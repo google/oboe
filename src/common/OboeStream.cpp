@@ -18,7 +18,6 @@
 #include <pthread.h>
 
 #include "common/OboeUtilities.h"
-#include "common/AudioClock.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 
