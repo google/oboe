@@ -17,7 +17,7 @@
 #ifndef OBOE_OBOE_STREAM_BUFFERED_H
 #define OBOE_OBOE_STREAM_BUFFERED_H
 
-#include "OboeDebug.h"
+#include "common/OboeDebug.h"
 #include "oboe/OboeStream.h"
 #include "oboe/OboeStreamCallback.h"
 #include "fifo/FifoBuffer.h"
