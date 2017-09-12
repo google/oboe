@@ -20,6 +20,10 @@
 #include "oboe/OboeDefinitions.h"
 #include "common/OboeUtilities.h"
 
+#define OBOE_CASE_ENUM(name) case name: return #name
+
+
+
 void OboeConvert_floatToPcm16(const float *source, int16_t *destination, int32_t numSamples) {
     for (int i = 0; i < numSamples; i++) {
         float fval = source[i];
@@ -53,4 +57,31 @@ int32_t OboeConvert_formatToSizeInBytes(oboe_audio_format_t format) {
             break;
     }
     return size;
+}
+
+const char * OboeConvert_ResultToText(oboe_result_t returnCode){
+    switch(returnCode){
+        OBOE_CASE_ENUM(OBOE_OK);
+        OBOE_CASE_ENUM(OBOE_ERROR_DISCONNECTED);
+        OBOE_CASE_ENUM(OBOE_ERROR_ILLEGAL_ARGUMENT);
+        // reserved
+        OBOE_CASE_ENUM(OBOE_ERROR_INTERNAL);
+        OBOE_CASE_ENUM(OBOE_ERROR_INVALID_STATE);
+        // reserved
+        // reserved
+        OBOE_CASE_ENUM(OBOE_ERROR_INVALID_HANDLE);
+        // reserved
+        OBOE_CASE_ENUM(OBOE_ERROR_UNIMPLEMENTED);
+        OBOE_CASE_ENUM(OBOE_ERROR_UNAVAILABLE);
+        OBOE_CASE_ENUM(OBOE_ERROR_NO_FREE_HANDLES);
+        OBOE_CASE_ENUM(OBOE_ERROR_NO_MEMORY);
+        OBOE_CASE_ENUM(OBOE_ERROR_NULL);
+        OBOE_CASE_ENUM(OBOE_ERROR_TIMEOUT);
+        OBOE_CASE_ENUM(OBOE_ERROR_WOULD_BLOCK);
+        OBOE_CASE_ENUM(OBOE_ERROR_INVALID_FORMAT);
+        OBOE_CASE_ENUM(OBOE_ERROR_OUT_OF_RANGE);
+        OBOE_CASE_ENUM(OBOE_ERROR_NO_SERVICE);
+        OBOE_CASE_ENUM(OBOE_ERROR_INVALID_RATE);
+    }
+    return "Unrecognized Oboe error.";
 }

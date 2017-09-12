@@ -29,4 +29,13 @@ void OboeConvert_pcm16ToFloat(const int16_t *source, float *destination, int32_t
  */
 int32_t OboeConvert_formatToSizeInBytes(oboe_audio_format_t format);
 
+/**
+ * The text is the ASCII symbol corresponding to the returnCode,
+ * or an English message saying the returnCode is unrecognized.
+ * This is intended for developers to use when debugging.
+ * It is not for display to users.
+ *
+ * @return pointer to a text representation of an Oboe result code.
+ */
+const char * OboeConvert_ResultToText(oboe_result_t returnCode);
 #endif //OBOE_OBOE_UTILITIES_H
