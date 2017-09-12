@@ -23,8 +23,8 @@
 
 #include "common/OboeDebug.h"
 #include "oboe/OboeStreamBuilder.h"
-#include "oboe/OboeStream.h"
 #include "OboeStreamOpenSLES.h"
+#include "OpenSLESUtilities.h"
 
 #ifndef NULL
 #define NULL 0
@@ -232,6 +232,19 @@ oboe_result_t OboeStreamOpenSLES::open() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "AudioPlayerOpenSLES::Open(chans:%d, rate:%d)",
                         mChannelCount, mSampleRate);
 
+    if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == OBOE_AUDIO_FORMAT_PCM_FLOAT){
+        // TODO: Allow floating point format on API <21 using float->int16 converter
+        return OBOE_ERROR_INVALID_FORMAT;
+    }
+
+    // If audio format is unspecified then choose a suitable default.
+    // API 21+: FLOAT
+    // API <21: INT16
+    if (mFormat == OBOE_AUDIO_FORMAT_UNSPECIFIED){
+        mFormat = (__ANDROID_API__ < __ANDROID_API_L__) ?
+                  OBOE_AUDIO_FORMAT_PCM_I16 : OBOE_AUDIO_FORMAT_PCM_FLOAT;
+    }
+
     oboe_result_t oboeResult = OboeStreamBuffered::open();
     if (oboeResult < 0) {
         return oboeResult;
@@ -260,16 +273,32 @@ oboe_result_t OboeStreamOpenSLES::open() {
             NUM_BURST_BUFFERS};                         // numBuffers
 
     // SLuint32 chanMask = SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT;
-    SLAndroidDataFormat_PCM_EX format_pcm = {
-            SL_ANDROID_DATAFORMAT_PCM_EX,       // formatType
+
+    // Define the audio data format.
+    SLDataFormat_PCM format_pcm = {
+            SL_DATAFORMAT_PCM,       // formatType
             (SLuint32) mChannelCount,           // numChannels
             (SLuint32) (mSampleRate * 1000),    // milliSamplesPerSec
             bitsPerSample,                      // bitsPerSample
             bitsPerSample,                      // containerSize;
             (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
             SL_BYTEORDER_LITTLEENDIAN, // TODO endianness? use native?
-            ConvertFormatToRepresentation(getFormat())}; // representation
+    };
+
     SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+
+    /**
+     * API 21 (Lollipop) introduced support for floating-point data representation and an extended
+     * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
+     * type, creating it from our original format.
+     */
+    if (__ANDROID_API__ >= __ANDROID_API_L__) {
+        SLuint32 representation = ConvertFormatToRepresentation(getFormat());
+        SLAndroidDataFormat_PCM_EX format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm,
+                                                                                 representation);
+        // Overwrite the previous format.
+        audioSrc.pFormat = &format_pcm_ex;
+    }
 
     // configure audio sink
     SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, sOutputMixObject};
