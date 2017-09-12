@@ -39,7 +39,7 @@ int AAudioLoader::open() {
     }
     mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
     if (mLibHandle == nullptr) {
-        LOGE("AAudioLoader::open() could not find " LIB_AAUDIO_NAME);
+        LOGI("AAudioLoader::open() could not find " LIB_AAUDIO_NAME);
         return -1; // TODO review return code
     } else {
         LOGD("AAudioLoader():  dlopen(%s) returned %p", LIB_AAUDIO_NAME, mLibHandle);
