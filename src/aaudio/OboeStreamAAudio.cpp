@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-#include "common/OboeUtilities.h"
+#include "oboe/OboeUtilities.h"
 #include "common/OboeDebug.h"
 #include "aaudio/AAudioLoader.h"
 #include "aaudio/OboeStreamAAudio.h"
@@ -162,12 +162,12 @@ oboe_result_t OboeStreamAAudio::convertApplicationDataToNative(int32_t numFrames
     int32_t numSamples = numFrames * getChannelCount();
     if (mFormat == OBOE_AUDIO_FORMAT_PCM_FLOAT) {
         if (mNativeFormat == OBOE_AUDIO_FORMAT_PCM_I16) {
-            OboeConvert_floatToPcm16(mFloatCallbackBuffer, mShortCallbackBuffer, numSamples);
+            Oboe_convertFloatToPcm16(mFloatCallbackBuffer, mShortCallbackBuffer, numSamples);
             result = AAUDIO_OK;
         }
     } else if (mFormat == OBOE_AUDIO_FORMAT_PCM_I16) {
         if (mNativeFormat == OBOE_AUDIO_FORMAT_PCM_FLOAT) {
-            OboeConvert_pcm16ToFloat(mShortCallbackBuffer, mFloatCallbackBuffer, numSamples);
+            Oboe_convertPcm16ToFloat(mShortCallbackBuffer, mFloatCallbackBuffer, numSamples);
             result = AAUDIO_OK;
         }
     }

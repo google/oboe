@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 
-#include "common/OboeUtilities.h"
+#include "oboe/OboeUtilities.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 
@@ -113,7 +113,7 @@ bool OboeStream::isPlaying() {
 }
 
 int32_t OboeStream::getBytesPerSample() const {
-    return OboeConvert_formatToSizeInBytes(mFormat);
+    return Oboe_convertFormatToSizeInBytes(mFormat);
 }
 
 void OboeStream::tuneLatency() {
