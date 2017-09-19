@@ -73,8 +73,6 @@ public:
     aaudio_result_t  (*builder_openStream)(AAudioStreamBuilder *builder,
                                            AAudioStream **stream);
 
-    const char * AAudio_convertResultToText(aaudio_result_t returnCode);
-
     signature_V_PBI builder_setBufferCapacityInFrames;
     signature_V_PBI builder_setChannelCount;
     signature_V_PBI builder_setDeviceId;
@@ -96,6 +94,11 @@ public:
     signature_I_PB  builder_delete;
 
     aaudio_format_t (*stream_getFormat)(AAudioStream *stream);
+
+    aaudio_result_t (*stream_read)(AAudioStream* stream,
+                                   void *buffer,
+                                   int32_t numFrames,
+                                   int64_t timeoutNanoseconds);
 
     aaudio_result_t (*stream_write)(AAudioStream *stream,
                                    const void *buffer,

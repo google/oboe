@@ -79,6 +79,12 @@ int AAudioLoader::open() {
                                         void *userData))
             dlsym(mLibHandle, "AAudioStreamBuilder_setErrorCallback");
 
+    stream_read = (aaudio_result_t (*)(AAudioStream *stream,
+                                       void *buffer,
+                                       int32_t numFrames,
+                                       int64_t timeoutNanoseconds))
+            dlsym(mLibHandle, "AAudioStream_read");
+
     stream_write = (aaudio_result_t (*)(AAudioStream *stream,
                                         const void *buffer,
                                         int32_t numFrames,
