@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEMIDISYNTH_AAUDIOLOADER_H
-#define NATIVEMIDISYNTH_AAUDIOLOADER_H
+#ifndef OBOE_AAUDIO_LOADER_H_
+#define OBOE_AAUDIO_LOADER_H_
 
 #include <unistd.h>
 #include "oboe/OboeDefinitions.h"
@@ -42,10 +42,9 @@ typedef int32_t (*signature_I_PSI)(AAudioStream *, int32_t);  // AAudioStream_se
  */
 class AAudioLoader {
 public:
-    AAudioLoader() {}
-    virtual ~AAudioLoader();
+    ~AAudioLoader();
 
-    static AAudioLoader *getInstance(); // singleton
+    static AAudioLoader* getInstance(); // singleton
 
     /**
      * Open the AAudio shared library and load the function pointers.
@@ -142,7 +141,7 @@ public:
     // TODO add any missing AAudio functions.
 
 private:
-    static AAudioLoader *mInstance;
+    AAudioLoader() {}
 
     // Load function pointers for specific signatures.
     signature_PC_I   load_PC_I(const char *name);
@@ -158,4 +157,4 @@ private:
 };
 
 
-#endif //NATIVEMIDISYNTH_AAUDIOLOADER_H
+#endif //OBOE_AAUDIO_LOADER_H_

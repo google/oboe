@@ -20,17 +20,13 @@
 
 #define LIB_AAUDIO_NAME "libaaudio.so"
 
-AAudioLoader *AAudioLoader::mInstance = nullptr;
-
 AAudioLoader::~AAudioLoader() {
     close(); // TODO dangerous from a destructor, require caller to close()
 }
 
-AAudioLoader *AAudioLoader::getInstance() {
-    if (mInstance == nullptr) {
-        mInstance = new AAudioLoader();
-    }
-    return mInstance;
+AAudioLoader* AAudioLoader::getInstance() {
+    static AAudioLoader instance;
+    return &instance;
 }
 
 int AAudioLoader::open() {
