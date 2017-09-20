@@ -22,27 +22,28 @@
 
 #include "aaudio/AAudio.h"
 
-// Use signatures for common functions.
-typedef const char * (*signature_PC_I)(int32_t);
-typedef int32_t (*signature_I_I)(int32_t);
-typedef int32_t (*signature_I_II)(int32_t, int32_t);
-typedef int32_t (*signature_I_IPI)(int32_t, int32_t *);
-typedef int32_t (*signature_I_IIPI)(int32_t, int32_t, int32_t *);
-
-typedef int32_t (*signature_I_PB)(AAudioStreamBuilder *);  // AAudioStreamBuilder_delete()
-typedef void    (*signature_V_PBI)(AAudioStreamBuilder *, int32_t);  // AAudioStreamBuilder_setSampleRate()
-
-typedef int32_t (*signature_I_PS)(AAudioStream *);  // AAudioStream_getSampleRate()
-typedef int64_t (*signature_L_PS)(AAudioStream *);  // AAudioStream_getFramesRead()
-typedef int32_t (*signature_I_PSI)(AAudioStream *, int32_t);  // AAudioStream_setBufferSizeInFrames()
 /**
  * The AAudio API was not available in early versions of Android.
  * To avoid linker errors, we dynamically link with the functions by name using dlsym().
  * On older versions this linkage will safely fail.
  */
 class AAudioLoader {
-public:
-    ~AAudioLoader();
+  public:
+    // Use signatures for common functions.
+    typedef const char * (*signature_PC_I)(int32_t);
+    typedef int32_t (*signature_I_I)(int32_t);
+    typedef int32_t (*signature_I_II)(int32_t, int32_t);
+    typedef int32_t (*signature_I_IPI)(int32_t, int32_t *);
+    typedef int32_t (*signature_I_IIPI)(int32_t, int32_t, int32_t *);
+
+    typedef int32_t (*signature_I_PB)(AAudioStreamBuilder *);  // AAudioStreamBuilder_delete()
+    // AAudioStreamBuilder_setSampleRate()
+    typedef void    (*signature_V_PBI)(AAudioStreamBuilder *, int32_t);
+
+    typedef int32_t (*signature_I_PS)(AAudioStream *);  // AAudioStream_getSampleRate()
+    typedef int64_t (*signature_L_PS)(AAudioStream *);  // AAudioStream_getFramesRead()
+    // AAudioStream_setBufferSizeInFrames()
+    typedef int32_t (*signature_I_PSI)(AAudioStream *, int32_t);
 
     static AAudioLoader* getInstance(); // singleton
 
@@ -143,8 +144,9 @@ public:
 
     // TODO add any missing AAudio functions.
 
-private:
+  private:
     AAudioLoader() {}
+    ~AAudioLoader();
 
     // Load function pointers for specific signatures.
     signature_PC_I   load_PC_I(const char *name);
@@ -156,8 +158,6 @@ private:
     signature_I_PSI  load_I_PSI(const char *name);
 
     void *mLibHandle = nullptr;
-
 };
-
 
 #endif //OBOE_AAUDIO_LOADER_H_

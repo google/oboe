@@ -155,37 +155,37 @@ static void AAudioLoader_check(void *proc, const char *functionName) {
     }
 }
 
-signature_PC_I AAudioLoader::load_PC_I(const char *functionName) {
+AAudioLoader::signature_PC_I AAudioLoader::load_PC_I(const char *functionName) {
     signature_PC_I proc = (signature_PC_I) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
 
-signature_V_PBI AAudioLoader::load_V_PBI(const char *functionName) {
+AAudioLoader::signature_V_PBI AAudioLoader::load_V_PBI(const char *functionName) {
     signature_V_PBI proc = (signature_V_PBI) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
 
-signature_I_PSI AAudioLoader::load_I_PSI(const char *functionName) {
+AAudioLoader::signature_I_PSI AAudioLoader::load_I_PSI(const char *functionName) {
     signature_I_PSI proc = (signature_I_PSI) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
 
-signature_I_PS AAudioLoader::load_I_PS(const char *functionName) {
+AAudioLoader::signature_I_PS AAudioLoader::load_I_PS(const char *functionName) {
     signature_I_PS proc = (signature_I_PS) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
 
-signature_L_PS AAudioLoader::load_L_PS(const char *functionName) {
+AAudioLoader::signature_L_PS AAudioLoader::load_L_PS(const char *functionName) {
     signature_L_PS proc = (signature_L_PS) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
 
-signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
+AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
     signature_I_PB proc = (signature_I_PB) dlsym(mLibHandle, functionName);
     AAudioLoader_check((void *)proc, functionName);
     return proc;
