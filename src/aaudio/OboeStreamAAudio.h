@@ -81,7 +81,6 @@ public:
 
 
 public:
- // FIXME remove   void *callbackLoop();
     aaudio_data_callback_result_t callOnAudioReady(AAudioStream *stream,
                                                    void *audioData,
                                                    int32_t numFrames);
@@ -91,10 +90,10 @@ protected:
     oboe_result_t convertApplicationDataToNative(int32_t numFrames);
 
 private:
-    float            *mFloatCallbackBuffer;
-    int16_t          *mShortCallbackBuffer;
-    std::atomic<bool> mCallbackThreadEnabled;
-    AAudioStream     *mAAudioStream;
+    float              *mFloatCallbackBuffer;
+    int16_t            *mShortCallbackBuffer;
+    std::atomic<bool>   mCallbackThreadEnabled;
+    AAudioStream       *mAAudioStream;
 
     static AAudioLoader *mLibLoader;
 };

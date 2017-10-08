@@ -115,21 +115,3 @@ bool OboeStream::isPlaying() {
 int32_t OboeStream::getBytesPerSample() const {
     return Oboe_convertFormatToSizeInBytes(mFormat);
 }
-
-void OboeStream::tuneLatency() {
-    if (mLatencyTriggerRequests != mLatencyTriggerResponses) {
-        mLatencyTriggerResponses = mLatencyTriggerRequests;
-        setBufferSizeInFrames(getFramesPerBurst());
-    } else {
-        int32_t xRuns = getXRunCount();
-        if (xRuns != mPreviousXRuns) {
-            mPreviousXRuns = xRuns;
-            int32_t requestedBufferSize = getBufferSizeInFrames() + getFramesPerBurst();
-            setBufferSizeInFrames(requestedBufferSize);
-        }
-    }
-}
-
-void OboeStream::triggerLatencyRetuning() {
-    mLatencyTriggerRequests++;
-}

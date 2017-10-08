@@ -122,6 +122,7 @@ public:
      * Default is OBOE_UNSPECIFIED.
      *
      * @param frames the desired buffer capacity in frames or OBOE_UNSPECIFIED
+     * @return pointer to the builder so calls can be chained
      */
     OboeStreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
         mBufferCapacityInFrames = bufferCapacityInFrames;
@@ -130,6 +131,12 @@ public:
 
     audio_api_index_t getApiIndex() const { return mAudioApi; }
 
+    /**
+     * Normally you would leave this unspecified, and Oboe will chose the best API
+     * for the device at runtime.
+     * @param Must be API_UNSPECIFIED, API_OPENSL_ES or API_AAUDIO.
+     * @return pointer to the builder so calls can be chained
+     */
     OboeStreamBuilder *setApiIndex(audio_api_index_t apiIndex) {
         mAudioApi = apiIndex;
         return this;
@@ -141,6 +148,7 @@ public:
      * So the application should query for the actual mode after the stream is opened.
      *
      * @param sharingMode OBOE_SHARING_MODE_LEGACY or OBOE_SHARING_MODE_EXCLUSIVE
+     * @return pointer to the builder so calls can be chained
      */
     OboeStreamBuilder *setSharingMode(oboe_sharing_mode_t sharingMode) {
         mSharingMode = sharingMode;
@@ -153,6 +161,7 @@ public:
      * protection from glitches.
      *
      * @param performanceMode for example, OBOE_PERFORMANCE_MODE_LOW_LATENCY
+     * @return pointer to the builder so calls can be chained
      */
     OboeStreamBuilder *setPerformanceMode(oboe_performance_mode_t performanceMode) {
         mPerformanceMode = performanceMode;
@@ -166,6 +175,7 @@ public:
      * By default, the primary device will be used.
      *
      * @param deviceId device identifier or OBOE_DEVICE_UNSPECIFIED
+     * @return pointer to the builder so calls can be chained
      */
     OboeStreamBuilder *setDeviceId(int32_t deviceId) {
         mDeviceId = deviceId;
@@ -178,6 +188,33 @@ public:
     }
 
     /**
+     * With OpenSL ES, the optimal framesPerBurst is not known by the native code.
+     * It should be obtained from the AudioManager using this code:
+     *
+     * <pre><code>
+        // Note that this technique only works for built-in speakers and headphones.
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        text = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        defaultFramesPerBurst = Integer.parseInt(text);
+        </code></pre>
+     *
+     * It can then be passed down to Oboe through JNI.
+     *
+     * AAudio will get the optimal framesPerBurst from the HAL and will ignore this value.
+     *
+     * @param defaultFramesPerBurst
+     * @return pointer to the builder so calls can be chained
+     */
+    OboeStreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
+        mDefaultFramesPerBurst = defaultFramesPerBurst;
+        return this;
+    }
+
+    int32_t getDefaultFramesPerBurst() const {
+        return mDefaultFramesPerBurst;
+    }
+
+    /**
      * Create and open a stream object based on the current settings.
      *
      * @param stream pointer to a variable to receive the stream address
@@ -185,6 +222,7 @@ public:
      */
     oboe_result_t openStream(OboeStream **stream);
 
+protected:
 
 private:
 
@@ -196,6 +234,8 @@ private:
     OboeStream *build();
 
     audio_api_index_t       mAudioApi = API_UNSPECIFIED;
+
+    int32_t                 mDefaultFramesPerBurst = 192; // arbitrary value, 4 msec at 48000 Hz
 };
 
 #endif /* OBOE_OBOE_STREAM_BUILDER_H_ */

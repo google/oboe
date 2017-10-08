@@ -95,7 +95,7 @@ int32_t OboeStreamBuffered::getBufferSizeInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getThresholdFrames();
     } else {
-        return OBOE_ERROR_UNIMPLEMENTED;
+        return OboeStream::getBufferSizeInFrames();
     }
 }
 
@@ -103,6 +103,6 @@ int32_t OboeStreamBuffered::getBufferCapacityInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getBufferCapacityInFrames(); // Maybe set mBufferCapacity in constructor
     } else {
-        return OBOE_ERROR_UNIMPLEMENTED;
+        return OboeStream::getBufferCapacityInFrames();
     }
 }

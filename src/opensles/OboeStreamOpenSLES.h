@@ -63,6 +63,7 @@ public:
     int32_t getFramesPerBurst() override;
 
 protected:
+private:
 
     /**
      * Internal use only.
@@ -72,17 +73,23 @@ protected:
         mState = state;
     }
 
-private:
-
+    /**
+     * Set OpenSL ES state.
+     *
+     * @param newState SL_PLAYSTATE_PAUSED, SL_PLAYSTATE_PLAYING, SL_PLAYSTATE_STOPPED
+     * @return
+     */
     oboe_result_t setPlayState(SLuint32 newState);
 
-    uint8_t   *mCallbackBuffer;
-    int32_t    mBytesPerCallback;
-    oboe_stream_state_t mState = OBOE_STREAM_STATE_UNINITIALIZED;
+    uint8_t              *mCallbackBuffer;
+    int32_t               mBytesPerCallback;
+    int32_t               mFramesPerBurst = 0;
+    int32_t               mBurstsPerBuffer = 2; // Double buffered
+    oboe_stream_state_t   mState = OBOE_STREAM_STATE_UNINITIALIZED;
 
     // OpenSLES stuff
-    SLObjectItf bqPlayerObject_;
-    SLPlayItf   bqPlayerPlay_;
+    SLObjectItf                   bqPlayerObject_;
+    SLPlayItf                     bqPlayerPlay_;
     SLAndroidSimpleBufferQueueItf bq_;
 };
 
