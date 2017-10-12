@@ -15,6 +15,7 @@
  */
 
 #include <sys/types.h>
+
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 
@@ -40,7 +41,6 @@ OboeStream *OboeStreamBuilder::build() {
     return stream;
 }
 
-
 oboe_result_t OboeStreamBuilder::openStream(OboeStream **streamPP) {
     if (streamPP == nullptr) {
         return OBOE_ERROR_NULL;
@@ -50,7 +50,7 @@ oboe_result_t OboeStreamBuilder::openStream(OboeStream **streamPP) {
     if (streamP == nullptr) {
         return OBOE_ERROR_NULL;
     }
-    oboe_result_t result = streamP->open(); // review API
+    oboe_result_t result = streamP->open(); // TODO review API
     if (result == OBOE_OK) {
         *streamPP = streamP;
     }

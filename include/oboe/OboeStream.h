@@ -23,7 +23,7 @@
 #include "oboe/OboeStreamCallback.h"
 #include "oboe/OboeStreamBase.h"
 
-/* ========== UNDER CONSTRUCTION - THIS API WILL CHANGE. =========== */
+/** WARNING - UNDER CONSTRUCTION - THIS API WILL CHANGE. */
 
 class OboeStreamBuilder;
 
@@ -40,6 +40,14 @@ public:
 
     virtual ~OboeStream() = default;
 
+    /**
+     * Open a stream based on the current settings.
+     *
+     * Note that we do not recommend re-opening a stream that has been closed.
+     * TODO Should we prevent re-opening?
+     *
+     * @return
+     */
     virtual oboe_result_t open();
 
     /**
@@ -75,11 +83,15 @@ public:
      * The current state is passed to avoid race conditions caused by the state
      * changing between calls.
      *
+     * Note that generally applications do not need to call this. It is considered
+     * an advanced technique.
+     *
      * <pre><code>
+     * int64_t timeoutNanos = 500 * OBOE_NANOS_PER_MILLISECOND; // arbitrary 1/2 second
      * oboe_stream_state_t currentState = stream->getState(stream);
      * while (currentState >= 0 && currentState != OBOE_STREAM_STATE_PAUSED) {
      *     currentState = stream->waitForStateChange(
-     *                                   stream, currentState, 500);
+     *                                   stream, currentState, timeoutNanos);
      * }
      * </code></pre>
      *
@@ -104,18 +116,9 @@ public:
     * This cannot be set higher than getBufferCapacity().
     *
     * @param requestedFrames requested number of frames that can be filled without blocking
-    * @return OBOE_OK or a negative error
+    * @return resulting buffer size in frames or a negative error
     */
     virtual oboe_result_t setBufferSizeInFrames(int32_t requestedFrames) {
-        return OBOE_ERROR_UNIMPLEMENTED;
-    }
-
-    /**
-     * Query the maximum number of frames that can be filled without blocking.
-     *
-     * @return buffer size or a negative error.
-     */
-    virtual int32_t getBufferSizeInFrames() const {
         return OBOE_ERROR_UNIMPLEMENTED;
     }
 
@@ -128,7 +131,7 @@ public:
      *
      * An underrun or overrun can cause an audible "pop" or "glitch".
      *
-     * @return the count or a negative error.
+     * @return the count or negative error.
      */
     virtual int32_t getXRunCount() {
         return OBOE_ERROR_UNIMPLEMENTED;
@@ -137,24 +140,13 @@ public:
     /**
      * Query the number of frames that are read or written by the endpoint at one time.
      *
-     * @return burst size or a negative error.
+     * @return burst size
      */
     virtual int32_t getFramesPerBurst() = 0;
 
-    // ============== Queries ===========================
     bool isPlaying();
-/*
-    int32_t getSampleRate() const { return mSampleRate; }
 
-    virtual oboe_result_t getChannelCount() const { return mChannelCount; }
-
-    int32_t getDeviceId() const { return mDeviceId; }
-    oboe_sharing_mode_t getSharingMode() const { return mSharingMode; }
-
-    oboe_direction_t getDirection() const { return mDirection; }
-*/
     OboeStreamCallback *getCallback() const { return mStreamCallback; }
-
 
     int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
 
@@ -197,12 +189,6 @@ public:
         return OBOE_ERROR_UNIMPLEMENTED;
     }
 
-    virtual void tuneLatency();
-
-    /**
-     * Try to minimize latency. This may cause a glitch.
-     */
-    void triggerLatencyRetuning();
 
 protected:
 
@@ -233,9 +219,6 @@ protected:
 private:
     int64_t              mFramesWritten = 0;
     int                  mPreviousScheduler = -1;
-    int32_t              mPreviousXRuns = 0;
-    int32_t              mLatencyTriggerRequests = 0;
-    int32_t              mLatencyTriggerResponses = 0;
 };
 
 

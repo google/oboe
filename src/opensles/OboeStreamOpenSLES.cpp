@@ -1,5 +1,4 @@
-/*
- * Copyright 2015 The Android Open Source Project
+/* Copyright 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +29,11 @@
 #define NULL 0
 #endif
 
-// TODO Query for a device specific value.
-#define DEFAULT_FRAMES_PER_CALLBACK   96
+#define DEFAULT_FRAMES_PER_CALLBACK   192    // 4 msec at 48000 Hz
+#define DEFAULT_SAMPLE_RATE           48000  // very common rate for mobile audio and video
+#define DEFAULT_CHANNEL_COUNT         2      // stereo
+
+#define OBOE_BITS_PER_BYTE            8      // common value
 
 /*
  * OSLES Helpers
@@ -59,8 +61,6 @@ static const char *errStrings[] = {
 const char *getSLErrStr(int code) {
     return errStrings[code];
 }
-
-#define NUM_BURST_BUFFERS                     2
 
 // These will wind up in <SLES/OpenSLES_Android.h>
 #define SL_ANDROID_SPEAKER_QUAD (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT \
@@ -203,6 +203,7 @@ OboeStreamOpenSLES::OboeStreamOpenSLES(const OboeStreamBuilder &builder)
     bqPlayerObject_ = NULL;
     bq_ = NULL;
     bqPlayerPlay_ = NULL;
+    mFramesPerBurst = builder.getDefaultFramesPerBurst();
     OpenSLEngine();
     LOGD("OboeStreamOpenSLES(): after OpenSLEngine()");
 }
@@ -223,6 +224,15 @@ static SLuint32 ConvertFormatToRepresentation(oboe_audio_format_t format) {
             return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
     }
     return 0;
+}
+
+static bool s_isLittleEndian() {
+    static uint32_t value = 1;
+    return *((uint8_t *) &value) == 1; // Does address point to LSB?
+}
+
+static SLuint32 s_getDefaultByteOrder() {
+    return s_isLittleEndian() ? SL_BYTEORDER_LITTLEENDIAN : SL_BYTEORDER_BIGENDIAN;
 }
 
 oboe_result_t OboeStreamOpenSLES::open() {
@@ -251,13 +261,20 @@ oboe_result_t OboeStreamOpenSLES::open() {
     }
     // Convert to defaults if UNSPECIFIED
     if (mSampleRate == OBOE_UNSPECIFIED) {
-        mSampleRate = 48000;
+        mSampleRate = DEFAULT_SAMPLE_RATE;
     }
     if (mChannelCount == OBOE_UNSPECIFIED) {
-        mChannelCount = 2;
+        mChannelCount = DEFAULT_CHANNEL_COUNT;
     }
-    if (mFramesPerCallback == OBOE_UNSPECIFIED) {
-        mFramesPerCallback = DEFAULT_FRAMES_PER_CALLBACK;
+
+    // Decide frames per burst based hints from caller.
+    // TODO  Can we query this from OpenSL ES?
+    if (mFramesPerCallback != OBOE_UNSPECIFIED) {
+        mFramesPerBurst = mFramesPerCallback;
+    } else if (mFramesPerBurst != OBOE_UNSPECIFIED) { // set from defaultFramesPerBurst
+        mFramesPerCallback = mFramesPerBurst;
+    } else {
+        mFramesPerBurst = mFramesPerCallback = DEFAULT_FRAMES_PER_CALLBACK;
     }
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
@@ -265,12 +282,12 @@ oboe_result_t OboeStreamOpenSLES::open() {
     LOGD("OboeStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
     LOGD("OboeStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
 
-    SLuint32 bitsPerSample = getBytesPerSample() * 8;
+    SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
 
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,    // locatorType
-            NUM_BURST_BUFFERS};                         // numBuffers
+            static_cast<SLuint32>(mBurstsPerBuffer)};   // numBuffers
 
     // SLuint32 chanMask = SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT;
 
@@ -278,11 +295,11 @@ oboe_result_t OboeStreamOpenSLES::open() {
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM,       // formatType
             (SLuint32) mChannelCount,           // numChannels
-            (SLuint32) (mSampleRate * 1000),    // milliSamplesPerSec
+            (SLuint32) (mSampleRate * OBOE_MILLIS_PER_SECOND),    // milliSamplesPerSec
             bitsPerSample,                      // bitsPerSample
             bitsPerSample,                      // containerSize;
             (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
-            SL_BYTEORDER_LITTLEENDIAN, // TODO endianness? use native?
+            s_getDefaultByteOrder(),
     };
 
     SLDataSource audioSrc = {&loc_bufq, &format_pcm};
@@ -334,6 +351,7 @@ oboe_result_t OboeStreamOpenSLES::open() {
     assert(SL_RESULT_SUCCESS == result);
 
     mSharingMode = OBOE_SHARING_MODE_SHARED;
+    mBufferCapacityInFrames = mFramesPerBurst * mBurstsPerBuffer;
 
     return OBOE_OK;
 }
@@ -426,5 +444,6 @@ oboe_result_t OboeStreamOpenSLES::waitForStateChange(oboe_stream_state_t current
 }
 
 int32_t OboeStreamOpenSLES::getFramesPerBurst() {
-    return mFramesPerCallback; // TODO review, can we query this?
+    return mFramesPerBurst;
 }
+

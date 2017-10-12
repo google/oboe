@@ -126,6 +126,7 @@ oboe_result_t OboeStreamAAudio::open() {
     }
     mSharingMode = mLibLoader->stream_getSharingMode(mAAudioStream);
     mPerformanceMode = mLibLoader->stream_getPerformanceMode(mAAudioStream);
+    mBufferCapacityInFrames = getBufferCapacityInFrames();
 
     LOGD("OboeStreamAAudio.open() app    format = %d", (int) mFormat);
     LOGD("OboeStreamAAudio.open() native format = %d", (int) mNativeFormat);
