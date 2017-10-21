@@ -42,7 +42,7 @@ public:
 
     /**
      *
-     * @return true is AAudio is supported on this device.
+     * @return true if AAudio is supported on this device.
      */
     static bool isSupported();
 
@@ -79,6 +79,10 @@ public:
 
     oboe_stream_state_t getState() override;
 
+
+    bool usesAAudio() const override {
+        return true;
+    }
 
 public:
     aaudio_data_callback_result_t callOnAudioReady(AAudioStream *stream,

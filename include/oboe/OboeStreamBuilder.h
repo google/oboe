@@ -58,7 +58,6 @@ public:
         return this;
     }
 
-
     /**
      * Request the direction for a stream. The default is OBOE_DIRECTION_OUTPUT.
      *
@@ -141,6 +140,15 @@ public:
         mAudioApi = apiIndex;
         return this;
     }
+
+    /**
+     * Is the AAudio API supported on this device?
+     *
+     * AAudio was introduced in the Oreo release.
+     *
+     * @return true if supported
+     */
+    static bool isAAudioSupported();
 
     /**
      * Request a mode for sharing the device.

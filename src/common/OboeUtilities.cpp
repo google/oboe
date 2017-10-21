@@ -21,7 +21,6 @@
 
 #define OBOE_CASE_ENUM(name) case name: return #name
 
-
 void Oboe_convertFloatToPcm16(const float *source, int16_t *destination, int32_t numSamples) {
     for (int i = 0; i < numSamples; i++) {
         float fval = source[i];
