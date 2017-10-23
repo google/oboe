@@ -22,5 +22,6 @@
 #include "oboe/OboeStream.h"
 #include "oboe/OboeStreamBase.h"
 #include "oboe/OboeStreamBuilder.h"
+#include "oboe/OboeUtilities.h"
 
 #endif //OBOE_OBOE_H
