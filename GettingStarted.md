@@ -6,7 +6,7 @@ Start by cloning the Oboe repository:
 
     git clone github.com/google/oboe
 
-Open your app's CMakeLists.txt, this can be found under `External Build Files` in the Android project view. 
+Open your app's `CMakeLists.txt`, this can be found under `External Build Files` in the Android project view. 
 
 ![CMakeLists.txt location in Android Studio](cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
 
