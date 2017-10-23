@@ -52,7 +52,7 @@ Streams are built using an `OboeStreamBuilder`. Create one like this:
 
     OboeStreamBuilder builder;
 
-Use the builder's set methods to request properties on the stream (you can read more about these properties in the [full guide](FullGuide.md)):
+Use the builder's set methods to set properties on the stream (you can read more about these properties in the [full guide](FullGuide.md)):
 
     builder.setDirection(OBOE_DIRECTION_OUTPUT);
     builder.setPerformanceMode(OBOE_PERFORMANCE_MODE_LOW_LATENCY);
