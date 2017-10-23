@@ -4,7 +4,7 @@ The easiest way to start using Oboe is to build it from source by adding a few s
 ## Building Oboe
 Start by cloning the Oboe repository: 
 
-    git clone github.com/google/oboe
+    git clone https://github.com/google/oboe
 
 Open your app's `CMakeLists.txt`, this can be found under `External Build Files` in the Android project view. 
 
