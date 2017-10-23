@@ -39,13 +39,6 @@ public:
 
     virtual void onError(OboeStream *audioStream, oboe_result_t error) {}
 
-    /**
-     * The callback thread is exiting.
-     *
-     * @param reason Why it is exiting. OBOE_OK if requested.
-     *               Or maybe OBOE_ERROR_TIMEOUT or OBOE_ERROR_DISCONNECTED.
-     */
-    virtual void onExit(oboe_result_t reason) {}
 };
 
 
