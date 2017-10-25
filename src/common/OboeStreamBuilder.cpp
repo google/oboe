@@ -22,6 +22,10 @@
 #include "opensles/OboeStreamOpenSLES.h"
 #include "aaudio/OboeStreamAAudio.h"
 
+bool OboeStreamBuilder::isAAudioSupported() {
+    return OboeStreamAAudio::isSupported();
+}
+
 OboeStream *OboeStreamBuilder::build() {
     LOGD("OboeStreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
          mAudioApi, mChannelCount, mFramesPerCallback);

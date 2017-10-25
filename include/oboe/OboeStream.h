@@ -189,6 +189,13 @@ public:
         return OBOE_ERROR_UNIMPLEMENTED;
     }
 
+    /**
+     *
+     * @return true if this stream is implemented using the AAudio API
+     */
+    virtual bool usesAAudio() const {
+        return false;
+    }
 
 protected:
 

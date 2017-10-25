@@ -118,6 +118,8 @@ oboe_result_t OboeStreamAAudio::open() {
         goto error2;
     }
 
+    // Query and cache the values that will not change.
+    mDeviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
     mChannelCount = mLibLoader->stream_getChannelCount(mAAudioStream);
     mSampleRate = mLibLoader->stream_getSampleRate(mAAudioStream);
     mNativeFormat = mLibLoader->stream_getFormat(mAAudioStream);
@@ -130,6 +132,7 @@ oboe_result_t OboeStreamAAudio::open() {
 
     LOGD("OboeStreamAAudio.open() app    format = %d", (int) mFormat);
     LOGD("OboeStreamAAudio.open() native format = %d", (int) mNativeFormat);
+    LOGD("OboeStreamAAudio.open() sample rate   = %d", (int) mSampleRate);
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
