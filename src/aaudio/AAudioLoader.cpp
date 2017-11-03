@@ -118,8 +118,8 @@ int AAudioLoader::open() {
     stream_getDirection       = load_I_PS("AAudioStream_getDirection");
     stream_getBufferCapacity  = load_I_PS("AAudioStream_getBufferCapacityInFrames");
     stream_getFramesPerBurst  = load_I_PS("AAudioStream_getFramesPerBurst");
-    stream_getFramesRead      = load_L_PS("AAudioStream_getFramesWritten");
-    stream_getFramesWritten   = load_L_PS("AAudioStream_getFramesRead");
+    stream_getFramesRead      = load_L_PS("AAudioStream_getFramesRead");
+    stream_getFramesWritten   = load_L_PS("AAudioStream_getFramesWritten");
     stream_getPerformanceMode = load_I_PS("AAudioStream_getPerformanceMode");
     stream_getSampleRate      = load_I_PS("AAudioStream_getSampleRate");
     stream_getSharingMode     = load_I_PS("AAudioStream_getSharingMode");
