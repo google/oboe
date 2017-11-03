@@ -18,12 +18,14 @@
 #define OBOE_OBOE_STREAM_AAUDIO_H_
 
 #include <atomic>
+#include <mutex>
+#include <thread>
+
+#include "aaudio/AAudio.h"
 
 #include "oboe/OboeStreamBuilder.h"
 #include "oboe/OboeStream.h"
 #include "oboe/OboeDefinitions.h"
-
-#include "aaudio/AAudio.h"
 
 class AAudioLoader;
 
@@ -62,7 +64,6 @@ public:
 
     oboe_result_t setBufferSizeInFrames(int32_t requestedFrames) override;
     int32_t getBufferSizeInFrames() const override;
-    int32_t getBufferCapacityInFrames() const override;
     int32_t getFramesPerBurst() override;
     int32_t getXRunCount() override;
 
@@ -88,16 +89,23 @@ public:
     aaudio_data_callback_result_t callOnAudioReady(AAudioStream *stream,
                                                    void *audioData,
                                                    int32_t numFrames);
-    void callOnError(AAudioStream *stream, oboe_result_t error);
+
+    void onErrorCallback(AAudioStream *stream, oboe_result_t error);
+
+    void onErrorInThread(AAudioStream *stream, oboe_result_t error);
 
 protected:
-    oboe_result_t convertApplicationDataToNative(int32_t numFrames);
+    oboe_result_t convertApplicationDataToNative(int32_t numFrames); // TODO remove?
 
 private:
-    float              *mFloatCallbackBuffer;
-    int16_t            *mShortCallbackBuffer;
-    std::atomic<bool>   mCallbackThreadEnabled;
-    AAudioStream       *mAAudioStream;
+
+    float               *mFloatCallbackBuffer;
+    int16_t             *mShortCallbackBuffer;
+    std::atomic<bool>    mCallbackThreadEnabled;
+    std::thread         *mErrorHandlingThread = nullptr;
+
+    std::mutex           mLock; // for synchronizing start/stop/close
+    std::atomic<AAudioStream *> mAAudioStream{nullptr};
 
     static AAudioLoader *mLibLoader;
 };

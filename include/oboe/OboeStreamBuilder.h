@@ -190,6 +190,15 @@ public:
         return this;
     }
 
+    /**
+     * Specifies an object to handle data or error related callbacks from the underlying API.
+     *
+     * When an error callback occurs, the associated stream will be stopped
+     * and closed in a separate thread.
+     *
+     * @param streamCallback
+     * @return
+     */
     OboeStreamBuilder *setCallback(OboeStreamCallback *streamCallback) {
         mStreamCallback = streamCallback;
         return this;

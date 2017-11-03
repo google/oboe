@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+#include <assert.h>
 #include <stdint.h>
 
-#include "oboe/OboeUtilities.h"
-#include "common/OboeDebug.h"
 #include "aaudio/AAudioLoader.h"
 #include "aaudio/OboeStreamAAudio.h"
+#include "common/OboeDebug.h"
+#include "oboe/OboeUtilities.h"
 
 AAudioLoader *OboeStreamAAudio::mLibLoader = nullptr;
 
@@ -64,6 +65,14 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
     }
 }
 
+static void oboe_aaudio_error_thread_proc(OboeStreamAAudio *oboeStream,
+                                          AAudioStream *stream,
+                                          oboe_result_t error) {
+    if (oboeStream != NULL) {
+        oboeStream->onErrorInThread(stream, error);
+    }
+}
+
 // 'C' wrapper for the error callback method
 static void oboe_aaudio_error_callback_proc(
         AAudioStream *stream,
@@ -72,7 +81,9 @@ static void oboe_aaudio_error_callback_proc(
 
     OboeStreamAAudio *oboeStream = (OboeStreamAAudio *)userData;
     if (oboeStream != NULL) {
-        oboeStream->callOnError(stream, error);
+        // Handle error on a separate thread
+        std::thread t(oboe_aaudio_error_thread_proc, oboeStream, stream, error);
+        t.detach();
     }
 }
 
@@ -105,15 +116,19 @@ oboe_result_t OboeStreamAAudio::open() {
     mLibLoader->builder_setSharingMode(aaudioBuilder, mSharingMode);
     mLibLoader->builder_setPerformanceMode(aaudioBuilder, mPerformanceMode);
 
-    // TODO get more parameters from the builder
+    // TODO get more parameters from the builder?
 
     if (mStreamCallback != nullptr) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
-        mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
     }
+    mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
 
-    result = mLibLoader->builder_openStream(aaudioBuilder, &mAAudioStream);
+    {
+        AAudioStream *stream = nullptr;
+        result = mLibLoader->builder_openStream(aaudioBuilder, &stream);
+        mAAudioStream.store(stream);
+    }
     if (result != AAUDIO_OK) {
         goto error2;
     }
@@ -128,23 +143,33 @@ oboe_result_t OboeStreamAAudio::open() {
     }
     mSharingMode = mLibLoader->stream_getSharingMode(mAAudioStream);
     mPerformanceMode = mLibLoader->stream_getPerformanceMode(mAAudioStream);
-    mBufferCapacityInFrames = getBufferCapacityInFrames();
+    mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
 
     LOGD("OboeStreamAAudio.open() app    format = %d", (int) mFormat);
     LOGD("OboeStreamAAudio.open() native format = %d", (int) mNativeFormat);
     LOGD("OboeStreamAAudio.open() sample rate   = %d", (int) mSampleRate);
+    LOGD("OboeStreamAAudio.open() capacity      = %d", (int) mBufferCapacityInFrames);
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
     LOGD("OboeStreamAAudio.open: AAudioStream_Open() returned %s, mAAudioStream = %p",
-         mLibLoader->convertResultToText(result), mAAudioStream);
+         mLibLoader->convertResultToText(result), mAAudioStream.load());
     return result;
 }
 
 oboe_result_t OboeStreamAAudio::close()
 {
-    oboe_result_t result = mLibLoader->stream_close(mAAudioStream);
-    mAAudioStream = nullptr;
+    // The main reason we have this mutex if to prevent a collision between a call
+    // by the application to stop a stream at the same time that an onError callback
+    // is being executed because of a disconnect. The close will delete the stream,
+    // which could otherwise cause the requestStop() to crash.
+    std::lock_guard<std::mutex> lock(mLock);
+    oboe_result_t result = OBOE_OK;
+    // This will delete the AAudio stream object so we need to null out the pointer.
+    AAudioStream *stream = mAAudioStream.exchange(nullptr);
+    if (stream != nullptr) {
+        result = mLibLoader->stream_close(stream);
+    }
     return result;
 }
 
@@ -157,8 +182,18 @@ aaudio_data_callback_result_t OboeStreamAAudio::callOnAudioReady(AAudioStream *s
             numFrames);
 }
 
-void OboeStreamAAudio::callOnError(AAudioStream *stream, oboe_result_t error) {
-    mStreamCallback->onError( this, error);
+void OboeStreamAAudio::onErrorInThread(AAudioStream *stream, oboe_result_t error) {
+    LOGD("onErrorInThread() - entering ===================================");
+    assert(stream == mAAudioStream.load());
+    requestStop();
+    if (mStreamCallback != nullptr) {
+        mStreamCallback->onErrorBeforeClose(this, error);
+    }
+    close();
+    if (mStreamCallback != nullptr) {
+        mStreamCallback->onErrorAfterClose(this, error);
+    }
+    LOGD("onErrorInThread() - exiting ===================================");
 }
 
 oboe_result_t OboeStreamAAudio::convertApplicationDataToNative(int32_t numFrames) {
@@ -180,81 +215,146 @@ oboe_result_t OboeStreamAAudio::convertApplicationDataToNative(int32_t numFrames
 
 oboe_result_t OboeStreamAAudio::requestStart()
 {
-    return mLibLoader->stream_requestStart(mAAudioStream);
+    std::lock_guard<std::mutex> lock(mLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_requestStart(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::requestPause()
 {
-    return mLibLoader->stream_requestPause(mAAudioStream);
+    std::lock_guard<std::mutex> lock(mLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_requestPause(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::requestFlush() {
-    return mLibLoader->stream_requestFlush(mAAudioStream);
+    std::lock_guard<std::mutex> lock(mLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_requestFlush(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::requestStop()
 {
-    return mLibLoader->stream_requestStop(mAAudioStream);
+    std::lock_guard<std::mutex> lock(mLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_requestStop(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds)
 {
-    return mLibLoader->stream_write(mAAudioStream, buffer, numFrames, timeoutNanoseconds);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_write(mAAudioStream, buffer, numFrames, timeoutNanoseconds);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::waitForStateChange(oboe_stream_state_t currentState,
                                                   oboe_stream_state_t *nextState,
                                                   int64_t timeoutNanoseconds)
 {
-    return mLibLoader->stream_waitForStateChange(mAAudioStream, currentState,
-                                                 nextState, timeoutNanoseconds);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_waitForStateChange(mAAudioStream, currentState,
+                                                     nextState, timeoutNanoseconds);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames)
 {
+    if (requestedFrames > mBufferCapacityInFrames) {
+        requestedFrames = mBufferCapacityInFrames;
+    }
     return mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
 }
 
 oboe_stream_state_t OboeStreamAAudio::getState()
 {
-    if (mAAudioStream == nullptr) {
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getState(stream);
+    } else {
         return OBOE_STREAM_STATE_CLOSED;
     }
-    return mLibLoader->stream_getState(mAAudioStream);
 }
 
 int32_t OboeStreamAAudio::getBufferSizeInFrames() const {
-    return mLibLoader->stream_getBufferSize(mAAudioStream);
-}
-
-int32_t OboeStreamAAudio::getBufferCapacityInFrames() const {
-    return mLibLoader->stream_getBufferCapacity(mAAudioStream);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getBufferSize(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 int32_t OboeStreamAAudio::getFramesPerBurst()
 {
-    return mLibLoader->stream_getFramesPerBurst(mAAudioStream);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getFramesPerBurst(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 int64_t OboeStreamAAudio::getFramesRead()
 {
-    return mLibLoader->stream_getFramesRead(mAAudioStream);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getFramesRead(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 int64_t OboeStreamAAudio::getFramesWritten()
 {
-    return mLibLoader->stream_getFramesWritten(mAAudioStream);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getFramesWritten(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 int32_t OboeStreamAAudio::getXRunCount()
 {
-    return mLibLoader->stream_getXRunCount(mAAudioStream);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getXRunCount(stream);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
 
 oboe_result_t OboeStreamAAudio::getTimestamp(clockid_t clockId,
                                    int64_t *framePosition,
                                    int64_t *timeNanoseconds) {
-    return mLibLoader->stream_getTimestamp(mAAudioStream, clockId,
-                                   framePosition, timeNanoseconds);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_getTimestamp(stream, clockId,
+                                               framePosition, timeNanoseconds);
+    } else {
+        return OBOE_ERROR_NULL;
+    }
 }
