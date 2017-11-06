@@ -30,8 +30,6 @@ CDEP_UPLOAD_DIR=${BUILD_DIR}/upload
 CDEP_UPLOAD_PATH=`pwd`/${CDEP_UPLOAD_DIR}
 CDEP_MANIFEST_FILE=${CDEP_UPLOAD_PATH}/cdep-manifest.yml
 
-ANDROID_SYSTEM_VERSION=26
-
 mkdir -p ${CDEP_UPLOAD_DIR}
 
 # Zip the headers
@@ -63,7 +61,6 @@ CMAKE_ARGS="-H. \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
   -DCMAKE_SYSTEM_NAME=Android \
-  -DCMAKE_SYSTEM_VERSION=${ANDROID_SYSTEM_VERSION} \
   -DCMAKE_ANDROID_STL_TYPE=c++_static \
   -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
   -DCMAKE_INSTALL_PREFIX=."
@@ -71,6 +68,7 @@ CMAKE_ARGS="-H. \
 function build_oboe {
 
   ABI=$1
+  MINIMUM_API_LEVEL=$2
   ABI_BUILD_DIR=build/${ABI}
   STAGING_DIR=staging
 
@@ -101,19 +99,19 @@ function build_oboe {
       ls -l ${CDEP_UPLOAD_PATH}/oboe-${ABI}.zip | awk '{print $5}' >> ${CDEP_MANIFEST_FILE}
 
       printf "    %s\r\n" "  abi: ${ABI}" >> ${CDEP_MANIFEST_FILE}
-      printf "    %s\r\n" "  platform: ${ANDROID_SYSTEM_VERSION}" >> ${CDEP_MANIFEST_FILE}
+      printf "    %s\r\n" "  platform: ${MINIMUM_API_LEVEL}" >> ${CDEP_MANIFEST_FILE}
       printf "      libs: [liboboe.a]\r\n" >> ${CDEP_MANIFEST_FILE}
 
     popd
   popd
 }
 
-build_oboe armeabi
-build_oboe armeabi-v7a
-build_oboe arm64-v8a
-build_oboe x86
-build_oboe x86_64
-build_oboe mips
+build_oboe armeabi 16
+build_oboe armeabi-v7a 16
+build_oboe arm64-v8a 21
+build_oboe x86 16
+build_oboe x86_64 21
+build_oboe mips 21
 
 # Currently unsupported ABIs
 # build_oboe mips64
