@@ -79,12 +79,13 @@ function build_oboe {
   cmake -B${ABI_BUILD_DIR} \
         -DCMAKE_ANDROID_ARCH_ABI=${ABI} \
         -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${STAGING_DIR}/lib/${ABI} \
+		-DCMAKE_SYSTEM_VERSION=${MINIMUM_API_LEVEL}\
         ${CMAKE_ARGS}
 
   pushd ${ABI_BUILD_DIR}
     make -j5
 
-    echo "Creating CDep package for ${ABI} ABI"
+    echo "Creating CDep package for ${ABI} minimum API: ${MINIMUM_API_LEVEL}"
     pushd ${STAGING_DIR}
 
       zip -r ${CDEP_UPLOAD_PATH}/oboe-${ABI}.zip .
@@ -146,7 +147,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
   -DCMAKE_SYSTEM_NAME=Android \
-  -DCMAKE_SYSTEM_VERSION=${ANDROID_SYSTEM_VERSION} \
+  -DCMAKE_SYSTEM_VERSION=16 \
   -DCMAKE_ANDROID_STL_TYPE=c++_static \
   -DCMAKE_ANDROID_NDK=${ANDROID_NDK} \
   -DCMAKE_ANDROID_ARCH_ABI=armeabi \
