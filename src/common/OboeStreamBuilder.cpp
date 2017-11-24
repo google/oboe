@@ -16,11 +16,11 @@
 
 #include <sys/types.h>
 
+#include "aaudio/OboeStreamAAudio.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
-
+#include "oboe/OboeStreamBuilder.h"
 #include "opensles/OboeStreamOpenSLES.h"
-#include "aaudio/OboeStreamAAudio.h"
 
 bool OboeStreamBuilder::isAAudioSupported() {
     return OboeStreamAAudio::isSupported();
