@@ -6,11 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++11")
 include_directories(
   include
   src
-  /Users/donturner/Library/Android/sdk/ndk-bundle/sysroot/usr/include
-  /Users/donturner/Library/Android/sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi/
 )
-
-#file(GLOB_RECURSE oboe_sources src/*)
 
 set (oboe_sources
         include/oboe/LatencyTuner.h
@@ -36,6 +32,5 @@ set (oboe_sources
         src/opensles/StreamOpenSLES.cpp
         src/opensles/OpenSLESUtilities.cpp
         )
-
 
 add_library(oboe STATIC ${oboe_sources})

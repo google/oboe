@@ -49,7 +49,7 @@ public:
      *
      * Latency tuning is only supported for AAudio.
      *
-     * @return OBOE_OK or negative error, OBOE_ERROR_UNIMPLEMENTED for OpenSL ES
+     * @return OK or negative error, ErrorUnimplemented for OpenSL ES
      */
     Result tune();
 
