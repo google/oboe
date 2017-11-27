@@ -14,8 +14,8 @@
  * limitations under the License.
  *
  */
-#ifndef OBOE_OBOE_DEBUG_H
-#define OBOE_OBOE_DEBUG_H
+#ifndef OBOE_DEBUG_H
+#define OBOE_DEBUG_H
 #include <android/log.h>
 
 #if 1
@@ -40,4 +40,4 @@
 #define LOGF(...)
 #endif
 
-#endif //OBOE_OBOE_DEBUG_H
+#endif //OBOE_DEBUG_H

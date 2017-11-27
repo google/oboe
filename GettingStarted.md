@@ -48,9 +48,9 @@ Include the Oboe header:
 
     #include <oboe/Oboe.h>
 
-Streams are built using an `OboeStreamBuilder`. Create one like this:
+Streams are built using an `StreamBuilder`. Create one like this:
 
-    OboeStreamBuilder builder;
+    StreamBuilder builder;
 
 Use the builder's set methods to set properties on the stream (you can read more about these properties in the [full guide](FullGuide.md)):
 
@@ -58,12 +58,12 @@ Use the builder's set methods to set properties on the stream (you can read more
     builder.setPerformanceMode(OBOE_PERFORMANCE_MODE_LOW_LATENCY);
     builder.setSharingMode(OBOE_SHARING_MODE_EXCLUSIVE);
 
-Define an `OboeStreamCallback` class to receive callbacks whenever the stream requires new data.
+Define an `StreamCallback` class to receive callbacks whenever the stream requires new data.
 
-    class MyCallback : public OboeStreamCallback {
+    class MyCallback : public StreamCallback {
     public:
         oboe_data_callback_result_t
-        onAudioReady(OboeStream *audioStream, void *audioData, int32_t numFrames){
+        onAudioReady(Stream *audioStream, void *audioData, int32_t numFrames){
             generateSineWave(static_cast<float *>(audioData), numFrames);
             return OBOE_CALLBACK_RESULT_CONTINUE;
         }
@@ -76,18 +76,18 @@ Supply this callback class to the builder:
 
 Open the stream:
 
-    OboeStream *stream;
-    oboe_result_t result = builder.openStream(&stream);
+    Stream *stream;
+    Result result = builder.openStream(&stream);
 
 Check the result to make sure the stream was opened successfully. Oboe has many convenience methods for converting its types into human-readable strings, they all start with `Oboe_convert`:
 
-    if (result != OBOE_OK){
+    if (result != OK){
         LOGE("Failed to create stream. Error: %s", Oboe_convertResultToText(result));
     }
 
 Note that this sample code uses the [logging macros from here](https://github.com/googlesamples/android-audio-high-performance/blob/master/debug-utils/logging_macros.h).
 
-Check the properties of the created stream. The **format** is one property which you should check. The default is `float` on API 21+ and `int16_t` on API 20 or lower. This will dictate the `audioData` type in the `OboeStreamCallback::onAudioReady` callback.
+Check the properties of the created stream. The **format** is one property which you should check. The default is `float` on API 21+ and `int16_t` on API 20 or lower. This will dictate the `audioData` type in the `StreamCallback::onAudioReady` callback.
 
     oboe_audio_format_t format = stream->getFormat();
     LOGI("Stream format is %s", Oboe_convertAudioFormatToText(format));

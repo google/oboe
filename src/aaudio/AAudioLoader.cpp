@@ -20,6 +20,8 @@
 
 #define LIB_AAUDIO_NAME "libaaudio.so"
 
+namespace oboe {
+
 AAudioLoader::~AAudioLoader() {
     close(); // TODO dangerous from a destructor, require caller to close()
 }
@@ -190,3 +192,5 @@ AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
     AAudioLoader_check((void *)proc, functionName);
     return proc;
 }
+
+} // namespace oboe

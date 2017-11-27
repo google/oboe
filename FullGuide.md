@@ -3,7 +3,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 ## Audio streams
 
-Oboe moves audio data between your app and the audio inputs and outputs on your Android device. Your app passes data in and out by reading from and writing to *audio streams*, represented by the class `OboeStream`. The read/write calls can be blocking or non-blocking.
+Oboe moves audio data between your app and the audio inputs and outputs on your Android device. Your app passes data in and out by reading from and writing to *audio streams*, represented by the class `Stream`. The read/write calls can be blocking or non-blocking.
 
 A stream is defined by the following:
 
@@ -59,11 +59,11 @@ Oboe might perform sample conversion on its own. For example, if an app is writi
 
 ## Creating an audio stream
 
-The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `OboeStreamBuilder`.
+The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `StreamBuilder`.
 
-  1. Set the audio stream configuration using an OboeStreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
+  1. Set the audio stream configuration using an StreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
 
-    OboeStreamBuilder streamBuilder;
+    StreamBuilder streamBuilder;
 
     streamBuilder.setDeviceId(deviceId);
     streamBuilder.setDirection(direction);
@@ -81,8 +81,8 @@ whether Oboe will use AAudio or OpenSL ES as the audio engine for you app. Oboe
 will automatically select the best implementation available on your device. If
 you want to specifically select AAudio or OpenSL, set the APIIndex yourself.
 After a stream has been opened, you can verify that the API you specified was
-chosen by calling `OboeStreamBuilder::getAPIIndex()`. The allowable indexes are
-`API_AAUDIO` and `API_OPENSL_ES`.
+chosen by calling `StreamBuilder::getAPIIndex()`. The allowable indexes are
+`AAudio` and `OpenSLES`.
 
 If you do not specify the deviceId, the default is the primary output device.
 If you do not specify the stream direction, the default is an output stream.
@@ -92,10 +92,10 @@ it to `OBOE_UNSPECIFIED`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
-  2. After you've configured the OboeStreamBuilder, call `openStream()` to open the stream:
+  2. After you've configured the StreamBuilder, call `openStream()` to open the stream:
 
-    oboe_result_t result = streamBuilder.openStream(&stream_);
-    if (result != OBOE_OK){
+    Result result = streamBuilder.openStream(&stream_);
+    if (result != OK){
         __android_log_print(ANDROID_LOG_ERROR,
                             "AudioEngine",
                             "Error opening stream %s",
@@ -139,7 +139,7 @@ Data only flows through a stream when the stream is in the Started state. To
 move a stream between states, use one of the functions that request a state
 transition:
 
-    oboe_result_t result;
+    Result result;
     result = stream->requestStart();
     result = stream->requestStop();
     result = stream->requestPause();
@@ -166,7 +166,7 @@ Though it's not shown, you can call `close()` from any state
 
 Oboe doesn't provide callbacks to alert you to state changes. One special
 function,
-`OboeStream::waitForStateChange()` can be used to wait for a state change.
+`Stream::waitForStateChange()` can be used to wait for a state change.
 
 The function does not detect a state change on its own, and does not wait for a
 specific state. It waits until the current state
@@ -178,8 +178,8 @@ Since you can't wait for the Paused state, use `waitForStateChange()` to wait fo
 other than Pausing*. Here's how that's done:
 
 ```
-oboe_stream_state_t inputState = OBOE_STREAM_STATE_PAUSING;
-oboe_stream_state_t nextState = OBOE_STREAM_STATE_UNINITIALIZED;
+StreamState inputState = OBOE_STREAM_STATE_PAUSING;
+StreamState nextState = OBOE_STREAM_STATE_UNINITIALIZED;
 int64_t timeoutNanos = 100 * OBOE_NANOS_PER_MILLISECOND;
 result = stream->requestPause();
 result = stream->waitForStateChange(inputState, &nextState, timeoutNanos);
@@ -194,16 +194,16 @@ stream.
 
 You can use this same technique after calling request start, stop, or flush,
 using the corresponding transient state as the inputState. Do not call
-`waitForStateChange()` after calling `OboeStream::close()` since the stream
+`waitForStateChange()` after calling `Stream::close()` since the stream
 will be deleted as soon as it closes. And do not call `close()`
 while `waitForStateChange()` is running in another thread.
 
 ### Reading and writing to an audio stream
 
 After the stream is started you can read or write to it using the methods
-`OboeStream::read(buffer, numFrames, timeoutNanos)`
+`Stream::read(buffer, numFrames, timeoutNanos)`
 and
-`OboeStream::write(buffer, numFrames, timeoutNanos)`.
+`Stream::write(buffer, numFrames, timeoutNanos)`.
 
 
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
@@ -214,7 +214,7 @@ frames was read. If not, the buffer might contain unknown data that could cause 
 audio glitch. You can pad the buffer with zeros to create a
 silent dropout:
 
-    oboe_result_t result =
+    Result result =
         stream.read(audioData, numFrames, timeout);
     if (result < 0) {
       // Error!
@@ -248,7 +248,7 @@ An audio stream can become disconnected at any time if one of these events happe
 When a stream is disconnected, it has the state "Disconnected" and any attempts to execute write() or other functions return `OBOE_ERROR_DISCONNECTED`.  When a stream is disconnected, all you can do is close it.
 
 If you need to be informed when an audio device is disconnected, write a class
-which extends `OboeStreamCallback` and implements the `onError(stream, error)`
+which extends `StreamCallback` and implements the `onError(stream, error)`
 method. Register your class using `builder.setCallback(yourCallbackClass)`.
 
 The `onError()` method should check the state of the stream as shown in the following
@@ -258,7 +258,7 @@ stream it might have different characteristics than the
 original stream (for example framesPerBurst):
 
 ```
-void PlayAudioEngine::onError(OboeStream *audioStream, oboe_result_t error) {
+void PlayAudioEngine::onError(Stream *audioStream, Result error) {
     if (error == OBOE_ERROR_DISCONNECTED) {
         // Handle stream restart on a separate thread
         std::function<void(void)> restartStream = std::bind(&PlayAudioEngine::restartStream, this);
@@ -268,7 +268,7 @@ void PlayAudioEngine::onError(OboeStream *audioStream, oboe_result_t error) {
 }
 ```
 
-You can also implement two other callback methods in the class `OboeStreamCallback`:
+You can also implement two other callback methods in the class `StreamCallback`:
 
 * `onAudioReady()` is used for a high-priority callback
 * `onExit()` is called when the callback thread exits.
@@ -285,13 +285,13 @@ For applications that require low latency, an audio stream can use an asynchrono
 The callback runs in a high-priority thread that has better performance.
 
 Your code can access the callback mechanism by implementing the virtual class
-`OboeStreamCallback`. The stream periodically executes `onAudioReady()` (the
+`StreamCallback`. The stream periodically executes `onAudioReady()` (the
 callback function) to acquire the data for its next burst.
 
-    class AudioEngine : OboeStreamCallback {
+    class AudioEngine : StreamCallback {
     public:
         oboe_data_callback_result_t AudioEngine::onAudioReady(
-                OboeStream *oboeStream,
+                Stream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
             oscillator_->render(static_cast<float *>(audioData), numFrames);
@@ -322,14 +322,14 @@ The callback does a non-blocking read from the input stream placing the data int
 
 (Note that Oboe version 1 does not support input streams, so this example cannot run.)
 
-    class AudioEngine : OboeStreamCallback {
+    class AudioEngine : StreamCallback {
     public:
 
         oboe_data_callback_result_t AudioEngine::onAudioReady(
-                OboeStream *oboeStream,
+                Stream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
-                oboe_result_t result =
+                Result result =
                   stream2.read(audioData, numFrames, timeout);
 
                 if (result == numFrames)
@@ -347,12 +347,12 @@ The callback does a non-blocking read from the input stream placing the data int
             streamBuilder.setCallback(this);
         }
 
-        void setRecordingStream(OboeStream *stream) {
+        void setRecordingStream(Stream *stream) {
           recordingStream = stream;
         }
 
     private:
-        OboeStream *recordingStream;
+        Stream *recordingStream;
     }
 
 
@@ -360,7 +360,7 @@ Note that in this example it is assumed the input and output streams have the sa
 
 ### Setting performance mode
 
-Every OboeStream has a *performance mode* which has a large effect on your app's behavior. There are three modes:
+Every Stream has a *performance mode* which has a large effect on your app's behavior. There are three modes:
 
 * `OBOE_PERFORMANCE_MODE_NONE` is the default mode. It uses a basic stream that balances latency and power savings.
 * `OBOE_PERFORMANCE_MODE_LOW_LATENCY` uses smaller buffers and an optimized data path for reduced latency.
@@ -382,12 +382,12 @@ In the current version of Oboe, in order to achieve the lowest possible latency 
 MyOboeStreamCallback myCallback;
 
 // Create a stream builder
-OboeStreamBuilder builder;
+StreamBuilder builder;
 builder.setCallback(myCallback);
 builder.setPerformanceMode(OBOE_PERFORMANCE_MODE_LOW_LATENCY);
 
 // Use it to create the stream
-OboeStream *stream;
+Stream *stream;
 builder.openStream(&stream);
 ```
 
@@ -399,7 +399,7 @@ This is because Oboe avoids using mutexes, which can cause thread preemption and
 
 To be safe, don't call `waitForStateChange()` or read or write to the same stream from two different threads. Similarly, don't close a stream in one thread while reading or writing to it in another thread.
 
-Calls that return stream settings, like `OboeStream::getSampleRate()` and `OboeStream::getChannelCount()`, are thread safe.
+Calls that return stream settings, like `Stream::getSampleRate()` and `Stream::getChannelCount()`, are thread safe.
 
 These calls are also thread safe:
 
@@ -409,7 +409,7 @@ These calls are also thread safe:
 * `Oboe_convertSharingModeToText()`
 * `Oboe_convertDataCallbackResultToText()`
 * `Oboe_convertDirectionToText()`
-* `OboeStream::get*()` except for `getTimestamp()`
+* `Stream::get*()` except for `getTimestamp()`
 
 
 <b>Note:</b> When a stream uses a callback function, it's safe to read/write from the callback thread while also closing the stream

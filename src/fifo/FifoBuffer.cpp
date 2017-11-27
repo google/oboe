@@ -25,6 +25,8 @@
 #include "fifo/FifoBuffer.h"
 #include "common/AudioClock.h"
 
+namespace oboe {
+
 FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
         : mFrameCapacity(capacityInFrames)
         , mBytesPerFrame(bytesPerFrame)
@@ -175,7 +177,7 @@ int64_t FifoBuffer::getNextReadTime(int frameRate) {
     if (mReadAtNanoseconds == 0) {
         return 0;
     }
-    int64_t nanosPerBuffer = (OBOE_NANOS_PER_SECOND * mLastReadSize) / frameRate;
+    int64_t nanosPerBuffer = (kNanosPerSecond * mLastReadSize) / frameRate;
     return mReadAtNanoseconds + nanosPerBuffer;
 }
 
@@ -190,3 +192,5 @@ uint32_t FifoBuffer::getBufferCapacityInFrames() const {
 void FifoBuffer::setThresholdFrames(uint32_t threshold) {
     mFifo->setThreshold(threshold);
 }
+
+} // namespace oboe
