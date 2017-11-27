@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_STREAM_AAUDIO_H_
-#define OBOE_OBOE_STREAM_AAUDIO_H_
+#ifndef OBOE_STREAM_AAUDIO_H_
+#define OBOE_STREAM_AAUDIO_H_
 
 #include <atomic>
 #include <mutex>
@@ -23,9 +23,11 @@
 
 #include "aaudio/AAudio.h"
 
-#include "oboe/OboeStreamBuilder.h"
-#include "oboe/OboeStream.h"
-#include "oboe/OboeDefinitions.h"
+#include "oboe/StreamBuilder.h"
+#include "oboe/Stream.h"
+#include "oboe/Definitions.h"
+
+namespace oboe {
 
 class AAudioLoader;
 
@@ -35,12 +37,12 @@ class AAudioLoader;
  * Do not create this class directly.
  * Use an OboeStreamBuilder to create one.
  */
-class OboeStreamAAudio : public OboeStream {
+class StreamAAudio : public Stream {
 public:
-    OboeStreamAAudio();
-    explicit OboeStreamAAudio(const OboeStreamBuilder &builder);
+    StreamAAudio();
+    explicit StreamAAudio(const StreamBuilder &builder);
 
-    ~OboeStreamAAudio();
+    ~StreamAAudio();
 
     /**
      *
@@ -48,21 +50,21 @@ public:
      */
     static bool isSupported();
 
-    // These functions override methods in OboeStream.
-    // See OboeStream for documentation.
-    oboe_result_t open() override;
-    oboe_result_t close() override;
+    // These functions override methods in Stream.
+    // See Stream for documentation.
+    Result open() override;
+    Result close() override;
 
-    oboe_result_t requestStart() override;
-    oboe_result_t requestPause() override;
-    oboe_result_t requestFlush() override;
-    oboe_result_t requestStop() override;
+    Result requestStart() override;
+    Result requestPause() override;
+    Result requestFlush() override;
+    Result requestStop() override;
 
-    oboe_result_t write(const void *buffer,
+    int32_t write(const void *buffer,
                              int32_t numFrames,
                              int64_t timeoutNanoseconds) override;
 
-    oboe_result_t setBufferSizeInFrames(int32_t requestedFrames) override;
+    Result setBufferSizeInFrames(int32_t requestedFrames) override;
     int32_t getBufferSizeInFrames() const override;
     int32_t getFramesPerBurst() override;
     int32_t getXRunCount() override;
@@ -70,15 +72,15 @@ public:
     int64_t getFramesRead() override;
     int64_t getFramesWritten() override;
 
-    oboe_result_t waitForStateChange(oboe_stream_state_t currentState,
-                                             oboe_stream_state_t *nextState,
-                                             int64_t timeoutNanoseconds) override;
+    Result waitForStateChange(StreamState currentState,
+                              StreamState *nextState,
+                              int64_t timeoutNanoseconds) override;
 
-    oboe_result_t getTimestamp(clockid_t clockId,
+    Result getTimestamp(clockid_t clockId,
                                        int64_t *framePosition,
                                        int64_t *timeNanoseconds) override;
 
-    oboe_stream_state_t getState() override;
+    StreamState getState() override;
 
 
     bool usesAAudio() const override {
@@ -86,16 +88,16 @@ public:
     }
 
 public:
-    aaudio_data_callback_result_t callOnAudioReady(AAudioStream *stream,
+    DataCallbackResult callOnAudioReady(AAudioStream *stream,
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    void onErrorCallback(AAudioStream *stream, oboe_result_t error);
+    void onErrorCallback(AAudioStream *stream, Result error);
 
-    void onErrorInThread(AAudioStream *stream, oboe_result_t error);
+    void onErrorInThread(AAudioStream *stream, Result error);
 
 protected:
-    oboe_result_t convertApplicationDataToNative(int32_t numFrames); // TODO remove?
+    Result convertApplicationDataToNative(int32_t numFrames); // TODO remove?
 
 private:
 
@@ -110,5 +112,6 @@ private:
     static AAudioLoader *mLibLoader;
 };
 
+} // namespace oboe
 
-#endif // OBOE_OBOE_STREAM_AAUDIO_H_
+#endif // OBOE_STREAM_AAUDIO_H_

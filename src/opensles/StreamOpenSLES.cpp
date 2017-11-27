@@ -21,8 +21,8 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "common/OboeDebug.h"
-#include "oboe/OboeStreamBuilder.h"
-#include "OboeStreamOpenSLES.h"
+#include "oboe/StreamBuilder.h"
+#include "StreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
 
 #ifndef NULL
@@ -34,6 +34,8 @@
 #define DEFAULT_CHANNEL_COUNT         2      // stereo
 
 #define OBOE_BITS_PER_BYTE            8      // common value
+
+namespace oboe {
 
 /*
  * OSLES Helpers
@@ -58,7 +60,7 @@ static const char *errStrings[] = {
         "SL_RESULT_CONTROL_LOST"              // 16
 };
 
-const char *getSLErrStr(int code) {
+const char *getSLErrStr(SLresult code) {
     return errStrings[code];
 }
 
@@ -112,10 +114,10 @@ static SLObjectItf sOutputMixObject = 0;
 
 static void CloseSLEngine();
 
-SLresult OboeStreamOpenSLES::enqueueBuffer() {
+SLresult StreamOpenSLES::enqueueBuffer() {
     // Ask the callback to fill the output buffer with data.
-    oboe_result_t result = fireCallback(mCallbackBuffer, mFramesPerCallback);
-    if (result != OBOE_OK) {
+    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
+    if (result != Result::OK) {
         LOGE("Oboe callback returned %d", result);
         return SL_RESULT_INTERNAL_ERROR;
     } else {
@@ -126,7 +128,7 @@ SLresult OboeStreamOpenSLES::enqueueBuffer() {
 
 // this callback handler is called every time a buffer finishes playing
 static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((OboeStreamOpenSLES *) context)->enqueueBuffer();
+    ((StreamOpenSLES *) context)->enqueueBuffer();
 }
 
 static SLresult OpenSLEngine() {
@@ -198,32 +200,31 @@ static void CloseSLEngine() {
     }
 }
 
-OboeStreamOpenSLES::OboeStreamOpenSLES(const OboeStreamBuilder &builder)
-    : OboeStreamBuffered(builder) {
+StreamOpenSLES::StreamOpenSLES(const StreamBuilder &builder)
+    : StreamBuffered(builder) {
     bqPlayerObject_ = NULL;
     bq_ = NULL;
     bqPlayerPlay_ = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
     OpenSLEngine();
-    LOGD("OboeStreamOpenSLES(): after OpenSLEngine()");
+    LOGD("StreamOpenSLES(): after OpenSLEngine()");
 }
 
-OboeStreamOpenSLES::~OboeStreamOpenSLES() {
+StreamOpenSLES::~StreamOpenSLES() {
     CloseSLEngine();
     delete[] mCallbackBuffer;
 }
 
-static SLuint32 ConvertFormatToRepresentation(oboe_audio_format_t format) {
+static SLuint32 ConvertFormatToRepresentation(AudioFormat format) {
     switch(format) {
-        case OBOE_AUDIO_FORMAT_INVALID:
-        case OBOE_AUDIO_FORMAT_UNSPECIFIED:
+        case AudioFormat::Invalid:
+        case AudioFormat::Unspecified:
             return 0;
-        case OBOE_AUDIO_FORMAT_PCM_I16:
+        case AudioFormat::I16:
             return SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
-        case OBOE_AUDIO_FORMAT_PCM_FLOAT:
+        case AudioFormat::Float:
             return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
     }
-    return 0;
 }
 
 static bool s_isLittleEndian() {
@@ -235,43 +236,43 @@ static SLuint32 s_getDefaultByteOrder() {
     return s_isLittleEndian() ? SL_BYTEORDER_LITTLEENDIAN : SL_BYTEORDER_BIGENDIAN;
 }
 
-oboe_result_t OboeStreamOpenSLES::open() {
+Result StreamOpenSLES::open() {
 
     SLresult result;
 
     __android_log_print(ANDROID_LOG_INFO, TAG, "AudioPlayerOpenSLES::Open(chans:%d, rate:%d)",
                         mChannelCount, mSampleRate);
 
-    if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == OBOE_AUDIO_FORMAT_PCM_FLOAT){
+    if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
         // TODO: Allow floating point format on API <21 using float->int16 converter
-        return OBOE_ERROR_INVALID_FORMAT;
+        return Result::ErrorInvalidFormat;
     }
 
     // If audio format is unspecified then choose a suitable default.
     // API 21+: FLOAT
     // API <21: INT16
-    if (mFormat == OBOE_AUDIO_FORMAT_UNSPECIFIED){
+    if (mFormat == AudioFormat::Unspecified){
         mFormat = (__ANDROID_API__ < __ANDROID_API_L__) ?
-                  OBOE_AUDIO_FORMAT_PCM_I16 : OBOE_AUDIO_FORMAT_PCM_FLOAT;
+                  AudioFormat::I16 : AudioFormat::Float;
     }
 
-    oboe_result_t oboeResult = OboeStreamBuffered::open();
-    if (oboeResult < 0) {
+    Result oboeResult = StreamBuffered::open();
+    if (oboeResult != Result::OK) {
         return oboeResult;
     }
     // Convert to defaults if UNSPECIFIED
-    if (mSampleRate == OBOE_UNSPECIFIED) {
+    if (mSampleRate == kUnspecified) {
         mSampleRate = DEFAULT_SAMPLE_RATE;
     }
-    if (mChannelCount == OBOE_UNSPECIFIED) {
+    if (mChannelCount == kUnspecified) {
         mChannelCount = DEFAULT_CHANNEL_COUNT;
     }
 
     // Decide frames per burst based hints from caller.
     // TODO  Can we query this from OpenSL ES?
-    if (mFramesPerCallback != OBOE_UNSPECIFIED) {
+    if (mFramesPerCallback != kUnspecified) {
         mFramesPerBurst = mFramesPerCallback;
-    } else if (mFramesPerBurst != OBOE_UNSPECIFIED) { // set from defaultFramesPerBurst
+    } else if (mFramesPerBurst != kUnspecified) { // set from defaultFramesPerBurst
         mFramesPerCallback = mFramesPerBurst;
     } else {
         mFramesPerBurst = mFramesPerCallback = DEFAULT_FRAMES_PER_CALLBACK;
@@ -279,8 +280,8 @@ oboe_result_t OboeStreamOpenSLES::open() {
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
     mCallbackBuffer = new uint8_t[mBytesPerCallback];
-    LOGD("OboeStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
-    LOGD("OboeStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
+    LOGD("StreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
+    LOGD("StreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
 
     SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
 
@@ -295,7 +296,7 @@ oboe_result_t OboeStreamOpenSLES::open() {
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM,       // formatType
             (SLuint32) mChannelCount,           // numChannels
-            (SLuint32) (mSampleRate * OBOE_MILLIS_PER_SECOND),    // milliSamplesPerSec
+            (SLuint32) (mSampleRate * kMillisPerSecond),    // milliSamplesPerSec
             bitsPerSample,                      // bitsPerSample
             bitsPerSample,                      // containerSize;
             (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
@@ -350,14 +351,14 @@ oboe_result_t OboeStreamOpenSLES::open() {
     LOGD("register callback result:%s", getSLErrStr(result));
     assert(SL_RESULT_SUCCESS == result);
 
-    mSharingMode = OBOE_SHARING_MODE_SHARED;
+    mSharingMode = SharingMode::Shared;
     mBufferCapacityInFrames = mFramesPerBurst * mBurstsPerBuffer;
 
-    return OBOE_OK;
+    return Result::OK;
 }
 
-oboe_result_t OboeStreamOpenSLES::close() {
-//    __android_log_write(ANDROID_LOG_INFO, TAG, "OboeStreamOpenSLES()");
+Result StreamOpenSLES::close() {
+//    __android_log_write(ANDROID_LOG_INFO, TAG, "StreamOpenSLES()");
     // TODO make sure callback is no longer being called
     if (bqPlayerObject_ != NULL) {
         (*bqPlayerObject_)->Destroy(bqPlayerObject_);
@@ -367,83 +368,84 @@ oboe_result_t OboeStreamOpenSLES::close() {
         bqPlayerPlay_ = NULL;
         bq_ = NULL;
     }
-    return OBOE_OK;
+    return Result::OK;
 }
 
-oboe_result_t OboeStreamOpenSLES::setPlayState(SLuint32 newState)
+Result StreamOpenSLES::setPlayState(SLuint32 newState)
 {
-    oboe_result_t result = OBOE_OK;
-    LOGD("OboeStreamOpenSLES(): setPlayState()");
+    Result result = Result::OK;
+    LOGD("StreamOpenSLES(): setPlayState()");
     if (bqPlayerPlay_ == NULL) {
-        return OBOE_ERROR_INVALID_STATE;
+        return Result::ErrorInvalidState;
     }
     SLresult slResult = (*bqPlayerPlay_)->SetPlayState(bqPlayerPlay_, newState);
     if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("OboeStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(result));
-        result = OBOE_ERROR_INVALID_STATE; // TODO review
+        LOGD("StreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
+        result = Result::ErrorInvalidState; // TODO review
     } else {
-        setState(OBOE_STREAM_STATE_PAUSING);
+        setState(StreamState::Pausing);
     }
     return result;
 }
 
-oboe_result_t OboeStreamOpenSLES::requestStart()
+Result StreamOpenSLES::requestStart()
 {
-    LOGD("OboeStreamOpenSLES(): requestStart()");
-    oboe_result_t result = setPlayState(SL_PLAYSTATE_PLAYING);
-    if(result != OBOE_OK) {
-        result = OBOE_ERROR_INVALID_STATE; // TODO review
+    LOGD("StreamOpenSLES(): requestStart()");
+    Result result = setPlayState(SL_PLAYSTATE_PLAYING);
+    if(result != Result::OK) {
+        result = Result::ErrorInvalidState; // TODO review
     } else {
         enqueueBuffer();
-        setState(OBOE_STREAM_STATE_STARTING);
+        setState(StreamState::Starting);
     }
     return result;
 }
 
 
-oboe_result_t OboeStreamOpenSLES::requestPause() {
-    LOGD("OboeStreamOpenSLES(): requestPause()");
-    oboe_result_t result = setPlayState(SL_PLAYSTATE_PAUSED);
-    if(result != OBOE_OK) {
-        result = OBOE_ERROR_INVALID_STATE; // TODO review
+Result StreamOpenSLES::requestPause() {
+    LOGD("StreamOpenSLES(): requestPause()");
+    Result result = setPlayState(SL_PLAYSTATE_PAUSED);
+    if(result != Result::OK) {
+        result = Result::ErrorInvalidState; // TODO review
     } else {
-        setState(OBOE_STREAM_STATE_PAUSING);
+        setState(StreamState::Pausing);
     }
     return result;
 }
 
-oboe_result_t OboeStreamOpenSLES::requestFlush() {
-    LOGD("OboeStreamOpenSLES(): requestFlush()");
+Result StreamOpenSLES::requestFlush() {
+    LOGD("StreamOpenSLES(): requestFlush()");
     if (bqPlayerPlay_ == NULL) {
-        return OBOE_ERROR_INVALID_STATE;
+        return Result::ErrorInvalidState;
     }
-    return OBOE_ERROR_UNIMPLEMENTED; // TODO
+    return Result::ErrorUnimplemented; // TODO
 }
 
-oboe_result_t OboeStreamOpenSLES::requestStop()
+Result StreamOpenSLES::requestStop()
 {
-    LOGD("OboeStreamOpenSLES(): requestStop()");
-    oboe_result_t result = setPlayState(SL_PLAYSTATE_STOPPED);
-    if(result != OBOE_OK) {
-        result = OBOE_ERROR_INVALID_STATE; // TODO review
+    LOGD("StreamOpenSLES(): requestStop()");
+    Result result = setPlayState(SL_PLAYSTATE_STOPPED);
+    if(result != Result::OK) {
+        result = Result::ErrorInvalidState; // TODO review
     } else {
-        setState(OBOE_STREAM_STATE_STOPPING);
+        setState(StreamState::Stopping);
     }
     return result;
 }
 
-oboe_result_t OboeStreamOpenSLES::waitForStateChange(oboe_stream_state_t currentState,
-                                                      oboe_stream_state_t *nextState,
+Result StreamOpenSLES::waitForStateChange(StreamState currentState,
+                                                      StreamState *nextState,
                                                       int64_t timeoutNanoseconds)
 {
-    LOGD("OboeStreamOpenSLES(): waitForStateChange()");
+    LOGD("StreamOpenSLES(): waitForStateChange()");
     if (bqPlayerPlay_ == NULL) {
-        return OBOE_ERROR_INVALID_STATE;
+        return Result::ErrorInvalidState;
     }
-    return OBOE_ERROR_UNIMPLEMENTED; // TODO
+    return Result::ErrorUnimplemented; // TODO
 }
 
-int32_t OboeStreamOpenSLES::getFramesPerBurst() {
+int32_t StreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
 
+} // namespace oboe

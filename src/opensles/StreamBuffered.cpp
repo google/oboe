@@ -16,53 +16,56 @@
 
 #include "oboe/Oboe.h"
 
-#include "opensles/OboeStreamBuffered.h"
+#include "opensles/StreamBuffered.h"
 #include "common/AudioClock.h"
 
+namespace oboe {
+
 /*
- * OboeStream with a FifoBuffer
+ * Stream with a FifoBuffer
  */
-OboeStreamBuffered::OboeStreamBuffered(const OboeStreamBuilder &builder)
-        : OboeStream(builder)
+StreamBuffered::StreamBuffered(const StreamBuilder &builder)
+        : Stream(builder)
         , mFifoBuffer(NULL)
         , mInternalCallback(NULL)
 {
 }
 
-oboe_result_t OboeStreamBuffered::open() {
+Result StreamBuffered::open() {
 
-    oboe_result_t result = OboeStream::open();
-    if (result < 0) {
+    Result result = Stream::open();
+    if (result != Result::OK) {
         return result;
     }
 
     // If the caller does not provide a callback use our own internal
     // callback that reads data from the FIFO.
     if (getCallback() == NULL) {
-        LOGD("OboeStreamBuffered(): new FifoBuffer");
+        LOGD("StreamBuffered(): new FifoBuffer");
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
         mInternalCallback = new AudioStreamBufferedCallback(this);
         mStreamCallback = mInternalCallback;
-        LOGD("OboeStreamBuffered(): mInternalCallback = %p", mInternalCallback);
+        LOGD("StreamBuffered(): mInternalCallback = %p", mInternalCallback);
     }
-    return OBOE_OK;
+    return Result::OK;
 }
 
-OboeStreamBuffered::~OboeStreamBuffered() {
+StreamBuffered::~StreamBuffered() {
     delete mInternalCallback;
 }
 
-oboe_result_t OboeStreamBuffered::write(const void *buffer,
-                                         int32_t numFrames,
-                                         int64_t timeoutNanoseconds)
+// TODO: This method should return a tuple of Result,int32_t where the 2nd return param is the frames written
+int32_t StreamBuffered::write(const void *buffer,
+                              int32_t numFrames,
+                              int64_t timeoutNanoseconds)
 {
-    oboe_result_t result = OBOE_OK;
+    int32_t result = 0;
     uint8_t *source = (uint8_t *)buffer;
     int32_t framesLeft = numFrames;
     while(framesLeft > 0 && result >= 0) {
-        oboe_result_t result = mFifoBuffer->write(source, numFrames);
-        LOGD("OboeStreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
+        result = mFifoBuffer->write(source, numFrames);
+        LOGD("StreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
         if (result > 0) {
             source += mFifoBuffer->convertFramesToBytes(result);
             incrementFramesWritten(result);
@@ -77,32 +80,34 @@ oboe_result_t OboeStreamBuffered::write(const void *buffer,
     return result;
 }
 
-oboe_result_t OboeStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
+Result StreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
 {
     if (mFifoBuffer != nullptr) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
         }
         mFifoBuffer->setThresholdFrames(requestedFrames);
-        return OBOE_OK;
+        return Result::OK;
     } else {
-        return OBOE_ERROR_UNIMPLEMENTED;
+        return Result::ErrorUnimplemented;
     }
 }
 
 
-int32_t OboeStreamBuffered::getBufferSizeInFrames() const {
+int32_t StreamBuffered::getBufferSizeInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getThresholdFrames();
     } else {
-        return OboeStream::getBufferSizeInFrames();
+        return Stream::getBufferSizeInFrames();
     }
 }
 
-int32_t OboeStreamBuffered::getBufferCapacityInFrames() const {
+int32_t StreamBuffered::getBufferCapacityInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getBufferCapacityInFrames(); // Maybe set mBufferCapacity in constructor
     } else {
-        return OboeStream::getBufferCapacityInFrames();
+        return Stream::getBufferCapacityInFrames();
     }
 }
+
+} // namespace oboe

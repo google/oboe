@@ -22,7 +22,9 @@
 
 #include "common/OboeDebug.h"
 #include "FifoControllerBase.h"
-#include "oboe/OboeDefinitions.h"
+#include "oboe/Definitions.h"
+
+namespace oboe {
 
 class FifoBuffer {
 public:
@@ -89,5 +91,7 @@ private:
     uint32_t mUnderrunCount; // need? just use frames
     uint32_t mLastReadSize;
 };
+
+} // namespace oboe
 
 #endif //NATIVEOBOE_FIFOPROCESSOR_H

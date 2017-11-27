@@ -17,11 +17,11 @@
 #ifndef OBOE_OBOE_H
 #define OBOE_OBOE_H
 
-#include "oboe/OboeDefinitions.h"
-#include "oboe/OboeLatencyTuner.h"
-#include "oboe/OboeStream.h"
-#include "oboe/OboeStreamBase.h"
-#include "oboe/OboeStreamBuilder.h"
-#include "oboe/OboeUtilities.h"
+#include "oboe/Definitions.h"
+#include "oboe/LatencyTuner.h"
+#include "oboe/Stream.h"
+#include "oboe/StreamBase.h"
+#include "oboe/StreamBuilder.h"
+#include "oboe/Utilities.h"
 
 #endif //OBOE_OBOE_H
