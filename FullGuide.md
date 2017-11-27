@@ -28,11 +28,11 @@ The audio device attached to a stream determines whether the stream is for input
 
 A stream has a sharing mode:
 
-*   `OBOE_SHARING_MODE_EXCLUSIVE` (available on API 26+) means the stream has exclusive access to its audio device; the device cannot be used by any other audio stream. If the audio device is already in use, it might not be possible for the stream to have exclusive access. Exclusive streams provide the lowest possible latency, but they are also more likely to get disconnected. You should close exclusive streams as soon as you no longer need them, so that other apps can access the device.
-*   `OBOE_SHARING_MODE_SHARED` allows Oboe to mix audio. Oboe mixes all the shared streams assigned to the same device.
+*   `SharingMode::Exclusive` (available on API 26+) means the stream has exclusive access to its audio device; the device cannot be used by any other audio stream. If the audio device is already in use, it might not be possible for the stream to have exclusive access. Exclusive streams provide the lowest possible latency, but they are also more likely to get disconnected. You should close exclusive streams as soon as you no longer need them, so that other apps can access the device.
+*   `SharingMode::Shared` allows Oboe to mix audio. Oboe mixes all the shared streams assigned to the same device.
 
 You can explicitly request the sharing mode when you create a stream, although you are not guaranteed to receive that mode. By default,
-the sharing mode is `SHARED`.
+the sharing mode is `Shared`.
 
 ### Audio format
 
@@ -44,16 +44,16 @@ The data passed through a stream has the usual digital audio attributes, which y
 
 Oboe permits these sample formats:
 
-| oboe_format_t | C data type | Notes |
+| AudioFormat | C data type | Notes |
 | :------------ | :---------- | :---- |
-| OBOE_FORMAT_PCM_I16 | int16_t | common 16-bit samples, [Q0.15 format](https://source.android.com/devices/audio/data_formats#androidFormats) |
-| OBOE_FORMAT_PCM_FLOAT | float | -1.0 to +1.0 |
+| I16 | int16_t | common 16-bit samples, [Q0.15 format](https://source.android.com/devices/audio/data_formats#androidFormats) |
+| Float | float | -1.0 to +1.0 |
 
 Oboe might perform sample conversion on its own. For example, if an app is writing FLOAT data but the HAL uses PCM_I16, Oboe might convert the samples automatically. Conversion can happen in either direction. If your app processes audio input, it is wise to verify the input format and be prepared to convert data if necessary, as in this example:
 
-    oboe_format_t dataFormat = stream->getDataFormat();
+    AudioFormat dataFormat = stream->getDataFormat();
     //... later
-    if (dataFormat == OBOE_FORMAT_PCM_I16) {
+    if (dataFormat == AudioFormat::I16) {
          convertFloatToPcm16(...)
     }
 
@@ -88,7 +88,7 @@ If you do not specify the deviceId, the default is the primary output device.
 If you do not specify the stream direction, the default is an output stream.
 For all other parameters, you can explicitly set a value, or let the system
 assign the optimal value by not specifying the parameter at all or setting
-it to `OBOE_UNSPECIFIED`.
+it to `kUnspecified`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
@@ -99,7 +99,7 @@ To be safe, check the state of the audio stream after you create it, as explaine
         __android_log_print(ANDROID_LOG_ERROR,
                             "AudioEngine",
                             "Error opening stream %s",
-                            OboeConvert_ResultToText(result));
+                            convertResultToText(result));
     }
 
 
@@ -178,9 +178,9 @@ Since you can't wait for the Paused state, use `waitForStateChange()` to wait fo
 other than Pausing*. Here's how that's done:
 
 ```
-StreamState inputState = OBOE_STREAM_STATE_PAUSING;
-StreamState nextState = OBOE_STREAM_STATE_UNINITIALIZED;
-int64_t timeoutNanos = 100 * OBOE_NANOS_PER_MILLISECOND;
+StreamState inputState = StreamState::Pausing;
+StreamState nextState = StreamState::Uninitialized;
+int64_t timeoutNanos = 100 * kNanosPerMillisecond;
 result = stream->requestPause();
 result = stream->waitForStateChange(inputState, &nextState, timeoutNanos);
 ```
@@ -259,12 +259,12 @@ original stream (for example framesPerBurst):
 
 ```
 void PlayAudioEngine::onError(Stream *audioStream, Result error) {
-    if (error == OBOE_ERROR_DISCONNECTED) {
+    if (error == Result::ErrorDisconnected) {
         // Handle stream restart on a separate thread
         std::function<void(void)> restartStream = std::bind(&PlayAudioEngine::restartStream, this);
         mStreamRestartThread = new std::thread(restartStream);
     }
-    // See OboeDefinitions.h for other OBOE_ERROR_* codes
+    // See Definitions.h for other Result::Error* codes
 }
 ```
 
@@ -290,12 +290,12 @@ callback function) to acquire the data for its next burst.
 
     class AudioEngine : StreamCallback {
     public:
-        oboe_data_callback_result_t AudioEngine::onAudioReady(
+        DataCallbackResult AudioEngine::onAudioReady(
                 Stream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
             oscillator_->render(static_cast<float *>(audioData), numFrames);
-            return OBOE_CALLBACK_RESULT_CONTINUE;
+            return DataCallbackResult::Continue;
         }
 
         bool AudioEngine::start() {
@@ -333,13 +333,13 @@ The callback does a non-blocking read from the input stream placing the data int
                   stream2.read(audioData, numFrames, timeout);
 
                 if (result == numFrames)
-                    return OBOE_CALLBACK_RESULT_CONTINUE;
+                    return DataCallbackResult::Continue;
                 if (result >= 0) {
                     memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
                         sizeof(sample_type) * (numFrames - result) * samplesPerFrame);
-                    return OBOE_CALLBACK_RESULT_CONTINUE;
+                    return DataCallbackResult::Continue;
                 }
-                return OBOE_CALLBACK_RESULT_STOP;
+                return DataCallbackResult::Stop;
                 }
 
         bool AudioEngine::start() {
@@ -362,20 +362,20 @@ Note that in this example it is assumed the input and output streams have the sa
 
 Every Stream has a *performance mode* which has a large effect on your app's behavior. There are three modes:
 
-* `OBOE_PERFORMANCE_MODE_NONE` is the default mode. It uses a basic stream that balances latency and power savings.
-* `OBOE_PERFORMANCE_MODE_LOW_LATENCY` uses smaller buffers and an optimized data path for reduced latency.
-* `OBOE_PERFORMANCE_MODE_POWER_SAVING` uses larger internal buffers and a data path that trades off latency for lower power.
+* `PerformanceMode::None` is the default mode. It uses a basic stream that balances latency and power savings.
+* `PerformanceMode::LowLatency` uses smaller buffers and an optimized data path for reduced latency.
+* `PerformanceMode::PowerSaving` uses larger internal buffers and a data path that trades off latency for lower power.
 
 You can select the performance mode by calling `setPerformanceMode()`,
 and discover the current mode by calling `getPerformanceMode()`.
 
-If low latency is more important than power savings in your application, use `OBOE_PERFORMANCE_MODE_LOW_LATENCY`.
+If low latency is more important than power savings in your application, use `PerformanceMode::LowLatency`.
 This is useful for apps that are very interactive, such as games or keyboard synthesizers.
 
-If saving power is more important than low latency in your application, use `OBOE_PERFORMANCE_MODE_POWER_SAVING`.
+If saving power is more important than low latency in your application, use `PerformanceMode::PowerSaving`.
 This is typical for apps that play back previously generated music, such as streaming audio or MIDI file players.
 
-In the current version of Oboe, in order to achieve the lowest possible latency you must use the `OBOE_PERFORMANCE_MODE_LOW_LATENCY` performance mode along with a high-priority callback. Follow this example:
+In the current version of Oboe, in order to achieve the lowest possible latency you must use the `PerformanceMode::LowLatency` performance mode along with a high-priority callback. Follow this example:
 
 ```
 // Create a callback object
@@ -384,7 +384,7 @@ MyOboeStreamCallback myCallback;
 // Create a stream builder
 StreamBuilder builder;
 builder.setCallback(myCallback);
-builder.setPerformanceMode(OBOE_PERFORMANCE_MODE_LOW_LATENCY);
+builder.setPerformanceMode(PerformanceMode::LowLatency);
 
 // Use it to create the stream
 Stream *stream;
@@ -403,12 +403,12 @@ Calls that return stream settings, like `Stream::getSampleRate()` and `Stream::g
 
 These calls are also thread safe:
 
-* `Oboe_convertToText()`
-* `Oboe_convertAudioFormatToText()`
-* `Oboe_convertPerformanceModeToText()`
-* `Oboe_convertSharingModeToText()`
-* `Oboe_convertDataCallbackResultToText()`
-* `Oboe_convertDirectionToText()`
+* `convertToText()`
+* `convertAudioFormatToText()`
+* `convertPerformanceModeToText()`
+* `convertSharingModeToText()`
+* `convertDataCallbackResultToText()`
+* `convertDirectionToText()`
 * `Stream::get*()` except for `getTimestamp()`
 
 
@@ -424,7 +424,7 @@ A small demo app is available on our [GitHub page](https://github.com/googlesamp
 
 ## Known Issues
 
-The following methods are defined, but will return `OBOE_ERROR_UNIMPLEMENTED`:
+The following methods are defined, but will return `Result::ErrorUnimplemented`:
 
 * `setBufferSizeInFrames()`
 * `getBufferSizeInFrames()`
