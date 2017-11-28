@@ -144,7 +144,7 @@ public:
 
     bool isPlaying();
 
-    StreamCallback *getCallback() const { return mStreamCallback; }
+    std::shared_ptr<StreamCallback> getCallback() const { return mStreamCallback; }
 
     int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
 
