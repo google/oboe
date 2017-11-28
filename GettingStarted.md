@@ -79,7 +79,7 @@ Open the stream:
     oboe::Stream *stream;
     oboe::Result result = builder.openStream(&stream);
 
-Check the result to make sure the stream was opened successfully. Oboe has many convenience methods for converting its types into human-readable strings, they all start with `Oboe_convert`:
+Check the result to make sure the stream was opened successfully. Oboe has many convenience methods for converting its types into human-readable strings, they all start with `oboe::convert`:
 
     if (result != Result::OK){
         LOGE("Failed to create stream. Error: %s", oboe::convertResultToText(result));
