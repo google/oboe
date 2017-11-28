@@ -78,6 +78,8 @@ const char *convertResultToText(Result returnCode) {
         OBOE_CASE_ENUM(Result::ErrorOutOfRange);
         OBOE_CASE_ENUM(Result::ErrorNoService);
         OBOE_CASE_ENUM(Result::ErrorInvalidRate);
+        default:
+            return "Unrecognized result";
     }
 }
 
@@ -87,6 +89,8 @@ const char *convertAudioFormatToText(AudioFormat format) {
         OBOE_CASE_ENUM(AudioFormat::Unspecified);
         OBOE_CASE_ENUM(AudioFormat::I16);
         OBOE_CASE_ENUM(AudioFormat::Float);
+        default:
+            return "Unrecognized format";
     }
 }
 
@@ -95,6 +99,8 @@ const char *convertPerformanceModeToText(PerformanceMode mode) {
         OBOE_CASE_ENUM(PerformanceMode::LowLatency);
         OBOE_CASE_ENUM(PerformanceMode::None);
         OBOE_CASE_ENUM(PerformanceMode::PowerSaving);
+        default:
+            return "Unrecognized performance mode";
     }
 }
 
@@ -102,6 +108,8 @@ const char *convertSharingModeToText(SharingMode mode) {
     switch (mode) {
         OBOE_CASE_ENUM(SharingMode::Exclusive);
         OBOE_CASE_ENUM(SharingMode::Shared);
+        default:
+            return "Unrecognized sharing mode";
     }
 }
 
@@ -109,6 +117,8 @@ const char *convertDataCallbackResultToText(DataCallbackResult result) {
     switch (result) {
         OBOE_CASE_ENUM(DataCallbackResult::Continue);
         OBOE_CASE_ENUM(DataCallbackResult::Stop);
+        default:
+            return "Unrecognized data callback result";
     }
 }
 
@@ -116,6 +126,8 @@ const char *convertDirectionToText(Direction direction) {
     switch (direction) {
         OBOE_CASE_ENUM(Direction::Input);
         OBOE_CASE_ENUM(Direction::Output);
+        default:
+            return "Unrecognized direction";
     }
 }
 
