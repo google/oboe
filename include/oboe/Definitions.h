@@ -24,6 +24,7 @@ namespace oboe {
 
     constexpr int32_t kUnspecified = 0;
 
+    // TODO: Investigate using std::chrono
     constexpr int64_t kNanosPerMicrosecond =    1000;
     constexpr int64_t kNanosPerMillisecond =    kNanosPerMicrosecond * 1000;
     constexpr int64_t kMillisPerSecond =        1000;
