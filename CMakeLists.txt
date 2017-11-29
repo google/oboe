@@ -11,25 +11,25 @@ include_directories(
 set (oboe_sources
         include/oboe/LatencyTuner.h
         include/oboe/Definitions.h
-        include/oboe/Stream.h
-        include/oboe/StreamBase.h
-        include/oboe/StreamBuilder.h
-        include/oboe/StreamCallback.h
+        include/oboe/AudioStream.h
+        include/oboe/AudioStreamBase.h
+        include/oboe/AudioStreamBuilder.h
+        include/oboe/AudioStreamCallback.h
         include/oboe/Utilities.h
         src/aaudio/AAudioLoader.cpp
-        src/aaudio/StreamAAudio.cpp
+        src/aaudio/AudioStreamAAudio.cpp
         src/common/AudioClock.h
         src/common/OboeDebug.h
         src/common/LatencyTuner.cpp
-        src/common/Stream.cpp
-        src/common/StreamBuilder.cpp
+        src/common/AudioStream.cpp
+        src/common/AudioStreamBuilder.cpp
         src/common/Utilities.cpp
         src/fifo/FifoBuffer.cpp
         src/fifo/FifoController.cpp
         src/fifo/FifoControllerBase.cpp
         src/fifo/FifoControllerIndirect.cpp
-        src/opensles/StreamBuffered.cpp
-        src/opensles/StreamOpenSLES.cpp
+        src/opensles/AudioStreamBuffered.cpp
+        src/opensles/AudioStreamOpenSLES.cpp
         src/opensles/OpenSLESUtilities.cpp
         )
 

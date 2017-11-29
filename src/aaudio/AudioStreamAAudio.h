@@ -23,8 +23,8 @@
 
 #include "aaudio/AAudio.h"
 
-#include "oboe/StreamBuilder.h"
-#include "oboe/Stream.h"
+#include "oboe/AudioStreamBuilder.h"
+#include "oboe/AudioStream.h"
 #include "oboe/Definitions.h"
 
 namespace oboe {
@@ -37,12 +37,12 @@ class AAudioLoader;
  * Do not create this class directly.
  * Use an OboeStreamBuilder to create one.
  */
-class StreamAAudio : public Stream {
+class AudioStreamAAudio : public AudioStream {
 public:
-    StreamAAudio();
-    explicit StreamAAudio(const StreamBuilder &builder);
+    AudioStreamAAudio();
+    explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
-    ~StreamAAudio();
+    ~AudioStreamAAudio();
 
     /**
      *
@@ -50,8 +50,8 @@ public:
      */
     static bool isSupported();
 
-    // These functions override methods in Stream.
-    // See Stream for documentation.
+    // These functions override methods in AudioStream.
+    // See AudioStream for documentation.
     Result open() override;
     Result close() override;
 

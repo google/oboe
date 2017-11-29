@@ -18,7 +18,7 @@
 #define OBOE_STREAM_BUILDER_H_
 
 #include "oboe/Definitions.h"
-#include "oboe/StreamBase.h"
+#include "oboe/AudioStreamBase.h"
 
 namespace oboe {
 
@@ -27,10 +27,10 @@ constexpr int32_t kDefaultFramesPerBurst = 192; // arbitrary value, 4 msec at 48
 /**
  * Factory class for an audio Stream.
  */
-class StreamBuilder : public StreamBase {
+class AudioStreamBuilder : public AudioStreamBase {
 public:
 
-    StreamBuilder() : StreamBase() {}
+    AudioStreamBuilder() : AudioStreamBase() {}
 
     enum class AudioApi {
         /**
@@ -56,7 +56,7 @@ public:
      * Default is kUnspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      */
-    StreamBuilder *setChannelCount(int channelCount) {
+    AudioStreamBuilder *setChannelCount(int channelCount) {
         mChannelCount = channelCount;
         return this;
     }
@@ -66,7 +66,7 @@ public:
      *
      * @param direction Direction::Output or Direction::Input
      */
-    StreamBuilder *setDirection(Direction direction) {
+    AudioStreamBuilder *setDirection(Direction direction) {
         mDirection = direction;
         return this;
     }
@@ -82,7 +82,7 @@ public:
      * But it is traditionally called "sample rate". Se we use that term.
      *
      */
-    StreamBuilder *setSampleRate(int32_t sampleRate) {
+    AudioStreamBuilder *setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
         return this;
     }
@@ -101,7 +101,7 @@ public:
      * @param framesPerCallback
      * @return
      */
-    StreamBuilder *setFramesPerCallback(int framesPerCallback) {
+    AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
         mFramesPerCallback = framesPerCallback;
         return this;
     }
@@ -112,7 +112,7 @@ public:
      * Default is Format::Unspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      */
-    StreamBuilder *setFormat(AudioFormat format) {
+    AudioStreamBuilder *setFormat(AudioFormat format) {
         mFormat = format;
         return this;
     }
@@ -126,7 +126,7 @@ public:
      * @param frames the desired buffer capacity in frames or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
+    AudioStreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
         mBufferCapacityInFrames = bufferCapacityInFrames;
         return this;
     }
@@ -139,7 +139,7 @@ public:
      * @param Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setApiIndex(AudioApi apiIndex) {
+    AudioStreamBuilder *setApiIndex(AudioApi apiIndex) {
         mAudioApi = apiIndex;
         return this;
     }
@@ -161,7 +161,7 @@ public:
      * @param sharingMode SharingMode::Shared or SharingMode::Exclusive
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setSharingMode(SharingMode sharingMode) {
+    AudioStreamBuilder *setSharingMode(SharingMode sharingMode) {
         mSharingMode = sharingMode;
         return this;
     }
@@ -174,7 +174,7 @@ public:
      * @param performanceMode for example, PerformanceMode::LowLatency
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setPerformanceMode(PerformanceMode performanceMode) {
+    AudioStreamBuilder *setPerformanceMode(PerformanceMode performanceMode) {
         mPerformanceMode = performanceMode;
         return this;
     }
@@ -188,7 +188,7 @@ public:
      * @param deviceId device identifier or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setDeviceId(int32_t deviceId) {
+    AudioStreamBuilder *setDeviceId(int32_t deviceId) {
         mDeviceId = deviceId;
         return this;
     }
@@ -202,7 +202,7 @@ public:
      * @param streamCallback
      * @return
      */
-    StreamBuilder *setCallback(std::shared_ptr<StreamCallback> streamCallback) {
+    AudioStreamBuilder *setCallback(std::shared_ptr<AudioStreamCallback> streamCallback) {
         mStreamCallback = streamCallback;
         return this;
     }
@@ -225,7 +225,7 @@ public:
      * @param defaultFramesPerBurst
      * @return pointer to the builder so calls can be chained
      */
-    StreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
+    AudioStreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
         mDefaultFramesPerBurst = defaultFramesPerBurst;
         return this;
     }
@@ -240,7 +240,7 @@ public:
      * @param stream pointer to a variable to receive the stream address
      * @return OBOE_OK if successful or a negative error code
      */
-    Result openStream(Stream **stream);
+    Result openStream(AudioStream **stream);
 
 protected:
 
@@ -251,7 +251,7 @@ private:
      *
      * @return pointer to an AudioStream object.
      */
-    oboe::Stream *build();
+    oboe::AudioStream *build();
 
     AudioApi       mAudioApi = AudioApi::Unspecified;
 

@@ -20,8 +20,8 @@
 #include <cstdint>
 #include <ctime>
 #include "oboe/Definitions.h"
-#include "oboe/StreamBuilder.h"
-#include "oboe/StreamBase.h"
+#include "oboe/AudioStreamBuilder.h"
+#include "oboe/AudioStreamBase.h"
 
 /** WARNING - UNDER CONSTRUCTION - THIS API WILL CHANGE. */
 
@@ -32,13 +32,13 @@ constexpr int64_t kDefaultTimeoutNanos = (2000 * kNanosPerMillisecond);
 /**
  * Base class for Oboe C++ audio stream.
  */
-class Stream : public StreamBase {
+class AudioStream : public AudioStreamBase {
 public:
 
-    Stream() {}
-    explicit Stream(const StreamBuilder &builder);
+    AudioStream() {}
+    explicit AudioStream(const AudioStreamBuilder &builder);
 
-    virtual ~Stream() = default;
+    virtual ~AudioStream() = default;
 
     /**
      * Open a stream based on the current settings.
@@ -144,7 +144,7 @@ public:
 
     bool isPlaying();
 
-    std::shared_ptr<StreamCallback> getCallback() const { return mStreamCallback; }
+    std::shared_ptr<AudioStreamCallback> getCallback() const { return mStreamCallback; }
 
     int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
 

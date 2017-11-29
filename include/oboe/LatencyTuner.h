@@ -20,7 +20,7 @@
 #include <atomic>
 #include <cstdint>
 #include "oboe/Definitions.h"
-#include "oboe/Stream.h"
+#include "oboe/AudioStream.h"
 
 namespace oboe {
 
@@ -41,7 +41,7 @@ namespace oboe {
  */
 class LatencyTuner {
 public:
-    explicit LatencyTuner(Stream &stream);
+    explicit LatencyTuner(AudioStream &stream);
 
     /**
      * Adjust the bufferSizeInFrames to optimize latency.
@@ -83,7 +83,7 @@ private:
     // arbitrary number of calls to wait before bumping up the latency
     static constexpr int32_t kIdleCount = 8;
 
-    Stream               &mStream;
+    AudioStream               &mStream;
     State                 mState = State::Idle;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
