@@ -21,11 +21,11 @@
 
 namespace oboe {
 
-class Stream;
+class AudioStream;
 
-class StreamCallback {
+class AudioStreamCallback {
 public:
-    virtual ~StreamCallback() = default;
+    virtual ~AudioStreamCallback() = default;
 
     /**
      * A buffer is ready for processing.
@@ -36,7 +36,7 @@ public:
      * @return DataCallbackResult::Continue or DataCallbackResult::Stop
      */
     virtual DataCallbackResult onAudioReady(
-            Stream *oboeStream,
+            AudioStream *oboeStream,
             void *audioData,
             int32_t numFrames) = 0;
 
@@ -48,7 +48,7 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorBeforeClose(Stream *oboeStream, Result error) {}
+    virtual void onErrorBeforeClose(AudioStream *oboeStream, Result error) {}
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected.
@@ -60,7 +60,7 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorAfterClose(Stream *oboeStream, Result error) {}
+    virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) {}
 
 };
 

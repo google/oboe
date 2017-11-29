@@ -16,23 +16,23 @@
 
 #include "oboe/Oboe.h"
 
-#include "opensles/StreamBuffered.h"
+#include "opensles/AudioStreamBuffered.h"
 #include "common/AudioClock.h"
 
 namespace oboe {
 
 /*
- * Stream with a FifoBuffer
+ * AudioStream with a FifoBuffer
  */
-StreamBuffered::StreamBuffered(const StreamBuilder &builder)
-        : Stream(builder)
+AudioStreamBuffered::AudioStreamBuffered(const AudioStreamBuilder &builder)
+        : AudioStream(builder)
         , mFifoBuffer(NULL)
 {
 }
 
-Result StreamBuffered::open() {
+Result AudioStreamBuffered::open() {
 
-    Result result = Stream::open();
+    Result result = AudioStream::open();
     if (result != Result::OK) {
         return result;
     }
@@ -40,17 +40,17 @@ Result StreamBuffered::open() {
     // If the caller does not provide a callback use our own internal
     // callback that reads data from the FIFO.
     if (getCallback() == NULL) {
-        LOGD("StreamBuffered(): new FifoBuffer");
+        LOGD("AudioStreamBuffered(): new FifoBuffer");
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
         mStreamCallback = std::make_shared<AudioStreamBufferedCallback>(this);
-        LOGD("StreamBuffered(): mStreamCallback = %p", mStreamCallback.get());
+        LOGD("AudioStreamBuffered(): mStreamCallback = %p", mStreamCallback.get());
     }
     return Result::OK;
 }
 
 // TODO: This method should return a tuple of Result,int32_t where the 2nd return param is the frames written
-int32_t StreamBuffered::write(const void *buffer,
+int32_t AudioStreamBuffered::write(const void *buffer,
                               int32_t numFrames,
                               int64_t timeoutNanoseconds)
 {
@@ -59,7 +59,7 @@ int32_t StreamBuffered::write(const void *buffer,
     int32_t framesLeft = numFrames;
     while(framesLeft > 0 && result >= 0) {
         result = mFifoBuffer->write(source, numFrames);
-        LOGD("StreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
+        LOGD("AudioStreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
         if (result > 0) {
             source += mFifoBuffer->convertFramesToBytes(result);
             incrementFramesWritten(result);
@@ -74,7 +74,7 @@ int32_t StreamBuffered::write(const void *buffer,
     return result;
 }
 
-Result StreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
+Result AudioStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
 {
     if (mFifoBuffer != nullptr) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
@@ -88,19 +88,19 @@ Result StreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
 }
 
 
-int32_t StreamBuffered::getBufferSizeInFrames() const {
+int32_t AudioStreamBuffered::getBufferSizeInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getThresholdFrames();
     } else {
-        return Stream::getBufferSizeInFrames();
+        return AudioStream::getBufferSizeInFrames();
     }
 }
 
-int32_t StreamBuffered::getBufferCapacityInFrames() const {
+int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getBufferCapacityInFrames(); // Maybe set mBufferCapacity in constructor
     } else {
-        return Stream::getBufferCapacityInFrames();
+        return AudioStream::getBufferCapacityInFrames();
     }
 }
 

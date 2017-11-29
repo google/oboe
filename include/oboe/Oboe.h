@@ -19,9 +19,9 @@
 
 #include "oboe/Definitions.h"
 #include "oboe/LatencyTuner.h"
-#include "oboe/Stream.h"
-#include "oboe/StreamBase.h"
-#include "oboe/StreamBuilder.h"
+#include "oboe/AudioStream.h"
+#include "oboe/AudioStreamBase.h"
+#include "oboe/AudioStreamBuilder.h"
 #include "oboe/Utilities.h"
 
 #endif //OBOE_OBOE_H

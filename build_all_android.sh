@@ -122,8 +122,8 @@ build_oboe mips
 printf "%s\r\n" "example: |" >> ${CDEP_MANIFEST_FILE}
 printf "%s\r\n" "  #include <oboe/Oboe.h>" >> ${CDEP_MANIFEST_FILE}
 printf "%s\r\n" "  void openStream() {" >> ${CDEP_MANIFEST_FILE}
-printf "%s\r\n" "    StreamBuilder builder;" >> ${CDEP_MANIFEST_FILE}
-printf "%s\r\n" "    Stream *stream;" >> ${CDEP_MANIFEST_FILE}
+printf "%s\r\n" "    AudioStreamBuilder builder;" >> ${CDEP_MANIFEST_FILE}
+printf "%s\r\n" "    AudioStream *stream;" >> ${CDEP_MANIFEST_FILE}
 printf "%s\r\n" "    builder.openStream(&stream);" >> ${CDEP_MANIFEST_FILE}
 printf "%s\r\n" "  }" >> ${CDEP_MANIFEST_FILE}
 

@@ -18,14 +18,14 @@
 #include <stdint.h>
 
 #include "aaudio/AAudioLoader.h"
-#include "aaudio/StreamAAudio.h"
+#include "aaudio/AudioStreamAAudio.h"
 #include "common/OboeDebug.h"
 #include "oboe/Utilities.h"
 
 
 
 using namespace oboe;
-AAudioLoader *StreamAAudio::mLibLoader = nullptr;
+AAudioLoader *AudioStreamAAudio::mLibLoader = nullptr;
 
 
 // 'C' wrapper for the data callback method
@@ -35,7 +35,7 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
 
-    StreamAAudio *oboeStream = (StreamAAudio *)userData;
+    AudioStreamAAudio *oboeStream = (AudioStreamAAudio *)userData;
     if (oboeStream != NULL) {
         return static_cast<aaudio_data_callback_result_t>(
                 oboeStream->callOnAudioReady(stream, audioData, numFrames));
@@ -44,7 +44,7 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
     }
 }
 
-static void oboe_aaudio_error_thread_proc(StreamAAudio *oboeStream,
+static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
                                           AAudioStream *stream,
                                           Result error) {
     if (oboeStream != NULL) {
@@ -58,7 +58,7 @@ static void oboe_aaudio_error_callback_proc(
         void *userData,
         aaudio_result_t error) {
 
-    StreamAAudio *oboeStream = (StreamAAudio *)userData;
+    AudioStreamAAudio *oboeStream = (AudioStreamAAudio *)userData;
     if (oboeStream != NULL) {
         // Handle error on a separate thread
         std::thread t(oboe_aaudio_error_thread_proc, oboeStream, stream, static_cast<Result>(error));
@@ -72,50 +72,50 @@ namespace oboe {
 /*
  * Create a stream that uses Oboe Audio API.
  */
-StreamAAudio::StreamAAudio(const StreamBuilder &builder)
-    : Stream(builder)
+AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
+    : AudioStream(builder)
     , mFloatCallbackBuffer(nullptr)
     , mShortCallbackBuffer(nullptr)
     , mAAudioStream(nullptr)
 {
     mCallbackThreadEnabled.store(false);
-    LOGD("StreamAAudio() call isSupported()");
+    LOGD("AudioStreamAAudio() call isSupported()");
     isSupported();
 }
 
-StreamAAudio::~StreamAAudio()
+AudioStreamAAudio::~AudioStreamAAudio()
 {
     delete[] mFloatCallbackBuffer;
     delete[] mShortCallbackBuffer;
 }
 
-bool StreamAAudio::isSupported() {
+bool AudioStreamAAudio::isSupported() {
     mLibLoader = AAudioLoader::getInstance();
     int openResult = mLibLoader->open();
     return openResult == 0;
 }
 
 
-Result StreamAAudio::open() {
+Result AudioStreamAAudio::open() {
     Result result = Result::OK;
 
     if (mAAudioStream != nullptr) {
         return Result::ErrorInvalidState;
     }
 
-    result = Stream::open();
+    result = AudioStream::open();
     if (result != Result::OK) {
         return result;
     }
 
-    LOGD("StreamAAudio():  AAudio_createStreamBuilder()");
+    LOGD("AudioStreamAAudio():  AAudio_createStreamBuilder()");
     AAudioStreamBuilder *aaudioBuilder;
     result = static_cast<Result>(mLibLoader->createStreamBuilder(&aaudioBuilder));
     if (result != Result::OK) {
         return result;
     }
 
-    LOGD("StreamAAudio.open() try with deviceId = %d", (int) mDeviceId);
+    LOGD("AudioStreamAAudio.open() try with deviceId = %d", (int) mDeviceId);
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, mBufferCapacityInFrames);
     mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
     mLibLoader->builder_setDeviceId(aaudioBuilder, mDeviceId);
@@ -157,20 +157,20 @@ Result StreamAAudio::open() {
             mLibLoader->stream_getPerformanceMode(mAAudioStream));
     mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
 
-    LOGD("StreamAAudio.open() app    format = %d", (int) mFormat);
-    LOGD("StreamAAudio.open() native format = %d", (int) mNativeFormat);
-    LOGD("StreamAAudio.open() sample rate   = %d", (int) mSampleRate);
-    LOGD("StreamAAudio.open() capacity      = %d", (int) mBufferCapacityInFrames);
+    LOGD("AudioStreamAAudio.open() app    format = %d", (int) mFormat);
+    LOGD("AudioStreamAAudio.open() native format = %d", (int) mNativeFormat);
+    LOGD("AudioStreamAAudio.open() sample rate   = %d", (int) mSampleRate);
+    LOGD("AudioStreamAAudio.open() capacity      = %d", (int) mBufferCapacityInFrames);
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
-    LOGD("StreamAAudio.open: AAudioStream_Open() returned %s, mAAudioStream = %p",
+    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s, mAAudioStream = %p",
          mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)),
          mAAudioStream.load());
     return result;
 }
 
-Result StreamAAudio::close()
+Result AudioStreamAAudio::close()
 {
     // The main reason we have this mutex if to prevent a collision between a call
     // by the application to stop a stream at the same time that an onError callback
@@ -186,7 +186,7 @@ Result StreamAAudio::close()
     return result;
 }
 
-DataCallbackResult StreamAAudio::callOnAudioReady(AAudioStream *stream,
+DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
     return mStreamCallback->onAudioReady(
@@ -195,7 +195,7 @@ DataCallbackResult StreamAAudio::callOnAudioReady(AAudioStream *stream,
             numFrames);
 }
 
-void StreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
+void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
     LOGD("onErrorInThread() - entering ===================================");
     assert(stream == mAAudioStream.load());
     requestStop();
@@ -209,7 +209,7 @@ void StreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
     LOGD("onErrorInThread() - exiting ===================================");
 }
 
-Result StreamAAudio::convertApplicationDataToNative(int32_t numFrames) {
+Result AudioStreamAAudio::convertApplicationDataToNative(int32_t numFrames) {
     Result result = Result::ErrorUnimplemented;
     int32_t numSamples = numFrames * getChannelCount();
     if (mFormat == AudioFormat::Float) {
@@ -226,7 +226,7 @@ Result StreamAAudio::convertApplicationDataToNative(int32_t numFrames) {
     return result;
 }
 
-Result StreamAAudio::requestStart()
+Result AudioStreamAAudio::requestStart()
 {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -237,7 +237,7 @@ Result StreamAAudio::requestStart()
     }
 }
 
-Result StreamAAudio::requestPause()
+Result AudioStreamAAudio::requestPause()
 {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -248,7 +248,7 @@ Result StreamAAudio::requestPause()
     }
 }
 
-Result StreamAAudio::requestFlush() {
+Result AudioStreamAAudio::requestFlush() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -258,7 +258,7 @@ Result StreamAAudio::requestFlush() {
     }
 }
 
-Result StreamAAudio::requestStop()
+Result AudioStreamAAudio::requestStop()
 {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -270,7 +270,7 @@ Result StreamAAudio::requestStop()
 }
 
 // TODO: Update to return tuple of Result and framesWritten (avoids cast)
-int32_t StreamAAudio::write(const void *buffer,
+int32_t AudioStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds)
 {
@@ -282,7 +282,7 @@ int32_t StreamAAudio::write(const void *buffer,
     }
 }
 
-Result StreamAAudio::waitForStateChange(StreamState currentState,
+Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds)
 {
@@ -302,7 +302,7 @@ Result StreamAAudio::waitForStateChange(StreamState currentState,
     }
 }
 
-Result StreamAAudio::setBufferSizeInFrames(int32_t requestedFrames)
+Result AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames)
 {
     if (requestedFrames > mBufferCapacityInFrames) {
         requestedFrames = mBufferCapacityInFrames;
@@ -310,7 +310,7 @@ Result StreamAAudio::setBufferSizeInFrames(int32_t requestedFrames)
     return static_cast<Result>(mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames));
 }
 
-StreamState StreamAAudio::getState()
+StreamState AudioStreamAAudio::getState()
 {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -320,7 +320,7 @@ StreamState StreamAAudio::getState()
     }
 }
 
-int32_t StreamAAudio::getBufferSizeInFrames() const {
+int32_t AudioStreamAAudio::getBufferSizeInFrames() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getBufferSize(stream);
@@ -329,7 +329,7 @@ int32_t StreamAAudio::getBufferSizeInFrames() const {
     }
 }
 
-int32_t StreamAAudio::getFramesPerBurst()
+int32_t AudioStreamAAudio::getFramesPerBurst()
 {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -339,7 +339,7 @@ int32_t StreamAAudio::getFramesPerBurst()
     }
 }
 
-int64_t StreamAAudio::getFramesRead()
+int64_t AudioStreamAAudio::getFramesRead()
 {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -348,7 +348,7 @@ int64_t StreamAAudio::getFramesRead()
         return static_cast<int32_t>(Result::ErrorNull);
     }
 }
-int64_t StreamAAudio::getFramesWritten()
+int64_t AudioStreamAAudio::getFramesWritten()
 {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -358,7 +358,7 @@ int64_t StreamAAudio::getFramesWritten()
     }
 }
 
-int32_t StreamAAudio::getXRunCount()
+int32_t AudioStreamAAudio::getXRunCount()
 {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
@@ -368,7 +368,7 @@ int32_t StreamAAudio::getXRunCount()
     }
 }
 
-Result StreamAAudio::getTimestamp(clockid_t clockId,
+Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
                                    int64_t *framePosition,
                                    int64_t *timeNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
