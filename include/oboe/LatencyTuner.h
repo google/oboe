@@ -83,7 +83,7 @@ private:
     // arbitrary number of calls to wait before bumping up the latency
     static constexpr int32_t kIdleCount = 8;
 
-    AudioStream               &mStream;
+    AudioStream           &mStream;
     State                 mState = State::Idle;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
