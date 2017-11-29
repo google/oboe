@@ -61,7 +61,6 @@ int32_t convertFormatToSizeInBytes(AudioFormat format) {
 const char *convertResultToText(Result returnCode) {
     switch (returnCode) {
         OBOE_CASE_ENUM(Result::OK);
-        OBOE_CASE_ENUM(Result::ErrorBase);
         OBOE_CASE_ENUM(Result::ErrorDisconnected);
         OBOE_CASE_ENUM(Result::ErrorIllegalArgument);
         OBOE_CASE_ENUM(Result::ErrorInternal);
