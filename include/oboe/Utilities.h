@@ -32,64 +32,17 @@ void convertPcm16ToFloat(const int16_t *source, float *destination, int32_t numS
 int32_t convertFormatToSizeInBytes(AudioFormat format);
 
 /**
- * The text is the ASCII symbol corresponding to the returnCode,
- * or an English message saying the returnCode is unrecognized.
+ * The text is the ASCII symbol corresponding to the supplied Oboe enum value,
+ * or an English message saying the value is unrecognized.
  * This is intended for developers to use when debugging.
  * It is not for displaying to users.
  *
- * @return pointer to a text representation of an Oboe result code.
+ * @param enum value @see common/Utilities.cpp for concrete implementations
+ * @return text representation of an Oboe enum value.
  */
-const char * convertResultToText(Result returnCode);
+template <typename FromType>
+const char * convertToText(FromType);
 
-/**
- * The text is the ASCII symbol corresponding to the audio format,
- * or an English message saying the audio format is unrecognized.
- * This is intended for developers to use when debugging.
- * It is not for displaying to users.
- *
- * @return pointer to a text representation of an Oboe audio format.
- */
-const char * convertAudioFormatToText(AudioFormat format);
-
-/**
- * The text is the ASCII symbol corresponding to the performance mode,
- * or an English message saying the performance is unrecognized.
- * This is intended for developers to use when debugging.
- * It is not for displaying to users.
- *
- * @return pointer to a text representation of an Oboe performance mode.
- */
-const char * convertPerformanceModeToText(PerformanceMode mode);
-
-/**
- * The text is the ASCII symbol corresponding to the sharing mode,
- * or an English message saying the sharing mode is unrecognized.
- * This is intended for developers to use when debugging.
- * It is not for displaying to users.
- *
- * @return pointer to a text representation of an Oboe sharing mode.
- */
-const char * convertSharingModeToText(SharingMode mode);
-
-/**
- * The text is the ASCII symbol corresponding to the data callback result,
- * or an English message saying the data callback result is unrecognized.
- * This is intended for developers to use when debugging.
- * It is not for displaying to users.
- *
- * @return pointer to a text representation of an Oboe data callback result.
- */
-const char * convertDataCallbackResultToText(DataCallbackResult result);
-
-/**
- * The text is the ASCII symbol corresponding to the stream direction,
- * or an English message saying the stream direction is unrecognized.
- * This is intended for developers to use when debugging.
- * It is not for displaying to users.
- *
- * @return pointer to a text representation of an Oboe stream direction.
- */
-const char * convertDirectionToText(Direction direction);
 
 } // namespace oboe
 

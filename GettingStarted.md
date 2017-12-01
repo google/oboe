@@ -13,6 +13,7 @@ Open your app's `CMakeLists.txt`, this can be found under `External Build Files`
 Now add the following build steps to `CMakeLists.txt`, making sure you update `/local/path/to/oboe` with your local Oboe repository directory:
 
     # Build the Oboe library
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14")
     set (OBOE_DIR /local/path/to/oboe)
     file (GLOB_RECURSE OBOE_SOURCES ${OBOE_DIR}/src/*)
     include_directories(${OBOE_DIR}/include ${OBOE_DIR}/src)
@@ -79,10 +80,10 @@ Open the stream:
     oboe::AudioStream *stream;
     oboe::Result result = builder.openStream(&stream);
 
-Check the result to make sure the stream was opened successfully. Oboe has many convenience methods for converting its types into human-readable strings, they all start with `oboe::convert`:
+Check the result to make sure the stream was opened successfully. Oboe has a convenience method for converting its types into human-readable strings called `oboe::convertToText`:
 
     if (result != Result::OK){
-        LOGE("Failed to create stream. Error: %s", oboe::convertResultToText(result));
+        LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
     }
 
 Note that this sample code uses the [logging macros from here](https://github.com/googlesamples/android-audio-high-performance/blob/master/debug-utils/logging_macros.h).
@@ -90,7 +91,7 @@ Note that this sample code uses the [logging macros from here](https://github.co
 Check the properties of the created stream. The **format** is one property which you should check. The default is `float` on API 21+ and `int16_t` on API 20 or lower. This will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback.
 
     oboe::AudioFormat format = stream->getFormat();
-    LOGI("AudioStream format is %s", oboe::convertAudioFormatToText(format));
+    LOGI("AudioStream format is %s", oboe::convertToText(format));
 
 Now start the stream. 
 

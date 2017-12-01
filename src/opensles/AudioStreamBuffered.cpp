@@ -41,6 +41,7 @@ Result AudioStreamBuffered::open() {
     // callback that reads data from the FIFO.
     if (getCallback() == nullptr) {
         LOGD("AudioStreamBuffered(): new FifoBuffer");
+        // TODO: Fix memory leak here
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
         mInternalCallback = std::make_unique<AudioStreamBufferedCallback>(this);
