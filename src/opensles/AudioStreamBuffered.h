@@ -70,6 +70,7 @@ protected:
 private:
 
     FifoBuffer *mFifoBuffer;
+    std::unique_ptr<AudioStreamBufferedCallback> mInternalCallback;
 };
 
 } // namespace oboe

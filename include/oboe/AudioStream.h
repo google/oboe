@@ -144,8 +144,6 @@ public:
 
     bool isPlaying();
 
-    std::shared_ptr<AudioStreamCallback> getCallback() const { return mStreamCallback; }
-
     int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
 
     int32_t getBytesPerSample() const;

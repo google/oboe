@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14")
 
 # Specify directories which the compiler should look for headers
 include_directories(
