@@ -58,7 +58,8 @@ int32_t convertFormatToSizeInBytes(AudioFormat format) {
     return size;
 }
 
-const char *convertResultToText(Result returnCode) {
+template<>
+const char *convertToText<Result>(Result returnCode) {
     switch (returnCode) {
         OBOE_CASE_ENUM(Result::OK);
         OBOE_CASE_ENUM(Result::ErrorDisconnected);
@@ -82,7 +83,8 @@ const char *convertResultToText(Result returnCode) {
     }
 }
 
-const char *convertAudioFormatToText(AudioFormat format) {
+template<>
+const char *convertToText<AudioFormat>(AudioFormat format) {
     switch (format) {
         OBOE_CASE_ENUM(AudioFormat::Invalid);
         OBOE_CASE_ENUM(AudioFormat::Unspecified);
@@ -93,7 +95,8 @@ const char *convertAudioFormatToText(AudioFormat format) {
     }
 }
 
-const char *convertPerformanceModeToText(PerformanceMode mode) {
+template<>
+const char *convertToText<PerformanceMode>(PerformanceMode mode) {
     switch (mode) {
         OBOE_CASE_ENUM(PerformanceMode::LowLatency);
         OBOE_CASE_ENUM(PerformanceMode::None);
@@ -103,7 +106,8 @@ const char *convertPerformanceModeToText(PerformanceMode mode) {
     }
 }
 
-const char *convertSharingModeToText(SharingMode mode) {
+template<>
+const char *convertToText<SharingMode>(SharingMode mode) {
     switch (mode) {
         OBOE_CASE_ENUM(SharingMode::Exclusive);
         OBOE_CASE_ENUM(SharingMode::Shared);
@@ -112,7 +116,8 @@ const char *convertSharingModeToText(SharingMode mode) {
     }
 }
 
-const char *convertDataCallbackResultToText(DataCallbackResult result) {
+template<>
+const char *convertToText<DataCallbackResult>(DataCallbackResult result) {
     switch (result) {
         OBOE_CASE_ENUM(DataCallbackResult::Continue);
         OBOE_CASE_ENUM(DataCallbackResult::Stop);
@@ -121,7 +126,8 @@ const char *convertDataCallbackResultToText(DataCallbackResult result) {
     }
 }
 
-const char *convertDirectionToText(Direction direction) {
+template<>
+const char *convertToText<Direction>(Direction direction) {
     switch (direction) {
         OBOE_CASE_ENUM(Direction::Input);
         OBOE_CASE_ENUM(Direction::Output);

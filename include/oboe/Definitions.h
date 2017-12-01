@@ -18,7 +18,20 @@
 #define OBOE_DEFINITIONS_H
 
 #include <cstdint>
+#include <type_traits>
 #include <aaudio/AAudio.h>
+
+// Ensure that all AAudio primitive data types are int32_t
+#define ASSERT_INT32(type) static_assert(std::is_same<int32_t, type>::value, \
+#type" must be int32_t")
+
+ASSERT_INT32(aaudio_stream_state_t);
+ASSERT_INT32(aaudio_direction_t);
+ASSERT_INT32(aaudio_format_t);
+ASSERT_INT32(aaudio_data_callback_result_t);
+ASSERT_INT32(aaudio_result_t);
+ASSERT_INT32(aaudio_sharing_mode_t);
+ASSERT_INT32(aaudio_performance_mode_t);
 
 namespace oboe {
 

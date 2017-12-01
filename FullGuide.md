@@ -99,7 +99,7 @@ To be safe, check the state of the audio stream after you create it, as explaine
         __android_log_print(ANDROID_LOG_ERROR,
                             "AudioEngine",
                             "Error opening stream %s",
-                            convertResultToText(result));
+                            convertToText(result));
     }
 
 
@@ -404,13 +404,7 @@ Calls that return stream settings, like `AudioStream::getSampleRate()` and `Audi
 These calls are also thread safe:
 
 * `convertToText()`
-* `convertAudioFormatToText()`
-* `convertPerformanceModeToText()`
-* `convertSharingModeToText()`
-* `convertDataCallbackResultToText()`
-* `convertDirectionToText()`
 * `AudioStream::get*()` except for `getTimestamp()`
-
 
 <b>Note:</b> When a stream uses a callback function, it's safe to read/write from the callback thread while also closing the stream
 from the thread in which it is running.
