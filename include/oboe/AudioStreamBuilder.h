@@ -196,13 +196,22 @@ public:
     /**
      * Specifies an object to handle data or error related callbacks from the underlying API.
      *
-     * When an error callback occurs, the associated stream will be stopped
-     * and closed in a separate thread.
+     * When an error callback occurs, the associated stream will be stopped and closed in a separate thread.
+     *
+     * A note on why the streamCallback parameter is a raw pointer rather than a smart pointer:
+     *
+     * The caller should retain ownership of the object streamCallback points to. At first glance weak_ptr may seem like
+     * a good candidate for streamCallback as this implies temporary ownership. However, a weak_ptr can only be created
+     * from a shared_ptr. A shared_ptr incurs some performance overhead. The callback object is likely to be accessed
+     * every few milliseconds when the stream requires new data so this overhead is something we want to avoid.
+     *
+     * This leaves a raw pointer as the logical type choice. The only caveat being that the caller must not destroy
+     * the callback before the stream has been closed.
      *
      * @param streamCallback
-     * @return
+     * @return pointer to the builder so calls can be chained
      */
-    AudioStreamBuilder *setCallback(std::shared_ptr<AudioStreamCallback> streamCallback) {
+    AudioStreamBuilder *setCallback(AudioStreamCallback *streamCallback) {
         mStreamCallback = streamCallback;
         return this;
     }
