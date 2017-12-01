@@ -16,53 +16,52 @@
 
 #include "oboe/Oboe.h"
 
-#include "opensles/OboeStreamBuffered.h"
+#include "opensles/AudioStreamBuffered.h"
 #include "common/AudioClock.h"
 
+namespace oboe {
+
 /*
- * OboeStream with a FifoBuffer
+ * AudioStream with a FifoBuffer
  */
-OboeStreamBuffered::OboeStreamBuffered(const OboeStreamBuilder &builder)
-        : OboeStream(builder)
-        , mFifoBuffer(NULL)
-        , mInternalCallback(NULL)
+AudioStreamBuffered::AudioStreamBuffered(const AudioStreamBuilder &builder)
+        : AudioStream(builder)
+        , mFifoBuffer(nullptr)
 {
 }
 
-oboe_result_t OboeStreamBuffered::open() {
+Result AudioStreamBuffered::open() {
 
-    oboe_result_t result = OboeStream::open();
-    if (result < 0) {
+    Result result = AudioStream::open();
+    if (result != Result::OK) {
         return result;
     }
 
     // If the caller does not provide a callback use our own internal
     // callback that reads data from the FIFO.
-    if (getCallback() == NULL) {
-        LOGD("OboeStreamBuffered(): new FifoBuffer");
+    if (getCallback() == nullptr) {
+        LOGD("AudioStreamBuffered(): new FifoBuffer");
+        // TODO: Fix memory leak here
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
-        mInternalCallback = new AudioStreamBufferedCallback(this);
-        mStreamCallback = mInternalCallback;
-        LOGD("OboeStreamBuffered(): mInternalCallback = %p", mInternalCallback);
+        mInternalCallback = std::make_unique<AudioStreamBufferedCallback>(this);
+        mStreamCallback = mInternalCallback.get();
+        LOGD("AudioStreamBuffered(): mStreamCallback = %p", mStreamCallback);
     }
-    return OBOE_OK;
+    return Result::OK;
 }
 
-OboeStreamBuffered::~OboeStreamBuffered() {
-    delete mInternalCallback;
-}
-
-oboe_result_t OboeStreamBuffered::write(const void *buffer,
-                                         int32_t numFrames,
-                                         int64_t timeoutNanoseconds)
+// TODO: This method should return a tuple of Result,int32_t where the 2nd return param is the frames written
+int32_t AudioStreamBuffered::write(const void *buffer,
+                              int32_t numFrames,
+                              int64_t timeoutNanoseconds)
 {
-    oboe_result_t result = OBOE_OK;
+    int32_t result = 0;
     uint8_t *source = (uint8_t *)buffer;
     int32_t framesLeft = numFrames;
     while(framesLeft > 0 && result >= 0) {
-        oboe_result_t result = mFifoBuffer->write(source, numFrames);
-        LOGD("OboeStreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
+        result = mFifoBuffer->write(source, numFrames);
+        LOGD("AudioStreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
         if (result > 0) {
             source += mFifoBuffer->convertFramesToBytes(result);
             incrementFramesWritten(result);
@@ -77,32 +76,34 @@ oboe_result_t OboeStreamBuffered::write(const void *buffer,
     return result;
 }
 
-oboe_result_t OboeStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
+Result AudioStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
 {
     if (mFifoBuffer != nullptr) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
         }
         mFifoBuffer->setThresholdFrames(requestedFrames);
-        return OBOE_OK;
+        return Result::OK;
     } else {
-        return OBOE_ERROR_UNIMPLEMENTED;
+        return Result::ErrorUnimplemented;
     }
 }
 
 
-int32_t OboeStreamBuffered::getBufferSizeInFrames() const {
+int32_t AudioStreamBuffered::getBufferSizeInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getThresholdFrames();
     } else {
-        return OboeStream::getBufferSizeInFrames();
+        return AudioStream::getBufferSizeInFrames();
     }
 }
 
-int32_t OboeStreamBuffered::getBufferCapacityInFrames() const {
+int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
     if (mFifoBuffer != nullptr) {
         return mFifoBuffer->getBufferCapacityInFrames(); // Maybe set mBufferCapacity in constructor
     } else {
-        return OboeStream::getBufferCapacityInFrames();
+        return AudioStream::getBufferCapacityInFrames();
     }
 }
+
+} // namespace oboe

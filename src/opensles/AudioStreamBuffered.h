@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_STREAM_BUFFERED_H
-#define OBOE_OBOE_STREAM_BUFFERED_H
+#ifndef OBOE_STREAM_BUFFERED_H
+#define OBOE_STREAM_BUFFERED_H
 
 #include "common/OboeDebug.h"
-#include "oboe/OboeStream.h"
-#include "oboe/OboeStreamCallback.h"
+#include "oboe/AudioStream.h"
+#include "oboe/AudioStreamCallback.h"
 #include "fifo/FifoBuffer.h"
 
+namespace oboe {
+
 // A stream that contains a FIFO buffer.
-class OboeStreamBuffered : public OboeStream {
+class AudioStreamBuffered : public AudioStream {
 public:
 
-    OboeStreamBuffered();
-    explicit OboeStreamBuffered(const OboeStreamBuilder &builder);
-    virtual ~OboeStreamBuffered();
+    AudioStreamBuffered();
+    explicit AudioStreamBuffered(const AudioStreamBuilder &builder);
 
-    oboe_result_t open() override;
+    Result open() override;
 
-    oboe_result_t write(const void *buffer,
-                                int32_t numFrames,
-                                int64_t timeoutNanoseconds) override;
+    int32_t write(const void *buffer,
+                  int32_t numFrames,
+                  int64_t timeoutNanoseconds) override;
 
-    oboe_result_t setBufferSizeInFrames(int32_t requestedFrames) override;
+    Result setBufferSizeInFrames(int32_t requestedFrames) override;
 
     int32_t getBufferSizeInFrames() const override;
 
@@ -44,33 +45,34 @@ public:
 
 protected:
 
-    class AudioStreamBufferedCallback : public OboeStreamCallback {
+    class AudioStreamBufferedCallback : public AudioStreamCallback {
     public:
-        AudioStreamBufferedCallback(OboeStreamBuffered *bufferedStream)
+        AudioStreamBufferedCallback(AudioStreamBuffered *bufferedStream)
                 : mBufferedStream(bufferedStream) {
         }
 
         virtual ~AudioStreamBufferedCallback() {}
 
-        virtual oboe_result_t onAudioReady(
-                OboeStream *audioStream,
+        virtual DataCallbackResult onAudioReady(
+                AudioStream *audioStream,
                 void *audioData,
                 int numFrames) {
             int32_t framesRead = mBufferedStream->mFifoBuffer->readNow(audioData, numFrames);
             //LOGD("AudioStreamBufferedCallback(): read %d / %d frames", framesRead, numFrames);
-            return (framesRead >= 0) ? OBOE_OK : OBOE_ERROR_INTERNAL;
+            return (framesRead >= 0) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
         }
 
-        virtual void onExit(oboe_result_t reason) {}
+        virtual void onExit(Result reason) {}
     private:
-        OboeStreamBuffered *mBufferedStream;
+        AudioStreamBuffered *mBufferedStream;
     };
 
 private:
 
     FifoBuffer *mFifoBuffer;
-    AudioStreamBufferedCallback *mInternalCallback;
+    std::unique_ptr<AudioStreamBufferedCallback> mInternalCallback;
 };
 
+} // namespace oboe
 
-#endif //OBOE_OBOE_STREAM_BUFFERED_H
+#endif //OBOE_STREAM_BUFFERED_H

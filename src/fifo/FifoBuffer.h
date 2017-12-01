@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_FIFOPROCESSOR_H
-#define NATIVEOBOE_FIFOPROCESSOR_H
+#ifndef OBOE_FIFOPROCESSOR_H
+#define OBOE_FIFOPROCESSOR_H
 
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "common/OboeDebug.h"
 #include "FifoControllerBase.h"
-#include "oboe/OboeDefinitions.h"
+#include "oboe/Definitions.h"
+
+namespace oboe {
 
 class FifoBuffer {
 public:
@@ -90,4 +92,6 @@ private:
     uint32_t mLastReadSize;
 };
 
-#endif //NATIVEOBOE_FIFOPROCESSOR_H
+} // namespace oboe
+
+#endif //OBOE_FIFOPROCESSOR_H

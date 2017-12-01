@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_LATENCY_TUNER_
-#define OBOE_OBOE_LATENCY_TUNER_
+#ifndef OBOE_LATENCY_TUNER_
+#define OBOE_LATENCY_TUNER_
 
 #include <atomic>
-#include <stdint.h>
-#include "oboe/OboeDefinitions.h"
-#include "oboe/OboeStream.h"
+#include <cstdint>
+#include "oboe/Definitions.h"
+#include "oboe/AudioStream.h"
+
+namespace oboe {
 
 /**
  * This can be used to dynamically tune the latency of an output stream.
@@ -37,9 +39,9 @@
  * stream->getBufferSize() periodically.
  *
  */
-class OboeLatencyTuner {
+class LatencyTuner {
 public:
-    explicit OboeLatencyTuner(OboeStream &stream);
+    explicit LatencyTuner(AudioStream &stream);
 
     /**
      * Adjust the bufferSizeInFrames to optimize latency.
@@ -47,9 +49,9 @@ public:
      *
      * Latency tuning is only supported for AAudio.
      *
-     * @return OBOE_OK or negative error, OBOE_ERROR_UNIMPLEMENTED for OpenSL ES
+     * @return OK or negative error, ErrorUnimplemented for OpenSL ES
      */
-    oboe_result_t tune();
+    Result tune();
 
     /**
      * This may be called from another thread. Then tune() will call reset(),
@@ -71,23 +73,24 @@ private:
      */
     void reset();
 
-    enum latency_tuner_state_t {
-        STATE_IDLE,
-        STATE_ACTIVE,
-        STATE_AT_MAX,
-        STATE_UNSUPPORTED
+    enum class State {
+        Idle,
+        Active,
+        AtMax,
+        Unsupported
     } ;
 
-    enum {
-        IDLE_COUNT = 8 // arbitrary number of calls to wait before bumping up the latency
-    };
+    // arbitrary number of calls to wait before bumping up the latency
+    static constexpr int32_t kIdleCount = 8;
 
-    OboeStream           &mStream;
-    latency_tuner_state_t mState = STATE_IDLE;
+    AudioStream           &mStream;
+    State                 mState = State::Idle;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
     std::atomic<int32_t>  mLatencyTriggerRequests{0}; // TODO user atomic requester from AAudio
     std::atomic<int32_t>  mLatencyTriggerResponses{0};
 };
 
-#endif // OBOE_OBOE_LATENCY_TUNER_
+} // namespace oboe
+
+#endif // OBOE_LATENCY_TUNER_

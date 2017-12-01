@@ -22,6 +22,8 @@
 
 #include "common/OboeDebug.h"
 
+namespace oboe {
+
 FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
         : mTotalFrames(totalFrames)
         , mThreshold(threshold)
@@ -69,3 +71,5 @@ void FifoControllerBase::advanceWriteIndex(uint32_t numFrames) {
 void FifoControllerBase::setThreshold(uint32_t threshold) {
     mThreshold = threshold;
 }
+
+} // namespace oboe

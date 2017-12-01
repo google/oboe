@@ -14,56 +14,59 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_STREAM_BUILDER_H_
-#define OBOE_OBOE_STREAM_BUILDER_H_
+#ifndef OBOE_STREAM_BUILDER_H_
+#define OBOE_STREAM_BUILDER_H_
 
-#include "OboeStreamBase.h"
-#include "OboeStream.h"
-#include "oboe/OboeDefinitions.h"
+#include "oboe/Definitions.h"
+#include "oboe/AudioStreamBase.h"
+
+namespace oboe {
+
+constexpr int32_t kDefaultFramesPerBurst = 192; // arbitrary value, 4 msec at 48000 Hz
 
 /**
- * Factory class for an AudioStream.
+ * Factory class for an audio Stream.
  */
-class OboeStreamBuilder : public OboeStreamBase {
+class AudioStreamBuilder : public AudioStreamBase {
 public:
 
-    OboeStreamBuilder() : OboeStreamBase() {}
+    AudioStreamBuilder() : AudioStreamBase() {}
 
-    enum audio_api_index_t {
+    enum class AudioApi {
         /**
          * Try to use AAudio. If not available then use OpenSL ES.
          */
-        API_UNSPECIFIED,
+        Unspecified,
 
         /**
          * Use OpenSL ES.
          */
-        API_OPENSL_ES,
+        OpenSLES,
 
         /**
          * Try to use AAudio. Fail if unavailable.
          */
-        API_AAUDIO
+        AAudio
     };
 
 
     /**
      * Request a specific number of channels.
      *
-     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
+     * Default is kUnspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      */
-    OboeStreamBuilder *setChannelCount(int channelCount) {
+    AudioStreamBuilder *setChannelCount(int channelCount) {
         mChannelCount = channelCount;
         return this;
     }
 
     /**
-     * Request the direction for a stream. The default is OBOE_DIRECTION_OUTPUT.
+     * Request the direction for a stream. The default is Direction::Output.
      *
-     * @param direction OBOE_DIRECTION_OUTPUT or OBOE_DIRECTION_INPUT
+     * @param direction Direction::Output or Direction::Input
      */
-    OboeStreamBuilder *setDirection(oboe_direction_t direction) {
+    AudioStreamBuilder *setDirection(Direction direction) {
         mDirection = direction;
         return this;
     }
@@ -71,7 +74,7 @@ public:
     /**
      * Request a specific sample rate in Hz.
      *
-     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
+     * Default is kUnspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      *
      * Technically, this should be called the "frame rate" or "frames per second",
@@ -79,7 +82,7 @@ public:
      * But it is traditionally called "sample rate". Se we use that term.
      *
      */
-    OboeStreamBuilder *setSampleRate(int32_t sampleRate) {
+    AudioStreamBuilder *setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
         return this;
     }
@@ -87,7 +90,7 @@ public:
     /**
      * Request a specific number of frames for the data callback.
      *
-     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
+     * Default is kUnspecified. If the value is unspecified then
      * the actual number may vary from callback to callback.
      *
      * If an application can handle a varying number of frames then we recommend
@@ -98,18 +101,18 @@ public:
      * @param framesPerCallback
      * @return
      */
-    OboeStreamBuilder *setFramesPerCallback(int framesPerCallback) {
+    AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
         mFramesPerCallback = framesPerCallback;
         return this;
     }
 
     /**
-     * Request a sample data format, for example OBOE_FORMAT_PCM_FLOAT.
+     * Request a sample data format, for example Format::Float.
      *
-     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
+     * Default is Format::Unspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      */
-    OboeStreamBuilder *setFormat(oboe_audio_format_t format) {
+    AudioStreamBuilder *setFormat(AudioFormat format) {
         mFormat = format;
         return this;
     }
@@ -118,25 +121,25 @@ public:
      * Set the requested maximum buffer capacity in frames.
      * The final stream capacity may differ, but will probably be at least this big.
      *
-     * Default is OBOE_UNSPECIFIED.
+     * Default is kUnspecified.
      *
-     * @param frames the desired buffer capacity in frames or OBOE_UNSPECIFIED
+     * @param frames the desired buffer capacity in frames or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
+    AudioStreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
         mBufferCapacityInFrames = bufferCapacityInFrames;
         return this;
     }
 
-    audio_api_index_t getApiIndex() const { return mAudioApi; }
+    AudioApi getApiIndex() const { return mAudioApi; }
 
     /**
      * Normally you would leave this unspecified, and Oboe will chose the best API
      * for the device at runtime.
-     * @param Must be API_UNSPECIFIED, API_OPENSL_ES or API_AAUDIO.
+     * @param Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setApiIndex(audio_api_index_t apiIndex) {
+    AudioStreamBuilder *setApiIndex(AudioApi apiIndex) {
         mAudioApi = apiIndex;
         return this;
     }
@@ -155,10 +158,10 @@ public:
      * The requested sharing mode may not be available.
      * So the application should query for the actual mode after the stream is opened.
      *
-     * @param sharingMode OBOE_SHARING_MODE_LEGACY or OBOE_SHARING_MODE_EXCLUSIVE
+     * @param sharingMode SharingMode::Shared or SharingMode::Exclusive
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setSharingMode(oboe_sharing_mode_t sharingMode) {
+    AudioStreamBuilder *setSharingMode(SharingMode sharingMode) {
         mSharingMode = sharingMode;
         return this;
     }
@@ -168,10 +171,10 @@ public:
      * This will determine the latency, the power consumption, and the level of
      * protection from glitches.
      *
-     * @param performanceMode for example, OBOE_PERFORMANCE_MODE_LOW_LATENCY
+     * @param performanceMode for example, PerformanceMode::LowLatency
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setPerformanceMode(oboe_performance_mode_t performanceMode) {
+    AudioStreamBuilder *setPerformanceMode(PerformanceMode performanceMode) {
         mPerformanceMode = performanceMode;
         return this;
     }
@@ -182,10 +185,10 @@ public:
      *
      * By default, the primary device will be used.
      *
-     * @param deviceId device identifier or OBOE_DEVICE_UNSPECIFIED
+     * @param deviceId device identifier or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setDeviceId(int32_t deviceId) {
+    AudioStreamBuilder *setDeviceId(int32_t deviceId) {
         mDeviceId = deviceId;
         return this;
     }
@@ -193,13 +196,22 @@ public:
     /**
      * Specifies an object to handle data or error related callbacks from the underlying API.
      *
-     * When an error callback occurs, the associated stream will be stopped
-     * and closed in a separate thread.
+     * When an error callback occurs, the associated stream will be stopped and closed in a separate thread.
+     *
+     * A note on why the streamCallback parameter is a raw pointer rather than a smart pointer:
+     *
+     * The caller should retain ownership of the object streamCallback points to. At first glance weak_ptr may seem like
+     * a good candidate for streamCallback as this implies temporary ownership. However, a weak_ptr can only be created
+     * from a shared_ptr. A shared_ptr incurs some performance overhead. The callback object is likely to be accessed
+     * every few milliseconds when the stream requires new data so this overhead is something we want to avoid.
+     *
+     * This leaves a raw pointer as the logical type choice. The only caveat being that the caller must not destroy
+     * the callback before the stream has been closed.
      *
      * @param streamCallback
-     * @return
+     * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setCallback(OboeStreamCallback *streamCallback) {
+    AudioStreamBuilder *setCallback(AudioStreamCallback *streamCallback) {
         mStreamCallback = streamCallback;
         return this;
     }
@@ -222,7 +234,7 @@ public:
      * @param defaultFramesPerBurst
      * @return pointer to the builder so calls can be chained
      */
-    OboeStreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
+    AudioStreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
         mDefaultFramesPerBurst = defaultFramesPerBurst;
         return this;
     }
@@ -237,7 +249,7 @@ public:
      * @param stream pointer to a variable to receive the stream address
      * @return OBOE_OK if successful or a negative error code
      */
-    oboe_result_t openStream(OboeStream **stream);
+    Result openStream(AudioStream **stream);
 
 protected:
 
@@ -248,11 +260,13 @@ private:
      *
      * @return pointer to an AudioStream object.
      */
-    OboeStream *build();
+    oboe::AudioStream *build();
 
-    audio_api_index_t       mAudioApi = API_UNSPECIFIED;
+    AudioApi       mAudioApi = AudioApi::Unspecified;
 
-    int32_t                 mDefaultFramesPerBurst = 192; // arbitrary value, 4 msec at 48000 Hz
+    int32_t        mDefaultFramesPerBurst = kDefaultFramesPerBurst;
 };
 
-#endif /* OBOE_OBOE_STREAM_BUILDER_H_ */
+} // namespace oboe
+
+#endif /* OBOE_STREAM_BUILDER_H_ */

@@ -16,6 +16,8 @@
 
 #include "OpenSLESUtilities.h"
 
+namespace oboe {
+
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
         SLDataFormat_PCM format, SLuint32 representation) {
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
@@ -29,3 +31,5 @@ SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
     format_pcm_ex.representation = representation;
     return format_pcm_ex;
 }
+
+} // namespace oboe
