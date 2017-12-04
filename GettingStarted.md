@@ -13,7 +13,7 @@ Open your app's `CMakeLists.txt`, this can be found under `External Build Files`
 Now add the following build steps to `CMakeLists.txt`, making sure you update `/local/path/to/oboe` with your local Oboe repository directory:
 
     # Build the Oboe library
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++11")
     set (OBOE_DIR /local/path/to/oboe)
     file (GLOB_RECURSE OBOE_SOURCES ${OBOE_DIR}/src/*)
     include_directories(${OBOE_DIR}/include ${OBOE_DIR}/src)
