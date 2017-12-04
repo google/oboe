@@ -1,25 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14")
-
-# Specify directories which the compiler should look for headers
-include_directories(
-  include
-  src
-)
-
 set (oboe_sources
-        include/oboe/LatencyTuner.h
-        include/oboe/Definitions.h
-        include/oboe/AudioStream.h
-        include/oboe/AudioStreamBase.h
-        include/oboe/AudioStreamBuilder.h
-        include/oboe/AudioStreamCallback.h
-        include/oboe/Utilities.h
         src/aaudio/AAudioLoader.cpp
         src/aaudio/AudioStreamAAudio.cpp
-        src/common/AudioClock.h
-        src/common/OboeDebug.h
         src/common/LatencyTuner.cpp
         src/common/AudioStream.cpp
         src/common/AudioStreamBuilder.cpp
@@ -34,3 +17,12 @@ set (oboe_sources
         )
 
 add_library(oboe STATIC ${oboe_sources})
+
+# Specify directories which the compiler should look for headers
+target_include_directories(oboe PRIVATE src include)
+
+target_compile_options(oboe PRIVATE -std=c++11
+                            PRIVATE -Wall
+                            PRIVATE "$<$<CONFIG:DEBUG>:-Werror>") # Only include -Werror when building debug config
+
+target_link_libraries(oboe PRIVATE log OpenSLES)
