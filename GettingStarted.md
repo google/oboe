@@ -6,38 +6,42 @@ Start by cloning the Oboe repository:
 
     git clone https://github.com/google/oboe
 
+**Make a note of the path which you cloned oboe into - you will need it shortly**
+
 Open your app's `CMakeLists.txt`, this can be found under `External Build Files` in the Android project view. 
 
 ![CMakeLists.txt location in Android Studio](cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
 
-Now add the following build steps to `CMakeLists.txt`, making sure you update `/local/path/to/oboe` with your local Oboe repository directory:
+Now add the following build steps to `CMakeLists.txt`, **update `**PATH TO OBOE**` with your local Oboe path from the previous step**:
 
-    # Build the Oboe library
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++11")
-    set (OBOE_DIR /local/path/to/oboe)
-    file (GLOB_RECURSE OBOE_SOURCES ${OBOE_DIR}/src/*)
-    include_directories(${OBOE_DIR}/include ${OBOE_DIR}/src)
-    add_library(oboe STATIC ${OBOE_SOURCES})
+    # Set the path to the Oboe directory.
+    set (OBOE_DIR ***PATH TO OBOE***) 
+    
+    # Add the Oboe library as a subdirectory in your project.
+    add_subdirectory (${OBOE_DIR} ./oboe) 
+    
+    # Specify the path to the Oboe header files.
+    include_directories (${OBOE_DIR}/include)  
 
-In the same file *after* your own library definition (by default it is named `native-lib`) add the dependencies for the Oboe and OpenSLES libraries:
 
-    target_link_libraries(native-lib log oboe OpenSLES)
+In the same file *after* your own library definition (by default it is named `native-lib`) add the dependencies for the Oboe library:
+
+    target_link_libraries(native-lib oboe)
 
 Here's a complete example `CMakeLists.txt` file:
 
     cmake_minimum_required(VERSION 3.4.1)
 
     # Build the Oboe library
-    set (OBOE_DIR /Users/donturner/Code/workspace-android/oboe)
-    file (GLOB_RECURSE OBOE_SOURCES ${OBOE_DIR}/src/*)
-    include_directories(${OBOE_DIR}/include ${OBOE_DIR}/src)
-    add_library(oboe STATIC ${OBOE_SOURCES})
+    set (OBOE_DIR ../../../oboe)  
+    add_subdirectory (${OBOE_DIR} ./oboe) 
+    include_directories (${OBOE_DIR}/include)
 
     # Build our own native library
-    add_library( native-lib SHARED src/main/cpp/native-lib.cpp )
+    add_library (native-lib SHARED src/main/cpp/native-lib.cpp )
 
     # Specify the libraries which our native library is dependent on
-    target_link_libraries( native-lib log oboe OpenSLES )
+    target_link_libraries (native-lib log oboe)
 
 Verify that your project builds correctly. If you have any issues building please [report them here](issues/new).
 
