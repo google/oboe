@@ -1,18 +1,21 @@
 # Getting Started
 The easiest way to start using Oboe is to build it from source by adding a few steps to an existing Android Studio project.
 
-## Building Oboe
+## Adding Oboe to your project
+
+### 1. Clone the github repository 
 Start by cloning the Oboe repository: 
 
     git clone https://github.com/google/oboe
 
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
-Open your app's `CMakeLists.txt`, this can be found under `External Build Files` in the Android project view. 
+### 2. Update CMakeLists.txt
+Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. 
 
 ![CMakeLists.txt location in Android Studio](cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
 
-Now add the following build steps to `CMakeLists.txt`, **update `**PATH TO OBOE**` with your local Oboe path from the previous step**:
+Now add the following commands to the end of `CMakeLists.txt`. **Remember to update `**PATH TO OBOE**` with your local Oboe path from the previous step**:
 
     # Set the path to the Oboe directory.
     set (OBOE_DIR ***PATH TO OBOE***) 
@@ -24,7 +27,8 @@ Now add the following build steps to `CMakeLists.txt`, **update `**PATH TO OBOE*
     include_directories (${OBOE_DIR}/include)  
 
 
-In the same file *after* your own library definition (by default it is named `native-lib`) add the dependencies for the Oboe library:
+In the same file find the [`target_link_libraries`](https://cmake.org/cmake/help/latest/command/target_link_libraries.html) command. 
+Add `oboe` to the list of libraries which your app's library depends on. For example:
 
     target_link_libraries(native-lib oboe)
 
