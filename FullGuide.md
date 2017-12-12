@@ -26,12 +26,16 @@ The audio device attached to a stream determines whether the stream is for input
 
 ### Sharing mode
 
-![Oboe sharing diagram](oboe-sharing-modes.png)
-
 A stream has a sharing mode:
 
-*   `SharingMode::Exclusive` (available on API 26+) means the stream has exclusive access to an endpoint on its audio device; the endpoint cannot be used by any other audio stream. If the exclusive endpoint is already in use, it might not be possible for the stream to obtain access to it. Exclusive streams provide the lowest possible latency by bypassing the mixer stage, but they are also more likely to get disconnected. You should close exclusive streams as soon as you no longer need them, so that other apps can access the device. Not all audio devices provide exclusive endpoints.
-*   `SharingMode::Shared` allows Oboe to mix audio. Oboe mixes all the shared streams assigned to the same device.
+*   `SharingMode::Exclusive` (available on API 26+) means the stream has exclusive access to an endpoint on its audio device; the endpoint cannot be used by any other audio stream. If the exclusive endpoint is already in use, it might not be possible for the stream to obtain access to it. Exclusive streams provide the lowest possible latency by bypassing the mixer stage, but they are also more likely to get disconnected. You should close exclusive streams as soon as you no longer need them, so that other apps can access that endpoint. Not all audio devices provide exclusive endpoints. System sounds and sounds from other apps can still be heard when an exclusive stream is in use as they use a different endpoint.
+
+![Oboe exclusive sharing mode diagram](oboe-sharing-mode-exclusive.jpg)
+
+*   `SharingMode::Shared` allows Oboe to mix audio. Oboe mixes all the shared streams assigned to the same endpoint on the audio device.
+
+![Oboe exclusive sharing mode diagram](oboe-sharing-mode-shared.jpg)
+
 
 You can explicitly request the sharing mode when you create a stream, although you are not guaranteed to receive that mode. By default, the sharing mode is `Shared`.
 
