@@ -26,6 +26,10 @@
 
 namespace oboe {
 
+/**
+ * INTERNAL USE ONLY
+ */
+
 class AudioInputStreamOpenSLES : public AudioStreamOpenSLES {
 public:
     AudioInputStreamOpenSLES();
