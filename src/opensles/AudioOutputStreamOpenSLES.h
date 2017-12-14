@@ -32,7 +32,33 @@ public:
     explicit AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder);
 
     virtual ~AudioOutputStreamOpenSLES();
+
+    Result open() override;
+    Result close() override;
+
+    Result requestStart() override;
+    Result requestPause() override;
+    Result requestFlush() override;
+    Result requestStop() override;
+
+    Result waitForStateChange(StreamState currentState,
+                              StreamState *nextState,
+                              int64_t timeoutNanoseconds) override;
+
+    int chanCountToChanMask(int chanCount) override;
+
 private:
+
+    /**
+     * Set OpenSL ES PLAYSTATE.
+     *
+     * @param newState SL_PLAYSTATE_PAUSED, SL_PLAYSTATE_PLAYING, SL_PLAYSTATE_STOPPED
+     * @return
+     */
+    Result setPlayState(SLuint32 newState);
+
+    SLObjectItf    bqPlayerObject_ = nullptr;
+    SLPlayItf      bqPlayerPlay_ = nullptr;
 };
 
 } // namespace oboe

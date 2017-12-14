@@ -33,76 +33,8 @@
 #define DEFAULT_SAMPLE_RATE           48000  // very common rate for mobile audio and video
 #define DEFAULT_CHANNEL_COUNT         2      // stereo
 
-#define OBOE_BITS_PER_BYTE            8      // common value
-
 using namespace oboe;
 
-/*
- * OSLES Helpers
- */
-static const char *errStrings[] = {
-        "SL_RESULT_SUCCESS",                  // 0
-        "SL_RESULT_PRECONDITIONS_VIOLATE",    // 1
-        "SL_RESULT_PARAMETER_INVALID",        // 2
-        "SL_RESULT_MEMORY_FAILURE",           // 3
-        "SL_RESULT_RESOURCE_ERROR",           // 4
-        "SL_RESULT_RESOURCE_LOST",            // 5
-        "SL_RESULT_IO_ERROR",                 // 6
-        "SL_RESULT_BUFFER_INSUFFICIENT",      // 7
-        "SL_RESULT_CONTENT_CORRUPTED",        // 8
-        "SL_RESULT_CONTENT_UNSUPPORTED",      // 9
-        "SL_RESULT_CONTENT_NOT_FOUND",        // 10
-        "SL_RESULT_PERMISSION_DENIED",        // 11
-        "SL_RESULT_FEATURE_UNSUPPORTED",      // 12
-        "SL_RESULT_INTERNAL_ERROR",           // 13
-        "SL_RESULT_UNKNOWN_ERROR",            // 14
-        "SL_RESULT_OPERATION_ABORTED",        // 15
-        "SL_RESULT_CONTROL_LOST"              // 16
-};
-
-const char *getSLErrStr(SLresult code) {
-    return errStrings[code];
-}
-
-// These will wind up in <SLES/OpenSLES_Android.h>
-#define SL_ANDROID_SPEAKER_QUAD (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT \
- | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
-
-#define SL_ANDROID_SPEAKER_5DOT1 (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT \
- | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY| SL_SPEAKER_BACK_LEFT \
- | SL_SPEAKER_BACK_RIGHT)
-
-#define SL_ANDROID_SPEAKER_7DOT1 (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT \
- |SL_SPEAKER_SIDE_RIGHT)
-
-int chanCountToChanMask(int chanCount) {
-    int channelMask = 0;
-
-    switch (chanCount) {
-        case  1:
-            channelMask = SL_SPEAKER_FRONT_CENTER;
-            break;
-
-        case  2:
-            channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-            break;
-
-        case  4: // Quad
-            channelMask = SL_ANDROID_SPEAKER_QUAD;
-            break;
-
-        case  6: // 5.1
-            channelMask = SL_ANDROID_SPEAKER_5DOT1;
-            break;
-
-        case  8: // 7.1
-            channelMask = SL_ANDROID_SPEAKER_7DOT1;
-            break;
-    }
-    return channelMask;
-}
-
-static const char *TAG = "AAudioStreamOpenSLES";
 
 OpenSLEngine *OpenSLEngine::getInstance() {
     // TODO mutex
@@ -240,11 +172,6 @@ SLresult OpenSLOutputMixer::createAudioPlayer(SLObjectItf *objectItf,
 
 OpenSLOutputMixer *OpenSLOutputMixer::sInstance = nullptr;
 
-// this callback handler is called every time a buffer finishes playing
-static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((AudioStreamOpenSLES *) context)->enqueueBuffer();
-}
-
 SLresult AudioStreamOpenSLES::enqueueBuffer() {
     // Ask the callback to fill the output buffer with data.
     Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
@@ -257,49 +184,17 @@ SLresult AudioStreamOpenSLES::enqueueBuffer() {
     }
 }
 
-
-static void CloseSLEngine() {
-    OpenSLOutputMixer::getInstance()->close();
-    OpenSLEngine::getInstance()->close();
-}
-
-static SLresult OpenSLContext() {
-    SLresult result = OpenSLEngine::getInstance()->open();
-    if (SL_RESULT_SUCCESS == result) {
-        // get the output mixer
-        result = OpenSLOutputMixer::getInstance()->open();
-        if (SL_RESULT_SUCCESS != result) {
-            CloseSLEngine();
-        }
-    }
-    return result;
-}
-
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
-    bqPlayerObject_ = NULL;
     bq_ = NULL;
-    bqPlayerPlay_ = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
-    OpenSLContext();
+    OpenSLEngine::getInstance()->open();
     LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
-    CloseSLEngine();
+    OpenSLEngine::getInstance()->close();
     delete[] mCallbackBuffer;
-}
-
-static SLuint32 ConvertFormatToRepresentation(AudioFormat format) {
-    switch(format) {
-        case AudioFormat::Invalid:
-        case AudioFormat::Unspecified:
-            return 0;
-        case AudioFormat::I16:
-            return SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
-        case AudioFormat::Float:
-            return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
-    }
 }
 
 static bool s_isLittleEndian() {
@@ -307,15 +202,13 @@ static bool s_isLittleEndian() {
     return *((uint8_t *) &value) == 1; // Does address point to LSB?
 }
 
-static SLuint32 s_getDefaultByteOrder() {
+SLuint32 AudioStreamOpenSLES::getDefaultByteOrder() {
     return s_isLittleEndian() ? SL_BYTEORDER_LITTLEENDIAN : SL_BYTEORDER_BIGENDIAN;
 }
 
 Result AudioStreamOpenSLES::open() {
 
-    SLresult result;
-
-    __android_log_print(ANDROID_LOG_INFO, TAG, "AudioPlayerOpenSLES::Open(chans:%d, rate:%d)",
+    LOGI("AudioStreamOpenSLES::open(chans:%d, rate:%d)",
                         mChannelCount, mSampleRate);
 
     if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
@@ -358,62 +251,6 @@ Result AudioStreamOpenSLES::open() {
     LOGD("AudioStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
     LOGD("AudioStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
 
-    SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
-
-    // configure audio source
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
-            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,    // locatorType
-            static_cast<SLuint32>(mBurstsPerBuffer)};   // numBuffers
-
-    // Define the audio data format.
-    SLDataFormat_PCM format_pcm = {
-            SL_DATAFORMAT_PCM,       // formatType
-            (SLuint32) mChannelCount,           // numChannels
-            (SLuint32) (mSampleRate * kMillisPerSecond),    // milliSamplesPerSec
-            bitsPerSample,                      // bitsPerSample
-            bitsPerSample,                      // containerSize;
-            (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
-            s_getDefaultByteOrder(),
-    };
-
-    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
-
-    /**
-     * API 21 (Lollipop) introduced support for floating-point data representation and an extended
-     * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
-     * type, creating it from our original format.
-     */
-    if (__ANDROID_API__ >= __ANDROID_API_L__) {
-        SLuint32 representation = ConvertFormatToRepresentation(getFormat());
-        SLAndroidDataFormat_PCM_EX format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm,
-                                                                                 representation);
-        // Overwrite the previous format.
-        audioSrc.pFormat = &format_pcm_ex;
-    }
-
-    result = OpenSLOutputMixer::getInstance()->createAudioPlayer(&bqPlayerObject_, &audioSrc);
-    LOGD("CreateAudioPlayer() result:%s", getSLErrStr(result));
-    assert(SL_RESULT_SUCCESS == result);
-
-    result = (*bqPlayerObject_)->Realize(bqPlayerObject_, SL_BOOLEAN_FALSE);
-    LOGD("Realize player object result:%s", getSLErrStr(result));
-    assert(SL_RESULT_SUCCESS == result);
-
-    result = (*bqPlayerObject_)->GetInterface(bqPlayerObject_, SL_IID_PLAY, &bqPlayerPlay_);
-    LOGD("get player interface result:%s", getSLErrStr(result));
-    assert(SL_RESULT_SUCCESS == result);
-
-    // The BufferQueue
-    result = (*bqPlayerObject_)->GetInterface(bqPlayerObject_, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                              &bq_);
-    LOGD("get bufferqueue interface:%p result:%s", bq_, getSLErrStr(result));
-    assert(SL_RESULT_SUCCESS == result);
-
-    // The register BufferQueue callback
-    result = (*bq_)->RegisterCallback(bq_, bqPlayerCallback, this);
-    LOGD("register callback result:%s", getSLErrStr(result));
-    assert(SL_RESULT_SUCCESS == result);
-
     mSharingMode = SharingMode::Shared;
     mBufferCapacityInFrames = mFramesPerBurst * mBurstsPerBuffer;
 
@@ -421,90 +258,8 @@ Result AudioStreamOpenSLES::open() {
 }
 
 Result AudioStreamOpenSLES::close() {
-//    __android_log_write(ANDROID_LOG_INFO, TAG, "AudioStreamOpenSLES()");
-    // TODO make sure callback is no longer being called
-    if (bqPlayerObject_ != NULL) {
-        (*bqPlayerObject_)->Destroy(bqPlayerObject_);
-        bqPlayerObject_ = NULL;
-
-        // invalidate any interfaces
-        bqPlayerPlay_ = NULL;
-        bq_ = NULL;
-    }
+    bq_ = NULL;
     return Result::OK;
-}
-
-Result AudioStreamOpenSLES::setPlayState(SLuint32 newState)
-{
-    Result result = Result::OK;
-    LOGD("AudioStreamOpenSLES(): setPlayState()");
-    if (bqPlayerPlay_ == NULL) {
-        return Result::ErrorInvalidState;
-    }
-    SLresult slResult = (*bqPlayerPlay_)->SetPlayState(bqPlayerPlay_, newState);
-    if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("AudioStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
-        result = Result::ErrorInvalidState; // TODO review
-    } else {
-        setState(StreamState::Pausing);
-    }
-    return result;
-}
-
-Result AudioStreamOpenSLES::requestStart()
-{
-    LOGD("AudioStreamOpenSLES(): requestStart()");
-    Result result = setPlayState(SL_PLAYSTATE_PLAYING);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
-    } else {
-        enqueueBuffer();
-        setState(StreamState::Starting);
-    }
-    return result;
-}
-
-
-Result AudioStreamOpenSLES::requestPause() {
-    LOGD("AudioStreamOpenSLES(): requestPause()");
-    Result result = setPlayState(SL_PLAYSTATE_PAUSED);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
-    } else {
-        setState(StreamState::Pausing);
-    }
-    return result;
-}
-
-Result AudioStreamOpenSLES::requestFlush() {
-    LOGD("AudioStreamOpenSLES(): requestFlush()");
-    if (bqPlayerPlay_ == NULL) {
-        return Result::ErrorInvalidState;
-    }
-    return Result::ErrorUnimplemented; // TODO
-}
-
-Result AudioStreamOpenSLES::requestStop()
-{
-    LOGD("AudioStreamOpenSLES(): requestStop()");
-    Result result = setPlayState(SL_PLAYSTATE_STOPPED);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
-    } else {
-        setState(StreamState::Stopping);
-    }
-    return result;
-}
-
-Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
-                                                      StreamState *nextState,
-                                                      int64_t timeoutNanoseconds)
-{
-    LOGD("AudioStreamOpenSLES(): waitForStateChange()");
-    if (bqPlayerPlay_ == NULL) {
-        return Result::ErrorInvalidState;
-    }
-    return Result::ErrorUnimplemented; // TODO
 }
 
 int32_t AudioStreamOpenSLES::getFramesPerBurst() {

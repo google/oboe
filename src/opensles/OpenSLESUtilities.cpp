@@ -18,6 +18,33 @@
 
 namespace oboe {
 
+/*
+ * OSLES Helpers
+ */
+static const char *errStrings[] = {
+        "SL_RESULT_SUCCESS",                  // 0
+        "SL_RESULT_PRECONDITIONS_VIOLATE",    // 1
+        "SL_RESULT_PARAMETER_INVALID",        // 2
+        "SL_RESULT_MEMORY_FAILURE",           // 3
+        "SL_RESULT_RESOURCE_ERROR",           // 4
+        "SL_RESULT_RESOURCE_LOST",            // 5
+        "SL_RESULT_IO_ERROR",                 // 6
+        "SL_RESULT_BUFFER_INSUFFICIENT",      // 7
+        "SL_RESULT_CONTENT_CORRUPTED",        // 8
+        "SL_RESULT_CONTENT_UNSUPPORTED",      // 9
+        "SL_RESULT_CONTENT_NOT_FOUND",        // 10
+        "SL_RESULT_PERMISSION_DENIED",        // 11
+        "SL_RESULT_FEATURE_UNSUPPORTED",      // 12
+        "SL_RESULT_INTERNAL_ERROR",           // 13
+        "SL_RESULT_UNKNOWN_ERROR",            // 14
+        "SL_RESULT_OPERATION_ABORTED",        // 15
+        "SL_RESULT_CONTROL_LOST"              // 16
+};
+
+const char *getSLErrStr(SLresult code) {
+    return errStrings[code];
+}
+
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
         SLDataFormat_PCM format, SLuint32 representation) {
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
@@ -32,4 +59,15 @@ SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
     return format_pcm_ex;
 }
 
+SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format) {
+    switch(format) {
+        case AudioFormat::Invalid:
+        case AudioFormat::Unspecified:
+            return 0;
+        case AudioFormat::I16:
+            return SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
+        case AudioFormat::Float:
+            return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+    }
+}
 } // namespace oboe

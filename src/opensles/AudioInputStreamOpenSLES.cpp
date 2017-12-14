@@ -26,3 +26,45 @@ AudioInputStreamOpenSLES::AudioInputStreamOpenSLES(const AudioStreamBuilder &bui
 
 AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 }
+
+
+int AudioInputStreamOpenSLES::chanCountToChanMask(int chanCount) {
+    return 0; // TODO
+}
+
+
+Result AudioInputStreamOpenSLES::open() {
+
+    return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioInputStreamOpenSLES::close() {
+
+    return AudioStreamOpenSLES::close();
+}
+
+Result AudioInputStreamOpenSLES::requestStart()
+{
+    return Result::ErrorUnimplemented; // TODO
+}
+
+
+Result AudioInputStreamOpenSLES::requestPause() {
+    return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioInputStreamOpenSLES::requestFlush() {
+    return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioInputStreamOpenSLES::requestStop()
+{
+    return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,
+                                                     StreamState *nextState,
+                                                     int64_t timeoutNanoseconds)
+{
+    return Result::ErrorUnimplemented; // TODO
+}
