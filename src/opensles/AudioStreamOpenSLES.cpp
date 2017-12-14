@@ -35,18 +35,14 @@
 
 using namespace oboe;
 
-
-
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
-    EngineOpenSLES::getInstance()->open();
     LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
-    EngineOpenSLES::getInstance()->close();
     delete[] mCallbackBuffer;
 }
 
@@ -67,6 +63,11 @@ Result AudioStreamOpenSLES::open() {
     if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
         // TODO: Allow floating point format on API <21 using float->int16 converter
         return Result::ErrorInvalidFormat;
+    }
+
+    SLresult result = EngineOpenSLES::getInstance()->open();
+    if (SL_RESULT_SUCCESS != result) {
+        return Result::ErrorInternal;
     }
 
     // If audio format is unspecified then choose a suitable default.
@@ -100,6 +101,7 @@ Result AudioStreamOpenSLES::open() {
     }
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
+    delete[] mCallbackBuffer; // to prevent memory leaks
     mCallbackBuffer = new uint8_t[mBytesPerCallback];
     LOGD("AudioStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
     LOGD("AudioStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
@@ -117,6 +119,7 @@ Result AudioStreamOpenSLES::close() {
 
     }
     mSimpleBufferQueueInterface = NULL;
+    EngineOpenSLES::getInstance()->close();
     return Result::OK;
 }
 

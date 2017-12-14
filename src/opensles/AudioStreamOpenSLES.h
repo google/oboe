@@ -91,8 +91,8 @@ protected:
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
 
-    uint8_t              *mCallbackBuffer;
-    int32_t               mBytesPerCallback;
+    uint8_t              *mCallbackBuffer = nullptr;
+    int32_t               mBytesPerCallback = oboe::kUnspecified;
     int32_t               mFramesPerBurst = 0;
     int32_t               mBurstsPerBuffer = 2; // Double buffered
     StreamState           mState = StreamState::Uninitialized;

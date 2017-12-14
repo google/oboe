@@ -29,11 +29,9 @@ using namespace oboe;
 
 AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
-    OutputMixerOpenSL::getInstance()->open();
 }
 
 AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
-    OutputMixerOpenSL::getInstance()->close();
 }
 
 // These will wind up in <SLES/OpenSLES_Android.h>
@@ -78,6 +76,12 @@ Result AudioOutputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
+    SLresult result = OutputMixerOpenSL::getInstance()->open();
+    if (SL_RESULT_SUCCESS != result) {
+        AudioStreamOpenSLES::close();
+        return Result::ErrorInternal;
+    }
+
     SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
 
     // configure audio source
@@ -112,7 +116,7 @@ Result AudioOutputStreamOpenSLES::open() {
         audioSrc.pFormat = &format_pcm_ex;
     }
 
-    SLresult result = OutputMixerOpenSL::getInstance()->createAudioPlayer(&mObjectInterface,
+    result = OutputMixerOpenSL::getInstance()->createAudioPlayer(&mObjectInterface,
                                                                           &audioSrc);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioPlayer() result:%s", getSLErrStr(result));
@@ -146,6 +150,7 @@ Result AudioOutputStreamOpenSLES::close() {
     requestPause();
     // invalidate any interfaces
     mPlayInterface = NULL;
+    OutputMixerOpenSL::getInstance()->close();
     return AudioStreamOpenSLES::close();
 }
 
