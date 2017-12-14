@@ -26,8 +26,6 @@
 
 using namespace oboe;
 
-#define OBOE_BITS_PER_BYTE            8      // common value
-
 AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
     OpenSLOutputMixer::getInstance()->open();
@@ -75,13 +73,7 @@ int AudioOutputStreamOpenSLES::chanCountToChanMask(int chanCount) {
     return channelMask;
 }
 
-// this callback handler is called every time a buffer finishes playing
-static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((AudioStreamOpenSLES *) context)->enqueueBuffer();
-}
-
 Result AudioOutputStreamOpenSLES::open() {
-
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
@@ -110,45 +102,37 @@ Result AudioOutputStreamOpenSLES::open() {
      * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
      * type, creating it from our original format.
      */
+    SLAndroidDataFormat_PCM_EX format_pcm_ex;
     if (__ANDROID_API__ >= __ANDROID_API_L__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
-        SLAndroidDataFormat_PCM_EX format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm,
-                                                                                 representation);
-        // Overwrite the previous format.
+        // Fill in the format structure.
+        format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
+        // Use in place of the previous format.
         audioSrc.pFormat = &format_pcm_ex;
     }
 
-    SLresult result = OpenSLOutputMixer::getInstance()->createAudioPlayer(&bqPlayerObject_,
+    SLresult result = OpenSLOutputMixer::getInstance()->createAudioPlayer(&mObjectInterface,
                                                                           &audioSrc);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioPlayer() result:%s", getSLErrStr(result));
         goto error;
     }
 
-    result = (*bqPlayerObject_)->Realize(bqPlayerObject_, SL_BOOLEAN_FALSE);
+    result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Realize player object result:%s", getSLErrStr(result));
         goto error;
     }
 
-    result = (*bqPlayerObject_)->GetInterface(bqPlayerObject_, SL_IID_PLAY, &bqPlayerPlay_);
+    result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_PLAY, &mPlayInterface);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("get player interface result:%s", getSLErrStr(result));
         goto error;
     }
 
-    // The BufferQueue
-    result = (*bqPlayerObject_)->GetInterface(bqPlayerObject_, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                              &bq_);
+    result = AudioStreamOpenSLES::registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("get bufferqueue interface:%p result:%s", bq_, getSLErrStr(result));
-        goto error;
-    }
-
-    // The register BufferQueue callback
-    result = (*bq_)->RegisterCallback(bq_, bqPlayerCallback, this);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("register callback result:%s", getSLErrStr(result));
+        LOGE("get bufferqueue interface:%p result:%s", mSimpleBufferQueueInterface, getSLErrStr(result));
         goto error;
     }
 
@@ -159,23 +143,18 @@ error:
 
 Result AudioOutputStreamOpenSLES::close() {
     requestPause();
-    if (bqPlayerObject_ != NULL) {
-        (*bqPlayerObject_)->Destroy(bqPlayerObject_);
-        bqPlayerObject_ = NULL;
-
-        // invalidate any interfaces
-        bqPlayerPlay_ = NULL;
-    }
+    // invalidate any interfaces
+    mPlayInterface = NULL;
     return AudioStreamOpenSLES::close();
 }
 
 Result AudioOutputStreamOpenSLES::setPlayState(SLuint32 newState) {
     Result result = Result::OK;
     LOGD("AudioOutputStreamOpenSLES(): setPlayState()");
-    if (bqPlayerPlay_ == NULL) {
+    if (mPlayInterface == NULL) {
         return Result::ErrorInvalidState;
     }
-    SLresult slResult = (*bqPlayerPlay_)->SetPlayState(bqPlayerPlay_, newState);
+    SLresult slResult = (*mPlayInterface)->SetPlayState(mPlayInterface, newState);
     if(SL_RESULT_SUCCESS != slResult) {
         LOGD("AudioOutputStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
         result = Result::ErrorInvalidState; // TODO review
@@ -191,7 +170,7 @@ Result AudioOutputStreamOpenSLES::requestStart() {
     if(result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
     } else {
-        enqueueBuffer();
+        processBufferCallback(mSimpleBufferQueueInterface);
         setState(StreamState::Starting);
     }
     return result;
@@ -210,7 +189,7 @@ Result AudioOutputStreamOpenSLES::requestPause() {
 
 Result AudioOutputStreamOpenSLES::requestFlush() {
     LOGD("AudioOutputStreamOpenSLES(): requestFlush()");
-    if (bqPlayerPlay_ == NULL) {
+    if (mPlayInterface == NULL) {
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
@@ -231,7 +210,7 @@ Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                StreamState *nextState,
                                                int64_t timeoutNanoseconds) {
     LOGD("AudioOutputStreamOpenSLES::waitForStateChange()");
-    if (bqPlayerPlay_ == NULL) {
+    if (mPlayInterface == NULL) {
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
