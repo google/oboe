@@ -35,7 +35,7 @@
 
 #define OBOE_BITS_PER_BYTE            8      // common value
 
-namespace oboe {
+using namespace oboe;
 
 /*
  * OSLES Helpers
@@ -104,34 +104,15 @@ int chanCountToChanMask(int chanCount) {
 
 static const char *TAG = "AAudioStreamOpenSLES";
 
-// engine interfaces
-static int32_t sOpenCount = 0;
-static SLObjectItf sEngineObject = 0;
-static SLEngineItf sEngineEngine;
-
-// output mix interfaces
-static SLObjectItf sOutputMixObject = 0;
-
-static void CloseSLEngine();
-
-SLresult AudioStreamOpenSLES::enqueueBuffer() {
-    // Ask the callback to fill the output buffer with data.
-    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
-    if (result != Result::OK) {
-        LOGE("Oboe callback returned %d", result);
-        return SL_RESULT_INTERNAL_ERROR;
-    } else {
-        // Pass the data to OpenSLES.
-        return (*bq_)->Enqueue(bq_, mCallbackBuffer, mBytesPerCallback);
+OpenSLEngine *OpenSLEngine::getInstance() {
+    // TODO mutex
+    if (sInstance == nullptr) {
+        sInstance = new OpenSLEngine();
     }
+    return sInstance;
 }
 
-// this callback handler is called every time a buffer finishes playing
-static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((AudioStreamOpenSLES *) context)->enqueueBuffer();
-}
-
-static SLresult OpenSLEngine() {
+SLresult OpenSLEngine::open() {
     SLresult result = SL_RESULT_SUCCESS;
     if (sOpenCount > 0) {
         ++sOpenCount;
@@ -159,29 +140,85 @@ static SLresult OpenSLEngine() {
         goto error;
     }
 
+    ++sOpenCount;
+    return result;
+
+    error:
+    close();
+    return result;
+}
+
+void OpenSLEngine::close() {
+//    __android_log_print(ANDROID_LOG_INFO, TAG, "CloseSLEngine()");
+    --sOpenCount;
+    if (sOpenCount > 0) {
+        return;
+    }
+
+    if (sEngineObject != NULL) {
+        (*sEngineObject)->Destroy(sEngineObject);
+        sEngineObject = NULL;
+        sEngineEngine = NULL;
+    }
+}
+
+SLresult OpenSLEngine::createOutputMix(SLObjectItf *objectItf) {
+    return (*sEngineEngine)->CreateOutputMix(sEngineEngine, objectItf, 0, 0, 0);
+}
+
+SLresult OpenSLEngine::createAudioPlayer(SLObjectItf *objectItf,
+                           SLDataSource *audioSource,
+                           SLDataSink *audioSink) {
+
+    const SLInterfaceID ids[] = {SL_IID_BUFFERQUEUE};
+    const SLboolean req[] = {SL_BOOLEAN_TRUE};
+
+    // The Player
+    return (*sEngineEngine)->CreateAudioPlayer(sEngineEngine, objectItf, audioSource,
+                                                 audioSink,
+                                                 sizeof(ids) / sizeof(ids[0]), ids, req);
+}
+
+OpenSLEngine *OpenSLEngine::sInstance = nullptr;
+
+OpenSLOutputMixer *OpenSLOutputMixer::getInstance() {
+    // TODO mutex
+    if (sInstance == nullptr) {
+        sInstance = new OpenSLOutputMixer();
+    }
+    return sInstance;
+}
+
+SLresult OpenSLOutputMixer::open() {
+    SLresult result = SL_RESULT_SUCCESS;
+    if (sOpenCount > 0) {
+        ++sOpenCount;
+        return SL_RESULT_SUCCESS;
+    }
+
     // get the output mixer
-    result = (*sEngineEngine)->CreateOutputMix(sEngineEngine, &sOutputMixObject, 0, 0, 0);
+    result = OpenSLEngine::getInstance()->createOutputMix(&sOutputMixObject);
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLEngine() - CreateOutputMix() result:%s", getSLErrStr(result));
+        LOGE("OpenSLOutputMixer() - createOutputMix() result:%s", getSLErrStr(result));
         goto error;
     }
 
     // realize the output mix
     result = (*sOutputMixObject)->Realize(sOutputMixObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLEngine() - Realize() sOutputMixObject result:%s", getSLErrStr(result));
+        LOGE("OpenSLOutputMixer() - Realize() sOutputMixObject result:%s", getSLErrStr(result));
         goto error;
     }
 
     ++sOpenCount;
     return result;
 
-error:
-    CloseSLEngine();
+    error:
+    close();
     return result;
 }
 
-static void CloseSLEngine() {
+void OpenSLOutputMixer::close() {
 //    __android_log_print(ANDROID_LOG_INFO, TAG, "CloseSLEngine()");
     --sOpenCount;
     if (sOpenCount > 0) {
@@ -192,12 +229,50 @@ static void CloseSLEngine() {
         (*sOutputMixObject)->Destroy(sOutputMixObject);
         sOutputMixObject = NULL;
     }
+}
 
-    if (sEngineObject != NULL) {
-        (*sEngineObject)->Destroy(sEngineObject);
-        sEngineObject = NULL;
-        sEngineEngine = NULL;
+SLresult OpenSLOutputMixer::createAudioPlayer(SLObjectItf *objectItf,
+                           SLDataSource *audioSource) {
+    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, sOutputMixObject};
+    SLDataSink audioSink = {&loc_outmix, NULL};
+    return OpenSLEngine::getInstance()->createAudioPlayer(objectItf, audioSource, &audioSink);
+}
+
+OpenSLOutputMixer *OpenSLOutputMixer::sInstance = nullptr;
+
+// this callback handler is called every time a buffer finishes playing
+static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
+    ((AudioStreamOpenSLES *) context)->enqueueBuffer();
+}
+
+SLresult AudioStreamOpenSLES::enqueueBuffer() {
+    // Ask the callback to fill the output buffer with data.
+    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
+    if (result != Result::OK) {
+        LOGE("Oboe callback returned %d", result);
+        return SL_RESULT_INTERNAL_ERROR;
+    } else {
+        // Pass the data to OpenSLES.
+        return (*bq_)->Enqueue(bq_, mCallbackBuffer, mBytesPerCallback);
     }
+}
+
+
+static void CloseSLEngine() {
+    OpenSLOutputMixer::getInstance()->close();
+    OpenSLEngine::getInstance()->close();
+}
+
+static SLresult OpenSLContext() {
+    SLresult result = OpenSLEngine::getInstance()->open();
+    if (SL_RESULT_SUCCESS == result) {
+        // get the output mixer
+        result = OpenSLOutputMixer::getInstance()->open();
+        if (SL_RESULT_SUCCESS != result) {
+            CloseSLEngine();
+        }
+    }
+    return result;
 }
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
@@ -206,8 +281,8 @@ AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     bq_ = NULL;
     bqPlayerPlay_ = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
-    OpenSLEngine();
-    LOGD("AudioStreamOpenSLES(): after OpenSLEngine()");
+    OpenSLContext();
+    LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
@@ -290,8 +365,6 @@ Result AudioStreamOpenSLES::open() {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,    // locatorType
             static_cast<SLuint32>(mBurstsPerBuffer)};   // numBuffers
 
-    // SLuint32 chanMask = SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT;
-
     // Define the audio data format.
     SLDataFormat_PCM format_pcm = {
             SL_DATAFORMAT_PCM,       // formatType
@@ -318,17 +391,7 @@ Result AudioStreamOpenSLES::open() {
         audioSrc.pFormat = &format_pcm_ex;
     }
 
-    // configure audio sink
-    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, sOutputMixObject};
-    SLDataSink audioSnk = {&loc_outmix, NULL};
-
-    const SLInterfaceID ids[] = {SL_IID_BUFFERQUEUE};
-    const SLboolean req[] = {SL_BOOLEAN_TRUE};
-
-    // The Player
-    result = (*sEngineEngine)->CreateAudioPlayer(sEngineEngine, &bqPlayerObject_, &audioSrc,
-                                                 &audioSnk,
-                                                sizeof(ids) / sizeof(ids[0]), ids, req);
+    result = OpenSLOutputMixer::getInstance()->createAudioPlayer(&bqPlayerObject_, &audioSrc);
     LOGD("CreateAudioPlayer() result:%s", getSLErrStr(result));
     assert(SL_RESULT_SUCCESS == result);
 
@@ -447,5 +510,3 @@ Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
 int32_t AudioStreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
-
-} // namespace oboe
