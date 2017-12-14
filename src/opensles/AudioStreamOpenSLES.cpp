@@ -36,167 +36,17 @@
 using namespace oboe;
 
 
-OpenSLEngine *OpenSLEngine::getInstance() {
-    // TODO mutex
-    if (sInstance == nullptr) {
-        sInstance = new OpenSLEngine();
-    }
-    return sInstance;
-}
-
-SLresult OpenSLEngine::open() {
-    SLresult result = SL_RESULT_SUCCESS;
-    if (sOpenCount > 0) {
-        ++sOpenCount;
-        return SL_RESULT_SUCCESS;
-    }
-
-    // create engine
-    result = slCreateEngine(&sEngineObject, 0, NULL, 0, NULL, NULL);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLEngine() - slCreateEngine() result:%s", getSLErrStr(result));
-        return result;
-    }
-
-    // realize the engine
-    result = (*sEngineObject)->Realize(sEngineObject, SL_BOOLEAN_FALSE);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLEngine() - Realize() engine result:%s", getSLErrStr(result));
-        goto error;
-    }
-
-    // get the engine interface, which is needed in order to create other objects
-    result = (*sEngineObject)->GetInterface(sEngineObject, SL_IID_ENGINE, &sEngineEngine);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLEngine() - GetInterface() engine result:%s", getSLErrStr(result));
-        goto error;
-    }
-
-    ++sOpenCount;
-    return result;
-
-    error:
-    close();
-    return result;
-}
-
-void OpenSLEngine::close() {
-//    __android_log_print(ANDROID_LOG_INFO, TAG, "CloseSLEngine()");
-    --sOpenCount;
-    if (sOpenCount > 0) {
-        return;
-    }
-
-    if (sEngineObject != NULL) {
-        (*sEngineObject)->Destroy(sEngineObject);
-        sEngineObject = NULL;
-        sEngineEngine = NULL;
-    }
-}
-
-SLresult OpenSLEngine::createOutputMix(SLObjectItf *objectItf) {
-    return (*sEngineEngine)->CreateOutputMix(sEngineEngine, objectItf, 0, 0, 0);
-}
-
-SLresult OpenSLEngine::createAudioPlayer(SLObjectItf *objectItf,
-                           SLDataSource *audioSource,
-                           SLDataSink *audioSink) {
-
-    const SLInterfaceID ids[] = {SL_IID_BUFFERQUEUE};
-    const SLboolean reqs[] = {SL_BOOLEAN_TRUE};
-
-    // The Player
-    return (*sEngineEngine)->CreateAudioPlayer(sEngineEngine, objectItf, audioSource,
-                                                 audioSink,
-                                                 sizeof(ids) / sizeof(ids[0]), ids, reqs);
-}
-
-SLresult OpenSLEngine::createAudioRecorder(SLObjectItf *objectItf,
-                                         SLDataSource *audioSource,
-                                         SLDataSink *audioSink) {
-
-    const SLInterfaceID ids[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                 SL_IID_ANDROIDCONFIGURATION };
-    const SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-
-    // The Player
-    return (*sEngineEngine)->CreateAudioRecorder(sEngineEngine, objectItf, audioSource,
-                                               audioSink,
-                                               sizeof(ids) / sizeof(ids[0]), ids, reqs);
-}
-
-OpenSLEngine *OpenSLEngine::sInstance = nullptr;
-
-OpenSLOutputMixer *OpenSLOutputMixer::getInstance() {
-    // TODO mutex
-    if (sInstance == nullptr) {
-        sInstance = new OpenSLOutputMixer();
-    }
-    return sInstance;
-}
-
-SLresult OpenSLOutputMixer::open() {
-    SLresult result = SL_RESULT_SUCCESS;
-    if (sOpenCount > 0) {
-        ++sOpenCount;
-        return SL_RESULT_SUCCESS;
-    }
-
-    // get the output mixer
-    result = OpenSLEngine::getInstance()->createOutputMix(&sOutputMixObject);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLOutputMixer() - createOutputMix() result:%s", getSLErrStr(result));
-        goto error;
-    }
-
-    // realize the output mix
-    result = (*sOutputMixObject)->Realize(sOutputMixObject, SL_BOOLEAN_FALSE);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("OpenSLOutputMixer() - Realize() sOutputMixObject result:%s", getSLErrStr(result));
-        goto error;
-    }
-
-    ++sOpenCount;
-    return result;
-
-    error:
-    close();
-    return result;
-}
-
-void OpenSLOutputMixer::close() {
-//    __android_log_print(ANDROID_LOG_INFO, TAG, "CloseSLEngine()");
-    --sOpenCount;
-    if (sOpenCount > 0) {
-        return;
-    }
-    // destroy output mix object, and invalidate all associated interfaces
-    if (sOutputMixObject != NULL) {
-        (*sOutputMixObject)->Destroy(sOutputMixObject);
-        sOutputMixObject = NULL;
-    }
-}
-
-SLresult OpenSLOutputMixer::createAudioPlayer(SLObjectItf *objectItf,
-                           SLDataSource *audioSource) {
-    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, sOutputMixObject};
-    SLDataSink audioSink = {&loc_outmix, NULL};
-    return OpenSLEngine::getInstance()->createAudioPlayer(objectItf, audioSource, &audioSink);
-}
-
-OpenSLOutputMixer *OpenSLOutputMixer::sInstance = nullptr;
-
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
-    OpenSLEngine::getInstance()->open();
+    EngineOpenSLES::getInstance()->open();
     LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
-    OpenSLEngine::getInstance()->close();
+    EngineOpenSLES::getInstance()->close();
     delete[] mCallbackBuffer;
 }
 

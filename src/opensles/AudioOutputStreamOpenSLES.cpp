@@ -23,16 +23,17 @@
 #include "AudioOutputStreamOpenSLES.h"
 #include "AudioStreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
+#include "OutputMixerOpenSLES.h"
 
 using namespace oboe;
 
 AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
-    OpenSLOutputMixer::getInstance()->open();
+    OutputMixerOpenSL::getInstance()->open();
 }
 
 AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
-    OpenSLOutputMixer::getInstance()->close();
+    OutputMixerOpenSL::getInstance()->close();
 }
 
 // These will wind up in <SLES/OpenSLES_Android.h>
@@ -111,7 +112,7 @@ Result AudioOutputStreamOpenSLES::open() {
         audioSrc.pFormat = &format_pcm_ex;
     }
 
-    SLresult result = OpenSLOutputMixer::getInstance()->createAudioPlayer(&mObjectInterface,
+    SLresult result = OutputMixerOpenSL::getInstance()->createAudioPlayer(&mObjectInterface,
                                                                           &audioSrc);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioPlayer() result:%s", getSLErrStr(result));

@@ -14,72 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef AUDIO_STREAM_OPENSL_ES_H_
-#define AUDIO_STREAM_OPENSL_ES_H_
+#ifndef OBOE_AUDIO_STREAM_OPENSL_ES_H_
+#define OBOE_AUDIO_STREAM_OPENSL_ES_H_
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
 #include "oboe/Oboe.h"
 #include "AudioStreamBuffered.h"
+#include "EngineOpenSLES.h"
 
 namespace oboe {
 
 #define OBOE_BITS_PER_BYTE            8      // common value TODO modernize
 
-class OpenSLEngine {
-public:
-    static OpenSLEngine *getInstance();
 
-    SLresult open();
 
-    void close();
-
-    SLresult createOutputMix(SLObjectItf *objectItf);
-
-    SLresult createAudioPlayer(SLObjectItf *objectItf,
-                               SLDataSource *audioSource,
-                               SLDataSink *audioSink);
-    SLresult createAudioRecorder(SLObjectItf *objectItf,
-                               SLDataSource *audioSource,
-                               SLDataSink *audioSink);
-
-private:
-    static OpenSLEngine *sInstance;
-
-// engine interfaces
-    int32_t sOpenCount = 0;
-    SLObjectItf sEngineObject = 0;
-    SLEngineItf sEngineEngine;
-};
-
-class OpenSLOutputMixer {
-public:
-    static OpenSLOutputMixer *getInstance();
-
-    SLresult open();
-
-    void close();
-
-    SLresult createAudioPlayer(SLObjectItf *objectItf,
-                               SLDataSource *audioSource);
-
-private:
-    static OpenSLOutputMixer *sInstance;
-
-// engine interfaces
-    int32_t sOpenCount = 0;
-// output mix interfaces
-    SLObjectItf sOutputMixObject = 0;
-};
 
 /**
+ * INTERNAL USE ONLY
+ *
  * A stream that wraps OpenSL ES.
  *
  * Do not instantiate this class directly.
  * Use an OboeStreamBuilder to create one.
  */
-//
+
 class AudioStreamOpenSLES : public AudioStreamBuffered {
 public:
 
@@ -140,4 +100,4 @@ protected:
 
 } // namespace oboe
 
-#endif // AUDIO_STREAM_OPENSL_ES_H_
+#endif // OBOE_AUDIO_STREAM_OPENSL_ES_H_

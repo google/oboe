@@ -100,7 +100,7 @@ Result AudioInputStreamOpenSLES::open() {
                                       NULL };
     SLDataSource audioSrc = {&loc_dev, NULL };
 
-    SLresult result = OpenSLEngine::getInstance()->createAudioRecorder(&mObjectInterface,
+    SLresult result = EngineOpenSLES::getInstance()->createAudioRecorder(&mObjectInterface,
                                                                        &audioSrc,
                                                                        &audioSink);
     if (SL_RESULT_SUCCESS != result) {
