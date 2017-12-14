@@ -25,6 +25,8 @@
 
 namespace oboe {
 
+#define OBOE_BITS_PER_BYTE            8      // common value TODO modernize
+
 class OpenSLEngine {
 public:
     static OpenSLEngine *getInstance();
@@ -36,6 +38,9 @@ public:
     SLresult createOutputMix(SLObjectItf *objectItf);
 
     SLresult createAudioPlayer(SLObjectItf *objectItf,
+                               SLDataSource *audioSource,
+                               SLDataSink *audioSink);
+    SLresult createAudioRecorder(SLObjectItf *objectItf,
                                SLDataSource *audioSource,
                                SLDataSink *audioSink);
 
@@ -86,8 +91,6 @@ public:
     virtual Result open() override;
     virtual Result close() override;
 
-    // public, but don't call directly (called by the OSLES callback)
-    SLresult enqueueBuffer();
 
     /**
      * Query the current state, eg. OBOE_STREAM_STATE_PAUSING
@@ -102,7 +105,20 @@ public:
 
     virtual int chanCountToChanMask(int chanCount) = 0;
 
+    /**
+     * Process next OpenSL ES buffer.
+     * Called by by OpenSL ES framework.
+     *
+     * This is public, but don't call it directly.
+     */
+    SLresult processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
+
 protected:
+
+    SLresult registerBufferQueueCallback();
+
+    SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
+
     /**
      * Internal use only.
      * Use this instead of directly setting the internal state variable.
@@ -111,14 +127,15 @@ protected:
         mState = state;
     }
 
+    // OpenSLES stuff
+    SLObjectItf                   mObjectInterface = nullptr;
+    SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
+
     uint8_t              *mCallbackBuffer;
     int32_t               mBytesPerCallback;
     int32_t               mFramesPerBurst = 0;
     int32_t               mBurstsPerBuffer = 2; // Double buffered
     StreamState           mState = StreamState::Uninitialized;
-
-    // OpenSLES stuff
-    SLAndroidSimpleBufferQueueItf bq_ = nullptr;
 };
 
 } // namespace oboe

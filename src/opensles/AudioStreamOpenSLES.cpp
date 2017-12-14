@@ -103,12 +103,26 @@ SLresult OpenSLEngine::createAudioPlayer(SLObjectItf *objectItf,
                            SLDataSink *audioSink) {
 
     const SLInterfaceID ids[] = {SL_IID_BUFFERQUEUE};
-    const SLboolean req[] = {SL_BOOLEAN_TRUE};
+    const SLboolean reqs[] = {SL_BOOLEAN_TRUE};
 
     // The Player
     return (*sEngineEngine)->CreateAudioPlayer(sEngineEngine, objectItf, audioSource,
                                                  audioSink,
-                                                 sizeof(ids) / sizeof(ids[0]), ids, req);
+                                                 sizeof(ids) / sizeof(ids[0]), ids, reqs);
+}
+
+SLresult OpenSLEngine::createAudioRecorder(SLObjectItf *objectItf,
+                                         SLDataSource *audioSource,
+                                         SLDataSink *audioSink) {
+
+    const SLInterfaceID ids[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                                 SL_IID_ANDROIDCONFIGURATION };
+    const SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+
+    // The Player
+    return (*sEngineEngine)->CreateAudioRecorder(sEngineEngine, objectItf, audioSource,
+                                               audioSink,
+                                               sizeof(ids) / sizeof(ids[0]), ids, reqs);
 }
 
 OpenSLEngine *OpenSLEngine::sInstance = nullptr;
@@ -172,21 +186,10 @@ SLresult OpenSLOutputMixer::createAudioPlayer(SLObjectItf *objectItf,
 
 OpenSLOutputMixer *OpenSLOutputMixer::sInstance = nullptr;
 
-SLresult AudioStreamOpenSLES::enqueueBuffer() {
-    // Ask the callback to fill the output buffer with data.
-    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
-    if (result != Result::OK) {
-        LOGE("Oboe callback returned %d", result);
-        return SL_RESULT_INTERNAL_ERROR;
-    } else {
-        // Pass the data to OpenSLES.
-        return (*bq_)->Enqueue(bq_, mCallbackBuffer, mBytesPerCallback);
-    }
-}
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
-    bq_ = NULL;
+    mSimpleBufferQueueInterface = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
     OpenSLEngine::getInstance()->open();
     LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
@@ -258,8 +261,51 @@ Result AudioStreamOpenSLES::open() {
 }
 
 Result AudioStreamOpenSLES::close() {
-    bq_ = NULL;
+    if (mObjectInterface != NULL) {
+        (*mObjectInterface)->Destroy(mObjectInterface);
+        mObjectInterface = NULL;
+
+    }
+    mSimpleBufferQueueInterface = NULL;
     return Result::OK;
+}
+
+SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
+    return (*bq)->Enqueue(bq, mCallbackBuffer, mBytesPerCallback);
+}
+
+SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
+    // Ask the callback to fill the output buffer with data.
+    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
+    if (result != Result::OK) {
+        LOGE("Oboe callback returned %d", result);
+        return SL_RESULT_INTERNAL_ERROR;
+    } else {
+        // Pass the data to OpenSLES.
+        return enqueueCallbackBuffer(bq);
+    }
+}
+
+// this callback handler is called every time a buffer needs processing
+static void bqCallbackGlue(SLAndroidSimpleBufferQueueItf bq, void *context) {
+    ((AudioStreamOpenSLES *) context)->processBufferCallback(bq);
+}
+
+SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
+    // The BufferQueue
+    SLresult result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                                                &mSimpleBufferQueueInterface);
+    if (SL_RESULT_SUCCESS != result) {
+        LOGE("get bufferqueue interface:%p result:%s", mSimpleBufferQueueInterface, getSLErrStr(result));
+    } else {
+        // Register the BufferQueue callback
+        result = (*mSimpleBufferQueueInterface)->RegisterCallback(mSimpleBufferQueueInterface,
+                                                                  bqCallbackGlue, this);
+        if (SL_RESULT_SUCCESS != result) {
+            LOGE("RegisterCallback result:%s", getSLErrStr(result));
+        }
+    }
+    return result;
 }
 
 int32_t AudioStreamOpenSLES::getFramesPerBurst() {
