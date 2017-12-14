@@ -18,8 +18,11 @@
 #define OBOE_OPENSLES_OPENSLESUTILITIES_H
 
 #include <SLES/OpenSLES_Android.h>
+#include "oboe/Oboe.h"
 
 namespace oboe {
+
+const char *getSLErrStr(SLresult code);
 
 /**
  * Creates an extended PCM format from the supplied format and data representation. This method
@@ -33,6 +36,9 @@ namespace oboe {
  */
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(SLDataFormat_PCM format,
                                                          SLuint32 representation);
+
+
+SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format);
 
 } // namespace oboe
 

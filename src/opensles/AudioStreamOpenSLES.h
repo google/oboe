@@ -83,20 +83,11 @@ public:
 
     virtual ~AudioStreamOpenSLES();
 
-    Result open() override;
-    Result close() override;
-
-    Result requestStart() override;
-    Result requestPause() override;
-    Result requestFlush() override;
-    Result requestStop() override;
+    virtual Result open() override;
+    virtual Result close() override;
 
     // public, but don't call directly (called by the OSLES callback)
     SLresult enqueueBuffer();
-
-    Result waitForStateChange(StreamState currentState,
-                                             StreamState *nextState,
-                                             int64_t timeoutNanoseconds) override;
 
     /**
      * Query the current state, eg. OBOE_STREAM_STATE_PAUSING
@@ -107,9 +98,11 @@ public:
 
     int32_t getFramesPerBurst() override;
 
-protected:
-private:
+    static SLuint32 getDefaultByteOrder();
 
+    virtual int chanCountToChanMask(int chanCount) = 0;
+
+protected:
     /**
      * Internal use only.
      * Use this instead of directly setting the internal state variable.
@@ -118,14 +111,6 @@ private:
         mState = state;
     }
 
-    /**
-     * Set OpenSL ES state.
-     *
-     * @param newState SL_PLAYSTATE_PAUSED, SL_PLAYSTATE_PLAYING, SL_PLAYSTATE_STOPPED
-     * @return
-     */
-    Result setPlayState(SLuint32 newState);
-
     uint8_t              *mCallbackBuffer;
     int32_t               mBytesPerCallback;
     int32_t               mFramesPerBurst = 0;
@@ -133,9 +118,7 @@ private:
     StreamState           mState = StreamState::Uninitialized;
 
     // OpenSLES stuff
-    SLObjectItf                   bqPlayerObject_;
-    SLPlayItf                     bqPlayerPlay_;
-    SLAndroidSimpleBufferQueueItf bq_;
+    SLAndroidSimpleBufferQueueItf bq_ = nullptr;
 };
 
 } // namespace oboe
