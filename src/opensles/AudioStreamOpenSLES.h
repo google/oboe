@@ -25,6 +25,49 @@
 
 namespace oboe {
 
+class OpenSLEngine {
+public:
+    static OpenSLEngine *getInstance();
+
+    SLresult open();
+
+    void close();
+
+    SLresult createOutputMix(SLObjectItf *objectItf);
+
+    SLresult createAudioPlayer(SLObjectItf *objectItf,
+                               SLDataSource *audioSource,
+                               SLDataSink *audioSink);
+
+private:
+    static OpenSLEngine *sInstance;
+
+// engine interfaces
+    int32_t sOpenCount = 0;
+    SLObjectItf sEngineObject = 0;
+    SLEngineItf sEngineEngine;
+};
+
+class OpenSLOutputMixer {
+public:
+    static OpenSLOutputMixer *getInstance();
+
+    SLresult open();
+
+    void close();
+
+    SLresult createAudioPlayer(SLObjectItf *objectItf,
+                               SLDataSource *audioSource);
+
+private:
+    static OpenSLOutputMixer *sInstance;
+
+// engine interfaces
+    int32_t sOpenCount = 0;
+// output mix interfaces
+    SLObjectItf sOutputMixObject = 0;
+};
+
 /**
  * A stream that wraps OpenSL ES.
  *
