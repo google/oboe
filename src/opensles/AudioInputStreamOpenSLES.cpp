@@ -37,7 +37,7 @@ AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 #define SL_ANDROID_UNKNOWN_CHANNELMASK  0
 
 int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
-    // stolen from sles_channel_in_mask_from_count(chanCount);
+    // from internal sles_channel_in_mask_from_count(chanCount);
     switch (channelCount) {
         case 1:
             return SL_SPEAKER_FRONT_LEFT;
