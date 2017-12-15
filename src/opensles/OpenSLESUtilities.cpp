@@ -61,13 +61,15 @@ SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
 
 SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format) {
     switch(format) {
-        case AudioFormat::Invalid:
-        case AudioFormat::Unspecified:
-            return 0;
         case AudioFormat::I16:
             return SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
         case AudioFormat::Float:
             return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+        case AudioFormat::Invalid:
+        case AudioFormat::Unspecified:
+        default:
+            return 0;
     }
 }
+
 } // namespace oboe

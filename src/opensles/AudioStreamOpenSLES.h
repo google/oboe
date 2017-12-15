@@ -26,10 +26,7 @@
 
 namespace oboe {
 
-#define OBOE_BITS_PER_BYTE            8      // common value TODO modernize
-
-
-
+constexpr int kBitsPerByte = 8;
 
 /**
  * INTERNAL USE ONLY
@@ -51,7 +48,6 @@ public:
     virtual Result open() override;
     virtual Result close() override;
 
-
     /**
      * Query the current state, eg. OBOE_STREAM_STATE_PAUSING
      *
@@ -60,8 +56,6 @@ public:
     StreamState getState() override { return mState; }
 
     int32_t getFramesPerBurst() override;
-
-    static SLuint32 getDefaultByteOrder();
 
     virtual int chanCountToChanMask(int chanCount) = 0;
 
@@ -74,6 +68,8 @@ public:
     SLresult processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
 
 protected:
+
+    static SLuint32 getDefaultByteOrder();
 
     SLresult registerBufferQueueCallback();
 

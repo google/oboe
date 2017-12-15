@@ -59,7 +59,7 @@ Result AudioInputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
-    SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
+    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
 
     // configure audio sink
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -100,7 +100,7 @@ Result AudioInputStreamOpenSLES::open() {
                                       NULL };
     SLDataSource audioSrc = {&loc_dev, NULL };
 
-    SLresult result = EngineOpenSLES::getInstance()->createAudioRecorder(&mObjectInterface,
+    SLresult result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
                                                                        &audioSrc,
                                                                        &audioSink);
     if (SL_RESULT_SUCCESS != result) {
@@ -130,17 +130,17 @@ Result AudioInputStreamOpenSLES::open() {
 
     result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_RECORD, &mRecordInterface);
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("get recorder interface result:%s", getSLErrStr(result));
+        LOGE("GetInterface RECORD result:%s", getSLErrStr(result));
         goto error;
     }
 
     result = AudioStreamOpenSLES::registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("get bufferqueue interface:%p result:%s", mSimpleBufferQueueInterface, getSLErrStr(result));
         goto error;
     }
 
     return Result::OK;
+
 error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }

@@ -20,9 +20,9 @@
 
 using namespace oboe;
 
-EngineOpenSLES *EngineOpenSLES::getInstance() {
+EngineOpenSLES &EngineOpenSLES::getInstance() {
     static EngineOpenSLES sInstance;
-    return &sInstance;
+    return sInstance;
 }
 
 SLresult EngineOpenSLES::open() {
