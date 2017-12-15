@@ -31,7 +31,7 @@ namespace oboe {
 
 class OutputMixerOpenSL {
 public:
-    static OutputMixerOpenSL *getInstance();
+    static OutputMixerOpenSL &getInstance();
 
     SLresult open();
 
@@ -41,8 +41,15 @@ public:
                                SLDataSource *audioSource);
 
 private:
+    // Make this a safe Singleton
+    OutputMixerOpenSL()= default;
+    ~OutputMixerOpenSL()= default;
+    OutputMixerOpenSL(const OutputMixerOpenSL&)= delete;
+    OutputMixerOpenSL& operator=(const OutputMixerOpenSL&)= delete;
+
     std::mutex            mLock;
-    std::atomic<int32_t>  mOpenCount{0};
+    int32_t               mOpenCount = 0;
+
     SLObjectItf           mOutputMixObject = 0;
 };
 

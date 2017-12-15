@@ -22,9 +22,9 @@
 
 using namespace oboe;
 
-OutputMixerOpenSL *OutputMixerOpenSL::getInstance() {
+OutputMixerOpenSL &OutputMixerOpenSL::getInstance() {
     static OutputMixerOpenSL sInstance;
-    return &sInstance;
+    return sInstance;
 }
 
 SLresult OutputMixerOpenSL::open() {
@@ -33,7 +33,7 @@ SLresult OutputMixerOpenSL::open() {
     SLresult result = SL_RESULT_SUCCESS;
     if (mOpenCount++ == 0) {
         // get the output mixer
-        result = EngineOpenSLES::getInstance()->createOutputMix(&mOutputMixObject);
+        result = EngineOpenSLES::getInstance().createOutputMix(&mOutputMixObject);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("OutputMixerOpenSL() - createOutputMix() result:%s", getSLErrStr(result));
             goto error;
@@ -70,5 +70,5 @@ SLresult OutputMixerOpenSL::createAudioPlayer(SLObjectItf *objectItf,
                                               SLDataSource *audioSource) {
     SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, mOutputMixObject};
     SLDataSink audioSink = {&loc_outmix, NULL};
-    return EngineOpenSLES::getInstance()->createAudioPlayer(objectItf, audioSource, &audioSink);
+    return EngineOpenSLES::getInstance().createAudioPlayer(objectItf, audioSource, &audioSink);
 }

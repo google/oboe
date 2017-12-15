@@ -11,9 +11,13 @@ set (oboe_sources
         src/fifo/FifoController.cpp
         src/fifo/FifoControllerBase.cpp
         src/fifo/FifoControllerIndirect.cpp
+        src/opensles/AudioInputStreamOpenSLES.cpp
+        src/opensles/AudioOutputStreamOpenSLES.cpp
         src/opensles/AudioStreamBuffered.cpp
         src/opensles/AudioStreamOpenSLES.cpp
+        src/opensles/EngineOpenSLES.cpp
         src/opensles/OpenSLESUtilities.cpp
+        src/opensles/OutputMixerOpenSLES.cpp
         )
 
 add_library(oboe STATIC ${oboe_sources})

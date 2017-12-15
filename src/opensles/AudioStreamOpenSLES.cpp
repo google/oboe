@@ -65,7 +65,7 @@ Result AudioStreamOpenSLES::open() {
         return Result::ErrorInvalidFormat;
     }
 
-    SLresult result = EngineOpenSLES::getInstance()->open();
+    SLresult result = EngineOpenSLES::getInstance().open();
     if (SL_RESULT_SUCCESS != result) {
         return Result::ErrorInternal;
     }
@@ -119,7 +119,7 @@ Result AudioStreamOpenSLES::close() {
 
     }
     mSimpleBufferQueueInterface = NULL;
-    EngineOpenSLES::getInstance()->close();
+    EngineOpenSLES::getInstance().close();
     return Result::OK;
 }
 
@@ -149,7 +149,9 @@ SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
     SLresult result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
                                                 &mSimpleBufferQueueInterface);
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("get bufferqueue interface:%p result:%s", mSimpleBufferQueueInterface, getSLErrStr(result));
+        LOGE("get buffer queue interface:%p result:%s",
+             mSimpleBufferQueueInterface,
+             getSLErrStr(result));
     } else {
         // Register the BufferQueue callback
         result = (*mSimpleBufferQueueInterface)->RegisterCallback(mSimpleBufferQueueInterface,
