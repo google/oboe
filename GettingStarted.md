@@ -36,16 +36,18 @@ Here's a complete example `CMakeLists.txt` file:
 
     cmake_minimum_required(VERSION 3.4.1)
 
-    # Build the Oboe library
-    set (OBOE_DIR ../../../oboe)  
-    add_subdirectory (${OBOE_DIR} ./oboe) 
-    include_directories (${OBOE_DIR}/include)
-
     # Build our own native library
     add_library (native-lib SHARED src/main/cpp/native-lib.cpp )
 
-    # Specify the libraries which our native library is dependent on
+    # Specify the libraries which our native library is dependent on, including Oboe
     target_link_libraries (native-lib log oboe)
+    
+    # Build the Oboe library
+    set (OBOE_DIR ../../../oboe)  
+    add_subdirectory (${OBOE_DIR} ./oboe) 
+    
+    # Make the Oboe public headers available to our app
+    include_directories (${OBOE_DIR}/include)
 
 Verify that your project builds correctly. If you have any issues building please [report them here](issues/new).
 
