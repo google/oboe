@@ -48,7 +48,7 @@ public:
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
 
-    int chanCountToChanMask(int chanCount) override;
+    int chanCountToChanMask(int chanCount);
 
 private:
 

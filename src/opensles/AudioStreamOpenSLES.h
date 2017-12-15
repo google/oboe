@@ -57,8 +57,6 @@ public:
 
     int32_t getFramesPerBurst() override;
 
-    virtual int chanCountToChanMask(int chanCount) = 0;
-
     /**
      * Process next OpenSL ES buffer.
      * Called by by OpenSL ES framework.
