@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_H
-#define OBOE_OBOE_H
-
-#include "oboe/Definitions.h"
-#include "oboe/LatencyTuner.h"
-#include "oboe/AudioStream.h"
-#include "oboe/AudioStreamBase.h"
-#include "oboe/AudioStreamBuilder.h"
-#include "oboe/Utilities.h"
+#include <sstream>
 #include "oboe/Version.h"
 
-#endif //OBOE_OBOE_H
+namespace oboe {
+
+// Max digits in 32-bit unsigned int = 10, plus two periods, plus null terminator = 13
+constexpr int kMaxVersionStringLength = 13;
+
+const char * Version::toString() {
+
+    static char text[kMaxVersionStringLength];
+    snprintf(text, kMaxVersionStringLength, "%d.%d.%d",
+             MajorNumber,
+             MinorNumber,
+             SubMinorNumber);
+    return text;
+}
+
+uint32_t Version::toInt(){
+    return MajorNumber << 24 | MinorNumber << 16 | SubMinorNumber;
+}
+
+} // namespace oboe
