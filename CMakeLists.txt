@@ -7,6 +7,7 @@ set (oboe_sources
         src/common/AudioStream.cpp
         src/common/AudioStreamBuilder.cpp
         src/common/Utilities.cpp
+        src/common/Version.cpp
         src/fifo/FifoBuffer.cpp
         src/fifo/FifoController.cpp
         src/fifo/FifoControllerBase.cpp
