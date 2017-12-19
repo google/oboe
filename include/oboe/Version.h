@@ -51,9 +51,7 @@
 
 namespace oboe {
 
-class Version {
-
-public:
+struct Version {
     /**
      * This is incremented when we make breaking API changes. Based loosely on https://semver.org/.
      */
