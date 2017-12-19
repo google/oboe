@@ -17,38 +17,70 @@
 #ifndef OBOE_VERSIONINFO_H
 #define OBOE_VERSIONINFO_H
 
+/**
+ * A note on use of preprocessor defines:
+ *
+ * This is one of the few times when it's suitable to use preprocessor defines rather than constexpr
+ * Why? Because C++11 requires a lot of boilerplate code to convert integers into compile-time
+ * string literals. The preprocessor, despite it's lack of type checking, is more suited to the task
+ *
+ * See: https://stackoverflow.com/questions/6713420/c-convert-integer-to-string-at-compile-time/26824971#26824971
+ *
+ */
+
+// Type: 8-bit unsigned int. Min value: 0 Max value: 255. See below for description.
+#define OBOE_VERSION_MAJOR 0
+
+// Type: 8-bit unsigned int. Min value: 0 Max value: 255. See below for description.
+#define OBOE_VERSION_MINOR 9
+
+// Type: 16-bit unsigned int. Min value: 0 Max value: 65535. See below for description.
+#define OBOE_VERSION_PATCH 0
+
+#define OBOE_STRINGIFY(x) #x
+#define OBOE_TOSTRING(x) OBOE_STRINGIFY(x)
+
+// Type: String literal. See below for description.
+#define OBOE_VERSION_TEXT \
+        OBOE_TOSTRING(OBOE_VERSION_MAJOR) "." \
+        OBOE_TOSTRING(OBOE_VERSION_MINOR) "." \
+        OBOE_TOSTRING(OBOE_VERSION_PATCH)
+
+// Type: 32-bit unsigned int. See below for description.
+#define OBOE_VERSION_NUMBER ((OBOE_VERSION_MAJOR << 24) | (OBOE_VERSION_MINOR << 16) | OBOE_VERSION_PATCH)
+
 namespace oboe {
 
 class Version {
 
 public:
-    // This is incremented when we make breaking API changes. Based loosely on https://semver.org/
-    static constexpr uint8_t MajorNumber = 0;
-
-    // This is incremented when we add backwards compatible functionality. Or set to zero when kVersionMajor is
-    // incremented
-    static constexpr uint8_t MinorNumber = 9;
-
-    // This is incremented when we make backwards compatible bug fixes. Or set to zero when kVersionMinor is
-    // incremented
-    static constexpr uint16_t SubMinorNumber = 0;
-
     /**
-     * Provides a text representation of the current Oboe library version in the form:
-     *
-     * MAJOR.MINOR.SUBMINOR
-     *
-     * @return A string containing the current Oboe library version
+     * This is incremented when we make breaking API changes. Based loosely on https://semver.org/.
      */
-    static const char * toString();
+    static constexpr uint8_t Major = OBOE_VERSION_MAJOR;
 
     /**
-     * Provides an integer representation of the current Oboe library version. This will always increase when the
+     * This is incremented when we add backwards compatible functionality. Or set to zero when MAJOR is
+     * incremented.
+     */
+    static constexpr uint8_t Minor = OBOE_VERSION_MINOR;
+
+    /**
+     * This is incremented when we make backwards compatible bug fixes. Or set to zero when MINOR is
+     * incremented.
+     */
+    static constexpr uint16_t Patch = OBOE_VERSION_PATCH;
+
+    /**
+     * Version string in the form MAJOR.MINOR.PATCH.
+     */
+    static constexpr const char * Text = OBOE_VERSION_TEXT;
+
+    /**
+     * Integer representation of the current Oboe library version. This will always increase when the
      * version number changes so can be compared using integer comparison.
-     *
-     * @return an integer representing the current Oboe library version.
      */
-    static uint32_t toInt();
+    static constexpr uint32_t Number = OBOE_VERSION_NUMBER;
 };
 
 } // namespace oboe
