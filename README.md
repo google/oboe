@@ -14,7 +14,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 - Modern C++ allowing you to write clean, elegant code
 
 ## Requirements
-To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/index.html) r16 or above
+To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/index.html) r15 or above
 
 ## Documentation
 - [Getting Started Guide](GettingStarted.md)
