@@ -3,8 +3,6 @@
 
 Oboe is a C++ library which makes it easy to build high-performance audio apps on Android. It was created primarily to allow developers to target a simplified API that works across multiple API levels back to API level 16 (Jelly Bean).
 
-**Note:** This version (0.9) of Oboe only supports playback (output) streams. Support for recording (input) streams is in active development.
-
 [Get started with Oboe here](GettingStarted.md).
 
 ## Features
