@@ -56,6 +56,7 @@ namespace oboe {
         Stopped = AAUDIO_STREAM_STATE_STOPPED,
         Closing = AAUDIO_STREAM_STATE_CLOSING,
         Closed = AAUDIO_STREAM_STATE_CLOSED,
+        Disconnected = AAUDIO_STREAM_STATE_DISCONNECTED,
     };
 
     enum class Direction : aaudio_direction_t {
