@@ -45,6 +45,7 @@ namespace oboe {
 
     enum class StreamState : aaudio_stream_state_t {
         Uninitialized = AAUDIO_STREAM_STATE_UNINITIALIZED,
+        Unknown = AAUDIO_STREAM_STATE_UNKNOWN,
         Open = AAUDIO_STREAM_STATE_OPEN,
         Starting = AAUDIO_STREAM_STATE_STARTING,
         Started = AAUDIO_STREAM_STATE_STARTED,
