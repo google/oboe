@@ -24,6 +24,8 @@
 
 namespace oboe {
 
+constexpr float kScaleI16ToFloat = (1.0f / 32768.0f);
+
 void convertFloatToPcm16(const float *source, int16_t *destination, int32_t numSamples) {
     for (int i = 0; i < numSamples; i++) {
         float fval = source[i];
@@ -40,7 +42,7 @@ void convertFloatToPcm16(const float *source, int16_t *destination, int32_t numS
 
 void convertPcm16ToFloat(const int16_t *source, float *destination, int32_t numSamples) {
     for (int i = 0; i < numSamples; i++) {
-        destination[i] = source[i] * (1.0f / 32768.0f);
+        destination[i] = source[i] * kScaleI16ToFloat;
     }
 }
 
