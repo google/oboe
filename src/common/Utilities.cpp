@@ -139,4 +139,27 @@ const char *convertToText<Direction>(Direction direction) {
     }
 }
 
+template<>
+const char *convertToText<StreamState>(StreamState state) {
+    switch (state) {
+        OBOE_CASE_ENUM(StreamState::Closed);
+        OBOE_CASE_ENUM(StreamState::Closing);
+        OBOE_CASE_ENUM(StreamState::Disconnected);
+        OBOE_CASE_ENUM(StreamState::Flushed);
+        OBOE_CASE_ENUM(StreamState::Flushing);
+        OBOE_CASE_ENUM(StreamState::Open);
+        OBOE_CASE_ENUM(StreamState::Paused);
+        OBOE_CASE_ENUM(StreamState::Pausing);
+        OBOE_CASE_ENUM(StreamState::Started);
+        OBOE_CASE_ENUM(StreamState::Starting);
+        OBOE_CASE_ENUM(StreamState::Stopped);
+        OBOE_CASE_ENUM(StreamState::Stopping);
+        OBOE_CASE_ENUM(StreamState::Uninitialized);
+        OBOE_CASE_ENUM(StreamState::Unknown);
+        default:
+            return "Unrecognized stream state";
+    }
+}
+
+
 } // namespace oboe
