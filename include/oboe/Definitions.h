@@ -125,6 +125,24 @@ namespace oboe {
         // Reducing latency is most important.
         LowLatency = AAUDIO_PERFORMANCE_MODE_LOW_LATENCY
     };
+
+    enum class AudioApi : int32_t {
+        /**
+         * Try to use AAudio. If not available then use OpenSL ES.
+         */
+        Unspecified = kUnspecified,
+
+        /**
+         * Use OpenSL ES.
+         */
+        OpenSLES,
+
+        /**
+         * Try to use AAudio. Fail if unavailable.
+         */
+        AAudio
+    };
+
 } // namespace oboe
 
 #endif // OBOE_DEFINITIONS_H
