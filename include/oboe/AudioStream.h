@@ -79,8 +79,8 @@ public:
     virtual StreamState getState() = 0;
 
     /**
-     * Wait until the current state no longer matches the input state.
-     * The current state is passed to avoid race conditions caused by the state
+     * Wait until the stream's current state no longer matches the input state.
+     * The input state is passed to avoid race conditions caused by the state
      * changing between calls.
      *
      * Note that generally applications do not need to call this. It is considered
@@ -95,13 +95,12 @@ public:
      * }
      * </code></pre>
      *
-     * @param stream A handle provided by OboeStreamBuilder_openStream()
-     * @param currentState The state we want to avoid.
+     * @param inputState The state we want to avoid.
      * @param nextState Pointer to a variable that will be set to the new state.
      * @param timeoutNanoseconds The maximum time to wait in nanoseconds.
      * @return Result::OK or a Result::Error.
      */
-    virtual Result waitForStateChange(StreamState currentState,
+    virtual Result waitForStateChange(StreamState inputState,
                                           StreamState *nextState,
                                           int64_t timeoutNanoseconds) = 0;
 

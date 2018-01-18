@@ -32,24 +32,6 @@ public:
 
     AudioStreamBuilder() : AudioStreamBase() {}
 
-    enum class AudioApi {
-        /**
-         * Try to use AAudio. If not available then use OpenSL ES.
-         */
-        Unspecified,
-
-        /**
-         * Use OpenSL ES.
-         */
-        OpenSLES,
-
-        /**
-         * Try to use AAudio. Fail if unavailable.
-         */
-        AAudio
-    };
-
-
     /**
      * Request a specific number of channels.
      *
@@ -131,7 +113,7 @@ public:
         return this;
     }
 
-    AudioApi getApiIndex() const { return mAudioApi; }
+    AudioApi getAudioApi() const { return mAudioApi; }
 
     /**
      * Normally you would leave this unspecified, and Oboe will chose the best API
@@ -139,8 +121,8 @@ public:
      * @param Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
      * @return pointer to the builder so calls can be chained
      */
-    AudioStreamBuilder *setApiIndex(AudioApi apiIndex) {
-        mAudioApi = apiIndex;
+    AudioStreamBuilder *setAudioApi(AudioApi audioApi) {
+        mAudioApi = audioApi;
         return this;
     }
 
