@@ -19,9 +19,6 @@
 #include "oboe/Definitions.h"
 #include "oboe/Utilities.h"
 
-// TODO: Return the int value as well as the name
-#define OBOE_CASE_ENUM(name) case name: return #name
-
 namespace oboe {
 
 constexpr float kScaleI16ToFloat = (1.0f / 32768.0f);
@@ -64,100 +61,93 @@ int32_t convertFormatToSizeInBytes(AudioFormat format) {
 template<>
 const char *convertToText<Result>(Result returnCode) {
     switch (returnCode) {
-        OBOE_CASE_ENUM(Result::OK);
-        OBOE_CASE_ENUM(Result::ErrorDisconnected);
-        OBOE_CASE_ENUM(Result::ErrorIllegalArgument);
-        OBOE_CASE_ENUM(Result::ErrorInternal);
-        OBOE_CASE_ENUM(Result::ErrorInvalidState);
-        OBOE_CASE_ENUM(Result::ErrorInvalidHandle);
-        OBOE_CASE_ENUM(Result::ErrorUnimplemented);
-        OBOE_CASE_ENUM(Result::ErrorUnavailable);
-        OBOE_CASE_ENUM(Result::ErrorNoFreeHandles);
-        OBOE_CASE_ENUM(Result::ErrorNoMemory);
-        OBOE_CASE_ENUM(Result::ErrorNull);
-        OBOE_CASE_ENUM(Result::ErrorTimeout);
-        OBOE_CASE_ENUM(Result::ErrorWouldBlock);
-        OBOE_CASE_ENUM(Result::ErrorInvalidFormat);
-        OBOE_CASE_ENUM(Result::ErrorOutOfRange);
-        OBOE_CASE_ENUM(Result::ErrorNoService);
-        OBOE_CASE_ENUM(Result::ErrorInvalidRate);
-        default:
-            return "Unrecognized result";
+        case Result::OK:                    return "OK";
+        case Result::ErrorDisconnected:     return "ErrorDisconnected";
+        case Result::ErrorIllegalArgument:  return "ErrorIllegalArgument";
+        case Result::ErrorInternal:         return "ErrorInternal";
+        case Result::ErrorInvalidState:     return "ErrorInvalidState";
+        case Result::ErrorInvalidHandle:    return "ErrorInvalidHandle";
+        case Result::ErrorUnimplemented:    return "ErrorUnimplemented";
+        case Result::ErrorUnavailable:      return "ErrorUnavailable";
+        case Result::ErrorNoFreeHandles:    return "ErrorNoFreeHandles";
+        case Result::ErrorNoMemory:         return "ErrorNoMemory";
+        case Result::ErrorNull:             return "ErrorNull";
+        case Result::ErrorTimeout:          return "ErrorTimeout";
+        case Result::ErrorWouldBlock:       return "ErrorWouldBlock";
+        case Result::ErrorInvalidFormat:    return "ErrorInvalidFormat";
+        case Result::ErrorOutOfRange:       return "ErrorOutOfRange";
+        case Result::ErrorNoService:        return "ErrorNoService";
+        case Result::ErrorInvalidRate:      return "ErrorInvalidRate";
+        default:                            return "Unrecognized result";
     }
 }
 
 template<>
 const char *convertToText<AudioFormat>(AudioFormat format) {
     switch (format) {
-        OBOE_CASE_ENUM(AudioFormat::Invalid);
-        OBOE_CASE_ENUM(AudioFormat::Unspecified);
-        OBOE_CASE_ENUM(AudioFormat::I16);
-        OBOE_CASE_ENUM(AudioFormat::Float);
-        default:
-            return "Unrecognized format";
+        case AudioFormat::Invalid:      return "Invalid";
+        case AudioFormat::Unspecified:  return "Unspecified";
+        case AudioFormat::I16:          return "I16";
+        case AudioFormat::Float:        return "Float";
+        default:                        return "Unrecognized format";
     }
 }
 
 template<>
 const char *convertToText<PerformanceMode>(PerformanceMode mode) {
     switch (mode) {
-        OBOE_CASE_ENUM(PerformanceMode::LowLatency);
-        OBOE_CASE_ENUM(PerformanceMode::None);
-        OBOE_CASE_ENUM(PerformanceMode::PowerSaving);
-        default:
-            return "Unrecognized performance mode";
+        case PerformanceMode::LowLatency:   return "LowLatency";
+        case PerformanceMode::None:         return "None";
+        case PerformanceMode::PowerSaving:  return "PowerSaving";
+        default:                            return "Unrecognized performance mode";
     }
 }
 
 template<>
 const char *convertToText<SharingMode>(SharingMode mode) {
     switch (mode) {
-        OBOE_CASE_ENUM(SharingMode::Exclusive);
-        OBOE_CASE_ENUM(SharingMode::Shared);
-        default:
-            return "Unrecognized sharing mode";
+        case SharingMode::Exclusive:    return "Exclusive";
+        case SharingMode::Shared:       return "Shared";
+        default:                        return "Unrecognized sharing mode";
     }
 }
 
 template<>
 const char *convertToText<DataCallbackResult>(DataCallbackResult result) {
     switch (result) {
-        OBOE_CASE_ENUM(DataCallbackResult::Continue);
-        OBOE_CASE_ENUM(DataCallbackResult::Stop);
-        default:
-            return "Unrecognized data callback result";
+        case DataCallbackResult::Continue:  return "Continue";
+        case DataCallbackResult::Stop:      return "Stop";
+        default:                            return "Unrecognized data callback result";
     }
 }
 
 template<>
 const char *convertToText<Direction>(Direction direction) {
     switch (direction) {
-        OBOE_CASE_ENUM(Direction::Input);
-        OBOE_CASE_ENUM(Direction::Output);
-        default:
-            return "Unrecognized direction";
+        case Direction::Input:  return "Input";
+        case Direction::Output: return "Output";
+        default:                return "Unrecognized direction";
     }
 }
 
 template<>
 const char *convertToText<StreamState>(StreamState state) {
     switch (state) {
-        OBOE_CASE_ENUM(StreamState::Closed);
-        OBOE_CASE_ENUM(StreamState::Closing);
-        OBOE_CASE_ENUM(StreamState::Disconnected);
-        OBOE_CASE_ENUM(StreamState::Flushed);
-        OBOE_CASE_ENUM(StreamState::Flushing);
-        OBOE_CASE_ENUM(StreamState::Open);
-        OBOE_CASE_ENUM(StreamState::Paused);
-        OBOE_CASE_ENUM(StreamState::Pausing);
-        OBOE_CASE_ENUM(StreamState::Started);
-        OBOE_CASE_ENUM(StreamState::Starting);
-        OBOE_CASE_ENUM(StreamState::Stopped);
-        OBOE_CASE_ENUM(StreamState::Stopping);
-        OBOE_CASE_ENUM(StreamState::Uninitialized);
-        OBOE_CASE_ENUM(StreamState::Unknown);
-        default:
-            return "Unrecognized stream state";
+        case StreamState::Closed:           return "Closed";
+        case StreamState::Closing:          return "Closing";
+        case StreamState::Disconnected:     return "Disconnected";
+        case StreamState::Flushed:          return "Flushed";
+        case StreamState::Flushing:         return "Flushing";
+        case StreamState::Open:             return "Open";
+        case StreamState::Paused:           return "Paused";
+        case StreamState::Pausing:          return "Pausing";
+        case StreamState::Started:          return "Started";
+        case StreamState::Starting:         return "Starting";
+        case StreamState::Stopped:          return "Stopped";
+        case StreamState::Stopping:         return "Stopping";
+        case StreamState::Uninitialized:    return "Uninitialized";
+        case StreamState::Unknown:          return "Unknown";
+        default:                            return "Unrecognized stream state";
     }
 }
 
@@ -165,12 +155,10 @@ template<>
 const char *convertToText<AudioApi >(AudioApi audioApi) {
 
     switch (audioApi) {
-        OBOE_CASE_ENUM(AudioApi::Unspecified);
-        OBOE_CASE_ENUM(AudioApi::OpenSLES);
-        OBOE_CASE_ENUM(AudioApi::AAudio);
-        default:
-            return "Unrecognised audio API";
-
+        case AudioApi::Unspecified: return "Unspecified";
+        case AudioApi::OpenSLES:    return "OpenSLES";
+        case AudioApi::AAudio:      return "AAudio";
+        default:                    return "Unrecognised audio API";
     }
 }
 
