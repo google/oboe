@@ -141,6 +141,11 @@ Result AudioOutputStreamOpenSLES::open() {
         goto error;
     }
 
+    oboeResult = finishOpen();
+    if (oboeResult != oboe::Result::OK) {
+        goto error;
+    }
+
     return Result::OK;
 error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE

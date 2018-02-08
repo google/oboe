@@ -151,9 +151,9 @@ public:
      * This monotonic counter will never get reset.
      * @return the number of frames written so far
      */
-    virtual int64_t getFramesWritten() { return mFramesWritten; }
+    virtual int64_t getFramesWritten() const { return mFramesWritten; }
 
-    virtual int64_t getFramesRead() { return static_cast<int64_t>(Result::ErrorUnimplemented); }
+    virtual int64_t getFramesRead() const { return mFramesRead; }
 
     virtual Result getTimestamp(clockid_t clockId,
                                        int64_t *framePosition,
@@ -197,6 +197,9 @@ protected:
     virtual int64_t incrementFramesWritten(int32_t frames) {
         return mFramesWritten += frames;
     }
+    virtual int64_t incrementFramesRead(int32_t frames) {
+        return mFramesRead += frames;
+    }
 
     /**
      * Wait for a transition from one state to another.
@@ -219,7 +222,9 @@ protected:
     AudioFormat mNativeFormat = AudioFormat::Invalid;
 
 private:
+    // TODO these should be atomic like in AAudio
     int64_t              mFramesWritten = 0;
+    int64_t              mFramesRead = 0;
     int                  mPreviousScheduler = -1;
 };
 

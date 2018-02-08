@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <memory.h>
+#include <assert.h>
 
 #include "common/OboeDebug.h"
 #include "fifo/FifoControllerBase.h"
@@ -36,12 +37,15 @@ FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
         , mFramesUnderrunCount(0)
         , mUnderrunCount(0)
 {
+    assert(bytesPerFrame > 0);
+    assert(capacityInFrames > 0);
     mFifo = new FifoController(capacityInFrames, capacityInFrames);
     // allocate buffer
     int32_t bytesPerBuffer = bytesPerFrame * capacityInFrames;
     mStorage = new uint8_t[bytesPerBuffer];
     mStorageOwned = true;
-    LOGD("FifoProcessor: numFrames = %d, bytesPerFrame = %d", capacityInFrames, bytesPerFrame);
+    LOGD("FifoProcessor: capacityInFrames = %d, bytesPerFrame = %d",
+         capacityInFrames, bytesPerFrame);
 }
 
 FifoBuffer::FifoBuffer( uint32_t   bytesPerFrame,
@@ -64,7 +68,8 @@ FifoBuffer::FifoBuffer( uint32_t   bytesPerFrame,
                                        writeIndexAddress);
     mStorage = dataStorageAddress;
     mStorageOwned = false;
-    LOGD("FifoProcessor: capacityInFrames = %d, bytesPerFrame = %d", capacityInFrames, bytesPerFrame);
+    LOGD("FifoProcessor: capacityInFrames = %d, bytesPerFrame = %d",
+         capacityInFrames, bytesPerFrame);
 }
 
 FifoBuffer::~FifoBuffer() {

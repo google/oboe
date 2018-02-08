@@ -17,6 +17,8 @@
 #ifndef OBOE_STREAM_BUFFERED_H
 #define OBOE_STREAM_BUFFERED_H
 
+#include <cstring>
+#include <assert.h>
 #include "common/OboeDebug.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamCallback.h"
@@ -25,17 +27,23 @@
 namespace oboe {
 
 // A stream that contains a FIFO buffer.
+// This is used to implement blocking reads and writes.
 class AudioStreamBuffered : public AudioStream {
 public:
 
     AudioStreamBuffered();
     explicit AudioStreamBuffered(const AudioStreamBuilder &builder);
+    ~AudioStreamBuffered();
 
-    Result open() override;
+    Result finishOpen();
 
     int32_t write(const void *buffer,
                   int32_t numFrames,
                   int64_t timeoutNanoseconds) override;
+
+    int32_t read(void *buffer,
+                 int32_t numFrames,
+                 int64_t timeoutNanoseconds) override;
 
     Result setBufferSizeInFrames(int32_t requestedFrames) override;
 
@@ -57,9 +65,23 @@ protected:
                 AudioStream *audioStream,
                 void *audioData,
                 int numFrames) {
-            int32_t framesRead = mBufferedStream->mFifoBuffer->readNow(audioData, numFrames);
-            //LOGD("AudioStreamBufferedCallback(): read %d / %d frames", framesRead, numFrames);
-            return (framesRead >= 0) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
+            int32_t framesTransferred  = 0;
+            static int transferCount = 0;
+
+            if (mBufferedStream->getDirection() == oboe::Direction::Output) {
+                // This OUTPUT callback will read from the FIFO and write to audioData
+                framesTransferred = mBufferedStream->mFifoBuffer->readNow(audioData, numFrames);
+                LOGV("AudioStreamBufferedCallback::onAudioReady() read %d / %d frames from FIFO, #%d",
+                     framesTransferred, numFrames, transferCount);
+            } else {
+                // This INPUT callback will read from audioData and write to the FIFO
+                framesTransferred = mBufferedStream->mFifoBuffer->write(audioData, numFrames);
+                LOGD("AudioStreamBufferedCallback::onAudioReady() wrote %d / %d frames to FIFO, #%d",
+                     framesTransferred, numFrames, transferCount);
+            }
+            transferCount++;
+            // return (framesTransferred >= 0) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
+            return DataCallbackResult::Continue;
         }
 
         virtual void onExit(Result reason) {}
@@ -69,7 +91,7 @@ protected:
 
 private:
 
-    FifoBuffer *mFifoBuffer;
+    FifoBuffer                                  *mFifoBuffer = nullptr;
     std::unique_ptr<AudioStreamBufferedCallback> mInternalCallback;
 };
 
