@@ -74,6 +74,7 @@ Result AudioStreamOpenSLES::open() {
     // API 21+: FLOAT
     // API <21: INT16
     if (mFormat == AudioFormat::Unspecified){
+        // TODO use runtime check
         mFormat = (__ANDROID_API__ < __ANDROID_API_L__) ?
                   AudioFormat::I16 : AudioFormat::Float;
     }

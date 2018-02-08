@@ -70,7 +70,6 @@ static void oboe_aaudio_error_callback_proc(
     }
 }
 
-
 namespace oboe {
 
 /*
@@ -301,6 +300,18 @@ int32_t AudioStreamAAudio::write(const void *buffer,
     }
 }
 
+int32_t AudioStreamAAudio::read(void *buffer,
+                                 int32_t numFrames,
+                                 int64_t timeoutNanoseconds)
+{
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_read(mAAudioStream, buffer, numFrames, timeoutNanoseconds);
+    } else {
+        return static_cast<int32_t>(Result::ErrorNull);
+    }
+}
+
 Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds)
@@ -358,8 +369,7 @@ int32_t AudioStreamAAudio::getFramesPerBurst()
     }
 }
 
-int64_t AudioStreamAAudio::getFramesRead()
-{
+int64_t AudioStreamAAudio::getFramesRead() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getFramesRead(stream);
@@ -367,8 +377,8 @@ int64_t AudioStreamAAudio::getFramesRead()
         return static_cast<int32_t>(Result::ErrorNull);
     }
 }
-int64_t AudioStreamAAudio::getFramesWritten()
-{
+
+int64_t AudioStreamAAudio::getFramesWritten() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getFramesWritten(stream);

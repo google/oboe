@@ -61,16 +61,20 @@ public:
     Result requestStop() override;
 
     int32_t write(const void *buffer,
-                             int32_t numFrames,
-                             int64_t timeoutNanoseconds) override;
+                  int32_t numFrames,
+                  int64_t timeoutNanoseconds) override;
+
+    int32_t read(void *buffer,
+                 int32_t numFrames,
+                 int64_t timeoutNanoseconds) override;
 
     Result setBufferSizeInFrames(int32_t requestedFrames) override;
     int32_t getBufferSizeInFrames() const override;
     int32_t getFramesPerBurst() override;
     int32_t getXRunCount() override;
 
-    int64_t getFramesRead() override;
-    int64_t getFramesWritten() override;
+    int64_t getFramesRead() const override;
+    int64_t getFramesWritten() const override;
 
     Result waitForStateChange(StreamState currentState,
                               StreamState *nextState,

@@ -25,23 +25,18 @@ namespace oboe {
  * AudioStream with a FifoBuffer
  */
 AudioStreamBuffered::AudioStreamBuffered(const AudioStreamBuilder &builder)
-        : AudioStream(builder)
-        , mFifoBuffer(nullptr)
-{
+        : AudioStream(builder) {
+}
+AudioStreamBuffered::~AudioStreamBuffered() {
+    delete mFifoBuffer;
 }
 
-Result AudioStreamBuffered::open() {
-
-    Result result = AudioStream::open();
-    if (result != Result::OK) {
-        return result;
-    }
-
+Result AudioStreamBuffered::finishOpen() {
     // If the caller does not provide a callback use our own internal
     // callback that reads data from the FIFO.
     if (getCallback() == nullptr) {
-        LOGD("AudioStreamBuffered(): new FifoBuffer");
-        // TODO: Fix memory leak here
+        LOGD("AudioStreamBuffered(): new FifoBuffer(bytesPerFrame=%d", getBytesPerFrame());
+        // FIFO is configured with the same format and channels as the stream.
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
         mInternalCallback = std::unique_ptr<AudioStreamBufferedCallback>(new AudioStreamBufferedCallback(this));
@@ -51,17 +46,19 @@ Result AudioStreamBuffered::open() {
     return Result::OK;
 }
 
-// TODO: This method should return a tuple of Result,int32_t where the 2nd return param is the frames written
+// TODO: This method should return a tuple of Result,int32_t where the
+// 2nd return param is the frames written. Maybe not!
 int32_t AudioStreamBuffered::write(const void *buffer,
-                              int32_t numFrames,
-                              int64_t timeoutNanoseconds)
+                                   int32_t numFrames,
+                                   int64_t timeoutNanoseconds)
 {
     int32_t result = 0;
     uint8_t *source = (uint8_t *)buffer;
     int32_t framesLeft = numFrames;
     while(framesLeft > 0 && result >= 0) {
-        result = mFifoBuffer->write(source, numFrames);
-        LOGD("AudioStreamBuffered::writeNow(): wrote %d/%d frames", result, numFrames);
+        result = mFifoBuffer->write(source, framesLeft);
+        LOGD("AudioStreamBuffered::%s(): wrote %d / %d frames to FIFO, [0] = %f",
+             __func__, result, framesLeft, ((float *)source)[0]);
         if (result > 0) {
             source += mFifoBuffer->convertFramesToBytes(result);
             incrementFramesWritten(result);
@@ -73,6 +70,35 @@ int32_t AudioStreamBuffered::write(const void *buffer,
             AudioClock::sleepUntilNanoTime(wakeTimeNanos);
         }
     }
+    return result;
+}
+
+// Read from the FIFO that was written by the callback.
+int32_t AudioStreamBuffered::read(void *buffer,
+                                  int32_t numFrames,
+                                  int64_t timeoutNanoseconds)
+{
+    static int readCount = 0;
+    int32_t result = 0;
+    uint8_t *destination = (uint8_t *)buffer;
+    int32_t framesLeft = numFrames;
+    while(framesLeft > 0 && result >= 0) {
+        result = mFifoBuffer->read(destination, framesLeft);
+        LOGD("AudioStreamBuffered::%s(): read %d/%d frames from FIFO, #%d",
+             __func__, result, framesLeft, readCount);
+        if (result > 0) {
+            destination += mFifoBuffer->convertFramesToBytes(result);
+            incrementFramesRead(result);
+            framesLeft -= result;
+            readCount++;
+        }
+        if (framesLeft > 0 && result >= 0) {
+            // FIXME use proper timing model, borrow one from AAudio
+            // TODO use timeoutNanoseconds
+            AudioClock::sleepForNanos(4 * kNanosPerMillisecond);
+        }
+    }
+
     return result;
 }
 
