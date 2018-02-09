@@ -88,10 +88,12 @@ public:
      *
      * <pre><code>
      * int64_t timeoutNanos = 500 * kNanosPerMillisecond; // arbitrary 1/2 second
-     * StreamState currentState = stream->getState(stream);
-     * while (currentState >= 0 && currentState != StreamState::Paused) {
-     *     currentState = stream->waitForStateChange(
-     *                                   stream, currentState, timeoutNanos);
+     * StreamState currentState = stream->getState();
+     * StreamState nextState = StreamState::Unknown;
+     * while (result == Result::OK && currentState != StreamState::Paused) {
+     *     result = stream->waitForStateChange(
+     *                                   currentState, &nextState, timeoutNanos);
+     *     currentState = nextState;
      * }
      * </code></pre>
      *
@@ -130,7 +132,7 @@ public:
      *
      * @return the count or negative error.
      */
-    virtual int32_t getXRunCount() {
+    virtual int32_t getXRunCount() const {
         return static_cast<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -211,7 +213,18 @@ protected:
                                               StreamState endingState,
                                               int64_t timeoutNanoseconds);
 
-    Result fireCallback(void *audioData, int numFrames);
+    /**
+     * Override this to provide a default for when the application did not specify a callback.
+     *
+     * @param audioData
+     * @param numFrames
+     * @return result
+     */
+    virtual DataCallbackResult onDefaultCallback(void *audioData, int numFrames) {
+        return DataCallbackResult::Stop;
+    }
+
+    DataCallbackResult fireCallback(void *audioData, int numFrames);
 
     virtual void setNativeFormat(AudioFormat format) {
         mNativeFormat = format;

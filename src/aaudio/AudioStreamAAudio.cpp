@@ -368,8 +368,7 @@ int64_t AudioStreamAAudio::getFramesWritten() const {
     }
 }
 
-int32_t AudioStreamAAudio::getXRunCount()
-{
+int32_t AudioStreamAAudio::getXRunCount() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getXRunCount(stream);
