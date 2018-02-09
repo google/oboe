@@ -32,7 +32,6 @@ FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
         : mFrameCapacity(capacityInFrames)
         , mBytesPerFrame(bytesPerFrame)
         , mStorage(NULL)
-        , mReadAtNanoseconds(0)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
         , mUnderrunCount(0)
@@ -57,7 +56,6 @@ FifoBuffer::FifoBuffer( uint32_t   bytesPerFrame,
         : mFrameCapacity(capacityInFrames)
         , mBytesPerFrame(bytesPerFrame)
         , mStorage(dataStorageAddress)
-        , mReadAtNanoseconds(0)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
         , mUnderrunCount(0)
@@ -161,7 +159,6 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
 }
 
 int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
-    mLastReadSize = numFrames;
     int32_t framesLeft = numFrames;
     int32_t framesRead = read(buffer, numFrames);
     framesLeft -= framesRead;
@@ -173,18 +170,8 @@ int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
         int32_t bytesToZero = convertFramesToBytes(framesLeft);
         memset(buffer, 0, bytesToZero);
     }
-    mReadAtNanoseconds = AudioClock::getNanoseconds();
 
     return framesRead;
-}
-
-    // FIXME remove
-int64_t FifoBuffer::getNextReadTime(int frameRate) {
-    if (mReadAtNanoseconds == 0) {
-        return 0;
-    }
-    int64_t nanosPerBuffer = (kNanosPerSecond * mLastReadSize) / frameRate;
-    return mReadAtNanoseconds + nanosPerBuffer;
 }
 
 uint32_t FifoBuffer::getThresholdFrames() const {
