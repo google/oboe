@@ -52,8 +52,6 @@ public:
 
     int32_t readNow(void *buffer, int32_t numFrames);
 
-    int64_t getNextReadTime(int32_t frameRate);
-
     uint32_t getUnderrunCount() const { return mUnderrunCount; }
 
     FifoControllerBase *getFifoControllerBase() { return mFifo; }
@@ -85,11 +83,9 @@ private:
     uint8_t* mStorage;
     bool     mStorageOwned; // did this object allocate the storage?
     FifoControllerBase *mFifo;
-    int64_t  mReadAtNanoseconds;
     uint64_t mFramesReadCount;
     uint64_t mFramesUnderrunCount;
     uint32_t mUnderrunCount; // need? just use frames
-    uint32_t mLastReadSize;
 };
 
 } // namespace oboe
