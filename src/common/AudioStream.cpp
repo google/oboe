@@ -30,12 +30,11 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
 }
 
 Result AudioStream::open() {
-    // TODO validate parameters or let underlyng API validate them?
+    // TODO validate parameters or let underlying API validate them?
     return Result::OK;
 }
 
-Result AudioStream::fireCallback(void *audioData, int32_t numFrames)
-{
+DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames) {
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
         LOGD("AudioStream::fireCallback() scheduler = %s",
@@ -45,21 +44,20 @@ Result AudioStream::fireCallback(void *audioData, int32_t numFrames)
         );
         mPreviousScheduler = scheduler;
     }
+
+    DataCallbackResult result;
     if (mStreamCallback == nullptr) {
-        return Result::ErrorNull;
+        result = onDefaultCallback(audioData, numFrames);
     } else {
-        /**
-         * TODO: onAudioRead doesn't return an Result, it returns either Continue or Stop
-         * neither of which tells us whether an error occured. Figure out what to do here.
-         */
-        /*Result result = mStreamCallback->onAudioReady(this, audioData, numFrames);
-        if (result == OBOE_OK) {
-            mFramesWritten += numFrames;
-        }*/
-        mStreamCallback->onAudioReady(this, audioData, numFrames);
-        mFramesWritten += numFrames;
-        return Result::OK;
+        result = mStreamCallback->onAudioReady(this, audioData, numFrames);
+        if (getDirection() == Direction::Input) {
+            incrementFramesRead(numFrames);
+        } else {
+            incrementFramesWritten(numFrames);
+        }
     }
+
+    return result;
 }
 
 Result AudioStream::waitForStateTransition(StreamState startingState,

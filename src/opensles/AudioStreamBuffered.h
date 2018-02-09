@@ -35,7 +35,8 @@ public:
     explicit AudioStreamBuffered(const AudioStreamBuilder &builder);
     ~AudioStreamBuffered();
 
-    Result finishOpen();
+    void allocateFifo();
+
 
     int32_t write(const void *buffer,
                   int32_t numFrames,
@@ -51,48 +52,40 @@ public:
 
     int32_t getBufferCapacityInFrames() const override;
 
+    int32_t getXRunCount() const override {
+        return mXRunCount;
+    }
+
+    int64_t getFramesWritten() const override;
+
+    int64_t getFramesRead() const override;
+
 protected:
 
-    class AudioStreamBufferedCallback : public AudioStreamCallback {
-    public:
-        AudioStreamBufferedCallback(AudioStreamBuffered *bufferedStream)
-                : mBufferedStream(bufferedStream) {
-        }
+    DataCallbackResult onDefaultCallback(void *audioData, int numFrames) override;
 
-        virtual ~AudioStreamBufferedCallback() {}
-
-        virtual DataCallbackResult onAudioReady(
-                AudioStream *audioStream,
-                void *audioData,
-                int numFrames) {
-            int32_t framesTransferred  = 0;
-            static int transferCount = 0;
-
-            if (mBufferedStream->getDirection() == oboe::Direction::Output) {
-                // This OUTPUT callback will read from the FIFO and write to audioData
-                framesTransferred = mBufferedStream->mFifoBuffer->readNow(audioData, numFrames);
-                LOGV("AudioStreamBufferedCallback::onAudioReady() read %d / %d frames from FIFO, #%d",
-                     framesTransferred, numFrames, transferCount);
-            } else {
-                // This INPUT callback will read from audioData and write to the FIFO
-                framesTransferred = mBufferedStream->mFifoBuffer->write(audioData, numFrames);
-                LOGD("AudioStreamBufferedCallback::onAudioReady() wrote %d / %d frames to FIFO, #%d",
-                     framesTransferred, numFrames, transferCount);
-            }
-            transferCount++;
-            // return (framesTransferred >= 0) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
-            return DataCallbackResult::Continue;
-        }
-
-        virtual void onExit(Result reason) {}
-    private:
-        AudioStreamBuffered *mBufferedStream;
-    };
+    // If there is no callback then we need a FIFO between the App and OpenSL ES.
+    bool usingFIFO() const { return getCallback() == nullptr; }
 
 private:
 
-    FifoBuffer                                  *mFifoBuffer = nullptr;
-    std::unique_ptr<AudioStreamBufferedCallback> mInternalCallback;
+
+    int64_t predictNextCallbackTime();
+
+    void markCallbackTime(int numFrames);
+
+    // Read or write to the FIFO.
+    int32_t transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
+
+    void incrementXRunCount() {
+        mXRunCount++;
+    }
+
+    std::unique_ptr<FifoBuffer>                  mFifoBuffer;
+
+    int64_t mBackgroundRanAtNanoseconds = 0;
+    int32_t mLastBackgroundSize = 0;
+    int32_t mXRunCount = 0;
 };
 
 } // namespace oboe

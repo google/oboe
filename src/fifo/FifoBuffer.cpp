@@ -178,6 +178,7 @@ int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
     return framesRead;
 }
 
+    // FIXME remove
 int64_t FifoBuffer::getNextReadTime(int frameRate) {
     if (mReadAtNanoseconds == 0) {
         return 0;

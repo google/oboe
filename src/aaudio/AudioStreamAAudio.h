@@ -71,7 +71,7 @@ public:
     Result setBufferSizeInFrames(int32_t requestedFrames) override;
     int32_t getBufferSizeInFrames() const override;
     int32_t getFramesPerBurst() override;
-    int32_t getXRunCount() override;
+    int32_t getXRunCount() const override;
 
     int64_t getFramesRead() const override;
     int64_t getFramesWritten() const override;
