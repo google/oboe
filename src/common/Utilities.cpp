@@ -19,7 +19,6 @@
 #include "oboe/Definitions.h"
 #include "oboe/Utilities.h"
 
-// TODO: Return the int value as well as the name
 #define OBOE_CASE_ENUM(name) case name: return #name
 
 namespace oboe {
