@@ -72,7 +72,7 @@ public:
     virtual Result requestStop() = 0;
 
     /**
-     * Query the current state, eg. StreamState::Pausing
+     * Query the current state, eg. OBOE_STREAM_STATE_PAUSING
      *
      * @return state or a negative error.
      */
@@ -87,9 +87,9 @@ public:
      * an advanced technique.
      *
      * <pre><code>
-     * int64_t timeoutNanos = 500 * kNanosPerMillisecond; // arbitrary 1/2 second
+     * int64_t timeoutNanos = 500 * OBOE_NANOS_PER_MILLISECOND; // arbitrary 1/2 second
      * StreamState currentState = stream->getState(stream);
-     * while (currentState >= 0 && currentState != StreamState::Paused) {
+     * while (currentState >= 0 && currentState != OBOE_STREAM_STATE_PAUSED) {
      *     currentState = stream->waitForStateChange(
      *                                   stream, currentState, timeoutNanos);
      * }
@@ -99,11 +99,13 @@ public:
      * @param currentState The state we want to avoid.
      * @param nextState Pointer to a variable that will be set to the new state.
      * @param timeoutNanoseconds The maximum time to wait in nanoseconds.
-     * @return Result::OK or a Result::Error.
+     * @return OBOE_OK or a negative error.
      */
     virtual Result waitForStateChange(StreamState currentState,
                                           StreamState *nextState,
                                           int64_t timeoutNanoseconds) = 0;
+
+
 
     /**
     * This can be used to adjust the latency of the buffer by changing
@@ -114,7 +116,7 @@ public:
     * This cannot be set higher than getBufferCapacity().
     *
     * @param requestedFrames requested number of frames that can be filled without blocking
-    * @return resulting buffer size in frames or a Result::Error
+    * @return resulting buffer size in frames or a negative error
     */
     virtual Result setBufferSizeInFrames(int32_t requestedFrames) {
         return Result::ErrorUnimplemented;
@@ -203,9 +205,9 @@ protected:
 
     /**
      * Wait for a transition from one state to another.
-     * @return OK if the endingState was observed, or ErrorUnexpectedState
+     * @return OBOE_OK if the endingState was observed, or OBOE_ERROR_UNEXPECTED_STATE
      *   if any state that was not the startingState or endingState was observed
-     *   or ErrorTimeout.
+     *   or OBOE_ERROR_TIMEOUT.
      */
     virtual Result waitForStateTransition(StreamState startingState,
                                               StreamState endingState,

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_FIFOPROCESSOR_H
-#define OBOE_FIFOPROCESSOR_H
+#ifndef NATIVEOBOE_FIFOPROCESSOR_H
+#define NATIVEOBOE_FIFOPROCESSOR_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -94,4 +94,4 @@ private:
 
 } // namespace oboe
 
-#endif //OBOE_FIFOPROCESSOR_H
+#endif //NATIVEOBOE_FIFOPROCESSOR_H
