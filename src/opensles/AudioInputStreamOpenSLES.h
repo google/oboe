@@ -46,11 +46,7 @@ public:
                               int64_t timeoutNanoseconds) override;
 
     int chanCountToChanMask(int chanCount) override;
-private:
 
-    Result setRecordState(SLuint32 newState);
-
-    SLRecordItf mRecordInterface;
 };
 
 } // namespace oboe

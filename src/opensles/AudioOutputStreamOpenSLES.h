@@ -57,8 +57,8 @@ private:
      */
     Result setPlayState(SLuint32 newState);
 
-    SLPlayItf      mPlayInterface = nullptr;
-
+    SLObjectItf    bqPlayerObject_ = nullptr;
+    SLPlayItf      bqPlayerPlay_ = nullptr;
 };
 
 } // namespace oboe
