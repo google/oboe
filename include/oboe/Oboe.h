@@ -23,6 +23,5 @@
 #include "oboe/AudioStreamBase.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/Utilities.h"
-#include "oboe/Version.h"
 
 #endif //OBOE_OBOE_H
