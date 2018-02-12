@@ -60,6 +60,8 @@ FifoBuffer::FifoBuffer( uint32_t   bytesPerFrame,
         , mFramesUnderrunCount(0)
         , mUnderrunCount(0)
 {
+    assert(bytesPerFrame > 0);
+    assert(capacityInFrames > 0);
     mFifo = new FifoControllerIndirect(capacityInFrames,
                                        capacityInFrames,
                                        readIndexAddress,

@@ -21,14 +21,13 @@
 
 namespace oboe {
 
+constexpr int kDefaultBurstsPerBuffer = 16;  // arbitrary, allows dynamic latency tuning
+
 /*
  * AudioStream with a FifoBuffer
  */
 AudioStreamBuffered::AudioStreamBuffered(const AudioStreamBuilder &builder)
         : AudioStream(builder) {
-}
-AudioStreamBuffered::~AudioStreamBuffered() {
-    LOGD("~AudioStreamBuffered() called");
 }
 
 void AudioStreamBuffered::allocateFifo() {
@@ -38,13 +37,10 @@ void AudioStreamBuffered::allocateFifo() {
         // FIFO is configured with the same format and channels as the stream.
         int32_t capacity = getBufferCapacityInFrames();
         if (capacity == oboe::kUnspecified) {
-            capacity = getFramesPerBurst() * 16; // arbitrary
+            capacity = getFramesPerBurst() * kDefaultBurstsPerBuffer;
             mBufferCapacityInFrames = capacity;
         }
-        LOGD("AudioStreamBuffered(): new FifoBuffer(bytesPerFrame=%d, capacity=%d)",
-             getBytesPerFrame(), capacity);
         mFifoBuffer.reset(new FifoBuffer(getBytesPerFrame(), capacity));
-        LOGD("AudioStreamBuffered(): mStreamCallback = %p", mStreamCallback);
     }
 }
 
@@ -72,11 +68,9 @@ DataCallbackResult AudioStreamBuffered::onDefaultCallback(void *audioData, int n
     if (getDirection() == oboe::Direction::Output) {
         // Read from the FIFO and write to audioData
         framesTransferred = mFifoBuffer->readNow(audioData, numFrames);
-        LOGV("%s() read %d / %d frames from FIFO", __func__, framesTransferred, numFrames);
     } else {
         // Read from audioData and write to the FIFO
         framesTransferred = mFifoBuffer->write(audioData, numFrames); // FIXME writeNow????
-        LOGV("%s() wrote %d / %d frames to FIFO", __func__, framesTransferred, numFrames);
     }
 
     if (framesTransferred < numFrames) {
@@ -101,10 +95,9 @@ int64_t AudioStreamBuffered::predictNextCallbackTime() {
     return mBackgroundRanAtNanoseconds + nanosPerBuffer + margin;
 }
 
-// TODO: This method should return a tuple of Result,int32_t where the
-// 2nd return param is the frames written. Maybe not!
-
+// TODO: Consider returning an error_or_value struct instead.
 // Common code for read/write.
+// @return number of frames transferred or negative error
 int32_t AudioStreamBuffered::transfer(void *buffer,
                                       int32_t numFrames,
                                       int64_t timeoutNanoseconds) {
@@ -211,6 +204,8 @@ Result AudioStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
     if (mFifoBuffer != nullptr) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
+        } else if (requestedFrames < getFramesPerBurst()) {
+            requestedFrames = getFramesPerBurst();
         }
         mFifoBuffer->setThresholdFrames(requestedFrames);
         return Result::OK;

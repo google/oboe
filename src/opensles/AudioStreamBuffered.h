@@ -33,7 +33,6 @@ public:
 
     AudioStreamBuffered();
     explicit AudioStreamBuffered(const AudioStreamBuilder &builder);
-    ~AudioStreamBuffered();
 
     void allocateFifo();
 
