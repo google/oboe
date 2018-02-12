@@ -27,6 +27,7 @@ namespace oboe {
 StreamBuffered::StreamBuffered(const StreamBuilder &builder)
         : Stream(builder)
         , mFifoBuffer(NULL)
+        , mInternalCallback(NULL)
 {
 }
 
@@ -43,10 +44,15 @@ Result StreamBuffered::open() {
         LOGD("StreamBuffered(): new FifoBuffer");
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
-        mStreamCallback = std::make_shared<AudioStreamBufferedCallback>(this);
-        LOGD("StreamBuffered(): mStreamCallback = %p", mStreamCallback.get());
+        mInternalCallback = new AudioStreamBufferedCallback(this);
+        mStreamCallback = mInternalCallback;
+        LOGD("StreamBuffered(): mInternalCallback = %p", mInternalCallback);
     }
     return Result::OK;
+}
+
+StreamBuffered::~StreamBuffered() {
+    delete mInternalCallback;
 }
 
 // TODO: This method should return a tuple of Result,int32_t where the 2nd return param is the frames written

@@ -53,7 +53,7 @@ public:
     /**
      * Request a specific number of channels.
      *
-     * Default is kUnspecified. If the value is unspecified then
+     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      */
     StreamBuilder *setChannelCount(int channelCount) {
@@ -62,7 +62,7 @@ public:
     }
 
     /**
-     * Request the direction for a stream. The default is Direction::Output.
+     * Request the direction for a stream. The default is OBOE_DIRECTION_OUTPUT.
      *
      * @param direction Direction::Output or Direction::Input
      */
@@ -74,7 +74,7 @@ public:
     /**
      * Request a specific sample rate in Hz.
      *
-     * Default is kUnspecified. If the value is unspecified then
+     * Default is OBOE_UNSPECIFIED. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
      *
      * Technically, this should be called the "frame rate" or "frames per second",
@@ -121,9 +121,9 @@ public:
      * Set the requested maximum buffer capacity in frames.
      * The final stream capacity may differ, but will probably be at least this big.
      *
-     * Default is kUnspecified.
+     * Default is OBOE_UNSPECIFIED.
      *
-     * @param frames the desired buffer capacity in frames or kUnspecified
+     * @param frames the desired buffer capacity in frames or OBOE_UNSPECIFIED
      * @return pointer to the builder so calls can be chained
      */
     StreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
@@ -136,7 +136,7 @@ public:
     /**
      * Normally you would leave this unspecified, and Oboe will chose the best API
      * for the device at runtime.
-     * @param Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
+     * @param Must be API_UNSPECIFIED, API_OPENSL_ES or API_AAUDIO.
      * @return pointer to the builder so calls can be chained
      */
     StreamBuilder *setApiIndex(AudioApi apiIndex) {
@@ -171,7 +171,7 @@ public:
      * This will determine the latency, the power consumption, and the level of
      * protection from glitches.
      *
-     * @param performanceMode for example, PerformanceMode::LowLatency
+     * @param performanceMode for example, OBOE_PERFORMANCE_MODE_LOW_LATENCY
      * @return pointer to the builder so calls can be chained
      */
     StreamBuilder *setPerformanceMode(PerformanceMode performanceMode) {
@@ -185,7 +185,7 @@ public:
      *
      * By default, the primary device will be used.
      *
-     * @param deviceId device identifier or kUnspecified
+     * @param deviceId device identifier or OBOE_DEVICE_UNSPECIFIED
      * @return pointer to the builder so calls can be chained
      */
     StreamBuilder *setDeviceId(int32_t deviceId) {
@@ -202,7 +202,7 @@ public:
      * @param streamCallback
      * @return
      */
-    StreamBuilder *setCallback(std::shared_ptr<StreamCallback> streamCallback) {
+    StreamBuilder *setCallback(StreamCallback *streamCallback) {
         mStreamCallback = streamCallback;
         return this;
     }

@@ -30,6 +30,7 @@ public:
 
     StreamBuffered();
     explicit StreamBuffered(const StreamBuilder &builder);
+    virtual ~StreamBuffered();
 
     Result open() override;
 
@@ -70,6 +71,7 @@ protected:
 private:
 
     FifoBuffer *mFifoBuffer;
+    AudioStreamBufferedCallback *mInternalCallback;
 };
 
 } // namespace oboe

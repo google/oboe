@@ -17,7 +17,6 @@
 #ifndef OBOE_STREAM_BASE_H_
 #define OBOE_STREAM_BASE_H_
 
-#include <memory>
 #include "oboe/StreamCallback.h"
 #include "oboe/Definitions.h"
 
@@ -90,22 +89,22 @@ public:
 
     int32_t getDeviceId() const { return mDeviceId; }
 
-    std::shared_ptr<StreamCallback> getCallback() const {
+    StreamCallback *getCallback() const {
         return mStreamCallback;
     }
 
 protected:
-    std::shared_ptr<StreamCallback> mStreamCallback;
-    int32_t                         mFramesPerCallback = kUnspecified;
-    int32_t                         mChannelCount = kUnspecified;
-    int32_t                         mSampleRate = kUnspecified;
-    int32_t                         mDeviceId = kUnspecified;
-    int32_t                         mBufferCapacityInFrames = kUnspecified;
+    StreamCallback         *mStreamCallback = NULL;
+    int32_t                 mFramesPerCallback = kUnspecified;
+    int32_t                 mChannelCount = kUnspecified;
+    int32_t                 mSampleRate = kUnspecified;
+    int32_t                 mDeviceId = kUnspecified;
+    int32_t                 mBufferCapacityInFrames = kUnspecified;
 
-    SharingMode                     mSharingMode = SharingMode::Shared;
-    AudioFormat                     mFormat = AudioFormat::Unspecified;
-    Direction                       mDirection = Direction::Output;
-    PerformanceMode                 mPerformanceMode = PerformanceMode::None;
+    SharingMode             mSharingMode = SharingMode::Shared;
+    AudioFormat                  mFormat = AudioFormat::Unspecified;
+    Direction               mDirection = Direction::Output;
+    PerformanceMode         mPerformanceMode = PerformanceMode::None;
 };
 
 } // namespace oboe
