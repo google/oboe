@@ -161,17 +161,5 @@ const char *convertToText<StreamState>(StreamState state) {
     }
 }
 
-template<>
-const char *convertToText<AudioApi >(AudioApi audioApi) {
 
-    switch (audioApi) {
-        OBOE_CASE_ENUM(AudioApi::Unspecified);
-        OBOE_CASE_ENUM(AudioApi::OpenSLES);
-        OBOE_CASE_ENUM(AudioApi::AAudio);
-        default:
-            return "Unrecognised audio API";
-
-    }
-}
-
-}// namespace oboe
+} // namespace oboe
