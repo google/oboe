@@ -95,7 +95,7 @@ public:
     }
 
 protected:
-    AudioStreamCallback            *mStreamCallback = nullptr;
+    AudioStreamCallback            *mStreamCallback;
     int32_t                         mFramesPerCallback = kUnspecified;
     int32_t                         mChannelCount = kUnspecified;
     int32_t                         mSampleRate = kUnspecified;
