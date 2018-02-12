@@ -20,8 +20,6 @@
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
-#include "opensles/AudioInputStreamOpenSLES.h"
-#include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
 
 namespace oboe {
@@ -43,11 +41,7 @@ AudioStream *AudioStreamBuilder::build() {
             }
             // fall into using older existing API
         case AudioApi::OpenSLES:
-            if (getDirection() == oboe::Direction::Output) {
-                stream = new AudioOutputStreamOpenSLES(*this);
-            } else if (getDirection() == oboe::Direction::Input) {
-                stream = new AudioInputStreamOpenSLES(*this);
-            }
+            stream = new AudioStreamOpenSLES(*this);
             break;
     }
     return stream;
