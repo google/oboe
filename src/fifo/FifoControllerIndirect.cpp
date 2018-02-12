@@ -17,8 +17,6 @@
 
 #include "FifoControllerIndirect.h"
 
-namespace oboe {
-
 FifoControllerIndirect::FifoControllerIndirect(uint32_t numFrames,
                                                uint32_t threshold,
                                                int64_t * readCounterAddress,
@@ -30,6 +28,4 @@ FifoControllerIndirect::FifoControllerIndirect(uint32_t numFrames,
 }
 
 FifoControllerIndirect::~FifoControllerIndirect() {
-}
-
 }

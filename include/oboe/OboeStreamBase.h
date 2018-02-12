@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_STREAM_BASE_H_
-#define OBOE_STREAM_BASE_H_
+#ifndef OBOE_OBOE_STREAM_BASE_H_
+#define OBOE_OBOE_STREAM_BASE_H_
 
-#include "oboe/StreamCallback.h"
-#include "oboe/Definitions.h"
-
-namespace oboe {
+#include "oboe/OboeStreamCallback.h"
+#include "oboe/OboeDefinitions.h"
 
 /**
  * Base class containing parameters for Oboe streams and builders.
@@ -30,17 +28,17 @@ namespace oboe {
  * OboeStream will generally return the actual final value, but getFramesPerCallback()
  * can be unspecified even for a stream.
  */
-class StreamBase {
+class OboeStreamBase {
 public:
 
-    StreamBase() {}
+    OboeStreamBase() {}
 
-    virtual ~StreamBase() = default;
+    virtual ~OboeStreamBase() = default;
 
     // This class only contains primitives so we can use default constructor and copy methods.
-    StreamBase(const StreamBase&) = default;
+    OboeStreamBase(const OboeStreamBase&) = default;
 
-    StreamBase& operator=(const StreamBase&) = default;
+    OboeStreamBase& operator=(const OboeStreamBase&) = default;
 
     /**
      * @return number of channels, for example 2 for stereo
@@ -48,9 +46,9 @@ public:
     int getChannelCount() const { return mChannelCount; }
 
     /**
-     * @return Direction::Input or Direction::Output
+     * @return OBOE_DIRECTION_INPUT or OBOE_DIRECTION_OUTPUT
      */
-    Direction getDirection() const { return mDirection; }
+    oboe_direction_t getDirection() const { return mDirection; }
 
     /**
      * @return sample rate for the stream
@@ -66,7 +64,7 @@ public:
      * @return OBOE_AUDIO_FORMAT_PCM_FLOAT, OBOE_AUDIO_FORMAT_PCM_I16
      *         or OBOE_AUDIO_FORMAT_UNSPECIFIED
      */
-    AudioFormat getFormat() const { return mFormat; }
+    oboe_audio_format_t getFormat() const { return mFormat; }
 
     /**
      * Query the maximum number of frames that can be filled without blocking.
@@ -83,30 +81,28 @@ public:
      */
     virtual int32_t getBufferCapacityInFrames() const { return mBufferCapacityInFrames; }
 
-    SharingMode getSharingMode() const { return mSharingMode; }
+    oboe_sharing_mode_t getSharingMode() const { return mSharingMode; }
 
-    PerformanceMode getPerformanceMode() const { return mPerformanceMode; }
+    oboe_performance_mode_t getPerformanceMode() const { return mPerformanceMode; }
 
     int32_t getDeviceId() const { return mDeviceId; }
 
-    StreamCallback *getCallback() const {
+    OboeStreamCallback *getCallback() const {
         return mStreamCallback;
     }
 
 protected:
-    StreamCallback         *mStreamCallback = NULL;
-    int32_t                 mFramesPerCallback = kUnspecified;
-    int32_t                 mChannelCount = kUnspecified;
-    int32_t                 mSampleRate = kUnspecified;
-    int32_t                 mDeviceId = kUnspecified;
-    int32_t                 mBufferCapacityInFrames = kUnspecified;
+    OboeStreamCallback     *mStreamCallback = NULL;
+    int32_t                 mFramesPerCallback = OBOE_UNSPECIFIED;
+    int32_t                 mChannelCount = OBOE_UNSPECIFIED;
+    int32_t                 mSampleRate = OBOE_UNSPECIFIED;
+    int32_t                 mDeviceId = OBOE_UNSPECIFIED;
+    int32_t                 mBufferCapacityInFrames = OBOE_UNSPECIFIED;
 
-    SharingMode             mSharingMode = SharingMode::Shared;
-    AudioFormat                  mFormat = AudioFormat::Unspecified;
-    Direction               mDirection = Direction::Output;
-    PerformanceMode         mPerformanceMode = PerformanceMode::None;
+    oboe_sharing_mode_t     mSharingMode = OBOE_SHARING_MODE_SHARED;
+    oboe_audio_format_t     mFormat = OBOE_AUDIO_FORMAT_UNSPECIFIED;
+    oboe_direction_t        mDirection = OBOE_DIRECTION_OUTPUT;
+    oboe_performance_mode_t mPerformanceMode = OBOE_PERFORMANCE_MODE_NONE;
 };
 
-} // namespace oboe
-
-#endif /* OBOE_STREAM_BASE_H_ */
+#endif /* OBOE_OBOE_STREAM_BASE_H_ */

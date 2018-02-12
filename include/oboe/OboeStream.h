@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_STREAM_H_
-#define OBOE_STREAM_H_
+#ifndef OBOE_OBOE_STREAM_H_
+#define OBOE_OBOE_STREAM_H_
 
-#include <cstdint>
-#include <ctime>
-#include "oboe/Definitions.h"
-#include "oboe/StreamBuilder.h"
-#include "oboe/StreamBase.h"
+#include <stdint.h>
+#include <time.h>
+#include "oboe/OboeDefinitions.h"
+#include "oboe/OboeStreamCallback.h"
+#include "oboe/OboeStreamBase.h"
 
 /** WARNING - UNDER CONSTRUCTION - THIS API WILL CHANGE. */
 
-namespace oboe {
+class OboeStreamBuilder;
 
-constexpr int64_t kDefaultTimeoutNanos = (2000 * kNanosPerMillisecond);
+#define DEFAULT_TIMEOUT_NANOS    (2000 * OBOE_NANOS_PER_MILLISECOND)
 
 /**
  * Base class for Oboe C++ audio stream.
  */
-class Stream : public StreamBase {
+class OboeStream : public OboeStreamBase {
 public:
 
-    Stream() {}
-    explicit Stream(const StreamBuilder &builder);
+    OboeStream() {}
+    explicit OboeStream(const OboeStreamBuilder &builder);
 
-    virtual ~Stream() = default;
+    virtual ~OboeStream() = default;
 
     /**
      * Open a stream based on the current settings.
@@ -48,35 +48,35 @@ public:
      *
      * @return
      */
-    virtual Result open();
+    virtual oboe_result_t open();
 
     /**
      * Close the stream and deallocate any resources from the open() call.
      */
-    virtual Result close() = 0;
+    virtual oboe_result_t close() = 0;
 
     /*
      * These are synchronous and will block until the operation is complete.
      */
-    virtual Result start(int64_t timeoutNanoseconds = kDefaultTimeoutNanos);
-    virtual Result pause(int64_t timeoutNanoseconds = kDefaultTimeoutNanos);
-    virtual Result flush(int64_t timeoutNanoseconds = kDefaultTimeoutNanos);
-    virtual Result stop(int64_t timeoutNanoseconds = kDefaultTimeoutNanos);
+    virtual oboe_result_t start(int64_t timeoutNanoseconds = DEFAULT_TIMEOUT_NANOS);
+    virtual oboe_result_t pause(int64_t timeoutNanoseconds = DEFAULT_TIMEOUT_NANOS);
+    virtual oboe_result_t flush(int64_t timeoutNanoseconds = DEFAULT_TIMEOUT_NANOS);
+    virtual oboe_result_t stop(int64_t timeoutNanoseconds = DEFAULT_TIMEOUT_NANOS);
 
     /* Asynchronous requests.
      * Use waitForStateChange() if you need to wait for completion.
      */
-    virtual Result requestStart() = 0;
-    virtual Result requestPause() = 0;
-    virtual Result requestFlush() = 0;
-    virtual Result requestStop() = 0;
+    virtual oboe_result_t requestStart() = 0;
+    virtual oboe_result_t requestPause() = 0;
+    virtual oboe_result_t requestFlush() = 0;
+    virtual oboe_result_t requestStop() = 0;
 
     /**
      * Query the current state, eg. OBOE_STREAM_STATE_PAUSING
      *
      * @return state or a negative error.
      */
-    virtual StreamState getState() = 0;
+    virtual oboe_stream_state_t getState() = 0;
 
     /**
      * Wait until the current state no longer matches the input state.
@@ -88,7 +88,7 @@ public:
      *
      * <pre><code>
      * int64_t timeoutNanos = 500 * OBOE_NANOS_PER_MILLISECOND; // arbitrary 1/2 second
-     * StreamState currentState = stream->getState(stream);
+     * oboe_stream_state_t currentState = stream->getState(stream);
      * while (currentState >= 0 && currentState != OBOE_STREAM_STATE_PAUSED) {
      *     currentState = stream->waitForStateChange(
      *                                   stream, currentState, timeoutNanos);
@@ -101,8 +101,8 @@ public:
      * @param timeoutNanoseconds The maximum time to wait in nanoseconds.
      * @return OBOE_OK or a negative error.
      */
-    virtual Result waitForStateChange(StreamState currentState,
-                                          StreamState *nextState,
+    virtual oboe_result_t waitForStateChange(oboe_stream_state_t currentState,
+                                          oboe_stream_state_t *nextState,
                                           int64_t timeoutNanoseconds) = 0;
 
 
@@ -118,8 +118,8 @@ public:
     * @param requestedFrames requested number of frames that can be filled without blocking
     * @return resulting buffer size in frames or a negative error
     */
-    virtual Result setBufferSizeInFrames(int32_t requestedFrames) {
-        return Result::ErrorUnimplemented;
+    virtual oboe_result_t setBufferSizeInFrames(int32_t requestedFrames) {
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
     /**
@@ -134,7 +134,7 @@ public:
      * @return the count or negative error.
      */
     virtual int32_t getXRunCount() {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
     /**
@@ -146,7 +146,7 @@ public:
 
     bool isPlaying();
 
-    StreamCallback *getCallback() const { return mStreamCallback; }
+    OboeStreamCallback *getCallback() const { return mStreamCallback; }
 
     int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
 
@@ -158,12 +158,12 @@ public:
      */
     virtual int64_t getFramesWritten() { return mFramesWritten; }
 
-    virtual int64_t getFramesRead() { return static_cast<int64_t>(Result::ErrorUnimplemented); }
+    virtual int64_t getFramesRead() { return OBOE_ERROR_UNIMPLEMENTED; }
 
-    virtual Result getTimestamp(clockid_t clockId,
+    virtual oboe_result_t getTimestamp(clockid_t clockId,
                                        int64_t *framePosition,
                                        int64_t *timeNanoseconds) {
-        return Result::ErrorUnimplemented;
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
     // ============== I/O ===========================
@@ -177,16 +177,16 @@ public:
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
      * @return The number of frames actually written or a negative error.
      */
-    virtual int32_t write(const void *buffer,
+    virtual oboe_result_t write(const void *buffer,
                              int32_t numFrames,
                              int64_t timeoutNanoseconds) {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
-    virtual int32_t read(void *buffer,
+    virtual oboe_result_t read(void *buffer,
                             int32_t numFrames,
                             int64_t timeoutNanoseconds) {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
     /**
@@ -209,25 +209,24 @@ protected:
      *   if any state that was not the startingState or endingState was observed
      *   or OBOE_ERROR_TIMEOUT.
      */
-    virtual Result waitForStateTransition(StreamState startingState,
-                                              StreamState endingState,
+    virtual oboe_result_t waitForStateTransition(oboe_stream_state_t startingState,
+                                              oboe_stream_state_t endingState,
                                               int64_t timeoutNanoseconds);
 
-    Result fireCallback(void *audioData, int numFrames);
+    oboe_result_t fireCallback(void *audioData, int numFrames);
 
-    virtual void setNativeFormat(AudioFormat format) {
+    virtual void setNativeFormat(oboe_audio_format_t format) {
         mNativeFormat = format;
     }
 
-    // TODO: make private
+    // TODO make private
     // These do not change after open.
-    AudioFormat mNativeFormat = AudioFormat::Invalid;
+    oboe_audio_format_t  mNativeFormat = OBOE_AUDIO_FORMAT_INVALID;
 
 private:
     int64_t              mFramesWritten = 0;
     int                  mPreviousScheduler = -1;
 };
 
-} // namespace oboe
 
-#endif /* OBOE_STREAM_H_ */
+#endif /* OBOE_OBOE_STREAM_H_ */

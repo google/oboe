@@ -18,11 +18,9 @@
 #define OBOE_AAUDIO_LOADER_H_
 
 #include <unistd.h>
-#include "oboe/Definitions.h"
+#include "oboe/OboeDefinitions.h"
 
 #include "aaudio/AAudio.h"
-
-namespace oboe {
 
 /**
  * The AAudio API was not available in early versions of Android.
@@ -161,7 +159,5 @@ class AAudioLoader {
 
     void *mLibHandle = nullptr;
 };
-
-} // namespace oboe
 
 #endif //OBOE_AAUDIO_LOADER_H_

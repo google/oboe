@@ -19,8 +19,6 @@
 #include "FifoControllerBase.h"
 #include "FifoController.h"
 
-namespace oboe {
-
 FifoController::FifoController(uint32_t numFrames, uint32_t threshold)
         : FifoControllerBase(numFrames, threshold)
 {
@@ -30,6 +28,3 @@ FifoController::FifoController(uint32_t numFrames, uint32_t threshold)
 
 FifoController::~FifoController() {
 }
-
-} // namespace oboe
-

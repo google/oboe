@@ -21,9 +21,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "oboe/Oboe.h"
-#include "StreamBuffered.h"
-
-namespace oboe {
+#include "OboeStreamBuffered.h"
 
 /**
  * A stream that wraps OpenSL ES.
@@ -32,27 +30,27 @@ namespace oboe {
  * Use an OboeStreamBuilder to create one.
  */
 //
-class StreamOpenSLES : public StreamBuffered {
+class OboeStreamOpenSLES : public OboeStreamBuffered {
 public:
 
-    StreamOpenSLES();
-    explicit StreamOpenSLES(const StreamBuilder &builder);
+    OboeStreamOpenSLES();
+    explicit OboeStreamOpenSLES(const OboeStreamBuilder &builder);
 
-    virtual ~StreamOpenSLES();
+    virtual ~OboeStreamOpenSLES();
 
-    Result open() override;
-    Result close() override;
+    oboe_result_t open() override;
+    oboe_result_t close() override;
 
-    Result requestStart() override;
-    Result requestPause() override;
-    Result requestFlush() override;
-    Result requestStop() override;
+    oboe_result_t requestStart() override;
+    oboe_result_t requestPause() override;
+    oboe_result_t requestFlush() override;
+    oboe_result_t requestStop() override;
 
     // public, but don't call directly (called by the OSLES callback)
     SLresult enqueueBuffer();
 
-    Result waitForStateChange(StreamState currentState,
-                                             StreamState *nextState,
+    oboe_result_t waitForStateChange(oboe_stream_state_t currentState,
+                                             oboe_stream_state_t *nextState,
                                              int64_t timeoutNanoseconds) override;
 
     /**
@@ -60,7 +58,7 @@ public:
      *
      * @return state or a negative error.
      */
-    StreamState getState() override { return mState; }
+    oboe_stream_state_t getState() override { return mState; }
 
     int32_t getFramesPerBurst() override;
 
@@ -71,7 +69,7 @@ private:
      * Internal use only.
      * Use this instead of directly setting the internal state variable.
      */
-    void setState(StreamState state) {
+    void setState(oboe_stream_state_t state) {
         mState = state;
     }
 
@@ -81,13 +79,13 @@ private:
      * @param newState SL_PLAYSTATE_PAUSED, SL_PLAYSTATE_PLAYING, SL_PLAYSTATE_STOPPED
      * @return
      */
-    Result setPlayState(SLuint32 newState);
+    oboe_result_t setPlayState(SLuint32 newState);
 
     uint8_t              *mCallbackBuffer;
     int32_t               mBytesPerCallback;
     int32_t               mFramesPerBurst = 0;
     int32_t               mBurstsPerBuffer = 2; // Double buffered
-    StreamState           mState = StreamState::Uninitialized;
+    oboe_stream_state_t   mState = OBOE_STREAM_STATE_UNINITIALIZED;
 
     // OpenSLES stuff
     SLObjectItf                   bqPlayerObject_;
@@ -95,6 +93,5 @@ private:
     SLAndroidSimpleBufferQueueItf bq_;
 };
 
-} // namespace oboe
 
 #endif // AUDIO_STREAM_OPENSL_ES_H_

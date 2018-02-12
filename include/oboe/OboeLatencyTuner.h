@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_LATENCY_TUNER_
-#define OBOE_LATENCY_TUNER_
+#ifndef OBOE_OBOE_LATENCY_TUNER_
+#define OBOE_OBOE_LATENCY_TUNER_
 
 #include <atomic>
-#include <cstdint>
-#include "oboe/Definitions.h"
-#include "oboe/Stream.h"
-
-namespace oboe {
+#include <stdint.h>
+#include "oboe/OboeDefinitions.h"
+#include "oboe/OboeStream.h"
 
 /**
  * This can be used to dynamically tune the latency of an output stream.
@@ -39,9 +37,9 @@ namespace oboe {
  * stream->getBufferSize() periodically.
  *
  */
-class LatencyTuner {
+class OboeLatencyTuner {
 public:
-    explicit LatencyTuner(Stream &stream);
+    explicit OboeLatencyTuner(OboeStream &stream);
 
     /**
      * Adjust the bufferSizeInFrames to optimize latency.
@@ -51,7 +49,7 @@ public:
      *
      * @return OBOE_OK or negative error, OBOE_ERROR_UNIMPLEMENTED for OpenSL ES
      */
-    Result tune();
+    oboe_result_t tune();
 
     /**
      * This may be called from another thread. Then tune() will call reset(),
@@ -73,24 +71,23 @@ private:
      */
     void reset();
 
-    enum class State {
-        Idle,
-        Active,
-        AtMax,
-        Unsupported
+    enum latency_tuner_state_t {
+        STATE_IDLE,
+        STATE_ACTIVE,
+        STATE_AT_MAX,
+        STATE_UNSUPPORTED
     } ;
 
-    // arbitrary number of calls to wait before bumping up the latency
-    static constexpr int32_t kIdleCount = 8;
+    enum {
+        IDLE_COUNT = 8 // arbitrary number of calls to wait before bumping up the latency
+    };
 
-    Stream               &mStream;
-    State                 mState = State::Idle;
+    OboeStream           &mStream;
+    latency_tuner_state_t mState = STATE_IDLE;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
     std::atomic<int32_t>  mLatencyTriggerRequests{0}; // TODO user atomic requester from AAudio
     std::atomic<int32_t>  mLatencyTriggerResponses{0};
 };
 
-} // namespace oboe
-
-#endif // OBOE_LATENCY_TUNER_
+#endif // OBOE_OBOE_LATENCY_TUNER_

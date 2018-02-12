@@ -20,8 +20,6 @@
 #include "FifoControllerBase.h"
 #include <atomic>
 
-namespace oboe {
-
 /**
  * A FifoControllerBase with counters external to the class.
  */
@@ -54,7 +52,5 @@ private:
     std::atomic<uint64_t> * mWriteCounterAddress;
 
 };
-
-} // namespace oboe
 
 #endif //NATIVEOBOE_FIFOCONTROLLERINDIRECT_H

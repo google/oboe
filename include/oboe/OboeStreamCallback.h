@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_STREAM_CALLBACK_H
-#define OBOE_STREAM_CALLBACK_H
+#ifndef OBOE_OBOE_STREAM_CALLBACK_H
+#define OBOE_OBOE_STREAM_CALLBACK_H
 
-#include "oboe/Definitions.h"
+#include "oboe/OboeDefinitions.h"
 
-namespace oboe {
+class OboeStream;
 
-class Stream;
-
-class StreamCallback {
+class OboeStreamCallback {
 public:
-    virtual ~StreamCallback() = default;
+    virtual ~OboeStreamCallback() = default;
 
     /**
      * A buffer is ready for processing.
@@ -33,10 +31,10 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param audioData buffer containing input data or a place to put output data
      * @param numFrames number of frames to be processed
-     * @return DataCallbackResult::Continue or DataCallbackResult::Stop
+     * @return OBOE_CALLBACK_RESULT_CONTINUE or OBOE_CALLBACK_RESULT_STOP
      */
-    virtual DataCallbackResult onAudioReady(
-            Stream *oboeStream,
+    virtual oboe_data_callback_result_t onAudioReady(
+            OboeStream *oboeStream,
             void *audioData,
             int32_t numFrames) = 0;
 
@@ -48,7 +46,7 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorBeforeClose(Stream *oboeStream, Result error) {}
+    virtual void onErrorBeforeClose(OboeStream *oboeStream, oboe_result_t error) {}
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected.
@@ -60,10 +58,8 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorAfterClose(Stream *oboeStream, Result error) {}
+    virtual void onErrorAfterClose(OboeStream *oboeStream, oboe_result_t error) {}
 
 };
 
-} // namespace oboe
-
-#endif //OBOE_STREAM_CALLBACK_H
+#endif //OBOE_OBOE_STREAM_CALLBACK_H

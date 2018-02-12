@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_UTILITIES_H
-#define OBOE_UTILITIES_H
+#ifndef OBOE_OBOE_UTILITIES_H
+#define OBOE_OBOE_UTILITIES_H
 
 #include <unistd.h>
 #include <sys/types.h>
-#include "oboe/Definitions.h"
+#include "oboe/OboeDefinitions.h"
 
-namespace oboe {
-
-void convertFloatToPcm16(const float *source, int16_t *destination, int32_t numSamples);
-void convertPcm16ToFloat(const int16_t *source, float *destination, int32_t numSamples);
+void Oboe_convertFloatToPcm16(const float *source, int16_t *destination, int32_t numSamples);
+void Oboe_convertPcm16ToFloat(const int16_t *source, float *destination, int32_t numSamples);
 
 /**
  * @return the size of a sample of the given format in bytes or OBOE_ERROR_ILLEGAL_ARGUMENT
  */
-int32_t convertFormatToSizeInBytes(AudioFormat format);
+int32_t Oboe_convertFormatToSizeInBytes(oboe_audio_format_t format);
 
 /**
  * The text is the ASCII symbol corresponding to the returnCode,
@@ -39,7 +37,7 @@ int32_t convertFormatToSizeInBytes(AudioFormat format);
  *
  * @return pointer to a text representation of an Oboe result code.
  */
-const char * convertResultToText(Result returnCode);
+const char * Oboe_convertResultToText(oboe_result_t returnCode);
 
 /**
  * The text is the ASCII symbol corresponding to the audio format,
@@ -49,7 +47,7 @@ const char * convertResultToText(Result returnCode);
  *
  * @return pointer to a text representation of an Oboe audio format.
  */
-const char * convertAudioFormatToText(AudioFormat format);
+const char * Oboe_convertAudioFormatToText(oboe_audio_format_t format);
 
 /**
  * The text is the ASCII symbol corresponding to the performance mode,
@@ -59,7 +57,7 @@ const char * convertAudioFormatToText(AudioFormat format);
  *
  * @return pointer to a text representation of an Oboe performance mode.
  */
-const char * convertPerformanceModeToText(PerformanceMode mode);
+const char * Oboe_convertPerformanceModeToText(oboe_performance_mode_t mode);
 
 /**
  * The text is the ASCII symbol corresponding to the sharing mode,
@@ -69,7 +67,7 @@ const char * convertPerformanceModeToText(PerformanceMode mode);
  *
  * @return pointer to a text representation of an Oboe sharing mode.
  */
-const char * convertSharingModeToText(SharingMode mode);
+const char * Oboe_convertSharingModeToText(oboe_sharing_mode_t mode);
 
 /**
  * The text is the ASCII symbol corresponding to the data callback result,
@@ -79,7 +77,7 @@ const char * convertSharingModeToText(SharingMode mode);
  *
  * @return pointer to a text representation of an Oboe data callback result.
  */
-const char * convertDataCallbackResultToText(DataCallbackResult result);
+const char * Oboe_convertDataCallbackResultToText(oboe_data_callback_result_t result);
 
 /**
  * The text is the ASCII symbol corresponding to the stream direction,
@@ -89,8 +87,5 @@ const char * convertDataCallbackResultToText(DataCallbackResult result);
  *
  * @return pointer to a text representation of an Oboe stream direction.
  */
-const char * convertDirectionToText(Direction direction);
-
-} // namespace oboe
-
-#endif //OBOE_UTILITIES_H
+const char *Oboe_convertDirectionToText(oboe_direction_t direction);
+#endif //OBOE_OBOE_UTILITIES_H

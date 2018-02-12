@@ -19,8 +19,6 @@
 
 #include <SLES/OpenSLES_Android.h>
 
-namespace oboe {
-
 /**
  * Creates an extended PCM format from the supplied format and data representation. This method
  * should only be called on Android devices with API level 21+. API 21 introduced the
@@ -33,7 +31,5 @@ namespace oboe {
  */
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(SLDataFormat_PCM format,
                                                          SLuint32 representation);
-
-} // namespace oboe
 
 #endif //OBOE_OPENSLES_OPENSLESUTILITIES_H

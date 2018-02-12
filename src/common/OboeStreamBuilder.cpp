@@ -16,51 +16,47 @@
 
 #include <sys/types.h>
 
-#include "aaudio/StreamAAudio.h"
+#include "aaudio/OboeStreamAAudio.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
-#include "oboe/StreamBuilder.h"
-#include "opensles/StreamOpenSLES.h"
+#include "oboe/OboeStreamBuilder.h"
+#include "opensles/OboeStreamOpenSLES.h"
 
-namespace oboe {
-
-bool StreamBuilder::isAAudioSupported() {
-    return StreamAAudio::isSupported();
+bool OboeStreamBuilder::isAAudioSupported() {
+    return OboeStreamAAudio::isSupported();
 }
 
-Stream *StreamBuilder::build() {
-    LOGD("StreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
+OboeStream *OboeStreamBuilder::build() {
+    LOGD("OboeStreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
          mAudioApi, mChannelCount, mFramesPerCallback);
-    Stream *stream = nullptr;
+    OboeStream *stream = nullptr;
     switch(mAudioApi) {
-        case AudioApi::Unspecified:
-        case AudioApi::AAudio:
-            if (StreamAAudio::isSupported()) {
-                stream = new StreamAAudio(*this);
+        case API_UNSPECIFIED:
+        case API_AAUDIO:
+            if (OboeStreamAAudio::isSupported()) {
+                stream = new OboeStreamAAudio(*this);
                 break;
             }
             // fall into using older existing API
-        case AudioApi::OpenSLES:
-            stream = new StreamOpenSLES(*this);
+        case API_OPENSL_ES:
+            stream = new OboeStreamOpenSLES(*this);
             break;
     }
     return stream;
 }
 
-Result StreamBuilder::openStream(Stream **streamPP) {
+oboe_result_t OboeStreamBuilder::openStream(OboeStream **streamPP) {
     if (streamPP == nullptr) {
-        return Result::ErrorNull;
+        return OBOE_ERROR_NULL;
     }
     *streamPP = nullptr;
-    Stream *streamP = build();
+    OboeStream *streamP = build();
     if (streamP == nullptr) {
-        return Result::ErrorNull;
+        return OBOE_ERROR_NULL;
     }
-    Result result = streamP->open(); // TODO review API
-    if (result == Result::OK) {
+    oboe_result_t result = streamP->open(); // TODO review API
+    if (result == OBOE_OK) {
         *streamPP = streamP;
     }
     return result;
 }
-
-} // namespace oboe

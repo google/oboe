@@ -17,9 +17,8 @@
 #ifndef NATIVEOBOE_FIFOCONTROLLERBASE_H
 #define NATIVEOBOE_FIFOCONTROLLERBASE_H
 
-#include <sys/types.h>
 
-namespace oboe {
+#include <sys/types.h>
 
 /**
  * Manage the read/write indices of a circular buffer.
@@ -90,6 +89,5 @@ private:
 //    uint32_t mSmallMask;
 };
 
-} // namespace oboe
 
 #endif //NATIVEOBOE_FIFOCONTROLLERBASE_H

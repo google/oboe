@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-#include "oboe/LatencyTuner.h"
+#include "oboe/OboeLatencyTuner.h"
 
-using namespace oboe;
-
-LatencyTuner::LatencyTuner(Stream &stream)
+OboeLatencyTuner::OboeLatencyTuner(OboeStream &stream)
     : mStream(stream) {
     reset();
 }
 
-Result LatencyTuner::tune() {
-    if (mState == State::Unsupported) {
-        return Result::ErrorUnimplemented;
+oboe_result_t OboeLatencyTuner::tune() {
+    if (mState == STATE_UNSUPPORTED) {
+        return OBOE_ERROR_UNIMPLEMENTED;
     }
 
-    Result result = Result::OK;
+    oboe_result_t result = OBOE_OK;
 
     // Process reset requests.
     int32_t numRequests = mLatencyTriggerRequests.load();
@@ -38,50 +36,49 @@ Result LatencyTuner::tune() {
     }
 
     switch (mState) {
-        case State::Idle:
+        case STATE_IDLE:
             if (--mIdleCountDown <= 0) {
-                mState = State::Active;
+                mState = STATE_ACTIVE;
             }
             mPreviousXRuns = mStream.getXRunCount();
             if (mPreviousXRuns < 0) {
-                result = static_cast<Result>(mPreviousXRuns); // error code
-                mState = State::Unsupported;
+                result = mPreviousXRuns; // error code
+                mState = STATE_UNSUPPORTED;
             }
             break;
 
-        case State::Active: {
+        case STATE_ACTIVE: {
             int32_t xRuns = mStream.getXRunCount();
             if ((xRuns - mPreviousXRuns) > 0) {
                 mPreviousXRuns = xRuns;
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
                 int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
-                int32_t resultingSize = static_cast<int32_t>(
-                        mStream.setBufferSizeInFrames(requestedBufferSize));
+                int32_t resultingSize = mStream.setBufferSizeInFrames(requestedBufferSize);
                 if (resultingSize == oldBufferSize) {
-                    mState = State::AtMax; // can't go any higher
+                    mState = STATE_AT_MAX; // can't go any higher
                 } else if (resultingSize < 0) {
-                    result = static_cast<Result>(resultingSize); // error code
-                    mState = State::Unsupported;
+                    result = resultingSize; // error code
+                    mState = STATE_UNSUPPORTED;
                 }
             }
         }
 
-        case State::AtMax:
-        case State::Unsupported:
+        case STATE_AT_MAX:
+        case STATE_UNSUPPORTED:
             break;
     }
     return result;
 }
 
-void LatencyTuner::requestReset() {
-    if (mState != State::Unsupported) {
+void OboeLatencyTuner::requestReset() {
+    if (mState != STATE_UNSUPPORTED) {
         mLatencyTriggerRequests++;
     }
 }
 
-void LatencyTuner::reset() {
-    mState = State::Idle;
-    mIdleCountDown = kIdleCount;
+void OboeLatencyTuner::reset() {
+    mState = STATE_IDLE;
+    mIdleCountDown = IDLE_COUNT;
     // Set to minimal latency
     mStream.setBufferSizeInFrames(mStream.getFramesPerBurst());
 }
