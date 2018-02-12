@@ -26,7 +26,7 @@ namespace oboe {
  */
 AudioStreamBuffered::AudioStreamBuffered(const AudioStreamBuilder &builder)
         : AudioStream(builder)
-        , mFifoBuffer(nullptr)
+        , mFifoBuffer(NULL)
 {
 }
 
@@ -39,13 +39,12 @@ Result AudioStreamBuffered::open() {
 
     // If the caller does not provide a callback use our own internal
     // callback that reads data from the FIFO.
-    if (getCallback() == nullptr) {
+    if (getCallback() == NULL) {
         LOGD("AudioStreamBuffered(): new FifoBuffer");
         mFifoBuffer = new FifoBuffer(getBytesPerFrame(), 1024); // TODO size?
         // Create a callback that reads from the FIFO
-        mInternalCallback = std::make_unique<AudioStreamBufferedCallback>(this);
-        mStreamCallback = mInternalCallback.get();
-        LOGD("AudioStreamBuffered(): mStreamCallback = %p", mStreamCallback);
+        mStreamCallback = std::make_shared<AudioStreamBufferedCallback>(this);
+        LOGD("AudioStreamBuffered(): mStreamCallback = %p", mStreamCallback.get());
     }
     return Result::OK;
 }

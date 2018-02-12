@@ -90,12 +90,12 @@ public:
 
     int32_t getDeviceId() const { return mDeviceId; }
 
-    AudioStreamCallback* getCallback() const {
+    std::shared_ptr<AudioStreamCallback> getCallback() const {
         return mStreamCallback;
     }
 
 protected:
-    AudioStreamCallback            *mStreamCallback;
+    std::shared_ptr<AudioStreamCallback> mStreamCallback;
     int32_t                         mFramesPerCallback = kUnspecified;
     int32_t                         mChannelCount = kUnspecified;
     int32_t                         mSampleRate = kUnspecified;
