@@ -35,16 +35,15 @@ AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
 }
 
 // These will wind up in <SLES/OpenSLES_Android.h>
-constexpr int SL_ANDROID_SPEAKER_STEREO = (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT);
+#define SL_ANDROID_SPEAKER_QUAD (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT \
+ | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
 
-constexpr int SL_ANDROID_SPEAKER_QUAD = (SL_ANDROID_SPEAKER_STEREO
-        | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT);
+#define SL_ANDROID_SPEAKER_5DOT1 (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT \
+ | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY| SL_SPEAKER_BACK_LEFT \
+ | SL_SPEAKER_BACK_RIGHT)
 
-constexpr int SL_ANDROID_SPEAKER_5DOT1 = (SL_ANDROID_SPEAKER_QUAD
-        | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY);
-
-constexpr int SL_ANDROID_SPEAKER_7DOT1 = (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT
-        | SL_SPEAKER_SIDE_RIGHT);
+#define SL_ANDROID_SPEAKER_7DOT1 (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT \
+ |SL_SPEAKER_SIDE_RIGHT)
 
 int AudioOutputStreamOpenSLES::chanCountToChanMask(int chanCount) {
     int channelMask = 0;
@@ -55,7 +54,7 @@ int AudioOutputStreamOpenSLES::chanCountToChanMask(int chanCount) {
             break;
 
         case  2:
-            channelMask = SL_ANDROID_SPEAKER_STEREO;
+            channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
             break;
 
         case  4: // Quad
@@ -77,13 +76,13 @@ Result AudioOutputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
-    SLresult result = OutputMixerOpenSL::getInstance().open();
+    SLresult result = OutputMixerOpenSL::getInstance()->open();
     if (SL_RESULT_SUCCESS != result) {
         AudioStreamOpenSLES::close();
         return Result::ErrorInternal;
     }
 
-    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
+    SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
 
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -117,7 +116,7 @@ Result AudioOutputStreamOpenSLES::open() {
         audioSrc.pFormat = &format_pcm_ex;
     }
 
-    result = OutputMixerOpenSL::getInstance().createAudioPlayer(&mObjectInterface,
+    result = OutputMixerOpenSL::getInstance()->createAudioPlayer(&mObjectInterface,
                                                                           &audioSrc);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioPlayer() result:%s", getSLErrStr(result));
@@ -132,12 +131,13 @@ Result AudioOutputStreamOpenSLES::open() {
 
     result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_PLAY, &mPlayInterface);
     if (SL_RESULT_SUCCESS != result) {
-        LOGE("GetInterface PLAY result:%s", getSLErrStr(result));
+        LOGE("get player interface result:%s", getSLErrStr(result));
         goto error;
     }
 
     result = AudioStreamOpenSLES::registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
+        LOGE("get bufferqueue interface:%p result:%s", mSimpleBufferQueueInterface, getSLErrStr(result));
         goto error;
     }
 
@@ -150,7 +150,7 @@ Result AudioOutputStreamOpenSLES::close() {
     requestPause();
     // invalidate any interfaces
     mPlayInterface = NULL;
-    OutputMixerOpenSL::getInstance().close();
+    OutputMixerOpenSL::getInstance()->close();
     return AudioStreamOpenSLES::close();
 }
 

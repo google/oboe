@@ -30,7 +30,7 @@ namespace oboe {
  */
 class EngineOpenSLES {
 public:
-    static EngineOpenSLES &getInstance();
+    static EngineOpenSLES *getInstance();
 
     SLresult open();
 
@@ -46,15 +46,8 @@ public:
                                  SLDataSink *audioSink);
 
 private:
-    // Make this a safe Singleton
-    EngineOpenSLES()= default;
-    ~EngineOpenSLES()= default;
-    EngineOpenSLES(const EngineOpenSLES&)= delete;
-    EngineOpenSLES& operator=(const EngineOpenSLES&)= delete;
-
     std::mutex             mLock;
-    int32_t                mOpenCount = 0;
-
+    std::atomic<int32_t>   mOpenCount{0};
     SLObjectItf            mEngineObject = 0;
     SLEngineItf            mEngineInterface;
 };
