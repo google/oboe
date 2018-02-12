@@ -21,7 +21,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "oboe/Oboe.h"
-#include "AudioStreamBuffered.h"
+#include "StreamBuffered.h"
 
 namespace oboe {
 
@@ -32,13 +32,13 @@ namespace oboe {
  * Use an OboeStreamBuilder to create one.
  */
 //
-class AudioStreamOpenSLES : public AudioStreamBuffered {
+class StreamOpenSLES : public StreamBuffered {
 public:
 
-    AudioStreamOpenSLES();
-    explicit AudioStreamOpenSLES(const AudioStreamBuilder &builder);
+    StreamOpenSLES();
+    explicit StreamOpenSLES(const StreamBuilder &builder);
 
-    virtual ~AudioStreamOpenSLES();
+    virtual ~StreamOpenSLES();
 
     Result open() override;
     Result close() override;

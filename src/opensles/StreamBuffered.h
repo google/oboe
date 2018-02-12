@@ -18,18 +18,18 @@
 #define OBOE_STREAM_BUFFERED_H
 
 #include "common/OboeDebug.h"
-#include "oboe/AudioStream.h"
-#include "oboe/AudioStreamCallback.h"
+#include "oboe/Stream.h"
+#include "oboe/StreamCallback.h"
 #include "fifo/FifoBuffer.h"
 
 namespace oboe {
 
 // A stream that contains a FIFO buffer.
-class AudioStreamBuffered : public AudioStream {
+class StreamBuffered : public Stream {
 public:
 
-    AudioStreamBuffered();
-    explicit AudioStreamBuffered(const AudioStreamBuilder &builder);
+    StreamBuffered();
+    explicit StreamBuffered(const StreamBuilder &builder);
 
     Result open() override;
 
@@ -45,16 +45,16 @@ public:
 
 protected:
 
-    class AudioStreamBufferedCallback : public AudioStreamCallback {
+    class AudioStreamBufferedCallback : public StreamCallback {
     public:
-        AudioStreamBufferedCallback(AudioStreamBuffered *bufferedStream)
+        AudioStreamBufferedCallback(StreamBuffered *bufferedStream)
                 : mBufferedStream(bufferedStream) {
         }
 
         virtual ~AudioStreamBufferedCallback() {}
 
         virtual DataCallbackResult onAudioReady(
-                AudioStream *audioStream,
+                Stream *audioStream,
                 void *audioData,
                 int numFrames) {
             int32_t framesRead = mBufferedStream->mFifoBuffer->readNow(audioData, numFrames);
@@ -64,7 +64,7 @@ protected:
 
         virtual void onExit(Result reason) {}
     private:
-        AudioStreamBuffered *mBufferedStream;
+        StreamBuffered *mBufferedStream;
     };
 
 private:

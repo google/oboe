@@ -16,43 +16,43 @@
 
 #include <sys/types.h>
 
-#include "aaudio/AudioStreamAAudio.h"
+#include "aaudio/StreamAAudio.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
-#include "oboe/AudioStreamBuilder.h"
-#include "opensles/AudioStreamOpenSLES.h"
+#include "oboe/StreamBuilder.h"
+#include "opensles/StreamOpenSLES.h"
 
 namespace oboe {
 
-bool AudioStreamBuilder::isAAudioSupported() {
-    return AudioStreamAAudio::isSupported();
+bool StreamBuilder::isAAudioSupported() {
+    return StreamAAudio::isSupported();
 }
 
-AudioStream *AudioStreamBuilder::build() {
-    LOGD("AudioStreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
+Stream *StreamBuilder::build() {
+    LOGD("StreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
          mAudioApi, mChannelCount, mFramesPerCallback);
-    AudioStream *stream = nullptr;
+    Stream *stream = nullptr;
     switch(mAudioApi) {
         case AudioApi::Unspecified:
         case AudioApi::AAudio:
-            if (AudioStreamAAudio::isSupported()) {
-                stream = new AudioStreamAAudio(*this);
+            if (StreamAAudio::isSupported()) {
+                stream = new StreamAAudio(*this);
                 break;
             }
             // fall into using older existing API
         case AudioApi::OpenSLES:
-            stream = new AudioStreamOpenSLES(*this);
+            stream = new StreamOpenSLES(*this);
             break;
     }
     return stream;
 }
 
-Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
+Result StreamBuilder::openStream(Stream **streamPP) {
     if (streamPP == nullptr) {
         return Result::ErrorNull;
     }
     *streamPP = nullptr;
-    AudioStream *streamP = build();
+    Stream *streamP = build();
     if (streamP == nullptr) {
         return Result::ErrorNull;
     }

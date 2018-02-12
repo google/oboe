@@ -18,7 +18,7 @@
 #define OBOE_STREAM_BASE_H_
 
 #include <memory>
-#include "oboe/AudioStreamCallback.h"
+#include "oboe/StreamCallback.h"
 #include "oboe/Definitions.h"
 
 namespace oboe {
@@ -31,17 +31,17 @@ namespace oboe {
  * OboeStream will generally return the actual final value, but getFramesPerCallback()
  * can be unspecified even for a stream.
  */
-class AudioStreamBase {
+class StreamBase {
 public:
 
-    AudioStreamBase() {}
+    StreamBase() {}
 
-    virtual ~AudioStreamBase() = default;
+    virtual ~StreamBase() = default;
 
     // This class only contains primitives so we can use default constructor and copy methods.
-    AudioStreamBase(const AudioStreamBase&) = default;
+    StreamBase(const StreamBase&) = default;
 
-    AudioStreamBase& operator=(const AudioStreamBase&) = default;
+    StreamBase& operator=(const StreamBase&) = default;
 
     /**
      * @return number of channels, for example 2 for stereo
@@ -90,12 +90,12 @@ public:
 
     int32_t getDeviceId() const { return mDeviceId; }
 
-    std::shared_ptr<AudioStreamCallback> getCallback() const {
+    std::shared_ptr<StreamCallback> getCallback() const {
         return mStreamCallback;
     }
 
 protected:
-    std::shared_ptr<AudioStreamCallback> mStreamCallback;
+    std::shared_ptr<StreamCallback> mStreamCallback;
     int32_t                         mFramesPerCallback = kUnspecified;
     int32_t                         mChannelCount = kUnspecified;
     int32_t                         mSampleRate = kUnspecified;

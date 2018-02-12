@@ -16,36 +16,36 @@
 
 #include <sys/types.h>
 #include <pthread.h>
-#include <oboe/AudioStream.h>
+#include <oboe/Stream.h>
 #include "OboeDebug.h"
 #include <oboe/Utilities.h>
 
 namespace oboe {
 
 /*
- * AudioStream
+ * Stream
  */
-AudioStream::AudioStream(const AudioStreamBuilder &builder)
-        : AudioStreamBase(builder) {
+Stream::Stream(const StreamBuilder &builder)
+        : StreamBase(builder) {
 }
 
-Result AudioStream::open() {
+Result Stream::open() {
     // TODO validate parameters or let underlyng API validate them?
     return Result::OK;
 }
 
-Result AudioStream::fireCallback(void *audioData, int32_t numFrames)
+Result Stream::fireCallback(void *audioData, int32_t numFrames)
 {
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
-        LOGD("AudioStream::fireCallback() scheduler = %s",
+        LOGD("Stream::fireCallback() scheduler = %s",
              ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
              ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
              ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
         );
         mPreviousScheduler = scheduler;
     }
-    if (mStreamCallback == nullptr) {
+    if (mStreamCallback == NULL) {
         return Result::ErrorNull;
     } else {
         /**
@@ -62,7 +62,7 @@ Result AudioStream::fireCallback(void *audioData, int32_t numFrames)
     }
 }
 
-Result AudioStream::waitForStateTransition(StreamState startingState,
+Result Stream::waitForStateTransition(StreamState startingState,
                                                StreamState endingState,
                                                int64_t timeoutNanoseconds)
 {
@@ -81,7 +81,7 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
     }
 }
 
-Result AudioStream::start(int64_t timeoutNanoseconds)
+Result Stream::start(int64_t timeoutNanoseconds)
 {
     Result result = requestStart();
     if (result != Result::OK) return result;
@@ -89,7 +89,7 @@ Result AudioStream::start(int64_t timeoutNanoseconds)
                                   StreamState::Started, timeoutNanoseconds);
 }
 
-Result AudioStream::pause(int64_t timeoutNanoseconds)
+Result Stream::pause(int64_t timeoutNanoseconds)
 {
     Result result = requestPause();
     if (result != Result::OK) return result;
@@ -97,7 +97,7 @@ Result AudioStream::pause(int64_t timeoutNanoseconds)
                                   StreamState::Paused, timeoutNanoseconds);
 }
 
-Result AudioStream::flush(int64_t timeoutNanoseconds)
+Result Stream::flush(int64_t timeoutNanoseconds)
 {
     Result result = requestFlush();
     if (result != Result::OK) return result;
@@ -105,7 +105,7 @@ Result AudioStream::flush(int64_t timeoutNanoseconds)
                                   StreamState::Flushed, timeoutNanoseconds);
 }
 
-Result AudioStream::stop(int64_t timeoutNanoseconds)
+Result Stream::stop(int64_t timeoutNanoseconds)
 {
     Result result = requestStop();
     if (result != Result::OK) return result;
@@ -113,12 +113,12 @@ Result AudioStream::stop(int64_t timeoutNanoseconds)
                                   StreamState::Stopped, timeoutNanoseconds);
 }
 
-bool AudioStream::isPlaying() {
+bool Stream::isPlaying() {
     StreamState state = getState();
     return state == StreamState::Starting || state == StreamState::Started;
 }
 
-int32_t AudioStream::getBytesPerSample() const {
+int32_t Stream::getBytesPerSample() const {
     return convertFormatToSizeInBytes(mFormat);
 }
 

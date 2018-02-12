@@ -18,7 +18,7 @@
 
 using namespace oboe;
 
-LatencyTuner::LatencyTuner(AudioStream &stream)
+LatencyTuner::LatencyTuner(Stream &stream)
     : mStream(stream) {
     reset();
 }

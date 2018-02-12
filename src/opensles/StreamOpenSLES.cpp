@@ -21,8 +21,8 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "common/OboeDebug.h"
-#include "oboe/AudioStreamBuilder.h"
-#include "AudioStreamOpenSLES.h"
+#include "oboe/StreamBuilder.h"
+#include "StreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
 
 #ifndef NULL
@@ -114,7 +114,7 @@ static SLObjectItf sOutputMixObject = 0;
 
 static void CloseSLEngine();
 
-SLresult AudioStreamOpenSLES::enqueueBuffer() {
+SLresult StreamOpenSLES::enqueueBuffer() {
     // Ask the callback to fill the output buffer with data.
     Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
     if (result != Result::OK) {
@@ -128,7 +128,7 @@ SLresult AudioStreamOpenSLES::enqueueBuffer() {
 
 // this callback handler is called every time a buffer finishes playing
 static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((AudioStreamOpenSLES *) context)->enqueueBuffer();
+    ((StreamOpenSLES *) context)->enqueueBuffer();
 }
 
 static SLresult OpenSLEngine() {
@@ -200,17 +200,17 @@ static void CloseSLEngine() {
     }
 }
 
-AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
-    : AudioStreamBuffered(builder) {
+StreamOpenSLES::StreamOpenSLES(const StreamBuilder &builder)
+    : StreamBuffered(builder) {
     bqPlayerObject_ = NULL;
     bq_ = NULL;
     bqPlayerPlay_ = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
     OpenSLEngine();
-    LOGD("AudioStreamOpenSLES(): after OpenSLEngine()");
+    LOGD("StreamOpenSLES(): after OpenSLEngine()");
 }
 
-AudioStreamOpenSLES::~AudioStreamOpenSLES() {
+StreamOpenSLES::~StreamOpenSLES() {
     CloseSLEngine();
     delete[] mCallbackBuffer;
 }
@@ -236,7 +236,7 @@ static SLuint32 s_getDefaultByteOrder() {
     return s_isLittleEndian() ? SL_BYTEORDER_LITTLEENDIAN : SL_BYTEORDER_BIGENDIAN;
 }
 
-Result AudioStreamOpenSLES::open() {
+Result StreamOpenSLES::open() {
 
     SLresult result;
 
@@ -256,7 +256,7 @@ Result AudioStreamOpenSLES::open() {
                   AudioFormat::I16 : AudioFormat::Float;
     }
 
-    Result oboeResult = AudioStreamBuffered::open();
+    Result oboeResult = StreamBuffered::open();
     if (oboeResult != Result::OK) {
         return oboeResult;
     }
@@ -280,8 +280,8 @@ Result AudioStreamOpenSLES::open() {
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
     mCallbackBuffer = new uint8_t[mBytesPerCallback];
-    LOGD("AudioStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
-    LOGD("AudioStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
+    LOGD("StreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
+    LOGD("StreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
 
     SLuint32 bitsPerSample = getBytesPerSample() * OBOE_BITS_PER_BYTE;
 
@@ -357,8 +357,8 @@ Result AudioStreamOpenSLES::open() {
     return Result::OK;
 }
 
-Result AudioStreamOpenSLES::close() {
-//    __android_log_write(ANDROID_LOG_INFO, TAG, "AudioStreamOpenSLES()");
+Result StreamOpenSLES::close() {
+//    __android_log_write(ANDROID_LOG_INFO, TAG, "StreamOpenSLES()");
     // TODO make sure callback is no longer being called
     if (bqPlayerObject_ != NULL) {
         (*bqPlayerObject_)->Destroy(bqPlayerObject_);
@@ -371,16 +371,16 @@ Result AudioStreamOpenSLES::close() {
     return Result::OK;
 }
 
-Result AudioStreamOpenSLES::setPlayState(SLuint32 newState)
+Result StreamOpenSLES::setPlayState(SLuint32 newState)
 {
     Result result = Result::OK;
-    LOGD("AudioStreamOpenSLES(): setPlayState()");
+    LOGD("StreamOpenSLES(): setPlayState()");
     if (bqPlayerPlay_ == NULL) {
         return Result::ErrorInvalidState;
     }
     SLresult slResult = (*bqPlayerPlay_)->SetPlayState(bqPlayerPlay_, newState);
     if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("AudioStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
+        LOGD("StreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Pausing);
@@ -388,9 +388,9 @@ Result AudioStreamOpenSLES::setPlayState(SLuint32 newState)
     return result;
 }
 
-Result AudioStreamOpenSLES::requestStart()
+Result StreamOpenSLES::requestStart()
 {
-    LOGD("AudioStreamOpenSLES(): requestStart()");
+    LOGD("StreamOpenSLES(): requestStart()");
     Result result = setPlayState(SL_PLAYSTATE_PLAYING);
     if(result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
@@ -402,8 +402,8 @@ Result AudioStreamOpenSLES::requestStart()
 }
 
 
-Result AudioStreamOpenSLES::requestPause() {
-    LOGD("AudioStreamOpenSLES(): requestPause()");
+Result StreamOpenSLES::requestPause() {
+    LOGD("StreamOpenSLES(): requestPause()");
     Result result = setPlayState(SL_PLAYSTATE_PAUSED);
     if(result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
@@ -413,17 +413,17 @@ Result AudioStreamOpenSLES::requestPause() {
     return result;
 }
 
-Result AudioStreamOpenSLES::requestFlush() {
-    LOGD("AudioStreamOpenSLES(): requestFlush()");
+Result StreamOpenSLES::requestFlush() {
+    LOGD("StreamOpenSLES(): requestFlush()");
     if (bqPlayerPlay_ == NULL) {
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
 }
 
-Result AudioStreamOpenSLES::requestStop()
+Result StreamOpenSLES::requestStop()
 {
-    LOGD("AudioStreamOpenSLES(): requestStop()");
+    LOGD("StreamOpenSLES(): requestStop()");
     Result result = setPlayState(SL_PLAYSTATE_STOPPED);
     if(result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
@@ -433,18 +433,18 @@ Result AudioStreamOpenSLES::requestStop()
     return result;
 }
 
-Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
+Result StreamOpenSLES::waitForStateChange(StreamState currentState,
                                                       StreamState *nextState,
                                                       int64_t timeoutNanoseconds)
 {
-    LOGD("AudioStreamOpenSLES(): waitForStateChange()");
+    LOGD("StreamOpenSLES(): waitForStateChange()");
     if (bqPlayerPlay_ == NULL) {
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
 }
 
-int32_t AudioStreamOpenSLES::getFramesPerBurst() {
+int32_t StreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
 
