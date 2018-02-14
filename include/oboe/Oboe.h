@@ -18,6 +18,7 @@
 #define OBOE_OBOE_H
 
 #include "oboe/Definitions.h"
+#include "oboe/ErrorOrValue.h"
 #include "oboe/LatencyTuner.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamBase.h"
