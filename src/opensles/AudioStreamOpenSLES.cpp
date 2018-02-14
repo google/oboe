@@ -74,6 +74,7 @@ Result AudioStreamOpenSLES::open() {
     // API 21+: FLOAT
     // API <21: INT16
     if (mFormat == AudioFormat::Unspecified){
+        // TODO use runtime check
         mFormat = (__ANDROID_API__ < __ANDROID_API_L__) ?
                   AudioFormat::I16 : AudioFormat::Float;
     }
@@ -107,18 +108,21 @@ Result AudioStreamOpenSLES::open() {
     LOGD("AudioStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
 
     mSharingMode = SharingMode::Shared;
-    mBufferCapacityInFrames = mFramesPerBurst * mBurstsPerBuffer;
+
+    if (!usingFIFO()) {
+        mBufferCapacityInFrames = mFramesPerBurst * kBufferQueueLength;
+    }
 
     return Result::OK;
 }
 
 Result AudioStreamOpenSLES::close() {
-    if (mObjectInterface != NULL) {
+    if (mObjectInterface != nullptr) {
         (*mObjectInterface)->Destroy(mObjectInterface);
-        mObjectInterface = NULL;
+        mObjectInterface = nullptr;
 
     }
-    mSimpleBufferQueueInterface = NULL;
+    mSimpleBufferQueueInterface = nullptr;
     EngineOpenSLES::getInstance().close();
     return Result::OK;
 }
@@ -129,10 +133,10 @@ SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueIt
 
 SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     // Ask the callback to fill the output buffer with data.
-    Result result = fireCallback(mCallbackBuffer, mFramesPerCallback);
-    if (result != Result::OK) {
+    DataCallbackResult result = fireCallback(mCallbackBuffer, mFramesPerCallback);
+    if (result != DataCallbackResult::Continue) {
         LOGE("Oboe callback returned %d", result);
-        return SL_RESULT_INTERNAL_ERROR;
+        return SL_RESULT_INTERNAL_ERROR; // TODO How should we stop OpenSL ES.
     } else {
         // Pass the data to OpenSLES.
         return enqueueCallbackBuffer(bq);

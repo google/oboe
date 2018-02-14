@@ -88,10 +88,12 @@ public:
      *
      * <pre><code>
      * int64_t timeoutNanos = 500 * kNanosPerMillisecond; // arbitrary 1/2 second
-     * StreamState currentState = stream->getState(stream);
-     * while (currentState >= 0 && currentState != StreamState::Paused) {
-     *     currentState = stream->waitForStateChange(
-     *                                   stream, currentState, timeoutNanos);
+     * StreamState currentState = stream->getState();
+     * StreamState nextState = StreamState::Unknown;
+     * while (result == Result::OK && currentState != StreamState::Paused) {
+     *     result = stream->waitForStateChange(
+     *                                   currentState, &nextState, timeoutNanos);
+     *     currentState = nextState;
      * }
      * </code></pre>
      *
@@ -130,7 +132,7 @@ public:
      *
      * @return the count or negative error.
      */
-    virtual int32_t getXRunCount() {
+    virtual int32_t getXRunCount() const {
         return static_cast<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -151,9 +153,9 @@ public:
      * This monotonic counter will never get reset.
      * @return the number of frames written so far
      */
-    virtual int64_t getFramesWritten() { return mFramesWritten; }
+    virtual int64_t getFramesWritten() const { return mFramesWritten; }
 
-    virtual int64_t getFramesRead() { return static_cast<int64_t>(Result::ErrorUnimplemented); }
+    virtual int64_t getFramesRead() const { return mFramesRead; }
 
     virtual Result getTimestamp(clockid_t clockId,
                                        int64_t *framePosition,
@@ -197,6 +199,9 @@ protected:
     virtual int64_t incrementFramesWritten(int32_t frames) {
         return mFramesWritten += frames;
     }
+    virtual int64_t incrementFramesRead(int32_t frames) {
+        return mFramesRead += frames;
+    }
 
     /**
      * Wait for a transition from one state to another.
@@ -208,7 +213,18 @@ protected:
                                               StreamState endingState,
                                               int64_t timeoutNanoseconds);
 
-    Result fireCallback(void *audioData, int numFrames);
+    /**
+     * Override this to provide a default for when the application did not specify a callback.
+     *
+     * @param audioData
+     * @param numFrames
+     * @return result
+     */
+    virtual DataCallbackResult onDefaultCallback(void *audioData, int numFrames) {
+        return DataCallbackResult::Stop;
+    }
+
+    DataCallbackResult fireCallback(void *audioData, int numFrames);
 
     virtual void setNativeFormat(AudioFormat format) {
         mNativeFormat = format;
@@ -219,7 +235,9 @@ protected:
     AudioFormat mNativeFormat = AudioFormat::Invalid;
 
 private:
+    // TODO these should be atomic like in AAudio
     int64_t              mFramesWritten = 0;
+    int64_t              mFramesRead = 0;
     int                  mPreviousScheduler = -1;
 };
 

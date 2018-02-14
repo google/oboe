@@ -64,7 +64,7 @@ Result AudioInputStreamOpenSLES::open() {
     // configure audio sink
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,    // locatorType
-            static_cast<SLuint32>(mBurstsPerBuffer)};   // numBuffers
+            static_cast<SLuint32>(kBufferQueueLength)};   // numBuffers
 
     // Define the audio data format.
     SLDataFormat_PCM format_pcm = {
@@ -138,6 +138,8 @@ Result AudioInputStreamOpenSLES::open() {
     if (SL_RESULT_SUCCESS != result) {
         goto error;
     }
+
+    allocateFifo();
 
     return Result::OK;
 
