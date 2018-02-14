@@ -60,11 +60,11 @@ public:
     Result requestFlush() override;
     Result requestStop() override;
 
-    int32_t write(const void *buffer,
+    ErrorOrValue<int32_t> write(const void *buffer,
                   int32_t numFrames,
                   int64_t timeoutNanoseconds) override;
 
-    int32_t read(void *buffer,
+    ErrorOrValue<int32_t> read(void *buffer,
                  int32_t numFrames,
                  int64_t timeoutNanoseconds) override;
 

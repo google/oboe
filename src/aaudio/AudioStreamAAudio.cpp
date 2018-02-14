@@ -265,25 +265,29 @@ Result AudioStreamAAudio::requestStop() {
 }
 
 // TODO: Update to return tuple of Result and framesWritten (avoids cast)
-int32_t AudioStreamAAudio::write(const void *buffer,
+ErrorOrValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_write(mAAudioStream, buffer, numFrames, timeoutNanoseconds);
+        int32_t result = mLibLoader->stream_write(mAAudioStream, buffer,
+                                                  numFrames, timeoutNanoseconds);
+        return ErrorOrValue<int32_t>(result);
     } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        return ErrorOrValue<int32_t>(Result::ErrorNull);
     }
 }
 
-int32_t AudioStreamAAudio::read(void *buffer,
+ErrorOrValue<int32_t>   AudioStreamAAudio::read(void *buffer,
                                  int32_t numFrames,
                                  int64_t timeoutNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_read(mAAudioStream, buffer, numFrames, timeoutNanoseconds);
+        int32_t result = mLibLoader->stream_read(mAAudioStream, buffer,
+                                                 numFrames, timeoutNanoseconds);
+        return ErrorOrValue<int32_t>(result);
     } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        return ErrorOrValue<int32_t>(Result::ErrorNull);
     }
 }
 

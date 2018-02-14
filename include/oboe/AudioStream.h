@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <ctime>
 #include "oboe/Definitions.h"
+#include "oboe/ErrorOrValue.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStreamBase.h"
 
@@ -174,16 +175,16 @@ public:
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
      * @return The number of frames actually written or a negative error.
      */
-    virtual int32_t write(const void *buffer,
+    virtual ErrorOrValue<int32_t> write(const void *buffer,
                              int32_t numFrames,
                              int64_t timeoutNanoseconds) {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+        return ErrorOrValue<int32_t>(Result::ErrorUnimplemented);
     }
 
-    virtual int32_t read(void *buffer,
+    virtual ErrorOrValue<int32_t> read(void *buffer,
                             int32_t numFrames,
                             int64_t timeoutNanoseconds) {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+        return ErrorOrValue<int32_t>(Result::ErrorUnimplemented);
     }
 
     /**

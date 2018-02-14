@@ -98,23 +98,23 @@ int64_t AudioStreamBuffered::predictNextCallbackTime() {
 // TODO: Consider returning an error_or_value struct instead.
 // Common code for read/write.
 // @return number of frames transferred or negative error
-int32_t AudioStreamBuffered::transfer(void *buffer,
+ErrorOrValue<int32_t>  AudioStreamBuffered::transfer(void *buffer,
                                       int32_t numFrames,
                                       int64_t timeoutNanoseconds) {
     // Validate arguments.
     if (buffer == nullptr) {
         LOGE("AudioStreamBuffered::%s(): buffer is NULL", __func__);
-        return (int32_t) Result ::ErrorNull;
+        return ErrorOrValue<int32_t>(Result ::ErrorNull);
     }
     if (numFrames < 0) {
         LOGE("AudioStreamBuffered::%s(): numFrames is negative", __func__);
-        return (int32_t) Result::ErrorOutOfRange;
+        return ErrorOrValue<int32_t>(Result::ErrorOutOfRange);
     } else if (numFrames == 0) {
-        return 0;
+        return ErrorOrValue<int32_t>(0);
     }
     if (timeoutNanoseconds < 0) {
         LOGE("AudioStreamBuffered::%s(): timeoutNanoseconds is negative", __func__);
-        return (int32_t) Result ::ErrorOutOfRange;
+        return ErrorOrValue<int32_t>(Result::ErrorOutOfRange);
     }
 
     int32_t result = 0;
@@ -175,25 +175,29 @@ int32_t AudioStreamBuffered::transfer(void *buffer,
         }
     } while(repeat);
 
-    return result < 0 ? result : (numFrames - framesLeft);
+    if (result < 0) {
+        return ErrorOrValue<int32_t>(static_cast<Result>(result));
+    } else {
+        return ErrorOrValue<int32_t>((numFrames - framesLeft));
+    }
 }
 
 // Write to the FIFO so the callback can read from it.
-int32_t AudioStreamBuffered::write(const void *buffer,
+ErrorOrValue<int32_t> AudioStreamBuffered::write(const void *buffer,
                                    int32_t numFrames,
                                    int64_t timeoutNanoseconds) {
     if (getDirection() == Direction::Input) {
-        return (int32_t) Result::ErrorUnavailable;  // TODO review, better error code?
+        return ErrorOrValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
     return transfer((void *) buffer, numFrames, timeoutNanoseconds);
 }
 
 // Read data from the FIFO that was written by the callback.
-int32_t AudioStreamBuffered::read(void *buffer,
+ErrorOrValue<int32_t> AudioStreamBuffered::read(void *buffer,
                                   int32_t numFrames,
                                   int64_t timeoutNanoseconds) {
     if (getDirection() == Direction::Output) {
-        return (int32_t) Result::ErrorUnavailable; // TODO review, better error code?
+        return ErrorOrValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
     return transfer(buffer, numFrames, timeoutNanoseconds);
 }

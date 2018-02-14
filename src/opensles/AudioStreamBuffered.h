@@ -37,11 +37,11 @@ public:
     void allocateFifo();
 
 
-    int32_t write(const void *buffer,
+    ErrorOrValue<int32_t> write(const void *buffer,
                   int32_t numFrames,
                   int64_t timeoutNanoseconds) override;
 
-    int32_t read(void *buffer,
+    ErrorOrValue<int32_t> read(void *buffer,
                  int32_t numFrames,
                  int64_t timeoutNanoseconds) override;
 
@@ -74,7 +74,7 @@ private:
     void markCallbackTime(int numFrames);
 
     // Read or write to the FIFO.
-    int32_t transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
+    ErrorOrValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
 
     void incrementXRunCount() {
         mXRunCount++;
