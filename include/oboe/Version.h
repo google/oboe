@@ -32,7 +32,9 @@
 #define OBOE_VERSION_MAJOR 0
 
 // Type: 8-bit unsigned int. Min value: 0 Max value: 255. See below for description.
-#define OBOE_VERSION_MINOR 10
+// #define OBOE_VERSION_MINOR 9 // Initial developer preview
+// #define OBOE_VERSION_MINOR 10 // Namespaces, input streams supported via callback
+#define OBOE_VERSION_MINOR 11 // AudioStreamCallback uses references rather than pointers
 
 // Type: 16-bit unsigned int. Min value: 0 Max value: 65535. See below for description.
 #define OBOE_VERSION_PATCH 0

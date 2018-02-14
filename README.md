@@ -26,4 +26,6 @@ We would love to receive your pull requests. Before we can though, please read t
 
 ## Version history
 
+- 14th February 2018 - v0.11 `AudioStreamCallback` methods use references rather than pointers
+- 18th January 2018 - v0.10 Input streams supported via callbacks (+ minor API changes/bug fixes)
 - 18th October 2017 - v0.9 Initial developer preview

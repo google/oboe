@@ -205,7 +205,7 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
     return mStreamCallback->onAudioReady(
-            this,
+            *this,
             audioData,
             numFrames);
 }
@@ -215,11 +215,11 @@ void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
     assert(stream == mAAudioStream.load());
     requestStop();
     if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorBeforeClose(this, error);
+        mStreamCallback->onErrorBeforeClose(*this, error);
     }
     close();
     if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorAfterClose(this, error);
+        mStreamCallback->onErrorAfterClose(*this, error);
     }
     LOGD("onErrorInThread() - exiting ===================================");
 }
