@@ -49,7 +49,7 @@ DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames)
     if (mStreamCallback == nullptr) {
         result = onDefaultCallback(audioData, numFrames);
     } else {
-        result = mStreamCallback->onAudioReady(this, audioData, numFrames);
+        result = mStreamCallback->onAudioReady(*this, audioData, numFrames);
         if (getDirection() == Direction::Input) {
             incrementFramesRead(numFrames);
         } else {

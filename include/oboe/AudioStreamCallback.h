@@ -30,13 +30,13 @@ public:
     /**
      * A buffer is ready for processing.
      *
-     * @param oboeStream pointer to the associated stream
+     * @param oboeStream the associated stream
      * @param audioData buffer containing input data or a place to put output data
      * @param numFrames number of frames to be processed
      * @return DataCallbackResult::Continue or DataCallbackResult::Stop
      */
     virtual DataCallbackResult onAudioReady(
-            AudioStream *oboeStream,
+            const AudioStream &oboeStream,
             void *audioData,
             int32_t numFrames) = 0;
 
@@ -45,10 +45,10 @@ public:
      * The underlying stream will already be stopped by Oboe but not yet closed.
      * So the stream can be queried.
      *
-     * @param oboeStream pointer to the associated stream
+     * @param oboeStream the associated stream
      * @param error
      */
-    virtual void onErrorBeforeClose(AudioStream *oboeStream, Result error) {}
+    virtual void onErrorBeforeClose(const AudioStream &oboeStream, Result error) {}
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected.
@@ -57,10 +57,10 @@ public:
      *
      * This callback could be used to reopen a new stream on another device.
      *
-     * @param oboeStream pointer to the associated stream
+     * @param oboeStream the associated stream
      * @param error
      */
-    virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) {}
+    virtual void onErrorAfterClose(const AudioStream &oboeStream, Result error) {}
 
 };
 
