@@ -110,7 +110,7 @@ ErrorOrValue<int32_t>  AudioStreamBuffered::transfer(void *buffer,
         LOGE("AudioStreamBuffered::%s(): numFrames is negative", __func__);
         return ErrorOrValue<int32_t>(Result::ErrorOutOfRange);
     } else if (numFrames == 0) {
-        return ErrorOrValue<int32_t>(0);
+        return ErrorOrValue<int32_t>(numFrames);
     }
     if (timeoutNanoseconds < 0) {
         LOGE("AudioStreamBuffered::%s(): timeoutNanoseconds is negative", __func__);
