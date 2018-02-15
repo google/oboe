@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public:
             , mError(error) {}
 
     explicit ErrorOrValue(T value)
-            : mValue(value < 0 ? 0 : value)
-            , mError(value < 0 ? static_cast<Result>(value) : oboe::Result::OK) {}
+            : mValue(value)
+            , mError(oboe::Result::OK) {}
 
     oboe::Result error() const {
         return mError;
@@ -41,12 +41,21 @@ public:
     }
 
     /**
-     * Quick way to check for an error.
-     * @return true if an error occurred  // TODO does this seem backwards?
+     * @return true if OK
      */
-    explicit operator bool() const { return mError != oboe::Result::OK; }
+    explicit operator bool() const { return mError == oboe::Result::OK; }
 
-    bool operator !() const { return mError == oboe::Result::OK; }
+    /**
+     * Quick way to check for an error.
+     *
+     * The caller could write something like this:
+     * <code>
+     *     if (!result) { printf("Got error %s\n", convertToText(result.error())); }
+     * </code>
+     *
+     * @return true if an error occurred
+     */
+    bool operator !() const { return mError != oboe::Result::OK; }
 
 private:
     const T             mValue;
