@@ -30,25 +30,27 @@ bool AudioStreamBuilder::isAAudioSupported() {
     return AudioStreamAAudio::isSupported();
 }
 
+bool AudioStreamBuilder::isAAudioRecommended() {
+    const int ANDROID_8_1 = 27; // OC-MR1
+    // See https://github.com/google/oboe/issues/40,
+    // AAudio may not be stable on Android 8.0, depending on how it is used.
+    return (getSdkVersion() >= ANDROID_8_1);
+}
+
 AudioStream *AudioStreamBuilder::build() {
-    LOGD("AudioStreamBuilder.build(): mAudioApi %d, mChannelCount = %d, mFramesPerCallback = %d",
-         mAudioApi, mChannelCount, mFramesPerCallback);
     AudioStream *stream = nullptr;
-    switch(mAudioApi) {
-        case AudioApi::Unspecified:
-        case AudioApi::AAudio:
-            if (AudioStreamAAudio::isSupported()) {
-                stream = new AudioStreamAAudio(*this);
-                break;
-            }
-            // fall into using older existing API
-        case AudioApi::OpenSLES:
-            if (getDirection() == oboe::Direction::Output) {
-                stream = new AudioOutputStreamOpenSLES(*this);
-            } else if (getDirection() == oboe::Direction::Input) {
-                stream = new AudioInputStreamOpenSLES(*this);
-            }
-            break;
+    if (mAudioApi == AudioApi::AAudio && isAAudioSupported()) {
+        stream = new AudioStreamAAudio(*this);
+
+    // If unspecified, only use AAudio if supported and recommended.
+    } else if (mAudioApi == AudioApi::Unspecified && isAAudioSupported() && isAAudioRecommended()) {
+        stream = new AudioStreamAAudio(*this);
+    } else {
+        if (getDirection() == oboe::Direction::Output) {
+            stream = new AudioOutputStreamOpenSLES(*this);
+        } else if (getDirection() == oboe::Direction::Input) {
+            stream = new AudioInputStreamOpenSLES(*this);
+        }
     }
     return stream;
 }

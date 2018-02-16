@@ -89,12 +89,6 @@ AudioStreamAAudio::~AudioStreamAAudio() {
 }
 
 bool AudioStreamAAudio::isSupported() {
-    const int SDK_8_1 = 27; // OC-MR1
-    if (getSdkVersion() < SDK_8_1) {
-        // See https://github.com/google/oboe/issues/40,
-        // AAudio is not stable enough on Android 8.0.
-        return false;
-    }
     mLibLoader = AAudioLoader::getInstance();
     int openResult = mLibLoader->open();
     return openResult == 0;
