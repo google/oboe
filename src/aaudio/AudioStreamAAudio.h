@@ -91,7 +91,6 @@ public:
         return true;
     }
 
-public:
     DataCallbackResult callOnAudioReady(AAudioStream *stream,
                                                    void *audioData,
                                                    int32_t numFrames);
@@ -99,6 +98,11 @@ public:
     void onErrorCallback(AAudioStream *stream, Result error);
 
     void onErrorInThread(AAudioStream *stream, Result error);
+
+
+    void *getUnderlyingStream() const override {
+        return mAAudioStream.load();
+    }
 
 protected:
     Result convertApplicationDataToNative(int32_t numFrames); // TODO remove?
