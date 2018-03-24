@@ -200,6 +200,18 @@ public:
         return getAudioApi() == AudioApi::AAudio;
     }
 
+    /**
+     * Do not use this for production. This is only for debugging.
+     * If you need to call this method then something is wrong.
+     * If you think you need it for production then please let us know
+     * so we can modify Oboe so that you don't need this.
+     *
+     * @return nullptr or a pointer to a stream from the system API
+     */
+    virtual void *getUnderlyingStream() const {
+        return nullptr;
+    }
+
 protected:
 
     virtual int64_t incrementFramesWritten(int32_t frames) {
