@@ -83,33 +83,16 @@ AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
     isSupported();
 }
 
-AudioStreamAAudio::~AudioStreamAAudio()
-{
+AudioStreamAAudio::~AudioStreamAAudio() {
     delete[] mFloatCallbackBuffer;
     delete[] mShortCallbackBuffer;
 }
 
-static bool isRunningOnAndroid8_1OrHigher() {
-#ifdef __ANDROID__
-  char sdk[PROP_VALUE_MAX] = {0};
-  if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
-      return atoi(sdk) >= 27;  // SDK Level 27 is Android Oreo 8.1
-  }
-#endif
-  return false;
-}
-
 bool AudioStreamAAudio::isSupported() {
-    if (!isRunningOnAndroid8_1OrHigher()) {
-        // See https://github.com/google/oboe/issues/40,
-        // AAudio is not stable enough on Android 8.0.
-        return false;
-    }
     mLibLoader = AAudioLoader::getInstance();
     int openResult = mLibLoader->open();
     return openResult == 0;
 }
-
 
 Result AudioStreamAAudio::open() {
     Result result = Result::OK;

@@ -87,8 +87,8 @@ public:
     StreamState getState() override;
 
 
-    bool usesAAudio() const override {
-        return true;
+    AudioApi getAudioApi() const override {
+        return AudioApi::AAudio;
     }
 
 public:

@@ -58,6 +58,11 @@ public:
 
     int32_t getFramesPerBurst() override;
 
+
+    AudioApi getAudioApi() const override {
+        return AudioApi::OpenSLES;
+    }
+
     /**
      * Process next OpenSL ES buffer.
      * Called by by OpenSL ES framework.

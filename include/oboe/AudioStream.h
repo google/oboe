@@ -186,12 +186,18 @@ public:
         return static_cast<int32_t>(Result::ErrorUnimplemented);
     }
 
+
     /**
      *
+     * @return the API that this stream uses
+     */
+    virtual AudioApi getAudioApi() const = 0;
+
+    /**
      * @return true if this stream is implemented using the AAudio API
      */
-    virtual bool usesAAudio() const {
-        return false;
+    bool usesAAudio() const {
+        return getAudioApi() == AudioApi::AAudio;
     }
 
 protected:

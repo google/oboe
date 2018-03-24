@@ -81,7 +81,7 @@ public:
      * oriented operations, then call this function to get the sizes you need.
      *
      * @param framesPerCallback
-     * @return
+     * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
         mFramesPerCallback = framesPerCallback;
@@ -105,7 +105,7 @@ public:
      *
      * Default is kUnspecified.
      *
-     * @param frames the desired buffer capacity in frames or kUnspecified
+     * @param bufferCapacityInFrames the desired buffer capacity in frames or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setBufferCapacityInFrames(int32_t bufferCapacityInFrames) {
@@ -116,9 +116,12 @@ public:
     AudioApi getAudioApi() const { return mAudioApi; }
 
     /**
-     * Normally you would leave this unspecified, and Oboe will chose the best API
-     * for the device at runtime.
-     * @param Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
+     * If you leave this unspecified then Oboe will choose the best API
+     * for the device and SDK version at runtime.
+     *
+     * If the caller requests AAudio and it is supported then AAudio will be used.
+     *
+     * @param audioApi Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setAudioApi(AudioApi audioApi) {
@@ -134,6 +137,15 @@ public:
      * @return true if supported
      */
     static bool isAAudioSupported();
+
+    /**
+     * Is the AAudio API recommended this device?
+     *
+     * AAudio may be supported but not recommended because of version specific issues.
+     *
+     * @return true if recommended
+     */
+    static bool isAAudioRecommended();
 
     /**
      * Request a mode for sharing the device.

@@ -43,6 +43,15 @@ int32_t convertFormatToSizeInBytes(AudioFormat format);
 template <typename FromType>
 const char * convertToText(FromType);
 
+/**
+ * Return the version of the SDK that is currently running.
+ *
+ * For example, on Android, this would return 27 for Oreo 8.1.
+ * If the version number cannot be determined then this will return -1.
+ *
+ * @return version number or -1
+ */
+int getSdkVersion();
 
 } // namespace oboe
 

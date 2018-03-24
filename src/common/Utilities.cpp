@@ -15,7 +15,13 @@
  */
 
 
+#include <stdlib.h>
 #include <unistd.h>
+
+#ifdef __ANDROID__
+#include <sys/system_properties.h>
+#endif
+
 #include "oboe/Definitions.h"
 #include "oboe/Utilities.h"
 
@@ -160,6 +166,16 @@ const char *convertToText<AudioApi >(AudioApi audioApi) {
         case AudioApi::AAudio:      return "AAudio";
         default:                    return "Unrecognised audio API";
     }
+}
+
+int getSdkVersion() {
+#ifdef __ANDROID__
+    char sdk[PROP_VALUE_MAX] = {0};
+    if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
+        return atoi(sdk);
+    }
+#endif
+    return -1;
 }
 
 }// namespace oboe
