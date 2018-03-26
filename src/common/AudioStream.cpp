@@ -61,8 +61,8 @@ DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames)
 }
 
 Result AudioStream::waitForStateTransition(StreamState startingState,
-                                               StreamState endingState,
-                                               int64_t timeoutNanoseconds)
+                                           StreamState endingState,
+                                           int64_t timeoutNanoseconds)
 {
     StreamState state = getState();
     StreamState nextState = state;

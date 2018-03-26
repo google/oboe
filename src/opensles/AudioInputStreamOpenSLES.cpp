@@ -156,12 +156,13 @@ Result AudioInputStreamOpenSLES::close() {
 Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
     Result result = Result::OK;
     LOGD("AudioInputStreamOpenSLES::setRecordState(%d)", newState);
-    if (mRecordInterface == NULL) {
+    if (mRecordInterface == nullptr) {
+        LOGE("AudioInputStreamOpenSLES::SetRecordState() mRecordInterface is null");
         return Result::ErrorInvalidState;
     }
     SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
     if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("AudioInputStreamOpenSLES::setPlayState() returned %s", getSLErrStr(slResult));
+        LOGE("AudioInputStreamOpenSLES::SetRecordState() returned %s", getSLErrStr(slResult));
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Pausing);
@@ -173,9 +174,7 @@ Result AudioInputStreamOpenSLES::requestStart()
 {
     LOGD("AudioInputStreamOpenSLES::requestStart()");
     Result result = setRecordState(SL_RECORDSTATE_RECORDING);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
-    } else {
+    if(result == Result::OK) {
         // Enqueue the first buffer so that we have data ready in the callback.
         enqueueCallbackBuffer(mSimpleBufferQueueInterface);
         setState(StreamState::Starting);
