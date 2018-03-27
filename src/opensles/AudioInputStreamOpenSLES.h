@@ -55,7 +55,7 @@ private:
 
     Result setRecordState(SLuint32 newState);
 
-    SLRecordItf mRecordInterface;
+    SLRecordItf mRecordInterface = nullptr;
 };
 
 } // namespace oboe

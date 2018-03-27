@@ -186,7 +186,6 @@ public:
         return static_cast<int32_t>(Result::ErrorUnimplemented);
     }
 
-
     /**
      *
      * @return the API that this stream uses
@@ -228,8 +227,8 @@ protected:
      *   or ErrorTimeout.
      */
     virtual Result waitForStateTransition(StreamState startingState,
-                                              StreamState endingState,
-                                              int64_t timeoutNanoseconds);
+                                          StreamState endingState,
+                                          int64_t timeoutNanoseconds);
 
     /**
      * Override this to provide a default for when the application did not specify a callback.
