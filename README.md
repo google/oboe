@@ -19,7 +19,7 @@ To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/
 - [Full Guide to Oboe](FullGuide.md)
 
 ## Sample code
-Example apps can be found in the [Android high-performance audio repository](https://github.com/googlesamples/android-audio-high-performance/tree/master/oboe)
+Sample apps can be found in the [samples directory](tree/master/samples)
 
 ## Contributing
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
