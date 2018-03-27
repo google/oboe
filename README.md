@@ -26,4 +26,5 @@ We would love to receive your pull requests. Before we can though, please read t
 
 ## Version history
 
+- 18th January 2018 - v0.10 Add support for input (recording) streams
 - 18th October 2017 - v0.9 Initial developer preview
