@@ -60,7 +60,7 @@ Result AudioStreamOpenSLES::open() {
     LOGI("AudioStreamOpenSLES::open(chans:%d, rate:%d)",
                         mChannelCount, mSampleRate);
 
-    if (__ANDROID_API__ < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
+    if (getSdkVersion() < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
         // TODO: Allow floating point format on API <21 using float->int16 converter
         return Result::ErrorInvalidFormat;
     }
@@ -74,8 +74,7 @@ Result AudioStreamOpenSLES::open() {
     // API 21+: FLOAT
     // API <21: INT16
     if (mFormat == AudioFormat::Unspecified){
-        // TODO use runtime check
-        mFormat = (__ANDROID_API__ < __ANDROID_API_L__) ?
+        mFormat = (getSdkVersion() < __ANDROID_API_L__) ?
                   AudioFormat::I16 : AudioFormat::Float;
     }
 
