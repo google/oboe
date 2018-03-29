@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-include ':audio-device'
-include ':hello-oboe'
-include ':RhythmGame'
+#ifndef RHYTHMGAME_AUDIORENDERER_H
+#define RHYTHMGAME_AUDIORENDERER_H
+
+
+#include <cstdint>
+
+class RenderableAudio {
+
+public:
+    virtual void renderAudio(int16_t *audioData, int32_t numFrames) = 0;
+};
+
+
+#endif //RHYTHMGAME_AUDIORENDERER_H

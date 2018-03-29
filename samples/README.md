@@ -2,8 +2,9 @@ Oboe Samples
 ==============
 These samples demonstrate how to use the Oboe library:
 
-1. hello-oboe: creates an output (playback) stream and plays a
+1. [hello-oboe](hello-oboe): creates an output (playback) stream and plays a
 sine wave when you tap the screen
+1. [RhythmGame](RhythmGame): A simple rhythm game where you copy the clap patterns you hear by tapping on the screen
 
 Pre-requisites
 -------------
@@ -20,10 +21,6 @@ Getting Started
     - Browse to oboe/samples/build.gradle
     - Click "OK"
 1. Click Run, click on the sample you wish to run
-
-Screenshots
------------
-![hello-oboe-screenshot](hello-oboe-screenshot.png)
 
 Support
 -------
