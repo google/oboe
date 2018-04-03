@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc.
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.donturner.rhythmgame;
+package com.google.oboe.sample.rhythmgame;
 
 import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGLConfig;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc.
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.donturner.rhythmgame;
+package com.google.oboe.sample.rhythmgame;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -30,13 +30,6 @@ public class GameSurfaceView extends GLSurfaceView {
 
     public GameSurfaceView(Context context) {
         super(context);
-
-        // Create an OpenGL ES context
-        /*if(BuildConfig.FLAVOR.equals("GL_3"))
-            setEGLContextClientVersion(3);
-        else if(BuildConfig.FLAVOR.equals("GL_3_2"))
-            setEGLContextClientVersion(3);
-        else*/
         setEGLContextClientVersion(2);
         mRenderer = new RendererWrapper();
         // Set the Renderer for drawing on the GLSurfaceView
@@ -45,13 +38,6 @@ public class GameSurfaceView extends GLSurfaceView {
 
     public GameSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        // Create an OpenGL ES context
-        /*if(BuildConfig.FLAVOR.equals("GL_3"))
-            setEGLContextClientVersion(3);
-        else if(BuildConfig.FLAVOR.equals("GL_3_2"))
-            setEGLContextClientVersion(3);
-        else*/
         setEGLContextClientVersion(2);
         mRenderer = new RendererWrapper();
         // Set the Renderer for drawing on the GLSurfaceView
@@ -60,21 +46,17 @@ public class GameSurfaceView extends GLSurfaceView {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        super.surfaceDestroyed(holder);
         native_surfaceDestroyed();
+        super.surfaceDestroyed(holder);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         // MotionEvent reports input details from the touch screen
-        // and other input controls. In our case, you are care
-        // about down and up events.
+        // and other input controls. In our case we care about DOWN events.
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 native_onTouchInput(0, e.getEventTime(), (int)e.getX(), (int)e.getY());
-                break;
-            case MotionEvent.ACTION_UP:
-                //native_onTouchInput(1, e.getEventTime(), (int)e.getX(), (int)e.getY());
                 break;
         }
         return true;

@@ -17,6 +17,7 @@
 #include <time.h>
 #include <chrono>
 #include <ui/OpenGLFunctions.h>
+#include <Game.h>
 #include "UtilityFunctions.h"
 #include "logging.h"
 
@@ -26,31 +27,7 @@ int64_t nowUptimeMillis() {
     return (res.tv_sec * kMillisecondsInSecond) + res.tv_nsec / kNanosecondsInMillisecond;
 }
 
-int64_t nowEpochMillis() {
-    using namespace std::chrono;
-    return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
-}
-
-int64_t convertUptimeToEpoch(long eventTime) {
-    auto deltaElapsedTime = nowUptimeMillis() - eventTime;
-    return nowEpochMillis() - deltaElapsedTime;
-}
-
-int64_t convertBeatToFrameNumber(const int barNumber,
-                                 const int semiQuaverNumber,
-                                 const int tempoBpm,
-                                 const int sampleRate) {
-
-    int64_t framesInMinute = sampleRate * kSecondsInMinute;
-    float framesPerBeat = framesInMinute / tempoBpm;
-    float framesPerBar = framesPerBeat * kBeatsInBar;
-    float framesPerSemiQuaver = framesPerBar / kSemiQuaversPerBar;
-
-    return (int64_t)((barNumber * framesPerBar) + (semiQuaverNumber * framesPerSemiQuaver));
-}
-
 TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
-
     if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffset) {
         if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffset) {
             return TapResult::Success;
@@ -62,18 +39,16 @@ TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
     }
 }
 
-
 void renderEvent(TapResult r){
-
     switch (r) {
         case TapResult::Success:
-            SetGLScreenColor(GREEN);
+            SetGLScreenColor(kTapSuccessColor);
             break;
         case TapResult::Early:
-            SetGLScreenColor(ORANGE);
+            SetGLScreenColor(kTapEarlyColor);
             break;
         case TapResult::Late:
-            SetGLScreenColor(PURPLE);
+            SetGLScreenColor(kTapLateColor);
             break;
     }
 }

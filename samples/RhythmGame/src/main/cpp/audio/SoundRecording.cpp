@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@ void SoundRecording::renderAudio(int16_t *targetData, int32_t numFrames){
             for (int j = 0; j < mChannelCount; ++j) {
                 targetData[(i*mChannelCount)+j] = mData[(mReadFrameIndex*mChannelCount)+j];
             }
-            mReadFrameIndex++;
 
-            // Handle wraparound
-            if (mReadFrameIndex >= mTotalFrames) mReadFrameIndex = 0;
+            // Increment and handle wraparound
+            if (++mReadFrameIndex >= mTotalFrames) mReadFrameIndex = 0;
         }
 
     } else {

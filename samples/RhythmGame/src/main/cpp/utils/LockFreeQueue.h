@@ -15,8 +15,8 @@
  */
 
 
-#ifndef RHYTHMGAME_CIRCULARQUEUE_H
-#define RHYTHMGAME_CIRCULARQUEUE_H
+#ifndef RHYTHMGAME_LOCKFREEQUEUE_H
+#define RHYTHMGAME_LOCKFREEQUEUE_H
 
 #include <cstdint>
 #include <atomic>
@@ -46,6 +46,9 @@ public:
      * Each time we need to access our data array we call mask() which gives us the index into the
      * array. This approach avoids having a "dead item" in the buffer to distinguish between full
      * and empty states. It also allows us to have a size() method which is easily calculated.
+     *
+     * IMPORTANT: This implementation is only thread-safe with a single reader thread and a single
+     * writer thread. Have more than one of either will result in Bad Things™.
      */
 
     static constexpr bool isPowerOfTwo(uint32_t n) { return (n & (n - 1)) == 0; }
@@ -139,4 +142,4 @@ private:
 
 };
 
-#endif //RHYTHMGAME_CIRCULARQUEUE_H
+#endif //RHYTHMGAME_LOCKFREEQUEUE_H

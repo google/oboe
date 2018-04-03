@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef WAVEMAKER2_SAMPLE_H
-#define WAVEMAKER2_SAMPLE_H
+#ifndef RHYTHMGAME_SOUNDRECORDING_H
+#define RHYTHMGAME_SOUNDRECORDING_H
 
 #include <cstdint>
 #include <array>
 
 #include <chrono>
 #include <memory>
-#include <android/asset_manager.h>
 #include <atomic>
+
+#include <android/asset_manager.h>
+
 #include "RenderableAudio.h"
 
 class SoundRecording : public RenderableAudio{
@@ -43,11 +45,11 @@ public:
 private:
     int32_t mChannelCount = 2; // TODO: move this into a konstant and maybe add as parameter to ctor
     int32_t mReadFrameIndex = 0;
-    const int16_t* mData;
+    const int16_t* mData = nullptr;
     int32_t mTotalFrames = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
 
 };
 
-#endif //WAVEMAKER2_SAMPLE_H
+#endif //RHYTHMGAME_SOUNDRECORDING_H
