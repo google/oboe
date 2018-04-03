@@ -19,16 +19,31 @@
 
 #include <android/asset_manager.h>
 #include <oboe/Oboe.h>
-#include <audio/SoundRecording.h>
-#include <audio/Mixer.h>
-#include <utils/LockFreeQueue.h>
-#include <utils/UtilityFunctions.h>
+
+#include "audio/Mixer.h"
+#include "audio/SoundRecording.h"
+#include "ui/OpenGLFunctions.h"
+#include "utils/LockFreeQueue.h"
+#include "utils/UtilityFunctions.h"
+
+constexpr int kSampleRate = 48000; // Fixed sample rate, see README
+constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
+constexpr int kMaxQueueItems = 1024; // Must be power of 2
+constexpr ScreenColor kScreenBackgroundColor = GREY;
+constexpr ScreenColor kTapSuccessColor = GREEN;
+constexpr ScreenColor kTapEarlyColor = ORANGE;
+constexpr ScreenColor kTapLateColor = PURPLE;
+
+// This defines the size of the tap window in milliseconds. For example, if defined at 100ms the
+// player will have 100ms before and after the centre of the tap window to tap on the screen and
+// be successful
+constexpr int kWindowCenterOffset = 100;
 
 using namespace oboe;
 
 class Game : public AudioStreamCallback {
 public:
-    Game(AAssetManager *assetManager);
+    explicit Game(AAssetManager *assetManager);
 
     void start();
     void onSurfaceCreated();
@@ -37,6 +52,7 @@ public:
     void tick();
     void tap(int64_t eventTimeAsUptime);
 
+    // Inherited from oboe::AudioStreamCallback
     DataCallbackResult
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
@@ -47,9 +63,9 @@ private:
     SoundRecording *mBackingTrack;
     Mixer mMixer;
 
-    LockFreeQueue<int64_t, 1024> mClapEvents;
-    LockFreeQueue<int64_t, 1024> mClapWindows;
-    LockFreeQueue<TapResult, 1024> mUiEvents;
+    LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
+    LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
+    LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
     std::atomic<int64_t> mCurrentFrame { 0 };
     std::atomic<int64_t> mLastUpdateTime { 0 };
 };

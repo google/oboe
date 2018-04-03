@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.donturner.rhythmgame.MainActivity">
+    tools:context="com.google.oboe.sample.rhythmgame.MainActivity">
 
-    <com.donturner.rhythmgame.GameSurfaceView
+    <com.google.oboe.sample.rhythmgame.GameSurfaceView
         android:id="@+id/glSurfaceView"
         android:layout_width="match_parent"
         android:layout_centerHorizontal="true"

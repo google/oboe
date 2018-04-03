@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef RHYTHMGAME_TIMEFUNCTIONS_H
-#define RHYTHMGAME_TIMEFUNCTIONS_H
+#ifndef RHYTHMGAME_UTILITYFUNCTIONS_H
+#define RHYTHMGAME_UTILITYFUNCTIONS_H
 
 #include <stdint.h>
 
-
-constexpr int kMillisecondsInSecond = 1000;
-constexpr int kMicrosecondsInMillisecond = 1000;
-constexpr int kNanosecondsInMillisecond = 1000000;
-constexpr int kSecondsInMinute = 60;
-constexpr int kBeatsInBar = 4; // 4/4 time
-constexpr int kSemiQuaversPerBar = 16;
-constexpr int kWindowCenterOffset = 100;
+constexpr int64_t kMillisecondsInSecond = 1000;
+constexpr int64_t kNanosecondsInMillisecond = 1000000;
 
 enum class TapResult {
     Early,
@@ -34,33 +28,15 @@ enum class TapResult {
     Success
 };
 
-
 int64_t nowUptimeMillis();
-
-int64_t nowEpochMillis();
-
-int64_t convertUptimeToEpoch(long eventTime);
-
-template <typename FromType>
-const char * convertToText2(FromType);
-
-int64_t convertBeatToFrameNumber(const int barNumber,
-                                 const int semiQuaverNumber,
-                                 const int tempoBpm,
-                                 const int sampleRate);
-
-constexpr int64_t convertMillisToFrames(const long millis, const int sampleRate) {
-    return millis * (sampleRate / kMillisecondsInSecond);
-}
 
 constexpr int64_t convertFramesToMillis(const int64_t frames, const int sampleRate){
     return (int64_t)(((double)frames / sampleRate) * kMillisecondsInSecond);
 }
-
 
 TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis);
 
 void renderEvent(TapResult r);
 
 
-#endif //RHYTHMGAME_TIMEFUNCTIONS_H
+#endif //RHYTHMGAME_UTILITYFUNCTIONS_H

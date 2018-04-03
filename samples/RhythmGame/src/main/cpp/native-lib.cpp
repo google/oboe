@@ -1,42 +1,57 @@
+/*
+ * Copyright 2018 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <jni.h>
-#include <android/asset_manager_jni.h>
-#include <android/input.h>
-#include <utils/logging.h>
 #include <memory>
 
+#include <android/asset_manager_jni.h>
+
+#include "utils/logging.h"
 #include "Game.h"
 
 extern "C" {
 
-std::shared_ptr<Game> game;
+std::unique_ptr<Game> game;
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_MainActivity_native_1onCreate(JNIEnv *env, jobject instance,
+Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onCreate(JNIEnv *env, jobject instance,
                                                             jobject jAssetManager) {
 
     AAssetManager *assetManager = AAssetManager_fromJava(env, jAssetManager);
-    game = std::make_shared<Game>(assetManager);
+    game = std::make_unique<Game>(assetManager);
     game->start();
 }
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_RendererWrapper_native_1onSurfaceCreated(JNIEnv *env, jobject instance) {
+Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onSurfaceCreated(JNIEnv *env, jobject instance) {
     game->onSurfaceCreated();
 }
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_RendererWrapper_native_1onSurfaceChanged(JNIEnv *env, jclass type,
+Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onSurfaceChanged(JNIEnv *env, jclass type,
                                                                    jint width, jint height) {
     game->onSurfaceChanged(width, height);
 }
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_RendererWrapper_native_1onDrawFrame(JNIEnv *env, jclass type) {
+Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onDrawFrame(JNIEnv *env, jclass type) {
     game->tick();
 }
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIEnv *env, jclass type,
+Java_com_google_oboe_sample_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIEnv *env, jclass type,
                                                            jint event_type,
                                                            jlong time_since_boot_ms,
                                                            jint pixel_x, jint pixel_y) {
@@ -44,7 +59,7 @@ Java_com_donturner_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL
-Java_com_donturner_rhythmgame_GameSurfaceView_native_1surfaceDestroyed__(JNIEnv *env, jclass type) {
+Java_com_google_oboe_sample_rhythmgame_GameSurfaceView_native_1surfaceDestroyed__(JNIEnv *env, jclass type) {
     game->onSurfaceDestroyed();
 }
 

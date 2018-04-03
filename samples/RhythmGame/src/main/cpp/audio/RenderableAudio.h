@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RHYTHMGAME_AUDIORENDERER_H
-#define RHYTHMGAME_AUDIORENDERER_H
+#ifndef RHYTHMGAME_RENDERABLEAUDIO_H
+#define RHYTHMGAME_RENDERABLEAUDIO_H
 
 
 #include <cstdint>
@@ -23,8 +23,9 @@
 class RenderableAudio {
 
 public:
+    virtual ~RenderableAudio(){};
     virtual void renderAudio(int16_t *audioData, int32_t numFrames) = 0;
 };
 
 
-#endif //RHYTHMGAME_AUDIORENDERER_H
+#endif //RHYTHMGAME_RENDERABLEAUDIO_H

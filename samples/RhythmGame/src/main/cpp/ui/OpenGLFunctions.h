@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc.
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ struct ScreenColor {
     float alpha;
 };
 
-const ScreenColor RED { 1.0f, 0.0f, 0.0f, 1.0f };
-const ScreenColor GREEN { 0.0f, 1.0f, 0.0f, 1.0f };
-const ScreenColor BLUE { 0.0f, 0.0f, 1.0f, 1.0f };
-const ScreenColor PURPLE { 1.0f, 0.0f, 1.0f, 1.0f };
-const ScreenColor ORANGE { 1.0f, 0.5f, 0.0f, 1.0f };
-const ScreenColor GREY { 0.3f, 0.3f, 0.3f, 0.3f };
+constexpr ScreenColor RED { 1.0f, 0.0f, 0.0f, 1.0f };
+constexpr ScreenColor GREEN { 0.0f, 1.0f, 0.0f, 1.0f };
+constexpr ScreenColor BLUE { 0.0f, 0.0f, 1.0f, 1.0f };
+constexpr ScreenColor PURPLE { 1.0f, 0.0f, 1.0f, 1.0f };
+constexpr ScreenColor ORANGE { 1.0f, 0.5f, 0.0f, 1.0f };
+constexpr ScreenColor GREY { 0.3f, 0.3f, 0.3f, 0.3f };
 
 #ifdef GL3
 #include <GLES3/gl3.h>

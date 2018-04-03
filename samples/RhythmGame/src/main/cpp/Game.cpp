@@ -18,42 +18,65 @@
 #include <thread>
 
 #include "Game.h"
-#include "ui/OpenGLFunctions.h"
 
 Game::Game(AAssetManager *assetManager): mAssetManager(assetManager) {
 }
 
 void Game::start() {
 
+    // Load the RAW PCM data files for both the clap sound and backing track into memory.
     mClap = SoundRecording::loadFromAssets(mAssetManager, "CLAP.raw");
     mBackingTrack = SoundRecording::loadFromAssets(mAssetManager, "FUNKY_HOUSE.raw" );
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
+    // Add the clap and backing track sounds to a mixer so that they can be played together
+    // simultaneously using a single audio stream.
     mMixer.addTrack(mClap);
     mMixer.addTrack(mBackingTrack);
 
+    // Add the audio frame numbers on which the clap sound should be played to the clap event queue.
+    // The backing track tempo is 120 beats per minute, which is 2 beats per second. At a sample
+    // rate of 48000 frames per second this means a beat occurs every 24000 frames, starting at
+    // zero. So the first 3 beats are: 0, 24000, 48000
     mClapEvents.push(0);
     mClapEvents.push(24000);
     mClapEvents.push(48000);
 
+    // We want the user to tap on the screen exactly 4 beats after the first clap. 4 beats is
+    // 96000 frames, so we just add 96000 to the above frame numbers.
     mClapWindows.push(96000);
     mClapWindows.push(120000);
     mClapWindows.push(144000);
 
+    // Create a builder
     AudioStreamBuilder builder;
     builder.setFormat(AudioFormat::I16);
     builder.setChannelCount(2);
-    builder.setSampleRate(48000);
+    builder.setSampleRate(kSampleRate);
     builder.setCallback(this);
-
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
 
-    builder.openStream(&mAudioStream);
+    Result result = builder.openStream(&mAudioStream);
+    if (result != Result::OK){
+        LOGE("Failed to open stream. Error: %s", convertToText(result));
+    }
 
-    mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * 2);
-    mAudioStream->requestStart();
+    // Reduce stream latency by setting the buffer size to a multiple of the burst size
+    result = mAudioStream->setBufferSizeInFrames(
+            mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+    if (result != Result::OK){
+        LOGE("Failed to set buffer size to %d bursts. Error: %s",
+             kBufferSizeInBursts,
+             convertToText(result)
+             );
+    }
+
+    result = mAudioStream->requestStart();
+    if (result != Result::OK){
+        LOGE("Failed to start stream. Error: %s", convertToText(result));
+    }
 }
 
 void Game::tap(int64_t eventTimeAsUptime) {
@@ -63,7 +86,7 @@ void Game::tap(int64_t eventTimeAsUptime) {
     if (mClapWindows.pop(nextClapWindowFrame)){
 
         int64_t frameDelta = nextClapWindowFrame - mCurrentFrame;
-        int64_t timeDelta = convertFramesToMillis(frameDelta, 48000);
+        int64_t timeDelta = convertFramesToMillis(frameDelta, kSampleRate);
         int64_t windowTime = mLastUpdateTime + timeDelta;
         TapResult result = getTapResult(eventTimeAsUptime, windowTime);
         mUiEvents.push(result);
@@ -76,12 +99,12 @@ void Game::tick(){
     if (mUiEvents.pop(r)) {
         renderEvent(r);
     } else {
-        SetGLScreenColor(GREY);
+        SetGLScreenColor(kScreenBackgroundColor);
     }
 }
 
 void Game::onSurfaceCreated() {
-    SetGLScreenColor(GREY);
+    SetGLScreenColor(kScreenBackgroundColor);
 }
 
 void Game::onSurfaceChanged(int widthInPixels, int heightInPixels) {
