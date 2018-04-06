@@ -26,7 +26,7 @@
 #include "utils/LockFreeQueue.h"
 #include "utils/UtilityFunctions.h"
 
-constexpr int kSampleRate = 48000; // Fixed sample rate, see README
+constexpr int kSampleRateHz = 48000; // Fixed sample rate, see README
 constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 constexpr int kMaxQueueItems = 1024; // Must be power of 2
 constexpr ScreenColor kScreenBackgroundColor = GREY;
@@ -37,7 +37,7 @@ constexpr ScreenColor kTapLateColor = PURPLE;
 // This defines the size of the tap window in milliseconds. For example, if defined at 100ms the
 // player will have 100ms before and after the centre of the tap window to tap on the screen and
 // be successful
-constexpr int kWindowCenterOffset = 100;
+constexpr int kWindowCenterOffsetMs = 100;
 
 using namespace oboe;
 

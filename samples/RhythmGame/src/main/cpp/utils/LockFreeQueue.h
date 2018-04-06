@@ -25,6 +25,13 @@
  * A lock-free queue for single consumer, single producer. Not thread-safe when using multiple
  * consumers or producers.
  *
+ * Example code:
+ *
+ * LockFreeQueue<int, 1024> myQueue;
+ * int value = 123;
+ * myQueue.push(value);
+ * myQueue.pop(value);
+ *
  * @tparam T - The item type
  * @tparam CAPACITY - Maximum number of items which can be held in the queue. Must be a power of 2.
  * Must be less than the maximum value permissible in INDEX_TYPE
@@ -134,7 +141,7 @@ private:
 
     bool isFull() const { return size() == CAPACITY; }
 
-    uint32_t mask(INDEX_TYPE n) const { return (INDEX_TYPE) (n & (CAPACITY - 1)); }
+    INDEX_TYPE mask(INDEX_TYPE n) const { return (INDEX_TYPE) (n & (CAPACITY - 1)); }
 
     T buffer[CAPACITY];
     std::atomic<INDEX_TYPE> writeCounter { 0 };
