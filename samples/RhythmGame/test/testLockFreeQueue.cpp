@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include <thread>
+#include <iostream>
+
 #include <gtest/gtest.h>
 #include "utils/LockFreeQueue.h"
 
@@ -43,11 +46,13 @@
  *  - correct once
  *  - correct many
  *
+ * MULTI-THREADED:
+ *  - write and read concurrently, queue is empty at end and item order is maintained
+ *
  * CANNOT TEST:
  *  - read/writes correct after wraparound (takes too long to run)
  *  - Constructing queue with non power of 2 capacity results in assert failure (needs death test)
  *  - Constructing queue with signed type results in assert failure (needs death test)
- *  - Multi-threaded read/writes (complicated to test)
  *
  */
 
@@ -158,4 +163,48 @@ TEST_F(TestLockFreeQueue, SizeCorrectAfterWriteCounterWraps){
 
     myQ.push(1);
     ASSERT_EQ(myQ.size(), 1);
+}
+
+TEST_F(TestLockFreeQueue, MultiThreadedTest){
+
+    // Push and pop from the queue concurrently
+    // Check that the queue is empty
+    // Check that the order of the read values matches the order of the written values
+
+    constexpr int kQueueCapacity = 2048;
+    LockFreeQueue<int, kQueueCapacity> myQ;
+    std::array<int, kQueueCapacity> sourceData;
+    std::array<int, kQueueCapacity> targetData { 0 };
+
+    // Populate the source data
+    for (int i = 0; i < kQueueCapacity; i++){
+        sourceData[i] = i;
+    }
+
+    std::thread writer([&myQ, &sourceData](){
+        for (int i = 0; i < kQueueCapacity; i++){
+            myQ.push(sourceData[i]);
+        }
+    });
+
+    std::thread reader([&myQ, &targetData](){
+        for (int i = 0; i < kQueueCapacity; i++){
+            // pop the latest element, or wait for it to become available
+            while (!myQ.pop(targetData[i])){
+                std::cout << "Waiting for element at index " << i << " to be written" << std::endl;
+                usleep(500);
+            }
+        }
+    });
+
+    writer.join();
+    reader.join();
+
+    int v;
+    ASSERT_FALSE(myQ.pop(v));
+
+    // Check that the target matches the source
+    for (int i = 0; i < kQueueCapacity; i++){
+        ASSERT_EQ(sourceData[i], targetData[i]) << "Elements at index " << i << " did not match";
+    }
 }
