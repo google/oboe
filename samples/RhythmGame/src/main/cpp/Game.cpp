@@ -53,7 +53,7 @@ void Game::start() {
     AudioStreamBuilder builder;
     builder.setFormat(AudioFormat::I16);
     builder.setChannelCount(2);
-    builder.setSampleRate(kSampleRate);
+    builder.setSampleRate(kSampleRateHz);
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
@@ -86,7 +86,7 @@ void Game::tap(int64_t eventTimeAsUptime) {
     if (mClapWindows.pop(nextClapWindowFrame)){
 
         int64_t frameDelta = nextClapWindowFrame - mCurrentFrame;
-        int64_t timeDelta = convertFramesToMillis(frameDelta, kSampleRate);
+        int64_t timeDelta = convertFramesToMillis(frameDelta, kSampleRateHz);
         int64_t windowTime = mLastUpdateTime + timeDelta;
         TapResult result = getTapResult(eventTimeAsUptime, windowTime);
         mUiEvents.push(result);
