@@ -28,8 +28,8 @@ int64_t nowUptimeMillis() {
 }
 
 TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
-    if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffset) {
-        if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffset) {
+    if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffsetMs) {
+        if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffsetMs) {
             return TapResult::Success;
         } else {
             return TapResult::Early;
