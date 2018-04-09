@@ -72,7 +72,8 @@ public:
         if (isEmpty()){
             return false;
         } else {
-            val = buffer[mask(readCounter++)];
+            val = buffer[mask(readCounter)];
+            ++readCounter;
             return true;
         }
     }
@@ -87,7 +88,8 @@ public:
         if (isFull()){
             return false;
         } else {
-            buffer[mask(writeCounter++)] = item;
+            buffer[mask(writeCounter)] = item;
+            ++writeCounter;
             return true;
         }
     }
