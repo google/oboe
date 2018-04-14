@@ -109,7 +109,7 @@ Result AudioOutputStreamOpenSLES::open() {
      * type, creating it from our original format.
      */
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
-    if (__ANDROID_API__ >= __ANDROID_API_L__) {
+    if (getSdkVersion() >= __ANDROID_API_L__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
         // Fill in the format structure.
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);

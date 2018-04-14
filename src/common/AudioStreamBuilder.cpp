@@ -31,10 +31,10 @@ bool AudioStreamBuilder::isAAudioSupported() {
 }
 
 bool AudioStreamBuilder::isAAudioRecommended() {
-    const int ANDROID_8_1 = 27; // OC-MR1
     // See https://github.com/google/oboe/issues/40,
-    // AAudio may not be stable on Android 8.0, depending on how it is used.
-    return (getSdkVersion() >= ANDROID_8_1);
+    // AAudio may not be stable on Android O, depending on how it is used.
+    // To be safe, use AAUdio on O_MR1 and above.
+    return (getSdkVersion() >= __ANDROID_API_O_MR1__);
 }
 
 AudioStream *AudioStreamBuilder::build() {
