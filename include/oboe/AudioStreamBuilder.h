@@ -179,7 +179,7 @@ public:
      *
      * By default, the primary device will be used.
      *
-     * Note that when using OpenSL ES, this will be ignored and the subsequent
+     * Note that when using OpenSL ES, this will be ignored and the created
      * stream will have deviceId kUnspecified.
      *
      * @param deviceId device identifier or kUnspecified
