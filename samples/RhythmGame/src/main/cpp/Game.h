@@ -25,19 +25,7 @@
 #include "ui/OpenGLFunctions.h"
 #include "utils/LockFreeQueue.h"
 #include "utils/UtilityFunctions.h"
-
-constexpr int kSampleRateHz = 48000; // Fixed sample rate, see README
-constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
-constexpr int kMaxQueueItems = 1024; // Must be power of 2
-constexpr ScreenColor kScreenBackgroundColor = GREY;
-constexpr ScreenColor kTapSuccessColor = GREEN;
-constexpr ScreenColor kTapEarlyColor = ORANGE;
-constexpr ScreenColor kTapLateColor = PURPLE;
-
-// This defines the size of the tap window in milliseconds. For example, if defined at 100ms the
-// player will have 100ms before and after the centre of the tap window to tap on the screen and
-// be successful
-constexpr int kWindowCenterOffsetMs = 100;
+#include "GameConstants.h"
 
 using namespace oboe;
 
@@ -64,9 +52,9 @@ private:
     Mixer mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
+    std::atomic<int64_t> mCurrentFrame { 0 };
     LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
     LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
-    std::atomic<int64_t> mCurrentFrame { 0 };
     std::atomic<int64_t> mLastUpdateTime { 0 };
 };
 
