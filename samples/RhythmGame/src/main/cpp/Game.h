@@ -40,22 +40,8 @@ public:
     void tick();
     void tap(int64_t eventTimeAsUptime);
 
-    // Inherited from oboe::AudioStreamCallback
-    DataCallbackResult
-    onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
-
 private:
     AAssetManager *mAssetManager;
-    AudioStream *mAudioStream;
-    SoundRecording *mClap;
-    SoundRecording *mBackingTrack;
-    Mixer mMixer;
-
-    LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
-    std::atomic<int64_t> mCurrentFrame { 0 };
-    LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
-    LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
-    std::atomic<int64_t> mLastUpdateTime { 0 };
 };
 
 
