@@ -17,7 +17,7 @@
 #include <time.h>
 #include <chrono>
 #include <ui/OpenGLFunctions.h>
-#include "GameConstants.h"
+#include <GameConstants.h>
 #include "UtilityFunctions.h"
 #include "logging.h"
 
