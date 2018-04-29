@@ -158,9 +158,30 @@ public:
 
     virtual int64_t getFramesRead() const { return mFramesRead; }
 
+    /**
+     * Calculate the latency of a stream based on getTimestamp().
+     *
+     * Latency is the time it takes for a given frame to travel from the
+     * app to the edge of the device or vice versa.
+     *
+     * Note that the latency of an OUTPUT stream will increase when you write data to it
+     * and then decrease over time.
+     *
+     * The latency of an INPUT stream will decrease when you read data from it
+     * and then increase over time.
+     *
+     * The latency of an OUTPUT stream is generally higher than the INPUT latency
+     * because an tries to keep the OUTPUT buffer full and the INPUT buffer empty.
+     *
+     * @return The latency in millisecondssec and Result::OK, or a negative error.
+     */
+    virtual ErrorOrValue<double> calculateLatencyMillis() {
+        return ErrorOrValue<double>(Result::ErrorUnimplemented);
+    }
+
     virtual Result getTimestamp(clockid_t clockId,
-                                       int64_t *framePosition,
-                                       int64_t *timeNanoseconds) {
+                                int64_t *framePosition,
+                                int64_t *timeNanoseconds) {
         return Result::ErrorUnimplemented;
     }
 
@@ -173,7 +194,7 @@ public:
      * @param buffer The address of the first sample.
      * @param numFrames Number of frames to write. Only complete frames will be written.
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
-     * @return The number of frames actually written or a negative error.
+     * @return The number of frames actually written and Result::OK, or a negative error.
      */
     virtual ErrorOrValue<int32_t> write(const void *buffer,
                              int32_t numFrames,

@@ -390,4 +390,46 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
     }
 }
 
+ErrorOrValue<double> AudioStreamAAudio::calculateLatencyMillis() {
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        bool isOutput = (getDirection() == oboe::Direction::Output);
+
+        // Get the time that a known audio frame was presented.
+        int64_t hardwareFrameIndex;
+        int64_t hardwareFrameHardwareTime;
+        auto result = getTimestamp(CLOCK_MONOTONIC,
+                                   &hardwareFrameIndex,
+                                   &hardwareFrameHardwareTime);
+        if (result != oboe::Result::OK) {
+            return ErrorOrValue<double>(static_cast<Result>(result));
+        }
+
+        // Get counter closest to the app.
+        int64_t appFrameIndex = isOutput ? getFramesWritten() : getFramesRead();
+
+        // Assume that the next frame will be processed at the current time
+        using namespace std::chrono;
+        int64_t appFrameAppTime =
+                duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
+
+        // Calculate the number of frames between app and hardware
+        int64_t frameIndexDelta = appFrameIndex - hardwareFrameIndex;
+
+        // Calculate the time which the next frame will be or was presented
+        int64_t frameTimeDelta = (frameIndexDelta * oboe::kNanosPerSecond) / getSampleRate();
+        int64_t appFrameHardwareTime = hardwareFrameHardwareTime + frameTimeDelta;
+
+        // The current latency is the difference in time between when the current frame is at
+        // the app and when it is at the hardware.
+        int64_t latencyNanos = (isOutput)
+                               ? (appFrameHardwareTime - appFrameAppTime) // hardware is later
+                               : (appFrameAppTime - appFrameHardwareTime); // hardware is earlier
+        double latencyMillis = (double) latencyNanos / kNanosPerMillisecond;
+        return ErrorOrValue<double>(latencyMillis);
+    } else {
+        return ErrorOrValue<double>(Result::ErrorNull);
+    }
+}
+
 } // namespace oboe

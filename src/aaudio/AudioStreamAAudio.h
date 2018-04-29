@@ -76,6 +76,8 @@ public:
     int64_t getFramesRead() const override;
     int64_t getFramesWritten() const override;
 
+    ErrorOrValue<double> calculateLatencyMillis() override;
+
     Result waitForStateChange(StreamState currentState,
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
@@ -85,7 +87,6 @@ public:
                                        int64_t *timeNanoseconds) override;
 
     StreamState getState() override;
-
 
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
