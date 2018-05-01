@@ -161,19 +161,24 @@ public:
     /**
      * Calculate the latency of a stream based on getTimestamp().
      *
-     * Latency is the time it takes for a given frame to travel from the
-     * app to the edge of the device or vice versa.
+     * Output latency is the time it takes for a given frame to travel from the
+     * app to some type of digital-to-analog converter. If the DAC is external, for example
+     * in a USB interface or a TV connected by HDMI, then there may be additional latency
+     * that the Android device is unaware of.
      *
-     * Note that the latency of an OUTPUT stream will increase when you write data to it
-     * and then decrease over time.
+     * Input latency is the time it takes to a given frame to travel from an analog-to-digital
+     * converter (ADC) to the app.
      *
-     * The latency of an INPUT stream will decrease when you read data from it
-     * and then increase over time.
+     * Note that the latency of an OUTPUT stream will increase abruptly when you write data to it
+     * and then decrease slowly over time as the data is consumed.
+     *
+     * The latency of an INPUT stream will decrease abruptly when you read data from it
+     * and then increase slowly over time as more data arrives.
      *
      * The latency of an OUTPUT stream is generally higher than the INPUT latency
-     * because an tries to keep the OUTPUT buffer full and the INPUT buffer empty.
+     * because an app generally tries to keep the OUTPUT buffer full and the INPUT buffer empty.
      *
-     * @return The latency in millisecondssec and Result::OK, or a negative error.
+     * @return The latency in milliseconds and Result::OK, or a negative error.
      */
     virtual ErrorOrValue<double> calculateLatencyMillis() {
         return ErrorOrValue<double>(Result::ErrorUnimplemented);
