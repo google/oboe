@@ -158,9 +158,35 @@ public:
 
     virtual int64_t getFramesRead() const { return mFramesRead; }
 
+    /**
+     * Calculate the latency of a stream based on getTimestamp().
+     *
+     * Output latency is the time it takes for a given frame to travel from the
+     * app to some type of digital-to-analog converter. If the DAC is external, for example
+     * in a USB interface or a TV connected by HDMI, then there may be additional latency
+     * that the Android device is unaware of.
+     *
+     * Input latency is the time it takes to a given frame to travel from an analog-to-digital
+     * converter (ADC) to the app.
+     *
+     * Note that the latency of an OUTPUT stream will increase abruptly when you write data to it
+     * and then decrease slowly over time as the data is consumed.
+     *
+     * The latency of an INPUT stream will decrease abruptly when you read data from it
+     * and then increase slowly over time as more data arrives.
+     *
+     * The latency of an OUTPUT stream is generally higher than the INPUT latency
+     * because an app generally tries to keep the OUTPUT buffer full and the INPUT buffer empty.
+     *
+     * @return The latency in milliseconds and Result::OK, or a negative error.
+     */
+    virtual ErrorOrValue<double> calculateLatencyMillis() {
+        return ErrorOrValue<double>(Result::ErrorUnimplemented);
+    }
+
     virtual Result getTimestamp(clockid_t clockId,
-                                       int64_t *framePosition,
-                                       int64_t *timeNanoseconds) {
+                                int64_t *framePosition,
+                                int64_t *timeNanoseconds) {
         return Result::ErrorUnimplemented;
     }
 
@@ -173,7 +199,7 @@ public:
      * @param buffer The address of the first sample.
      * @param numFrames Number of frames to write. Only complete frames will be written.
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
-     * @return The number of frames actually written or a negative error.
+     * @return The number of frames actually written and Result::OK, or a negative error.
      */
     virtual ErrorOrValue<int32_t> write(const void *buffer,
                              int32_t numFrames,
