@@ -23,15 +23,15 @@ Game::Game(AAssetManager *assetManager): mAssetManager(assetManager) {
 }
 
 void Game::start() {
-    // Add your code here
+    // TODO: Add your code here
 }
 
 void Game::tap(int64_t eventTimeAsUptime) {
-    // Add your code here
+    // TODO: Add your code here
 }
 
 void Game::tick(){
-    // Add your code here
+    // TODO: Add your code here
 }
 
 void Game::onSurfaceCreated() {

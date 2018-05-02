@@ -29,7 +29,7 @@
 
 using namespace oboe;
 
-class Game : public AudioStreamCallback {
+class Game {
 public:
     explicit Game(AAssetManager *assetManager);
 
@@ -40,8 +40,13 @@ public:
     void tick();
     void tap(int64_t eventTimeAsUptime);
 
+    // TODO: Add methods here
+
 private:
     AAssetManager *mAssetManager;
+
+    // TODO: Add class members
+
 };
 
 
