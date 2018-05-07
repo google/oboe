@@ -43,7 +43,7 @@ public:
     // TODO: Add methods here
 
 private:
-    AAssetManager *mAssetManager;
+    AAssetManager *mAssetManager{nullptr};
 
     // TODO: Add class members
 
