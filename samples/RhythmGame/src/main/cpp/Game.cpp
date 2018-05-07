@@ -64,14 +64,8 @@ void Game::start() {
     }
 
     // Reduce stream latency by setting the buffer size to a multiple of the burst size
-    result = mAudioStream->setBufferSizeInFrames(
+    mAudioStream->setBufferSizeInFrames(
             mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    if (result != Result::OK){
-        LOGE("Failed to set buffer size to %d bursts. Error: %s",
-             kBufferSizeInBursts,
-             convertToText(result)
-             );
-    }
 
     result = mAudioStream->requestStart();
     if (result != Result::OK){
