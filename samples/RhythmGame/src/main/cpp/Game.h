@@ -46,9 +46,9 @@ public:
 
 private:
     AAssetManager *mAssetManager{nullptr};
-    AudioStream *mAudioStream;
-    SoundRecording *mClap;
-    SoundRecording *mBackingTrack;
+    AudioStream *mAudioStream{nullptr};
+    SoundRecording *mClap{nullptr};
+    SoundRecording *mBackingTrack{nullptr};
     Mixer mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
