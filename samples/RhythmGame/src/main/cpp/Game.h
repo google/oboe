@@ -45,7 +45,7 @@ public:
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
 private:
-    AAssetManager *mAssetManager;
+    AAssetManager *mAssetManager{nullptr};
     AudioStream *mAudioStream;
     SoundRecording *mClap;
     SoundRecording *mBackingTrack;
