@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_ERROR_OR_VALUE_H
-#define OBOE_ERROR_OR_VALUE_H
+#ifndef OBOE_RESULT_WITH_VALUE_H
+#define OBOE_RESULT_WITH_VALUE_H
 
 #include "oboe/Definitions.h"
 
 namespace oboe {
 
 template <typename T>
-class ErrorOrValue {
+class ResultWithValue {
 public:
-    explicit ErrorOrValue(oboe::Result error)
+    explicit ResultWithValue(oboe::Result error)
             : mValue{}
             , mError(error) {}
 
-    explicit ErrorOrValue(T value)
+    explicit ResultWithValue(T value)
             : mValue(value)
             , mError(oboe::Result::OK) {}
 
@@ -39,6 +39,21 @@ public:
     T value() const {
         return mValue;
     }
+
+    /**
+     * Checks if the result was OK. Example usage:
+     *
+     * <code>
+     *     if (result.ok()) {
+     *         printf("Operation was successful");
+     *     } else {
+     *         printf("Operation was unsuccessful. Error: %s", convertToText(result.error()));
+     *     }
+     * </code>
+     *
+     * @return true if OK, false if error
+     */
+    bool ok() const { return mError == Result::OK; }
 
     /**
      * @return true if OK
@@ -64,4 +79,4 @@ private:
 
 } // namespace oboe
 
-#endif //OBOE_ERROR_OR_VALUE_H
+#endif //OBOE_RESULT_WITH_VALUE_H
