@@ -60,8 +60,7 @@ int64_t AudioStreamBuffered::getFramesRead() const {
     }
 }
 
-
-    // This is called by the OpenSL ES callback to read or write the back end of the FIFO.
+// This is called by the OpenSL ES callback to read or write the back end of the FIFO.
 DataCallbackResult AudioStreamBuffered::onDefaultCallback(void *audioData, int numFrames) {
     int32_t framesTransferred  = 0;
 
@@ -189,6 +188,7 @@ ErrorOrValue<int32_t> AudioStreamBuffered::write(const void *buffer,
     if (getDirection() == Direction::Input) {
         return ErrorOrValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
+    updateServiceFrameCounter();
     return transfer((void *) buffer, numFrames, timeoutNanoseconds);
 }
 
@@ -199,6 +199,7 @@ ErrorOrValue<int32_t> AudioStreamBuffered::read(void *buffer,
     if (getDirection() == Direction::Output) {
         return ErrorOrValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
+    updateServiceFrameCounter();
     return transfer(buffer, numFrames, timeoutNanoseconds);
 }
 

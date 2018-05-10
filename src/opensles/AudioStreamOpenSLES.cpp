@@ -137,6 +137,7 @@ SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueIt
         LOGE("Oboe callback returned %d", result);
         return SL_RESULT_INTERNAL_ERROR; // TODO How should we stop OpenSL ES.
     } else {
+        updateServiceFrameCounter();
         // Pass the data to OpenSLES.
         return enqueueCallbackBuffer(bq);
     }

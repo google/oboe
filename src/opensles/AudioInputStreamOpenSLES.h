@@ -51,6 +51,12 @@ public:
 
     int chanCountToChanMask(int chanCount);
 
+    int64_t getFramesWritten() const override;
+
+protected:
+
+    Result updateServiceFrameCounter() override;
+
 private:
 
     Result setRecordState(SLuint32 newState);
