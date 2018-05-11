@@ -325,8 +325,6 @@ stream. The input stream is included in the class.
 
 The callback does a non-blocking read from the input stream placing the data into the buffer of the output stream.
 
-(Note that Oboe version 1 does not support input streams, so this example cannot run.)
-
     class AudioEngine : AudioStreamCallback {
     public:
 
@@ -334,18 +332,17 @@ The callback does a non-blocking read from the input stream placing the data int
                 AudioStream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
-                Result result =
-                  stream2.read(audioData, numFrames, timeout);
+            Result result = stream2.read(audioData, numFrames, timeout);
 
-                if (result == numFrames)
-                    return DataCallbackResult::Continue;
-                if (result >= 0) {
-                    memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
-                        sizeof(sample_type) * (numFrames - result) * samplesPerFrame);
-                    return DataCallbackResult::Continue;
-                }
-                return DataCallbackResult::Stop;
-                }
+            if (result == numFrames)
+                return DataCallbackResult::Continue;
+            if (result >= 0) {
+                memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
+                    sizeof(sample_type) * (numFrames - result) * samplesPerFrame);
+                return DataCallbackResult::Continue;
+            }
+            return DataCallbackResult::Stop;
+        }
 
         bool AudioEngine::start() {
             ...
