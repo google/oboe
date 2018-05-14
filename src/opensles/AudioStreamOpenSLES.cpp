@@ -39,7 +39,8 @@ AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
-    LOGD("AudioStreamOpenSLES(): after OpenSLContext()");
+    // OpenSL ES does not support device IDs. So overwrite value from builder.
+    mDeviceId = kUnspecified;
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
@@ -90,7 +91,7 @@ Result AudioStreamOpenSLES::open() {
         mChannelCount = DEFAULT_CHANNEL_COUNT;
     }
 
-    // Decide frames per burst based hints from caller.
+    // Decide frames per burst based on hints from caller.
     // TODO  Can we query this from OpenSL ES?
     if (mFramesPerCallback != kUnspecified) {
         mFramesPerBurst = mFramesPerCallback;

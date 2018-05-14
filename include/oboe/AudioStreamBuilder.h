@@ -179,6 +179,9 @@ public:
      *
      * By default, the primary device will be used.
      *
+     * Note that when using OpenSL ES, this will be ignored and the subsequent
+     * stream will have deviceId kUnspecified.
+     *
      * @param deviceId device identifier or kUnspecified
      * @return pointer to the builder so calls can be chained
      */
