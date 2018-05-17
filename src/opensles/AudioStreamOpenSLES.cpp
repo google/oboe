@@ -117,13 +117,19 @@ Result AudioStreamOpenSLES::open() {
 }
 
 Result AudioStreamOpenSLES::close() {
+    onBeforeDestroy();
+
     if (mObjectInterface != nullptr) {
         (*mObjectInterface)->Destroy(mObjectInterface);
         mObjectInterface = nullptr;
 
     }
+
+    onAfterDestroy();
+
     mSimpleBufferQueueInterface = nullptr;
     EngineOpenSLES::getInstance().close();
+
     return Result::OK;
 }
 

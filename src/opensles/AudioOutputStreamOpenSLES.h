@@ -52,6 +52,8 @@ public:
 
 private:
 
+    Result onAfterDestroy() override;
+
     /**
      * Set OpenSL ES PLAYSTATE.
      *

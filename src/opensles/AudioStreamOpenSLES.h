@@ -73,6 +73,9 @@ public:
 
 protected:
 
+    virtual Result onBeforeDestroy() { return Result::OK; };
+    virtual Result onAfterDestroy() { return Result::OK; };
+
     static SLuint32 getDefaultByteOrder();
 
     SLresult registerBufferQueueCallback();
