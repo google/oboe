@@ -57,7 +57,7 @@ int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
 Result AudioInputStreamOpenSLES::open() {
 
     Result oboeResult = AudioStreamOpenSLES::open();
-    if (Result::OK != oboeResult)  return oboeResult;
+    if (Result::OK != oboeResult) return oboeResult;
 
     SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
 
@@ -97,29 +97,37 @@ Result AudioInputStreamOpenSLES::open() {
     SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
                                       SL_IODEVICE_AUDIOINPUT,
                                       SL_DEFAULTDEVICEID_AUDIOINPUT,
-                                      NULL };
-    SLDataSource audioSrc = {&loc_dev, NULL };
+                                      NULL};
+    SLDataSource audioSrc = {&loc_dev, NULL};
 
     SLresult result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
-                                                                       &audioSrc,
-                                                                       &audioSink);
+                                                                        &audioSrc,
+                                                                        &audioSink);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioRecorder() result:%s", getSLErrStr(result));
         goto error;
     }
 
-    // Configure the voice recognition preset, which has no
+    // Configure the unprocessed preset
+    // or voice recognition as fallback, which has no
     // signal processing, for lower latency.
     SLAndroidConfigurationItf inputConfig;
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
-                                            SL_IID_ANDROIDCONFIGURATION,
-                                            &inputConfig);
+                                               SL_IID_ANDROIDCONFIGURATION,
+                                               &inputConfig);
     if (SL_RESULT_SUCCESS == result) {
-        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
-        (*inputConfig)->SetConfiguration(inputConfig,
-                                         SL_ANDROID_KEY_RECORDING_PRESET,
-                                         &presetValue,
-                                         sizeof(SLuint32));
+        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_UNPROCESSED;
+        result = (*inputConfig)->SetConfiguration(inputConfig,
+                                                  SL_ANDROID_KEY_RECORDING_PRESET,
+                                                  &presetValue,
+                                                  sizeof(SLuint32));
+        if (SL_RESULT_SUCCESS != result) {
+            presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+            (*inputConfig)->SetConfiguration(inputConfig,
+                                             SL_ANDROID_KEY_RECORDING_PRESET,
+                                             &presetValue,
+                                             sizeof(SLuint32));
+        }
     }
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
@@ -143,7 +151,7 @@ Result AudioInputStreamOpenSLES::open() {
 
     return Result::OK;
 
-error:
+    error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }
 
@@ -161,7 +169,7 @@ Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
         return Result::ErrorInvalidState;
     }
     SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
-    if(SL_RESULT_SUCCESS != slResult) {
+    if (SL_RESULT_SUCCESS != slResult) {
         LOGE("AudioInputStreamOpenSLES::SetRecordState() returned %s", getSLErrStr(slResult));
         result = Result::ErrorInvalidState; // TODO review
     } else {
@@ -170,11 +178,10 @@ Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
     return result;
 }
 
-Result AudioInputStreamOpenSLES::requestStart()
-{
+Result AudioInputStreamOpenSLES::requestStart() {
     LOGD("AudioInputStreamOpenSLES::requestStart()");
     Result result = setRecordState(SL_RECORDSTATE_RECORDING);
-    if(result == Result::OK) {
+    if (result == Result::OK) {
         // Enqueue the first buffer so that we have data ready in the callback.
         enqueueCallbackBuffer(mSimpleBufferQueueInterface);
         setState(StreamState::Starting);
@@ -186,7 +193,7 @@ Result AudioInputStreamOpenSLES::requestStart()
 Result AudioInputStreamOpenSLES::requestPause() {
     LOGD("AudioInputStreamOpenSLES::requestStop()");
     Result result = setRecordState(SL_RECORDSTATE_PAUSED);
-    if(result != Result::OK) {
+    if (result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Pausing);
@@ -202,7 +209,7 @@ Result AudioInputStreamOpenSLES::requestFlush() {
 Result AudioInputStreamOpenSLES::requestStop() {
     LOGD("AudioInputStreamOpenSLES::requestStop()");
     Result result = setRecordState(SL_RECORDSTATE_STOPPED);
-    if(result != Result::OK) {
+    if (result != Result::OK) {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Stopping);
@@ -216,8 +223,8 @@ int64_t AudioInputStreamOpenSLES::getFramesWritten() const {
 }
 
 Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,
-                                                     StreamState *nextState,
-                                                     int64_t timeoutNanoseconds) {
+                                                    StreamState *nextState,
+                                                    int64_t timeoutNanoseconds) {
     LOGD("AudioInputStreamOpenSLES::waitForStateChange()");
     if (mRecordInterface == NULL) {
         return Result::ErrorInvalidState;
