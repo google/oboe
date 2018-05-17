@@ -19,7 +19,7 @@ To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/
 - [Full Guide to Oboe](FullGuide.md)
 
 ## Sample code
-Sample apps can be found in the [samples directory](samples)
+Sample apps can be found in the [samples directory](samples). Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
 
 ## Contributing
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
