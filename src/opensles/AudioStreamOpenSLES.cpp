@@ -174,6 +174,6 @@ int32_t AudioStreamOpenSLES::getFramesPerBurst() {
 
 int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
     int64_t millis64 = mPositionMillis.get();
-    int64_t framesRead = millis64 * getSampleRate() / kMillisPerSecond;
-    return framesRead;
+    int64_t framesProcessed = millis64 * getSampleRate() / kMillisPerSecond;
+    return framesProcessed;
 }
