@@ -86,6 +86,11 @@ class AAudioLoader {
     signature_V_PBI builder_setSampleRate;
     signature_V_PBI builder_setSharingMode;
 
+    signature_V_PBI builder_setUsage;
+    signature_V_PBI builder_setContentType;
+    signature_V_PBI builder_setInputPreset;
+    signature_V_PBI builder_setSessionId;
+
     void (*builder_setDataCallback)(AAudioStreamBuilder *builder,
                                     AAudioStream_dataCallback callback,
                                     void *userData);
@@ -144,7 +149,10 @@ class AAudioLoader {
     signature_PC_I   convertResultToText;
     signature_PC_I   convertStreamStateToText;
 
-    // TODO add any missing AAudio functions.
+    signature_I_PS   stream_getUsage;
+    signature_I_PS   stream_getContentType;
+    signature_I_PS   stream_getInputPreset;
+    signature_I_PS   stream_getSessionId;
 
   private:
     AAudioLoader() {}

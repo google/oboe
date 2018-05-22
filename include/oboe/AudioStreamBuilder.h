@@ -173,6 +173,90 @@ public:
         return this;
     }
 
+
+    /**
+     * Set the intended use case for the stream.
+     *
+     * The system will use this information to optimize the behavior of the stream.
+     * This could, for example, affect how volume and focus is handled for the stream.
+     *
+     * The default, if you do not call this function, is Usage::Media.
+     *
+     * Added in API level 28.
+     *
+     * @param usage the desired usage, eg. Usage::Game
+     */
+    AudioStreamBuilder *setUsage(Usage usage) {
+        mUsage = usage;
+        return this;
+    }
+
+    /**
+     * Set the type of audio data that the stream will carry.
+     *
+     * The system will use this information to optimize the behavior of the stream.
+     * This could, for example, affect whether a stream is paused when a notification occurs.
+     *
+     * The default, if you do not call this function, is ContentType::Music.
+     *
+     * Added in API level 28.
+     *
+     * @param contentType the type of audio data, eg. ContentType::Speech
+     */
+    AudioStreamBuilder *setContentType(ContentType contentType) {
+        mContentType = contentType;
+        return this;
+    }
+
+    /**
+     * Set the input (capture) preset for the stream.
+     *
+     * The system will use this information to optimize the behavior of the stream.
+     * This could, for example, affect which microphones are used and how the
+     * recorded data is processed.
+     *
+     * The default, if you do not call this function, is InputPreset::VoiceRecognition.
+     * That is because VoiceRecognition is the preset with the lowest latency
+     * on many platforms.
+     *
+     * Added in API level 28.
+     *
+     * @param inputPreset the desired configuration for recording
+     */
+    AudioStreamBuilder *setInputPreset(InputPreset inputPreset) {
+        mInputPreset = inputPreset;
+        return this;
+    }
+
+    /** Set the requested session ID.
+     *
+     * The session ID can be used to associate a stream with effects processors.
+     * The effects are controlled using the Android AudioEffect Java API.
+     *
+     * The default, if you do not call this function, is SessionId::None.
+     *
+     * If set to SessionId::Allocate then a session ID will be allocated
+     * when the stream is opened.
+     *
+     * The allocated session ID can be obtained by calling AudioStream::getSessionId()
+     * and then used with this function when opening another stream.
+     * This allows effects to be shared between streams.
+     *
+     * Session IDs from Oboe can be used the Android Java APIs and vice versa.
+     * So a session ID from an Oboe stream can be passed to Java
+     * and effects applied using the Java AudioEffect API.
+     *
+     * Allocated session IDs will always be positive and nonzero.
+     *
+     * Added in API level 28.
+     *
+     * @param sessionId an allocated sessionID or SessionId::Allocate
+     */
+    AudioStreamBuilder *setSessionId(SessionId sessionId) {
+        mSessionId = sessionId;
+        return this;
+    }
+
     /**
      * Request an audio device identified device using an ID.
      * On Android, for example, the ID could be obtained from the Java AudioManager.

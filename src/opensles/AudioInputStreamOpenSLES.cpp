@@ -26,6 +26,30 @@
 
 using namespace oboe;
 
+static SLuint32 OpenSLES_convertInputPreset(InputPreset oboePreset) {
+    SLuint32 openslPreset = SL_ANDROID_RECORDING_PRESET_NONE;
+    switch(oboePreset) {
+        case InputPreset::Generic:
+            openslPreset =  SL_ANDROID_RECORDING_PRESET_GENERIC;
+            break;
+        case InputPreset::Camcorder:
+            openslPreset =  SL_ANDROID_RECORDING_PRESET_CAMCORDER;
+            break;
+        case InputPreset::VoiceRecognition:
+            openslPreset =  SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+            break;
+        case InputPreset::VoiceCommunication:
+            openslPreset =  SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+            break;
+        case InputPreset::Unprocessed:
+            openslPreset =  SL_ANDROID_RECORDING_PRESET_UNPROCESSED;
+            break;
+        default:
+            break;
+    }
+    return openslPreset;
+}
+
 AudioInputStreamOpenSLES::AudioInputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
 }
@@ -57,7 +81,7 @@ int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
 Result AudioInputStreamOpenSLES::open() {
 
     Result oboeResult = AudioStreamOpenSLES::open();
-    if (Result::OK != oboeResult)  return oboeResult;
+    if (Result::OK != oboeResult) return oboeResult;
 
     SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
 
@@ -108,18 +132,31 @@ Result AudioInputStreamOpenSLES::open() {
         goto error;
     }
 
-    // Configure the voice recognition preset, which has no
-    // signal processing, for lower latency.
-    SLAndroidConfigurationItf inputConfig;
+    // Configure the stream.
+    SLAndroidConfigurationItf configItf;
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
                                             SL_IID_ANDROIDCONFIGURATION,
-                                            &inputConfig);
+                                            &configItf);
     if (SL_RESULT_SUCCESS == result) {
-        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
-        (*inputConfig)->SetConfiguration(inputConfig,
+        SLuint32 presetValue = OpenSLES_convertInputPreset(getInputPreset());
+        result = (*configItf)->SetConfiguration(configItf,
                                          SL_ANDROID_KEY_RECORDING_PRESET,
                                          &presetValue,
                                          sizeof(SLuint32));
+        if (SL_RESULT_SUCCESS != result
+            && presetValue != SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION) {
+            presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+            mInputPreset = InputPreset::VoiceRecognition;
+            (*configItf)->SetConfiguration(configItf,
+                                             SL_ANDROID_KEY_RECORDING_PRESET,
+                                             &presetValue,
+                                             sizeof(SLuint32));
+        }
+
+        result = configurePerformanceMode(configItf);
+        if (SL_RESULT_SUCCESS != result) {
+            goto error;
+        }
     }
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);

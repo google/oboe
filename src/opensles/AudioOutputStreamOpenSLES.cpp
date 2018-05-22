@@ -124,6 +124,18 @@ Result AudioOutputStreamOpenSLES::open() {
         goto error;
     }
 
+    // Configure the stream.
+    SLAndroidConfigurationItf configItf;
+    result = (*mObjectInterface)->GetInterface(mObjectInterface,
+                                               SL_IID_ANDROIDCONFIGURATION,
+                                               &configItf);
+    if (SL_RESULT_SUCCESS == result) {
+        result = configurePerformanceMode(configItf);
+        if (SL_RESULT_SUCCESS != result) {
+            goto error;
+        }
+    }
+
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Realize player object result:%s", getSLErrStr(result));

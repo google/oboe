@@ -35,6 +35,7 @@
 
 using namespace oboe;
 
+
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
@@ -114,6 +115,34 @@ Result AudioStreamOpenSLES::open() {
     }
 
     return Result::OK;
+}
+
+SLuint32 AudioStreamOpenSLES::convertPerformanceMode(PerformanceMode oboeMode) const {
+    SLuint32 openslMode = SL_ANDROID_PERFORMANCE_NONE;
+    switch(oboeMode) {
+        case PerformanceMode::None:
+            openslMode =  SL_ANDROID_PERFORMANCE_NONE;
+            break;
+        case PerformanceMode::LowLatency:
+            openslMode =  (getSessionId() != SessionId::None) ?  SL_ANDROID_PERFORMANCE_LATENCY : SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS;
+            break;
+        case PerformanceMode::PowerSaving:
+            openslMode =  SL_ANDROID_PERFORMANCE_POWER_SAVING;
+            break;
+        default:
+            break;
+    }
+    return openslMode;
+}
+
+SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
+    SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
+    SLresult result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                            &performanceMode, sizeof(performanceMode));
+    if (SL_RESULT_SUCCESS != result) {
+        LOGE("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
+    }
+    return result;
 }
 
 Result AudioStreamOpenSLES::close() {

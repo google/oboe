@@ -143,6 +143,175 @@ namespace oboe {
         AAudio
     };
 
+    /**
+     * The Usage attribute expresses "why" you are playing a sound, what is this sound used for.
+     * This information is used by certain platforms or routing policies
+     * to make more refined volume or routing decisions.
+     *
+     * Note that these match the equivalent values in AudioAttributes in the Android Java API.
+     *
+     * Added in API level 28.
+     */
+    enum class Usage : aaudio_usage_t {
+        /**
+         * Use this for streaming media, music performance, video, podcasts, etcetera.
+         */
+        Media = AAUDIO_USAGE_MEDIA,
+
+        /**
+         * Use this for voice over IP, telephony, etcetera.
+         */
+        VoiceCommunication = AAUDIO_USAGE_VOICE_COMMUNICATION,
+
+        /**
+         * Use this for sounds associated with telephony such as busy tones, DTMF, etcetera.
+         */
+        VoiceCommunicationSignalling = AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING,
+
+        /**
+         * Use this to demand the users attention.
+         */
+        Alarm = AAUDIO_USAGE_ALARM,
+
+        /**
+         * Use this for notifying the user when a message has arrived or some
+         * other background event has occured.
+         */
+        Notification = AAUDIO_USAGE_NOTIFICATION,
+
+        /**
+         * Use this when the phone rings.
+         */
+        NotificationRingtone = AAUDIO_USAGE_NOTIFICATION_RINGTONE,
+
+        /**
+         * Use this to attract the users attention when, for example, the battery is low.
+         */
+        NotificationEvent = AAUDIO_USAGE_NOTIFICATION_EVENT,
+
+        /**
+         * Use this for screen readers, etcetera.
+         */
+        AssistanceAccessibility = AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY,
+
+        /**
+         * Use this for driving or navigation directions.
+         */
+        AssistanceNavigationGuidance = AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE,
+
+        /**
+         * Use this for user interface sounds, beeps, etcetera.
+         */
+        AssistanceSonification = AAUDIO_USAGE_ASSISTANCE_SONIFICATION,
+
+        /**
+         * Use this for game audio and sound effects.
+         */
+        Game = AAUDIO_USAGE_GAME,
+
+        /**
+         * Use this for audio responses to user queries, audio instructions or help utterances.
+         */
+        Assistant = AAUDIO_USAGE_ASSISTANT,
+    };
+
+
+    /**
+     * The CONTENT_TYPE attribute describes "what" you are playing.
+     * It expresses the general category of the content. This information is optional.
+     * But in case it is known (for instance {@link #AAUDIO_CONTENT_TYPE_MOVIE} for a
+     * movie streaming service or {@link #AAUDIO_CONTENT_TYPE_SPEECH} for
+     * an audio book application) this information might be used by the audio framework to
+     * enforce audio focus.
+     *
+     * Note that these match the equivalent values in AudioAttributes in the Android Java API.
+     *
+     * Added in API level 28.
+     */
+    enum ContentType : aaudio_content_type_t {
+
+        /**
+         * Use this for spoken voice, audio books, etcetera.
+         */
+        Speech = AAUDIO_CONTENT_TYPE_SPEECH,
+
+        /**
+         * Use this for pre-recorded or live music.
+         */
+        Music = AAUDIO_CONTENT_TYPE_MUSIC,
+
+        /**
+         * Use this for a movie or video soundtrack.
+         */
+        Movie = AAUDIO_CONTENT_TYPE_MOVIE,
+
+        /**
+         * Use this for sound is designed to accompany a user action,
+         * such as a click or beep sound made when the user presses a button.
+         */
+        Sonification = AAUDIO_CONTENT_TYPE_SONIFICATION,
+    };
+
+    /**
+     * Defines the audio source.
+     * An audio source defines both a default physical source of audio signal, and a recording
+     * configuration.
+     *
+     * Note that these match the equivalent values in MediaRecorder.AudioSource in the Android Java API.
+     *
+     * Added in API level 28.
+     */
+    enum InputPreset : aaudio_input_preset_t {
+        /**
+         * Use this preset when other presets do not apply.
+         */
+        Generic = AAUDIO_INPUT_PRESET_GENERIC,
+
+        /**
+         * Use this preset when recording video.
+         */
+        Camcorder = AAUDIO_INPUT_PRESET_CAMCORDER,
+
+        /**
+         * Use this preset when doing speech recognition.
+         */
+        VoiceRecognition = AAUDIO_INPUT_PRESET_VOICE_RECOGNITION,
+
+        /**
+         * Use this preset when doing telephony or voice messaging.
+         */
+        VoiceCommunication = AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION,
+
+        /**
+         * Use this preset to obtain an input with no effects.
+         * Note that this input will not have automatic gain control
+         * so the recorded volume may be very low.
+         */
+        Unprocessed = AAUDIO_INPUT_PRESET_UNPROCESSED,
+    };
+
+    enum SessionId {
+        /**
+         * Do not allocate a session ID.
+         * Effects cannot be used with this stream.
+         * Default.
+         *
+         * Added in API level 28.
+         */
+         None = AAUDIO_SESSION_ID_NONE,
+
+        /**
+         * Allocate a session ID that can be used to attach and control
+         * effects using the Java AudioEffects API.
+         * Note that the use of this flag may result in higher latency.
+         *
+         * Note that this matches the value of AudioManager.AUDIO_SESSION_ID_GENERATE.
+         *
+         * Added in API level 28.
+         */
+         Allocate = AAUDIO_SESSION_ID_ALLOCATE,
+    };
+
 } // namespace oboe
 
 #endif // OBOE_DEFINITIONS_H
