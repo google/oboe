@@ -50,6 +50,14 @@ public:
 
     int chanCountToChanMask(int chanCount);
 
+    int64_t getFramesRead() const override;
+
+protected:
+
+    void setFramesRead(int64_t framesRead);
+
+    Result updateServiceFrameCounter() override;
+
 private:
 
     /**

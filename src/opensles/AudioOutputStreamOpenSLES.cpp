@@ -191,6 +191,11 @@ Result AudioOutputStreamOpenSLES::requestPause() {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Pausing);
+        // Note that OpenSL ES does NOT reset its millisecond position when OUTPUT is paused.
+        int64_t framesWritten = getFramesWritten();
+        if (framesWritten >= 0) {
+            setFramesRead(framesWritten);
+        }
     }
     return result;
 }
@@ -210,8 +215,22 @@ Result AudioOutputStreamOpenSLES::requestStop() {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Stopping);
+        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
+        int64_t framesWritten = getFramesWritten();
+        if (framesWritten >= 0) {
+            setFramesRead(framesWritten);
+        }
     }
     return result;
+}
+
+void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
+    int64_t millisWritten = framesRead * kMillisPerSecond / getSampleRate();
+    mPositionMillis.set(millisWritten);
+}
+
+int64_t AudioOutputStreamOpenSLES::getFramesRead() const {
+    return getFramesProcessedByServer();
 }
 
 Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
@@ -222,4 +241,21 @@ Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
+    if (mPlayInterface == NULL) {
+        return Result::ErrorNull;
+    }
+    SLmillisecond msec = 0;
+    SLresult slResult = (*mPlayInterface)->GetPosition(mPlayInterface, &msec);
+    Result result = Result::OK;
+    if(SL_RESULT_SUCCESS != slResult) {
+        LOGD("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
+        // set result based on SLresult
+        result = Result::ErrorInternal;
+    } else {
+        mPositionMillis.update32(msec);
+    }
+    return result;
 }

@@ -190,6 +190,7 @@ Result AudioInputStreamOpenSLES::requestPause() {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Pausing);
+        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when paused.
     }
     return result;
 }
@@ -205,8 +206,13 @@ Result AudioInputStreamOpenSLES::requestStop() {
         result = Result::ErrorInvalidState; // TODO review
     } else {
         setState(StreamState::Stopping);
+        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
     }
     return result;
+}
+
+int64_t AudioInputStreamOpenSLES::getFramesWritten() const {
+    return getFramesProcessedByServer();
 }
 
 Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,
@@ -217,4 +223,21 @@ Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
+}
+
+Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
+    if (mRecordInterface == NULL) {
+        return Result::ErrorNull;
+    }
+    SLmillisecond msec = 0;
+    SLresult slResult = (*mRecordInterface)->GetPosition(mRecordInterface, &msec);
+    Result result = Result::OK;
+    if(SL_RESULT_SUCCESS != slResult) {
+        LOGD("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
+        // set result based on SLresult
+        result = Result::ErrorInternal;
+    } else {
+        mPositionMillis.update32(msec);
+    }
+    return result;
 }

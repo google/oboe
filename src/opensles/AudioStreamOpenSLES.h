@@ -21,8 +21,9 @@
 #include <SLES/OpenSLES_Android.h>
 
 #include "oboe/Oboe.h"
-#include "AudioStreamBuffered.h"
-#include "EngineOpenSLES.h"
+#include "common/MonotonicCounter.h"
+#include "opensles/AudioStreamBuffered.h"
+#include "opensles/EngineOpenSLES.h"
 
 namespace oboe {
 
@@ -87,6 +88,8 @@ protected:
         mState = state;
     }
 
+    int64_t getFramesProcessedByServer() const;
+
     // OpenSLES stuff
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
@@ -96,6 +99,8 @@ protected:
     int32_t               mFramesPerBurst = 0;
     int32_t               mBurstsPerBuffer = 2; // Double buffered
     StreamState           mState = StreamState::Uninitialized;
+
+    MonotonicCounter  mPositionMillis; // for tracking OpenSL ES service position
 };
 
 } // namespace oboe
