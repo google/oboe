@@ -92,6 +92,8 @@ public:
     /**
      * Round 64-bit counter up to a multiple of the period.
      *
+     * The period must be positive.
+     *
      * @param period might be, for example, a buffer capacity
      */
     void roundUp64(int32_t period) {

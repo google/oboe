@@ -88,6 +88,8 @@ protected:
         mState = state;
     }
 
+    int64_t getFramesProcessedByServer() const;
+
     // OpenSLES stuff
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;

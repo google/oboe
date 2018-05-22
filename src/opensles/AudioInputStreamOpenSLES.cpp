@@ -212,9 +212,7 @@ Result AudioInputStreamOpenSLES::requestStop() {
 }
 
 int64_t AudioInputStreamOpenSLES::getFramesWritten() const {
-    int64_t millis64 = mPositionMillis.get();
-    int64_t framesRead = millis64 * getSampleRate() / kMillisPerSecond;
-    return framesRead;
+    return getFramesProcessedByServer();
 }
 
 Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,

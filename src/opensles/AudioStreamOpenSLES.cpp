@@ -170,3 +170,9 @@ SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
 int32_t AudioStreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
+
+int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
+    int64_t millis64 = mPositionMillis.get();
+    int64_t framesRead = millis64 * getSampleRate() / kMillisPerSecond;
+    return framesRead;
+}

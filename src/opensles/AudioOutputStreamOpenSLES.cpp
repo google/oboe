@@ -230,9 +230,7 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
 }
 
 int64_t AudioOutputStreamOpenSLES::getFramesRead() const {
-    int64_t millis64 = mPositionMillis.get();
-    int64_t framesRead = millis64 * getSampleRate() / kMillisPerSecond;
-    return framesRead;
+    return getFramesProcessedByServer();
 }
 
 Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
