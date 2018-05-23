@@ -5,6 +5,10 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 [Get started with Oboe here](GettingStarted.md).
 
+# Projects using Oboe
+- [JUCE middleware framework](https://juce.com/)
+- CSound (waiting on: https://github.com/csound/csound/pull/915)
+
 ## Features
 - Compatible with API 16 onwards - runs on 99% of Android devices
 - Chooses the audio API (OpenSL ES on API 16+ or AAudio on API 27+) which will give the best audio performance on the target Android device
@@ -20,6 +24,9 @@ To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/
 
 ## Sample code
 Sample apps can be found in the [samples directory](samples). Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
+
+### Third party sample code
+- [Ableton Link integration demo] (waiting on confirmation from jbloit)
 
 ## Contributing
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
