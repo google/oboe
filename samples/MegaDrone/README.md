@@ -13,7 +13,7 @@ This sample demonstrates how to obtain the lowest latency by:
 
 This code was presented at [AES Milan](http://www.aes.org/events/144/) as part of a live coding demonstration. 
 
-The following article explaining how to debug CPU performance problems may also be useful when looking at this code 
+The [following article explaining how to debug CPU performance problems](https://medium.com/@donturner/debugging-audio-glitches-on-android-ed10782f9c64) may also be useful when looking at this code 
 
 Implementation details
 ---
@@ -40,4 +40,4 @@ The compiler optimization flag `-Ofast` can be found in [CMakeLists.txt](CMakeLi
  
 Screenshots
 -----------
-![mega-drone-screenshot](mega-drone-screenshot.png)
+![megadrone-screenshot](megadrone-screenshot.png)
