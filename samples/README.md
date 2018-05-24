@@ -5,6 +5,7 @@ These samples demonstrate how to use the Oboe library:
 1. [hello-oboe](hello-oboe): creates an output (playback) stream and plays a
 sine wave when you tap the screen
 1. [RhythmGame](RhythmGame): A simple rhythm game where you copy the clap patterns you hear by tapping on the screen
+1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance
 
 Pre-requisites
 -------------
