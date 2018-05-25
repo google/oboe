@@ -14,32 +14,17 @@
  * limitations under the License.
  */
 
-#include <jni.h>
-#include <string>
+#include "Oscillator.h"
+#include "../../../../../src/common/OboeDebug.h"
 
-#include "AudioEngine.h"
+// We need to calculate the amplitude value differently for each supported output format
+template<>
+void Oscillator<float>::setAmplitude(float amplitude){
+    mAmplitude = amplitude;
+};
 
-AudioEngine engine;
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance) {
-
-    engine.start();
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance) {
-
-    engine.stop();
-
-}
-
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
-
-    engine.tap(b);
-}
+template<>
+void Oscillator<int16_t>::setAmplitude(float amplitude){
+    mAmplitude = amplitude * INT16_MAX;
+    LOGD("16-bit amplitude set to %d", mAmplitude.load());
+};

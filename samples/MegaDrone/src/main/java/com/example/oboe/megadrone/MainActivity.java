@@ -31,9 +31,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
+    protected void onStart(){
+        super.onStart();
         startEngine();
     }
+
+    protected void onStop(){
+        super.onStop();
+        stopEngine();
+    }
+
+    private native void stopEngine();
 
     private native void startEngine();
 
