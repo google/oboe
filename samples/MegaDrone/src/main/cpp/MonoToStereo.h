@@ -29,12 +29,15 @@ public:
 
     void renderAudio(T *audioData, int32_t numFrames) override {
 
+        mInput->renderAudio(audioData, numFrames);
+
         // We assume that audioData has sufficient frames to hold the stereo output, so copy each
-        // frame in the input to the output twice
+        // frame in the input to the output twice, working our way backwards through the input array
         // e.g. 123 => 112233
-        for (int i = 0; i < numFrames; ++i) {
-            mInput->renderAudio(audioData+(i*kStereoChannelCount), 1);
-            audioData[(i*kStereoChannelCount)+1] = audioData[i*kStereoChannelCount];
+        for (int i = numFrames - 1; i >= 0; --i) {
+
+            audioData[i * kStereoChannelCount] = audioData[i];
+            audioData[i * kStereoChannelCount + 1] = audioData[i];
         }
     }
 

@@ -14,32 +14,34 @@
  * limitations under the License.
  */
 
-#include <jni.h>
-#include <string>
-
-#include "AudioEngine.h"
-
-AudioEngine engine;
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance) {
-
-    engine.start();
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance) {
-
-    engine.stop();
-
-}
+#ifndef MEGADRONE_AUDIOENGINE_H
+#define MEGADRONE_AUDIOENGINE_H
 
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
+#include <oboe/Oboe.h>
 
-    engine.tap(b);
-}
+#include "Synth.h"
+
+using namespace oboe;
+
+class AudioEngine : public AudioStreamCallback {
+
+public:
+    void start();
+    void tap(bool isOn);
+
+    DataCallbackResult
+    onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
+
+    void stop();
+
+private:
+
+    AudioStream *mStream = nullptr;
+    std::unique_ptr<Synth<float>> mSynthFloat;
+    std::unique_ptr<Synth<int16_t>> mSynthInt16;
+
+};
+
+
+#endif //MEGADRONE_AUDIOENGINE_H

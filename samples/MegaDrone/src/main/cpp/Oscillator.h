@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <atomic>
 #include <math.h>
+#include <memory>
 #include "RenderableAudio.h"
 
 constexpr double kDefaultFrequency = 440.0;
@@ -49,9 +50,7 @@ public:
         updatePhaseIncrement();
     };
 
-    void setAmplitude(T amplitude){
-        mAmplitude = amplitude;
-    };
+    void setAmplitude(float amplitude);
 
     // From RenderableAudio<T>
     void renderAudio(T *audioData, int32_t numFrames) {
@@ -73,16 +72,14 @@ public:
                 if (mPhase > kTwoPi) mPhase -= kTwoPi;
             }
         } else {
-            for (int i = 0; i < numFrames; ++i) {
-                audioData[i] = 0;
-            }
+            memset(audioData, 0, sizeof(T) * numFrames);
         }
     };
 
 private:
-    std::atomic<bool> mIsWaveOn{false};
+    std::atomic<bool> mIsWaveOn { false };
     float mPhase = 0.0;
-    std::atomic<float> mAmplitude { 0.0 };
+    std::atomic<T> mAmplitude { 0 };
     std::atomic<double> mPhaseIncrement { 0.0 };
     double mFrequency = kDefaultFrequency;
     int32_t mSampleRate = kDefaultSampleRate;
@@ -91,6 +88,5 @@ private:
         mPhaseIncrement.store((kTwoPi * mFrequency) / (double) mSampleRate);
     };
 };
-
 
 #endif //MEGADRONE_OSCILLATOR_H

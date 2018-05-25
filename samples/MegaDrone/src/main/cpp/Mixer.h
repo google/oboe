@@ -19,20 +19,17 @@
 
 #include "RenderableAudio.h"
 
-constexpr int32_t kBufferSize = 192*10; // Temporary buffer is used for mixing
+constexpr int32_t kBufferSize = 192*10;  // Temporary buffer is used for mixing
 constexpr uint8_t kMaxTracks = 100;
 
 template <typename T>
 class Mixer : public RenderableAudio<T> {
 
 public:
-
     void renderAudio(T *audioData, int32_t numFrames) {
 
         // Zero out the incoming container array
-        for (int j = 0; j < numFrames; ++j) {
-            audioData[j] = 0;
-        }
+        memset(audioData, 0, sizeof(T) * numFrames);
 
         for (int i = 0; i < mNextFreeTrackIndex; ++i) {
             mTracks[i]->renderAudio(mixingBuffer, numFrames);
@@ -43,13 +40,13 @@ public:
         }
     }
 
-    void addTrack(RenderableAudio<T> *renderer){
+    void addTrack(std::shared_ptr<RenderableAudio<T>> renderer){
         mTracks[mNextFreeTrackIndex++] = renderer;
     }
 
 private:
-    T mixingBuffer[kBufferSize]; // TODO: smart pointer
-    RenderableAudio<T>* mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
+    T mixingBuffer[kBufferSize];
+    std::array<std::shared_ptr<RenderableAudio<T>>, kMaxTracks> mTracks;
     uint8_t mNextFreeTrackIndex = 0;
 };
 
