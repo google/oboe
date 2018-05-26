@@ -21,6 +21,8 @@
 
 void AudioEngine::start() {
 
+    //LOGD("In start()");
+
     AudioStreamBuilder builder;
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
@@ -40,14 +42,18 @@ void AudioEngine::start() {
 
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
     mStream->requestStart();
+
+    //LOGD("Finished start()");
 }
 
 void AudioEngine::stop() {
 
+    //LOGD("In stop()");
+
     if (mStream != nullptr){
         mStream->close();
     }
-    LOGD("Stop - end");
+    //LOGD("Finished stop()");
 }
 
 void AudioEngine::tap(bool isOn) {

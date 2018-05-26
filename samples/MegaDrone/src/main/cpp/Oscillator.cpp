@@ -15,7 +15,6 @@
  */
 
 #include "Oscillator.h"
-#include "../../../../../src/common/OboeDebug.h"
 
 // We need to calculate the amplitude value differently for each supported output format
 template<>
@@ -26,5 +25,4 @@ void Oscillator<float>::setAmplitude(float amplitude){
 template<>
 void Oscillator<int16_t>::setAmplitude(float amplitude){
     mAmplitude = amplitude * INT16_MAX;
-    LOGD("16-bit amplitude set to %d", mAmplitude.load());
 };
