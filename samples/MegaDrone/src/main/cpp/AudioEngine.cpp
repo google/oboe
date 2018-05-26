@@ -33,9 +33,9 @@ void AudioEngine::start() {
     }
 
     if (mStream->getFormat() == AudioFormat::Float){
-        mSynthFloat = std::make_unique<Synth<float>>(mStream->getSampleRate(), mStream->getChannelCount());
+        mSynth = std::make_unique<Synth<float>>(mStream->getSampleRate(), mStream->getChannelCount());
     } else {
-        mSynthInt16 = std::make_unique<Synth<int16_t>>(mStream->getSampleRate(), mStream->getChannelCount());
+        mSynth = std::make_unique<Synth<int16_t>>(mStream->getSampleRate(), mStream->getChannelCount());
     }
 
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
@@ -51,23 +51,12 @@ void AudioEngine::stop() {
 }
 
 void AudioEngine::tap(bool isOn) {
-
-    if (mStream->getFormat() == AudioFormat::Float){
-        mSynthFloat->setWaveOn(isOn);
-    } else {
-        mSynthInt16->setWaveOn(isOn);
-    }
+    mSynth->setWaveOn(isOn);
 }
 
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-
-    if (mStream->getFormat() == AudioFormat::Float){
-        mSynthFloat->renderAudio(static_cast<float *>(audioData), numFrames);
-    } else {
-        mSynthInt16->renderAudio(static_cast<int16_t *>(audioData), numFrames);
-    }
-
+    mSynth->renderAudio(audioData, numFrames);
     return DataCallbackResult::Continue;
 }
 
