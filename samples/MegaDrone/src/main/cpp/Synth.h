@@ -29,8 +29,15 @@ constexpr float kOscBaseFrequency = 116.0;
 constexpr float kOscDivisor = 33;
 constexpr float kOscAmplitude = 0.009;
 
+class ISynth {
+public:
+    virtual void renderAudio(void *audioData, int32_t numFrames) = 0;
+    virtual void setWaveOn(bool isEnabled) = 0;
+};
+
+
 template <typename T>
-class Synth : public RenderableAudio<T>{
+class Synth : public ISynth {
 public:
 
     Synth(int32_t sampleRate, int32_t channelCount) {
@@ -51,14 +58,16 @@ public:
         }
     }
 
+    // From ISynth
     void setWaveOn(bool isEnabled){
         for (auto &osc : mOscs) osc.setWaveOn(isEnabled);
     };
 
-    // From RenderableAudio<T>
-    void renderAudio(T *audioData, int32_t numFrames){
-        mOutputStage->renderAudio(audioData, numFrames);
+    // From ISynth
+    void renderAudio(void *audioData, int32_t numFrames) override {
+        mOutputStage->renderAudio(static_cast<T*>(audioData), numFrames);
     };
+
 
 private:
 

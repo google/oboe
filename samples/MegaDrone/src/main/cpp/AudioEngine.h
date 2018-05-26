@@ -38,8 +38,7 @@ public:
 private:
 
     AudioStream *mStream = nullptr;
-    std::unique_ptr<Synth<float>> mSynthFloat;
-    std::unique_ptr<Synth<int16_t>> mSynthInt16;
+    std::unique_ptr<ISynth> mSynth;
 
 };
 
