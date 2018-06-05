@@ -34,7 +34,6 @@ template <typename T>
 class Oscillator : public RenderableAudio<T> {
 
 public:
-    ~Oscillator(){};
 
     void setWaveOn(bool isWaveOn){
         mIsWaveOn.store(isWaveOn);
