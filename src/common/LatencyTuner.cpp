@@ -56,8 +56,8 @@ Result LatencyTuner::tune() {
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
                 int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
                 auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
-                if (!setBufferResult.ok()){
-                    result = setBufferResult.error();
+                if (setBufferResult != Result::OK){
+                    result = setBufferResult;
                     mState = State::Unsupported;
                 } else if (setBufferResult.value() == oldBufferSize){
                     mState = State::AtMax;

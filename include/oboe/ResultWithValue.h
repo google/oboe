@@ -24,7 +24,7 @@ namespace oboe {
 template <typename T>
 class ResultWithValue {
 public:
-    explicit ResultWithValue(oboe::Result error)
+    ResultWithValue(oboe::Result error)
             : mValue{}
             , mError(error) {}
 
@@ -39,21 +39,6 @@ public:
     T value() const {
         return mValue;
     }
-
-    /**
-     * Checks if the result was OK. Example usage:
-     *
-     * <code>
-     *     if (result.ok()) {
-     *         printf("Operation was successful");
-     *     } else {
-     *         printf("Operation was unsuccessful. Error: %s", convertToText(result.error()));
-     *     }
-     * </code>
-     *
-     * @return true if OK, false if error
-     */
-    bool ok() const { return mError == Result::OK; }
 
     /**
      * @return true if OK
@@ -71,6 +56,39 @@ public:
      * @return true if an error occurred
      */
     bool operator !() const { return mError != oboe::Result::OK; }
+
+    /**
+     * Implicitly convert to a Result. This enables easy comparison with Result values. Example:
+     *
+     * <code>
+     *     ResultWithValue result = openStream();
+     *     if (result == Result::ErrorNoMemory){ // tell user they're out of memory }
+     * </code>
+     */
+    operator Result() const {
+        return mError;
+    }
+
+    /**
+     * Create a ResultWithValue from a number. If the number is positive the ResultWithValue will
+     * have a result of Result::OK and the value will contain the number. If the number is negative
+     * the result will be obtained from the negative number (numeric error codes can be found in
+     * AAudio.h) and the value will be null.
+     *
+     */
+    static ResultWithValue<T> createBasedOnSign(T numericResult){
+
+        // Ensure that the type is either an integer or float
+        static_assert(std::is_arithmetic<T>::value,
+                      "createBasedOnSign can only be called for numeric types (int or float)");
+
+        if (numericResult >= 0){
+            return ResultWithValue<T>(numericResult);
+        } else {
+            return ResultWithValue<T>(static_cast<Result>(numericResult));
+        }
+    }
+
 
 private:
     const T             mValue;
