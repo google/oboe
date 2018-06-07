@@ -288,11 +288,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
     if (stream != nullptr) {
         int32_t result = mLibLoader->stream_read(mAAudioStream, buffer,
                                                  numFrames, timeoutNanoseconds);
-        if (result < 0) {
-            return ResultWithValue<int32_t>(static_cast<Result>(result));
-        } else {
-            return ResultWithValue<int32_t>(result);
-        }
+        return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
         return ResultWithValue<int32_t>(Result::ErrorNull);
     }

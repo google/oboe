@@ -120,7 +120,7 @@ public:
     * using error())
     */
     virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) {
-        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
+        return Result::ErrorUnimplemented;
     }
 
     /**
