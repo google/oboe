@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.google.sample.oboe.echo.MainActivity"
+    tools:layout_editor_absoluteY="81dp">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/recording_device"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.sample.audio_device.AudioDeviceSpinner
+        android:id="@+id/recording_devices_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/playback_device"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recording_devices_spinner" />
+
+    <com.google.sample.audio_device.AudioDeviceSpinner
+        android:id="@+id/playback_devices_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/apiSelectionGroup"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/playback_devices_spinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/apiTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/apiSelection" />
+
+        <RadioButton
+            android:id="@+id/aaudioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/aaudio" />
+
+        <RadioButton
+            android:id="@+id/slesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/sles" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/voiceLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_group_margin"
+        android:layout_marginEnd="0dp"
+        android:text="@string/voice_label"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/apiSelectionGroup"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <SeekBar
+        android:id="@+id/mixerSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="17dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="1dp"
+        android:maxHeight="3dp"
+        android:minHeight="3dp"
+        android:max="10"
+        android:min="0"
+        android:progress="5"
+        android:progressDrawable="@drawable/balance_seekbar"
+        app:layout_constraintStart_toEndOf="@+id/voiceLabel"
+        app:layout_constraintEnd_toStartOf="@+id/musicLabel"
+        app:layout_constraintTop_toTopOf="@+id/voiceLabel" />
+
+    <TextView
+        android:id="@+id/musicLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="@string/music_label"
+        android:visibility="visible"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/voiceLabel"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/echoCurDelay"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_group_margin"
+        android:text="@string/echo_init_delay"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/voiceLabel"
+        app:layout_constraintStart_toEndOf="@+id/echoDelayLabel" />
+
+    <TextView
+        android:id="@+id/echoDelayLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:text="@string/echo_delay_label"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/echoCurDelay"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <SeekBar
+        android:id="@+id/echoDelaySeekBar"
+        android:layout_width="0dp"
+        android:layout_height="17dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:max="10"
+        android:min="0"
+        android:progress="5"
+        app:layout_constraintStart_toEndOf="@+id/echoDelayLabel"
+        app:layout_constraintTop_toTopOf="@+id/echoDelayLabel"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/echoCurDecay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/echo_init_decay"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/echoDelayLabel"
+        app:layout_constraintStart_toEndOf="@+id/echoDecayLabel"/>
+
+    <TextView
+        android:id="@+id/echoDecayLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:text="@string/echo_decay_label"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/echoCurDecay"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <SeekBar
+        android:id="@+id/echoDecaySeekBar"
+        android:layout_width="0dp"
+        android:layout_height="17dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:max="10"
+        android:min="0"
+        android:progress="1"
+        app:layout_constraintTop_toTopOf="@+id/echoDecayLabel"
+        app:layout_constraintBottom_toBottomOf="@+id/echoDecayLabel"
+        app:layout_constraintStart_toEndOf="@+id/echoDecayLabel"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/status_view_text"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_group_margin"
+        android:lines="6"
+        android:text="@string/status_warning"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/echoDecayLabel" />
+
+    <Button
+        android:id="@+id/button_toggle_echo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:textAllCaps="false"
+        android:text="@string/start_echo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_view_text" />
+
+</android.support.constraint.ConstraintLayout>
