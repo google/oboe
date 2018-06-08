@@ -44,4 +44,4 @@ target_link_libraries(echo
 
 target_compile_options(echo
     PRIVATE
-        -Wall)
+        -Wall -Werror)

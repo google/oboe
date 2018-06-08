@@ -19,6 +19,9 @@
 #include <cstring>
 #include <audio_common.h>
 
+#define CLAMP_FOR_I16(x) ((x)>SHRT_MAX ? SHRT_MAX : \
+                         ((x)<SHRT_MIN ? SHRT_MIN : (x)))
+
 /*
  * Mixing Audio in integer domain to avoid FP calculation
  *   (FG * ( MixFactor * 16 ) + BG * ( (1.0f-MixFactor) * 16 )) / 16
@@ -28,7 +31,6 @@ static const int32_t kFloatToIntMapFactor = 128;
 AudioMixer::AudioMixer() :
     AudioFormat(48000, 2, oboe::AudioFormat::I16) {
 
-  busy_ = false;
   bgMixFactorInt_ = (int32_t)
                    (bgMixFactor_ * kFloatToIntMapFactor + 0.5f);
   fgMixFactorInt_ = kFloatToIntMapFactor - bgMixFactorInt_;
@@ -49,8 +51,13 @@ AudioMixer::~AudioMixer() {
 void  AudioMixer::setBackgroundMixer(float mixer) {
   if (mixer >= 0.0f && mixer <= 1.0f) {
     bgMixFactor_ = mixer;
-    bgMixFactorInt_ = (int32_t)
-      (bgMixFactor_ * kFloatToIntMapFactor + 0.5f);
+    if (bgMixFactor_ < 0.05f) {
+      bgMixFactor_ = 0.0f;
+      bgMixFactorInt_ = 0;
+    } else {
+      bgMixFactorInt_ = (int32_t)
+        (bgMixFactor_ * kFloatToIntMapFactor + 0.5f);
+    }
     fgMixFactorInt_ = kFloatToIntMapFactor - bgMixFactorInt_;
   }
 }
@@ -63,12 +70,10 @@ void  AudioMixer::setBackgroundMixer(float mixer) {
  * @param channelCount channels for PCM audio pointed by samples
  * @param freq is PCM audio frequency (48000hz for this sample)
  */
-void  AudioMixer::addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCount,
-          int32_t sampleRate, int32_t channelCount, oboe::AudioFormat format){
-  if (busy_) {
-    LOGW("filtering in progress, filter configuration is IGNORED");
-    return;
-  }
+bool  AudioMixer::addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCount,
+          int32_t sampleRate, int32_t channelCount, oboe::AudioFormat format) {
+  // Wait for lock, from user context.
+  std::lock_guard<std::mutex> lock(lock_);
   bgAudio_ = std::move(samples);
   bgAudioSampleCount_ = sampleCount;
   sampleRate_ = sampleRate;
@@ -76,6 +81,8 @@ void  AudioMixer::addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCoun
   channelCount_ = channelCount;
 
   curPosition_ = 0;
+
+  return true;
 }
 
 /**
@@ -87,35 +94,67 @@ void  AudioMixer::addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCoun
  */
 void AudioMixer::process(int16_t *liveAudio, int32_t channelCount,
                           int32_t numFrames) {
-  assert(bgAudio_ && liveAudio);
-  if (numFrames > bgAudioSampleCount_ || channelCount != channelCount_ ||
+  if(!bgAudio_ || !liveAudio) {
+    return;
+  }
+
+  if ((numFrames * channelCount) > bgAudioSampleCount_ ||
+      channelCount != channelCount_ ||
       bgMixFactorInt_ == 0) {
     return;
   }
 
-  busy_ = true;
+  if (!lock_.try_lock()) {
+    // UI thread still updating the stream, skip blending
+    return;
+  }
+
+  size_t sampleCount  = numFrames * channelCount;
   int32_t curSample;
-  for (int i = 0; i < (numFrames * channelCount); i++) {
+  for (int i = 0; i < sampleCount ; i++) {
     curSample = liveAudio[i];
     curSample = curSample * fgMixFactorInt_ +
                 bgAudio_[curPosition_] * bgMixFactorInt_;
     curSample /= kFloatToIntMapFactor;
 
-    curSample = (curSample > SHRT_MAX ? SHRT_MAX : curSample);
-    liveAudio[i] = (int16_t)(curSample < SHRT_MIN ? SHRT_MIN : curSample);
+    curSample = CLAMP_FOR_I16(curSample);
+    liveAudio[i] = (int16_t)curSample;
     curPosition_ = (curPosition_ + 1 ) % bgAudioSampleCount_;
   }
-  busy_ = false;
+
+  lock_.unlock();
 }
 
 /**
  * query for audio format supportability
  */
-bool AudioMixer::AudioFormatSupported(int32_t frequency,
-                  int32_t channels, oboe::AudioFormat format) const {
-  return (frequency == sampleRate_ &&
-          channels == channelCount_ &&
-          format == format_);
+bool AudioMixer::AudioFormatSupported(int32_t sampleRate,
+                  int32_t channels, oboe::AudioFormat format) {
+  if (sampleRate != sampleRate_ || format != format_) {
+    return false;
+  }
+
+  if (channels  == channelCount_ ) {
+    return true;
+  }
+
+  if(channelCount_ == channels * 2) {
+    size_t dst = 0, src = 0;
+    size_t totalFrames = bgAudioSampleCount_ / channelCount_;
+    for(size_t frame = 0; frame < totalFrames; frame++) {
+      for (int32_t c = 0; c < channelCount_; c += 2) {
+        int32_t sample = bgAudio_[src] + bgAudio_[src + 1];
+        src += 2;
+        sample /= 2;
+        bgAudio_[dst++] = static_cast<int16_t>(CLAMP_FOR_I16(sample));
+      }
+    }
+    channelCount_ >>= 1;
+    bgAudioSampleCount_ >>= 1;
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -143,11 +182,11 @@ AudioDelay::AudioDelay(int32_t sampleRate,
  * Destructor
  */
 AudioDelay::~AudioDelay() {
-  if(buffer_) delete static_cast<uint8_t*>(buffer_);
+  delete buffer_;
 }
 
 /**
- * Configure for delay time ( in miliseconds ). It is possible to dynamically
+ * Configure for delay time ( in second ). It is possible to dynamically
  * adjust the value
  * @param delay in seconds
  * @return true if delay time is set successfully
@@ -160,10 +199,7 @@ bool AudioDelay::setDelay(float delay) {
 
   std::lock_guard<std::mutex> lock(lock_);
 
-  if(buffer_) {
-    delete static_cast<uint8_t*>(buffer_);
-    buffer_ = nullptr;
-  }
+  delete (buffer_);
 
   delay_  = delay;
   allocateBuffer();
@@ -194,7 +230,9 @@ void AudioDelay::allocateBuffer(void) {
   buffer_ = new uint8_t[bufCapacity_];
   assert(buffer_);
 
-  memset(buffer_, 0, bufCapacity_);
+  if (buffer_) {
+    memset(buffer_, 0, bufCapacity_);
+  }
   curPos_ = 0;
 
   // bufSize_ is in Frames ( not samples, not bytes )
@@ -237,7 +275,9 @@ float AudioDelay::getDecay(float) const {
 void AudioDelay::process(int16_t *liveAudio,
                          int32_t channelCount,
                          int32_t numFrames) {
-  if (feedbackFactor_ == 0 ||
+
+  if (!buffer_ || !liveAudio ||
+      feedbackFactor_ == 0 ||
       channelCount != channelCount_ ||
       bufSize_ < numFrames) {
     return;
@@ -253,22 +293,13 @@ void AudioDelay::process(int16_t *liveAudio,
 
   // process every sample
   int32_t sampleCount = channelCount * numFrames;
-  int16_t* samples =  & static_cast<int16_t*>(buffer_)[curPos_];
-  int32_t curSample;
+  int16_t* samples =  & reinterpret_cast<int16_t*>(buffer_)[curPos_ * channelCount_];
   for (size_t idx = 0; idx < sampleCount; idx++) {
-#if 1
-    curSample = (samples[idx] * feedbackFactor_ +
+    int32_t curSample = (samples[idx] * feedbackFactor_ +
                 liveAudio[idx] * liveAudioFactor_) / kFloatToIntMapFactor;
-#else
-    curSample = (samples[idx] * feedbackFactor_) / kFloatToIntMapFactor +
-                 liveAudio[idx];
-#endif
-    if(curSample > SHRT_MAX)
-      curSample = SHRT_MAX;
-    else if (curSample < SHRT_MIN)
-      curSample = SHRT_MAX;
-    samples[idx] = static_cast<int16_t>(curSample);
+    CLAMP_FOR_I16(curSample);
     liveAudio[idx] = samples[idx];
+    samples[idx] = static_cast<int16_t>(curSample);
   }
 
   curPos_ += numFrames;
