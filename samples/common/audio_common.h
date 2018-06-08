@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@
 #include <chrono>
 #include <oboe/Oboe.h>
 
-// Time constants
-#define NANOS_PER_SECOND 1000000000L
-#define NANOS_PER_MILLISECOND 1000000L
 
 constexpr int kMonoChannelCount = 1;
 constexpr int kStereoChannelCount = 2;
@@ -36,7 +33,7 @@ __inline__ uint64_t GetSystemTicks(void) {
     struct timeval Time;
     gettimeofday( &Time, NULL );
 
-    return (static_cast<uint64_t>(1000000) * Time.tv_sec + Time.tv_usec);
+    return (static_cast<uint64_t>(oboe::kNanosPerMillisecond) * Time.tv_sec + Time.tv_usec);
 }
 
 /*

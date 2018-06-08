@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@
 #include <android/asset_manager_jni.h>
 
 static EchoAudioEngine *engine = nullptr;
+
+static const int OBOE_API_AAUDIO = 0;
+static const int OBOE_API_OPENSL_ES = 1;
+
 extern "C" {
 
 JNIEXPORT bool JNICALL
@@ -131,9 +135,6 @@ Java_com_google_sample_oboe_echo_EchoEngine_setEchoControls(
   engine->setEchoControls(delay, decay);
 }
 
-
-static const int OBOE_API_AAUDIO = 0;
-static const int OBOE_API_OPENSL_ES = 1;
 
 JNIEXPORT jboolean JNICALL
 Java_com_google_sample_oboe_echo_EchoEngine_setAPI(JNIEnv *env, jclass type, jint apiType) {

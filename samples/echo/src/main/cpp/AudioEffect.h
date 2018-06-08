@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,20 +48,20 @@ class AudioMixer : public AudioFormat {
     ~AudioMixer();
     void process(int16_t *liveAudio, int32_t channelCount,
                  int32_t numFrames);
-    void addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCount,
+    bool addStream(std::unique_ptr<int16_t[]>samples, size_t sampleCount,
                    int32_t sampleRate, int32_t channelCount,
                    oboe::AudioFormat format);
     void setBackgroundMixer(float bgMix);
     bool AudioFormatSupported(int32_t sampleRate, int32_t channels,
-                              oboe::AudioFormat format) const;
+                              oboe::AudioFormat format);
   private:
-    std::unique_ptr<int16_t[]> bgAudio_ = nullptr;
+    std::unique_ptr<int16_t[]> bgAudio_;
     size_t bgAudioSampleCount_ = 0;
     size_t curPosition_ = 0;
-    std::atomic_bool busy_;
     float bgMixFactor_ = 0.5f;
     int32_t  fgMixFactorInt_;
     int32_t  bgMixFactorInt_;
+    std::mutex lock_;
 };
 
 /**
@@ -93,7 +93,7 @@ class AudioDelay : public AudioFormat {
   private:
     float delay_ = 0.0f;
     float decay_ = 0.1f;
-    void *buffer_ = nullptr;
+    uint8_t *buffer_ = nullptr;
     size_t bufCapacity_ = 0;
     size_t bufSize_ = 0;
     size_t curPos_ = 0;

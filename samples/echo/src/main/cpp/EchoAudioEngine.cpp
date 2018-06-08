@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,14 @@
 #include <climits>
 #include <assert.h>
 
+/**
+ * Duplex is not very stable right after starting up:
+ *   the callbacks may not be happening at the right times
+ * The time to get it stable varies on different systems. Half second
+ * is used for this sample, during the time this sample plays silence.
+ */
+const float kSystemWarmupTime = 0.5f;
+
 EchoAudioEngine::EchoAudioEngine() {
   assert(outputChannelCount_ == inputChannelCount_);
   mixerEffect_ = std::unique_ptr<AudioMixer>(new AudioMixer);
@@ -30,7 +38,6 @@ EchoAudioEngine::~EchoAudioEngine() {
   stopStream(recordingStream_);
 
   closeStream(playStream_);
-  frameCallbackCount_ = 0;
 
   closeStream(recordingStream_);
 }
@@ -158,20 +165,16 @@ void EchoAudioEngine::openPlaybackStream() {
     assert(playStream_->getFormat() == oboe::AudioFormat::I16);
     assert(outputChannelCount_ == playStream_->getChannelCount());
 
+    systemStartupFrames_ = static_cast<uint64_t>
+                             (sampleRate_ * kSystemWarmupTime);
+    processedFrameCount_ = 0;
+
     framesPerBurst_ = playStream_->getFramesPerBurst();
-
-    // Read blocking timeout value: half of the burst size
-    audioBlockingReadTimeout_ = static_cast<uint64_t>(.5f * framesPerBurst_
-                                          / sampleRate_ * NANOS_PER_SECOND);
-
-    latencyTuner_ = std::unique_ptr<oboe::LatencyTuner>
-                    (new oboe::LatencyTuner(*playStream_));
 
     delayEffect_ = std::unique_ptr<AudioDelay>(new AudioDelay(
       sampleRate_,outputChannelCount_, format_, echoDelay_, echoDecay_));
     assert(delayEffect_ && mixerEffect_);
 
-    frameCallbackCount_ = 0;
     warnIfNotLowLatency(playStream_);
 
     PrintAudioStreamInfo(playStream_);
@@ -211,7 +214,8 @@ oboe::AudioStreamBuilder *EchoAudioEngine::setupPlaybackStreamParameters(
       ->setDeviceId(playbackDeviceId_)
       ->setDirection(oboe::Direction::Output)
       ->setChannelCount(outputChannelCount_)
-      ->setSampleRate(sampleRate_);
+      ->setSampleRate(sampleRate_)
+      ->setFramesPerCallback(framesPerBurst_);
 
   return setupCommonStreamParameters(builder);
 }
@@ -318,23 +322,29 @@ oboe::DataCallbackResult EchoAudioEngine::onAudioReady(
 
   assert(oboeStream == playStream_);
 
-  if (frameCallbackCount_) {
-    latencyTuner_->tune();
+  int32_t prevFrameRead = 0, framesRead = 0;
+  if (processedFrameCount_ < systemStartupFrames_) {
+    do {
+      // Drain the audio for the starting up period, half second for
+      // this sample.
+      prevFrameRead = framesRead;
+
+      oboe::ResultWithValue<int32_t> status =
+        recordingStream_->read(audioData, numFrames, 0);
+      framesRead = (!status) ? 0 : status.value();
+      if (framesRead == 0)
+        break;
+
+    } while (framesRead);
+
+    framesRead = prevFrameRead;
+  } else {
+    oboe::ResultWithValue<int32_t> status =
+      recordingStream_->read(audioData, numFrames, 0);
+
+    framesRead = (!status) ? 0 : status.value();
   }
-  frameCallbackCount_++;
 
-  // blocking read with timeout:
-  //     recorder may not have data ready, specifically
-  //     at the very beginning; in this case, simply play
-  //     silent audio. The timeout is equivalent to
-  //       framesPerBurst()/2
-  //     Do not make it too long, otherwise player would underrun
-  //     and if tuning is in process, player will increase
-  //     FramesPerBurst.
-  oboe::ErrorOrValue<int32_t> status =
-    recordingStream_->read(audioData, numFrames, audioBlockingReadTimeout_);
-
-  int32_t framesRead = (!status) ? 0 : status.value();
   if (framesRead < numFrames) {
     int32_t bytesPerFrame = recordingStream_->getChannelCount() *
                             SampleFormatToBpp(oboeStream->getFormat()) / 8;
@@ -343,12 +353,16 @@ oboe::DataCallbackResult EchoAudioEngine::onAudioReady(
     memset(padPos, 0, (size_t)(numFrames - framesRead) * bytesPerFrame);
   }
 
+  // Processing audio: padded silence audio treated as valid audio
+  //                   glitch would be felt by turning off mixer
   delayEffect_->process(static_cast<int16_t *>(audioData),
                         outputChannelCount_, numFrames);
   if (mixAudio_) {
     mixerEffect_->process(static_cast<int16_t *>(audioData),
-                         outputChannelCount_, numFrames);
+                          outputChannelCount_, numFrames);
   }
+  processedFrameCount_ += numFrames;
+
   return oboe::DataCallbackResult::Continue;
 }
 
