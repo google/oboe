@@ -342,7 +342,7 @@ int32_t AudioStreamAAudio::getBufferSizeInFrames() const {
     }
 }
 
-int32_t AudioStreamAAudio::getFramesPerBurst() {
+int32_t AudioStreamAAudio::getFramesPerBurst() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getFramesPerBurst(stream);
