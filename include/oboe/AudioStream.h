@@ -143,7 +143,7 @@ public:
      *
      * @return burst size
      */
-    virtual int32_t getFramesPerBurst() = 0;
+    virtual int32_t getFramesPerBurst() const = 0;
 
     bool isPlaying();
 
