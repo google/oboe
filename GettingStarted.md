@@ -73,7 +73,7 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
 
     class MyCallback : public oboe::AudioStreamCallback {
     public:
-        oboe::Result
+        oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames){
             generateSineWave(static_cast<float *>(audioData), numFrames);
             return oboe::DataCallbackResult::Continue;
