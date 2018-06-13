@@ -371,12 +371,12 @@ int64_t AudioStreamAAudio::getFramesWritten() const {
     }
 }
 
-int32_t AudioStreamAAudio::getXRunCount() const {
+ResultWithValue<int32_t> AudioStreamAAudio::getXRunCount() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getXRunCount(stream);
+        return ResultWithValue<int32_t>::createBasedOnSign(mLibLoader->stream_getXRunCount(stream));
     } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorNull);
     }
 }
 
