@@ -132,10 +132,11 @@ public:
      *
      * An underrun or overrun can cause an audible "pop" or "glitch".
      *
-     * @return the count or negative error.
+     * @return a result which is either Result::OK with the xRun count as the value, or a
+     * Result::Error* code
      */
-    virtual int32_t getXRunCount() const {
-        return static_cast<int32_t>(Result::ErrorUnimplemented);
+    virtual ResultWithValue<int32_t> getXRunCount() const {
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
     /**
