@@ -314,7 +314,7 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
         requestedFrames = mBufferCapacityInFrames;
     }
     int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
-    ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
+    return ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
 }
 
 StreamState AudioStreamAAudio::getState() {
