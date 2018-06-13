@@ -332,15 +332,16 @@ The callback does a non-blocking read from the input stream placing the data int
                 AudioStream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
-            Result result = stream2.read(audioData, numFrames, timeout);
-
-            if (result == numFrames)
-                return DataCallbackResult::Continue;
-            if (result >= 0) {
-                memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
-                    sizeof(sample_type) * (numFrames - result) * samplesPerFrame);
-                return DataCallbackResult::Continue;
-            }
+            auto result = stream2.read(audioData, numFrames, timeout);
+            if (result == Result::OK){
+			    if (result == numFrames)
+                    return DataCallbackResult::Continue;
+			    if (result.value() >= 0) {
+                    memset(static_cast<sample_type*>(audioData) + result.value() * samplesPerFrame, 0,
+                        sizeof(sample_type) * (numFrames - result.value()) * samplesPerFrame);
+                    return DataCallbackResult::Continue;
+                }
+			}
             return DataCallbackResult::Stop;
         }
 

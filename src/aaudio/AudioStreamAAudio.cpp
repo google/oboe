@@ -271,11 +271,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
     if (stream != nullptr) {
         int32_t result = mLibLoader->stream_write(mAAudioStream, buffer,
                                                   numFrames, timeoutNanoseconds);
-        if (result < 0) {
-            return ResultWithValue<int32_t>(static_cast<Result>(result));
-        } else {
-            return ResultWithValue<int32_t>(result);
-        }
+        return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
         return ResultWithValue<int32_t>(Result::ErrorNull);
     }
@@ -317,13 +313,8 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
     if (requestedFrames > mBufferCapacityInFrames) {
         requestedFrames = mBufferCapacityInFrames;
     }
-    int newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
-    if (newBufferSize < 0){
-        // Negative buffer size indicates error
-        return ResultWithValue<int32_t>(static_cast<Result>(newBufferSize));
-    } else{
-        return ResultWithValue<int32_t>(newBufferSize);
-    }
+    int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+    ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
 }
 
 StreamState AudioStreamAAudio::getState() {

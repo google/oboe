@@ -94,9 +94,8 @@ int64_t AudioStreamBuffered::predictNextCallbackTime() {
     return mBackgroundRanAtNanoseconds + nanosPerBuffer + margin;
 }
 
-// TODO: Consider returning an error_or_value struct instead.
 // Common code for read/write.
-// @return number of frames transferred or negative error
+// @return Result::OK with frames read/written, or Result::Error*
 ResultWithValue<int32_t>  AudioStreamBuffered::transfer(void *buffer,
                                       int32_t numFrames,
                                       int64_t timeoutNanoseconds) {
