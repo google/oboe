@@ -180,7 +180,8 @@ public:
      * The latency of an OUTPUT stream is generally higher than the INPUT latency
      * because an app generally tries to keep the OUTPUT buffer full and the INPUT buffer empty.
      *
-     * @return The latency in milliseconds and Result::OK, or a negative error.
+     * @return a ResultWithValue which has a result of Result::OK and a value containing the latency
+     * in milliseconds, or a result of Result::Error*.
      */
     virtual ResultWithValue<double> calculateLatencyMillis() {
         return ResultWithValue<double>(Result::ErrorUnimplemented);
@@ -201,7 +202,8 @@ public:
      * @param buffer The address of the first sample.
      * @param numFrames Number of frames to write. Only complete frames will be written.
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
-     * @return The number of frames actually written and Result::OK, or a negative error.
+     * @return a ResultWithValue which has a result of Result::OK and a value containing the number
+     * of frames actually written, or result of Result::Error*.
      */
     virtual ResultWithValue<int32_t> write(const void *buffer,
                              int32_t numFrames,
