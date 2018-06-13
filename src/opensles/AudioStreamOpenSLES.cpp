@@ -168,7 +168,7 @@ SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
     return result;
 }
 
-int32_t AudioStreamOpenSLES::getFramesPerBurst() {
+int32_t AudioStreamOpenSLES::getFramesPerBurst() const {
     return mFramesPerBurst;
 }
 

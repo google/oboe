@@ -264,7 +264,7 @@ Result AudioStreamAAudio::requestStop() {
     }
 }
 
-ErrorOrValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
+ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
@@ -272,29 +272,25 @@ ErrorOrValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
         int32_t result = mLibLoader->stream_write(mAAudioStream, buffer,
                                                   numFrames, timeoutNanoseconds);
         if (result < 0) {
-            return ErrorOrValue<int32_t>(static_cast<Result>(result));
+            return ResultWithValue<int32_t>(static_cast<Result>(result));
         } else {
-            return ErrorOrValue<int32_t>(result);
+            return ResultWithValue<int32_t>(result);
         }
     } else {
-        return ErrorOrValue<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorNull);
     }
 }
 
-ErrorOrValue<int32_t>   AudioStreamAAudio::read(void *buffer,
+ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
                                  int32_t numFrames,
                                  int64_t timeoutNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         int32_t result = mLibLoader->stream_read(mAAudioStream, buffer,
                                                  numFrames, timeoutNanoseconds);
-        if (result < 0) {
-            return ErrorOrValue<int32_t>(static_cast<Result>(result));
-        } else {
-            return ErrorOrValue<int32_t>(result);
-        }
+        return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
-        return ErrorOrValue<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorNull);
     }
 }
 
@@ -317,11 +313,17 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
     }
 }
 
-Result AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {
+ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {
     if (requestedFrames > mBufferCapacityInFrames) {
         requestedFrames = mBufferCapacityInFrames;
     }
-    return static_cast<Result>(mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames));
+    int newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+    if (newBufferSize < 0){
+        // Negative buffer size indicates error
+        return ResultWithValue<int32_t>(static_cast<Result>(newBufferSize));
+    } else{
+        return ResultWithValue<int32_t>(newBufferSize);
+    }
 }
 
 StreamState AudioStreamAAudio::getState() {
@@ -342,7 +344,7 @@ int32_t AudioStreamAAudio::getBufferSizeInFrames() const {
     }
 }
 
-int32_t AudioStreamAAudio::getFramesPerBurst() {
+int32_t AudioStreamAAudio::getFramesPerBurst() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         return mLibLoader->stream_getFramesPerBurst(stream);
@@ -390,10 +392,10 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
     }
 }
 
-ErrorOrValue<double> AudioStreamAAudio::calculateLatencyMillis() {
+ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream == nullptr) {
-        return ErrorOrValue<double>(Result::ErrorNull);
+        return ResultWithValue<double>(Result::ErrorNull);
     }
 
     // Get the time that a known audio frame was presented.
@@ -403,7 +405,7 @@ ErrorOrValue<double> AudioStreamAAudio::calculateLatencyMillis() {
                                &hardwareFrameIndex,
                                &hardwareFrameHardwareTime);
     if (result != oboe::Result::OK) {
-        return ErrorOrValue<double>(static_cast<Result>(result));
+        return ResultWithValue<double>(static_cast<Result>(result));
     }
 
     // Get counter closest to the app.
@@ -429,7 +431,7 @@ ErrorOrValue<double> AudioStreamAAudio::calculateLatencyMillis() {
                           : (appFrameAppTime - appFrameHardwareTime)); // hardware is earlier
     double latencyMillis = latencyNanos / kNanosPerMillisecond;
 
-    return ErrorOrValue<double>(latencyMillis);
+    return ResultWithValue<double>(latencyMillis);
 }
 
 } // namespace oboe

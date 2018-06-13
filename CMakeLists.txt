@@ -23,7 +23,9 @@ set (oboe_sources
 add_library(oboe STATIC ${oboe_sources})
 
 # Specify directories which the compiler should look for headers
-target_include_directories(oboe PRIVATE src include)
+target_include_directories(oboe
+                           PRIVATE src 
+                           PUBLIC include)
 
 target_compile_options(oboe PRIVATE -std=c++11
                             PRIVATE -Wall

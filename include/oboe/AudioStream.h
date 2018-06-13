@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <ctime>
 #include "oboe/Definitions.h"
-#include "oboe/ErrorOrValue.h"
+#include "oboe/ResultWithValue.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStreamBase.h"
 
@@ -116,9 +116,10 @@ public:
     * This cannot be set higher than getBufferCapacity().
     *
     * @param requestedFrames requested number of frames that can be filled without blocking
-    * @return resulting buffer size in frames or a Result::Error
+    * @return the resulting buffer size in frames (obtained using value()) or an error (obtained
+    * using error())
     */
-    virtual Result setBufferSizeInFrames(int32_t requestedFrames) {
+    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) {
         return Result::ErrorUnimplemented;
     }
 
@@ -142,7 +143,7 @@ public:
      *
      * @return burst size
      */
-    virtual int32_t getFramesPerBurst() = 0;
+    virtual int32_t getFramesPerBurst() const = 0;
 
     bool isPlaying();
 
@@ -180,8 +181,8 @@ public:
      *
      * @return The latency in milliseconds and Result::OK, or a negative error.
      */
-    virtual ErrorOrValue<double> calculateLatencyMillis() {
-        return ErrorOrValue<double>(Result::ErrorUnimplemented);
+    virtual ResultWithValue<double> calculateLatencyMillis() {
+        return ResultWithValue<double>(Result::ErrorUnimplemented);
     }
 
     virtual Result getTimestamp(clockid_t clockId,
@@ -201,16 +202,16 @@ public:
      * @param timeoutNanoseconds Maximum number of nanoseconds to wait for completion.
      * @return The number of frames actually written and Result::OK, or a negative error.
      */
-    virtual ErrorOrValue<int32_t> write(const void *buffer,
+    virtual ResultWithValue<int32_t> write(const void *buffer,
                              int32_t numFrames,
                              int64_t timeoutNanoseconds) {
-        return ErrorOrValue<int32_t>(Result::ErrorUnimplemented);
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
-    virtual ErrorOrValue<int32_t> read(void *buffer,
+    virtual ResultWithValue<int32_t> read(void *buffer,
                             int32_t numFrames,
                             int64_t timeoutNanoseconds) {
-        return ErrorOrValue<int32_t>(Result::ErrorUnimplemented);
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
     /**

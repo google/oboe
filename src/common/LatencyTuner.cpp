@@ -55,13 +55,12 @@ Result LatencyTuner::tune() {
                 mPreviousXRuns = xRuns;
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
                 int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
-                int32_t resultingSize = static_cast<int32_t>(
-                        mStream.setBufferSizeInFrames(requestedBufferSize));
-                if (resultingSize == oldBufferSize) {
-                    mState = State::AtMax; // can't go any higher
-                } else if (resultingSize < 0) {
-                    result = static_cast<Result>(resultingSize); // error code
+                auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
+                if (setBufferResult != Result::OK){
+                    result = setBufferResult;
                     mState = State::Unsupported;
+                } else if (setBufferResult.value() == oldBufferSize){
+                    mState = State::AtMax;
                 }
             }
         }
