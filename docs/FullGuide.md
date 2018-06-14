@@ -333,8 +333,9 @@ The callback does a non-blocking read from the input stream placing the data int
                 void *audioData,
                 int32_t numFrames){
             auto result = stream2.read(audioData, numFrames, timeout);
+            // result has type ResultWithValue<int32_t>, which for convenience is coerced to a Result type when compared with another Result.
             if (result == Result::OK){
-			    if (result == numFrames)
+			    if (result.value() == numFrames)
                     return DataCallbackResult::Continue;
 			    if (result.value() >= 0) {
                     memset(static_cast<sample_type*>(audioData) + result.value() * samplesPerFrame, 0,
