@@ -6,6 +6,7 @@ These samples demonstrate how to use the Oboe library:
 sine wave when you tap the screen
 1. [RhythmGame](RhythmGame): A simple rhythm game where you copy the clap patterns you hear by tapping on the screen
 1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance
+1. [LiveEffect](LiveEffect): loops audio from input stream to output stream to demonstrate duplex capability
 
 Pre-requisites
 -------------

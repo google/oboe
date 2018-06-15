@@ -18,12 +18,11 @@ done
 
 
 # Check the apks that all get built fine
-# TBD: add echo after it is merged
-#        samples/echo/build/outputs/apk/debug/echo-debug.apk
 declare apks=(
     samples/hello-oboe/build/outputs/apk/debug/hello-oboe-debug.apk
     samples/MegaDrone/build/outputs/apk/debug/MegaDrone-debug.apk
     samples/RhythmGame/build/outputs/apk/debug/RhythmGame-debug.apk
+    samples/LiveEffect/build/outputs/apk/debug/LiveEffect-debug.apk
 )
 
 rm -fr ${BUILD_RESULT_FILE}
