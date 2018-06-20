@@ -35,13 +35,14 @@
 
 using namespace oboe;
 
-
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
     mFramesPerBurst = builder.getDefaultFramesPerBurst();
     // OpenSL ES does not support device IDs. So overwrite value from builder.
     mDeviceId = kUnspecified;
+    // OpenSL ES does not support session IDs. So overwrite value from builder.
+    mSessionId = SessionId::None;
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {

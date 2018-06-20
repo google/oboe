@@ -143,9 +143,7 @@ Result AudioStreamAAudio::open() {
 
     if (mLibLoader->builder_setSessionId != nullptr) {
         mLibLoader->builder_setSessionId(aaudioBuilder,
-                                           static_cast<aaudio_session_id_t>(mSessionId));
-    } else {
-        mSessionId = SessionId::None;
+                                         static_cast<aaudio_session_id_t>(mSessionId));
     }
 
     // TODO get more parameters from the builder?
@@ -191,6 +189,8 @@ Result AudioStreamAAudio::open() {
     }
     if (mLibLoader->stream_getSessionId != nullptr) {
         mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
+    } else {
+        mSessionId = SessionId::None;
     }
 
     LOGD("AudioStreamAAudio.open() app    format = %d", (int) mFormat);
