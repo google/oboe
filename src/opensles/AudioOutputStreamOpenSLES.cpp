@@ -160,11 +160,16 @@ error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }
 
+Result AudioOutputStreamOpenSLES::onAfterDestroy() {
+    OutputMixerOpenSL::getInstance().close();
+
+    return Result::OK;
+}
+
 Result AudioOutputStreamOpenSLES::close() {
     requestPause();
     // invalidate any interfaces
     mPlayInterface = NULL;
-    OutputMixerOpenSL::getInstance().close();
     return AudioStreamOpenSLES::close();
 }
 

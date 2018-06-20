@@ -57,7 +57,7 @@ public:
      */
     StreamState getState() override { return mState; }
 
-    int32_t getFramesPerBurst() override;
+    int32_t getFramesPerBurst() const override;
 
 
     AudioApi getAudioApi() const override {
@@ -73,6 +73,9 @@ public:
     SLresult processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
 
 protected:
+
+    virtual Result onBeforeDestroy() { return Result::OK; };
+    virtual Result onAfterDestroy() { return Result::OK; };
 
     static SLuint32 getDefaultByteOrder();
 

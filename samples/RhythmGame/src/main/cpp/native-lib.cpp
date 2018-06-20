@@ -21,6 +21,7 @@
 #include "utils/logging.h"
 #include "Game.h"
 
+
 extern "C" {
 
 std::unique_ptr<Game> game;

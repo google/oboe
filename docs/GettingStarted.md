@@ -13,7 +13,7 @@ Start by cloning the Oboe repository:
 ### 2. Update CMakeLists.txt
 Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. 
 
-![CMakeLists.txt location in Android Studio](cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
+![CMakeLists.txt location in Android Studio](images/cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
 
 Now add the following commands to the end of `CMakeLists.txt`. **Remember to update `**PATH TO OBOE**` with your local Oboe path from the previous step**:
 
@@ -73,7 +73,7 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
 
     class MyCallback : public oboe::AudioStreamCallback {
     public:
-        oboe::Result
+        oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames){
             generateSineWave(static_cast<float *>(audioData), numFrames);
             return oboe::DataCallbackResult::Continue;

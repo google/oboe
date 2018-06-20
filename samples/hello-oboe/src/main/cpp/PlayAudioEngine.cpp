@@ -173,10 +173,10 @@ PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, i
      *
      * See https://developer.android.com/studio/profile/systrace-commandline.html
      */
-    int32_t underrunCount = audioStream->getXRunCount();
+    auto underrunCountResult = audioStream->getXRunCount();
 
     Trace::beginSection("numFrames %d, Underruns %d, buffer size %d",
-                        numFrames, underrunCount, bufferSize);
+                        numFrames, underrunCountResult.value(), bufferSize);
 
     int32_t channelCount = audioStream->getChannelCount();
 

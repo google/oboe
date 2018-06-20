@@ -37,38 +37,39 @@ Result LatencyTuner::tune() {
         reset();
     }
 
-    switch (mState) {
-        case State::Idle:
-            if (--mIdleCountDown <= 0) {
-                mState = State::Active;
-            }
-            mPreviousXRuns = mStream.getXRunCount();
-            if (mPreviousXRuns < 0) {
-                result = static_cast<Result>(mPreviousXRuns); // error code
-                mState = State::Unsupported;
-            }
-            break;
+    // Set state to Active if the idle countdown has reached zero.
+    if (mState == State::Idle && --mIdleCountDown <= 0) {
+        mState = State::Active;
+    }
 
-        case State::Active: {
-            int32_t xRuns = mStream.getXRunCount();
-            if ((xRuns - mPreviousXRuns) > 0) {
-                mPreviousXRuns = xRuns;
+    // When state is Active attempt to change the buffer size if the number of xRuns has increased.
+    if (mState == State::Active) {
+
+        auto xRunCountResult = mStream.getXRunCount();
+        if (xRunCountResult == Result::OK) {
+            if ((xRunCountResult.value() - mPreviousXRuns) > 0) {
+                mPreviousXRuns = xRunCountResult.value();
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
                 int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
-                int32_t resultingSize = static_cast<int32_t>(
-                        mStream.setBufferSizeInFrames(requestedBufferSize));
-                if (resultingSize == oldBufferSize) {
-                    mState = State::AtMax; // can't go any higher
-                } else if (resultingSize < 0) {
-                    result = static_cast<Result>(resultingSize); // error code
+                auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
+                if (setBufferResult != Result::OK) {
+                    result = setBufferResult;
                     mState = State::Unsupported;
+                } else if (setBufferResult.value() == oldBufferSize) {
+                    mState = State::AtMax;
                 }
             }
+        } else {
+            mState = State::Unsupported;
         }
+    }
 
-        case State::AtMax:
-        case State::Unsupported:
-            break;
+    if (mState == State::Unsupported) {
+        result = Result::ErrorUnimplemented;
+    }
+
+    if (mState == State::AtMax) {
+        result = Result::OK;
     }
     return result;
 }

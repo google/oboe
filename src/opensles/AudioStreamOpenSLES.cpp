@@ -147,13 +147,19 @@ SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf
 }
 
 Result AudioStreamOpenSLES::close() {
+    onBeforeDestroy();
+
     if (mObjectInterface != nullptr) {
         (*mObjectInterface)->Destroy(mObjectInterface);
         mObjectInterface = nullptr;
 
     }
+
+    onAfterDestroy();
+
     mSimpleBufferQueueInterface = nullptr;
     EngineOpenSLES::getInstance().close();
+
     return Result::OK;
 }
 
@@ -198,7 +204,7 @@ SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
     return result;
 }
 
-int32_t AudioStreamOpenSLES::getFramesPerBurst() {
+int32_t AudioStreamOpenSLES::getFramesPerBurst() const {
     return mFramesPerBurst;
 }
 
