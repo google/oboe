@@ -63,8 +63,13 @@ int AAudioLoader::open() {
     builder_setFormat          = load_V_PBI("AAudioStreamBuilder_setFormat");
     builder_setFramesPerDataCallback = load_V_PBI("AAudioStreamBuilder_setFramesPerDataCallback");
     builder_setSharingMode     = load_V_PBI("AAudioStreamBuilder_setSharingMode");
-    builder_setPerformanceMode     = load_V_PBI("AAudioStreamBuilder_setPerformanceMode");
+    builder_setPerformanceMode = load_V_PBI("AAudioStreamBuilder_setPerformanceMode");
     builder_setSampleRate      = load_V_PBI("AAudioStreamBuilder_setSampleRate");
+
+    builder_setUsage           = load_V_PBI("AAudioStreamBuilder_setUsage");
+    builder_setContentType     = load_V_PBI("AAudioStreamBuilder_setContentType");
+    builder_setInputPreset     = load_V_PBI("AAudioStreamBuilder_setinputPreset");
+    builder_setSessionId       = load_V_PBI("AAudioStreamBuilder_setSessionId");
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
@@ -137,6 +142,11 @@ int AAudioLoader::open() {
 
     convertResultToText       = load_PC_I("AAudio_convertResultToText");
     convertStreamStateToText  = load_PC_I("AAudio_convertStreamStateToText");
+
+    stream_getUsage           = load_I_PS("AAudioStream_getUsage");
+    stream_getContentType     = load_I_PS("AAudioStream_getContentType");
+    stream_getInputPreset     = load_I_PS("AAudioStream_getInputPreset");
+    stream_getSessionId       = load_I_PS("AAudioStream_getSessionId");
 
     return 0;
 }

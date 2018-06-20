@@ -125,6 +125,27 @@ Result AudioStreamAAudio::open() {
     mLibLoader->builder_setPerformanceMode(aaudioBuilder,
                                            static_cast<aaudio_performance_mode_t>(mPerformanceMode));
 
+    // These were added in P so we have to check for the function pointer.
+    if (mLibLoader->builder_setUsage != nullptr) {
+        mLibLoader->builder_setUsage(aaudioBuilder,
+                                     static_cast<aaudio_usage_t>(mUsage));
+    }
+
+    if (mLibLoader->builder_setContentType != nullptr) {
+        mLibLoader->builder_setContentType(aaudioBuilder,
+                                           static_cast<aaudio_content_type_t>(mContentType));
+    }
+
+    if (mLibLoader->builder_setInputPreset != nullptr) {
+        mLibLoader->builder_setInputPreset(aaudioBuilder,
+                                           static_cast<aaudio_input_preset_t>(mInputPreset));
+    }
+
+    if (mLibLoader->builder_setSessionId != nullptr) {
+        mLibLoader->builder_setSessionId(aaudioBuilder,
+                                         static_cast<aaudio_session_id_t>(mSessionId));
+    }
+
     // TODO get more parameters from the builder?
 
     if (mStreamCallback != nullptr) {
@@ -133,6 +154,7 @@ Result AudioStreamAAudio::open() {
     }
     mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
 
+    // ============= OPEN THE STREAM ================
     {
         AAudioStream *stream = nullptr;
         result = static_cast<Result>(mLibLoader->builder_openStream(aaudioBuilder, &stream));
@@ -154,6 +176,22 @@ Result AudioStreamAAudio::open() {
     mPerformanceMode = static_cast<PerformanceMode>(
             mLibLoader->stream_getPerformanceMode(mAAudioStream));
     mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
+
+    // These were added in P so we have to check for the function pointer.
+    if (mLibLoader->stream_getUsage != nullptr) {
+        mUsage = static_cast<Usage>(mLibLoader->stream_getUsage(mAAudioStream));
+    }
+    if (mLibLoader->stream_getContentType != nullptr) {
+        mContentType = static_cast<ContentType>(mLibLoader->stream_getContentType(mAAudioStream));
+    }
+    if (mLibLoader->stream_getInputPreset != nullptr) {
+        mInputPreset = static_cast<InputPreset>(mLibLoader->stream_getInputPreset(mAAudioStream));
+    }
+    if (mLibLoader->stream_getSessionId != nullptr) {
+        mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
+    } else {
+        mSessionId = SessionId::None;
+    }
 
     LOGD("AudioStreamAAudio.open() app    format = %d", (int) mFormat);
     LOGD("AudioStreamAAudio.open() native format = %d", (int) mNativeFormat);

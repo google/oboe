@@ -83,6 +83,10 @@ protected:
 
     SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
 
+    SLresult configurePerformanceMode(SLAndroidConfigurationItf configItf);
+
+    SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
+
     /**
      * Internal use only.
      * Use this instead of directly setting the internal state variable.

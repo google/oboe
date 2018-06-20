@@ -94,6 +94,14 @@ public:
         return mStreamCallback;
     }
 
+    Usage getUsage() const { return mUsage; }
+
+    ContentType getContentType() const { return mContentType; }
+
+    InputPreset getInputPreset() const { return mInputPreset; }
+
+    SessionId getSessionId() const { return mSessionId; }
+
 protected:
     AudioStreamCallback            *mStreamCallback = nullptr;
     int32_t                         mFramesPerCallback = kUnspecified;
@@ -106,6 +114,11 @@ protected:
     AudioFormat                     mFormat = AudioFormat::Unspecified;
     Direction                       mDirection = Direction::Output;
     PerformanceMode                 mPerformanceMode = PerformanceMode::None;
+    // Added in API 28
+    Usage                           mUsage = Usage::Media;
+    ContentType                     mContentType = ContentType::Music;
+    InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
+    SessionId                       mSessionId = SessionId::None;
 };
 
 } // namespace oboe

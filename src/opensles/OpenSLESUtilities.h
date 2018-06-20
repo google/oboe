@@ -38,7 +38,8 @@ SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(SLDataFormat_PCM format
                                                          SLuint32 representation);
 
 
-SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format);
+    SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format);
+
 
 } // namespace oboe
 
