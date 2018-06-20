@@ -116,18 +116,11 @@ Result AudioInputStreamOpenSLES::open() {
                                                SL_IID_ANDROIDCONFIGURATION,
                                                &inputConfig);
     if (SL_RESULT_SUCCESS == result) {
-        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_UNPROCESSED;
+        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
         result = (*inputConfig)->SetConfiguration(inputConfig,
                                                   SL_ANDROID_KEY_RECORDING_PRESET,
                                                   &presetValue,
                                                   sizeof(SLuint32));
-        if (SL_RESULT_SUCCESS != result) {
-            presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
-            (*inputConfig)->SetConfiguration(inputConfig,
-                                             SL_ANDROID_KEY_RECORDING_PRESET,
-                                             &presetValue,
-                                             sizeof(SLuint32));
-        }
     }
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
