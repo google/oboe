@@ -22,9 +22,6 @@
 #include <string>
 #include <thread>
 
-constexpr int kMonoChannelCount = 1;
-constexpr int kStereoChannelCount = 2;
-
 class LiveEffectEngine : public oboe::AudioStreamCallback {
    public:
     LiveEffectEngine();
@@ -52,8 +49,8 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     int32_t mPlaybackDeviceId = oboe::kUnspecified;
     oboe::AudioFormat mFormat = oboe::AudioFormat::I16;
     int32_t mSampleRate = oboe::kUnspecified;
-    int32_t mInputChannelCount = kStereoChannelCount;
-    int32_t mOutputChannelCount = kStereoChannelCount;
+    int32_t mInputChannelCount = oboe::ChannelCount::Stereo;
+    int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
     oboe::AudioStream *mRecordingStream = nullptr;
     oboe::AudioStream *mPlayStream = nullptr;
     std::mutex mRestartingLock;

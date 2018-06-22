@@ -21,7 +21,6 @@
 
 #include "Oscillator.h"
 #include "Mixer.h"
-#include "Constants.h"
 #include "MonoToStereo.h"
 
 constexpr int kNumOscillators = 100;
@@ -51,7 +50,7 @@ public:
             mMixer.addTrack(pOsc);
         }
 
-        if (channelCount == kStereoChannelCount){
+        if (channelCount == oboe::ChannelCount::Stereo){
             mOutputStage = std::make_shared<MonoToStereo<T>>(&mMixer);
         } else {
             mOutputStage.reset(&mMixer);

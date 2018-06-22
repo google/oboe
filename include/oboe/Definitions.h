@@ -312,6 +312,23 @@ namespace oboe {
          Allocate = AAUDIO_SESSION_ID_ALLOCATE,
     };
 
+    enum ChannelCount : int32_t {
+      /**
+       * Audio channel count definition, use Mono or Stereo
+       */
+      Unspecified = kUnspecified,
+
+      /**
+       * Use this for mono audio
+       */
+      Mono = 1,
+
+      /**
+       * Use this for stereo audio.
+       */
+      Stereo = 2,
+    };
+
 } // namespace oboe
 
 #endif // OBOE_DEFINITIONS_H
