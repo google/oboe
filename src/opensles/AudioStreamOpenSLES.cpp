@@ -125,7 +125,7 @@ SLuint32 AudioStreamOpenSLES::convertPerformanceMode(PerformanceMode oboeMode) c
             openslMode =  SL_ANDROID_PERFORMANCE_NONE;
             break;
         case PerformanceMode::LowLatency:
-            openslMode =  (getSessionId() != SessionId::None) ?  SL_ANDROID_PERFORMANCE_LATENCY : SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS;
+            openslMode =  (getSessionId() == SessionId::None) ?  SL_ANDROID_PERFORMANCE_LATENCY : SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS;
             break;
         case PerformanceMode::PowerSaving:
             openslMode =  SL_ANDROID_PERFORMANCE_POWER_SAVING;
