@@ -247,7 +247,8 @@ Result AudioInputStreamOpenSLES::requestPause() {
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
-    return Result::ErrorUnimplemented; // TODO
+    LOGW("AudioInputStreamOpenSLES::%s() UNIMPLEMENTED", __func__);
+    return Result::ErrorUnimplemented; // Matches AAudio behavior.
 }
 
 Result AudioInputStreamOpenSLES::requestStop() {
