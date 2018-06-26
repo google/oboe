@@ -49,6 +49,29 @@ AudioStreamOpenSLES::~AudioStreamOpenSLES() {
     delete[] mCallbackBuffer;
 }
 
+#define AUDIO_CHANNEL_COUNT_MAX          30u
+#define SL_ANDROID_UNKNOWN_CHANNELMASK   0
+
+int AudioStreamOpenSLES::chanCountToChanMaskDefault(int channelCount) {
+    if (channelCount > AUDIO_CHANNEL_COUNT_MAX) {
+        return SL_ANDROID_UNKNOWN_CHANNELMASK;
+    } else {
+        SLuint32 bitfield = (1 << channelCount) - 1;
+// Check for NDK at compile-time.
+#if __ANDROID_API__ >= __ANDROID_API_N__
+        // Check for OS at run-time.
+        if(getSdkVersion() >= __ANDROID_API_N__) {
+            return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
+        } else
+#endif
+        {
+            // Indexed channels masks were added in N.
+            // For before N, the best we can do is use a positional channel mask.
+            return bitfield;
+        }
+    }
+}
+
 static bool s_isLittleEndian() {
     static uint32_t value = 1;
     return *((uint8_t *) &value) == 1; // Does address point to LSB?
