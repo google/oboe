@@ -68,7 +68,7 @@ int AAudioLoader::open() {
 
     builder_setUsage           = load_V_PBI("AAudioStreamBuilder_setUsage");
     builder_setContentType     = load_V_PBI("AAudioStreamBuilder_setContentType");
-    builder_setInputPreset     = load_V_PBI("AAudioStreamBuilder_setinputPreset");
+    builder_setInputPreset     = load_V_PBI("AAudioStreamBuilder_setInputPreset");
     builder_setSessionId       = load_V_PBI("AAudioStreamBuilder_setSessionId");
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
