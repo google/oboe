@@ -57,9 +57,6 @@ AudioInputStreamOpenSLES::AudioInputStreamOpenSLES(const AudioStreamBuilder &bui
 AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 }
 
-#define AUDIO_CHANNEL_COUNT_MAX         30u
-#define SL_ANDROID_UNKNOWN_CHANNELMASK  0
-
 int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
     // from internal sles_channel_in_mask_from_count(chanCount);
     switch (channelCount) {
@@ -67,14 +64,8 @@ int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
             return SL_SPEAKER_FRONT_LEFT;
         case 2:
             return SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-        default: {
-            if (channelCount > AUDIO_CHANNEL_COUNT_MAX) {
-                return SL_ANDROID_UNKNOWN_CHANNELMASK;
-            } else {
-                SLuint32 bitfield = (1 << channelCount) - 1;
-                return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
-            }
-        }
+        default:
+            return chanCountToChanMaskDefault(channelCount);
     }
 }
 

@@ -74,6 +74,8 @@ public:
 
 protected:
 
+    int chanCountToChanMaskDefault(int channelCount);
+
     virtual Result onBeforeDestroy() { return Result::OK; };
     virtual Result onAfterDestroy() { return Result::OK; };
 
