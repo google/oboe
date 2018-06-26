@@ -269,6 +269,15 @@ Result AudioStreamAAudio::requestStart() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
+        // Avoid state machine errors in O_MR1.
+#if defined(__ANDROID_API_O_MR1__)
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            if (state == StreamState::Starting || state == StreamState::Started) {
+                return Result::ErrorInvalidState; // match AAudio in P
+            }
+        }
+#endif
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
         return Result::ErrorClosed;
@@ -279,6 +288,15 @@ Result AudioStreamAAudio::requestPause() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
+        // Avoid state machine errors in O_MR1.
+#if defined(__ANDROID_API_O_MR1__)
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            if (state == StreamState::Pausing || state == StreamState::Paused) {
+                return Result::OK;
+            }
+        }
+#endif
         return static_cast<Result>(mLibLoader->stream_requestPause(stream));
     } else {
         return Result::ErrorClosed;
@@ -289,6 +307,15 @@ Result AudioStreamAAudio::requestFlush() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
+        // Avoid state machine errors in O_MR1.
+#if defined(__ANDROID_API_O_MR1__)
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            if (state == StreamState::Flushing || state == StreamState::Flushed) {
+                return Result::OK;
+            }
+        }
+#endif
         return static_cast<Result>(mLibLoader->stream_requestFlush(stream));
     } else {
         return Result::ErrorClosed;
@@ -299,6 +326,15 @@ Result AudioStreamAAudio::requestStop() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
+        // Avoid state machine errors in O_MR1.
+#if defined(__ANDROID_API_O_MR1__)
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            if (state == StreamState::Stopping || state == StreamState::Stopped) {
+                return Result::OK;
+            }
+        }
+#endif
         return static_cast<Result>(mLibLoader->stream_requestStop(stream));
     } else {
         return Result::ErrorClosed;
