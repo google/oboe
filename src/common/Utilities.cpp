@@ -200,10 +200,14 @@ const char* convertToText<AudioStream*>(AudioStream* stream) {
 
 int getSdkVersion() {
 #ifdef __ANDROID__
-    char sdk[PROP_VALUE_MAX] = {0};
-    if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
-        return atoi(sdk);
+    static int sCachedSdkVersion = -1;
+    if (sCachedSdkVersion == -1) {
+        char sdk[PROP_VALUE_MAX] = {0};
+        if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
+            sCachedSdkVersion = atoi(sdk);
+        }
     }
+    return sCachedSdkVersion;
 #endif
     return -1;
 }
