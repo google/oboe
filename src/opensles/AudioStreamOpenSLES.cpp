@@ -137,11 +137,17 @@ SLuint32 AudioStreamOpenSLES::convertPerformanceMode(PerformanceMode oboeMode) c
 }
 
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
-    SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
-    SLresult result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
-                                            &performanceMode, sizeof(performanceMode));
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
+    SLresult result = SL_RESULT_SUCCESS;
+    if(getSdkVersion() >= __ANDROID_API_N_MR1__) {
+        SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
+        result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                                         &performanceMode, sizeof(performanceMode));
+        if (SL_RESULT_SUCCESS != result) {
+            LOGW("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
+            mPerformanceMode = PerformanceMode::None;
+        }
+    } else {
+        mPerformanceMode = PerformanceMode::None;
     }
     return result;
 }
