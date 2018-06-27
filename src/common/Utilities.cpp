@@ -190,7 +190,7 @@ const char* convertToText<AudioStream*>(AudioStream* stream) {
      <<"PerformanceMode: "<<oboe::convertToText(stream->getPerformanceMode())
      <<std::endl
      <<"CurrentState: "<<oboe::convertToText(stream->getState())<<std::endl
-     <<"XRunCount: "<<stream->getXRunCount().value()<<std::endl
+     <<"XRunCount: "<<stream->getXRunCount()<<std::endl
      <<"FramesRead: "<<stream->getFramesRead()<<std::endl
      <<"FramesWritten: "<<stream->getFramesWritten()<<std::endl;
 

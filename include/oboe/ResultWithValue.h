@@ -18,6 +18,8 @@
 #define OBOE_RESULT_WITH_VALUE_H
 
 #include "oboe/Definitions.h"
+#include <iostream>
+#include <sstream>
 
 namespace oboe {
 
@@ -89,12 +91,22 @@ public:
         }
     }
 
-
 private:
     const T             mValue;
     const oboe::Result  mError;
 };
 
+template <typename T>
+std::ostream& operator<<(std::ostream &strm, const ResultWithValue<T> &result) {
+    if (!result) {
+        strm << convertToText(result.error());
+    } else {
+        strm << result.value();
+    }
+   return strm;
+}
+
 } // namespace oboe
+
 
 #endif //OBOE_RESULT_WITH_VALUE_H
