@@ -49,14 +49,19 @@ Result LatencyTuner::tune() {
         if (xRunCountResult == Result::OK) {
             if ((xRunCountResult.value() - mPreviousXRuns) > 0) {
                 mPreviousXRuns = xRunCountResult.value();
-                int32_t oldBufferSize = mStream.getBufferSizeInFrames();
-                int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
-                auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
-                if (setBufferResult != Result::OK) {
-                    result = setBufferResult;
+                auto oldBufferSizeResult = mStream.getBufferSizeInFrames();
+                if (oldBufferSizeResult == Result::OK){
+                    int32_t requestedBufferSize = oldBufferSizeResult.value() + mStream.getFramesPerBurst();
+                    auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
+                    if (setBufferResult != Result::OK) {
+                        result = setBufferResult;
+                        mState = State::Unsupported;
+                    } else if (setBufferResult.value() == oldBufferSizeResult.value()) {
+                        mState = State::AtMax;
+                    }
+                } else {
+                    result = oldBufferSizeResult;
                     mState = State::Unsupported;
-                } else if (setBufferResult.value() == oldBufferSize) {
-                    mState = State::AtMax;
                 }
             }
         } else {

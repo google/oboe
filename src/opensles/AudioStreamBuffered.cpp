@@ -218,9 +218,9 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
     }
 }
 
-int32_t AudioStreamBuffered::getBufferSizeInFrames() const {
+ResultWithValue<int32_t> AudioStreamBuffered::getBufferSizeInFrames() const {
     if (mFifoBuffer != nullptr) {
-        return mFifoBuffer->getThresholdFrames();
+        return ResultWithValue<int32_t>(mFifoBuffer->getThresholdFrames());
     } else {
         return AudioStream::getBufferSizeInFrames();
     }
