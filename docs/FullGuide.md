@@ -429,5 +429,3 @@ The following methods are defined, but will return `Result::ErrorUnimplemented`:
 * `getXRunCount()`
 * `getFramesRead()`
 * `getTimestamp()`
-* `write()`
-* `read()`
