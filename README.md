@@ -18,7 +18,7 @@ Want your project added? [File an issue](https://github.com/google/oboe/issues/n
 - Modern C++ allowing you to write clean, elegant code
 
 ## Requirements
-To build Oboe you will need the [Android NDK](https://developer.android.com/ndk/index.html) r15 or above
+To build Oboe you will need the Android NDK r17 or above. It can be installed using Android Studio's SDK manager, or via [direct download](https://developer.android.com/ndk/downloads/).
 
 ## Documentation
 - [Getting Started Guide](docs/GettingStarted.md)
