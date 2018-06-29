@@ -18,7 +18,6 @@
 #define MEGADRONE_MONOTOSTEREO_H
 
 #include "RenderableAudio.h"
-#include "Constants.h"
 
 template <typename T>
 class MonoToStereo : public RenderableAudio<T> {
@@ -36,8 +35,8 @@ public:
         // e.g. 123 => 112233
         for (int i = numFrames - 1; i >= 0; --i) {
 
-            audioData[i * kStereoChannelCount] = audioData[i];
-            audioData[i * kStereoChannelCount + 1] = audioData[i];
+            audioData[i * oboe::ChannelCount::Stereo] = audioData[i];
+            audioData[i * oboe::ChannelCount::Stereo + 1] = audioData[i];
         }
     }
 
