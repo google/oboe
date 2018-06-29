@@ -12,7 +12,7 @@ Pre-requisites
 -------------
 * Android device or emulator running API 16 (Jelly Bean) or above
 * [Android SDK 26](https://developer.android.com/about/versions/oreo/android-8.0-migration.html#ptb)
-* [NDK r16](https://developer.android.com/ndk/downloads/index.html) or above
+* [NDK r17](https://developer.android.com/ndk/downloads/index.html) or above
 * [Android Studio 2.3.0+](https://developer.android.com/studio/index.html)
 
 Getting Started
