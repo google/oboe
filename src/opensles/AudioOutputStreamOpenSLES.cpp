@@ -108,6 +108,7 @@ Result AudioOutputStreamOpenSLES::open() {
      * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
      * type, creating it from our original format.
      */
+#if __ANDROID_API__ >= __ANDROID_API_L__
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
     if (getSdkVersion() >= __ANDROID_API_L__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
@@ -116,6 +117,7 @@ Result AudioOutputStreamOpenSLES::open() {
         // Use in place of the previous format.
         audioSrc.pFormat = &format_pcm_ex;
     }
+#endif // __ANDROID_API_L__
 
     result = OutputMixerOpenSL::getInstance().createAudioPlayer(&mObjectInterface,
                                                                           &audioSrc);
