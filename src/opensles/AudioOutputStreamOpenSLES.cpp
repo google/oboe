@@ -46,8 +46,8 @@ constexpr int SL_ANDROID_SPEAKER_5DOT1 = (SL_ANDROID_SPEAKER_QUAD
 constexpr int SL_ANDROID_SPEAKER_7DOT1 = (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT
         | SL_SPEAKER_SIDE_RIGHT);
 
-int AudioOutputStreamOpenSLES::chanCountToChanMask(int channelCount) {
-    int channelMask = 0;
+SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+    SLuint32 channelMask = 0;
 
     switch (channelCount) {
         case  1:
@@ -71,7 +71,7 @@ int AudioOutputStreamOpenSLES::chanCountToChanMask(int channelCount) {
             break;
 
         default:
-            channelMask = chanCountToChanMaskDefault(channelCount);
+            channelMask = channelCountToChannelMaskDefault(channelCount);
             break;
     }
     return channelMask;
@@ -101,7 +101,7 @@ Result AudioOutputStreamOpenSLES::open() {
             (SLuint32) (mSampleRate * kMillisPerSecond),    // milliSamplesPerSec
             bitsPerSample,                      // bitsPerSample
             bitsPerSample,                      // containerSize;
-            (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
+            channelCountToChannelMask(mChannelCount), // channelMask
             getDefaultByteOrder(),
     };
 

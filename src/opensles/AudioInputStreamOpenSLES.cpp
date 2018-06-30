@@ -57,15 +57,19 @@ AudioInputStreamOpenSLES::AudioInputStreamOpenSLES(const AudioStreamBuilder &bui
 AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 }
 
-int AudioInputStreamOpenSLES::chanCountToChanMask(int channelCount) {
-    // from internal sles_channel_in_mask_from_count(chanCount);
+// Calculate masks specific to INPUT streams.
+SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+    // Derived from internal sles_channel_in_mask_from_count(chanCount);
+    // in "frameworks/wilhelm/src/android/channels.cpp".
+    // Yes, it seems strange to use SPEAKER constants to describe inputs.
+    // But that is how OpenSL ES does it internally.
     switch (channelCount) {
         case 1:
             return SL_SPEAKER_FRONT_LEFT;
         case 2:
             return SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
         default:
-            return chanCountToChanMaskDefault(channelCount);
+            return channelCountToChannelMaskDefault(channelCount);
     }
 }
 
@@ -88,7 +92,7 @@ Result AudioInputStreamOpenSLES::open() {
             (SLuint32) (mSampleRate * kMillisPerSecond),    // milliSamplesPerSec
             bitsPerSample,                      // bitsPerSample
             bitsPerSample,                      // containerSize;
-            (SLuint32) chanCountToChanMask(mChannelCount), // channelMask
+            channelCountToChannelMask(mChannelCount), // channelMask
             getDefaultByteOrder(),
     };
 

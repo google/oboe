@@ -49,8 +49,6 @@ public:
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
 
-    int chanCountToChanMask(int chanCount);
-
     int64_t getFramesWritten() const override;
 
 protected:
@@ -58,6 +56,8 @@ protected:
     Result updateServiceFrameCounter() override;
 
 private:
+
+    SLuint32 channelCountToChannelMask(int chanCount);
 
     Result setRecordState(SLuint32 newState);
 
