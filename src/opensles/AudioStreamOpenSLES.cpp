@@ -49,11 +49,11 @@ AudioStreamOpenSLES::~AudioStreamOpenSLES() {
     delete[] mCallbackBuffer;
 }
 
-#define AUDIO_CHANNEL_COUNT_MAX          30u
-#define SL_ANDROID_UNKNOWN_CHANNELMASK   0
+constexpr uint      kAudioChannelCountMax = 30u;
+constexpr SLuint32  SL_ANDROID_UNKNOWN_CHANNELMASK  = 0; // Matches name used internally.
 
-int AudioStreamOpenSLES::chanCountToChanMaskDefault(int channelCount) {
-    if (channelCount > AUDIO_CHANNEL_COUNT_MAX) {
+SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) {
+    if (channelCount > kAudioChannelCountMax) {
         return SL_ANDROID_UNKNOWN_CHANNELMASK;
     } else {
         SLuint32 bitfield = (1 << channelCount) - 1;
