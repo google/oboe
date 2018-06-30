@@ -24,6 +24,7 @@ namespace oboe {
 
 const char *getSLErrStr(SLresult code);
 
+#if __ANDROID_API__ >= __ANDROID_API_L__
 /**
  * Creates an extended PCM format from the supplied format and data representation. This method
  * should only be called on Android devices with API level 21+. API 21 introduced the
@@ -37,9 +38,8 @@ const char *getSLErrStr(SLresult code);
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(SLDataFormat_PCM format,
                                                          SLuint32 representation);
 
-
-    SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format);
-
+SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format);
+#endif // __ANDROID_API_L__
 
 } // namespace oboe
 

@@ -108,14 +108,16 @@ Result AudioInputStreamOpenSLES::open() {
      * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
      * type, creating it from our original format.
      */
+#if __ANDROID_API__ >= __ANDROID_API_L__
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
-    if (__ANDROID_API__ >= __ANDROID_API_L__) {
+    if (getSdkVersion() >= __ANDROID_API_L__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
         // Fill in the format structure.
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
         // Use in place of the previous format.
         audioSink.pFormat = &format_pcm_ex;
     }
+#endif // __ANDROID_API_L__
 
     // configure audio source
     SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
