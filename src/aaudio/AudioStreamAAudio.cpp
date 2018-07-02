@@ -364,12 +364,12 @@ StreamState AudioStreamAAudio::getState() {
     }
 }
 
-int32_t AudioStreamAAudio::getBufferSizeInFrames() const {
+ResultWithValue<int32_t> AudioStreamAAudio::getBufferSizeInFrames() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getBufferSize(stream);
+        return ResultWithValue<int32_t>(mLibLoader->stream_getBufferSize(stream));
     } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorNull);
     }
 }
 

@@ -47,7 +47,7 @@ public:
 
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override;
 
-    int32_t getBufferSizeInFrames() const override;
+    ResultWithValue<int32_t> getBufferSizeInFrames() const override;
 
     int32_t getBufferCapacityInFrames() const override;
 

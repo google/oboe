@@ -158,13 +158,22 @@ void PlayAudioEngine::setToneOn(bool isToneOn) {
 oboe::DataCallbackResult
 PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
 
-    int32_t bufferSize = audioStream->getBufferSizeInFrames();
+    int32_t bufferSize = -1;
+    auto bufferSizeResult = audioStream->getBufferSizeInFrames();
 
-    if (mBufferSizeSelection == kBufferSizeAutomatic) {
-        mLatencyTuner->tune();
-    } else if (bufferSize != (mBufferSizeSelection * mFramesPerBurst)) {
-        audioStream->setBufferSizeInFrames(mBufferSizeSelection * mFramesPerBurst);
-        bufferSize = audioStream->getBufferSizeInFrames();
+    if (bufferSizeResult == oboe::Result::OK){
+        bufferSize = bufferSizeResult.value();
+
+        if (mBufferSizeSelection == kBufferSizeAutomatic) {
+            mLatencyTuner->tune();
+        } else if (bufferSize != (mBufferSizeSelection * mFramesPerBurst)) {
+            audioStream->setBufferSizeInFrames(mBufferSizeSelection * mFramesPerBurst);
+
+            auto newBufferSizeResult = audioStream->getBufferSizeInFrames();
+            if (newBufferSizeResult == oboe::Result::OK){
+                bufferSize = newBufferSizeResult.value();
+            }
+        }
     }
 
     /**

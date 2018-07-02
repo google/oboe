@@ -20,6 +20,7 @@
 #include <memory>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
+#include "oboe/ResultWithValue.h"
 
 namespace oboe {
 
@@ -74,15 +75,17 @@ public:
      *
      * @return buffer size or a negative error.
      */
-    virtual int32_t getBufferSizeInFrames() const {
+    virtual ResultWithValue<int32_t> getBufferSizeInFrames() const {
         // By default assume the effective size is the same as capacity.
-        return getBufferCapacityInFrames();
+        return ResultWithValue<int32_t>(getBufferCapacityInFrames());
     }
 
     /**
-     * @return capacityInFrames or OBOE_UNSPECIFIED
+     * @return capacityInFrames or kUnspecified
      */
-    virtual int32_t getBufferCapacityInFrames() const { return mBufferCapacityInFrames; }
+    virtual int32_t getBufferCapacityInFrames() const {
+        return mBufferCapacityInFrames;
+    }
 
     SharingMode getSharingMode() const { return mSharingMode; }
 
