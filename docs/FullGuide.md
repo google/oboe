@@ -416,9 +416,7 @@ from the thread in which it is running.
 
 ## Code samples
 
-A small demo app is available on our [GitHub page](https://github.com/googlesamples/android-audio-high-performance/tree/master/oboe):
-
-* `Hello-Oboe` generates a sine wave and plays back audio at the lowest possible latency.
+Code samples are available in the [samples folder](../samples).
 
 ## Known Issues
 
