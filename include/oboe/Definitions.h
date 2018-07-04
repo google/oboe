@@ -96,6 +96,7 @@ namespace oboe {
         ErrorOutOfRange = AAUDIO_ERROR_OUT_OF_RANGE,
         ErrorNoService = AAUDIO_ERROR_NO_SERVICE,
         ErrorInvalidRate = AAUDIO_ERROR_INVALID_RATE,
+        ErrorClosed,
     };
 
     enum class SharingMode : aaudio_sharing_mode_t {

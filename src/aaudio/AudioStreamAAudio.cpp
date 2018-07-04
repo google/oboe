@@ -164,7 +164,7 @@ Result AudioStreamAAudio::open() {
         goto error2;
     }
 
-    // Query and cache the values that will not change.
+    // Query and cache the stream properties
     mDeviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
     mChannelCount = mLibLoader->stream_getChannelCount(mAAudioStream);
     mSampleRate = mLibLoader->stream_getSampleRate(mAAudioStream);
@@ -176,6 +176,8 @@ Result AudioStreamAAudio::open() {
     mPerformanceMode = static_cast<PerformanceMode>(
             mLibLoader->stream_getPerformanceMode(mAAudioStream));
     mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
+    mBufferSizeInFrames = mLibLoader->stream_getBufferSize(mAAudioStream);
+
 
     // These were added in P so we have to check for the function pointer.
     if (mLibLoader->stream_getUsage != nullptr) {
@@ -213,13 +215,14 @@ Result AudioStreamAAudio::close()
     // is being executed because of a disconnect. The close will delete the stream,
     // which could otherwise cause the requestStop() to crash.
     std::lock_guard<std::mutex> lock(mLock);
-    Result result = Result::OK;
+
     // This will delete the AAudio stream object so we need to null out the pointer.
     AAudioStream *stream = mAAudioStream.exchange(nullptr);
     if (stream != nullptr) {
-        result = static_cast<Result>(mLibLoader->stream_close(stream));
+        return static_cast<Result>(mLibLoader->stream_close(stream));
+    } else {
+        return Result::ErrorClosed;
     }
-    return result;
 }
 
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
@@ -268,7 +271,7 @@ Result AudioStreamAAudio::requestStart() {
     if (stream != nullptr) {
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
-        return Result::ErrorNull;
+        return Result::ErrorClosed;
     }
 }
 
@@ -278,7 +281,7 @@ Result AudioStreamAAudio::requestPause() {
     if (stream != nullptr) {
         return static_cast<Result>(mLibLoader->stream_requestPause(stream));
     } else {
-        return Result::ErrorNull;
+        return Result::ErrorClosed;
     }
 }
 
@@ -288,7 +291,7 @@ Result AudioStreamAAudio::requestFlush() {
     if (stream != nullptr) {
         return static_cast<Result>(mLibLoader->stream_requestFlush(stream));
     } else {
-        return Result::ErrorNull;
+        return Result::ErrorClosed;
     }
 }
 
@@ -298,7 +301,7 @@ Result AudioStreamAAudio::requestStop() {
     if (stream != nullptr) {
         return static_cast<Result>(mLibLoader->stream_requestStop(stream));
     } else {
-        return Result::ErrorNull;
+        return Result::ErrorClosed;
     }
 }
 
@@ -343,7 +346,7 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
         *nextState = static_cast<StreamState>(aaudioNextState);
         return static_cast<Result>(result);
     } else {
-        return Result::ErrorNull;
+        return Result::ErrorClosed;
     }
 }
 
@@ -352,6 +355,10 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
         requestedFrames = mBufferCapacityInFrames;
     }
     int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+
+    // Cache the result if it's valid
+    if (newBufferSize > 0) mBufferSizeInFrames = newBufferSize;
+
     return ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
 }
 
@@ -364,40 +371,36 @@ StreamState AudioStreamAAudio::getState() {
     }
 }
 
-int32_t AudioStreamAAudio::getBufferSizeInFrames() const {
+int32_t AudioStreamAAudio::getBufferSizeInFrames() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getBufferSize(stream);
-    } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        mBufferSizeInFrames = mLibLoader->stream_getBufferSize(stream);
     }
+    return mBufferSizeInFrames;
 }
 
-int32_t AudioStreamAAudio::getFramesPerBurst() const {
+int32_t AudioStreamAAudio::getFramesPerBurst() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getFramesPerBurst(stream);
-    } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        mFramesPerBurst = mLibLoader->stream_getFramesPerBurst(stream);
     }
+    return mFramesPerBurst;
 }
 
-int64_t AudioStreamAAudio::getFramesRead() const {
+int64_t AudioStreamAAudio::getFramesRead() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getFramesRead(stream);
-    } else {
-        return static_cast<int32_t>(Result::ErrorNull);
+        mFramesRead = mLibLoader->stream_getFramesRead(stream);
     }
+    return mFramesRead;
 }
 
-int64_t AudioStreamAAudio::getFramesWritten() const {
+int64_t AudioStreamAAudio::getFramesWritten() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return mLibLoader->stream_getFramesWritten(stream);
-    } else {
-        return static_cast<int64_t>(Result::ErrorNull);
+        mFramesWritten = mLibLoader->stream_getFramesWritten(stream);
     }
+    return mFramesWritten;
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::getXRunCount() const {

@@ -176,20 +176,26 @@ SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf
 }
 
 Result AudioStreamOpenSLES::close() {
-    onBeforeDestroy();
 
-    if (mObjectInterface != nullptr) {
-        (*mObjectInterface)->Destroy(mObjectInterface);
-        mObjectInterface = nullptr;
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
+    } else {
+        onBeforeDestroy();
 
+        if (mObjectInterface != nullptr) {
+            (*mObjectInterface)->Destroy(mObjectInterface);
+            mObjectInterface = nullptr;
+
+        }
+
+        onAfterDestroy();
+
+        mSimpleBufferQueueInterface = nullptr;
+        EngineOpenSLES::getInstance().close();
+
+        mState = StreamState::Closed;
+        return Result::OK;
     }
-
-    onAfterDestroy();
-
-    mSimpleBufferQueueInterface = nullptr;
-    EngineOpenSLES::getInstance().close();
-
-    return Result::OK;
 }
 
 SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
@@ -233,7 +239,7 @@ SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
     return result;
 }
 
-int32_t AudioStreamOpenSLES::getFramesPerBurst() const {
+int32_t AudioStreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
 

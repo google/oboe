@@ -140,11 +140,16 @@ public:
     }
 
     /**
+     * @return true if XRun counts are supported on the stream
+     */
+    virtual bool isXRunCountSupported() const = 0;
+
+    /**
      * Query the number of frames that are read or written by the endpoint at one time.
      *
      * @return burst size
      */
-    virtual int32_t getFramesPerBurst() const = 0;
+    virtual int32_t getFramesPerBurst() = 0;
 
     bool isPlaying();
 
@@ -156,9 +161,9 @@ public:
      * This monotonic counter will never get reset.
      * @return the number of frames written so far
      */
-    virtual int64_t getFramesWritten() const { return mFramesWritten; }
+    virtual int64_t getFramesWritten() { return mFramesWritten; }
 
-    virtual int64_t getFramesRead() const { return mFramesRead; }
+    virtual int64_t getFramesRead() { return mFramesRead; }
 
     /**
      * Calculate the latency of a stream based on getTimestamp().
@@ -282,10 +287,12 @@ protected:
     // These do not change after open.
     AudioFormat mNativeFormat = AudioFormat::Invalid;
 
-private:
     // TODO these should be atomic like in AAudio
     int64_t              mFramesWritten = 0;
     int64_t              mFramesRead = 0;
+
+private:
+    // TODO these should be atomic like in AAudio
     int                  mPreviousScheduler = -1;
 };
 

@@ -71,13 +71,11 @@ public:
 
     /**
      * Query the maximum number of frames that can be filled without blocking.
+     * If the stream has been closed the last known value will be returned.
      *
-     * @return buffer size or a negative error.
+     * @return buffer size
      */
-    virtual int32_t getBufferSizeInFrames() const {
-        // By default assume the effective size is the same as capacity.
-        return getBufferCapacityInFrames();
-    }
+    virtual int32_t getBufferSizeInFrames() { return mBufferSizeInFrames; };
 
     /**
      * @return capacityInFrames or OBOE_UNSPECIFIED
@@ -109,6 +107,8 @@ protected:
     int32_t                         mSampleRate = kUnspecified;
     int32_t                         mDeviceId = kUnspecified;
     int32_t                         mBufferCapacityInFrames = kUnspecified;
+    int32_t                         mBufferSizeInFrames = kUnspecified;
+    int32_t                         mFramesPerBurst = kUnspecified;
 
     SharingMode                     mSharingMode = SharingMode::Shared;
     AudioFormat                     mFormat = AudioFormat::Unspecified;

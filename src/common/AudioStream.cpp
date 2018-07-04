@@ -65,17 +65,21 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
                                            int64_t timeoutNanoseconds)
 {
     StreamState state = getState();
-    StreamState nextState = state;
-    if (state == startingState && state != endingState) {
-        Result result = waitForStateChange(state, &nextState, timeoutNanoseconds);
-        if (result != Result::OK) {
-            return result;
-        }
-    }
-    if (nextState != endingState) {
-        return Result::ErrorInvalidState;
+    if (state == StreamState::Closed) {
+        return Result::ErrorClosed;
     } else {
-        return Result::OK;
+        StreamState nextState = state;
+        if (state == startingState && state != endingState) {
+            Result result = waitForStateChange(state, &nextState, timeoutNanoseconds);
+            if (result != Result::OK) {
+                return result;
+            }
+        }
+        if (nextState != endingState) {
+            return Result::ErrorInvalidState;
+        } else {
+            return Result::OK;
+        }
     }
 }
 

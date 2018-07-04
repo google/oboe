@@ -49,7 +49,7 @@ public:
                               int64_t timeoutNanoseconds) override;
 
 
-    int64_t getFramesRead() const override;
+    int64_t getFramesRead() override;
 
 protected:
 
