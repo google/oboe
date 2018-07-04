@@ -57,7 +57,7 @@ public:
      */
     StreamState getState() override { return mState; }
 
-    int32_t getFramesPerBurst() const override;
+    int32_t getFramesPerBurst() override;
 
 
     AudioApi getAudioApi() const override {

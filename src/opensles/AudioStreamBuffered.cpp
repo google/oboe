@@ -44,20 +44,18 @@ void AudioStreamBuffered::allocateFifo() {
     }
 }
 
-int64_t AudioStreamBuffered::getFramesWritten() const {
+int64_t AudioStreamBuffered::getFramesWritten() {
     if (usingFIFO()) {
-        return (int64_t) mFifoBuffer->getWriteCounter();
-    } else {
-        return AudioStream::getFramesWritten();
+        mFramesWritten = (int64_t) mFifoBuffer->getWriteCounter();
     }
+    return mFramesWritten;
 }
 
-int64_t AudioStreamBuffered::getFramesRead() const {
+int64_t AudioStreamBuffered::getFramesRead() {
     if (usingFIFO()) {
-        return (int64_t) mFifoBuffer->getReadCounter();
-    } else {
-        return AudioStream::getFramesRead();
+        mFramesRead = (int64_t) mFifoBuffer->getReadCounter();
     }
+    return mFramesRead;
 }
 
 // This is called by the OpenSL ES callback to read or write the back end of the FIFO.
@@ -96,7 +94,7 @@ int64_t AudioStreamBuffered::predictNextCallbackTime() {
 
 // Common code for read/write.
 // @return Result::OK with frames read/written, or Result::Error*
-ResultWithValue<int32_t>  AudioStreamBuffered::transfer(void *buffer,
+ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
                                       int32_t numFrames,
                                       int64_t timeoutNanoseconds) {
     // Validate arguments.
@@ -173,11 +171,7 @@ ResultWithValue<int32_t>  AudioStreamBuffered::transfer(void *buffer,
         }
     } while(repeat);
 
-    if (result < 0) {
-        return ResultWithValue<int32_t>(static_cast<Result>(result));
-    } else {
-        return ResultWithValue<int32_t>((numFrames - framesLeft));
-    }
+    return ResultWithValue<int32_t>::createBasedOnSign(result);
 }
 
 // Write to the FIFO so the callback can read from it.
@@ -218,12 +212,12 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
     }
 }
 
-int32_t AudioStreamBuffered::getBufferSizeInFrames() const {
+int32_t AudioStreamBuffered::getBufferSizeInFrames() {
+
     if (mFifoBuffer != nullptr) {
-        return mFifoBuffer->getThresholdFrames();
-    } else {
-        return AudioStream::getBufferSizeInFrames();
+        mBufferSizeInFrames = mFifoBuffer->getThresholdFrames();
     }
+    return mBufferSizeInFrames;
 }
 
 int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {

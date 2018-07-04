@@ -47,7 +47,7 @@ public:
 
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override;
 
-    int32_t getBufferSizeInFrames() const override;
+    int32_t getBufferSizeInFrames() override;
 
     int32_t getBufferCapacityInFrames() const override;
 
@@ -55,9 +55,11 @@ public:
         return ResultWithValue<int32_t>(mXRunCount);
     }
 
-    int64_t getFramesWritten() const override;
+    bool isXRunCountSupported() const override { return false; }
 
-    int64_t getFramesRead() const override;
+    int64_t getFramesWritten() override;
+
+    int64_t getFramesRead() override;
 
 protected:
 

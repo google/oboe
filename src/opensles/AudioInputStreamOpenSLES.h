@@ -49,7 +49,7 @@ public:
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
 
-    int64_t getFramesWritten() const override;
+    int64_t getFramesWritten() override;
 
 protected:
 

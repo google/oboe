@@ -39,7 +39,9 @@
 BUILD_DIR=build
 CMAKE=cmake
 TEST_BINARY_FILENAME=testOboe
-REMOTE_DIR=/data/local/tmp/oboe
+REMOTE_TEMP_DIR=/data/local/tmp
+TEST_PACKAGE_NAME=com.google.sample.oboe.liveeffect
+REMOTE_DIR=/data/data/${TEST_PACKAGE_NAME}
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -102,9 +104,12 @@ popd
 
 
 # Push the test binary to the device and run it
-echo "Pushing test binary to device/emulator"
 adb shell mkdir -p ${REMOTE_DIR}
-adb push ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${REMOTE_DIR}
+adb push ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${REMOTE_TEMP_DIR}
+echo "Pushed ${BUILD_DIR}/${TEST_BINARY_FILENAME} to ${REMOTE_TEMP_DIR}"
+
+echo "Copying ${TEST_BINARY_FILENAME} from ${REMOTE_TEMP_DIR} to ${REMOTE_DIR}"
+adb shell run-as ${TEST_PACKAGE_NAME} cp ${REMOTE_TEMP_DIR}/${TEST_BINARY_FILENAME} ${REMOTE_DIR}
 
 echo "Running test binary"
-adb shell ${REMOTE_DIR}/${TEST_BINARY_FILENAME}
+adb shell run-as ${TEST_PACKAGE_NAME} ${REMOTE_DIR}/${TEST_BINARY_FILENAME}

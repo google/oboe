@@ -69,12 +69,13 @@ public:
                  int64_t timeoutNanoseconds) override;
 
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override;
-    int32_t getBufferSizeInFrames() const override;
-    int32_t getFramesPerBurst() const override;
+    int32_t getBufferSizeInFrames() override;
+    int32_t getFramesPerBurst() override;
     ResultWithValue<int32_t> getXRunCount() const override;
+    bool isXRunCountSupported() const override { return true; }
 
-    int64_t getFramesRead() const override;
-    int64_t getFramesWritten() const override;
+    int64_t getFramesRead() override;
+    int64_t getFramesWritten() override;
 
     ResultWithValue<double> calculateLatencyMillis() override;
 

@@ -163,8 +163,8 @@ PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, i
     if (mBufferSizeSelection == kBufferSizeAutomatic) {
         mLatencyTuner->tune();
     } else if (bufferSize != (mBufferSizeSelection * mFramesPerBurst)) {
-        audioStream->setBufferSizeInFrames(mBufferSizeSelection * mFramesPerBurst);
-        bufferSize = audioStream->getBufferSizeInFrames();
+        auto setBufferResult = audioStream->setBufferSizeInFrames(mBufferSizeSelection * mFramesPerBurst);
+        if (setBufferResult == oboe::Result::OK) bufferSize = setBufferResult.value();
     }
 
     /**

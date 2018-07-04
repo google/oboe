@@ -15,5 +15,6 @@ include_directories(${OBOE_DIR}/include)
 add_executable(testOboe
         testUtilities.cpp
         testStreamClosedMethods.cpp
+        testXRunBehaviour.cpp
         )
 target_link_libraries(testOboe gtest oboe)

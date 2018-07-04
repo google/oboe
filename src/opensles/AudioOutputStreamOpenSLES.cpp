@@ -173,78 +173,112 @@ Result AudioOutputStreamOpenSLES::onAfterDestroy() {
 }
 
 Result AudioOutputStreamOpenSLES::close() {
-    requestPause();
-    // invalidate any interfaces
-    mPlayInterface = NULL;
-    return AudioStreamOpenSLES::close();
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
+    } else {
+        requestPause();
+        // invalidate any interfaces
+        mPlayInterface = NULL;
+        return AudioStreamOpenSLES::close();
+    }
 }
 
 Result AudioOutputStreamOpenSLES::setPlayState(SLuint32 newState) {
-    Result result = Result::OK;
+
     LOGD("AudioOutputStreamOpenSLES(): setPlayState()");
-    if (mPlayInterface == NULL) {
-        return Result::ErrorInvalidState;
-    }
-    SLresult slResult = (*mPlayInterface)->SetPlayState(mPlayInterface, newState);
-    if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("AudioOutputStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
-        result = Result::ErrorInvalidState; // TODO review
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
     } else {
-        setState(StreamState::Pausing);
+        Result result = Result::OK;
+        if (mPlayInterface == NULL) {
+            return Result::ErrorInvalidState;
+        }
+        SLresult slResult = (*mPlayInterface)->SetPlayState(mPlayInterface, newState);
+        if (SL_RESULT_SUCCESS != slResult) {
+            LOGD("AudioOutputStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
+            result = Result::ErrorInvalidState; // TODO review
+        } else {
+            setState(StreamState::Pausing);
+        }
+        return result;
     }
-    return result;
 }
 
 Result AudioOutputStreamOpenSLES::requestStart() {
+
     LOGD("AudioOutputStreamOpenSLES(): requestStart()");
-    Result result = setPlayState(SL_PLAYSTATE_PLAYING);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
     } else {
-        processBufferCallback(mSimpleBufferQueueInterface);
-        setState(StreamState::Starting);
+        Result result = setPlayState(SL_PLAYSTATE_PLAYING);
+        if (result != Result::OK) {
+            result = Result::ErrorInvalidState; // TODO review
+        } else {
+            processBufferCallback(mSimpleBufferQueueInterface);
+            setState(StreamState::Starting);
+        }
+        return result;
     }
-    return result;
 }
 
 Result AudioOutputStreamOpenSLES::requestPause() {
+
     LOGD("AudioOutputStreamOpenSLES(): requestPause()");
-    Result result = setPlayState(SL_PLAYSTATE_PAUSED);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
     } else {
-        setState(StreamState::Pausing);
-        // Note that OpenSL ES does NOT reset its millisecond position when OUTPUT is paused.
-        int64_t framesWritten = getFramesWritten();
-        if (framesWritten >= 0) {
-            setFramesRead(framesWritten);
+        Result result = setPlayState(SL_PLAYSTATE_PAUSED);
+        if (result != Result::OK) {
+            result = Result::ErrorInvalidState; // TODO review
+        } else {
+            setState(StreamState::Pausing);
+            // Note that OpenSL ES does NOT reset its millisecond position when OUTPUT is paused.
+            int64_t framesWritten = getFramesWritten();
+            if (framesWritten >= 0) {
+                setFramesRead(framesWritten);
+            }
         }
+        return result;
     }
-    return result;
 }
 
 Result AudioOutputStreamOpenSLES::requestFlush() {
     LOGD("AudioOutputStreamOpenSLES(): requestFlush()");
-    if (mPlayInterface == NULL) {
-        return Result::ErrorInvalidState;
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
+    } else {
+        if (mPlayInterface == NULL) {
+            return Result::ErrorInvalidState;
+        }
+        return Result::ErrorUnimplemented; // TODO
     }
-    return Result::ErrorUnimplemented; // TODO
 }
 
 Result AudioOutputStreamOpenSLES::requestStop() {
     LOGD("AudioOutputStreamOpenSLES(): requestStop()");
-    Result result = setPlayState(SL_PLAYSTATE_STOPPED);
-    if(result != Result::OK) {
-        result = Result::ErrorInvalidState; // TODO review
+
+    if (mState == StreamState::Closed){
+        return Result::ErrorClosed;
     } else {
-        setState(StreamState::Stopping);
-        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
-        int64_t framesWritten = getFramesWritten();
-        if (framesWritten >= 0) {
-            setFramesRead(framesWritten);
+
+        Result result = setPlayState(SL_PLAYSTATE_STOPPED);
+        if (result != Result::OK) {
+            result = Result::ErrorInvalidState; // TODO review
+        } else {
+            setState(StreamState::Stopping);
+            mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
+            int64_t framesWritten = getFramesWritten();
+            if (framesWritten >= 0) {
+                setFramesRead(framesWritten);
+            }
         }
+        return result;
     }
-    return result;
 }
 
 void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
@@ -252,7 +286,7 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
     mPositionMillis.set(millisWritten);
 }
 
-int64_t AudioOutputStreamOpenSLES::getFramesRead() const {
+int64_t AudioOutputStreamOpenSLES::getFramesRead() {
     return getFramesProcessedByServer();
 }
 
@@ -260,7 +294,10 @@ Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                StreamState *nextState,
                                                int64_t timeoutNanoseconds) {
     LOGD("AudioOutputStreamOpenSLES::waitForStateChange()");
-    if (mPlayInterface == NULL) {
+
+    if (getState() == StreamState::Closed){
+        return Result::ErrorClosed;
+    } else if (mPlayInterface == NULL) {
         return Result::ErrorInvalidState;
     }
     return Result::ErrorUnimplemented; // TODO
