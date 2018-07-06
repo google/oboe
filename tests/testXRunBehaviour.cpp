@@ -20,6 +20,14 @@
 
 using namespace oboe;
 
+
+class MyCallback : public AudioStreamCallback {
+public:
+    DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
+        return DataCallbackResult::Continue;
+    }
+};
+
 class XRunBehaviour : public ::testing::Test {
 
 protected:
@@ -63,12 +71,25 @@ TEST_F(XRunBehaviour, SupportedWhenStreamIsUsingAAudio){
     if (mStream->getAudioApi() == AudioApi::AAudio){
         ASSERT_TRUE(mStream->isXRunCountSupported());
     }
+    closeStream();
 }
 
-TEST_F(XRunBehaviour, NotSupportedWhenStreamIsUsingOpenSLES){
+TEST_F(XRunBehaviour, NotSupportedOnOpenSLESWhenStreamIsUsingCallback){
 
+    MyCallback callback;
+    mBuilder.setCallback(&callback);
     openStream();
     if (mStream->getAudioApi() == AudioApi::OpenSLES){
         ASSERT_FALSE(mStream->isXRunCountSupported());
     }
+    closeStream();
+}
+
+TEST_F(XRunBehaviour, SupportedOnOpenSLESWhenStreamIsUsingBlockingIO){
+
+    openStream();
+    if (mStream->getAudioApi() == AudioApi::OpenSLES){
+        ASSERT_TRUE(mStream->isXRunCountSupported());
+    }
+    closeStream();
 }
