@@ -55,7 +55,7 @@ public:
         return ResultWithValue<int32_t>(mXRunCount);
     }
 
-    bool isXRunCountSupported() const override { return false; }
+    bool isXRunCountSupported() const override;
 
     int64_t getFramesWritten() override;
 
