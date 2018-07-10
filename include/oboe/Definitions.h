@@ -96,6 +96,17 @@ namespace oboe {
         ErrorOutOfRange = AAUDIO_ERROR_OUT_OF_RANGE,
         ErrorNoService = AAUDIO_ERROR_NO_SERVICE,
         ErrorInvalidRate = AAUDIO_ERROR_INVALID_RATE,
+        // Reserved for future AAudio result types
+        Reserved1,
+        Reserved2,
+        Reserved3,
+        Reserved4,
+        Reserved5,
+        Reserved6,
+        Reserved7,
+        Reserved8,
+        Reserved9,
+        Reserved10,
         ErrorClosed,
     };
 
