@@ -86,6 +86,7 @@ const char *convertToText<Result>(Result returnCode) {
         case Result::ErrorOutOfRange:       return "ErrorOutOfRange";
         case Result::ErrorNoService:        return "ErrorNoService";
         case Result::ErrorInvalidRate:      return "ErrorInvalidRate";
+        case Result::ErrorClosed:           return "ErrorClosed";
         default:                            return "Unrecognized result";
     }
 }
