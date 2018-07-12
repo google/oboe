@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+# TODO: Remove this line and inherit it from the host environment
+set(ANDROID_NDK /Users/donturner/Library/Android/sdk/ndk-bundle)
+
 # Include GoogleTest library
 set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest)
 add_library(gtest STATIC ${GOOGLETEST_ROOT}/src/gtest_main.cc ${GOOGLETEST_ROOT}/src/gtest-all.cc)
