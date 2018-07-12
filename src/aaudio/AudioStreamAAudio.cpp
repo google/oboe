@@ -314,7 +314,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
                                                   numFrames, timeoutNanoseconds);
         return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
-        return ResultWithValue<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 }
 
@@ -327,7 +327,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
                                                  numFrames, timeoutNanoseconds);
         return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
-        return ResultWithValue<int32_t>(Result::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 }
 
@@ -351,15 +351,24 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {
-    if (requestedFrames > mBufferCapacityInFrames) {
-        requestedFrames = mBufferCapacityInFrames;
+
+    AAudioStream *stream = mAAudioStream.load();
+
+    if (stream != nullptr) {
+
+        if (requestedFrames > mBufferCapacityInFrames) {
+            requestedFrames = mBufferCapacityInFrames;
+        }
+        int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+
+        // Cache the result if it's valid
+        if (newBufferSize > 0) mBufferSizeInFrames = newBufferSize;
+
+        return ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
+
+    } else {
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
-    int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
-
-    // Cache the result if it's valid
-    if (newBufferSize > 0) mBufferSizeInFrames = newBufferSize;
-
-    return ResultWithValue<int32_t>::createBasedOnSign(newBufferSize);
 }
 
 StreamState AudioStreamAAudio::getState() {
@@ -427,7 +436,7 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
 ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream == nullptr) {
-        return ResultWithValue<double>(Result::ErrorNull);
+        return ResultWithValue<double>(Result::ErrorClosed);
     }
 
     // Get the time that a known audio frame was presented.

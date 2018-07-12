@@ -178,6 +178,10 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
 ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
                                    int32_t numFrames,
                                    int64_t timeoutNanoseconds) {
+    if (getState() == StreamState::Closed){
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
+    }
+
     if (getDirection() == Direction::Input) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
@@ -189,6 +193,10 @@ ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
 ResultWithValue<int32_t> AudioStreamBuffered::read(void *buffer,
                                   int32_t numFrames,
                                   int64_t timeoutNanoseconds) {
+    if (getState() == StreamState::Closed){
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
+    }
+
     if (getDirection() == Direction::Output) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
@@ -199,6 +207,10 @@ ResultWithValue<int32_t> AudioStreamBuffered::read(void *buffer,
 // Only supported when we are not using a callback.
 ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requestedFrames)
 {
+    if (getState() == StreamState::Closed){
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
+    }
+
     if (mFifoBuffer != nullptr) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
