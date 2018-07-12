@@ -21,7 +21,8 @@
 # e.g. /Library/Android/sdk/ndk-bundle
 # - Android device or emulator attached and accessible via adb
 #
-# Instructions: 
+# Instructions:
+# Install the LiveEffect sample app, run it once and grant the recording permission (TODO: Make this step easier)
 # Run this script from within the oboe/tests directory. A directory 'build' will be 
 # created containing the test binary. This binary will then be copied to the device/emulator
 # and executed. 

@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * TODO:
- Create test runner APK
- Remove hardcoded ANDROID_NDK from cmake config
- */
-
 #include <gtest/gtest.h>
 #include <oboe/Oboe.h>
 
@@ -318,4 +312,39 @@ TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsClosed){
     openAndCloseStream();
     StreamState next;
     ASSERT_EQ(mStream->waitForStateChange(StreamState::Open, &next, 0), Result::ErrorClosed);
+}
+
+TEST_F(StreamClosedReturnValues, SetBufferSizeInFramesReturnsClosed){
+
+    openAndCloseStream();
+    auto r = mStream->setBufferSizeInFrames(192);
+    ASSERT_EQ(r.error(), Result::ErrorClosed);
+}
+
+TEST_F(StreamClosedReturnValues, CalculateLatencyInMillisReturnsClosedIfSupported){
+
+    openAndCloseStream();
+
+    if (mStream->getAudioApi() == AudioApi::AAudio){
+        auto r = mStream->calculateLatencyMillis();
+        ASSERT_EQ(r.error(), Result::ErrorClosed);
+    }
+}
+
+TEST_F(StreamClosedReturnValues, ReadReturnsClosed){
+
+    openAndCloseStream();
+
+    void *buffer;
+    auto r = mStream->read(buffer, 1, 0);
+    ASSERT_EQ(r.error(), Result::ErrorClosed);
+}
+
+TEST_F(StreamClosedReturnValues, WriteReturnsClosed){
+
+    openAndCloseStream();
+
+    void *buffer;
+    auto r = mStream->write(buffer, 1, 0);
+    ASSERT_EQ(r.error(), Result::ErrorClosed);
 }
