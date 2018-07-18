@@ -31,16 +31,12 @@
 #define NULL 0
 #endif
 
-#define DEFAULT_FRAMES_PER_CALLBACK   192    // 4 msec at 48000 Hz
-#define DEFAULT_SAMPLE_RATE           48000  // very common rate for mobile audio and video
-#define DEFAULT_CHANNEL_COUNT         2      // stereo
-
 using namespace oboe;
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     mSimpleBufferQueueInterface = NULL;
-    mFramesPerBurst = builder.getDefaultFramesPerBurst();
+    mFramesPerBurst = DefaultStreamValues::FramesPerBurst;
     // OpenSL ES does not support device IDs. So overwrite value from builder.
     mDeviceId = kUnspecified;
     // OpenSL ES does not support session IDs. So overwrite value from builder.
@@ -112,10 +108,10 @@ Result AudioStreamOpenSLES::open() {
     }
     // Convert to defaults if UNSPECIFIED
     if (mSampleRate == kUnspecified) {
-        mSampleRate = DEFAULT_SAMPLE_RATE;
+        mSampleRate = DefaultStreamValues::SampleRate;
     }
     if (mChannelCount == kUnspecified) {
-        mChannelCount = DEFAULT_CHANNEL_COUNT;
+        mChannelCount = DefaultStreamValues::ChannelCount;
     }
 
     // Decide frames per burst based on hints from caller.
@@ -125,7 +121,7 @@ Result AudioStreamOpenSLES::open() {
     } else if (mFramesPerBurst != kUnspecified) { // set from defaultFramesPerBurst
         mFramesPerCallback = mFramesPerBurst;
     } else {
-        mFramesPerBurst = mFramesPerCallback = DEFAULT_FRAMES_PER_CALLBACK;
+        mFramesPerBurst = mFramesPerCallback = DefaultStreamValues::FramesPerBurst;
     }
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();

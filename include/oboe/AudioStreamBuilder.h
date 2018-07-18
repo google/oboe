@@ -22,8 +22,6 @@
 
 namespace oboe {
 
-constexpr int32_t kDefaultFramesPerBurst = 192; // arbitrary value, 4 msec at 48000 Hz
-
 /**
  * Factory class for an audio Stream.
  */
@@ -298,33 +296,6 @@ public:
     }
 
     /**
-     * With OpenSL ES, the optimal framesPerBurst is not known by the native code.
-     * It should be obtained from the AudioManager using this code:
-     *
-     * <pre><code>
-        // Note that this technique only works for built-in speakers and headphones.
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        text = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-        defaultFramesPerBurst = Integer.parseInt(text);
-        </code></pre>
-     *
-     * It can then be passed down to Oboe through JNI.
-     *
-     * AAudio will get the optimal framesPerBurst from the HAL and will ignore this value.
-     *
-     * @param defaultFramesPerBurst
-     * @return pointer to the builder so calls can be chained
-     */
-    AudioStreamBuilder *setDefaultFramesPerBurst(int32_t defaultFramesPerBurst) {
-        mDefaultFramesPerBurst = defaultFramesPerBurst;
-        return this;
-    }
-
-    int32_t getDefaultFramesPerBurst() const {
-        return mDefaultFramesPerBurst;
-    }
-
-    /**
      * Create and open a stream object based on the current settings.
      *
      * @param stream pointer to a variable to receive the stream address
@@ -344,8 +315,6 @@ private:
     oboe::AudioStream *build();
 
     AudioApi       mAudioApi = AudioApi::Unspecified;
-
-    int32_t        mDefaultFramesPerBurst = kDefaultFramesPerBurst;
 };
 
 } // namespace oboe
