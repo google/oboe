@@ -45,10 +45,6 @@ public:
     Result requestFlush() override;
     Result requestStop() override;
 
-    Result waitForStateChange(StreamState currentState,
-                              StreamState *nextState,
-                              int64_t timeoutNanoseconds) override;
-
     int64_t getFramesWritten() override;
 
 protected:

@@ -191,6 +191,11 @@ Result AudioOutputStreamOpenSLES::setPlayState(SLuint32 newState) {
     LOGD("AudioOutputStreamOpenSLES(): setPlayState()");
     Result result = Result::OK;
 
+    if (mPlayInterface == nullptr){
+        LOGE("AudioOutputStreamOpenSLES::setPlayState() mPlayInterface is null");
+        return Result::ErrorInvalidState;
+    }
+
     SLresult slResult = (*mPlayInterface)->SetPlayState(mPlayInterface, newState);
     if (SL_RESULT_SUCCESS != slResult) {
         LOGD("AudioOutputStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
@@ -215,7 +220,7 @@ Result AudioOutputStreamOpenSLES::requestStart() {
 
 Result AudioOutputStreamOpenSLES::requestPause() {
 
-    LOGD("AudioOutputStreamOpenSLES(): requestPause()");
+    LOGD("AudioOutputStreamOpenSLES::requestPause()");
     if (mState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Pausing);
@@ -270,36 +275,6 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
 
 int64_t AudioOutputStreamOpenSLES::getFramesRead() {
     return getFramesProcessedByServer();
-}
-
-Result AudioOutputStreamOpenSLES::waitForStateChange(StreamState currentState,
-                                               StreamState *nextState,
-                                               int64_t timeoutNanoseconds) {
-    LOGD("AudioOutputStreamOpenSLES::waitForStateChange()");
-
-    if (getState() == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else if (mPlayInterface == NULL) {
-        return Result::ErrorInvalidState;
-    }
-
-    int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
-    StreamState state = getState();
-
-    while (state == currentState && timeoutNanoseconds > 0){
-        if (durationNanos > timeoutNanoseconds){
-            durationNanos = timeoutNanoseconds;
-        }
-        AudioClock::sleepForNanos(durationNanos);
-        timeoutNanoseconds -= durationNanos;
-
-        state = getState();
-    }
-    if (nextState != nullptr) {
-        *nextState = state;
-    }
-
-    return (state == currentState) ? Result::ErrorTimeout : Result::OK;
 }
 
 Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {

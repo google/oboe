@@ -33,6 +33,11 @@ protected:
         return (r == Result::OK);
     }
 
+    bool openInputStream(){
+        mBuilder.setDirection(Direction::Input);
+        return openStream();
+    }
+
     void closeStream(){
         Result r = mStream->close();
         if (r != Result::OK){
@@ -53,7 +58,7 @@ protected:
 
 };
 
-TEST_F(StreamStates, StateIsOpenAfterOpening){
+TEST_F(StreamStates, OutputStreamStateIsOpenAfterOpening){
     openStream();
     StreamState next;
     Result r = mStream->waitForStateChange(StreamState::Uninitialized, &next, kTimeoutInNanos);
@@ -62,7 +67,7 @@ TEST_F(StreamStates, StateIsOpenAfterOpening){
     closeStream();
 }
 
-TEST_F(StreamStates, StateIsStartedAfterStarting){
+TEST_F(StreamStates, OutputStreamStateIsStartedAfterStarting){
 
     openStream();
 
@@ -78,7 +83,7 @@ TEST_F(StreamStates, StateIsStartedAfterStarting){
     closeStream();
 }
 
-TEST_F(StreamStates, StateIsPausedAfterPausing){
+TEST_F(StreamStates, OutputStreamStateIsPausedAfterPausing){
 
     openStream();
 
@@ -97,9 +102,73 @@ TEST_F(StreamStates, StateIsPausedAfterPausing){
 }
 
 
-TEST_F(StreamStates, StateIsStoppedAfterStopping){
+TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStopping){
 
     openStream();
+
+    StreamState next;
+    auto r = mStream->requestStart();
+    EXPECT_EQ(r, Result::OK);
+
+    r = mStream->requestStop();
+    r = mStream->waitForStateChange(StreamState::Stopping, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK);
+
+    ASSERT_EQ(next, StreamState::Stopped);
+
+    closeStream();
+}
+
+
+TEST_F(StreamStates, InputStreamStateIsOpenAfterOpening){
+    openInputStream();
+    StreamState next;
+    Result r = mStream->waitForStateChange(StreamState::Uninitialized, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK) << convertToText(r);
+    ASSERT_EQ(next, StreamState::Open) << convertToText(next);
+    closeStream();
+}
+
+TEST_F(StreamStates, InputStreamStateIsStartedAfterStarting){
+
+    openInputStream();
+
+    StreamState next;
+    auto r = mStream->requestStart();
+    EXPECT_EQ(r, Result::OK);
+
+    r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK);
+
+    ASSERT_EQ(next, StreamState::Started);
+
+    closeStream();
+}
+
+/*
+ * TODO: what should the state be when we try to pause an input stream?
+ * TEST_F(StreamStates, InputStreamStateIsAfterPausing){
+
+    openInputStream();
+
+    StreamState next;
+    auto r = mStream->requestStart();
+    EXPECT_EQ(r, Result::OK);
+    r = mStream->requestPause();
+    EXPECT_EQ(r, Result::OK);
+
+    r = mStream->waitForStateChange(StreamState::Pausing, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK);
+
+    ASSERT_EQ(next, StreamState::Paused);
+
+    closeStream();
+}*/
+
+
+TEST_F(StreamStates, InputStreamStateIsStoppedAfterStopping){
+
+    openInputStream();
 
     StreamState next;
     auto r = mStream->requestStart();
