@@ -17,6 +17,7 @@
 package com.google.sample.oboe.hellooboe;
 
 import android.app.Activity;
+import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -87,7 +88,7 @@ public class MainActivity extends Activity {
         setupBufferSizeSpinner();
 
         // initialize native audio system
-        PlaybackEngine.create();
+        PlaybackEngine.create(this);
 
         // Periodically update the UI with the output stream latency
         mLatencyText = findViewById(R.id.latencyText);

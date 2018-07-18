@@ -15,6 +15,7 @@
  */
 
 #include <jni.h>
+#include <oboe/Oboe.h>
 #include "PlayAudioEngine.h"
 #include "logging_macros.h"
 
@@ -28,8 +29,7 @@ extern "C" {
 JNIEXPORT jlong JNICALL
 Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1createEngine(
         JNIEnv *env,
-        jclass) {
-
+        jclass /*unused*/) {
     // We use std::nothrow so `new` returns a nullptr if the engine creation fails
     PlayAudioEngine *engine = new(std::nothrow) PlayAudioEngine();
     return (jlong) engine;
@@ -148,6 +148,21 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionS
         return (jboolean) false;
     }
     return (jboolean) engine->isLatencyDetectionSupported();
+}
+
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultSampleRate(JNIEnv *env,
+                                                                                  jclass type,
+                                                                                  jint sampleRate) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultFramesPerBurst(JNIEnv *env,
+                                                                                      jclass type,
+                                                                                      jint framesPerBurst) {
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
 
 }

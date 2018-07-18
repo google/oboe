@@ -19,6 +19,7 @@ add_executable(testOboe
         testUtilities.cpp
         testStreamClosedMethods.cpp
         testStreamStates.cpp
+	testStreamOpen.cpp
         testXRunBehaviour.cpp
         )
 target_link_libraries(testOboe gtest oboe)
