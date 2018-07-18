@@ -296,8 +296,10 @@ TEST_F(StreamClosedReturnValues, GetUsesAAudioReturnsLastKnownValue){
 TEST_F(StreamClosedReturnValues, StreamStateControlsReturnClosed){
 
     openAndCloseStream();
-    EXPECT_EQ(mStream->close(), Result::ErrorClosed);
-    EXPECT_EQ(mStream->start(), Result::ErrorClosed);
+    Result r = mStream->close();
+    EXPECT_EQ(r, Result::ErrorClosed) << convertToText(r);
+    r = mStream->start();
+    EXPECT_EQ(r, Result::ErrorClosed) << convertToText(r);
     EXPECT_EQ(mStream->pause(), Result::ErrorClosed);
     EXPECT_EQ(mStream->flush(), Result::ErrorClosed);
     EXPECT_EQ(mStream->stop(), Result::ErrorClosed);
