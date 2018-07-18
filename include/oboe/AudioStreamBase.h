@@ -18,6 +18,7 @@
 #define OBOE_STREAM_BASE_H_
 
 #include <memory>
+#include <jni.h>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
 
@@ -100,6 +101,8 @@ public:
 
     SessionId getSessionId() const { return mSessionId; }
 
+    JNIEnv* getJNIEnv() const { return mJNIEnv; }
+
 protected:
     AudioStreamCallback            *mStreamCallback = nullptr;
     int32_t                         mFramesPerCallback = kUnspecified;
@@ -119,6 +122,8 @@ protected:
     ContentType                     mContentType = ContentType::Music;
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     SessionId                       mSessionId = SessionId::None;
+
+    JNIEnv                         *mJNIEnv = nullptr;
 };
 
 } // namespace oboe

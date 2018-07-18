@@ -12,6 +12,8 @@ Java_com_google_oboe_test_oboetest_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject instance) {
 
+
+
     jclass activityClazz = env->FindClass("android/app/Activity");
     jclass contextClazz = env->FindClass("android/content/Context");
     jfieldID audioServiceField = env->GetStaticFieldID(contextClazz, "AUDIO_SERVICE", "Ljava/lang/String;");

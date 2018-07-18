@@ -16,13 +16,12 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror")
 
 ### INCLUDE OBOE LIBRARY ###
 
 # Set the path to the Oboe library directory
-set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set (OBOE_DIR /Users/donturner/Code/workspace-android/oboe)
 
 # Add the Oboe library as a subproject. Since Oboe is an out-of-tree source library we must also
 # specify a binary directory
@@ -33,26 +32,17 @@ include_directories(${OBOE_DIR}/include)
 
 ### END OBOE INCLUDE SECTION ###
 
-# Debug utilities
-set (DEBUG_UTILS_PATH "../debug-utils")
-set (DEBUG_UTILS_SOURCES ${DEBUG_UTILS_PATH}/trace.cpp)
-include_directories(${DEBUG_UTILS_PATH})
-
 # App specific sources
 set (APP_DIR src/main/cpp)
 file (GLOB_RECURSE APP_SOURCES
-    ${APP_DIR}/jni_bridge.cpp
-    ${APP_DIR}/PlayAudioEngine.cpp
-    ${APP_DIR}/SineGenerator.cpp
+    ${APP_DIR}/native-lib.cpp
 )
 
-# Build the libhello-oboe library
-add_library(hello-oboe SHARED
+# Build the oboe-test library
+add_library(oboe-test SHARED
             ${DEBUG_UTILS_SOURCES}
             ${APP_SOURCES}
             )
 
-# Specify the libraries needed for hello-oboe
-target_link_libraries(hello-oboe android log oboe)
-
-target_compile_options(hello-oboe PUBLIC "$<$<CONFIG:RELEASE>:-Ofast>")
+# Specify the libraries needed for oboe-test
+target_link_libraries(oboe-test android log oboe)

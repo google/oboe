@@ -18,11 +18,22 @@ android {
             }
         }
     }
+    signingConfigs {
+        release {
+            storeFile new File("${System.properties['user.home']}/.android/debug.keystore")
+            storePassword 'android'
+            storeType "jks"
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                           'proguard-rules.pro'
+            debuggable false
         }
     }
     externalNativeBuild {

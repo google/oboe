@@ -3,4 +3,4 @@
 .externalNativeBuild/
 .idea
 build
-
+cmake-build-debug
