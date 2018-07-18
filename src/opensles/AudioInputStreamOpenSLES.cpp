@@ -175,6 +175,7 @@ Result AudioInputStreamOpenSLES::open() {
 
     allocateFifo();
 
+    setState(StreamState::Open);
     return Result::OK;
 
     error:
@@ -194,58 +195,49 @@ Result AudioInputStreamOpenSLES::close() {
 
 Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
 
-    if (mState == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else {
-        Result result = Result::OK;
-        LOGD("AudioInputStreamOpenSLES::setRecordState(%d)", newState);
-        if (mRecordInterface == nullptr) {
-            LOGE("AudioInputStreamOpenSLES::SetRecordState() mRecordInterface is null");
-            return Result::ErrorInvalidState;
-        }
-        SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
-        if (SL_RESULT_SUCCESS != slResult) {
-            LOGE("AudioInputStreamOpenSLES::SetRecordState() returned %s", getSLErrStr(slResult));
-            result = Result::ErrorInvalidState; // TODO review
-        } else {
-            setState(StreamState::Pausing);
-        }
-        return result;
+    LOGD("AudioInputStreamOpenSLES::setRecordState(%d)", newState);
+    Result result = Result::OK;
+
+    if (mRecordInterface == nullptr) {
+        LOGE("AudioInputStreamOpenSLES::SetRecordState() mRecordInterface is null");
+        return Result::ErrorInvalidState;
     }
+    SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
+    if (SL_RESULT_SUCCESS != slResult) {
+        LOGE("AudioInputStreamOpenSLES::SetRecordState() returned %s", getSLErrStr(slResult));
+        result = Result::ErrorInternal; // TODO review
+    }
+    return result;
 }
 
 Result AudioInputStreamOpenSLES::requestStart() {
-    LOGD("AudioInputStreamOpenSLES::requestStart()");
 
-    if (mState == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else {
-        Result result = setRecordState(SL_RECORDSTATE_RECORDING);
-        if (result == Result::OK) {
-            // Enqueue the first buffer so that we have data ready in the callback.
-            enqueueCallbackBuffer(mSimpleBufferQueueInterface);
-            setState(StreamState::Starting);
-        }
-        return result;
+    LOGD("AudioInputStreamOpenSLES::requestStart()");
+    if (mState == StreamState::Closed)return Result::ErrorClosed;
+
+    setState(StreamState::Starting);
+    Result result = setRecordState(SL_RECORDSTATE_RECORDING);
+    if (result == Result::OK) {
+        // Enqueue the first buffer so that we have data ready in the callback.
+        setState(StreamState::Started);
+        enqueueCallbackBuffer(mSimpleBufferQueueInterface);
     }
+    return result;
 }
 
 
 Result AudioInputStreamOpenSLES::requestPause() {
 
-    if (mState == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else {
-        LOGD("AudioInputStreamOpenSLES::requestStop()");
-        Result result = setRecordState(SL_RECORDSTATE_PAUSED);
-        if (result != Result::OK) {
-            result = Result::ErrorInvalidState; // TODO review
-        } else {
-            setState(StreamState::Pausing);
-            mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when paused.
-        }
-        return result;
+    LOGD("AudioInputStreamOpenSLES::requestPause()");
+    if (mState == StreamState::Closed) return Result::ErrorClosed;
+
+    setState(StreamState::Pausing);
+    Result result = setRecordState(SL_RECORDSTATE_PAUSED);
+    if (result == Result::OK) {
+        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when paused.
+        setState(StreamState::Paused);
     }
+    return result;
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
@@ -253,36 +245,23 @@ Result AudioInputStreamOpenSLES::requestFlush() {
 }
 
 Result AudioInputStreamOpenSLES::requestStop() {
-    LOGD("AudioInputStreamOpenSLES::requestStop()");
 
-    if (mState == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else {
-        Result result = setRecordState(SL_RECORDSTATE_STOPPED);
-        if (result != Result::OK) {
-            result = Result::ErrorInvalidState; // TODO review
-        } else {
-            setState(StreamState::Stopping);
-            mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
-        }
-        return result;
+    LOGD("AudioInputStreamOpenSLES::requestStop()");
+    if (mState == StreamState::Closed) return Result::ErrorClosed;
+
+    setState(StreamState::Stopping);
+
+    Result result = setRecordState(SL_RECORDSTATE_STOPPED);
+    if (result == Result::OK) {
+        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
+        setState(StreamState::Stopped);
     }
+    return result;
+
 }
 
 int64_t AudioInputStreamOpenSLES::getFramesWritten() {
     return getFramesProcessedByServer();
-}
-
-Result AudioInputStreamOpenSLES::waitForStateChange(StreamState currentState,
-                                                    StreamState *nextState,
-                                                    int64_t timeoutNanoseconds) {
-    LOGD("AudioInputStreamOpenSLES::waitForStateChange()");
-    if (getState() == StreamState::Closed){
-        return Result::ErrorClosed;
-    } else if (mRecordInterface == NULL) {
-        return Result::ErrorInvalidState;
-    }
-    return Result::ErrorUnimplemented; // TODO
 }
 
 Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {

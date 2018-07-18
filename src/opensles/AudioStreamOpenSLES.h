@@ -72,6 +72,11 @@ public:
      */
     SLresult processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
 
+    Result waitForStateChange(StreamState currentState,
+                              StreamState *nextState,
+                              int64_t timeoutNanoseconds) override;
+
+
 protected:
 
     SLuint32 channelCountToChannelMaskDefault(int channelCount);

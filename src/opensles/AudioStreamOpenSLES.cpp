@@ -19,6 +19,8 @@
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <oboe/AudioStream.h>
+#include <common/AudioClock.h>
 
 #include "common/OboeDebug.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -247,4 +249,30 @@ int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
     int64_t millis64 = mPositionMillis.get();
     int64_t framesProcessed = millis64 * getSampleRate() / kMillisPerSecond;
     return framesProcessed;
+}
+
+Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
+                                                     StreamState *nextState,
+                                                     int64_t timeoutNanoseconds) {
+    LOGD("AudioStreamOpenSLES::waitForStateChange()");
+
+    if (getState() == StreamState::Closed) return Result::ErrorClosed;
+
+    int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
+    StreamState state = getState();
+
+    while (state == currentState && timeoutNanoseconds > 0){
+        if (durationNanos > timeoutNanoseconds){
+            durationNanos = timeoutNanoseconds;
+        }
+        AudioClock::sleepForNanos(durationNanos);
+        timeoutNanoseconds -= durationNanos;
+
+        state = getState();
+    }
+    if (nextState != nullptr) {
+        *nextState = state;
+    }
+
+    return (state == currentState) ? Result::ErrorTimeout : Result::OK;
 }
