@@ -27,7 +27,12 @@ target_include_directories(oboe
                            PRIVATE src 
                            PUBLIC include)
 
+ # Compile Flags:
+ #     Enable -Werror when building debug config
+ #     Enable -Ofast for release config (could be enabled for debug too)
 target_compile_options(oboe PRIVATE -std=c++11
                             PRIVATE -Wall
-                            PRIVATE "$<$<CONFIG:DEBUG>:-Werror>") # Only include -Werror when building debug config
+                            PRIVATE "$<$<CONFIG:DEBUG>:-Werror>"
+                            PRIVATE "$<$<CONFIG:RELEASE>:-Ofast>")
+
 target_link_libraries(oboe PRIVATE log OpenSLES)
