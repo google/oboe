@@ -256,8 +256,6 @@ Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                      int64_t timeoutNanoseconds) {
     LOGD("AudioStreamOpenSLES::waitForStateChange()");
 
-    if (getState() == StreamState::Closed) return Result::ErrorClosed;
-
     int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
     StreamState state = getState();
 
