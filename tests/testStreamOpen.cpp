@@ -25,8 +25,11 @@ class StreamOpen : public ::testing::Test {
 protected:
 
     bool openStream(){
+        mBuilder.setAudioApi(AudioApi::OpenSLES);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
+        EXPECT_EQ(mStream->getAudioApi(), AudioApi::OpenSLES) << "Stream is not using OpenSLES";
+
         return (r == Result::OK);
     }
 
@@ -45,10 +48,9 @@ protected:
 TEST_F(StreamOpen, ForOpenSLESDefaultSampleRateIsUsed){
 
     DefaultStreamValues::SampleRate = 44100;
+
     openStream();
-    if (mStream->getAudioApi() == AudioApi::OpenSLES){
-        ASSERT_EQ(mStream->getSampleRate(), 44100);
-    }
+    ASSERT_EQ(mStream->getSampleRate(), 44100);
     closeStream();
 }
 
@@ -56,9 +58,7 @@ TEST_F(StreamOpen, ForOpenSLESDefaultFramesPerBurstIsUsed){
 
     DefaultStreamValues::FramesPerBurst = 128;
     openStream();
-    if (mStream->getAudioApi() == AudioApi::OpenSLES){
-        ASSERT_EQ(mStream->getFramesPerBurst(), 128);
-    }
+    ASSERT_EQ(mStream->getFramesPerBurst(), 128);
     closeStream();
 }
 
@@ -66,8 +66,6 @@ TEST_F(StreamOpen, ForOpenSLESDefaultChannelCountIsUsed){
 
     DefaultStreamValues::ChannelCount = 1;
     openStream();
-    if (mStream->getAudioApi() == AudioApi::OpenSLES){
-        ASSERT_EQ(mStream->getChannelCount(), 1);
-    }
+    ASSERT_EQ(mStream->getChannelCount(), 1);
     closeStream();
 }

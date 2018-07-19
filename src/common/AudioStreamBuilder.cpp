@@ -30,10 +30,10 @@ namespace oboe {
  * The following default values are used when oboe does not have any better way of determining the optimal values
  * for an audio stream. The most common scenarios for this are:
  *
- * - Creating a stream on API < 26 (OpenSLES) but has not supplied the optimal sample
+ * - Client is creating a stream on API < 26 (OpenSLES) but has not supplied the optimal sample
  * rate and/or frames per burst
- * - Creating a stream on API 16 (OpenSLES) where AudioManager.PROPERTY_OUTPUT_* values are not
- * available
+ * - Client is creating a stream on API 16 (OpenSLES) where AudioManager.PROPERTY_OUTPUT_* values
+ * are not available
  */
 int32_t DefaultStreamValues::SampleRate = 48000; // Common rate for mobile audio and video
 int32_t DefaultStreamValues::FramesPerBurst = 192; // 4 msec at 48000 Hz
