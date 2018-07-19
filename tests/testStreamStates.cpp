@@ -60,7 +60,7 @@ protected:
 
 TEST_F(StreamStates, OutputStreamStateIsOpenAfterOpening){
     openStream();
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     Result r = mStream->waitForStateChange(StreamState::Uninitialized, &next, kTimeoutInNanos);
     EXPECT_EQ(r, Result::OK) << convertToText(r);
     ASSERT_EQ(next, StreamState::Open) << convertToText(next);
@@ -71,7 +71,7 @@ TEST_F(StreamStates, OutputStreamStateIsStartedAfterStarting){
 
     openStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
 
@@ -87,7 +87,7 @@ TEST_F(StreamStates, OutputStreamStateIsPausedAfterPausing){
 
     openStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
     r = mStream->requestPause();
@@ -106,7 +106,7 @@ TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStopping){
 
     openStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
 
@@ -122,7 +122,7 @@ TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStopping){
 
 TEST_F(StreamStates, InputStreamStateIsOpenAfterOpening){
     openInputStream();
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     Result r = mStream->waitForStateChange(StreamState::Uninitialized, &next, kTimeoutInNanos);
     EXPECT_EQ(r, Result::OK) << convertToText(r);
     ASSERT_EQ(next, StreamState::Open) << convertToText(next);
@@ -133,7 +133,7 @@ TEST_F(StreamStates, InputStreamStateIsStartedAfterStarting){
 
     openInputStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
 
@@ -151,7 +151,7 @@ TEST_F(StreamStates, InputStreamStateIsStartedAfterStarting){
 
     openInputStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
     r = mStream->requestPause();
@@ -170,7 +170,7 @@ TEST_F(StreamStates, InputStreamStateIsStoppedAfterStopping){
 
     openInputStream();
 
-    StreamState next;
+    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
 

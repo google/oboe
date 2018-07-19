@@ -309,11 +309,11 @@ TEST_F(StreamClosedReturnValues, StreamStateControlsReturnClosed){
     EXPECT_EQ(mStream->requestStop(), Result::ErrorClosed);
 }
 
-TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsClosed){
+TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsOK){
 
     openAndCloseStream();
     StreamState next;
-    ASSERT_EQ(mStream->waitForStateChange(StreamState::Open, &next, 0), Result::ErrorClosed);
+    ASSERT_EQ(mStream->waitForStateChange(StreamState::Open, &next, 0), Result::OK);
 }
 
 TEST_F(StreamClosedReturnValues, SetBufferSizeInFramesReturnsClosed){

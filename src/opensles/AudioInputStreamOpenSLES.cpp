@@ -213,7 +213,8 @@ Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
 Result AudioInputStreamOpenSLES::requestStart() {
 
     LOGD("AudioInputStreamOpenSLES::requestStart()");
-    if (mState == StreamState::Closed)return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Starting);
     Result result = setRecordState(SL_RECORDSTATE_RECORDING);
@@ -221,6 +222,8 @@ Result AudioInputStreamOpenSLES::requestStart() {
         // Enqueue the first buffer so that we have data ready in the callback.
         setState(StreamState::Started);
         enqueueCallbackBuffer(mSimpleBufferQueueInterface);
+    } else {
+        setState(initialState);
     }
     return result;
 }
@@ -229,13 +232,16 @@ Result AudioInputStreamOpenSLES::requestStart() {
 Result AudioInputStreamOpenSLES::requestPause() {
 
     LOGD("AudioInputStreamOpenSLES::requestPause()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Pausing);
     Result result = setRecordState(SL_RECORDSTATE_PAUSED);
     if (result == Result::OK) {
         mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when paused.
         setState(StreamState::Paused);
+    } else {
+        setState(initialState);
     }
     return result;
 }
@@ -247,7 +253,8 @@ Result AudioInputStreamOpenSLES::requestFlush() {
 Result AudioInputStreamOpenSLES::requestStop() {
 
     LOGD("AudioInputStreamOpenSLES::requestStop()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Stopping);
 
@@ -255,6 +262,8 @@ Result AudioInputStreamOpenSLES::requestStop() {
     if (result == Result::OK) {
         mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
         setState(StreamState::Stopped);
+    } else {
+        setState(initialState);
     }
     return result;
 

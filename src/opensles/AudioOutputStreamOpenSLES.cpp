@@ -207,13 +207,16 @@ Result AudioOutputStreamOpenSLES::setPlayState(SLuint32 newState) {
 Result AudioOutputStreamOpenSLES::requestStart() {
 
     LOGD("AudioOutputStreamOpenSLES(): requestStart()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Starting);
     Result result = setPlayState(SL_PLAYSTATE_PLAYING);
     if (result == Result::OK) {
         setState(StreamState::Started);
         processBufferCallback(mSimpleBufferQueueInterface);
+    } else {
+        setState(initialState);
     }
     return result;
 }
@@ -221,7 +224,8 @@ Result AudioOutputStreamOpenSLES::requestStart() {
 Result AudioOutputStreamOpenSLES::requestPause() {
 
     LOGD("AudioOutputStreamOpenSLES::requestPause()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Pausing);
     Result result = setPlayState(SL_PLAYSTATE_PAUSED);
@@ -232,6 +236,8 @@ Result AudioOutputStreamOpenSLES::requestPause() {
             setFramesRead(framesWritten);
         }
         setState(StreamState::Paused);
+    } else {
+        setState(initialState);
     }
     return result;
 }
@@ -239,7 +245,7 @@ Result AudioOutputStreamOpenSLES::requestPause() {
 Result AudioOutputStreamOpenSLES::requestFlush() {
 
     LOGD("AudioOutputStreamOpenSLES(): requestFlush()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    if (getState() == StreamState::Closed) return Result::ErrorClosed;
 
     if (mPlayInterface == NULL) {
         return Result::ErrorInvalidState;
@@ -250,7 +256,8 @@ Result AudioOutputStreamOpenSLES::requestFlush() {
 Result AudioOutputStreamOpenSLES::requestStop() {
 
     LOGD("AudioOutputStreamOpenSLES(): requestStop()");
-    if (mState == StreamState::Closed) return Result::ErrorClosed;
+    StreamState initialState = getState();
+    if (initialState == StreamState::Closed) return Result::ErrorClosed;
 
     setState(StreamState::Stopping);
 
@@ -263,6 +270,8 @@ Result AudioOutputStreamOpenSLES::requestStop() {
             setFramesRead(framesWritten);
         }
         setState(StreamState::Stopped);
+    } else {
+        setState(initialState);
     }
     return result;
 
