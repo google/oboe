@@ -155,11 +155,11 @@ namespace oboe {
         AAudio
     };
 
-// Help compile with old NDK versions.
+// Hard code constants so they can be compiled with versions of the NDK before P.
 #if __ANDROID_API_LEVEL__ >= __ANDROID_API_P__
-#define P_CONSTANT(hardcon, softcon) (softcon)
+#define CONSTANT_API_P(hard_constant, soft_constant) (soft_constant)
 #else
-#define P_CONSTANT(hardcon, softcon) (hardcon)
+#define CONSTANT_API_P(hard_constant, soft_constant) (hard_constant)
 #endif
 
     /**
@@ -175,63 +175,65 @@ namespace oboe {
         /**
          * Use this for streaming media, music performance, video, podcasts, etcetera.
          */
-        Media = P_CONSTANT(1, AAUDIO_USAGE_MEDIA),
+        Media = CONSTANT_API_P(1, AAUDIO_USAGE_MEDIA),
 
         /**
          * Use this for voice over IP, telephony, etcetera.
          */
-        VoiceCommunication = P_CONSTANT(2, AAUDIO_USAGE_VOICE_COMMUNICATION),
+        VoiceCommunication = CONSTANT_API_P(2, AAUDIO_USAGE_VOICE_COMMUNICATION),
 
         /**
          * Use this for sounds associated with telephony such as busy tones, DTMF, etcetera.
          */
-        VoiceCommunicationSignalling = P_CONSTANT(3, AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING),
+        VoiceCommunicationSignalling = CONSTANT_API_P(3,
+                                                      AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING),
 
         /**
          * Use this to demand the users attention.
          */
-        Alarm = P_CONSTANT(4, AAUDIO_USAGE_ALARM),
+        Alarm = CONSTANT_API_P(4, AAUDIO_USAGE_ALARM),
 
         /**
          * Use this for notifying the user when a message has arrived or some
          * other background event has occured.
          */
-        Notification = P_CONSTANT(5, AAUDIO_USAGE_NOTIFICATION),
+        Notification = CONSTANT_API_P(5, AAUDIO_USAGE_NOTIFICATION),
 
         /**
          * Use this when the phone rings.
          */
-        NotificationRingtone = P_CONSTANT(6, AAUDIO_USAGE_NOTIFICATION_RINGTONE),
+        NotificationRingtone = CONSTANT_API_P(6, AAUDIO_USAGE_NOTIFICATION_RINGTONE),
 
         /**
          * Use this to attract the users attention when, for example, the battery is low.
          */
-        NotificationEvent = P_CONSTANT(10, AAUDIO_USAGE_NOTIFICATION_EVENT),
+        NotificationEvent = CONSTANT_API_P(10, AAUDIO_USAGE_NOTIFICATION_EVENT),
 
         /**
          * Use this for screen readers, etcetera.
          */
-        AssistanceAccessibility = P_CONSTANT(11, AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY),
+        AssistanceAccessibility = CONSTANT_API_P(11, AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY),
 
         /**
          * Use this for driving or navigation directions.
          */
-        AssistanceNavigationGuidance = P_CONSTANT(12, AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE),
+        AssistanceNavigationGuidance = CONSTANT_API_P(12,
+                                                      AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE),
 
         /**
          * Use this for user interface sounds, beeps, etcetera.
          */
-        AssistanceSonification = P_CONSTANT(13, AAUDIO_USAGE_ASSISTANCE_SONIFICATION),
+        AssistanceSonification = CONSTANT_API_P(13, AAUDIO_USAGE_ASSISTANCE_SONIFICATION),
 
         /**
          * Use this for game audio and sound effects.
          */
-        Game = P_CONSTANT(14, AAUDIO_USAGE_GAME),
+        Game = CONSTANT_API_P(14, AAUDIO_USAGE_GAME),
 
         /**
          * Use this for audio responses to user queries, audio instructions or help utterances.
          */
-        Assistant = P_CONSTANT(16, AAUDIO_USAGE_ASSISTANT),
+        Assistant = CONSTANT_API_P(16, AAUDIO_USAGE_ASSISTANT),
     };
 
 
@@ -252,23 +254,23 @@ namespace oboe {
         /**
          * Use this for spoken voice, audio books, etcetera.
          */
-        Speech = P_CONSTANT(1, AAUDIO_CONTENT_TYPE_SPEECH),
+        Speech = CONSTANT_API_P(1, AAUDIO_CONTENT_TYPE_SPEECH),
 
         /**
          * Use this for pre-recorded or live music.
          */
-        Music = P_CONSTANT(2, AAUDIO_CONTENT_TYPE_MUSIC),
+        Music = CONSTANT_API_P(2, AAUDIO_CONTENT_TYPE_MUSIC),
 
         /**
          * Use this for a movie or video soundtrack.
          */
-        Movie = P_CONSTANT(3, AAUDIO_CONTENT_TYPE_MOVIE),
+        Movie = CONSTANT_API_P(3, AAUDIO_CONTENT_TYPE_MOVIE),
 
         /**
          * Use this for sound is designed to accompany a user action,
          * such as a click or beep sound made when the user presses a button.
          */
-        Sonification = P_CONSTANT(4, AAUDIO_CONTENT_TYPE_SONIFICATION),
+        Sonification = CONSTANT_API_P(4, AAUDIO_CONTENT_TYPE_SONIFICATION),
     };
 
     /**
@@ -284,29 +286,29 @@ namespace oboe {
         /**
          * Use this preset when other presets do not apply.
          */
-        Generic = P_CONSTANT(1, AAUDIO_INPUT_PRESET_GENERIC),
+        Generic = CONSTANT_API_P(1, AAUDIO_INPUT_PRESET_GENERIC),
 
         /**
          * Use this preset when recording video.
          */
-        Camcorder = P_CONSTANT(5, AAUDIO_INPUT_PRESET_CAMCORDER),
+        Camcorder = CONSTANT_API_P(5, AAUDIO_INPUT_PRESET_CAMCORDER),
 
         /**
          * Use this preset when doing speech recognition.
          */
-        VoiceRecognition = P_CONSTANT(6, AAUDIO_INPUT_PRESET_VOICE_RECOGNITION),
+        VoiceRecognition = CONSTANT_API_P(6, AAUDIO_INPUT_PRESET_VOICE_RECOGNITION),
 
         /**
          * Use this preset when doing telephony or voice messaging.
          */
-        VoiceCommunication = P_CONSTANT(7, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION),
+        VoiceCommunication = CONSTANT_API_P(7, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION),
 
         /**
          * Use this preset to obtain an input with no effects.
          * Note that this input will not have automatic gain control
          * so the recorded volume may be very low.
          */
-        Unprocessed = P_CONSTANT(9, AAUDIO_INPUT_PRESET_UNPROCESSED),
+        Unprocessed = CONSTANT_API_P(9, AAUDIO_INPUT_PRESET_UNPROCESSED),
     };
 
     enum SessionId {
@@ -317,7 +319,7 @@ namespace oboe {
          *
          * Added in API level 28.
          */
-         None = P_CONSTANT(-1, AAUDIO_SESSION_ID_NONE),
+         None = CONSTANT_API_P(-1, AAUDIO_SESSION_ID_NONE),
 
         /**
          * Allocate a session ID that can be used to attach and control
@@ -328,7 +330,7 @@ namespace oboe {
          *
          * Added in API level 28.
          */
-         Allocate = P_CONSTANT(0, AAUDIO_SESSION_ID_ALLOCATE),
+         Allocate = CONSTANT_API_P(0, AAUDIO_SESSION_ID_ALLOCATE),
     };
 
     enum ChannelCount : int32_t {
@@ -347,6 +349,8 @@ namespace oboe {
        */
       Stereo = 2,
     };
+
+#undef CONSTANT_API_P
 
 } // namespace oboe
 
