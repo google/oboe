@@ -22,86 +22,112 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity">
 
-    <TextView
+    <!-- Audio API container -->
+    <LinearLayout
+        android:id="@+id/audioApisContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/audio_api"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:id="@+id/audioApisTitleText"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
-    <Spinner
-        android:id="@+id/audioApiSpinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/audioApisTitleText"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/playback_device"
-        app:layout_constraintTop_toBottomOf="@+id/audioApiSpinner"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:id="@+id/playbackDeviceTitleText"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/audio_api"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:id="@+id/audioApisTitleText"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"
+            />
+        <Spinner
+            android:id="@+id/audioApiSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
 
-    <com.google.sample.audio_device.AudioDeviceSpinner
-        android:id="@+id/playbackDevicesSpinner"
+    <!-- Playback device container -->
+    <LinearLayout
+        android:id="@+id/playbackDevicesContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/playbackDeviceTitleText"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/audioApisContainer"
+        app:layout_constraintLeft_toLeftOf="parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/playback_device"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:id="@+id/playbackDeviceTitleText"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
 
-    <Spinner
-        android:id="@+id/channelCountSpinner"
+        <com.google.sample.audio_device.AudioDeviceSpinner
+            android:id="@+id/playbackDevicesSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+
+    <!-- Channel count container -->
+    <LinearLayout
+        android:id="@+id/channelCountContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/channelCountTitleText"
-        android:layout_marginStart="@dimen/activity_horizontal_margin" />
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/playbackDevicesContainer"
+        app:layout_constraintLeft_toLeftOf="parent">
+        <TextView
+            android:id="@+id/channelCountTitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:text="Channel count"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
+        <Spinner
+            android:id="@+id/channelCountSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/channelCountTitleText"
+    <!-- Buffer size container -->
+    <LinearLayout
+        android:id="@+id/bufferSizeContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:text="Channel count"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/playbackDevicesSpinner"
-        android:layout_marginStart="@dimen/activity_horizontal_margin" />
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/channelCountContainer"
+        app:layout_constraintLeft_toLeftOf="parent">
+        <TextView
+            android:id="@+id/bufferSizeTitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:text="@string/buffer_size_title"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
 
-    <TextView
-        android:id="@+id/bufferSizeTitleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:text="@string/buffer_size_title"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/channelCountSpinner"
-        android:layout_marginStart="@dimen/activity_horizontal_margin" />
+        <Spinner
+            android:id="@+id/bufferSizeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
 
-    <Spinner
-        android:id="@+id/bufferSizeSpinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="4dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bufferSizeTitleText"
-        android:layout_marginStart="@dimen/activity_horizontal_margin" />
-
+    <!-- Audio stream latency -->
     <TextView
         android:id="@+id/latencyText"
         android:layout_width="wrap_content"
@@ -110,9 +136,10 @@
         android:layout_marginTop="12dp"
         android:text="@string/latency"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bufferSizeSpinner"
+        app:layout_constraintTop_toBottomOf="@+id/bufferSizeContainer"
         android:layout_marginStart="@dimen/activity_horizontal_margin" />
 
+    <!-- User instructions -->
     <TextView
         android:id="@+id/userInstructionView"
         android:layout_width="wrap_content"
@@ -124,5 +151,4 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/latencyText"
         android:layout_marginStart="@dimen/activity_horizontal_margin" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
