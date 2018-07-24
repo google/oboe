@@ -28,7 +28,7 @@ namespace oboe {
 
 /**
  * The following default values are used when oboe does not have any better way of determining the optimal values
- * for an audio stream. The most common scenarios for this are:
+ * for an audio stream. This can happen when:
  *
  * - Client is creating a stream on API < 26 (OpenSLES) but has not supplied the optimal sample
  * rate and/or frames per burst
