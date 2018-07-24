@@ -115,6 +115,42 @@ When you are done with the stream you should close it:
 
 Note that `close()` is a blocking call which also stops the stream.
 
-## Further information
+## Obtaining optimal latency
+One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened. 
+
+Oboe provides a convenient way of setting global default values so that the sample rate and buffer size do not have to be set each time an audio stream is created.
+
+Here's a code sample showing how the default values for built-in devices can be passed to Oboe:
+
+*MainActivity.java*
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+        AudioManager myAudioMgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+	    int defaultSampleRate = Integer.parseInt(sampleRateStr);
+	    String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+	    int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+
+	    native_setDefaultSampleRate(defaultSampleRate);
+	    native_setDefaultFramesPerBurst(defaultFramesPerBurst);
+	}
+
+*jni-bridge.cpp*
+
+	JNIEXPORT void JNICALL
+	Java_com_google_sample_oboe_hellooboe_MainActivity_native_1setDefaultSampleRate(JNIEnv *env,
+	                                                                                  jclass type,
+	                                                                                  jint sampleRate) {
+	    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+	}
+
+	JNIEXPORT void JNICALL
+	Java_com_google_sample_oboe_hellooboe_MainActivity_native_1setDefaultFramesPerBurst(JNIEnv *env,
+	                                                                                      jclass type,
+	                                                                                      jint framesPerBurst) {
+	    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
+	}
+
+# Further information
 - [Code samples](https://github.com/googlesamples/android-audio-high-performance/tree/master/oboe)
 - [Full guide to Oboe](FullGuide.md)
