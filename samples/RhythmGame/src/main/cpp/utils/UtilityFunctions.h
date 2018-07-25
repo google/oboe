@@ -31,7 +31,7 @@ enum class TapResult {
 int64_t nowUptimeMillis();
 
 constexpr int64_t convertFramesToMillis(const int64_t frames, const int sampleRate){
-    return (int64_t)(((double)frames / sampleRate) * kMillisecondsInSecond);
+    return static_cast<int64_t>((static_cast<double>(frames)/ sampleRate) * kMillisecondsInSecond);
 }
 
 TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis);

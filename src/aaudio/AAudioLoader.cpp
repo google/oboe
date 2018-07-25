@@ -44,12 +44,12 @@ int AAudioLoader::open() {
     }
 
     // Load all the function pointers.
-    createStreamBuilder = (aaudio_result_t (*)(AAudioStreamBuilder **builder))
-            dlsym(mLibHandle, "AAudio_createStreamBuilder");
+    createStreamBuilder = reinterpret_cast<aaudio_result_t (*)(AAudioStreamBuilder **builder)>
+            (dlsym(mLibHandle, "AAudio_createStreamBuilder"));
 
-    builder_openStream = (aaudio_result_t (*)(AAudioStreamBuilder *builder,
-                                              AAudioStream **stream))
-            dlsym(mLibHandle, "AAudioStreamBuilder_openStream");
+    builder_openStream = reinterpret_cast<aaudio_result_t (*)(AAudioStreamBuilder *builder,
+                                              AAudioStream **stream)>
+            (dlsym(mLibHandle, "AAudioStreamBuilder_openStream"));
 
     builder_setChannelCount    = load_V_PBI("AAudioStreamBuilder_setChannelCount");
     if (builder_setChannelCount == nullptr) {
@@ -73,44 +73,44 @@ int AAudioLoader::open() {
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
-    stream_getFormat = (aaudio_format_t (*)(AAudioStream *stream))
-            dlsym(mLibHandle, "AAudioStream_getFormat");
+    stream_getFormat = reinterpret_cast<aaudio_format_t (*)(AAudioStream *stream)>
+            (dlsym(mLibHandle, "AAudioStream_getFormat"));
 
-    builder_setDataCallback = (void (*)(AAudioStreamBuilder *builder,
+    builder_setDataCallback = reinterpret_cast<void (*)(AAudioStreamBuilder *builder,
                                         AAudioStream_dataCallback callback,
-                                        void *userData))
-            dlsym(mLibHandle, "AAudioStreamBuilder_setDataCallback");
+                                        void *userData)>
+            (dlsym(mLibHandle, "AAudioStreamBuilder_setDataCallback"));
 
-    builder_setErrorCallback = (void (*)(AAudioStreamBuilder *builder,
+    builder_setErrorCallback = reinterpret_cast<void (*)(AAudioStreamBuilder *builder,
                                         AAudioStream_errorCallback callback,
-                                        void *userData))
-            dlsym(mLibHandle, "AAudioStreamBuilder_setErrorCallback");
+                                        void *userData)>
+            (dlsym(mLibHandle, "AAudioStreamBuilder_setErrorCallback"));
 
-    stream_read = (aaudio_result_t (*)(AAudioStream *stream,
+    stream_read = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
                                        void *buffer,
                                        int32_t numFrames,
-                                       int64_t timeoutNanoseconds))
-            dlsym(mLibHandle, "AAudioStream_read");
+                                       int64_t timeoutNanoseconds)>
+            (dlsym(mLibHandle, "AAudioStream_read"));
 
-    stream_write = (aaudio_result_t (*)(AAudioStream *stream,
+    stream_write = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
                                         const void *buffer,
                                         int32_t numFrames,
-                                        int64_t timeoutNanoseconds))
-            dlsym(mLibHandle, "AAudioStream_write");
+                                        int64_t timeoutNanoseconds)>
+            (dlsym(mLibHandle, "AAudioStream_write"));
 
 
-    stream_waitForStateChange = (aaudio_result_t (*)(AAudioStream *stream,
+    stream_waitForStateChange = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
                                                  aaudio_stream_state_t inputState,
                                                  aaudio_stream_state_t *nextState,
-                                                 int64_t timeoutNanoseconds))
-            dlsym(mLibHandle, "AAudioStream_waitForStateChange");
+                                                 int64_t timeoutNanoseconds)>
+            (dlsym(mLibHandle, "AAudioStream_waitForStateChange"));
 
 
-    stream_getTimestamp = (aaudio_result_t (*)(AAudioStream *stream,
+    stream_getTimestamp = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
                                            clockid_t clockid,
                                            int64_t *framePosition,
-                                           int64_t *timeNanoseconds))
-            dlsym(mLibHandle, "AAudioStream_getTimestamp");
+                                           int64_t *timeNanoseconds)>
+            (dlsym(mLibHandle, "AAudioStream_getTimestamp"));
 
     stream_getChannelCount    = load_I_PS("AAudioStream_getChannelCount");
     if (stream_getChannelCount == nullptr) {
@@ -168,39 +168,39 @@ static void AAudioLoader_check(void *proc, const char *functionName) {
 }
 
 AAudioLoader::signature_PC_I AAudioLoader::load_PC_I(const char *functionName) {
-    signature_PC_I proc = (signature_PC_I) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_PC_I>(proc);
 }
 
 AAudioLoader::signature_V_PBI AAudioLoader::load_V_PBI(const char *functionName) {
-    signature_V_PBI proc = (signature_V_PBI) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBI>(proc);
 }
 
 AAudioLoader::signature_I_PSI AAudioLoader::load_I_PSI(const char *functionName) {
-    signature_I_PSI proc = (signature_I_PSI) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSI>(proc);
 }
 
 AAudioLoader::signature_I_PS AAudioLoader::load_I_PS(const char *functionName) {
-    signature_I_PS proc = (signature_I_PS) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PS>(proc);
 }
 
 AAudioLoader::signature_L_PS AAudioLoader::load_L_PS(const char *functionName) {
-    signature_L_PS proc = (signature_L_PS) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_L_PS>(proc);
 }
 
 AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
-    signature_I_PB proc = (signature_I_PB) dlsym(mLibHandle, functionName);
-    AAudioLoader_check((void *)proc, functionName);
-    return proc;
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PB>(proc);
 }
 
 } // namespace oboe

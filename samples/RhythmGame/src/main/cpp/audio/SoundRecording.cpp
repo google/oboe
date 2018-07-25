@@ -68,7 +68,7 @@ SoundRecording * SoundRecording::loadFromAssets(AAssetManager *assetManager, con
     // There are 4 bytes per frame because
     // each sample is 2 bytes and
     // it's a stereo recording which has 2 samples per frame.
-    int32_t numFrames = (int32_t) (trackLength / 4);
+    int32_t numFrames = static_cast<int32_t>(trackLength / 4);
     LOGD("Opened backing track, bytes: %ld frames: %d", trackLength, numFrames);
     return new SoundRecording(audioBuffer, numFrames);
 }

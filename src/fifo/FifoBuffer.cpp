@@ -97,7 +97,7 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
     }
 
     uint32_t readIndex = mFifo->getReadIndex();
-    uint8_t *destination = (uint8_t *) buffer;
+    uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
     uint8_t *source = &mStorage[convertFramesToBytes(readIndex)];
     if ((readIndex + framesToRead) > mFrameCapacity) {
         // read in two parts, first part here
@@ -134,7 +134,7 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
     size_t numBytes;
     uint32_t writeIndex = mFifo->getWriteIndex();
     int byteIndex = convertFramesToBytes(writeIndex);
-    const uint8_t *source = (const uint8_t *) buffer;
+    const uint8_t *source = reinterpret_cast<const uint8_t *>(buffer);
     uint8_t *destination = &mStorage[byteIndex];
     if ((writeIndex + framesToWrite) > mFrameCapacity) {
         // write in two parts, first part here

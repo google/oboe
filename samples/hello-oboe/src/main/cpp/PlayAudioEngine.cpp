@@ -257,7 +257,7 @@ PlayAudioEngine::calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream,
                 duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
 
         // Calculate the latency
-        *latencyMillis = (double) (nextFramePresentationTime - nextFrameWriteTime)
+        *latencyMillis = static_cast<double>(nextFramePresentationTime - nextFrameWriteTime)
                          / kNanosPerMillisecond;
     } else {
         LOGE("Error calculating latency: %s", oboe::convertToText(result));

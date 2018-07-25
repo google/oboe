@@ -36,12 +36,12 @@ void convertFloatToPcm16(const float *source, int16_t *destination, int32_t numS
         float fval = source[i];
         fval += 1.0; // to avoid discontinuity at 0.0 caused by truncation
         fval *= 32768.0f;
-        auto sample = (int32_t) fval;
+        auto sample = static_cast<int32_t>(fval);
         // clip to 16-bit range
         if (sample < 0) sample = 0;
         else if (sample > 0x0FFFF) sample = 0x0FFFF;
         sample -= 32768; // center at zero
-        destination[i] = (int16_t) sample;
+        destination[i] = static_cast<int16_t>(sample);
     }
 }
 

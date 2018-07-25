@@ -336,7 +336,7 @@ oboe::DataCallbackResult LiveEffectEngine::onAudioReady(
                                 oboeStream->getBytesPerSample();
         uint8_t *padPos =
             static_cast<uint8_t *>(audioData) + framesRead * bytesPerFrame;
-        memset(padPos, 0, (size_t)(numFrames - framesRead) * bytesPerFrame);
+        memset(padPos, 0, static_cast<size_t>((numFrames - framesRead) * bytesPerFrame));
     }
 
     // add your audio processing here

@@ -143,7 +143,7 @@ private:
 
     bool isFull() const { return size() == CAPACITY; }
 
-    INDEX_TYPE mask(INDEX_TYPE n) const { return (INDEX_TYPE) (n & (CAPACITY - 1)); }
+    INDEX_TYPE mask(INDEX_TYPE n) const { return static_cast<INDEX_TYPE>(n & (CAPACITY - 1)); }
 
     T buffer[CAPACITY];
     std::atomic<INDEX_TYPE> writeCounter { 0 };

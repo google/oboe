@@ -76,7 +76,7 @@ SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount)
 
 static bool s_isLittleEndian() {
     static uint32_t value = 1;
-    return *((uint8_t *) &value) == 1; // Does address point to LSB?
+    return (*reinterpret_cast<uint8_t *>(&value) == 1);  // Does address point to LSB?
 }
 
 SLuint32 AudioStreamOpenSLES::getDefaultByteOrder() {
@@ -219,7 +219,7 @@ SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueIt
 
 // this callback handler is called every time a buffer needs processing
 static void bqCallbackGlue(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    ((AudioStreamOpenSLES *) context)->processBufferCallback(bq);
+    (reinterpret_cast<AudioStreamOpenSLES *>(context))->processBufferCallback(bq);
 }
 
 SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {

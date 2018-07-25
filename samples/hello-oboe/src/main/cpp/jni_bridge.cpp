@@ -32,7 +32,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1createEngine(
 
     // We use std::nothrow so `new` returns a nullptr if the engine creation fails
     PlayAudioEngine *engine = new(std::nothrow) PlayAudioEngine();
-    return (jlong) engine;
+    return reinterpret_cast<jlong>(engine);
 }
 
 JNIEXPORT void JNICALL
@@ -41,7 +41,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1deleteEngine(
         jclass,
         jlong engineHandle) {
 
-    delete (PlayAudioEngine *) engineHandle;
+    delete reinterpret_cast<PlayAudioEngine *>(engineHandle);
 }
 
 JNIEXPORT void JNICALL
@@ -51,7 +51,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setToneOn(
         jlong engineHandle,
         jboolean isToneOn) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine *>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -66,7 +66,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioApi(
         jlong engineHandle,
         jint audioApi) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -83,7 +83,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioDeviceId(
         jlong engineHandle,
         jint deviceId) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -98,7 +98,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setChannelCount(
         jlong engineHandle,
         jint channelCount) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -113,7 +113,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setBufferSizeInBurs
         jlong engineHandle,
         jint bufferSizeInBursts) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -128,12 +128,12 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1getCurrentOutputLat
         jclass,
         jlong engineHandle) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine is null, you must call createEngine before calling this method");
-        return -1;
+        return static_cast<jdouble>(-1.0);
     }
-    return (jdouble) engine->getCurrentOutputLatencyMillis();
+    return static_cast<jdouble>(engine->getCurrentOutputLatencyMillis());
 }
 
 JNIEXPORT jboolean JNICALL
@@ -142,12 +142,12 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionS
         jclass type,
         jlong engineHandle) {
 
-    PlayAudioEngine *engine = (PlayAudioEngine *) engineHandle;
+    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine is null, you must call createEngine before calling this method");
-        return (jboolean) false;
+        return JNI_FALSE;
     }
-    return (jboolean) engine->isLatencyDetectionSupported();
+    return (engine->isLatencyDetectionSupported() ? JNI_TRUE : JNI_FALSE);
 }
 
 }

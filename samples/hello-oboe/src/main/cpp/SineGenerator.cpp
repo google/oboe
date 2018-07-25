@@ -49,7 +49,7 @@ void SineGenerator::setSweep(double frequencyLow, double frequencyHigh, double s
 void SineGenerator::render(int16_t *buffer, int32_t channelStride, int32_t numFrames) {
     int sampleIndex = 0;
     for (int i = 0; i < numFrames; i++) {
-        buffer[sampleIndex] = (int16_t) (INT16_MAX * sinf(mPhase) * mAmplitude);
+        buffer[sampleIndex] = static_cast<int16_t>(INT16_MAX * sinf(mPhase) * mAmplitude);
         sampleIndex += channelStride;
         advancePhase();
     }
@@ -57,7 +57,7 @@ void SineGenerator::render(int16_t *buffer, int32_t channelStride, int32_t numFr
 
 void SineGenerator::render(float *buffer, int32_t channelStride, int32_t numFrames) {
     for (int i = 0, sampleIndex = 0; i < numFrames; i++) {
-        buffer[sampleIndex] = (float) (sinf(mPhase) * mAmplitude);
+        buffer[sampleIndex] = static_cast<float>(sinf(mPhase) * mAmplitude);
         sampleIndex += channelStride;
         advancePhase();
     }

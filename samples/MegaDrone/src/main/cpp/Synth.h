@@ -32,6 +32,7 @@ class ISynth {
 public:
     virtual void renderAudio(void *audioData, int32_t numFrames) = 0;
     virtual void setWaveOn(bool isEnabled) = 0;
+    virtual ~ISynth() {};
 };
 
 
@@ -43,7 +44,7 @@ public:
 
         for (int i = 0; i < kNumOscillators; ++i) {
             mOscs[i].setSampleRate(sampleRate);
-            mOscs[i].setFrequency(kOscBaseFrequency+((float)i/kOscDivisor));
+            mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));
             mOscs[i].setAmplitude(kOscAmplitude);
 
             std::shared_ptr<RenderableAudio<T>> pOsc(&mOscs[i]);
@@ -58,7 +59,7 @@ public:
     }
 
     // From ISynth
-    void setWaveOn(bool isEnabled){
+    void setWaveOn(bool isEnabled) override {
         for (auto &osc : mOscs) osc.setWaveOn(isEnabled);
     };
 
@@ -67,7 +68,7 @@ public:
         mOutputStage->renderAudio(static_cast<T*>(audioData), numFrames);
     };
 
-
+    virtual ~Synth() {}
 private:
 
     // Rendering objects
