@@ -42,5 +42,5 @@ target_link_libraries(liveEffect
 # Enable optimization for release build; it could be enabled for debug build
 # if performance is of interest.
 target_compile_options(liveEffect
-    PRIVATE
-        -std=c++14 -Wall -Werror $<$<CONFIG:RELEASE>:-Ofast>)
+    PRIVATE -std=c++14 -Wall -Werror $<$<CONFIG:RELEASE>:-Ofast>)
+
