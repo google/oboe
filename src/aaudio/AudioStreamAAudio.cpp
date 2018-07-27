@@ -346,8 +346,10 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
         *nextState = static_cast<StreamState>(aaudioNextState);
         return static_cast<Result>(result);
     } else {
-        return Result::ErrorClosed;
+        *nextState = StreamState::Closed;
     }
+
+    return (currentState != *nextState) ? Result::OK : Result::ErrorTimeout;
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {

@@ -313,7 +313,8 @@ TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsOK){
 
     openAndCloseStream();
     StreamState next;
-    ASSERT_EQ(mStream->waitForStateChange(StreamState::Open, &next, 0), Result::OK);
+    Result r = mStream->waitForStateChange(StreamState::Open, &next, 0);
+    ASSERT_EQ(r, Result::OK) << convertToText(r);
 }
 
 TEST_F(StreamClosedReturnValues, SetBufferSizeInFramesReturnsClosed){
