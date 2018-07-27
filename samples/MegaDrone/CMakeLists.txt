@@ -30,5 +30,4 @@ include_directories (${OBOE_DIR}/include)
 # Enable optimization for release build; it could be enabled for debug build
 # if performance is of interest.
 target_compile_options(megadrone
-    PRIVATE
-        -std=c++14 -Wall $<$<CONFIG:RELEASE>:-Ofast>)
+    PRIVATE -std=c++14 -Wall $<$<CONFIG:RELEASE>:-Ofast>)
