@@ -167,8 +167,6 @@ SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf
             LOGW("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
             mPerformanceMode = PerformanceMode::None;
         }
-    } else {
-        mPerformanceMode = PerformanceMode::None;
     }
     return result;
 }
