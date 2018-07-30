@@ -29,11 +29,11 @@ target_include_directories(oboe
 
  # Compile Flags:
  #     Enable -Werror when building debug config
- #     Enable -Ofast for release config (could be enabled for debug too)
+ #     Enable -Ofast
 target_compile_options(oboe PRIVATE -std=c++11
                             PRIVATE -Wall
                             PRIVATE "$<$<CONFIG:DEBUG>:-Werror>"
-                            PRIVATE "$<$<CONFIG:RELEASE>:-Ofast>")
+                            PRIVATE -Ofast)
 
 # Enable logging when debugging
 # target_compile_options(oboe PUBLIC -DOBOE_ENABLE_LOGGING=1)

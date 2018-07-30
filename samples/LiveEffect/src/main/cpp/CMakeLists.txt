@@ -39,8 +39,7 @@ target_link_libraries(liveEffect
         atomic
         log)
 
-# Enable optimization for release build; it could be enabled for debug build
-# if performance is of interest.
-target_compile_options(liveEffect
-    PRIVATE -std=c++14 -Wall -Werror $<$<CONFIG:RELEASE>:-Ofast>)
+# Enable optimization flags: if having problems with source level debugging,
+# disable -Ofast ( and debug ), re-enable it after done debugging.
+target_compile_options(liveEffect PRIVATE -Wall -Werror -Ofast)
 

@@ -27,7 +27,6 @@ target_link_libraries( megadrone log oboe )
 # Make the Oboe public headers available to our app
 include_directories (${OBOE_DIR}/include)
 
-# Enable optimization for release build; it could be enabled for debug build
-# if performance is of interest.
-target_compile_options(megadrone
-    PRIVATE -std=c++14 -Wall $<$<CONFIG:RELEASE>:-Ofast>)
+# Enable optimization flags: if having problems with source level debugging,
+# disable -Ofast ( and debug ), re-enable it after done debugging.
+target_compile_options(megadrone PRIVATE -Wall -Werror -Ofast)
