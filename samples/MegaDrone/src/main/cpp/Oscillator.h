@@ -84,7 +84,7 @@ private:
     int32_t mSampleRate = kDefaultSampleRate;
 
     void updatePhaseIncrement(){
-        mPhaseIncrement.store((kTwoPi * mFrequency) / (double) mSampleRate);
+        mPhaseIncrement.store((kTwoPi * mFrequency) / static_cast<double>(mSampleRate));
     };
 };
 

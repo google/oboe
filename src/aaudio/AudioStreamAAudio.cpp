@@ -37,7 +37,7 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
 
-    AudioStreamAAudio *oboeStream = (AudioStreamAAudio *)userData;
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
     if (oboeStream != NULL) {
         return static_cast<aaudio_data_callback_result_t>(
                 oboeStream->callOnAudioReady(stream, audioData, numFrames));
@@ -60,7 +60,7 @@ static void oboe_aaudio_error_callback_proc(
         void *userData,
         aaudio_result_t error) {
 
-    AudioStreamAAudio *oboeStream = (AudioStreamAAudio *)userData;
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
     if (oboeStream != NULL) {
         // Handle error on a separate thread
         std::thread t(oboe_aaudio_error_thread_proc, oboeStream, stream, static_cast<Result>(error));
@@ -113,7 +113,7 @@ Result AudioStreamAAudio::open() {
         return result;
     }
 
-    LOGD("AudioStreamAAudio.open() try with deviceId = %d", (int) mDeviceId);
+    LOGD("AudioStreamAAudio.open() try with deviceId = %d", static_cast<int>(mDeviceId));
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, mBufferCapacityInFrames);
     mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
     mLibLoader->builder_setDeviceId(aaudioBuilder, mDeviceId);
@@ -195,10 +195,10 @@ Result AudioStreamAAudio::open() {
         mSessionId = SessionId::None;
     }
 
-    LOGD("AudioStreamAAudio.open() app    format = %d", (int) mFormat);
-    LOGD("AudioStreamAAudio.open() native format = %d", (int) mNativeFormat);
-    LOGD("AudioStreamAAudio.open() sample rate   = %d", (int) mSampleRate);
-    LOGD("AudioStreamAAudio.open() capacity      = %d", (int) mBufferCapacityInFrames);
+    LOGD("AudioStreamAAudio.open() app    format = %d", static_cast<int>(mFormat));
+    LOGD("AudioStreamAAudio.open() native format = %d", static_cast<int>(mNativeFormat));
+    LOGD("AudioStreamAAudio.open() sample rate   = %d", static_cast<int>(mSampleRate));
+    LOGD("AudioStreamAAudio.open() capacity      = %d", static_cast<int>(mBufferCapacityInFrames));
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
@@ -469,7 +469,7 @@ ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
 
     // The current latency is the difference in time between when the current frame is at
     // the app and when it is at the hardware.
-    double latencyNanos = (double)((isOutput)
+    double latencyNanos = static_cast<double>(isOutput
                           ? (appFrameHardwareTime - appFrameAppTime) // hardware is later
                           : (appFrameAppTime - appFrameHardwareTime)); // hardware is earlier
     double latencyMillis = latencyNanos / kNanosPerMillisecond;

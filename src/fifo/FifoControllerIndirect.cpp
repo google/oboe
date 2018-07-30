@@ -24,8 +24,8 @@ FifoControllerIndirect::FifoControllerIndirect(uint32_t numFrames,
                                                int64_t * readCounterAddress,
                                                int64_t * writeCounterAddress)
         : FifoControllerBase(numFrames, threshold)
-        , mReadCounterAddress((std::atomic<uint64_t> *) readCounterAddress)
-        , mWriteCounterAddress((std::atomic<uint64_t> *) writeCounterAddress)
+        , mReadCounterAddress(reinterpret_cast<std::atomic<uint64_t> *>(readCounterAddress))
+        , mWriteCounterAddress(reinterpret_cast<std::atomic<uint64_t> *>(writeCounterAddress))
 {
 }
 

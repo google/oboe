@@ -46,14 +46,14 @@ void AudioStreamBuffered::allocateFifo() {
 
 int64_t AudioStreamBuffered::getFramesWritten() {
     if (usingFIFO()) {
-        mFramesWritten = (int64_t) mFifoBuffer->getWriteCounter();
+        mFramesWritten = static_cast<int64_t>(mFifoBuffer->getWriteCounter());
     }
     return mFramesWritten;
 }
 
 int64_t AudioStreamBuffered::getFramesRead() {
     if (usingFIFO()) {
-        mFramesRead = (int64_t) mFifoBuffer->getReadCounter();
+        mFramesRead = static_cast<int64_t>(mFifoBuffer->getReadCounter());
     }
     return mFramesRead;
 }
@@ -114,7 +114,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
     }
 
     int32_t result = 0;
-    uint8_t *data = (uint8_t *)buffer;
+    uint8_t *data = reinterpret_cast<uint8_t *>(buffer);
     int32_t framesLeft = numFrames;
     int64_t timeToQuit = 0;
     bool repeat = true;
@@ -186,7 +186,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
     updateServiceFrameCounter();
-    return transfer((void *) buffer, numFrames, timeoutNanoseconds);
+    return transfer(const_cast<void *>(buffer), numFrames, timeoutNanoseconds);
 }
 
 // Read data from the FIFO that was written by the callback.
