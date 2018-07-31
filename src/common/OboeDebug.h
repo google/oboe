@@ -18,10 +18,13 @@
 #ifndef OBOE_DEBUG_H
 #define OBOE_DEBUG_H
 
-#ifndef OBOE_ENABLE_LOGGING
-#define OBOE_ENABLE_LOGGING 1
-#endif /* OBOE_ENABLE_LOGGING */
-
+/**
+ * To enable Oboe log output use the OBOE_ENABLE_LOGGING directive.
+ *
+ * For CMake builds this can be done using the target_compile_definitions command. Example:
+ *
+ * target_compile_definitions(oboe PRIVATE "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")
+ */
 #if OBOE_ENABLE_LOGGING
 
 #include <android/log.h>
