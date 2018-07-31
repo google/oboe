@@ -35,7 +35,9 @@ protected:
 
     bool openInputStream(){
         mBuilder.setDirection(Direction::Input);
-        return openStream();
+        bool isOpened = openStream();
+        EXPECT_EQ(mStream->getDirection(), Direction::Input) << convertToText(mStream->getDirection());
+        return isOpened;
     }
 
     void closeStream(){
@@ -145,26 +147,16 @@ TEST_F(StreamStates, InputStreamStateIsStartedAfterStarting){
     closeStream();
 }
 
-/*
- * TODO: what should the state be when we try to pause an input stream?
- * TEST_F(StreamStates, InputStreamStateIsAfterPausing){
+TEST_F(StreamStates, InputStreamDoesNotSupportPause){
 
     openInputStream();
-
-    StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
     r = mStream->requestPause();
-    EXPECT_EQ(r, Result::OK);
 
-    r = mStream->waitForStateChange(StreamState::Pausing, &next, kTimeoutInNanos);
-    EXPECT_EQ(r, Result::OK);
-
-    ASSERT_EQ(next, StreamState::Paused);
-
+    ASSERT_EQ(r, Result::ErrorUnavailable) << convertToText(r);
     closeStream();
-}*/
-
+}
 
 TEST_F(StreamStates, InputStreamStateIsStoppedAfterStopping){
 

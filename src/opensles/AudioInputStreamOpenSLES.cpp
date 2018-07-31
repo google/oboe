@@ -230,20 +230,8 @@ Result AudioInputStreamOpenSLES::requestStart() {
 
 
 Result AudioInputStreamOpenSLES::requestPause() {
-
-    LOGD("AudioInputStreamOpenSLES::requestPause()");
-    StreamState initialState = getState();
-    if (initialState == StreamState::Closed) return Result::ErrorClosed;
-
-    setState(StreamState::Pausing);
-    Result result = setRecordState(SL_RECORDSTATE_PAUSED);
-    if (result == Result::OK) {
-        mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when paused.
-        setState(StreamState::Paused);
-    } else {
-        setState(initialState);
-    }
-    return result;
+    LOGD("AudioInputStreamOpenSLES::requestPause() is unavailable for input streams");
+    return Result::ErrorUnavailable;
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
