@@ -21,9 +21,6 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
-
-        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-        audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
     }
 
     /**

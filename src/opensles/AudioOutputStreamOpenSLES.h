@@ -58,8 +58,6 @@ private:
 
     Result onAfterDestroy() override;
 
-    static int32_t getOutputSampleRateFromJNI(JNIEnv *jniEnv);
-
     /**
      * Set OpenSL ES PLAYSTATE.
      *

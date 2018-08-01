@@ -79,14 +79,6 @@ SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) 
 }
 
 Result AudioOutputStreamOpenSLES::open() {
-
-    // If the JNI environment is available use this to obtain optimal default values for sample rate and buffer size
-    if (mJNIEnv != nullptr){
-        if (mSampleRate == kUnspecified){
-            mSampleRate = getOutputSampleRateFromJNI(mJNIEnv);
-        }
-    }
-
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
@@ -309,9 +301,4 @@ Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
         mPositionMillis.update32(msec);
     }
     return result;
-}
-
-int32_t AudioOutputStreamOpenSLES::getOutputSampleRateFromJNI(JNIEnv *jniEnv){
-
-    return 48000;
 }
