@@ -18,10 +18,6 @@
 #ifndef OBOE_DEBUG_H
 #define OBOE_DEBUG_H
 
-#ifndef OBOE_ENABLE_LOGGING
-#define OBOE_ENABLE_LOGGING 1
-#endif /* OBOE_ENABLE_LOGGING */
-
 #if OBOE_ENABLE_LOGGING
 
 #include <android/log.h>
