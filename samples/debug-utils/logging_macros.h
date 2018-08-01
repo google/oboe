@@ -18,7 +18,7 @@
 #define __SAMPLE_ANDROID_DEBUG_H__
 #include <android/log.h>
 
-#if OBOE_ENABLE_LOGGING
+#if 1
 #ifndef MODULE_NAME
 #define MODULE_NAME  "AUDIO-APP"
 #endif

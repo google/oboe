@@ -47,6 +47,4 @@ include_directories (${OBOE_DIR}/include)
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
 target_compile_options(native-lib
-    PRIVATE -std=c++14
-    PRIVATE -Wall -Werror
-    PRIVATE -Ofast)
+    PRIVATE -std=c++14 -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
