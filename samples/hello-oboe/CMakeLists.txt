@@ -16,8 +16,6 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror")
-
 ### INCLUDE OBOE LIBRARY ###
 
 # Set the path to the Oboe library directory
@@ -53,3 +51,7 @@ add_library(hello-oboe SHARED
 
 # Specify the libraries needed for hello-oboe
 target_link_libraries(hello-oboe android log oboe)
+
+# Enable optimization flags: if having problems with source level debugging,
+# disable -Ofast ( and debug ), re-enable after done debugging.
+target_compile_options(hello-oboe PRIVATE -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")

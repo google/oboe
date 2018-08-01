@@ -43,3 +43,8 @@ add_subdirectory (${OBOE_DIR} ./oboe-bin)
 
 # Specify the path to the Oboe header files.
 include_directories (${OBOE_DIR}/include)
+
+# Enable optimization flags: if having problems with source level debugging,
+# disable -Ofast ( and debug ), re-enable after done debugging.
+target_compile_options(native-lib
+    PRIVATE -std=c++14 -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")

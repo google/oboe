@@ -27,7 +27,6 @@ target_link_libraries( megadrone log oboe )
 # Make the Oboe public headers available to our app
 include_directories (${OBOE_DIR}/include)
 
-# Append compiler optimization flags to both the debug and release build variants
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Ofast")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
-
+# Enable optimization flags: if having problems with source level debugging,
+# disable -Ofast ( and debug ), re-enable it after done debugging.
+target_compile_options(megadrone PRIVATE -Wall -Werror -Ofast)
