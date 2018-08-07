@@ -45,7 +45,6 @@ const char *getSLErrStr(SLresult code) {
     return errStrings[code];
 }
 
-#if __ANDROID_API__ >= __ANDROID_API_L__
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
         SLDataFormat_PCM format, SLuint32 representation) {
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
@@ -59,9 +58,7 @@ SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(
     format_pcm_ex.representation = representation;
     return format_pcm_ex;
 }
-#endif // __ANDROID_API_L__
 
-#if __ANDROID_API__ >= __ANDROID_API_L__
 SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format) {
     switch(format) {
         case AudioFormat::I16:
@@ -74,6 +71,5 @@ SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format) {
             return 0;
     }
 }
-#endif // __ANDROID_API_L__
 
 } // namespace oboe

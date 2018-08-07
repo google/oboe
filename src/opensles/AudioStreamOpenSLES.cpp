@@ -55,14 +55,11 @@ SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount)
         return SL_ANDROID_UNKNOWN_CHANNELMASK;
     } else {
         SLuint32 bitfield = (1 << channelCount) - 1;
-// Check for NDK at compile-time.
-#if __ANDROID_API__ >= __ANDROID_API_N__
+
         // Check for OS at run-time.
         if(getSdkVersion() >= __ANDROID_API_N__) {
             return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
-        } else
-#endif
-        {
+        } else {
             // Indexed channels masks were added in N.
             // For before N, the best we can do is use a positional channel mask.
             return bitfield;
