@@ -230,12 +230,14 @@ Result AudioInputStreamOpenSLES::requestStart() {
 
 
 Result AudioInputStreamOpenSLES::requestPause() {
-    LOGD("AudioInputStreamOpenSLES::requestPause() is unavailable for input streams");
-    return Result::ErrorUnimplemented;
+    LOGW("AudioInputStreamOpenSLES::requestPause() is intentionally not implemented for input "
+         "streams");
+    return Result::ErrorUnimplemented; // Matches AAudio behavior.
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
-    LOGW("AudioInputStreamOpenSLES::%s() UNIMPLEMENTED", __func__);
+    LOGW("AudioInputStreamOpenSLES::requestFlush() is intentionally not implemented for input "
+         "streams");
     return Result::ErrorUnimplemented; // Matches AAudio behavior.
 }
 
