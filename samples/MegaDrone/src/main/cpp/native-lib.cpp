@@ -16,16 +16,34 @@
 
 #include <jni.h>
 #include <string>
+#include <vector>
 
 #include "AudioEngine.h"
 
 AudioEngine engine;
 
+std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
+
+    std::vector<int> v;
+    jsize length = env->GetArrayLength(intArray);
+
+    if (length > 0) {
+        jboolean isCopy;
+        jint *elements = env->GetIntArrayElements(intArray, &isCopy);
+        for (int i = 0; i < length; i++) {
+            v.push_back(elements[i]);
+        }
+    }
+    return v;
+}
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance) {
+Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
+                                                         jintArray jCpuIds) {
 
-    engine.start();
+    std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
+    engine.start(cpuIds);
 }
 
 extern "C"

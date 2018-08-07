@@ -17,10 +17,14 @@ package com.example.oboe.megadrone;
  */
 
 import androidx.appcompat.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 
 public class MainActivity extends AppCompatActivity {
+
+    private final String TAG = MainActivity.class.toString();
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -35,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onStart(){
         super.onStart();
-        startEngine();
+        startEngine(getExclusiveCores());
     }
 
     protected void onStop(){
@@ -45,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     private native void stopEngine();
 
-    private native void startEngine();
+    private native void startEngine(int[] cpuIds);
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -58,6 +62,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         return super.onTouchEvent(event);
+    }
+
+    // Obtain CPU cores which are reserved for the foreground app. The audio thread can be
+    // bound to these cores to avoids the risk of it being migrated to slower or more contended
+    // core(s).
+    private int[] getExclusiveCores(){
+        int exclusiveCores[] = {};
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            Log.w(TAG, "getExclusiveCores() not supported. Only available on API " +
+                    Build.VERSION_CODES.N + "+");
+        } else {
+            exclusiveCores = android.os.Process.getExclusiveCores();
+
+        }
+        return exclusiveCores;
     }
 
     private native void tap(boolean b);

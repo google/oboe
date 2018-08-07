@@ -19,6 +19,7 @@
 
 
 #include <oboe/Oboe.h>
+#include <vector>
 
 #include "Synth.h"
 
@@ -27,7 +28,7 @@ using namespace oboe;
 class AudioEngine : public AudioStreamCallback {
 
 public:
-    void start();
+    void start(std::vector<int> cpuIds);
     void tap(bool isOn);
 
     DataCallbackResult
@@ -39,7 +40,10 @@ private:
 
     AudioStream *mStream = nullptr;
     std::unique_ptr<ISynth> mSynth;
+    std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
+    bool mIsThreadAffinitySet = false;
 
+    void setThreadAffinity();
 };
 
 
