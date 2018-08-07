@@ -231,7 +231,7 @@ Result AudioInputStreamOpenSLES::requestStart() {
 
 Result AudioInputStreamOpenSLES::requestPause() {
     LOGD("AudioInputStreamOpenSLES::requestPause() is unavailable for input streams");
-    return Result::ErrorUnavailable;
+    return Result::ErrorUnimplemented;
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
