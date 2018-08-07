@@ -154,7 +154,7 @@ TEST_F(StreamStates, InputStreamDoesNotSupportPause){
     EXPECT_EQ(r, Result::OK);
     r = mStream->requestPause();
 
-    ASSERT_EQ(r, Result::ErrorUnavailable) << convertToText(r);
+    ASSERT_EQ(r, Result::ErrorUnimplemented) << convertToText(r);
     closeStream();
 }
 
