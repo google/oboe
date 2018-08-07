@@ -34,7 +34,6 @@ target_compile_options(oboe
     PRIVATE -std=c++11 -Wall "$<$<CONFIG:DEBUG>:-Werror>" -Ofast)
 
 # Enable logging for debug builds
-target_compile_definitions(oboe PRIVATE "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")
-
+target_compile_definitions(oboe PUBLIC "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")
 
 target_link_libraries(oboe PRIVATE log OpenSLES)
