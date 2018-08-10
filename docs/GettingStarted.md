@@ -49,6 +49,8 @@ Here's a complete example `CMakeLists.txt` file:
     # Make the Oboe public headers available to our app
     include_directories (${OBOE_DIR}/include)
 
+Now go to `Build->Refresh Linked C++ Projects` to have Android Studio index the Oboe library. 
+
 Verify that your project builds correctly. If you have any issues building please [report them here](issues/new).
 
 # Using Oboe
