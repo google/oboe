@@ -11,7 +11,7 @@ Start by cloning the Oboe repository:
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
 ### 2. Update CMakeLists.txt
-Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. 
+Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. If you don't have a `CMakeLists.txt` you will need to [add C++ support to your project](https://developer.android.com/studio/projects/add-native-code).
 
 ![CMakeLists.txt location in Android Studio](images/cmakelists-location-in-as.png "CMakeLists.txt location in Android Studio")
 
