@@ -96,6 +96,7 @@ Result AudioInputStreamOpenSLES::open() {
             channelCountToChannelMask(mChannelCount), // channelMask
             getDefaultByteOrder(),
     };
+    bool usingExtendedDataFormat = false;
 
     SLDataSink audioSink = {&loc_bufq, &format_pcm};
 
@@ -112,6 +113,7 @@ Result AudioInputStreamOpenSLES::open() {
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
         // Use in place of the previous format.
         audioSink.pFormat = &format_pcm_ex;
+        usingExtendedDataFormat = true;
     }
 
 
@@ -125,10 +127,28 @@ Result AudioInputStreamOpenSLES::open() {
     SLresult result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
                                                                         &audioSrc,
                                                                         &audioSink);
+
+    // If the result is "invalid parameter" and we're using the extended data format it could be
+    // that the underlying hardware doesn't support it
+    // (e.g. Moto G: https://github.com/google/oboe/issues/192)
+    // Try again using the old format
+    if (result == SL_RESULT_PARAMETER_INVALID && usingExtendedDataFormat){
+
+        LOGW("Unable to open recording stream using PCM_EX format, trying again using PCM...");
+        audioSink.pFormat = &format_pcm;
+        result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
+                                                                   &audioSrc,
+                                                                   &audioSink);
+    }
+
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioRecorder() result:%s", getSLErrStr(result));
         goto error;
     }
+
+    // If the stream is not using the extended data format it must have a format of I16 since no
+    // other format is supported, regardless of what format was requested.
+    if (!usingExtendedDataFormat) mFormat = AudioFormat::I16;
 
     // Configure the stream.
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
