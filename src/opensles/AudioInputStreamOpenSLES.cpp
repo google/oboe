@@ -139,6 +139,7 @@ Result AudioInputStreamOpenSLES::open() {
         result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
                                                                    &audioSrc,
                                                                    &audioSink);
+        usingExtendedDataFormat = false;
     }
 
     if (SL_RESULT_SUCCESS != result) {
