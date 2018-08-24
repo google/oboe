@@ -81,22 +81,9 @@ Result AudioStreamOpenSLES::open() {
     LOGI("AudioStreamOpenSLES::open(chans:%d, rate:%d)",
                         mChannelCount, mSampleRate);
 
-    if (getSdkVersion() < __ANDROID_API_L__ && mFormat == AudioFormat::Float){
-        // TODO: Allow floating point format on API <21 using float->int16 converter
-        return Result::ErrorInvalidFormat;
-    }
-
     SLresult result = EngineOpenSLES::getInstance().open();
     if (SL_RESULT_SUCCESS != result) {
         return Result::ErrorInternal;
-    }
-
-    // If audio format is unspecified then choose a suitable default.
-    // API 21+: FLOAT
-    // API <21: INT16
-    if (mFormat == AudioFormat::Unspecified){
-        mFormat = (getSdkVersion() < __ANDROID_API_L__) ?
-                  AudioFormat::I16 : AudioFormat::Float;
     }
 
     Result oboeResult = AudioStreamBuffered::open();

@@ -76,6 +76,19 @@ SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
 Result AudioInputStreamOpenSLES::open() {
     SLAndroidConfigurationItf configItf = nullptr;
 
+    if (getSdkVersion() < __ANDROID_API_M__ && mFormat == AudioFormat::Float){
+        // TODO: Allow floating point format on API <23 using float->int16 converter
+        return Result::ErrorInvalidFormat;
+    }
+
+    // If audio format is unspecified then choose a suitable default.
+    // API 23+: FLOAT
+    // API <23: INT16
+    if (mFormat == AudioFormat::Unspecified){
+        mFormat = (getSdkVersion() < __ANDROID_API_M__) ?
+                  AudioFormat::I16 : AudioFormat::Float;
+    }
+
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult) return oboeResult;
 
@@ -96,24 +109,22 @@ Result AudioInputStreamOpenSLES::open() {
             channelCountToChannelMask(mChannelCount), // channelMask
             getDefaultByteOrder(),
     };
-    bool usingExtendedDataFormat = false;
 
     SLDataSink audioSink = {&loc_bufq, &format_pcm};
 
     /**
-     * API 21 (Lollipop) introduced support for floating-point data representation and an extended
-     * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
-     * type, creating it from our original format.
+     * API 23 (Marshmallow) introduced support for floating-point data representation and an
+     * extended data format type: SLAndroidDataFormat_PCM_EX for recording streams (playback streams
+     * got this in API 21). If running on API 23+ use this newer format type, creating it from our
+     * original format.
      */
-
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
-    if (getSdkVersion() >= __ANDROID_API_L__) {
+    if (getSdkVersion() >= __ANDROID_API_M__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
         // Fill in the format structure.
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
         // Use in place of the previous format.
         audioSink.pFormat = &format_pcm_ex;
-        usingExtendedDataFormat = true;
     }
 
 
@@ -128,28 +139,10 @@ Result AudioInputStreamOpenSLES::open() {
                                                                         &audioSrc,
                                                                         &audioSink);
 
-    // If the result is "invalid parameter" and we're using the extended data format it could be
-    // that the underlying hardware doesn't support it
-    // (e.g. Moto G: https://github.com/google/oboe/issues/192)
-    // Try again using the old format
-    if (result == SL_RESULT_PARAMETER_INVALID && usingExtendedDataFormat){
-
-        LOGW("Unable to open recording stream using PCM_EX format, trying again using PCM...");
-        audioSink.pFormat = &format_pcm;
-        result = EngineOpenSLES::getInstance().createAudioRecorder(&mObjectInterface,
-                                                                   &audioSrc,
-                                                                   &audioSink);
-        usingExtendedDataFormat = false;
-    }
-
     if (SL_RESULT_SUCCESS != result) {
         LOGE("createAudioRecorder() result:%s", getSLErrStr(result));
         goto error;
     }
-
-    // If the stream is not using the extended data format it must have a format of I16 since no
-    // other format is supported, regardless of what format was requested.
-    if (!usingExtendedDataFormat) mFormat = AudioFormat::I16;
 
     // Configure the stream.
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
