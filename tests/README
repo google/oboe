@@ -1,0 +1,10 @@
+To run the tests:
+
+cd tests
+
+- Modify ANDROID_NDK in CMakeLists.txt to your local Android NDK path
+- Add ANDROID_NDK as an environment variable
+- Add cmake to path
+- Run the Oboe LiveEffect sample, hit Start and accept permissions
+- ./run_tests.sh
+- If that fails you can run the tests using adb shell /data/local/tmp/testOboe
