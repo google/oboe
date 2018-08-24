@@ -27,22 +27,26 @@ protected:
 
     }
 
-    bool openStream(){
+    bool openStream(Direction direction) {
+        mBuilder.setDirection(direction);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
+        EXPECT_EQ(mStream->getDirection(), direction) << convertToText(mStream->getDirection());
         return (r == Result::OK);
     }
 
-    bool openInputStream(){
-        mBuilder.setDirection(Direction::Input);
-        bool isOpened = openStream();
-        EXPECT_EQ(mStream->getDirection(), Direction::Input) << convertToText(mStream->getDirection());
-        return isOpened;
+    bool openStream() {
+        return openStream(Direction::Output);
     }
 
-    void closeStream(){
+    bool openInputStream() {
+        return openStream(Direction::Input);
+    }
+
+    void closeStream() {
         if (mStream != nullptr){
             Result r = mStream->close();
+            mStream = nullptr;
             if (r != Result::OK){
                 FAIL() << "Failed to close stream. " << convertToText(r);
             }
@@ -54,6 +58,69 @@ protected:
         openStream();
         closeStream();
         ASSERT_EQ(mStream->getState(), StreamState::Closed) << "Stream state " << convertToText(mStream->getState());
+    }
+
+    void checkStreamStateIsStartedAfterStartingTwice(Direction direction) {
+        openStream(direction);
+
+        StreamState next = StreamState::Unknown;
+        auto r = mStream->requestStart();
+        EXPECT_EQ(r, Result::OK);
+        r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
+        EXPECT_EQ(r, Result::OK);
+        EXPECT_EQ(next, StreamState::Started);
+
+        next = StreamState::Unknown;
+        r = mStream->requestStart();
+        // TODO On P, AAudio is returning ErrorInvalidState for Output and OK for Input
+        // EXPECT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
+        r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
+        EXPECT_EQ(r, Result::OK);
+        ASSERT_EQ(next, StreamState::Started);
+
+        closeStream();
+    }
+
+    void checkStreamStateIsStoppedAfterStoppingTwice(Direction direction) {
+        openStream(direction);
+
+        StreamState next = StreamState::Unknown;
+        auto r = mStream->requestStart();
+        EXPECT_EQ(r, Result::OK);
+
+        r = mStream->requestStop();
+        EXPECT_EQ(r, Result::OK);
+        r = mStream->waitForStateChange(StreamState::Stopping, &next, kTimeoutInNanos);
+        EXPECT_EQ(r, Result::OK);
+        EXPECT_EQ(next, StreamState::Stopped);
+
+        r = mStream->requestStop();
+        EXPECT_EQ(r, Result::OK);
+        next = StreamState::Unknown;
+        r = mStream->waitForStateChange(StreamState::Stopping, &next, kTimeoutInNanos);
+        EXPECT_EQ(r, Result::OK);
+        ASSERT_EQ(next, StreamState::Stopped);
+
+        closeStream();
+    }
+
+    // TODO: This seems to fail intermittently on Pixel OC_MR1 !
+    void checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction direction) {
+        openStream(direction);
+
+        auto r = mStream->requestStart();
+        EXPECT_EQ(r, Result::OK);
+        // It should be safe to close without stopping.
+        // The underlying API should stop the stream.
+        closeStream();
+
+        openInputStream();
+        r = mStream->requestStart();
+        ASSERT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
+
+        r = mStream->requestStop();
+        EXPECT_EQ(r, Result::OK) << "requestStop returned: " << convertToText(r);
+        closeStream();
     }
 
     AudioStreamBuilder mBuilder;
@@ -94,6 +161,7 @@ TEST_F(StreamStates, OutputStreamStateIsPausedAfterPausing){
     StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
     EXPECT_EQ(r, Result::OK);
+
     r = mStream->requestPause();
     EXPECT_EQ(r, Result::OK);
 
@@ -104,7 +172,6 @@ TEST_F(StreamStates, OutputStreamStateIsPausedAfterPausing){
 
     closeStream();
 }
-
 
 TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStopping){
 
@@ -122,7 +189,6 @@ TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStopping){
 
     closeStream();
 }
-
 
 TEST_F(StreamStates, InputStreamStateIsOpenAfterOpening){
     openInputStream();
@@ -149,6 +215,46 @@ TEST_F(StreamStates, InputStreamStateIsStartedAfterStarting){
     closeStream();
 }
 
+TEST_F(StreamStates, OutputStreamStateIsStartedAfterStartingTwice){
+    checkStreamStateIsStartedAfterStartingTwice(Direction::Output);
+}
+
+TEST_F(StreamStates, InputStreamStateIsStartedAfterStartingTwice){
+    checkStreamStateIsStartedAfterStartingTwice(Direction::Input);
+}
+
+TEST_F(StreamStates, OutputStreamStateIsStoppedAfterStoppingTwice){
+    checkStreamStateIsStoppedAfterStoppingTwice(Direction::Output);
+}
+
+TEST_F(StreamStates, InputStreamStateIsStoppedAfterStoppingTwice){
+    checkStreamStateIsStoppedAfterStoppingTwice(Direction::Input);
+}
+
+TEST_F(StreamStates, OutputStreamStateIsPausedAfterPausingTwice){
+    openStream();
+
+    StreamState next = StreamState::Unknown;
+    auto r = mStream->requestStart();
+    EXPECT_EQ(r, Result::OK);
+
+    r = mStream->requestPause();
+    EXPECT_EQ(r, Result::OK);
+    r = mStream->waitForStateChange(StreamState::Pausing, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK);
+    EXPECT_EQ(next, StreamState::Paused);
+
+    // requestPause() while already paused could leave us in Pausing in AAudio O_MR1.
+    r = mStream->requestPause();
+    EXPECT_EQ(r, Result::OK);
+    next = StreamState::Unknown;
+    r = mStream->waitForStateChange(StreamState::Pausing, &next, kTimeoutInNanos);
+    EXPECT_EQ(r, Result::OK);
+    ASSERT_EQ(next, StreamState::Paused);
+
+    closeStream();
+}
+
 TEST_F(StreamStates, InputStreamDoesNotSupportPause){
 
     openInputStream();
@@ -157,7 +263,16 @@ TEST_F(StreamStates, InputStreamDoesNotSupportPause){
     r = mStream->requestPause();
 
     ASSERT_EQ(r, Result::ErrorUnimplemented) << convertToText(r);
+    mStream->requestStop();
     closeStream();
+}
+
+TEST_F(StreamStates, OutputStreamLeftRunningShouldNotInterfereWithNextOpen){
+    checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Output);
+}
+
+TEST_F(StreamStates, InputStreamLeftRunningShouldNotInterfereWithNextOpen){
+    checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Input);
 }
 
 TEST_F(StreamStates, InputStreamStateIsStoppedAfterStopping){
