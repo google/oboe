@@ -39,15 +39,21 @@ int32_t DefaultStreamValues::SampleRate = 48000; // Common rate for mobile audio
 int32_t DefaultStreamValues::FramesPerBurst = 192; // 4 msec at 48000 Hz
 int32_t DefaultStreamValues::ChannelCount = 2; // Stereo
 
+#ifndef OBOE_ENABLE_AAUDIO
+// Set OBOE_ENABLE_AAUDIO to 0 if you want to disable the AAudio API.
+// This might be useful if you want to force all the unit tests to use OpenSL ES.
+#define OBOE_ENABLE_AAUDIO 1
+#endif
+
 bool AudioStreamBuilder::isAAudioSupported() {
-    return AudioStreamAAudio::isSupported();
+    return AudioStreamAAudio::isSupported() && OBOE_ENABLE_AAUDIO;
 }
 
 bool AudioStreamBuilder::isAAudioRecommended() {
     // See https://github.com/google/oboe/issues/40,
     // AAudio may not be stable on Android O, depending on how it is used.
-    // To be safe, use AAUdio on O_MR1 and above.
-    return (getSdkVersion() >= __ANDROID_API_O_MR1__);
+    // To be safe, use AAudio only on O_MR1 and above.
+    return (getSdkVersion() >= __ANDROID_API_O_MR1__) && isAAudioSupported();
 }
 
 AudioStream *AudioStreamBuilder::build() {
@@ -55,8 +61,8 @@ AudioStream *AudioStreamBuilder::build() {
     if (mAudioApi == AudioApi::AAudio && isAAudioSupported()) {
         stream = new AudioStreamAAudio(*this);
 
-    // If unspecified, only use AAudio if supported and recommended.
-    } else if (mAudioApi == AudioApi::Unspecified && isAAudioSupported() && isAAudioRecommended()) {
+    // If unspecified, only use AAudio if recommended.
+    } else if (mAudioApi == AudioApi::Unspecified && isAAudioRecommended()) {
         stream = new AudioStreamAAudio(*this);
     } else {
         if (getDirection() == oboe::Direction::Output) {
