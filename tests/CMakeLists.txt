@@ -14,12 +14,15 @@ set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 include_directories(${OBOE_DIR}/include)
 
+# include android headers
+include_directories(${ANDROID_NDK}/sysroot/usr/include)
+
 # Build the test binary
 add_executable(testOboe
         testUtilities.cpp
         testStreamClosedMethods.cpp
         testStreamStates.cpp
-	testStreamOpen.cpp
+		testStreamOpen.cpp
         testXRunBehaviour.cpp
         )
 target_link_libraries(testOboe gtest oboe)
