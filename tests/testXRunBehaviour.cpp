@@ -45,9 +45,11 @@ protected:
     }
 
     void closeStream(){
-        Result r = mStream->close();
-        if (r != Result::OK){
-            FAIL() << "Failed to close stream. " << convertToText(r);
+        if (mStream != nullptr){
+            Result r = mStream->close();
+            if (r != Result::OK){
+                FAIL() << "Failed to close stream. " << convertToText(r);
+            }
         }
     }
 

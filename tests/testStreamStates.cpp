@@ -41,9 +41,11 @@ protected:
     }
 
     void closeStream(){
-        Result r = mStream->close();
-        if (r != Result::OK){
-            FAIL() << "Failed to close stream. " << convertToText(r);
+        if (mStream != nullptr){
+            Result r = mStream->close();
+            if (r != Result::OK){
+                FAIL() << "Failed to close stream. " << convertToText(r);
+            }
         }
     }
 
@@ -164,11 +166,13 @@ TEST_F(StreamStates, InputStreamStateIsStoppedAfterStopping){
 
     StreamState next = StreamState::Unknown;
     auto r = mStream->requestStart();
-    EXPECT_EQ(r, Result::OK);
+    EXPECT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
 
     r = mStream->requestStop();
+    EXPECT_EQ(r, Result::OK) << "requestStop returned: " << convertToText(r);
+
     r = mStream->waitForStateChange(StreamState::Stopping, &next, kTimeoutInNanos);
-    EXPECT_EQ(r, Result::OK);
+    EXPECT_EQ(r, Result::OK) << "waitForStateChange returned: " << convertToText(r);
 
     ASSERT_EQ(next, StreamState::Stopped);
 
