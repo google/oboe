@@ -79,6 +79,8 @@ SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) 
 }
 
 Result AudioOutputStreamOpenSLES::open() {
+    SLAndroidConfigurationItf configItf = nullptr;
+
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
 
@@ -130,16 +132,19 @@ Result AudioOutputStreamOpenSLES::open() {
     }
 
     // Configure the stream.
-    SLAndroidConfigurationItf configItf;
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
                                                SL_IID_ANDROIDCONFIGURATION,
-                                               &configItf);
-    if (SL_RESULT_SUCCESS == result) {
+                                               (void *)&configItf);
+    if (SL_RESULT_SUCCESS != result) {
+        LOGW("%s() GetInterface(SL_IID_ANDROIDCONFIGURATION) failed with %s",
+             __func__, getSLErrStr(result));
+    } else {
         result = configurePerformanceMode(configItf);
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }
     }
+    assert(configItf != nullptr);
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
@@ -154,6 +159,11 @@ Result AudioOutputStreamOpenSLES::open() {
     }
 
     result = AudioStreamOpenSLES::registerBufferQueueCallback();
+    if (SL_RESULT_SUCCESS != result) {
+        goto error;
+    }
+
+    result = updateStreamParameters(configItf);
     if (SL_RESULT_SUCCESS != result) {
         goto error;
     }

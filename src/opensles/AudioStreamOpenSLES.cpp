@@ -154,6 +154,25 @@ SLuint32 AudioStreamOpenSLES::convertPerformanceMode(PerformanceMode oboeMode) c
     return openslMode;
 }
 
+PerformanceMode AudioStreamOpenSLES::convertPerformanceMode(SLuint32 openslMode) const {
+    PerformanceMode oboeMode = PerformanceMode::None;
+    switch(openslMode) {
+        case SL_ANDROID_PERFORMANCE_NONE:
+            oboeMode =  PerformanceMode::None;
+            break;
+        case SL_ANDROID_PERFORMANCE_LATENCY:
+        case SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS:
+            oboeMode =  PerformanceMode::LowLatency;
+            break;
+        case SL_ANDROID_PERFORMANCE_POWER_SAVING:
+            oboeMode =  PerformanceMode::PowerSaving;
+            break;
+        default:
+            break;
+    }
+    return oboeMode;
+}
+
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
     SLresult result = SL_RESULT_SUCCESS;
     if(getSdkVersion() >= __ANDROID_API_N_MR1__) {
@@ -166,6 +185,30 @@ SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf
         }
     } else {
         mPerformanceMode = PerformanceMode::None;
+    }
+    return result;
+}
+
+SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf configItf) {
+    SLresult result = SL_RESULT_SUCCESS;
+    if(getSdkVersion() >= __ANDROID_API_N_MR1__ && configItf != nullptr) {
+        SLuint32 performanceMode = 0;
+        SLuint32 performanceModeSize = sizeof(performanceMode);
+        result = (*configItf)->GetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                                &performanceModeSize, &performanceMode);
+        // A bug in GetConfiguration() before P caused a wrong result code to be returned.
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            result = SL_RESULT_SUCCESS; // Ignore actual result before P.
+        }
+
+        if (SL_RESULT_SUCCESS != result) {
+            LOGW("GetConfiguration(SL_ANDROID_KEY_PERFORMANCE_MODE) returned %d", result);
+            mPerformanceMode = PerformanceMode::None; // If we can't query it then assume None.
+        } else {
+            mPerformanceMode = convertPerformanceMode(performanceMode); // convert SL to Oboe mode
+        }
+    } else {
+        mPerformanceMode = PerformanceMode::None; // If we can't query it then assume None.
     }
     return result;
 }
