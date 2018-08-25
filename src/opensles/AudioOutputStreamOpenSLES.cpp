@@ -144,7 +144,6 @@ Result AudioOutputStreamOpenSLES::open() {
             goto error;
         }
     }
-    assert(configItf != nullptr);
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {

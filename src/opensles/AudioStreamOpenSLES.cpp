@@ -174,18 +174,29 @@ PerformanceMode AudioStreamOpenSLES::convertPerformanceMode(SLuint32 openslMode)
 }
 
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
+
+    if (configItf == nullptr) {
+        LOGW("%s() called with NULL configuration", __func__);
+        mPerformanceMode = PerformanceMode::None;
+        return SL_RESULT_INTERNAL_ERROR;
+    }
+    if (getSdkVersion() < __ANDROID_API_N_MR1__) {
+        LOGW("%s() not supported until N_MR1", __func__);
+        mPerformanceMode = PerformanceMode::None;
+        return SL_RESULT_SUCCESS;
+    }
+
     SLresult result = SL_RESULT_SUCCESS;
-    if(getSdkVersion() >= __ANDROID_API_N_MR1__) {
-        SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
-        result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
-                                                         &performanceMode, sizeof(performanceMode));
-        if (SL_RESULT_SUCCESS != result) {
-            LOGW("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
-            mPerformanceMode = PerformanceMode::None;
-        }
-    } else {
+    SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
+    LOGD("SetConfiguration(SL_ANDROID_KEY_PERFORMANCE_MODE, SL %u) called", performanceMode);
+    result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                                     &performanceMode, sizeof(performanceMode));
+    if (SL_RESULT_SUCCESS != result) {
+        LOGW("SetConfiguration(PERFORMANCE_MODE, SL %u) returned %s",
+             performanceMode, getSLErrStr(result));
         mPerformanceMode = PerformanceMode::None;
     }
+
     return result;
 }
 

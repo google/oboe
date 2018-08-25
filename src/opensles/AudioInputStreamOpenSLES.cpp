@@ -134,7 +134,11 @@ Result AudioInputStreamOpenSLES::open() {
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
                                             SL_IID_ANDROIDCONFIGURATION,
                                             &configItf);
-    if (SL_RESULT_SUCCESS == result) {
+
+    if (SL_RESULT_SUCCESS != result) {
+        LOGW("%s() GetInterface(SL_IID_ANDROIDCONFIGURATION) failed with %s",
+             __func__, getSLErrStr(result));
+    } else {
         SLuint32 presetValue = OpenSLES_convertInputPreset(getInputPreset());
         result = (*configItf)->SetConfiguration(configItf,
                                          SL_ANDROID_KEY_RECORDING_PRESET,
