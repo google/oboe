@@ -69,3 +69,23 @@ TEST_F(StreamOpen, ForOpenSLESDefaultChannelCountIsUsed){
     ASSERT_EQ(mStream->getChannelCount(), 1);
     closeStream();
 }
+
+TEST_F(StreamOpen, OutputForOpenSLESPerformanceModeShouldBeNone){
+    // We will not get a LowLatency stream if we request 16000 Hz.
+    mBuilder.setSampleRate(16000);
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    mBuilder.setDirection(Direction::Output);
+    openStream(AudioApi::OpenSLES);
+    ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
+    closeStream();
+}
+
+TEST_F(StreamOpen, InputForOpenSLESPerformanceModeShouldBeNone){
+    // We will not get a LowLatency stream if we request 16000 Hz.
+    mBuilder.setSampleRate(16000);
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    mBuilder.setDirection(Direction::Input);
+    openStream(AudioApi::OpenSLES);
+    ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
+    closeStream();
+}

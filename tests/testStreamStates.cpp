@@ -24,7 +24,8 @@ class StreamStates : public ::testing::Test {
 protected:
 
     void SetUp(){
-
+        mBuilder.setPerformanceMode(PerformanceMode::None);
+        mBuilder.setDirection(Direction::Output);
     }
 
     bool openStream(Direction direction) {
@@ -267,11 +268,21 @@ TEST_F(StreamStates, InputStreamDoesNotSupportPause){
     closeStream();
 }
 
-TEST_F(StreamStates, OutputStreamLeftRunningShouldNotInterfereWithNextOpen){
+TEST_F(StreamStates, OutputStreamLeftRunningShouldNotInterfereWithNextOpen) {
     checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Output);
 }
 
-TEST_F(StreamStates, InputStreamLeftRunningShouldNotInterfereWithNextOpen){
+TEST_F(StreamStates, InputStreamLeftRunningShouldNotInterfereWithNextOpen) {
+    checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Input);
+}
+
+TEST_F(StreamStates, OutputLowLatencyStreamLeftRunningShouldNotInterfereWithNextOpen) {
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Output);
+}
+
+TEST_F(StreamStates, InputLowLatencyStreamLeftRunningShouldNotInterfereWithNextOpen) {
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     checkStreamLeftRunningShouldNotInterfereWithNextOpen(Direction::Input);
 }
 

@@ -154,18 +154,72 @@ SLuint32 AudioStreamOpenSLES::convertPerformanceMode(PerformanceMode oboeMode) c
     return openslMode;
 }
 
+PerformanceMode AudioStreamOpenSLES::convertPerformanceMode(SLuint32 openslMode) const {
+    PerformanceMode oboeMode = PerformanceMode::None;
+    switch(openslMode) {
+        case SL_ANDROID_PERFORMANCE_NONE:
+            oboeMode =  PerformanceMode::None;
+            break;
+        case SL_ANDROID_PERFORMANCE_LATENCY:
+        case SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS:
+            oboeMode =  PerformanceMode::LowLatency;
+            break;
+        case SL_ANDROID_PERFORMANCE_POWER_SAVING:
+            oboeMode =  PerformanceMode::PowerSaving;
+            break;
+        default:
+            break;
+    }
+    return oboeMode;
+}
+
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
+
+    if (configItf == nullptr) {
+        LOGW("%s() called with NULL configuration", __func__);
+        mPerformanceMode = PerformanceMode::None;
+        return SL_RESULT_INTERNAL_ERROR;
+    }
+    if (getSdkVersion() < __ANDROID_API_N_MR1__) {
+        LOGW("%s() not supported until N_MR1", __func__);
+        mPerformanceMode = PerformanceMode::None;
+        return SL_RESULT_SUCCESS;
+    }
+
     SLresult result = SL_RESULT_SUCCESS;
-    if(getSdkVersion() >= __ANDROID_API_N_MR1__) {
-        SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
-        result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
-                                                         &performanceMode, sizeof(performanceMode));
+    SLuint32 performanceMode = convertPerformanceMode(getPerformanceMode());
+    LOGD("SetConfiguration(SL_ANDROID_KEY_PERFORMANCE_MODE, SL %u) called", performanceMode);
+    result = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                                     &performanceMode, sizeof(performanceMode));
+    if (SL_RESULT_SUCCESS != result) {
+        LOGW("SetConfiguration(PERFORMANCE_MODE, SL %u) returned %s",
+             performanceMode, getSLErrStr(result));
+        mPerformanceMode = PerformanceMode::None;
+    }
+
+    return result;
+}
+
+SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf configItf) {
+    SLresult result = SL_RESULT_SUCCESS;
+    if(getSdkVersion() >= __ANDROID_API_N_MR1__ && configItf != nullptr) {
+        SLuint32 performanceMode = 0;
+        SLuint32 performanceModeSize = sizeof(performanceMode);
+        result = (*configItf)->GetConfiguration(configItf, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                                                &performanceModeSize, &performanceMode);
+        // A bug in GetConfiguration() before P caused a wrong result code to be returned.
+        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+            result = SL_RESULT_SUCCESS; // Ignore actual result before P.
+        }
+
         if (SL_RESULT_SUCCESS != result) {
-            LOGW("SetConfiguration(PERFORMANCE_MODE, %u) returned %d", performanceMode, result);
-            mPerformanceMode = PerformanceMode::None;
+            LOGW("GetConfiguration(SL_ANDROID_KEY_PERFORMANCE_MODE) returned %d", result);
+            mPerformanceMode = PerformanceMode::None; // If we can't query it then assume None.
+        } else {
+            mPerformanceMode = convertPerformanceMode(performanceMode); // convert SL to Oboe mode
         }
     } else {
-        mPerformanceMode = PerformanceMode::None;
+        mPerformanceMode = PerformanceMode::None; // If we can't query it then assume None.
     }
     return result;
 }

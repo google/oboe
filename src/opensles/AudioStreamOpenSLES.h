@@ -92,6 +92,9 @@ protected:
 
     SLresult configurePerformanceMode(SLAndroidConfigurationItf configItf);
 
+    SLresult updateStreamParameters(SLAndroidConfigurationItf configItf);
+
+    PerformanceMode convertPerformanceMode(SLuint32 openslMode) const;
     SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
 
     /**
