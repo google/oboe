@@ -88,7 +88,6 @@ public:
 private:
     uint32_t mTotalFrames;
     uint32_t mThreshold;
-//    uint32_t mSmallMask;
 };
 
 } // namespace oboe

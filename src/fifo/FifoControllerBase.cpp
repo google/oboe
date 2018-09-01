@@ -28,22 +28,16 @@ FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
         : mTotalFrames(totalFrames)
         , mThreshold(threshold)
 {
-    // numFrames must be a power of 2
-//    assert((totalFrames & (totalFrames - 1)) == 0);
-//    mSmallMask = totalFrames - 1;
 }
 
 FifoControllerBase::~FifoControllerBase() {
 }
 
 int32_t FifoControllerBase::getFullFramesAvailable() {
-//    LOGD("getFullFramesAvailable - writeCounter = %d, readCounter() = %d",
-//         (int)getWriteCounter(), (int) getReadCounter());
     return static_cast<int32_t>(getWriteCounter() - getReadCounter());
 }
 
 uint32_t FifoControllerBase::getReadIndex() {
-//    return ((uint32_t) getReadCounter()) & mSmallMask;
     return static_cast<uint32_t>(getReadCounter() % mTotalFrames);
 }
 
@@ -54,13 +48,10 @@ void FifoControllerBase::advanceReadIndex(int numFrames) {
 int32_t FifoControllerBase::getEmptyFramesAvailable() {
     int32_t fullFramesAvailable = getFullFramesAvailable();
     int32_t available = static_cast<int32_t>(mThreshold - fullFramesAvailable);
-//    LOGD("getEmptyFramesAvailable - full = %d, threshold = %u, available = %d",
-//         fullFramesAvailable, mThreshold, available);
     return available;
 }
 
 uint32_t FifoControllerBase::getWriteIndex() {
-//    return ((uint32_t) getWriteCounter()) & mSmallMask;
     return static_cast<uint32_t>(getWriteCounter() % mTotalFrames); // % works with non-power of two sizes
 }
 
