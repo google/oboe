@@ -66,7 +66,6 @@ public:
 
     void setReadCounter(uint64_t n) {
         mFifo->setReadCounter(n);
-//        LOGD("FifoBuffer: setReadCounter(%d)", (int) n);
     }
 
     uint64_t getWriteCounter() {
@@ -74,7 +73,6 @@ public:
     }
     void setWriteCounter(uint64_t n) {
         mFifo->setWriteCounter(n);
-//        LOGD("FifoBuffer: setWriteCounter(%d)", (int) n);
     }
 
 private:

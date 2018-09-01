@@ -122,8 +122,6 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
 
 int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
     int32_t framesAvailable = mFifo->getEmptyFramesAvailable();
-//    LOGD("FifoBuffer::write() framesToWrite = %d, framesAvailable = %d",
-//         framesToWrite, framesAvailable);
     if (framesToWrite > framesAvailable) {
         framesToWrite = framesAvailable;
     }
@@ -141,18 +139,15 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
         int frames1 = mFrameCapacity - writeIndex;
         numBytes = convertFramesToBytes(frames1);
         memcpy(destination, source, numBytes);
-//        LOGD("FifoBuffer::write(%p to %p, numBytes = %d", source, destination, numBytes);
         // read second part
         source += convertFramesToBytes(frames1);
         destination = &mStorage[0];
         int framesLeft = framesToWrite - frames1;
         numBytes = convertFramesToBytes(framesLeft);
-//        LOGD("FifoBuffer::write(%p to %p, numBytes = %d", source, destination, numBytes);
         memcpy(destination, source, numBytes);
     } else {
         // just write in one shot
         numBytes = convertFramesToBytes(framesToWrite);
-//        LOGD("FifoBuffer::write(%p to %p, numBytes = %d", source, destination, numBytes);
         memcpy(destination, source, numBytes);
     }
     mFifo->advanceWriteIndex(framesToWrite);
