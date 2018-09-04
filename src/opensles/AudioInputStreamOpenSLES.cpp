@@ -101,12 +101,16 @@ Result AudioInputStreamOpenSLES::open() {
 
     /**
      * API 21 (Lollipop) introduced support for floating-point data representation and an extended
-     * data format type: SLAndroidDataFormat_PCM_EX. If running on API 21+ use this newer format
-     * type, creating it from our original format.
+     * data format type for audio playback: SLAndroidDataFormat_PCM_EX.
+     *
+     * The support for floating-point data representation and the extended data format type for
+     * audio record was only added in API 23 (Marshmallow).
+     *
+     * If running on API 23+ use this newer format type, creating it from our original format.
      */
 
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
-    if (getSdkVersion() >= __ANDROID_API_L__) {
+    if (getSdkVersion() >= __ANDROID_API_M__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
         // Fill in the format structure.
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
