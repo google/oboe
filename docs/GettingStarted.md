@@ -100,7 +100,7 @@ Check the result to make sure the stream was opened successfully. Oboe has a con
 
 Note that this sample code uses the [logging macros from here](https://github.com/googlesamples/android-audio-high-performance/blob/master/debug-utils/logging_macros.h).
 
-Check the properties of the created stream. The **format** is one property which you should check. The default is `float` on API 21+ and `int16_t` on API 20 or lower. This will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback.
+Check the properties of the created stream. The **format** is one property which you should check. This will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback.
 
     oboe::AudioFormat format = stream->getFormat();
     LOGI("AudioStream format is %s", oboe::convertToText(format));
