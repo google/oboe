@@ -154,5 +154,5 @@ Here's a code sample showing how the default values for built-in devices can be 
 	}
 
 # Further information
-- [Code samples](https://github.com/googlesamples/android-audio-high-performance/tree/master/oboe)
+- [Code samples](https://github.com/google/oboe/tree/master/samples)
 - [Full guide to Oboe](FullGuide.md)
