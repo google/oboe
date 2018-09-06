@@ -26,9 +26,9 @@ Getting Started
 
 Support
 -------
-If you've found an error in these samples, please [file an issue](https://github.com/googlesamples/android-audio-high-performance/issues/new).
+If you've found an error in these samples, please [file an issue](https://github.com/google/oboe/issues/new).
 
-Patches are encouraged, and may be submitted by [forking this project](https://github.com/googlesamples/android-audio-high-performance/fork) and
+Patches are encouraged, and may be submitted by [forking this project](https://github.com/google/oboe/fork) and
 submitting a pull request through GitHub. Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for more details.
 
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/android-ndk)
