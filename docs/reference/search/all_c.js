@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['samplerate',['SampleRate',['../classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1',1,'oboe::DefaultStreamValues']]],
+  ['sessionid',['SessionId',['../namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf',1,'oboe']]],
+  ['setaudioapi',['setAudioApi',['../classoboe_1_1_audio_stream_builder.html#a38c6d6c5e718df1e3ac69daaac47c391',1,'oboe::AudioStreamBuilder']]],
+  ['setbuffercapacityinframes',['setBufferCapacityInFrames',['../classoboe_1_1_audio_stream_builder.html#abaff480867af51ca0899bfa6fd7cc3ef',1,'oboe::AudioStreamBuilder']]],
+  ['setbuffersizeinframes',['setBufferSizeInFrames',['../classoboe_1_1_audio_stream.html#ac93b18e18487e809151f63ec3c6228bb',1,'oboe::AudioStream']]],
+  ['setcallback',['setCallback',['../classoboe_1_1_audio_stream_builder.html#a698cefa9af73bc97c020c004821fccbd',1,'oboe::AudioStreamBuilder']]],
+  ['setchannelcount',['setChannelCount',['../classoboe_1_1_audio_stream_builder.html#a075d10291e1f998d90c2f73ef767b5a7',1,'oboe::AudioStreamBuilder']]],
+  ['setcontenttype',['setContentType',['../classoboe_1_1_audio_stream_builder.html#a6a17bafc217c2b624179fbbf77fe4468',1,'oboe::AudioStreamBuilder']]],
+  ['setdeviceid',['setDeviceId',['../classoboe_1_1_audio_stream_builder.html#af36ddcd00686a9e1de661bdac0685a8e',1,'oboe::AudioStreamBuilder']]],
+  ['setdirection',['setDirection',['../classoboe_1_1_audio_stream_builder.html#ab3fbd47b06197619c26393637e26354c',1,'oboe::AudioStreamBuilder']]],
+  ['setformat',['setFormat',['../classoboe_1_1_audio_stream_builder.html#aa2e1d2d73cd6c2eb9f349bf2fe5f6515',1,'oboe::AudioStreamBuilder']]],
+  ['setframespercallback',['setFramesPerCallback',['../classoboe_1_1_audio_stream_builder.html#a3f397821f61eabaeedaf31064c859a54',1,'oboe::AudioStreamBuilder']]],
+  ['setinputpreset',['setInputPreset',['../classoboe_1_1_audio_stream_builder.html#a144a3d095fd668210282f1a91f23e1f0',1,'oboe::AudioStreamBuilder']]],
+  ['setperformancemode',['setPerformanceMode',['../classoboe_1_1_audio_stream_builder.html#a6cd1d65612e844e59da71a68ea0ab3ee',1,'oboe::AudioStreamBuilder']]],
+  ['setsamplerate',['setSampleRate',['../classoboe_1_1_audio_stream_builder.html#a30ef3d5f51d56a9f980dc09600ed139d',1,'oboe::AudioStreamBuilder']]],
+  ['setsessionid',['setSessionId',['../classoboe_1_1_audio_stream_builder.html#a54c1651bdbe089d0d714af499e8a5f1d',1,'oboe::AudioStreamBuilder']]],
+  ['setsharingmode',['setSharingMode',['../classoboe_1_1_audio_stream_builder.html#a3e991742acbbfb6fe5ebcf592c478654',1,'oboe::AudioStreamBuilder']]],
+  ['setusage',['setUsage',['../classoboe_1_1_audio_stream_builder.html#a593255a2f5eb972665775cfc5bc58f6a',1,'oboe::AudioStreamBuilder']]],
+  ['shared',['Shared',['../namespaceoboe.html#ae3a52556c58387e0cecba01f9abffdffaa6156ea9d66fef24e87e841fbabf7cca',1,'oboe']]],
+  ['sharingmode',['SharingMode',['../namespaceoboe.html#ae3a52556c58387e0cecba01f9abffdff',1,'oboe']]],
+  ['sonification',['Sonification',['../namespaceoboe.html#a07eed38097ed944422063801f8f83406a0885eef555037e94a7cf39fe683c2799',1,'oboe']]],
+  ['speech',['Speech',['../namespaceoboe.html#a07eed38097ed944422063801f8f83406a3dc48a4b4619aa4edd1da7b937b4dcd1',1,'oboe']]],
+  ['stereo',['Stereo',['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba',1,'oboe']]]
+];
