@@ -8,8 +8,9 @@ var searchData=
   ['assistancesonification',['AssistanceSonification',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba1ce57a0572748beebfc0c664ca1077e7',1,'oboe']]],
   ['assistant',['Assistant',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba9b1363da9503dbd4142c0274a88e8d4b',1,'oboe']]],
   ['audioapi',['AudioApi',['../a00032.html#a92972414867c81d5974cb2ed7abefbf6',1,'oboe']]],
-  ['audiostream',['AudioStream',['../a00036.html',1,'oboe']]],
-  ['audiostreambase',['AudioStreamBase',['../a00040.html',1,'oboe']]],
+  ['audioformat',['AudioFormat',['../a00032.html#a58191d1a396041246bd4e0a87dbfdec9',1,'oboe']]],
+  ['audiostream',['AudioStream',['../a00036.html',1,'oboe::AudioStream'],['../a00036.html#a8ebb587a07bf62c864fd62c63b241fd4',1,'oboe::AudioStream::AudioStream()']]],
+  ['audiostreambase',['AudioStreamBase',['../a00040.html',1,'oboe::AudioStreamBase'],['../a00040.html#aa6b103e1b0f808bbc4949d56f0829f98',1,'oboe::AudioStreamBase::AudioStreamBase()']]],
   ['audiostreambuilder',['AudioStreamBuilder',['../a00044.html',1,'oboe']]],
   ['audiostreamcallback',['AudioStreamCallback',['../a00048.html',1,'oboe']]]
 ];

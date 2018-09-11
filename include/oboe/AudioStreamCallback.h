@@ -23,6 +23,13 @@ namespace oboe {
 
 class AudioStream;
 
+/**
+ * AudioStreamCallback defines a callback interface for:
+ *
+ * 1) moving data to/from an audio stream using `onAudioReady`
+ * 2) being alerted when a stream has an error using `onError*` methods
+ *
+ */
 class AudioStreamCallback {
 public:
     virtual ~AudioStreamCallback() = default;

@@ -111,6 +111,13 @@ public:
         return this;
     }
 
+    /**
+     * Get the audio API which will be requested when opening the stream. No guarantees that this is
+     * the API which will actually be used. Query the stream itself to find out the API which is
+     * being used.
+     *
+     * @return the requested audio API
+     */
     AudioApi getAudioApi() const { return mAudioApi; }
 
     /**

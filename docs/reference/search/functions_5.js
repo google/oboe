@@ -1,19 +1,9 @@
 var searchData=
 [
-  ['setaudioapi',['setAudioApi',['../a00044.html#a38c6d6c5e718df1e3ac69daaac47c391',1,'oboe::AudioStreamBuilder']]],
-  ['setbuffercapacityinframes',['setBufferCapacityInFrames',['../a00044.html#abaff480867af51ca0899bfa6fd7cc3ef',1,'oboe::AudioStreamBuilder']]],
-  ['setbuffersizeinframes',['setBufferSizeInFrames',['../a00036.html#ac93b18e18487e809151f63ec3c6228bb',1,'oboe::AudioStream']]],
-  ['setcallback',['setCallback',['../a00044.html#a698cefa9af73bc97c020c004821fccbd',1,'oboe::AudioStreamBuilder']]],
-  ['setchannelcount',['setChannelCount',['../a00044.html#a075d10291e1f998d90c2f73ef767b5a7',1,'oboe::AudioStreamBuilder']]],
-  ['setcontenttype',['setContentType',['../a00044.html#a6a17bafc217c2b624179fbbf77fe4468',1,'oboe::AudioStreamBuilder']]],
-  ['setdeviceid',['setDeviceId',['../a00044.html#af36ddcd00686a9e1de661bdac0685a8e',1,'oboe::AudioStreamBuilder']]],
-  ['setdirection',['setDirection',['../a00044.html#ab3fbd47b06197619c26393637e26354c',1,'oboe::AudioStreamBuilder']]],
-  ['setformat',['setFormat',['../a00044.html#aa2e1d2d73cd6c2eb9f349bf2fe5f6515',1,'oboe::AudioStreamBuilder']]],
-  ['setframespercallback',['setFramesPerCallback',['../a00044.html#a3f397821f61eabaeedaf31064c859a54',1,'oboe::AudioStreamBuilder']]],
-  ['setinputpreset',['setInputPreset',['../a00044.html#a144a3d095fd668210282f1a91f23e1f0',1,'oboe::AudioStreamBuilder']]],
-  ['setperformancemode',['setPerformanceMode',['../a00044.html#a6cd1d65612e844e59da71a68ea0ab3ee',1,'oboe::AudioStreamBuilder']]],
-  ['setsamplerate',['setSampleRate',['../a00044.html#a30ef3d5f51d56a9f980dc09600ed139d',1,'oboe::AudioStreamBuilder']]],
-  ['setsessionid',['setSessionId',['../a00044.html#a54c1651bdbe089d0d714af499e8a5f1d',1,'oboe::AudioStreamBuilder']]],
-  ['setsharingmode',['setSharingMode',['../a00044.html#a3e991742acbbfb6fe5ebcf592c478654',1,'oboe::AudioStreamBuilder']]],
-  ['setusage',['setUsage',['../a00044.html#a593255a2f5eb972665775cfc5bc58f6a',1,'oboe::AudioStreamBuilder']]]
+  ['incrementframesread',['incrementFramesRead',['../a00036.html#a81568482a217b314498e2501210758d7',1,'oboe::AudioStream']]],
+  ['incrementframeswritten',['incrementFramesWritten',['../a00036.html#ad6b4c63f6ed1ecb509f7b80352a9c0bd',1,'oboe::AudioStream']]],
+  ['isaaudiorecommended',['isAAudioRecommended',['../a00044.html#a622732bbe5c6577356d749f7dc2108df',1,'oboe::AudioStreamBuilder']]],
+  ['isaaudiosupported',['isAAudioSupported',['../a00044.html#a18e7b5f7554a4c2ca763e35e8117d699',1,'oboe::AudioStreamBuilder']]],
+  ['isplaying',['isPlaying',['../a00036.html#ad5260e2cc71108b1b2e694bf6162279f',1,'oboe::AudioStream']]],
+  ['isxruncountsupported',['isXRunCountSupported',['../a00036.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
 ];

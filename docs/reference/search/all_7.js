@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['major',['Major',['../a00064.html#a270f2e92582d5187be339eeda8e2b276',1,'oboe::Version']]],
-  ['media',['Media',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba3b563524fdb17b4a86590470d40bef74',1,'oboe']]],
-  ['minor',['Minor',['../a00064.html#ae460bb95e3a9099696205a35fffb5469',1,'oboe::Version']]],
-  ['mono',['Mono',['../a00032.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79',1,'oboe']]],
-  ['movie',['Movie',['../a00032.html#a07eed38097ed944422063801f8f83406a8b3b366178c2b7b1688bca6cd33758b1',1,'oboe']]],
-  ['music',['Music',['../a00032.html#a07eed38097ed944422063801f8f83406ac156fcc7b29059305cef26f3904d4517',1,'oboe']]]
+  ['kdefaulttimeoutnanos',['kDefaultTimeoutNanos',['../a00032.html#aab8f5f081a8b2147e16ec920347c1b5c',1,'oboe']]],
+  ['kmillispersecond',['kMillisPerSecond',['../a00032.html#ad1bb9f5626cec20d3a052a8721959873',1,'oboe']]],
+  ['knanospermicrosecond',['kNanosPerMicrosecond',['../a00032.html#aedef0759ae3622b6f0324799bcbdebf0',1,'oboe']]],
+  ['knanospermillisecond',['kNanosPerMillisecond',['../a00032.html#a831e887150474c087170679eaca8672b',1,'oboe']]],
+  ['knanospersecond',['kNanosPerSecond',['../a00032.html#a5948466b593c4eab65f7025846a39f51',1,'oboe']]],
+  ['kunspecified',['kUnspecified',['../a00032.html#ab0772052200184e514082eaa89be7905',1,'oboe']]]
 ];

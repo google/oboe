@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['unprocessed',['Unprocessed',['../a00032.html#a17f63a064de966efddd5d0335992bc04acad9424158aefae0af7975901b11d85f',1,'oboe']]],
-  ['unspecified',['Unspecified',['../a00032.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76',1,'oboe::Unspecified()'],['../a00032.html#a522e6806948369987639a0d1df03c029a6fcdc090caeade09d0efd6253932b6f5',1,'oboe::Unspecified()']]]
+  ['none',['None',['../a00032.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f',1,'oboe::None()'],['../a00032.html#a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754',1,'oboe::None()']]],
+  ['notification',['Notification',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba96d008db67fc0b5551a926842bbb6a71',1,'oboe']]],
+  ['notificationevent',['NotificationEvent',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba089240b5380dbd12f1eac0ec258a3b2f',1,'oboe']]],
+  ['notificationringtone',['NotificationRingtone',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba4e7a4b08274d472394b740a20d3bbdaf',1,'oboe']]]
 ];
