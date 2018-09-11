@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tune',['tune',['../a00056.html#ad2be756965e6a9af3114008eda892174',1,'oboe::LatencyTuner']]]
+  ['latencytuner',['LatencyTuner',['../a00056.html#a0263b9a55825c0a403653b2b508073ea',1,'oboe::LatencyTuner']]]
 ];

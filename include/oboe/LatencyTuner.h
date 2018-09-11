@@ -25,9 +25,8 @@
 namespace oboe {
 
 /**
- * This can be used to dynamically tune the latency of an output stream.
- * It adjusts the bufferSize based on the number of underruns.
- * The bufferSize is the portion of the total bufferCapacity that is used to store data.
+ * LatencyTuner can be used to dynamically tune the latency of an output stream.
+ * It adjusts the stream's bufferSize by monitoring the number of underruns.
  *
  * This only affects the latency associated with the first level of buffering that is closest
  * to the application. It does not affect low latency in the HAL, or touch latency in the UI.
@@ -41,6 +40,12 @@ namespace oboe {
  */
 class LatencyTuner {
 public:
+
+    /**
+     * Construct a new LatencyTuner object which will act on the given audio stream
+     *
+     * @param stream the stream who's latency will be tuned
+     */
     explicit LatencyTuner(AudioStream &stream);
 
     /**

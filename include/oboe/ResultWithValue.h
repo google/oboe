@@ -23,21 +23,61 @@
 
 namespace oboe {
 
+/**
+ * A ResultWithValue can store both the result of an operation (either OK or an error) and a value.
+ *
+ * It has been designed for cases where the caller needs to know whether an operation succeeded and,
+ * if it did, a value which was obtained during the operation.
+ *
+ * For example, when reading from a stream the caller needs to know the result of the read operation
+ * and, if it was successful, how many frames were read. Note that ResultWithValue can be evaluated
+ * as a boolean so it's simple to check whether the result is OK.
+ *
+ * <code>
+ * ResultWithValue<int32_t> resultOfRead = myStream.read(&buffer, numFrames, timeoutNanoseconds);
+ *
+ * if (resultOfRead){
+ *     LOGD("Frames read: %d", resultOfRead.value());
+ * } else {
+ *     LOGD("Error reading from stream: %s", resultOfRead.error());
+ * }
+ * </code>
+ */
 template <typename T>
 class ResultWithValue {
 public:
+
+    /**
+     * Construct a ResultWithValue containing an error result.
+     *
+     * @param error The error
+     */
     ResultWithValue(oboe::Result error)
             : mValue{}
             , mError(error) {}
 
+    /**
+     * Construct a ResultWithValue containing an OK result and a value.
+     *
+     * @param value the value to store
+     */
     explicit ResultWithValue(T value)
             : mValue(value)
             , mError(oboe::Result::OK) {}
 
+    /**
+     * Get the result.
+     *
+     * @return the result
+     */
     oboe::Result error() const {
         return mError;
     }
 
+    /**
+     * Get the value
+     * @return
+     */
     T value() const {
         return mValue;
     }
@@ -96,6 +136,9 @@ private:
     const oboe::Result  mError;
 };
 
+/**
+ * If the result is `OK` then return the value, otherwise return a human-readable error message.
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream &strm, const ResultWithValue<T> &result) {
     if (!result) {

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['number',['Number',['../a00064.html#ac579661e79bcee45dc676d4647891de0',1,'oboe::Version']]]
+  ['framesperburst',['FramesPerBurst',['../a00052.html#ab5ea5576699cebc56193f5c297d3e300',1,'oboe::DefaultStreamValues']]]
 ];

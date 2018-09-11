@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['voicecommunication',['VoiceCommunication',['../a00032.html#a17f63a064de966efddd5d0335992bc04a1862e72c9730c448fbec6f61a5d8234d',1,'oboe::VoiceCommunication()'],['../a00032.html#a17f63a064de966efddd5d0335992bc04a5bad8854288c956062ec1d4d7c14fed6',1,'oboe::VoiceCommunication()']]],
-  ['voicecommunicationsignalling',['VoiceCommunicationSignalling',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba404f62633744bf4da0c6a27a2b78ce74',1,'oboe']]],
-  ['voicerecognition',['VoiceRecognition',['../a00032.html#a17f63a064de966efddd5d0335992bc04af6e440b4e9edf49afe18aa4be77be6fc',1,'oboe']]]
+  ['opensles',['OpenSLES',['../a00032.html#a92972414867c81d5974cb2ed7abefbf6a24e758ea9c1e842ef71cc8ff8b63fa9b',1,'oboe']]],
+  ['output',['Output',['../a00032.html#aea1c5f88e3dd4144f51ed5a434fb387ba29c2c02a361c9d7028472e5d92cd4a54',1,'oboe']]]
 ];

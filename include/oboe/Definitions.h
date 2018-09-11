@@ -35,14 +35,35 @@ ASSERT_INT32(aaudio_performance_mode_t);
 
 namespace oboe {
 
+    /**
+     * Represents any attribute, property or value which hasn't been specified.
+     */
     constexpr int32_t kUnspecified = 0;
 
     // TODO: Investigate using std::chrono
+    /**
+     * The number of nanoseconds in a microsecond. 1,000.
+     */
     constexpr int64_t kNanosPerMicrosecond =    1000;
+
+    /**
+     * The number of nanoseconds in a millisecond. 1,000,000.
+     */
     constexpr int64_t kNanosPerMillisecond =    kNanosPerMicrosecond * 1000;
+
+    /**
+     * The number of milliseconds in a second. 1,000.
+     */
     constexpr int64_t kMillisPerSecond =        1000;
+
+    /**
+     * The number of nanoseconds in a second. 1,000,000,000.
+     */
     constexpr int64_t kNanosPerSecond =         kNanosPerMillisecond * kMillisPerSecond;
 
+    /**
+     * The state of the audio stream.
+     */
     enum class StreamState : aaudio_stream_state_t {
         Uninitialized = AAUDIO_STREAM_STATE_UNINITIALIZED,
         Unknown = AAUDIO_STREAM_STATE_UNKNOWN,
@@ -60,23 +81,62 @@ namespace oboe {
         Disconnected = AAUDIO_STREAM_STATE_DISCONNECTED,
     };
 
+    /**
+     * The direction of the stream.
+     */
     enum class Direction : aaudio_direction_t {
+
+        /**
+         * Used for playback.
+         */
         Output = AAUDIO_DIRECTION_OUTPUT,
+
+        /**
+         * Used for recording.
+         */
         Input = AAUDIO_DIRECTION_INPUT,
     };
 
+    /**
+     * The format of audio samples.
+     */
     enum class AudioFormat : aaudio_format_t {
+        /**
+         * Invalid format.
+         */
         Invalid = AAUDIO_FORMAT_INVALID,
+
+        /**
+         * Unspecified format. Format will be decided by Oboe.
+         */
         Unspecified = AAUDIO_FORMAT_UNSPECIFIED,
+
+        /**
+         * Signed 16-bit integers.
+         */
         I16 = AAUDIO_FORMAT_PCM_I16,
+
+        /**
+         * Single precision floating points.
+         */
         Float = AAUDIO_FORMAT_PCM_FLOAT,
     };
 
+    /**
+     * The result of an audio callback.
+     */
     enum class DataCallbackResult : aaudio_data_callback_result_t {
+        // Indicates to the caller that the callbacks should continue.
         Continue = AAUDIO_CALLBACK_RESULT_CONTINUE,
+
+        // Indicates to the caller that the callbacks should stop immediately.
         Stop = AAUDIO_CALLBACK_RESULT_STOP,
     };
 
+    /**
+     * The result of an operation. All except the `OK` result indicates that an error occurred.
+     * The `Result` can be converted into a human readable string using `convertToText`.
+     */
     enum class Result : aaudio_result_t {
         OK,
         ErrorBase = AAUDIO_ERROR_BASE,
@@ -110,6 +170,9 @@ namespace oboe {
         ErrorClosed,
     };
 
+    /**
+     * The sharing mode of the audio stream.
+     */
     enum class SharingMode : aaudio_sharing_mode_t {
 
         /**
@@ -126,18 +189,30 @@ namespace oboe {
         Shared = AAUDIO_SHARING_MODE_SHARED,
     };
 
+    /**
+     * The performance mode of the audio stream.
+     */
     enum class PerformanceMode : aaudio_performance_mode_t {
 
-        // No particular performance needs. Default.
+        /**
+         * No particular performance needs. Default.
+         */
         None = AAUDIO_PERFORMANCE_MODE_NONE,
 
-        // Extending battery life is most important.
+        /**
+         * Extending battery life is most important.
+         */
         PowerSaving = AAUDIO_PERFORMANCE_MODE_POWER_SAVING,
 
-        // Reducing latency is most important.
+        /**
+         * Reducing latency is most important.
+         */
         LowLatency = AAUDIO_PERFORMANCE_MODE_LOW_LATENCY
     };
 
+    /**
+     * The underlying audio API used by the audio stream.
+     */
     enum class AudioApi : int32_t {
         /**
          * Try to use AAudio. If not available then use OpenSL ES.
@@ -163,13 +238,13 @@ namespace oboe {
 #endif
 
     /**
-     * The Usage attribute expresses "why" you are playing a sound, what is this sound used for.
+     * The Usage attribute expresses *why* you are playing a sound, what is this sound used for.
      * This information is used by certain platforms or routing policies
      * to make more refined volume or routing decisions.
      *
      * Note that these match the equivalent values in AudioAttributes in the Android Java API.
      *
-     * Added in API level 28.
+     * This attribute only has an effect on Android API 28+.
      */
     enum class Usage : aaudio_usage_t {
         /**
@@ -238,16 +313,16 @@ namespace oboe {
 
 
     /**
-     * The CONTENT_TYPE attribute describes "what" you are playing.
+     * The ContentType attribute describes *what* you are playing.
      * It expresses the general category of the content. This information is optional.
-     * But in case it is known (for instance {@link #AAUDIO_CONTENT_TYPE_MOVIE} for a
-     * movie streaming service or {@link #AAUDIO_CONTENT_TYPE_SPEECH} for
+     * But in case it is known (for instance {@link Movie} for a
+     * movie streaming service or {@link Speech} for
      * an audio book application) this information might be used by the audio framework to
      * enforce audio focus.
      *
      * Note that these match the equivalent values in AudioAttributes in the Android Java API.
      *
-     * Added in API level 28.
+     * This attribute only has an effect on Android API 28+.
      */
     enum ContentType : aaudio_content_type_t {
 
@@ -280,7 +355,7 @@ namespace oboe {
      *
      * Note that these match the equivalent values in MediaRecorder.AudioSource in the Android Java API.
      *
-     * Added in API level 28.
+     * This attribute only has an effect on Android API 28+.
      */
     enum InputPreset : aaudio_input_preset_t {
         /**
@@ -311,13 +386,16 @@ namespace oboe {
         Unprocessed = CONSTANT_API_P(9, AAUDIO_INPUT_PRESET_UNPROCESSED),
     };
 
+    /**
+     * This attribute can be used to allocate a session ID to the audio stream.
+     *
+     * This attribute only has an effect on Android API 28+.
+     */
     enum SessionId {
         /**
          * Do not allocate a session ID.
          * Effects cannot be used with this stream.
          * Default.
-         *
-         * Added in API level 28.
          */
          None = CONSTANT_API_P(-1, AAUDIO_SESSION_ID_NONE),
 
@@ -327,12 +405,20 @@ namespace oboe {
          * Note that the use of this flag may result in higher latency.
          *
          * Note that this matches the value of AudioManager.AUDIO_SESSION_ID_GENERATE.
-         *
-         * Added in API level 28.
          */
          Allocate = CONSTANT_API_P(0, AAUDIO_SESSION_ID_ALLOCATE),
     };
 
+    /**
+     * The channel count of the audio stream. The underlying type is `int32_t`.
+     * Use of this enum is convenient to avoid "magic"
+     * numbers when specifying the channel count.
+     *
+     * For example, you can write
+     * `builder.setChannelCount(ChannelCount::Stereo)`
+     * rather than `builder.setChannelCount(2)`
+     *
+     */
     enum ChannelCount : int32_t {
       /**
        * Audio channel count definition, use Mono or Stereo
@@ -352,31 +438,35 @@ namespace oboe {
 
 #undef CONSTANT_API_P
 
+    /**
+     * On API 16 to 25 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
+     * framesPerBurst are not known by the native code.
+     * On API 17+ these values should be obtained from the AudioManager using this code:
+     *
+     * <pre><code>
+        // Note that this technique only works for built-in speakers and headphones.
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+        int defaultSampleRate = Integer.parseInt(sampleRateStr);
+        String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+        </code></pre>
+     *
+     * It can then be passed down to Oboe through JNI.
+     *
+     * AAudio will get the optimal framesPerBurst from the HAL and will ignore this value.
+     */
     class DefaultStreamValues {
 
     public:
 
-        /**
-         * On API 16 to 25 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
-         * framesPerBurst are not known by the native code.
-         * On API 17+ these values should be obtained from the AudioManager using this code:
-         *
-         * <pre><code>
-            // Note that this technique only works for built-in speakers and headphones.
-            AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-            int defaultSampleRate = Integer.parseInt(sampleRateStr);
-            String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-            int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
-            </code></pre>
-         *
-         * It can then be passed down to Oboe through JNI.
-         *
-         * AAudio will get the optimal framesPerBurst from the HAL and will ignore this value.
-         */
+        /** The default sample rate to use when opening new audio streams */
         static int32_t SampleRate;
+        /** The default frames per burst to use when opening new audio streams */
         static int32_t FramesPerBurst;
+        /** The default channel count to use when opening new audio streams */
         static int32_t ChannelCount;
+
     };
 
 

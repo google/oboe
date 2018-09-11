@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['game',['Game',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbba63d72051e901c069f8aa1b32aa0c43bb',1,'oboe']]],
-  ['generic',['Generic',['../a00032.html#a17f63a064de966efddd5d0335992bc04a0ba6f369e7f8a700c14afe2992290544',1,'oboe']]]
+  ['float',['Float',['../a00032.html#a58191d1a396041246bd4e0a87dbfdec9a22ae0e2b89e5e3d477f988cc36d3272b',1,'oboe']]]
 ];

@@ -79,20 +79,53 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0263b9a55825c0a403653b2b508073ea"><td class="memItemLeft" align="right" valign="top"><a id="a0263b9a55825c0a403653b2b508073ea"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LatencyTuner</b> (<a class="el" href="a00036.html">AudioStream</a> &amp;stream)</td></tr>
+<tr class="memitem:a0263b9a55825c0a403653b2b508073ea"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00056.html#a0263b9a55825c0a403653b2b508073ea">LatencyTuner</a> (<a class="el" href="a00036.html">AudioStream</a> &amp;stream)</td></tr>
 <tr class="separator:a0263b9a55825c0a403653b2b508073ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2be756965e6a9af3114008eda892174"><td class="memItemLeft" align="right" valign="top">Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00056.html#ad2be756965e6a9af3114008eda892174">tune</a> ()</td></tr>
+<tr class="memitem:ad2be756965e6a9af3114008eda892174"><td class="memItemLeft" align="right" valign="top"><a class="el" href="a00032.html#a5e32586b07bf64da91f99fc33c043cb1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00056.html#ad2be756965e6a9af3114008eda892174">tune</a> ()</td></tr>
 <tr class="separator:ad2be756965e6a9af3114008eda892174"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c0142e08dc65eda8f758b4794450867"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00056.html#a6c0142e08dc65eda8f758b4794450867">requestReset</a> ()</td></tr>
 <tr class="separator:a6c0142e08dc65eda8f758b4794450867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This can be used to dynamically tune the latency of an output stream. It adjusts the bufferSize based on the number of underruns. The bufferSize is the portion of the total bufferCapacity that is used to store data.</p>
+<div class="textblock"><p><a class="el" href="a00056.html">LatencyTuner</a> can be used to dynamically tune the latency of an output stream. It adjusts the stream's bufferSize by monitoring the number of underruns.</p>
 <p>This only affects the latency associated with the first level of buffering that is closest to the application. It does not affect low latency in the HAL, or touch latency in the UI.</p>
 <p>Call <a class="el" href="a00056.html#ad2be756965e6a9af3114008eda892174">tune()</a> right before returning from your data callback function if using callbacks. Call <a class="el" href="a00056.html#ad2be756965e6a9af3114008eda892174">tune()</a> right before calling write() if using blocking writes.</p>
 <p>If you want to see the ongoing results of this tuning process then call stream-&gt;getBufferSize() periodically. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a0263b9a55825c0a403653b2b508073ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0263b9a55825c0a403653b2b508073ea">&#9670;&nbsp;</a></span>LatencyTuner()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">oboe::LatencyTuner::LatencyTuner </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="a00036.html">AudioStream</a> &amp;&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct a new <a class="el" href="a00056.html">LatencyTuner</a> object which will act on the given audio stream</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>the stream who's latency will be tuned </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="a6c0142e08dc65eda8f758b4794450867"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6c0142e08dc65eda8f758b4794450867">&#9670;&nbsp;</a></span>requestReset()</h2>
 
@@ -119,7 +152,7 @@ Public Member Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Result oboe::LatencyTuner::tune </td>
+          <td class="memname"><a class="el" href="a00032.html#a5e32586b07bf64da91f99fc33c043cb1">Result</a> oboe::LatencyTuner::tune </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>

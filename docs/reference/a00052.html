@@ -74,19 +74,76 @@ $(function() {
 <div class="title">oboe::DefaultStreamValues Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="a00014_source.html">Definitions.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:a46a5d9a653f2153f618cadcab764e1b1"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00052.html#a46a5d9a653f2153f618cadcab764e1b1">SampleRate</a></td></tr>
 <tr class="separator:a46a5d9a653f2153f618cadcab764e1b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5ea5576699cebc56193f5c297d3e300"><td class="memItemLeft" align="right" valign="top"><a id="ab5ea5576699cebc56193f5c297d3e300"></a>
-static int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>FramesPerBurst</b></td></tr>
+<tr class="memitem:ab5ea5576699cebc56193f5c297d3e300"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00052.html#ab5ea5576699cebc56193f5c297d3e300">FramesPerBurst</a></td></tr>
 <tr class="separator:ab5ea5576699cebc56193f5c297d3e300"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5dce538d5963c81bf58350ab730962d"><td class="memItemLeft" align="right" valign="top"><a id="ad5dce538d5963c81bf58350ab730962d"></a>
-static int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>ChannelCount</b></td></tr>
+<tr class="memitem:ad5dce538d5963c81bf58350ab730962d"><td class="memItemLeft" align="right" valign="top">static int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="a00052.html#ad5dce538d5963c81bf58350ab730962d">ChannelCount</a></td></tr>
 <tr class="separator:ad5dce538d5963c81bf58350ab730962d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>On API 16 to 25 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and framesPerBurst are not known by the native code. On API 17+ these values should be obtained from the AudioManager using this code:</p>
+<pre><code>
+Note that this technique only works for built-in speakers and headphones.
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+        int defaultSampleRate = Integer.parseInt(sampleRateStr);
+        String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+        </code></pre><p>It can then be passed down to Oboe through JNI.</p>
+<p>AAudio will get the optimal framesPerBurst from the HAL and will ignore this value. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad5dce538d5963c81bf58350ab730962d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5dce538d5963c81bf58350ab730962d">&#9670;&nbsp;</a></span>ChannelCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::DefaultStreamValues::ChannelCount</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The default channel count to use when opening new audio streams </p>
+
+</div>
+</div>
+<a id="ab5ea5576699cebc56193f5c297d3e300"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5ea5576699cebc56193f5c297d3e300">&#9670;&nbsp;</a></span>FramesPerBurst</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::DefaultStreamValues::FramesPerBurst</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The default frames per burst to use when opening new audio streams </p>
+
+</div>
+</div>
 <a id="a46a5d9a653f2153f618cadcab764e1b1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a46a5d9a653f2153f618cadcab764e1b1">&#9670;&nbsp;</a></span>SampleRate</h2>
 
@@ -106,16 +163,7 @@ static int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>ChannelCoun
   </tr>
 </table>
 </div><div class="memdoc">
-<p>On API 16 to 25 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and framesPerBurst are not known by the native code. On API 17+ these values should be obtained from the AudioManager using this code:</p>
-<pre><code>
-Note that this technique only works for built-in speakers and headphones.
-            AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-            int defaultSampleRate = Integer.parseInt(sampleRateStr);
-            String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-            int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
-            </code></pre><p>It can then be passed down to Oboe through JNI.</p>
-<p>AAudio will get the optimal framesPerBurst from the HAL and will ignore this value. </p>
+<p>The default sample rate to use when opening new audio streams </p>
 
 </div>
 </div>

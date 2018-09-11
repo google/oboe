@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usage',['Usage',['../a00032.html#a1b2a1bdc891d640eb82724dcd9b7afbb',1,'oboe']]]
+  ['performancemode',['PerformanceMode',['../a00032.html#acd0e87a1512eca01c60eb3b7a6676fde',1,'oboe']]]
 ];
