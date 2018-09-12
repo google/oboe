@@ -117,11 +117,6 @@ Result AudioStream::stop(int64_t timeoutNanoseconds)
                                   StreamState::Stopped, timeoutNanoseconds);
 }
 
-bool AudioStream::isPlaying() {
-    StreamState state = getState();
-    return state == StreamState::Starting || state == StreamState::Started;
-}
-
 int32_t AudioStream::getBytesPerSample() const {
     return convertFormatToSizeInBytes(mFormat);
 }
