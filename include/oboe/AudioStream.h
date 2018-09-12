@@ -335,7 +335,7 @@ public:
     }
 
     /**
-     * Only for debugging. Do use in production.
+     * Only for debugging. Do not use in production.
      * If you need to call this method something is wrong.
      * If you think you need it for production then please let us know
      * so we can modify Oboe so that you don't need this.
