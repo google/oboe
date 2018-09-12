@@ -233,23 +233,21 @@ PlayAudioEngine::calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream,
                                                      double *latencyMillis) {
 
     // Get the time that a known audio frame was presented for playing
-    int64_t existingFrameIndex;
-    int64_t existingFramePresentationTime;
-    oboe::Result result = stream->getTimestamp(CLOCK_MONOTONIC,
-                                               &existingFrameIndex,
-                                               &existingFramePresentationTime);
+    auto result = stream->getTimestamp(CLOCK_MONOTONIC);
 
     if (result == oboe::Result::OK) {
+
+        oboe::FrameTimestamp playedFrame = result.value();
 
         // Get the write index for the next audio frame
         int64_t writeIndex = stream->getFramesWritten();
 
         // Calculate the number of frames between our known frame and the write index
-        int64_t frameIndexDelta = writeIndex - existingFrameIndex;
+        int64_t frameIndexDelta = writeIndex - playedFrame.position;
 
         // Calculate the time which the next frame will be presented
         int64_t frameTimeDelta = (frameIndexDelta * oboe::kNanosPerSecond) / mSampleRate;
-        int64_t nextFramePresentationTime = existingFramePresentationTime + frameTimeDelta;
+        int64_t nextFramePresentationTime = playedFrame.timestamp + frameTimeDelta;
 
         // Assume that the next frame will be written at the current time
         using namespace std::chrono;
@@ -260,7 +258,7 @@ PlayAudioEngine::calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream,
         *latencyMillis = static_cast<double>(nextFramePresentationTime - nextFrameWriteTime)
                          / kNanosPerMillisecond;
     } else {
-        LOGE("Error calculating latency: %s", oboe::convertToText(result));
+        LOGE("Error calculating latency: %s", oboe::convertToText(result.error()));
     }
 
     return result;
