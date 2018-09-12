@@ -181,10 +181,7 @@ Result AudioStreamAAudio::open() {
     mDeviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
     mChannelCount = mLibLoader->stream_getChannelCount(mAAudioStream);
     mSampleRate = mLibLoader->stream_getSampleRate(mAAudioStream);
-    mNativeFormat = static_cast<AudioFormat>(mLibLoader->stream_getFormat(mAAudioStream));
-    if (mFormat == AudioFormat::Unspecified) {
-        mFormat = mNativeFormat;
-    }
+    mFormat = static_cast<AudioFormat>(mLibLoader->stream_getFormat(mAAudioStream));
     mSharingMode = static_cast<SharingMode>(mLibLoader->stream_getSharingMode(mAAudioStream));
     mPerformanceMode = static_cast<PerformanceMode>(
             mLibLoader->stream_getPerformanceMode(mAAudioStream));
@@ -209,7 +206,6 @@ Result AudioStreamAAudio::open() {
     }
 
     LOGD("AudioStreamAAudio.open() app    format = %d", static_cast<int>(mFormat));
-    LOGD("AudioStreamAAudio.open() native format = %d", static_cast<int>(mNativeFormat));
     LOGD("AudioStreamAAudio.open() sample rate   = %d", static_cast<int>(mSampleRate));
     LOGD("AudioStreamAAudio.open() capacity      = %d", static_cast<int>(mBufferCapacityInFrames));
 
@@ -260,23 +256,6 @@ void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
         mStreamCallback->onErrorAfterClose(this, error);
     }
     LOGD("onErrorInThread() - exiting ===================================");
-}
-
-Result AudioStreamAAudio::convertApplicationDataToNative(int32_t numFrames) {
-    Result result = Result::ErrorUnimplemented;
-    int32_t numSamples = numFrames * getChannelCount();
-    if (mFormat == AudioFormat::Float) {
-        if (mNativeFormat == AudioFormat::I16) {
-            convertFloatToPcm16(mFloatCallbackBuffer, mShortCallbackBuffer, numSamples);
-            result = Result::OK;
-        }
-    } else if (mFormat == AudioFormat::I16) {
-        if (mNativeFormat == AudioFormat::Float) {
-            convertPcm16ToFloat(mShortCallbackBuffer, mFloatCallbackBuffer, numSamples);
-            result = Result::OK;
-        }
-    }
-    return result;
 }
 
 Result AudioStreamAAudio::requestStart() {

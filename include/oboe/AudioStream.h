@@ -387,15 +387,6 @@ protected:
     DataCallbackResult fireCallback(void *audioData, int numFrames);
 
     /**
-     * Used to set the format of the underlying stream
-     */
-    virtual void setNativeFormat(AudioFormat format) {
-        mNativeFormat = format;
-    }
-
-    AudioFormat mNativeFormat = AudioFormat::Invalid;
-
-    /**
      * Update mFramesWritten.
      */
     virtual void updateFramesWritten() = 0;
