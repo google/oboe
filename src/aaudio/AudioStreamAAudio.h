@@ -104,8 +104,6 @@ public:
     }
 
 protected:
-    Result convertApplicationDataToNative(int32_t numFrames); // TODO remove?
-
     void updateFramesRead() override;
     void updateFramesWritten() override;
 
