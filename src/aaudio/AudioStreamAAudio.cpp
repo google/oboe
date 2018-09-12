@@ -455,6 +455,24 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
     }
 }
 
+ResultWithValue<FrameTimestamp> AudioStreamAAudio::getTimestamp(clockid_t clockId) {
+
+    FrameTimestamp frame;
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        aaudio_result_t result = mLibLoader->stream_getTimestamp(stream, clockId,
+                                                                 &frame.position,
+                                                                 &frame.timestamp);
+        if (result == AAUDIO_OK){
+            return ResultWithValue<FrameTimestamp>(frame);
+        } else {
+            return ResultWithValue<FrameTimestamp>(static_cast<Result>(result));
+        }
+    } else {
+        return ResultWithValue<FrameTimestamp>(Result::ErrorNull);
+    }
+}
+
 ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream == nullptr) {

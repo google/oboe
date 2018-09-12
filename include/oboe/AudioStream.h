@@ -268,7 +268,6 @@ public:
 
     /**
      * Get the estimated time that the frame at `framePosition` entered or left the audio processing
-     * pipeline.
      *
      * This can be used to coordinate events and interactions with the external environment, and to
      * estimate the latency of an audio stream. An example of usage can be found in the hello-oboe
@@ -280,11 +279,28 @@ public:
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @param framePosition the frame number to query
      * @param timeNanoseconds an output parameter which will contain the presentation timestamp
-     * (if the operation is successful)
      */
     virtual Result getTimestamp(clockid_t clockId,
                                 int64_t *framePosition,
                                 int64_t *timeNanoseconds) {
+        return Result::ErrorUnimplemented;
+    }
+
+    /**
+     * Get the estimated time that the frame at `framePosition` entered or left the audio processing
+     *
+     * This can be used to coordinate events and interactions with the external environment, and to
+     * estimate the latency of an audio stream. An example of usage can be found in the hello-oboe
+     * sample (search for "calculateCurrentOutputLatencyMillis").
+     *
+     * The time is based on the implementation's best effort, using whatever knowledge is available
+     * to the system, but cannot account for any delay unknown to the implementation.
+     *
+     * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
+     * @return a FrameTimestamp containing the position and time at which a particular audio frame
+     * entered or left the audio processing pipeline, or an error if the operation failed.
+     */
+	virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId){
         return Result::ErrorUnimplemented;
     }
 
