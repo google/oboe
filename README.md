@@ -30,10 +30,7 @@ Sample apps can be found in the [samples directory](samples). Also check out the
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
 
 ## Version history
-
-- [13th June 2018 - v0.11](https://github.com/google/oboe/pull/109) Change `AudioStream` method return types to `ResultWithValue` where appropriate
-- 18th January 2018 - v0.10 Add support for input (recording) streams
-- 18th October 2017 - v0.9 Initial developer preview
+View the [changelog](docs/ChangeLog.md).
 
 ## License
 [LICENSE](LICENSE)
