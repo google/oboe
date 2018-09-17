@@ -202,7 +202,7 @@ public:
     /**
      * Indicates whether the audio stream is playing.
      *
-     * THIS MAY BE REMOVED IN FUTURE. https://github.com/google/oboe/issues/208
+     * @deprecated check the stream state directly using `AudioStream::getState`.
      */
     bool isPlaying();
 
@@ -217,7 +217,7 @@ public:
 
     /**
      * Get the number of bytes per sample. This is calculated using the sample format. For example,
-     * stream using 16-bit integer samples will have 2 bytes per sample.
+     * a stream using 16-bit integer samples will have 2 bytes per sample.
      *
      * @return the number of bytes per sample.
      */
@@ -267,8 +267,15 @@ public:
     }
 
     /**
-     * Get the timestamp that the frame at `framePosition` was presented to the
-     * audio hardware.
+     * Get the estimated time that the frame at `framePosition` entered or left the audio processing
+     * pipeline.
+     *
+     * This can be used to coordinate events and interactions with the external environment, and to
+     * estimate the latency of an audio stream. An example of usage can be found in the hello-oboe
+     * sample (search for "calculateCurrentOutputLatencyMillis").
+     *
+     * The time is based on the implementation's best effort, using whatever knowledge is available
+     * to the system, but cannot account for any delay unknown to the implementation.
      *
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @param framePosition the frame number to query
@@ -406,12 +413,6 @@ protected:
         mNativeFormat = format;
     }
 
-    /**
-     * Do not set directly, use `setNativeFormat`
-     *
-     * TODO: make private
-     * These do not change after open.
-     */
     AudioFormat mNativeFormat = AudioFormat::Invalid;
 
     /**
