@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['audiostream',['AudioStream',['../a00036.html',1,'oboe']]],
-  ['audiostreambase',['AudioStreamBase',['../a00040.html',1,'oboe']]],
-  ['audiostreambuilder',['AudioStreamBuilder',['../a00044.html',1,'oboe']]],
-  ['audiostreamcallback',['AudioStreamCallback',['../a00048.html',1,'oboe']]]
+  ['audiostream',['AudioStream',['../a00037.html',1,'oboe']]],
+  ['audiostreambase',['AudioStreamBase',['../a00041.html',1,'oboe']]],
+  ['audiostreambuilder',['AudioStreamBuilder',['../a00045.html',1,'oboe']]],
+  ['audiostreamcallback',['AudioStreamCallback',['../a00049.html',1,'oboe']]]
 ];

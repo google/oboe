@@ -36,7 +36,7 @@ namespace oboe {
  * <code>
  * ResultWithValue<int32_t> resultOfRead = myStream.read(&buffer, numFrames, timeoutNanoseconds);
  *
- * if (resultOfRead){
+ * if (resultOfRead) {
  *     LOGD("Frames read: %d", resultOfRead.value());
  * } else {
  *     LOGD("Error reading from stream: %s", resultOfRead.error());

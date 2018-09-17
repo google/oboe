@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['latencytuner',['LatencyTuner',['../a00056.html',1,'oboe']]]
+  ['latencytuner',['LatencyTuner',['../a00057.html',1,'oboe']]]
 ];
