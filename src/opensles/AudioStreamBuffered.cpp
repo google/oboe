@@ -171,7 +171,12 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
         }
     } while(repeat);
 
-    return ResultWithValue<int32_t>::createBasedOnSign(result);
+    if (result < 0) {
+        return ResultWithValue<int32_t>(static_cast<Result>(result));
+    } else {
+        int32_t framesWritten = numFrames - framesLeft;
+        return ResultWithValue<int32_t>(framesWritten);
+    }
 }
 
 // Write to the FIFO so the callback can read from it.
