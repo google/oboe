@@ -263,15 +263,25 @@ Result AudioOutputStreamOpenSLES::requestPause() {
     return result;
 }
 
+/**
+ * Flush/clear the queue buffers
+ */
 Result AudioOutputStreamOpenSLES::requestFlush() {
 
     LOGD("AudioOutputStreamOpenSLES(): requestFlush()");
     if (getState() == StreamState::Closed) return Result::ErrorClosed;
 
-    if (mPlayInterface == NULL) {
+    if (mPlayInterface == NULL || mSimpleBufferQueueInterface == NULL) {
         return Result::ErrorInvalidState;
+    } else {
+        SLresult result = (*mSimpleBufferQueueInterface)->Clear(mSimpleBufferQueueInterface);
+        if (result == SL_RESULT_SUCCESS){
+            return Result::OK;
+        } else {
+            LOGW("Failed to clear buffer queue. OpenSLES error: %d", result);
+            return Result::ErrorInternal;
+        }
     }
-    return Result::ErrorUnimplemented; // TODO
 }
 
 Result AudioOutputStreamOpenSLES::requestStop() {
@@ -284,6 +294,11 @@ Result AudioOutputStreamOpenSLES::requestStop() {
 
     Result result = setPlayState(SL_PLAYSTATE_STOPPED);
     if (result == Result::OK) {
+
+        // Also clear the buffer queue so the old data won't be played if the stream is restarted
+        if (requestFlush() != Result::OK){
+            LOGW("Failed to flush the stream. Error %s", convertToText(flush()));
+        }
 
         mPositionMillis.reset32(); // OpenSL ES resets its millisecond position when stopped.
         int64_t framesWritten = getFramesWritten();
