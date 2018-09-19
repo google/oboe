@@ -106,15 +106,28 @@ Result AudioStreamAAudio::open() {
         return result;
     }
 
-    LOGD("AudioStreamAAudio():  AAudio_createStreamBuilder()");
     AAudioStreamBuilder *aaudioBuilder;
     result = static_cast<Result>(mLibLoader->createStreamBuilder(&aaudioBuilder));
     if (result != Result::OK) {
         return result;
     }
 
-    LOGD("AudioStreamAAudio.open() try with deviceId = %d", static_cast<int>(mDeviceId));
-    mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, mBufferCapacityInFrames);
+    // Do not set INPUT capacity below 4096 because that prevents us from getting a FAST track
+    // when using the Legacy data path.
+    // If the app requests > 4096 then we allow it but we are less likely to get LowLatency.
+    // See internal bug b/80308183 for more details.
+    int32_t capacity = mBufferCapacityInFrames;
+    constexpr int kCapacityRequiredForFastLegacyTrack = 4096; // matches value in AudioFinger
+    if (mDirection == oboe::Direction::Input
+            && capacity != oboe::Unspecified
+            && capacity < kCapacityRequiredForFastLegacyTrack
+            && mPerformanceMode == oboe::PerformanceMode::LowLatency) {
+        capacity = kCapacityRequiredForFastLegacyTrack;
+        LOGD("AudioStreamAAudio.open() capacity changed from %d to %d",
+             static_cast<int>(mBufferCapacityInFrames), capacity);
+    }
+    mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, capacity);
+
     mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
     mLibLoader->builder_setDeviceId(aaudioBuilder, mDeviceId);
     mLibLoader->builder_setDirection(aaudioBuilder, static_cast<aaudio_direction_t>(mDirection));
