@@ -439,7 +439,7 @@ namespace oboe {
 #undef CONSTANT_API_P
 
     /**
-     * On API 16 to 25 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
+     * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:
      *

@@ -53,7 +53,7 @@ int32_t convertFormatToSizeInBytes(AudioFormat format);
  * It is not for displaying to users.
  *
  * @param input object to convert from. @see common/Utilities.cpp for concrete implementations
- * @return text representation of an Oboe enum value.
+ * @return text representation of an Oboe enum value. There is no need to call free on this.
  */
 template <typename FromType>
 const char * convertToText(FromType input);
