@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['defaultstreamvalues',['DefaultStreamValues',['../a00053.html',1,'oboe']]]
+  ['defaultstreamvalues',['DefaultStreamValues',['../classoboe_1_1_default_stream_values.html',1,'oboe']]]
 ];

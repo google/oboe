@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resultwithvalue',['ResultWithValue',['../a00061.html',1,'oboe']]]
+  ['resultwithvalue',['ResultWithValue',['../classoboe_1_1_result_with_value.html',1,'oboe']]]
 ];

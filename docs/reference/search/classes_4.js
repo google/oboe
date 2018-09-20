@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['version',['Version',['../a00065.html',1,'oboe']]]
+  ['version',['Version',['../structoboe_1_1_version.html',1,'oboe']]]
 ];

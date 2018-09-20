@@ -17,6 +17,13 @@
 #ifndef OBOE_OBOE_H
 #define OBOE_OBOE_H
 
+/**
+ * \mainpage API reference
+ *
+ * All documentation is found in the <a href="namespaceoboe.html">oboe namespace section</a>
+ *
+ */
+
 #include "oboe/Definitions.h"
 #include "oboe/ResultWithValue.h"
 #include "oboe/LatencyTuner.h"
