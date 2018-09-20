@@ -473,8 +473,8 @@ namespace oboe {
      * The time at which the frame at `position` was presented
      */
     struct FrameTimestamp {
-        int64_t position;
-        int64_t timestamp;
+        int64_t position; // in frames
+        int64_t timestamp; // in nanoseconds
     };
 
 

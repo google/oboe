@@ -268,6 +268,7 @@ public:
 
     /**
      * Get the estimated time that the frame at `framePosition` entered or left the audio processing
+     * pipeline.
      *
      * This can be used to coordinate events and interactions with the external environment, and to
      * estimate the latency of an audio stream. An example of usage can be found in the hello-oboe
@@ -288,6 +289,7 @@ public:
 
     /**
      * Get the estimated time that the frame at `framePosition` entered or left the audio processing
+     * pipeline.
      *
      * This can be used to coordinate events and interactions with the external environment, and to
      * estimate the latency of an audio stream. An example of usage can be found in the hello-oboe
