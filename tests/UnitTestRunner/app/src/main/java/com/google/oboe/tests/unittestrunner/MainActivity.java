@@ -99,12 +99,13 @@ public class MainActivity extends AppCompatActivity {
             // read the output from the command
             String s = null;
             while ((s = stdInput.readLine()) != null) {
-                //Log.d(TAG,s);
+                Log.d(TAG, s);
                 output.append(s + "\n");
             }
 
             // read any errors from the attempted command
             while ((s = stdError.readLine()) != null) {
+                Log.d(TAG, "ERROR: " + s);
                 outputText.append("ERROR: " + s);
             }
 
