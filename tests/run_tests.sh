@@ -22,15 +22,23 @@
 # - Android device or emulator attached and accessible via adb
 #
 # Instructions:
-# Install the LiveEffect sample app, run it once and grant the recording permission (TODO: Make this step easier)
-# Run this script from within the oboe/tests directory. A directory 'build' will be 
-# created containing the test binary. This binary will then be copied to the device/emulator
-# and executed. 
+# - Run this script 
+# - Check the test results on your target device
 #
-# The initial run may take some time as GTest is built, subsequent runs should be much, much
-# faster. 
+# What does the script do?
+# - Builds a test binary for the target architecture
+# - Copies the test binary into the UnitTestRunner app
+# - Builds, installs and runs the app on the target device
 #
-# If you want to perform a clean build just delete the 'build' folder and re-run this script
+# The initial run may take some time as GTest is built, subsequent runs should be much faster. 
+#
+# If you want to perform a clean build just delete the 'build' folder and re-run this script. You will need to do 
+# this if you change target architectures (e.g. when changing between real device and emulator)
+#
+# Why is running the tests so convoluted? 
+# The tests require the RECORDING permission and on many devices (e.g Samsung) the adb user does not have this 
+# permission (and `run-as` is broken). This means that the test binary must be executed by an app which has this 
+# permission, hence the need for the UnitTestRunner app. 
 # 
 ################################################
 
@@ -40,9 +48,9 @@
 BUILD_DIR=build
 CMAKE=cmake
 TEST_BINARY_FILENAME=testOboe
-REMOTE_TEMP_DIR=/data/local/tmp
-TEST_PACKAGE_NAME=com.google.sample.oboe.liveeffect
-REMOTE_DIR=/data/data/${TEST_PACKAGE_NAME}
+TEST_RUNNER_DIR=UnitTestRunner
+TEST_RUNNER_PACKAGE_NAME=com.google.oboe.tests.unittestrunner
+TEST_RUNNER_ASSET_DIR=${TEST_RUNNER_DIR}/app/src/main/assets
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -103,14 +111,19 @@ pushd ${BUILD_DIR}
 	
 popd
 
+# Copy the binary into the unit test runner app
+mkdir ${TEST_RUNNER_ASSET_DIR}/${ABI}
+DESTINATION_DIR=${TEST_RUNNER_ASSET_DIR}/${ABI}/${TEST_BINARY_FILENAME}
+echo "Copying binary to ${DESTINATION_DIR}"
+cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
 
-# Push the test binary to the device and run it
-adb shell mkdir -p ${REMOTE_DIR}
-adb push ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${REMOTE_TEMP_DIR}
-echo "Pushed ${BUILD_DIR}/${TEST_BINARY_FILENAME} to ${REMOTE_TEMP_DIR}"
+# Build and install the unit test runner app
+pushd ${TEST_RUNNER_DIR}
+    echo "Building test runner app" 
+	./gradlew assembleDebug
+	echo "Installing to device"
+	./gradlew installDebug
+popd
 
-echo "Copying ${TEST_BINARY_FILENAME} from ${REMOTE_TEMP_DIR} to ${REMOTE_DIR}"
-adb shell run-as ${TEST_PACKAGE_NAME} cp ${REMOTE_TEMP_DIR}/${TEST_BINARY_FILENAME} ${REMOTE_DIR}
-
-echo "Running test binary"
-adb shell run-as ${TEST_PACKAGE_NAME} ${REMOTE_DIR}/${TEST_BINARY_FILENAME}
+echo "Starting app - Check your device for test results"
+adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
