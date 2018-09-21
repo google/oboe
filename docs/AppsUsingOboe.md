@@ -36,5 +36,6 @@ Uses AAudio if you enable it in Settings.
 - Click menu icon at bottom right.
 - Click "Settings".
 - Select AAudio for input and/or output.
+- Scroll down and click "OK".
 
 [App on Play Store](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo)
