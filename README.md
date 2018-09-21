@@ -5,11 +5,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 [Get started with Oboe here](docs/GettingStarted.md).
 
-# Projects using Oboe
-- [JUCE middleware framework](https://juce.com/)
-- CSound for Android. [App](https://play.google.com/store/apps/details?id=com.csounds.Csound6), [Source](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp)
-
-Want your project added? [Add a comment to issue #214](https://github.com/google/oboe/issues/214) with your project name and Play Store URL. 
+[List of Projects using Oboe](docs/AppsUsingOboe.md) - [Add your project!](https://github.com/google/oboe/issues/214)
 
 ## Features
 - Compatible with API 16 onwards - runs on 99% of Android devices
