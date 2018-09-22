@@ -221,13 +221,16 @@ error2:
     return result;
 }
 
-Result AudioStreamAAudio::close()
-{
+Result AudioStreamAAudio::close() {
     // The main reason we have this mutex if to prevent a collision between a call
     // by the application to stop a stream at the same time that an onError callback
     // is being executed because of a disconnect. The close will delete the stream,
     // which could otherwise cause the requestStop() to crash.
     std::lock_guard<std::mutex> lock(mLock);
+
+    // Update frame counter variables to avoid retrograde motion.
+    getFramesWritten();
+    getFramesRead();
 
     // This will delete the AAudio stream object so we need to null out the pointer.
     AAudioStream *stream = mAAudioStream.exchange(nullptr);

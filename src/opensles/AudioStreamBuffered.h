@@ -72,7 +72,6 @@ protected:
 
 private:
 
-
     int64_t predictNextCallbackTime();
 
     void markCallbackTime(int numFrames);
@@ -84,7 +83,7 @@ private:
         mXRunCount++;
     }
 
-    std::unique_ptr<FifoBuffer>                  mFifoBuffer;
+    std::unique_ptr<FifoBuffer>                  mFifoBuffer{};
 
     int64_t mBackgroundRanAtNanoseconds = 0;
     int32_t mLastBackgroundSize = 0;

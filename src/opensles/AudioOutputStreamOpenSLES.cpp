@@ -319,7 +319,12 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
 }
 
 int64_t AudioOutputStreamOpenSLES::getFramesRead() {
-    return getFramesProcessedByServer();
+    if (usingFIFO()) {
+        return AudioStreamBuffered::getFramesRead();
+    } else {
+        mFramesRead = getFramesProcessedByServer();
+        return mFramesRead;
+    }
 }
 
 Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {

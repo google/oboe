@@ -280,11 +280,15 @@ Result AudioInputStreamOpenSLES::requestStop() {
         setState(initialState);
     }
     return result;
-
 }
 
 int64_t AudioInputStreamOpenSLES::getFramesWritten() {
-    return getFramesProcessedByServer();
+    if (usingFIFO()) {
+        return AudioStreamBuffered::getFramesWritten();
+    } else {
+        mFramesWritten = getFramesProcessedByServer();
+        return mFramesWritten;
+    }
 }
 
 Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {

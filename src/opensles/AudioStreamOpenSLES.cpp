@@ -216,6 +216,10 @@ Result AudioStreamOpenSLES::close() {
     if (mState == StreamState::Closed){
         return Result::ErrorClosed;
     } else {
+        // Update frame counter variables so they can be read after close.
+        getFramesWritten();
+        getFramesRead();
+
         onBeforeDestroy();
 
         if (mObjectInterface != nullptr) {
@@ -245,7 +249,14 @@ SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueIt
         LOGE("Oboe callback returned %d", result);
         return SL_RESULT_INTERNAL_ERROR; // TODO How should we stop OpenSL ES.
     } else {
+        // Update Oboe service position based on OpenSL ES position.
         updateServiceFrameCounter();
+        // Update Oboe client position with frames handled by the callback.
+        if (getDirection() == Direction::Input) {
+            mFramesRead += mFramesPerCallback;
+        } else {
+            mFramesWritten += mFramesPerCallback;
+        }
         // Pass the data to OpenSLES.
         return enqueueCallbackBuffer(bq);
     }

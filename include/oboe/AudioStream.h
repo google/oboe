@@ -356,26 +356,6 @@ public:
 protected:
 
     /**
-     * Increment the frames written to this stream
-     *
-     * @param frames number of frames to increment by
-     * @return total frames which have been written
-     */
-    virtual int64_t incrementFramesWritten(int32_t frames) {
-        return mFramesWritten += frames;
-    }
-
-    /**
-     * Increment the frames which have been read from this stream
-     *
-     * @param frames number of frames to increment by
-     * @return total frames which have been read
-     */
-    virtual int64_t incrementFramesRead(int32_t frames) {
-        return mFramesRead += frames;
-    }
-
-    /**
      * Wait for a transition from one state to another.
      * @return OK if the endingState was observed, or ErrorUnexpectedState
      *   if any state that was not the startingState or endingState was observed
@@ -431,6 +411,7 @@ protected:
 
 private:
     int                  mPreviousScheduler = -1;
+
 };
 
 } // namespace oboe
