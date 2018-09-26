@@ -74,8 +74,11 @@ public class MainActivity extends AppCompatActivity {
             Log.w(TAG, "getExclusiveCores() not supported. Only available on API " +
                     Build.VERSION_CODES.N + "+");
         } else {
-            exclusiveCores = android.os.Process.getExclusiveCores();
-
+            try {
+                exclusiveCores = android.os.Process.getExclusiveCores();
+            } catch (RuntimeException e){
+                Log.w(TAG, "getExclusiveCores() is not supported on this device.");
+            }
         }
         return exclusiveCores;
     }
