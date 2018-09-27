@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.1"
     defaultConfig {
         applicationId "com.google.oboe.tests.unittestrunner"
         minSdkVersion 16
@@ -20,6 +19,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.0.0-rc01'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
+    implementation 'androidx.appcompat:appcompat:1.0.0-rc02'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 }
