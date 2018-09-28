@@ -216,9 +216,7 @@ Result AudioStreamOpenSLES::close() {
     if (mState == StreamState::Closed){
         return Result::ErrorClosed;
     } else {
-        // Update frame counter variables so they can be read after close.
-        getFramesWritten();
-        getFramesRead();
+        AudioStreamBuffered::close();
 
         onBeforeDestroy();
 

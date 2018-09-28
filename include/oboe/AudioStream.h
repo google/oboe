@@ -66,7 +66,7 @@ public:
     /**
      * Close the stream and deallocate any resources from the open() call.
      */
-    virtual Result close() = 0;
+    virtual Result close();
 
     /**
      * Start the stream. This will block until the stream has been started, an error occurs
@@ -229,7 +229,7 @@ public:
      *
      * @return the number of frames written so far
      */
-    virtual int64_t getFramesWritten() { return mFramesWritten; }
+    virtual int64_t getFramesWritten();
 
     /**
      * The number of audio frames read from the stream.
@@ -237,7 +237,7 @@ public:
      *
      * @return the number of frames read so far
      */
-    virtual int64_t getFramesRead() { return mFramesRead; }
+    virtual int64_t getFramesRead();
 
     /**
      * Calculate the latency of a stream based on getTimestamp().
@@ -394,6 +394,16 @@ protected:
     }
 
     AudioFormat mNativeFormat = AudioFormat::Invalid;
+
+    /**
+     * Update mFramesWritten.
+     */
+    virtual void updateFramesWritten() = 0;
+
+    /**
+     * Update mFramesRead.
+     */
+    virtual void updateFramesRead() = 0;
 
     /**
      * Number of frames which have been written into the stream

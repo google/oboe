@@ -43,22 +43,20 @@ void AudioStreamBuffered::allocateFifo() {
             mBufferCapacityInFrames = capacity;
         }
         // TODO consider using std::make_unique if we require c++14
-        mFifoBuffer.reset( new FifoBuffer(getBytesPerFrame(), capacity));
+        mFifoBuffer.reset(new FifoBuffer(getBytesPerFrame(), capacity));
     }
 }
 
-int64_t AudioStreamBuffered::getFramesWritten() {
+void AudioStreamBuffered::updateFramesWritten() {
     if (mFifoBuffer) {
         mFramesWritten = static_cast<int64_t>(mFifoBuffer->getWriteCounter());
-    }
-    return mFramesWritten;
+    } // or else it will get updated by processBufferCallback()
 }
 
-int64_t AudioStreamBuffered::getFramesRead() {
+void AudioStreamBuffered::updateFramesRead() {
     if (mFifoBuffer) {
         mFramesRead = static_cast<int64_t>(mFifoBuffer->getReadCounter());
-    }
-    return mFramesRead;
+    } // or else it will get updated by processBufferCallback()
 }
 
 // This is called by the OpenSL ES callback to read or write the back end of the FIFO.

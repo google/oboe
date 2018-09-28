@@ -74,9 +74,6 @@ public:
     ResultWithValue<int32_t> getXRunCount() const override;
     bool isXRunCountSupported() const override { return true; }
 
-    int64_t getFramesRead() override;
-    int64_t getFramesWritten() override;
-
     ResultWithValue<double> calculateLatencyMillis() override;
 
     Result waitForStateChange(StreamState currentState,
@@ -108,6 +105,9 @@ public:
 
 protected:
     Result convertApplicationDataToNative(int32_t numFrames); // TODO remove?
+
+    void updateFramesRead() override;
+    void updateFramesWritten() override;
 
 private:
 

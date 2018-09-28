@@ -228,9 +228,7 @@ Result AudioStreamAAudio::close() {
     // which could otherwise cause the requestStop() to crash.
     std::lock_guard<std::mutex> lock(mLock);
 
-    // Update frame counter variables to avoid retrograde motion.
-    getFramesWritten();
-    getFramesRead();
+    AudioStream::close();
 
     // This will delete the AAudio stream object so we need to null out the pointer.
     AAudioStream *stream = mAAudioStream.exchange(nullptr);
@@ -443,20 +441,18 @@ int32_t AudioStreamAAudio::getFramesPerBurst() {
     return mFramesPerBurst;
 }
 
-int64_t AudioStreamAAudio::getFramesRead() {
+void AudioStreamAAudio::updateFramesRead() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         mFramesRead = mLibLoader->stream_getFramesRead(stream);
     }
-    return mFramesRead;
 }
 
-int64_t AudioStreamAAudio::getFramesWritten() {
+void AudioStreamAAudio::updateFramesWritten() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         mFramesWritten = mLibLoader->stream_getFramesWritten(stream);
     }
-    return mFramesWritten;
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::getXRunCount() const {

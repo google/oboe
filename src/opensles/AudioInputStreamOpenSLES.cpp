@@ -282,12 +282,11 @@ Result AudioInputStreamOpenSLES::requestStop() {
     return result;
 }
 
-int64_t AudioInputStreamOpenSLES::getFramesWritten() {
+void AudioInputStreamOpenSLES::updateFramesWritten() {
     if (usingFIFO()) {
-        return AudioStreamBuffered::getFramesWritten();
+        AudioStreamBuffered::updateFramesWritten();
     } else {
         mFramesWritten = getFramesProcessedByServer();
-        return mFramesWritten;
     }
 }
 

@@ -318,12 +318,11 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
     mPositionMillis.set(millisWritten);
 }
 
-int64_t AudioOutputStreamOpenSLES::getFramesRead() {
+void AudioOutputStreamOpenSLES::updateFramesRead() {
     if (usingFIFO()) {
-        return AudioStreamBuffered::getFramesRead();
+        AudioStreamBuffered::updateFramesRead();
     } else {
         mFramesRead = getFramesProcessedByServer();
-        return mFramesRead;
     }
 }
 
