@@ -39,3 +39,8 @@ Uses AAudio if you enable it in Settings.
 - Scroll down and click "OK".
 
 [App on Play Store](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo)
+
+## ktnes
+A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native.
+
+[Source](https://github.com/felipecsl/ktnes)
