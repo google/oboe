@@ -44,13 +44,13 @@ public:
     Result requestFlush() override;
     Result requestStop() override;
 
-    int64_t getFramesRead() override;
-
 protected:
 
     void setFramesRead(int64_t framesRead);
 
     Result updateServiceFrameCounter() override;
+
+    void updateFramesRead() override;
 
 private:
 

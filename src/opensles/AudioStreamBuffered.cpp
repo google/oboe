@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include "oboe/Oboe.h"
 
 #include "opensles/AudioStreamBuffered.h"
@@ -40,22 +42,21 @@ void AudioStreamBuffered::allocateFifo() {
             capacity = getFramesPerBurst() * kDefaultBurstsPerBuffer;
             mBufferCapacityInFrames = capacity;
         }
+        // TODO consider using std::make_unique if we require c++14
         mFifoBuffer.reset(new FifoBuffer(getBytesPerFrame(), capacity));
     }
 }
 
-int64_t AudioStreamBuffered::getFramesWritten() {
-    if (usingFIFO()) {
+void AudioStreamBuffered::updateFramesWritten() {
+    if (mFifoBuffer) {
         mFramesWritten = static_cast<int64_t>(mFifoBuffer->getWriteCounter());
-    }
-    return mFramesWritten;
+    } // or else it will get updated by processBufferCallback()
 }
 
-int64_t AudioStreamBuffered::getFramesRead() {
-    if (usingFIFO()) {
+void AudioStreamBuffered::updateFramesRead() {
+    if (mFifoBuffer) {
         mFramesRead = static_cast<int64_t>(mFifoBuffer->getReadCounter());
-    }
-    return mFramesRead;
+    } // or else it will get updated by processBufferCallback()
 }
 
 // This is called by the OpenSL ES callback to read or write the back end of the FIFO.
@@ -216,7 +217,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 
-    if (mFifoBuffer != nullptr) {
+    if (mFifoBuffer) {
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
         } else if (requestedFrames < getFramesPerBurst()) {
@@ -230,15 +231,14 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
 }
 
 int32_t AudioStreamBuffered::getBufferSizeInFrames() {
-
-    if (mFifoBuffer != nullptr) {
+    if (mFifoBuffer) {
         mBufferSizeInFrames = mFifoBuffer->getThresholdFrames();
     }
     return mBufferSizeInFrames;
 }
 
 int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
-    if (mFifoBuffer != nullptr) {
+    if (mFifoBuffer) {
         return mFifoBuffer->getBufferCapacityInFrames();
     } else {
         return AudioStream::getBufferCapacityInFrames();

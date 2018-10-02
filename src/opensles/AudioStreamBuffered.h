@@ -57,10 +57,6 @@ public:
 
     bool isXRunCountSupported() const override;
 
-    int64_t getFramesWritten() override;
-
-    int64_t getFramesRead() override;
-
 protected:
 
     DataCallbackResult onDefaultCallback(void *audioData, int numFrames) override;
@@ -70,8 +66,10 @@ protected:
 
     virtual Result updateServiceFrameCounter() { return Result::OK; };
 
-private:
+    void updateFramesRead() override;
+    void updateFramesWritten() override;
 
+private:
 
     int64_t predictNextCallbackTime();
 
@@ -84,7 +82,7 @@ private:
         mXRunCount++;
     }
 
-    std::unique_ptr<FifoBuffer>                  mFifoBuffer;
+    std::unique_ptr<FifoBuffer>   mFifoBuffer{};
 
     int64_t mBackgroundRanAtNanoseconds = 0;
     int32_t mLastBackgroundSize = 0;

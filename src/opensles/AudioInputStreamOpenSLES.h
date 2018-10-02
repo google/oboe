@@ -45,11 +45,11 @@ public:
     Result requestFlush() override;
     Result requestStop() override;
 
-    int64_t getFramesWritten() override;
-
 protected:
 
     Result updateServiceFrameCounter() override;
+
+    void updateFramesWritten() override;
 
 private:
 

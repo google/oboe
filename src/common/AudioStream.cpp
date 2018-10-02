@@ -34,6 +34,13 @@ Result AudioStream::open() {
     return Result::OK;
 }
 
+Result AudioStream::close() {
+    // Update local counters so they can be read after the close.
+    updateFramesWritten();
+    updateFramesRead();
+    return Result::OK;
+}
+
 DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames) {
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
@@ -50,11 +57,6 @@ DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames)
         result = onDefaultCallback(audioData, numFrames);
     } else {
         result = mStreamCallback->onAudioReady(this, audioData, numFrames);
-        if (getDirection() == Direction::Input) {
-            incrementFramesRead(numFrames);
-        } else {
-            incrementFramesWritten(numFrames);
-        }
     }
 
     return result;
@@ -122,6 +124,16 @@ bool AudioStream::isPlaying() {
 
 int32_t AudioStream::getBytesPerSample() const {
     return convertFormatToSizeInBytes(mFormat);
+}
+
+int64_t AudioStream::getFramesRead() {
+    updateFramesRead();
+    return mFramesRead;
+}
+
+int64_t AudioStream::getFramesWritten() {
+    updateFramesWritten();
+    return mFramesWritten;
 }
 
 } // namespace oboe

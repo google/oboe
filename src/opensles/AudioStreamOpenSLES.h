@@ -114,10 +114,9 @@ protected:
     uint8_t              *mCallbackBuffer = nullptr;
     int32_t               mBytesPerCallback = oboe::kUnspecified;
     int32_t               mFramesPerBurst = 0;
-    int32_t               mBurstsPerBuffer = 2; // Double buffered
     StreamState           mState = StreamState::Uninitialized;
 
-    MonotonicCounter  mPositionMillis; // for tracking OpenSL ES service position
+    MonotonicCounter      mPositionMillis; // for tracking OpenSL ES service position
 };
 
 } // namespace oboe

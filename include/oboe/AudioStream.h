@@ -66,7 +66,7 @@ public:
     /**
      * Close the stream and deallocate any resources from the open() call.
      */
-    virtual Result close() = 0;
+    virtual Result close();
 
     /**
      * Start the stream. This will block until the stream has been started, an error occurs
@@ -229,7 +229,7 @@ public:
      *
      * @return the number of frames written so far
      */
-    virtual int64_t getFramesWritten() { return mFramesWritten; }
+    virtual int64_t getFramesWritten();
 
     /**
      * The number of audio frames read from the stream.
@@ -237,7 +237,7 @@ public:
      *
      * @return the number of frames read so far
      */
-    virtual int64_t getFramesRead() { return mFramesRead; }
+    virtual int64_t getFramesRead();
 
     /**
      * Calculate the latency of a stream based on getTimestamp().
@@ -356,26 +356,6 @@ public:
 protected:
 
     /**
-     * Increment the frames written to this stream
-     *
-     * @param frames number of frames to increment by
-     * @return total frames which have been written
-     */
-    virtual int64_t incrementFramesWritten(int32_t frames) {
-        return mFramesWritten += frames;
-    }
-
-    /**
-     * Increment the frames which have been read from this stream
-     *
-     * @param frames number of frames to increment by
-     * @return total frames which have been read
-     */
-    virtual int64_t incrementFramesRead(int32_t frames) {
-        return mFramesRead += frames;
-    }
-
-    /**
      * Wait for a transition from one state to another.
      * @return OK if the endingState was observed, or ErrorUnexpectedState
      *   if any state that was not the startingState or endingState was observed
@@ -416,6 +396,16 @@ protected:
     AudioFormat mNativeFormat = AudioFormat::Invalid;
 
     /**
+     * Update mFramesWritten.
+     */
+    virtual void updateFramesWritten() = 0;
+
+    /**
+     * Update mFramesRead.
+     */
+    virtual void updateFramesRead() = 0;
+
+    /**
      * Number of frames which have been written into the stream
      *
      * TODO these should be atomic like in AAudio
@@ -431,6 +421,7 @@ protected:
 
 private:
     int                  mPreviousScheduler = -1;
+
 };
 
 } // namespace oboe
