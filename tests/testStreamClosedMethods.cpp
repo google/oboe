@@ -201,12 +201,6 @@ TEST_F(StreamClosedReturnValues, GetFramesPerBurstReturnsLastKnownValue){
     ASSERT_EQ(mStream->getFramesPerBurst(), f);
 }
 
-TEST_F(StreamClosedReturnValues, IsPlayingReturnsFalse){
-
-    openAndCloseStream();
-    ASSERT_FALSE(mStream->isPlaying());
-}
-
 TEST_F(StreamClosedReturnValues, GetBytesPerFrameReturnsLastKnownValue){
     openStream();
     auto f = mStream->getBytesPerFrame();
