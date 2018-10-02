@@ -1,7 +1,7 @@
 # Changelog
 
 ## 1.0
-#### 20th September 2018
+#### 2nd October 2018
 First production ready version
 
 **API changes**
