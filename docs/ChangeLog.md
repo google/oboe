@@ -12,7 +12,7 @@ First production ready version
 - [Add Android P functions](https://github.com/google/oboe/commit/c30bbe603c256f92cdf2876c3122bc5be24b5e3e)
 
 **Other changes**
-- Add [API reference](google.github.io/oboe/docs/reference)
+- Add [API reference](https://google.github.io/oboe/)
 - Add unit tests
 
 ## 0.11
