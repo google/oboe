@@ -64,11 +64,11 @@ DataCallbackResult AudioStreamBuffered::onDefaultCallback(void *audioData, int n
     int32_t framesTransferred  = 0;
 
     if (getDirection() == oboe::Direction::Output) {
-        // Read from the FIFO and write to audioData
+        // Read from the FIFO and write to audioData, clear part of buffer if not enough data.
         framesTransferred = mFifoBuffer->readNow(audioData, numFrames);
     } else {
         // Read from audioData and write to the FIFO
-        framesTransferred = mFifoBuffer->write(audioData, numFrames); // FIXME writeNow????
+        framesTransferred = mFifoBuffer->write(audioData, numFrames); // There is no writeNow()
     }
 
     if (framesTransferred < numFrames) {

@@ -164,8 +164,10 @@ int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
     // Zero out any samples we could not set.
     if (framesLeft > 0) {
         mUnderrunCount++;
+        uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
+        destination += convertFramesToBytes(framesRead); // point to first byte not set in buffer
         int32_t bytesToZero = convertFramesToBytes(framesLeft);
-        memset(buffer, 0, bytesToZero);
+        memset(destination, 0, bytesToZero);
     }
 
     return framesRead;
