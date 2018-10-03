@@ -165,7 +165,7 @@ int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
     if (framesLeft > 0) {
         mUnderrunCount++;
         uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
-        destination += convertFramesToBytes(framesRead); // point to first byte not set in buffer
+        destination += convertFramesToBytes(framesRead); // point to first byte not set
         int32_t bytesToZero = convertFramesToBytes(framesLeft);
         memset(destination, 0, bytesToZero);
     }

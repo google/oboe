@@ -64,7 +64,7 @@ public:
      * @param framesToRead number of frames requested
      * @return number of frames actually read
      */
-    int32_t readNow(void *buffer, int32_t numFrames);
+    int32_t readNow(void *destination, int32_t numFrames);
 
     uint32_t getUnderrunCount() const { return mUnderrunCount; }
 
