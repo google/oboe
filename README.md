@@ -23,6 +23,9 @@ Sample apps can be found in the [samples directory](samples). Also check out the
 ### Third party sample code
 - [Ableton Link integration demo](https://github.com/jbloit/AndroidLinkAudio) (author: jbloit)
 
+## Distributing to specific devices
+If your app has specific audio latency requirements you may wish to distribute only to certain devices. Here is a [list of manually verfied devices with their audio latency](docs/Devices.md).
+
 ## Contributing
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
 
