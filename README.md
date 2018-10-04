@@ -3,7 +3,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 [Get started with Oboe here](docs/GettingStarted.md).
 
-[List of Projects using Oboe](docs/AppsUsingOboe.md) - [Add your project!](https://github.com/google/oboe/issues/214)
+[Projects and apps using Oboe](docs/AppsUsingOboe.md)
 
 ## Features
 - Compatible with API 16 onwards - runs on 99% of Android devices
