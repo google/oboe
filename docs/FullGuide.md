@@ -250,20 +250,20 @@ An audio stream can become disconnected at any time if one of these events happe
 *   An error occurs internally.
 *   An audio device is no longer the primary audio device.
 
-When a stream is disconnected, it has the state "Disconnected" and any attempts to execute write() or other functions return `OBOE_ERROR_DISCONNECTED`.  When a stream is disconnected, all you can do is close it.
+When a stream is disconnected, it has the state "Disconnected" and calls to `write()` or other functions will return `Result::ErrorDisconnected`.  When a stream is disconnected, all you can do is close it.
 
 If you need to be informed when an audio device is disconnected, write a class
-which extends `AudioStreamCallback` and implements the `onError(stream, error)`
-method. Register your class using `builder.setCallback(yourCallbackClass)`.
+which extends `AudioStreamCallback` and implements one of the following methods: 
 
-The `onError()` method should check the state of the stream as shown in the following
-example. You should not close or reopen the stream from the callback, use
-another thread instead. Note that if you open a new
-stream it might have different characteristics than the
-original stream (for example framesPerBurst):
+* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns).
+* `onErrorAfterClose(stream, error)` - called when the stream has been closed so the stream cannot be referenced. 
+
+Register your class using `builder.setCallback(yourCallbackClass)`.
+
+The `onError*()` methods should check the state of the stream as shown in the following example. You should not close or reopen the stream from the callback, use another thread instead. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst):
 
 ```
-void PlayAudioEngine::onError(AudioStream *audioStream, Result error) {
+void PlayAudioEngine::onErrorBeforeClose(AudioStream *audioStream, Result error) {
     if (error == Result::ErrorDisconnected) {
         // Handle stream restart on a separate thread
         std::function<void(void)> restartStream = std::bind(&PlayAudioEngine::restartStream, this);
@@ -272,11 +272,6 @@ void PlayAudioEngine::onError(AudioStream *audioStream, Result error) {
     // See Definitions.h for other Result::Error* codes
 }
 ```
-
-You can also implement two other callback methods in the class `AudioStreamCallback`:
-
-* `onAudioReady()` is used for a high-priority callback
-* `onExit()` is called when the callback thread exits.
 
 ## Optimizing performance
 
