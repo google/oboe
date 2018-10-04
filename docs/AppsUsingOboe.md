@@ -7,7 +7,7 @@ your project name and Play Store URL.
 JUCE has enabled Oboe as an experimental feature.
 [JUCE middleware framework](https://juce.com/)
 
-## GStomper Rhythm
+## G-Stomper apps
 Uses AAudio if you enable it in Settings.
 - Click "SETUP" button at far right.
 - Select "AUD" tab.
@@ -16,7 +16,7 @@ Uses AAudio if you enable it in Settings.
 - You will see a message saying to restart GStomper.
 - Restart GStomper. It should now be using AAudio.
 
-[App on Play Store](https://play.google.com/store/apps/details?id=com.planeth.rhythm)
+[planet-h.com apps on Play store](https://play.google.com/store/apps/dev?id=5200192441928542082)
 
 ## CSound for Android.
 Uses Oboe.
