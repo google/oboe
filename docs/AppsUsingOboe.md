@@ -18,12 +18,6 @@ Uses AAudio if you enable it in Settings.
 
 [planet-h.com apps on Play store](https://play.google.com/store/apps/dev?id=5200192441928542082)
 
-## CSound for Android.
-Uses Oboe.
-
-[App on Play Store](https://play.google.com/store/apps/details?id=com.csounds.Csound6),
-[Source](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp)
-
 ## Volcano Mobile
 They have several MIDI synthesizer apps using Oboe.
 
@@ -40,7 +34,18 @@ Uses AAudio if you enable it in Settings.
 
 [App on Play Store](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo)
 
-## ktnes
+## Music Speed Changer
+Play song files while changing the pitch and tempo.
+
+[App on Play Store](https://play.google.com/store/apps/details?id=com.smp.musicspeed)
+
+## CSound for Android.
+Uses Oboe.
+
+[App on Play Store](https://play.google.com/store/apps/details?id=com.csounds.Csound6),
+[Source](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp)
+
+# ktnes
 A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native.
 
 [Source](https://github.com/felipecsl/ktnes)
