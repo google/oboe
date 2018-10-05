@@ -37,6 +37,44 @@ public:
     /**
      * A buffer is ready for processing.
      *
+     * For an output stream, this function should render and write numFrames of data
+     * in the stream's current data format to the audioData buffer.
+     *
+     * For an input stream, this function should read and process numFrames of data
+     * from the audioData buffer.
+     *
+     * The audio data is passed through the buffer. So do NOT call read() or
+     * write() on the stream that is making the callback.
+     *
+     * Note that numFrames can vary unless AudioStreamBuilder::setFramesPerCallback()
+     * is called.
+     *
+     * Also note that this callback function should be considered a "real-time" function.
+     * It must not do anything that could cause an unbounded delay because that can cause the
+     * audio to glitch or pop.
+     *
+     * These are things the function should NOT do:
+     * <ul>
+     * <li>allocate memory using, for example, malloc() or new</li>
+     * <li>any file operations such as opening, closing, reading or writing</li>
+     * <li>any network operations such as streaming</li>
+     * <li>use any mutexes or other synchronization primitives</li>
+     * <li>sleep</li>
+     * <li>oboeStream->stop(), pause(), flush() or close()</li>
+     * <li>oboeStream->read()</li>
+     * <li>oboeStream->write()</li>
+     * </ul>
+     *
+     * The following are OK to call from the data callback:
+     * <ul>
+     * <li>oboeStream->get*()</li>
+     * <li>oboe::convertToText()</li>
+     * <li>oboeStream->setBufferSizeInFrames()</li>
+     * </ul>
+     *
+     * If you need to move data, eg. MIDI commands, in or out of the callback function then
+     * we recommend the use of non-blocking techniques such as an atomic FIFO.
+     *
      * @param oboeStream pointer to the associated stream
      * @param audioData buffer containing input data or a place to put output data
      * @param numFrames number of frames to be processed
@@ -48,7 +86,11 @@ public:
             int32_t numFrames) = 0;
 
     /**
-     * This will be called when an error occurs on a stream or when the stream is discomnnected.
+     * This will be called when an error occurs on a stream or when the stream is disconnected.
+     *
+     * Note that this will be called on a different thread than the onAudioReady() thread.
+     * This thread will be created by Oboe.
+     *
      * The underlying stream will already be stopped by Oboe but not yet closed.
      * So the stream can be queried.
      *
