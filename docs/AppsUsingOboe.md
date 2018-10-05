@@ -3,11 +3,27 @@
 Want your project added? [Add a comment to issue #214](https://github.com/google/oboe/issues/214) with 
 your project name and Play Store URL. 
 
-## JUCE
+## Frameworks
+
+### JUCE
 JUCE has enabled Oboe as an experimental feature.
 [JUCE middleware framework](https://juce.com/)
 
-## G-Stomper apps
+## Apps and Projects
+In alphabetical order.
+
+### CSound for Android.
+Uses Oboe.
+
+[App on Play Store](https://play.google.com/store/apps/details?id=com.csounds.Csound6),
+[Source](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp)
+
+### ktnes
+A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native.
+
+[Source](https://github.com/felipecsl/ktnes)
+
+### G-Stomper apps
 Uses AAudio if you enable it in Settings.
 - Click "SETUP" button at far right.
 - Select "AUD" tab.
@@ -18,14 +34,12 @@ Uses AAudio if you enable it in Settings.
 
 [planet-h.com apps on Play store](https://play.google.com/store/apps/dev?id=5200192441928542082)
 
-## Volcano Mobile
-They have several MIDI synthesizer apps using Oboe.
+### Music Speed Changer
+Play song files while changing the pitch and tempo.
 
-FluidSynth - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi)
+[App on Play Store](https://play.google.com/store/apps/details?id=com.smp.musicspeed)
 
-OPL3 MIDI Synth FM - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth)
-
-## n-Track Studio
+### n-Track Studio
 Uses AAudio if you enable it in Settings.
 - Click menu icon at bottom right.
 - Click "Settings".
@@ -34,18 +48,9 @@ Uses AAudio if you enable it in Settings.
 
 [App on Play Store](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo)
 
-## Music Speed Changer
-Play song files while changing the pitch and tempo.
+### Volcano Mobile
+They have several MIDI synthesizer apps using Oboe.
 
-[App on Play Store](https://play.google.com/store/apps/details?id=com.smp.musicspeed)
+FluidSynth - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi)
 
-## CSound for Android.
-Uses Oboe.
-
-[App on Play Store](https://play.google.com/store/apps/details?id=com.csounds.Csound6),
-[Source](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp)
-
-# ktnes
-A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native.
-
-[Source](https://github.com/felipecsl/ktnes)
+OPL3 MIDI Synth FM - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth)
