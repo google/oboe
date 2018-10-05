@@ -40,6 +40,12 @@ public:
 
     int32_t convertFramesToBytes(int32_t frames);
 
+    /**
+     * Read framesToRead or, if not enough, then read as many as are available.
+     * @param destination
+     * @param framesToRead number of frames requested
+     * @return number of frames actually read
+     */
     int32_t read(void *destination, int32_t framesToRead);
 
     int32_t write(const void *source, int32_t framesToWrite);
@@ -50,7 +56,15 @@ public:
 
     uint32_t getBufferCapacityInFrames() const;
 
-    int32_t readNow(void *buffer, int32_t numFrames);
+    /**
+     * Calls read(). If all of the frames cannot be read then the remainder of the buffer
+     * is set to zero and the underruncount is incremented.
+     *
+     * @param destination
+     * @param framesToRead number of frames requested
+     * @return number of frames actually read
+     */
+    int32_t readNow(void *destination, int32_t numFrames);
 
     uint32_t getUnderrunCount() const { return mUnderrunCount; }
 
