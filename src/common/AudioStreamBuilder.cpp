@@ -86,6 +86,8 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     Result result = streamP->open(); // TODO review API
     if (result == Result::OK) {
         *streamPP = streamP;
+    } else {
+        delete streamP;
     }
     return result;
 }
