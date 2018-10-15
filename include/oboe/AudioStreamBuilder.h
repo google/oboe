@@ -282,6 +282,9 @@ public:
     /**
      * Specifies an object to handle data or error related callbacks from the underlying API.
      *
+     * <strong>Important: See AudioStreamCallback for restrictions on what may be called
+     * from the callback methods.</strong>
+     *
      * When an error callback occurs, the associated stream will be stopped and closed in a separate thread.
      *
      * A note on why the streamCallback parameter is a raw pointer rather than a smart pointer:
