@@ -308,6 +308,8 @@ public:
     /**
      * Create and open a stream object based on the current settings.
      *
+     * The caller owns the pointer to the AudioStream object.
+     *
      * @param stream pointer to a variable to receive the stream address
      * @return OBOE_OK if successful or a negative error code
      */
@@ -320,7 +322,9 @@ private:
     /**
      * Create an AudioStream object. The AudioStream must be opened before use.
      *
-     * @return pointer to an AudioStream object.
+     * The caller owns the pointer.
+     *
+     * @return pointer to an AudioStream object or nullptr.
      */
     oboe::AudioStream *build();
 
