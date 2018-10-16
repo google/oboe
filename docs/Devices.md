@@ -9,6 +9,7 @@ If you would like a device tested please [add a comment to this issue](https://g
 ## [Android Pro Audio](https://source.android.com/compatibility/android-cdd#5_10_professional_audio) compliant (<20ms)
 These devices have less than 20ms round-trip audio latency.
 
+
 | Manufacturer | Model | Android version | Build number | Round-trip latency (ms) | Notes |
 |---|---|---|---|---|
 | HTC / Google | Nexus 9 | 7.0.0 Nougat | NRD91R | 15.22 |   |
@@ -21,6 +22,7 @@ These devices have less than 20ms round-trip audio latency.
 
 ## Nearly compliant (<50ms)
 These devices have less than 50ms round-trip audio latency.
+
 
 | Manufacturer | Model | Android version | Build number | Round-trip latency (ms) | Notes |
 |---|---|---|---|---|
