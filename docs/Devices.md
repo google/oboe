@@ -10,14 +10,14 @@ If you would like a device tested please [add a comment to this issue](https://g
 These devices have less than 20ms round-trip audio latency.
 
 
-| Manufacturer | Model | Android version | Build number | Round-trip latency (ms) | Notes |
+| Manufacturer | Model | Android version | Build number | Round-trip latency (ms) |
 |---|---|---|---|---|
-| HTC / Google | Nexus 9 | 7.0.0 Nougat | NRD91R | 15.22 |   |
-| LG / Google | Nexus 5X | 8.1.0 Oreo MR1 | OPM1.170918.001 | 17.72  |   |
-| Huawei / Google | Nexus 6P | 8.0.0 Oreo  | OPR5.170623.007  | 16.83  | |
-| Google | Pixel XL | 9.0.0 Pie | PPR2.181005.003 | 13.52  |   |
-| Google | Pixel 2 | 8.1.0 Oreo MR1 | OPM1.171019.011 | 18.08  | |
-| Samsung | Galaxy Note 9 | 8.1.0 Oreo MR1 | M1AJQ.N960FXXUOARZM | 19.33 | |
+| HTC / Google | Nexus 9 | 7.0.0 Nougat | NRD91R | 15.22 |
+| LG / Google | Nexus 5X | 8.1.0 Oreo MR1 | OPM1.170918.001 | 17.72 |
+| Huawei / Google | Nexus 6P | 8.0.0 Oreo  | OPR5.170623.007  | 16.83 |
+| Google | Pixel XL | 9.0.0 Pie | PPR2.181005.003 | 13.52 |
+| Google | Pixel 2 | 8.1.0 Oreo MR1 | OPM1.171019.011 | 18.08  |
+| Samsung | Galaxy Note 9 | 8.1.0 Oreo MR1 | M1AJQ.N960FXXUOARZM | 19.33 |
 
 
 ## Nearly compliant (<50ms)
@@ -25,7 +25,7 @@ These devices have less than 50ms round-trip audio latency.
 
 
 | Manufacturer | Model | Android version | Build number | Round-trip latency (ms) | Notes |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | Samsung | Galaxy S9 (SM-G960F) | 8.0.0 Oreo | G960FXXS2BRI1 | 20.95 | SLES was used ([see bug](https://github.com/gkasten/drrickorang/issues/28))|
 
 ## Test method
