@@ -219,15 +219,14 @@ frames was read. If not, the buffer might contain unknown data that could cause 
 audio glitch. You can pad the buffer with zeros to create a
 silent dropout:
 
-    Result result =
-        stream.read(audioData, numFrames, timeout);
+    Result result = stream.read(audioData, numFrames, timeout);
     if (result < 0) {
-      // Error!
+        // Error!
     }
     if (result != numFrames) {
-      // pad the buffer with zeros
-      memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
-          sizeof(sample_type) * (numFrames - result) * samplesPerFrame);
+        // pad the buffer with zeros
+        memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
+               (numFrames - result) * stream.getBytesPerFrame());
     }
 
 You can prime the stream's buffer before starting the stream by writing data or silence into it. This must be done in a non-blocking call with timeoutNanos set to zero.
@@ -326,18 +325,20 @@ The callback does a non-blocking read from the input stream placing the data int
         oboe_data_callback_result_t AudioEngine::onAudioReady(
                 AudioStream *oboeStream,
                 void *audioData,
-                int32_t numFrames){
-            auto result = stream2.read(audioData, numFrames, timeout);
-            // result has type ResultWithValue<int32_t>, which for convenience is coerced to a Result type when compared with another Result.
-            if (result == Result::OK){
-			    if (result.value() == numFrames)
-                    return DataCallbackResult::Continue;
-			    if (result.value() >= 0) {
+                int32_t numFrames) {
+            const int64_t timeoutNanos = 0; // for a non-blocking read
+            auto result = recordingStream->read(audioData, numFrames, timeoutNanos);
+            // result has type ResultWithValue<int32_t>, which for convenience is coerced
+            // to a Result type when compared with another Result.
+            if (result == Result::OK) {
+                if (result.value() < numFrames) {
+                    // replace the missing data with silence
                     memset(static_cast<sample_type*>(audioData) + result.value() * samplesPerFrame, 0,
-                        sizeof(sample_type) * (numFrames - result.value()) * samplesPerFrame);
-                    return DataCallbackResult::Continue;
+                        (numFrames - result.value()) * oboeStream->getBytesPerFrame());
+                    
                 }
-			}
+                return DataCallbackResult::Continue;
+            }
             return DataCallbackResult::Stop;
         }
 
