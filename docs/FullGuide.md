@@ -327,7 +327,7 @@ The callback does a non-blocking read from the input stream placing the data int
                 void *audioData,
                 int32_t numFrames) {
             const int64_t timeoutNanos = 0; // for a non-blocking read
-            auto result = stream2.read(audioData, numFrames, timeoutNanos);
+            auto result = recordingStream->read(audioData, numFrames, timeoutNanos);
             // result has type ResultWithValue<int32_t>, which for convenience is coerced
             // to a Result type when compared with another Result.
             if (result == Result::OK) {
