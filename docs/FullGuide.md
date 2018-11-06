@@ -255,22 +255,11 @@ If you need to be informed when an audio device is disconnected, write a class
 which extends `AudioStreamCallback` and implements one of the following methods: 
 
 * `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns).
-* `onErrorAfterClose(stream, error)` - called when the stream has been closed so the stream cannot be referenced. 
+* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be referenced. 
 
 Register your class using `builder.setCallback(yourCallbackClass)`.
 
-The `onError*()` methods should check the state of the stream as shown in the following example. You should not close or reopen the stream from the callback, use another thread instead. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst):
-
-```
-void PlayAudioEngine::onErrorBeforeClose(AudioStream *audioStream, Result error) {
-    if (error == Result::ErrorDisconnected) {
-        // Handle stream restart on a separate thread
-        std::function<void(void)> restartStream = std::bind(&PlayAudioEngine::restartStream, this);
-        mStreamRestartThread = new std::thread(restartStream);
-    }
-    // See Definitions.h for other Result::Error* codes
-}
-```
+The `onError*()` methods will be called in a new thread created by Oboe just for this callback. So you can safely open a new stream in the `onErrorAfterClose()` method. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst).
 
 ## Optimizing performance
 
