@@ -21,7 +21,7 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 ### 7.1 Nougat MR1 - API 25
 - OpenSL adds supports for setting and querying of PerformanceMode.
 
-### 7.0 Nougat - API 24 (Don?)
+### 7.0 Nougat - API 24
 - OpenSL method `acquireJavaProxy` added, which allows the Java AudioTrack object associated with playback to be obtained (which allows underrun count).
 
 ### 6.0 Marshmallow - API 23 (October 5, 2015)
