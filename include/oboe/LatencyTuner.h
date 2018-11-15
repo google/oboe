@@ -49,6 +49,14 @@ public:
     explicit LatencyTuner(AudioStream &stream);
 
     /**
+     * Construct a new LatencyTuner object which will act on the given audio stream.
+     *
+     * @param stream the stream who's latency will be tuned
+     * @param the maximum buffer size which the tune() operation will set the buffer size to
+     */
+     explicit LatencyTuner(AudioStream &stream, int32_t maximumBufferSize);
+
+    /**
      * Adjust the bufferSizeInFrames to optimize latency.
      * It will start with a low latency and then raise it if an underrun occurs.
      *
@@ -67,6 +75,14 @@ public:
      * call this from a button handler.
      */
     void requestReset();
+
+    /**
+     * @return true if the audio stream's buffer size is at the maximum value. If no maximum value
+     * was specified when constructing the LatencyTuner then the value of
+     * stream->getBufferCapacityInFrames is used
+     */
+     bool isAtMaximumBufferSize();
+
 
 private:
 
@@ -90,6 +106,7 @@ private:
 
     AudioStream           &mStream;
     State                 mState = State::Idle;
+    int32_t               mMaxBufferSize = 0;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
     std::atomic<int32_t>  mLatencyTriggerRequests{0}; // TODO user atomic requester from AAudio
