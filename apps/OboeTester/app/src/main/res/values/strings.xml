@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">Oboe Tester</string>
+    <string name="init_device">Device:</string>
+    <string name="init_status">Status:</string>
+    <string name="init_result">Result:</string>
+    <string name="action_settings">Settings</string>
+    <string name="openAudio">Open</string>
+    <string name="startAudio">Start</string>
+    <string name="pauseAudio">Pause</string>
+    <string name="stopAudio">Stop</string>
+    <string name="closeAudio">Close</string>
+    <string name="GetParam">Get Param</string>
+
+    <string name="output_prompt">Choose an Output Mode</string>
+    <string-array name="output_modes">
+        <item>Unspecified</item>
+        <item>OpenSL ES</item>
+        <item>AAudio</item>
+    </string-array>
+
+    <string name="audio_mode_prompt">Performance Mode</string>
+    <string-array name="audio_modes">
+        <item>NORMAL</item>
+        <item>RINGTONE</item>
+        <item>IN_CALL</item>
+        <item>IN_COMMUNICATION</item>
+    </string-array>
+
+    <string name="sample_rate_prompt">SRate:</string>
+    <string-array name="sample_rates">
+        <item>0</item>
+        <item>8000</item>
+        <item>16000</item>
+        <item>22050</item>
+        <item>32000</item>
+        <item>44100</item>
+        <item>48000</item>
+        <item>64000</item>
+        <item>88200</item>
+        <item>96000</item>
+    </string-array>
+
+    <string name="format_prompt">Format:</string>
+    <string-array name="audio_formats">
+        <item>Unspecified</item>
+        <item>PCM_I16</item>
+        <item>PCM_FLOAT</item>
+    </string-array>
+
+    <string name="channel_count_prompt">Channels:</string>
+    <string-array name="channel_counts">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
+
+    <string name="performance_prompt">Perf:</string>
+    <string-array name="performance_modes">
+        <item>NONE</item>
+        <item>POWER_SAVING</item>
+        <item>LOW_LATENCY</item>
+    </string-array>
+
+    <string name="tone_prompt">Choose a Tone Type</string>
+    <string-array name="tone_types">
+        <item>Saw Ping</item>
+        <item>Sine Steady</item>
+    </string-array>
+
+    <string name="synth_sender_text">Select Sender for Synth</string>
+    <string name="error_port_busy">Selected port is in use or unavailable.</string>
+    <string name="port_open_ok">Port opened OK.</string>
+    <string-array name="senders">
+        <item>"none"</item>
+    </string-array>
+
+    <string name="title_activity_main">Test Oboe</string>
+    <string name="title_activity_test_output">Test Output</string>
+    <string name="title_activity_test_input">Test Input</string>
+    <string name="title_activity_latency">Tap to Tone</string>
+    <string name="title_activity_recorder">Recorder</string>
+
+    <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
+
+    <string name="device_name">Device Name</string>
+    <string name="auto_select">Auto select</string>
+    <string name="recordAudio">Record</string>
+    <string name="playAudio">Play</string>
+</resources>
