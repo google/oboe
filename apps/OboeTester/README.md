@@ -1,11 +1,17 @@
-NativeOboe
+# Oboe Tester
 
-CONFIDENTIAL - contains proposed APIs for O release of Android
+Test Oboe using an Interactive App
 
-This is a prototype for a new audio API that can be used in place of OpenSL ES.
+## Test Output
 
-It contains:
-1. A measurement test app for touch to tone latency.
-2. A 'C' API for Oboe.
-3. A C++ stream for multiple interfaces including Oboe 'C' and OpenSL ES.
+Test opening, starting, stopping and closing a stream.
 
+## Test Input
+
+## Tap to Tone Latency
+
+Measure touch screen latency plus audio output latency.
+
+## Record and Playback
+
+Record 10 seconds of audio and play it back.
