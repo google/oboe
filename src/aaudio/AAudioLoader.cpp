@@ -23,7 +23,10 @@
 namespace oboe {
 
 AAudioLoader::~AAudioLoader() {
-    close(); // TODO dangerous from a destructor, require caller to close()
+    if (mLibHandle != nullptr) {
+        dlclose(mLibHandle);
+        mLibHandle = nullptr;
+    }
 }
 
 AAudioLoader* AAudioLoader::getInstance() {
@@ -151,19 +154,9 @@ int AAudioLoader::open() {
     return 0;
 }
 
-int AAudioLoader::close() {
-    if (mLibHandle != nullptr) {
-        dlclose(mLibHandle);
-        mLibHandle = nullptr;
-    }
-    return 0;
-}
-
 static void AAudioLoader_check(void *proc, const char *functionName) {
     if (proc == nullptr) {
-        LOGE("AAudioLoader could not find %s", functionName);
-    } else {
-        LOGV("AAudioLoader(): dlsym(%s) succeeded.", functionName);
+        LOGW("AAudioLoader could not find %s", functionName);
     }
 }
 
