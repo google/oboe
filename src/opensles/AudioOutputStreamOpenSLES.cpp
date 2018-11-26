@@ -28,6 +28,40 @@
 
 using namespace oboe;
 
+static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
+    SLuint32 openslStream = SL_ANDROID_STREAM_MEDIA;
+    switch(oboeUsage) {
+        case Usage::Media:
+            openslStream = SL_ANDROID_STREAM_MEDIA;
+            break;
+        case Usage::VoiceCommunication:
+        case Usage::VoiceCommunicationSignalling:
+            openslStream = SL_ANDROID_STREAM_VOICE;
+            break;
+        case Usage::Alarm:
+            openslStream = SL_ANDROID_STREAM_ALARM;
+            break;
+        case Usage::Notification:
+        case Usage::NotificationRingtone:
+        case Usage::NotificationEvent:
+            openslStream = SL_ANDROID_STREAM_NOTIFICATION;
+            break;
+        case Usage::AssistanceAccessibility:
+        case Usage::AssistanceNavigationGuidance:
+        case Usage::AssistanceSonification:
+            openslStream = SL_ANDROID_STREAM_SYSTEM;
+            break;
+        case Usage::Game:
+            openslStream = SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+            break;
+        case Usage::Assistant:
+        default:
+            openslStream = SL_ANDROID_STREAM_SYSTEM;
+            break;
+    }
+    return openslStream;
+}
+
 AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
 }
@@ -157,7 +191,18 @@ Result AudioOutputStreamOpenSLES::open() {
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }
+
+        SLuint32 presetValue = OpenSLES_convertOutputUsage(getUsage());
+        result = (*configItf)->SetConfiguration(configItf,
+                                                SL_ANDROID_KEY_STREAM_TYPE,
+                                                &presetValue,
+                                                sizeof(SLuint32));
+        if (SL_RESULT_SUCCESS != result) {
+            goto error;
+        }
     }
+
+
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
