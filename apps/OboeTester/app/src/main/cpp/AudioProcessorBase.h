@@ -46,8 +46,6 @@ class AudioPort {
 public:
     AudioPort(AudioProcessorBase &mParent, int samplesPerFrame);
 
-    ~AudioPort();
-
     int getSamplesPerFrame() const { return mSamplesPerFrame; }
 
 protected:
@@ -59,7 +57,7 @@ class AudioFloatPort  : public AudioPort {
 public:
     AudioFloatPort(AudioProcessorBase &mParent, int samplesPerFrame);
 
-    ~AudioFloatPort();
+    virtual ~AudioFloatPort();
 
     virtual float *getFloatBuffer(int numFrames);
 
@@ -71,7 +69,7 @@ class AudioOutputPort : public AudioFloatPort {
 public:
     AudioOutputPort(AudioProcessorBase &parent, int samplesPerFrame);
 
-    ~AudioOutputPort();
+    virtual ~AudioOutputPort() = default;
 
     using AudioFloatPort::getFloatBuffer;
 
@@ -87,7 +85,7 @@ class AudioInputPort : public AudioFloatPort {
 public:
     AudioInputPort(AudioProcessorBase &parent, int mSamplesPerFrame);
 
-    ~AudioInputPort();
+    virtual ~AudioInputPort() = default;
 
     float *getFloatBuffer(int numFrames);
 
@@ -123,9 +121,7 @@ public:
 
 class AudioProcessorBase : public IAudioProcessor {
 public:
-    AudioProcessorBase();
-
-    ~AudioProcessorBase();
+    virtual ~AudioProcessorBase() = default;
 
     virtual AudioResult onProcess(
             uint64_t framePosition,

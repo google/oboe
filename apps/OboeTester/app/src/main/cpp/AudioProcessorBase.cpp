@@ -28,7 +28,6 @@ AudioPort::AudioPort(AudioProcessorBase &parent, int samplesPerFrame)
         : mParent(parent)
         , mSamplesPerFrame(samplesPerFrame) {
 }
-AudioPort::~AudioPort() { }
 
 AudioFloatPort::AudioFloatPort(AudioProcessorBase &parent, int samplesPerFrame)
         : AudioPort(parent, samplesPerFrame), mFloatBuffer(NULL) {
@@ -51,10 +50,6 @@ AudioOutputPort::AudioOutputPort(AudioProcessorBase &parent, int samplesPerFrame
     LOGD("AudioOutputPort(%d)", samplesPerFrame);
 }
 
-AudioOutputPort::~AudioOutputPort()
-{
-}
-
 AudioResult AudioOutputPort::pullData(
         uint64_t framePosition,
         int numFrames) {
@@ -71,8 +66,6 @@ void AudioOutputPort::disconnect(AudioInputPort *port) {
 AudioInputPort::AudioInputPort(AudioProcessorBase &parent, int samplesPerFrame)
         : AudioFloatPort(parent, samplesPerFrame)
 {
-}
-AudioInputPort::~AudioInputPort() {
 }
 
 AudioResult AudioInputPort::pullData(
@@ -101,11 +94,6 @@ void AudioInputPort::setValue(float value) {
 /*
  * AudioProcessorBase
  */
-AudioProcessorBase::AudioProcessorBase() {
-}
-
-AudioProcessorBase::~AudioProcessorBase() {
-}
 
 AudioResult AudioProcessorBase::pullData(
         uint64_t framePosition,
