@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.sample.oboe.manualtest"
+    android:versionCode="3"
+    android:versionName="1.2.01">
+    <!-- versionCode and versionName also have to be updated in build.gradle -->
+
+    <uses-sdk
+        android:minSdkVersion="24"
+        android:targetSdkVersion="24" />
+
+    <uses-feature android:name="android.hardware.microphone" android:required="true" />
+    <uses-feature android:name="android.hardware.audio.output" android:required="true" />
+    <uses-feature android:name="android.software.midi" android:required="true" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- debug-writing file need external storage writing -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.MainActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.TestOutputActivity"
+            android:label="@string/title_activity_test_output"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.TestInputActivity"
+            android:label="@string/title_activity_test_input"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.TapToToneActivity"
+            android:label="@string/title_activity_latency"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.RecorderActivity"
+            android:label="@string/title_activity_recorder"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <service
+            android:name="com.google.sample.oboe.manualtest.AudioMidiTester"
+            android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">
+            <intent-filter>
+                <action android:name="android.media.midi.MidiDeviceService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.media.midi.MidiDeviceService"
+                android:resource="@xml/service_device_info" />
+        </service>
+
+    </application>
+
+</manifest>

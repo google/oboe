@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.google.sample.oboe.manualtest.MainActivity">
+
+    <TextView
+        android:id="@+id/versionText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="V?" />
+
+    <Button
+        android:id="@+id/buttonTestOutput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTestOutput"
+        android:text="Test Output" />
+
+    <Button
+        android:id="@+id/buttonTestInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTestInput"
+        android:text="Test Input" />
+
+    <Button
+        android:id="@+id/buttonTapToTone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTapToTone"
+        android:text="Tap to Tone Latency" />
+
+    <Button
+        android:id="@+id/buttonRecorder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchRecorder"
+        android:text="Record and Play" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/useCallback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="30sp"
+            android:text="Use Callback"
+            android:checked="true"
+            android:onClick="onUseCallbackClicked"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Size:" />
+
+        <EditText
+            android:id="@+id/callbackSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:text="0"
+            android:inputType="number" />
+
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/setSpeakerphoneOn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="30sp"
+        android:text="call setSpeakerphoneOn()"
+        android:checked="false"
+        android:onClick="onSetSpeakerphoneOn"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mode:" />
+
+        <Spinner
+            android:id="@+id/spinnerAudioMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/audio_modes"
+            android:prompt="@string/audio_mode_prompt" />
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/deviceView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:lines="1"
+        android:text="@string/init_device" />
+
+</LinearLayout>

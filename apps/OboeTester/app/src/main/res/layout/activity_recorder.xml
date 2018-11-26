@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.google.sample.oboe.manualtest.TestInputActivity">
+
+    <com.google.sample.oboe.manualtest.StreamConfigurationView
+        android:id="@+id/outputStreamConfiguration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_start_recording"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onStartRecording"
+            android:text="@string/recordAudio" />
+
+        <Button
+            android:id="@+id/button_stop_record_play"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onStopRecordPlay"
+            android:text="@string/stopAudio" />
+
+        <Button
+            android:id="@+id/button_start_playback"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onStartPlayback"
+            android:text="@string/playAudio" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/statusView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="3"
+        android:text="@string/init_status" />
+
+    <TextView
+        android:id="@+id/volumeText0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\?" />
+
+    <com.google.sample.oboe.manualtest.VolumeBarView
+        android:id="@+id/volumeBar0"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <TextView
+        android:id="@+id/volumeText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\?" />
+
+    <com.google.sample.oboe.manualtest.VolumeBarView
+        android:id="@+id/volumeBar1"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <TextView
+        android:id="@+id/volumeText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\?" />
+
+    <com.google.sample.oboe.manualtest.VolumeBarView
+        android:id="@+id/volumeBar2"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <TextView
+        android:id="@+id/volumeText3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\?" />
+
+    <com.google.sample.oboe.manualtest.VolumeBarView
+        android:id="@+id/volumeBar3"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+</LinearLayout>
