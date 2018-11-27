@@ -52,7 +52,7 @@ static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
             openslStream = SL_ANDROID_STREAM_SYSTEM;
             break;
         case Usage::Game:
-            openslStream = SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+            openslStream = SL_ANDROID_STREAM_MEDIA;
             break;
         case Usage::Assistant:
         default:
@@ -201,8 +201,6 @@ Result AudioOutputStreamOpenSLES::open() {
             goto error;
         }
     }
-
-
 
     result = (*mObjectInterface)->Realize(mObjectInterface, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
