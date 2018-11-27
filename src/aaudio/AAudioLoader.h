@@ -54,21 +54,11 @@ class AAudioLoader {
      * This can be called multiple times.
      * It should only be called from one thread.
      *
+     * The destructor will clean up after the open.
+     *
      * @return 0 if successful or negative error.
      */
     int open();
-
-    /**
-     * Close the AAudio shared library.
-     * This can be called multiple times.
-     * It should only be called from one thread.
-     *
-     * The open() and close() do not nest. Calling close() once will always close the library.
-     * The destructor will call close() so you don't need to.
-     *
-     * @return 0 if successful or negative error.
-     */
-    int close();
 
     // Function pointers into the AAudio shared library.
     aaudio_result_t (*createStreamBuilder)(AAudioStreamBuilder **builder);
