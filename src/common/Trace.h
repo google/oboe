@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_OBOE_H
-#define OBOE_OBOE_H
+#ifndef OBOE_TRACE_H
+#define OBOE_TRACE_H
 
-/**
- * \mainpage API reference
- *
- * All documentation is found in the <a href="namespaceoboe.html">oboe namespace section</a>
- *
- */
+class Trace {
 
-#include "oboe/Definitions.h"
-#include "oboe/ResultWithValue.h"
-#include "oboe/LatencyTuner.h"
-#include "oboe/AudioStream.h"
-#include "oboe/AudioStreamBase.h"
-#include "oboe/AudioStreamBuilder.h"
-#include "oboe/Utilities.h"
-#include "oboe/Version.h"
-#include "oboe/StabilizedCallback.h"
+public:
+    static void beginSection(const char *format, ...);
+    static void endSection();
+    static void initialize();
 
-#endif //OBOE_OBOE_H
+private:
+    static bool mIsTracingSupported;
+};
+
+#endif //OBOE_TRACE_H
