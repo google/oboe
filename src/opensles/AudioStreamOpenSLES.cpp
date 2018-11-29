@@ -118,6 +118,7 @@ Result AudioStreamOpenSLES::open() {
 
     if (!usingFIFO()) {
         mBufferCapacityInFrames = mFramesPerBurst * kBufferQueueLength;
+        mBufferSizeInFrames = mBufferCapacityInFrames;
     }
 
     return Result::OK;
