@@ -100,7 +100,7 @@ abstract class TestAudioActivity extends Activity {
             if (status.bufferSize < 0 || status.framesWritten < 0) {
                 return;
             }
-            int numBuffers = -1;
+            int numBuffers = 0;
             if (status.bufferSize > 0 && mFramesPerBurst > 0) {
                 numBuffers = status.bufferSize / mFramesPerBurst;
             }
