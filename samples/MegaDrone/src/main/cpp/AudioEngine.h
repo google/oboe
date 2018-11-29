@@ -38,6 +38,7 @@ public:
 
 private:
 
+    StabilizedCallback *mStabilizedCallback = nullptr;
     AudioStream *mStream = nullptr;
     std::unique_ptr<ISynth> mSynth;
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to

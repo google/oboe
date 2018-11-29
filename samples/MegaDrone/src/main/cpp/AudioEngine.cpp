@@ -25,7 +25,9 @@ void AudioEngine::start(std::vector<int> cpuIds) {
 
     mCpuIds = cpuIds;
     AudioStreamBuilder builder;
-    builder.setCallback(this);
+
+    mStabilizedCallback = new StabilizedCallback(this);
+    builder.setCallback(mStabilizedCallback);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
 

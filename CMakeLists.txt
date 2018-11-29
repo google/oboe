@@ -18,6 +18,8 @@ set (oboe_sources
         src/opensles/EngineOpenSLES.cpp
         src/opensles/OpenSLESUtilities.cpp
         src/opensles/OutputMixerOpenSLES.cpp
+        src/common/StabilizedCallback.cpp
+		src/common/Trace.cpp
         )
 
 add_library(oboe STATIC ${oboe_sources})
