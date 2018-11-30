@@ -12,6 +12,11 @@ JUCE has enabled Oboe as an experimental feature.
 ## Apps and Projects
 In alphabetical order.
 
+### Best Piano
+Learn to play the Piano. Note that they open the stream with 44100 Hz so it will not get an MMAP stream on Pixel.
+
+[App on Play Store](https://play.google.com/store/apps/details?id=com.netigen.piano)
+
 ### CSound for Android.
 Uses Oboe.
 
@@ -34,7 +39,12 @@ A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Nati
 
 [Source](https://github.com/felipecsl/ktnes)
 
-### Music Speed Changer
+### Les Talens Lyriques
+A series of music education apps using Oboe. Note that they open the stream with 44100 Hz so it will not get an MMAP stream on Pixel.
+
+[App on Play Store](https://play.google.com/store/apps/developer?id=Les+Talens+Lyriques)
+
+## Music Speed Changer
 Play song files while changing the pitch and tempo.
 
 [App on Play Store](https://play.google.com/store/apps/details?id=com.smp.musicspeed)
