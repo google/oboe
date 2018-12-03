@@ -233,7 +233,7 @@ void LiveEffectEngine::startStream(oboe::AudioStream *stream) {
 
 void LiveEffectEngine::stopStream(oboe::AudioStream *stream) {
     if (stream) {
-        oboe::Result result = stream->start(0L);
+        oboe::Result result = stream->stop(0L);
         if (result != oboe::Result::OK) {
             LOGE("Error stopping stream. %s", oboe::convertToText(result));
         }
