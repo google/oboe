@@ -18,7 +18,7 @@
 #include "common/AudioClock.h"
 #include "common/Trace.h"
 
-constexpr int32_t kLoadGenerationStepSizeNanos = 1000;
+constexpr int32_t kLoadGenerationStepSizeNanos = 20000;
 constexpr float kPercentageOfCallbackToUse = 0.8;
 
 using namespace oboe;
@@ -91,7 +91,7 @@ void StabilizedCallback::generateLoad(int64_t durationNanos) {
     // the CPU for a fixed amount of time (specified by kLoadGenerationStepSizeNanos).
     // After each step the opsPerStep value is re-calculated based on the actual time taken to
     // execute those operations.
-    int opsPerStep = (int)(mOpsPerNano * kLoadGenerationStepSizeNanos);
+    auto opsPerStep = (int)(mOpsPerNano * kLoadGenerationStepSizeNanos);
     int64_t stepDurationNanos = 0;
     int64_t previousTimeNanos = 0;
 
@@ -102,7 +102,12 @@ void StabilizedCallback::generateLoad(int64_t durationNanos) {
         previousTimeNanos = currentTimeNanos;
         currentTimeNanos = AudioClock::getNanoseconds();
         stepDurationNanos = currentTimeNanos - previousTimeNanos;
-        mOpsPerNano = (int)(opsPerStep / stepDurationNanos);
-        opsPerStep = (int)(mOpsPerNano * kLoadGenerationStepSizeNanos);
+
+        // Calculate exponential moving average to smooth out values, this acts as a low pass filter.
+        // @see https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+        static const float kFilterCoefficient = 0.1;
+        auto measuredOpsPerNano = (double) opsPerStep / stepDurationNanos;
+        mOpsPerNano = kFilterCoefficient * measuredOpsPerNano + (1.0 - kFilterCoefficient) * mOpsPerNano;
+        opsPerStep = (int) (mOpsPerNano * kLoadGenerationStepSizeNanos);
     }
 }
