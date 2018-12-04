@@ -5,10 +5,6 @@
     android:versionName="1.2.01">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
 
-    <uses-sdk
-        android:minSdkVersion="24"
-        android:targetSdkVersion="24" />
-
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
     <uses-feature android:name="android.hardware.audio.output" android:required="true" />
     <uses-feature android:name="android.software.midi" android:required="true" />
