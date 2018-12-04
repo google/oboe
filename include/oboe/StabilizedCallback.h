@@ -25,7 +25,7 @@ namespace oboe {
 class StabilizedCallback : public AudioStreamCallback {
 
 public:
-    StabilizedCallback(AudioStreamCallback *callback);
+    explicit StabilizedCallback(AudioStreamCallback *callback);
 
     DataCallbackResult
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
@@ -35,6 +35,11 @@ public:
     }
 
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override {
+
+        // Reset all fields now that the stream has been closed
+        mFrameCount = 0;
+        mEpochTimeNanos = 0;
+        mOpsPerNano = 1;
         return mCallback->onErrorAfterClose(oboeStream, error);
     }
 
