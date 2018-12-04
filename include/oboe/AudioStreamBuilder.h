@@ -98,8 +98,11 @@ public:
     }
 
     /**
-     * Set the requested maximum buffer capacity in frames.
-     * The final stream capacity may differ, but will probably be at least this big.
+     * Set the requested buffer capacity in frames.
+     * BufferCapacityInFrames is the maximum possible BufferSizeInFrames.
+     *
+     * The final stream capacity may differ. For AAudio it should be at least this big.
+     * For OpenSL ES, it could be smaller.
      *
      * Default is kUnspecified.
      *
@@ -115,6 +118,9 @@ public:
      * Get the audio API which will be requested when opening the stream. No guarantees that this is
      * the API which will actually be used. Query the stream itself to find out the API which is
      * being used.
+     *
+     * If you do not specify the API, then AAudio will be used if isAAudioRecommended()
+     * returns true. Otherwise OpenSL ES will be used.
      *
      * @return the requested audio API
      */
@@ -137,7 +143,7 @@ public:
     /**
      * Is the AAudio API supported on this device?
      *
-     * AAudio was introduced in the Oreo release.
+     * AAudio was introduced in the Oreo 8.0 release.
      *
      * @return true if supported
      */
@@ -147,6 +153,7 @@ public:
      * Is the AAudio API recommended this device?
      *
      * AAudio may be supported but not recommended because of version specific issues.
+     * AAudio is not recommended for Android 8.0 or earlier versions.
      *
      * @return true if recommended
      */
