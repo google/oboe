@@ -75,7 +75,6 @@ StabilizedCallback::onAudioReady(AudioStream *oboeStream, void *audioData, int32
     generateLoad(stabilizingLoadDurationNanos);
     Trace::endSection();
 
-    // TODO: Could this be done with oboeStream->getFramesRead or getFramesWritten()?
     // Wraparound: At 48000 frames per second mFrameCount wraparound will occur after 6m years,
     // significantly longer than the average lifetime of an Android phone.
     mFrameCount += numFrames;
