@@ -32,7 +32,7 @@ AudioPort::AudioPort(AudioProcessorBase &parent, int samplesPerFrame)
 AudioFloatPort::AudioFloatPort(AudioProcessorBase &parent, int samplesPerFrame)
         : AudioPort(parent, samplesPerFrame), mFloatBuffer(NULL) {
     int numFloats = MAX_BLOCK_SIZE * mSamplesPerFrame;
-    mFloatBuffer = new float[numFloats];
+    mFloatBuffer = new float[numFloats]{};
 }
 
 AudioFloatPort::~AudioFloatPort() {

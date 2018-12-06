@@ -392,4 +392,10 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setAmplitude(
 
 }
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
+        JNIEnv *env, jobject, jint channelIndex, jboolean enabled) {
+    engine.setChannelEnabled(channelIndex, enabled);
+}
+
 }

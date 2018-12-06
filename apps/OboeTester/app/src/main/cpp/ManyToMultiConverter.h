@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_MONO_TO_MULTI_CONVERTER_H
-#define OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+#ifndef OBOETESTER_MANY_TO_MULTI_CONVERTER_H
+#define OBOETESTER_MANY_TO_MULTI_CONVERTER_H
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <vector>
 
 #include "AudioProcessorBase.h"
 
 /**
- * Duplicate a single mono input across multiple channels of output.
+ * Combine multiple mono inputs into one multi-channel output.
  */
-class MonoToMultiConverter : AudioProcessorBase {
+class ManyToMultiConverter : public AudioProcessorBase {
 public:
-    explicit MonoToMultiConverter(int32_t channelCount);
+    explicit ManyToMultiConverter(int32_t channelCount);
 
-    virtual ~MonoToMultiConverter() = default;
+    virtual ~ManyToMultiConverter() = default;
 
     AudioResult onProcess(
             uint64_t framePosition,
@@ -37,10 +38,10 @@ public:
 
     void setEnabled(bool enabled) {};
 
-    AudioInputPort input;
+    std::vector<std::unique_ptr<AudioInputPort> > inputs;
     AudioOutputPort output;
 
 private:
 };
 
-#endif //OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+#endif //OBOETESTER_MANY_TO_MULTI_CONVERTER_H

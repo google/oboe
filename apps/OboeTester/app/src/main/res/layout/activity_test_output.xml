@@ -12,4 +12,72 @@
 
     <include layout="@layout/merge_audio_common"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/channelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Channels:" />
+
+        <CheckBox
+            android:id="@+id/channelBox0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="0" />
+
+        <CheckBox
+            android:id="@+id/channelBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="1" />
+
+        <CheckBox
+            android:id="@+id/channelBox2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="2" />
+
+        <CheckBox
+            android:id="@+id/channelBox3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="3" />
+
+        <CheckBox
+            android:id="@+id/channelBox4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="4" />
+
+        <CheckBox
+            android:id="@+id/channelBox5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="5" />
+
+        <CheckBox
+            android:id="@+id/channelBox6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="6" />
+
+        <CheckBox
+            android:id="@+id/channelBox7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onChannelBoxClicked"
+            android:text="7" />
+
+    </LinearLayout>
 </LinearLayout>
