@@ -27,28 +27,45 @@
 #include <android/asset_manager.h>
 
 #include "RenderableAudio.h"
+#include "DataSource.h"
 
-class SoundRecording : public RenderableAudio{
+class Player : public RenderableAudio{
 
 public:
-    SoundRecording(const int16_t *sourceData, int32_t numFrames)
+    /**
+     * Construct a new SoundPlayer from the given source data.
+     *
+     * @param sourceData
+     * @param numFrames
+     */
+
+    // maybe use shared_ptr
+    // Player
+    //Player(SoundSource)
+    Player(DataSource *source)
+        : mSource(source)
+        , mChannelCount(source->getChannelCount())
+    {};
+
+    /*Player(const int16_t *sourceData, int32_t numFrames)
             : mData(sourceData)
             , mTotalFrames(numFrames)
-    {};
+    {};*/
+
     void renderAudio(int16_t *targetData, int32_t numFrames);
     void resetPlayHead() { mReadFrameIndex = 0; };
     void setPlaying(bool isPlaying) { mIsPlaying = isPlaying; resetPlayHead(); };
     void setLooping(bool isLooping) { mIsLooping = isLooping; };
 
-    static SoundRecording * loadFromAssets(AAssetManager *assetManager, const char * filename);
-
 private:
-    int32_t mChannelCount = 2; // TODO: move this into a konstant and maybe add as parameter to ctor
     int32_t mReadFrameIndex = 0;
-    const int16_t* mData = nullptr;
-    int32_t mTotalFrames = 0;
+    //const int16_t* mData = nullptr;
+    //int32_t mTotalFrames = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
+
+    DataSource *mSource;
+    int32_t mChannelCount;
 
 };
 

@@ -33,8 +33,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        native_onCreate(getAssets());
     }
 
-    private native void native_onCreate(AssetManager assetManager);
+    protected void onStart(){
+        super.onStart();
+        native_onStart(getAssets());
+    }
+
+    protected void onStop(){
+        super.onStop();
+        native_onStop();
+    }
+
+    private native void native_onStart(AssetManager assetManager);
+    private native void native_onStop();
 }

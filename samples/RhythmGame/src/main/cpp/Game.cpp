@@ -25,8 +25,22 @@ Game::Game(AAssetManager *assetManager): mAssetManager(assetManager) {
 void Game::start() {
 
     // Load the RAW PCM data files for both the clap sound and backing track into memory.
-    mClap = SoundRecording::loadFromAssets(mAssetManager, "CLAP.raw");
-    mBackingTrack = SoundRecording::loadFromAssets(mAssetManager, "FUNKY_HOUSE.raw" );
+    mClapSource = AAssetDataSource::newFromAssetManager(mAssetManager, "CLAP.raw",
+            oboe::ChannelCount::Stereo);
+    if (mClapSource == nullptr){
+        LOGE("Could not load source data for clap sound");
+        return;
+    }
+    mClap = new Player(mClapSource);
+
+    mBackingTrackSource = AAssetDataSource::newFromAssetManager(mAssetManager, "FUNKY_HOUSE.raw",
+            oboe::ChannelCount::Stereo);
+    if (mBackingTrackSource == nullptr){
+        LOGE("Could not load source data for backing track");
+        return;
+    }
+
+    mBackingTrack = new Player(mBackingTrackSource);
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
@@ -74,6 +88,18 @@ void Game::start() {
     if (result != Result::OK){
         LOGE("Failed to start stream. Error: %s", convertToText(result));
     }
+}
+
+void Game::stop(){
+
+    if (mAudioStream != nullptr){
+        mAudioStream->close();
+    }
+
+    delete mClap;
+    delete mBackingTrack;
+    delete mClapSource;
+    delete mBackingTrackSource;
 }
 
 void Game::tap(int64_t eventTimeAsUptime) {

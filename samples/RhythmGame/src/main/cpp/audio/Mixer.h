@@ -18,7 +18,7 @@
 #define RHYTHMGAME_MIXER_H
 
 
-#include "SoundRecording.h"
+#include "Player.h"
 #include "RenderableAudio.h"
 
 constexpr int32_t kBufferSize = 192*10; // Temporary buffer is used for mixing
