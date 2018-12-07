@@ -21,7 +21,8 @@
 #include <oboe/Oboe.h>
 
 #include "audio/Mixer.h"
-#include "audio/SoundRecording.h"
+#include "audio/Player.h"
+#include "audio/AAssetDataSource.h"
 #include "ui/OpenGLFunctions.h"
 #include "utils/LockFreeQueue.h"
 #include "utils/UtilityFunctions.h"
@@ -34,6 +35,7 @@ public:
     explicit Game(AAssetManager *assetManager);
 
     void start();
+    void stop();
     void onSurfaceCreated();
     void onSurfaceDestroyed();
     void onSurfaceChanged(int widthInPixels, int heightInPixels);
@@ -47,8 +49,11 @@ public:
 private:
     AAssetManager *mAssetManager{nullptr};
     AudioStream *mAudioStream{nullptr};
-    SoundRecording *mClap{nullptr};
-    SoundRecording *mBackingTrack{nullptr};
+
+    AAssetDataSource *mClapSource{nullptr};
+    AAssetDataSource *mBackingTrackSource{nullptr};
+    Player *mClap{nullptr};
+    Player *mBackingTrack{nullptr};
     Mixer mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
@@ -56,6 +61,7 @@ private:
     LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
     LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
     std::atomic<int64_t> mLastUpdateTime { 0 };
+
 };
 
 

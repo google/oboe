@@ -12,7 +12,8 @@ add_library( native-lib
              src/main/cpp/Game.cpp
 
              # audio engine
-             src/main/cpp/audio/SoundRecording.cpp
+             src/main/cpp/audio/AAssetDataSource.cpp
+             src/main/cpp/audio/Player.cpp
              src/main/cpp/audio/Mixer.cpp
 
              # UI engine
