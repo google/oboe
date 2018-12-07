@@ -23,3 +23,6 @@ If you don't need the lowest possible audio latency you may want to investigate 
 
 - [MediaPlayer](https://developer.android.com/reference/android/media/MediaPlayer)
 - [SoundPool](https://developer.android.com/reference/android/media/SoundPool)
+
+## My question isn't listed, where can I ask it?
+Please ask questions on [Stack Overflow](https://stackoverflow.com/questions/ask) with the [Oboe tag](https://stackoverflow.com/tags/oboe). 
