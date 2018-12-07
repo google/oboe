@@ -33,24 +33,16 @@ class Player : public RenderableAudio{
 
 public:
     /**
-     * Construct a new SoundPlayer from the given source data.
+     * Construct a new Player from the given DataSource. Note that the Player does *not* take
+     * ownership of the source so it's up to the caller to delete the source after it's no longer
+     * needed
      *
-     * @param sourceData
-     * @param numFrames
+     * @param source
      */
-
-    // maybe use shared_ptr
-    // Player
-    //Player(SoundSource)
     Player(DataSource *source)
         : mSource(source)
         , mChannelCount(source->getChannelCount())
     {};
-
-    /*Player(const int16_t *sourceData, int32_t numFrames)
-            : mData(sourceData)
-            , mTotalFrames(numFrames)
-    {};*/
 
     void renderAudio(int16_t *targetData, int32_t numFrames);
     void resetPlayHead() { mReadFrameIndex = 0; };
@@ -59,8 +51,6 @@ public:
 
 private:
     int32_t mReadFrameIndex = 0;
-    //const int16_t* mData = nullptr;
-    //int32_t mTotalFrames = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
 
