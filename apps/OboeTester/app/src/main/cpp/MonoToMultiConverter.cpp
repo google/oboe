@@ -23,8 +23,6 @@ MonoToMultiConverter::MonoToMultiConverter(int32_t channelCount)
         , output(*this, channelCount) {
 }
 
-MonoToMultiConverter::~MonoToMultiConverter() { }
-
 AudioResult MonoToMultiConverter::onProcess(
         uint64_t framePosition,
         int numFrames) {

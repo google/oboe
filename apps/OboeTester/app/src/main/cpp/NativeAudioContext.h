@@ -19,6 +19,7 @@
 
 #include <dlfcn.h>
 #include <thread>
+#include <vector>
 
 #include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
@@ -26,6 +27,7 @@
 #include "AudioStreamGateway.h"
 #include "ImpulseGenerator.h"
 #include "InputStreamCallbackAnalyzer.h"
+#include "ManyToMultiConverter.h"
 #include "MonoToMultiConverter.h"
 #include "MultiChannelRecording.h"
 #include "OboeStreamCallbackProxy.h"
@@ -33,8 +35,9 @@
 #include "SawPingGenerator.h"
 #include "SineGenerator.h"
 
+#define MAX_SINE_OSCILLATORS     8
 #define AMPLITUDE_SINE           1.0
-#define FREQUENCY_SAW_PING       1200.0
+#define FREQUENCY_SAW_PING       800.0
 #define AMPLITUDE_SAW_PING       1.0
 #define AMPLITUDE_IMPULSE        0.7
 
@@ -52,6 +55,8 @@
  */
 class NativeAudioContext {
 public:
+
+    NativeAudioContext();
 
     void close();
 
@@ -121,7 +126,9 @@ public:
         oboe::Result result1 = stopPlayback();
         oboe::Result result2 = stopAudio();
 
-        sineGenerator.stop();
+        for (int i = 0; i < mChannelCount; i++) {
+            sineGenerators[i].stop();
+        }
         impulseGenerator.stop();
         sawPingGenerator.stop();
         if (audioStreamGateway != nullptr) {
@@ -137,8 +144,8 @@ public:
         builder.setChannelCount(mChannelCount)
                 ->setSampleRate(mSampleRate)
                 ->setFormat(oboe::AudioFormat::Float)
-                ->setCallback(&mPlayRecordingCallback);
-          //      ->setAudioApi(oboe::AudioApi::OpenSLES);
+                ->setCallback(&mPlayRecordingCallback)
+                ->setAudioApi(oboe::AudioApi::OpenSLES);
         oboe::Result result = builder.openStream(&playbackStream);
         LOGD("NativeAudioContext::startPlayback() openStream() returned %d", result);
         if (result != oboe::Result::OK) {
@@ -163,7 +170,9 @@ public:
     oboe::Result start() {
         stop();
 
-        sineGenerator.start();
+        for (int i = 0; i < mChannelCount; i++) {
+            sineGenerators[i].start();
+        }
         impulseGenerator.start();
         sawPingGenerator.start();
         if (audioStreamGateway != nullptr) {
@@ -199,10 +208,14 @@ public:
 
     void setAmplitude(double amplitude) {
         LOGD("%s(%f)", __func__, amplitude);
-        sineGenerator.amplitude.setValue(amplitude);
+        for (int i = 0; i < mChannelCount; i++) {
+            sineGenerators[i].amplitude.setValue(amplitude);
+        }
         sawPingGenerator.amplitude.setValue(amplitude);
         impulseGenerator.amplitude.setValue(amplitude);
     }
+
+    void setChannelEnabled(int channelIndex, bool enabled);
 
     oboe::AudioStream           *oboeStream = nullptr;
     InputStreamCallbackAnalyzer  mInputAnalyzer;
@@ -244,14 +257,16 @@ private:
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr;
 
-    OboeStreamCallbackProxy     oboeCallbackProxy;
-    SineGenerator               sineGenerator;
-    ImpulseGenerator            impulseGenerator;
-    SawPingGenerator            sawPingGenerator;
-    MonoToMultiConverter        *monoToMulti = nullptr;
-    oboe::AudioStream           *playbackStream = nullptr;
-    std::unique_ptr<float>       dataBuffer{};
+    OboeStreamCallbackProxy      oboeCallbackProxy;
+    std::vector<SineGenerator>   sineGenerators;
 
+    ImpulseGenerator             impulseGenerator;
+    SawPingGenerator             sawPingGenerator;
+    oboe::AudioStream           *playbackStream = nullptr;
+
+    std::unique_ptr<float>                  dataBuffer{};
+    std::unique_ptr<ManyToMultiConverter>            manyToMulti;
+    std::unique_ptr<MonoToMultiConverter>   monoToMulti;
     std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
 

@@ -44,7 +44,7 @@ public:
 
     AudioResult onProcess(
             uint64_t framePosition,
-            int numFrames) {
+            int numFrames)  override {
         float *buffer = output.getFloatBuffer(numFrames);
         return mFifoBuffer.readNow(buffer, numFrames);
     }

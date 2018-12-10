@@ -18,6 +18,11 @@
 
 #define SECONDS_TO_RECORD   10
 
+
+NativeAudioContext::NativeAudioContext()
+    : sineGenerators(MAX_SINE_OSCILLATORS) {
+}
+
 void NativeAudioContext::close() {
     stopBlockingIOThread();
 
@@ -26,8 +31,9 @@ void NativeAudioContext::close() {
     }
     delete oboeStream;
     oboeStream = nullptr;
-    delete monoToMulti;
-    monoToMulti = nullptr;
+    manyToMulti.reset(nullptr);
+    monoToMulti.reset(nullptr);
+    audioStreamGateway.reset(nullptr);
 }
 
 bool NativeAudioContext::isMMapUsed() {
@@ -58,15 +64,31 @@ void NativeAudioContext::connectTone() {
         LOGI("%s() mToneType = %d", __func__, mToneType);
         switch (mToneType) {
             case ToneType::SawPing:
-                sawPingGenerator.output.connect(&monoToMulti->input);
+                sawPingGenerator.output.connect(&(monoToMulti->input));
+                monoToMulti->output.connect(&(audioStreamGateway.get()->input));
                 break;
             case ToneType::Sine:
-                sineGenerator.output.connect(&monoToMulti->input);
+                for (int i = 0; i < mChannelCount; i++) {
+                    sineGenerators[i].output.connect(manyToMulti->inputs[i].get());
+                }
+                manyToMulti->output.connect(&(audioStreamGateway.get()->input));
                 break;
             case ToneType::Impulse:
-                impulseGenerator.output.connect(&monoToMulti->input);
+                impulseGenerator.output.connect(&(monoToMulti->input));
+                monoToMulti->output.connect(&(audioStreamGateway.get()->input));
                 break;
         }
+    }
+}
+
+void NativeAudioContext::setChannelEnabled(int channelIndex, bool enabled) {
+    if (manyToMulti == nullptr) {
+        return;
+    }
+    if (enabled) {
+        sineGenerators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+    } else {
+        manyToMulti->inputs[channelIndex]->disconnect();
     }
 }
 
@@ -128,10 +150,13 @@ int NativeAudioContext::open(jint sampleRate,
                                                                  SECONDS_TO_RECORD * mSampleRate);
             mInputAnalyzer.setRecording(mRecording.get());
         } else {
-
-            sineGenerator.setSampleRate(oboeStream->getSampleRate());
-            sineGenerator.frequency.setValue(440.0);
-            sineGenerator.amplitude.setValue(AMPLITUDE_SINE);
+            double frequency = 440.0;
+            for (int i = 0; i < mChannelCount; i++) {
+                sineGenerators[i].setSampleRate(oboeStream->getSampleRate());
+                sineGenerators[i].frequency.setValue(frequency);
+                frequency *= 4.0 / 3.0; // each sine is a higher frequency
+                sineGenerators[i].amplitude.setValue(AMPLITUDE_SINE);
+            }
 
             impulseGenerator.setSampleRate(oboeStream->getSampleRate());
             impulseGenerator.frequency.setValue(440.0);
@@ -141,19 +166,18 @@ int NativeAudioContext::open(jint sampleRate,
             sawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
             sawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
 
-            monoToMulti = new MonoToMultiConverter(mChannelCount);
-            connectTone();
+            manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
+            monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
 
             // We needed the proxy because we did not know the channelCount
             // when we setup the Builder.
             audioStreamGateway = std::make_unique<AudioStreamGateway>(mChannelCount);
 
+            connectTone();
+
             if (useCallback) {
                 oboeCallbackProxy.setCallback(audioStreamGateway.get());
             }
-
-            // Input will get connected by setToneType()
-            monoToMulti->output.connect(&(audioStreamGateway.get()->input));
 
             // Set starting size of buffer.
             constexpr int kDefaultNumBursts = 2; // "double buffer"
