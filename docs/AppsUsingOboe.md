@@ -67,3 +67,5 @@ They have several MIDI synthesizer apps using Oboe.
 FluidSynth - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi)
 
 OPL3 MIDI Synth FM - [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth)
+
+MIDI Sequencer app is very handy for testing. [App on Play Store](https://play.google.com/store/apps/details?id=net.volcanomobile.midisequencer)
