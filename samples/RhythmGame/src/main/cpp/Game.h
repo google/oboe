@@ -49,10 +49,8 @@ public:
 private:
     AAssetManager& mAssetManager;
     AudioStream *mAudioStream{nullptr};
-    AAssetDataSource *mClapSource{nullptr};
-    AAssetDataSource *mBackingTrackSource{nullptr};
-    std::unique_ptr<Player> mClap;
-    std::unique_ptr<Player> mBackingTrack;
+    std::shared_ptr<Player> mClap;
+    std::shared_ptr<Player> mBackingTrack;
     Mixer mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;

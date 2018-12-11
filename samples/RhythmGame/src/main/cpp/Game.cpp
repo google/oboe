@@ -25,29 +25,30 @@ Game::Game(AAssetManager &assetManager): mAssetManager(assetManager) {
 void Game::start() {
 
     // Load the RAW PCM data files for both the clap sound and backing track into memory.
-    mClapSource = AAssetDataSource::newFromAssetManager(mAssetManager, "CLAP.raw",
-            oboe::ChannelCount::Stereo);
-    if (mClapSource == nullptr){
+    std::unique_ptr<AAssetDataSource> mClapSource(AAssetDataSource::newFromAssetManager(mAssetManager,
+        "CLAP.raw",
+        oboe::ChannelCount::Stereo));
+    if (mClapSource.get() == nullptr){
         LOGE("Could not load source data for clap sound");
         return;
     }
-    mClap = std::make_unique<Player>(*mClapSource);
+    mClap = std::make_shared<Player>(std::move(mClapSource));
 
-    mBackingTrackSource = AAssetDataSource::newFromAssetManager(mAssetManager, "FUNKY_HOUSE.raw",
-            oboe::ChannelCount::Stereo);
-    if (mBackingTrackSource == nullptr){
+    std::unique_ptr<AAssetDataSource> mBackingTrackSource(AAssetDataSource::newFromAssetManager(mAssetManager,
+        "FUNKY_HOUSE.raw",
+        oboe::ChannelCount::Stereo));
+    if (mBackingTrackSource.get() == nullptr){
         LOGE("Could not load source data for backing track");
         return;
     }
-
-    mBackingTrack = std::make_unique<Player>(*mBackingTrackSource);
+    mBackingTrack = std::make_shared<Player>(std::move(mBackingTrackSource));
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
     // Add the clap and backing track sounds to a mixer so that they can be played together
     // simultaneously using a single audio stream.
-    mMixer.addTrack(*mClap);
-    mMixer.addTrack(*mBackingTrack);
+    mMixer.addTrack(mClap);
+    mMixer.addTrack(mBackingTrack);
 
     // Add the audio frame numbers on which the clap sound should be played to the clap event queue.
     // The backing track tempo is 120 beats per minute, which is 2 beats per second. At a sample
@@ -96,9 +97,6 @@ void Game::stop(){
         mAudioStream->close();
         mAudioStream = nullptr;
     }
-
-    delete mClapSource;
-    delete mBackingTrackSource;
 }
 
 void Game::tap(int64_t eventTimeAsUptime) {
