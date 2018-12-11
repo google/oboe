@@ -32,7 +32,7 @@ using namespace oboe;
 
 class Game : public AudioStreamCallback {
 public:
-    explicit Game(AAssetManager *assetManager);
+    explicit Game(AAssetManager&);
 
     void start();
     void stop();
@@ -47,13 +47,12 @@ public:
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
 private:
-    AAssetManager *mAssetManager{nullptr};
+    AAssetManager& mAssetManager;
     AudioStream *mAudioStream{nullptr};
-
     AAssetDataSource *mClapSource{nullptr};
     AAssetDataSource *mBackingTrackSource{nullptr};
-    Player *mClap{nullptr};
-    Player *mBackingTrack{nullptr};
+    std::unique_ptr<Player> mClap;
+    std::unique_ptr<Player> mBackingTrack;
     Mixer mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;

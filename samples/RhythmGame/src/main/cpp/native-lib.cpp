@@ -31,7 +31,12 @@ Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onStart(JNIEnv *env,
                                                                      jobject jAssetManager) {
 
     AAssetManager *assetManager = AAssetManager_fromJava(env, jAssetManager);
-    game = std::make_unique<Game>(assetManager);
+    if (assetManager == nullptr) {
+        LOGE("Could not obtain the AAssetManager");
+        return;
+    }
+
+    game = std::make_unique<Game>(*assetManager);
     game->start();
 }
 

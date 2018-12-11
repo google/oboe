@@ -22,9 +22,9 @@
 class DataSource {
 public:
     virtual ~DataSource(){};
-    virtual int32_t getTotalFrames() = 0;
-    virtual int32_t getChannelCount() = 0;
-    virtual const int16_t* getData() = 0;
+    virtual int32_t getTotalFrames() const = 0;
+    virtual int32_t getChannelCount() const  = 0;
+    virtual const int16_t* getData() const = 0;
 };
 
 

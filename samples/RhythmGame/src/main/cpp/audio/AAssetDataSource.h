@@ -30,12 +30,11 @@ public:
         AAsset_close(mAsset);
     }
 
-    int32_t getTotalFrames() override { return mTotalFrames; } ;
-    int32_t getChannelCount() override { return mChannelCount; } ;
-    virtual const int16_t* getData() override { return mBuffer;	};
+    int32_t getTotalFrames() const override { return mTotalFrames; } ;
+    int32_t getChannelCount() const override { return mChannelCount; } ;
+    const int16_t* getData() const override { return mBuffer;	};
 
-    static AAssetDataSource* newFromAssetManager(AAssetManager *assetManager, const char *filename,
-                                                 const int32_t channelCount);
+    static AAssetDataSource* newFromAssetManager(AAssetManager&, const char *, const int32_t);
 
 private:
 
@@ -49,7 +48,7 @@ private:
 
     AAsset *mAsset = nullptr;
     const int16_t* mBuffer;
-    int32_t mTotalFrames;
+    const int32_t mTotalFrames;
     const int32_t mChannelCount;
 
 };
