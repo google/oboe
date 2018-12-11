@@ -28,15 +28,13 @@ constexpr int32_t kChannelCount = 2;
 class Mixer : public RenderableAudio {
 
 public:
-    void addTrack(RenderableAudio&);
+    void addTrack(std::shared_ptr<RenderableAudio> renderer);
     void renderAudio(int16_t *audioData, int32_t numFrames);
 
 private:
-
     std::array<int16_t, kBufferSize> mixingBuffer;
-    RenderableAudio *mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
+    std::shared_ptr<RenderableAudio> mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
     uint8_t mNextFreeTrackIndex = 0;
 };
-
 
 #endif //RHYTHMGAME_MIXER_H

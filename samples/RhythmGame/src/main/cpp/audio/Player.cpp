@@ -19,13 +19,13 @@
 
 void Player::renderAudio(int16_t *targetData, int32_t numFrames){
 
-    const int32_t channelCount = mSource.getChannelCount();
+    const int32_t channelCount = mSource->getChannelCount();
 
     if (mIsPlaying){
 
         int32_t framesToRenderFromData = numFrames;
-        int32_t totalSourceFrames = mSource.getTotalFrames();
-        const int16_t *data = mSource.getData();
+        int32_t totalSourceFrames = mSource->getTotalFrames();
+        const int16_t *data = mSource->getData();
 
         // Check whether we're about to reach the end of the recording
         if (!mIsLooping && mReadFrameIndex + numFrames >= totalSourceFrames){

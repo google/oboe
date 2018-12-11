@@ -40,8 +40,8 @@ public:
      *
      * @param source
      */
-    Player(DataSource &source)
-        : mSource(source)
+    Player(std::unique_ptr<DataSource> source)
+        : mSource(std::move(source))
     {};
 
     void renderAudio(int16_t *targetData, int32_t numFrames);
@@ -53,10 +53,9 @@ private:
     int32_t mReadFrameIndex = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
-    DataSource &mSource;
+    std::unique_ptr<DataSource> mSource;
 
     void renderSilence(int16_t*, int32_t);
-
 };
 
 #endif //RHYTHMGAME_SOUNDRECORDING_H
