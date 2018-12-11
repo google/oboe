@@ -24,33 +24,33 @@ class AAssetDataSource : public DataSource {
 
 public:
 
-	~AAssetDataSource(){
+    ~AAssetDataSource(){
 
-		// Note that this will also delete the data at mBuffer
-		AAsset_close(mAsset);
-	}
+        // Note that this will also delete the data at mBuffer
+        AAsset_close(mAsset);
+    }
 
-	int32_t getTotalFrames() override { return mTotalFrames; } ;
-	int32_t getChannelCount() override { return mChannelCount; } ;
-	virtual const int16_t* getData() override { return mBuffer;	};
+    int32_t getTotalFrames() override { return mTotalFrames; } ;
+    int32_t getChannelCount() override { return mChannelCount; } ;
+    virtual const int16_t* getData() override { return mBuffer;	};
 
-	static AAssetDataSource* newFromAssetManager(AAssetManager *assetManager, const char *filename,
-			const int32_t channelCount);
+    static AAssetDataSource* newFromAssetManager(AAssetManager *assetManager, const char *filename,
+                                                 const int32_t channelCount);
 
 private:
 
-	AAssetDataSource(AAsset *asset, const int16_t *data, int32_t frames,
-			int32_t channelCount)
-	: mAsset(asset)
-	, mBuffer(data)
-	, mTotalFrames(frames)
-	, mChannelCount(channelCount) {
-	};
+    AAssetDataSource(AAsset *asset, const int16_t *data, int32_t frames,
+                     int32_t channelCount)
+            : mAsset(asset)
+            , mBuffer(data)
+            , mTotalFrames(frames)
+            , mChannelCount(channelCount) {
+    };
 
-	AAsset *mAsset = nullptr;
-	const int16_t* mBuffer;
-	int32_t mTotalFrames;
-	const int32_t mChannelCount;
+    AAsset *mAsset = nullptr;
+    const int16_t* mBuffer;
+    int32_t mTotalFrames;
+    const int32_t mChannelCount;
 
 };
 #endif //RHYTHMGAME_AASSETDATASOURCE_H
