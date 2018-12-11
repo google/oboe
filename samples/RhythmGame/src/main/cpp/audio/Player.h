@@ -35,7 +35,8 @@ public:
     /**
      * Construct a new Player from the given DataSource. Note that the Player does *not* take
      * ownership of the source so it's up to the caller to delete the source after it's no longer
-     * needed
+     * needed. Players can share the same data source. For example, you could play two identical
+     * sounds concurrently by creating 2 Players with the same data source.
      *
      * @param source
      */
