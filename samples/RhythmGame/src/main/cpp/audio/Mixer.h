@@ -28,12 +28,12 @@ constexpr int32_t kChannelCount = 2;
 class Mixer : public RenderableAudio {
 
 public:
-    void addTrack(RenderableAudio *renderer);
+    void addTrack(RenderableAudio&);
     void renderAudio(int16_t *audioData, int32_t numFrames);
 
 private:
 
-    int16_t *mixingBuffer = new int16_t[kBufferSize]; // TODO: smart pointer
+    std::array<int16_t, kBufferSize> mixingBuffer;
     RenderableAudio *mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
     uint8_t mNextFreeTrackIndex = 0;
 };

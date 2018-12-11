@@ -19,30 +19,41 @@
 
 void Player::renderAudio(int16_t *targetData, int32_t numFrames){
 
+    const int32_t channelCount = mSource.getChannelCount();
+
     if (mIsPlaying){
 
-        int32_t totalFrames = mSource->getTotalFrames();
-        const int16_t *data = mSource->getData();
+        int32_t framesToRenderFromData = numFrames;
+        int32_t totalSourceFrames = mSource.getTotalFrames();
+        const int16_t *data = mSource.getData();
 
         // Check whether we're about to reach the end of the recording
-        if (!mIsLooping && mReadFrameIndex + numFrames >= totalFrames){
-            numFrames = totalFrames - mReadFrameIndex;
+        if (!mIsLooping && mReadFrameIndex + numFrames >= totalSourceFrames){
+            framesToRenderFromData = totalSourceFrames - mReadFrameIndex;
             mIsPlaying = false;
         }
 
-        for (int i = 0; i < numFrames; ++i) {
-            for (int j = 0; j < mChannelCount; ++j) {
-                targetData[(i*mChannelCount)+j] = data[(mReadFrameIndex*mChannelCount)+j];
+        for (int i = 0; i < framesToRenderFromData; ++i) {
+            for (int j = 0; j < channelCount; ++j) {
+                targetData[(i*channelCount)+j] = data[(mReadFrameIndex*channelCount)+j];
             }
 
             // Increment and handle wraparound
-            if (++mReadFrameIndex >= totalFrames) mReadFrameIndex = 0;
+            if (++mReadFrameIndex >= totalSourceFrames) mReadFrameIndex = 0;
+        }
+
+        if (framesToRenderFromData < numFrames){
+            // fill the rest of the buffer with silence
+            renderSilence(&targetData[framesToRenderFromData], numFrames * channelCount);
         }
 
     } else {
-        // fill with zeros to output silence
-        for (int i = 0; i < numFrames * mChannelCount; ++i) {
-            targetData[i] = 0;
-        }
+        renderSilence(targetData, numFrames * channelCount);
+    }
+}
+
+void Player::renderSilence(int16_t *start, int32_t numSamples){
+    for (int i = 0; i < numSamples; ++i) {
+        start[i] = 0;
     }
 }

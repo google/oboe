@@ -19,12 +19,12 @@
 #include "AAssetDataSource.h"
 
 
-AAssetDataSource* AAssetDataSource::newFromAssetManager(AAssetManager *assetManager,
+AAssetDataSource* AAssetDataSource::newFromAssetManager(AAssetManager &assetManager,
                                                         const char *filename,
                                                         const int32_t channelCount) {
 
     // Load the backing track
-    AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_BUFFER);
+    AAsset* asset = AAssetManager_open(&assetManager, filename, AASSET_MODE_BUFFER);
 
     if (asset == nullptr){
         LOGE("Failed to open track, filename %s", filename);
@@ -32,7 +32,7 @@ AAssetDataSource* AAssetDataSource::newFromAssetManager(AAssetManager *assetMana
     }
 
     // Get the length of the track (we assume it is stereo 48kHz)
-    off_t trackLength = AAsset_getLength(asset);
+    off_t trackSizeInBytes = AAsset_getLength(asset);
 
     // Load it into memory
     auto *audioBuffer = static_cast<const int16_t*>(AAsset_getBuffer(asset));
@@ -42,11 +42,8 @@ AAssetDataSource* AAssetDataSource::newFromAssetManager(AAssetManager *assetMana
         return nullptr;
     }
 
-    // There are 4 bytes per frame because
-    // each sample is 2 bytes and
-    // it's a stereo recording which has 2 samples per frame.
-    int32_t numFrames = static_cast<int32_t>(trackLength / 4);
-    LOGD("Opened backing track, bytes: %ld frames: %d", trackLength, numFrames);
+    auto numFrames = static_cast<int32_t>(trackSizeInBytes / (sizeof(int16_t) * channelCount));
+    LOGD("Opened audio data source, bytes: %ld frames: %d", trackSizeInBytes, numFrames);
 
     return new AAssetDataSource(asset, audioBuffer, numFrames, channelCount);
 }

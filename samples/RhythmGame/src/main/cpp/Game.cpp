@@ -19,7 +19,7 @@
 
 #include "Game.h"
 
-Game::Game(AAssetManager *assetManager): mAssetManager(assetManager) {
+Game::Game(AAssetManager &assetManager): mAssetManager(assetManager) {
 }
 
 void Game::start() {
@@ -31,7 +31,7 @@ void Game::start() {
         LOGE("Could not load source data for clap sound");
         return;
     }
-    mClap = new Player(mClapSource);
+    mClap = std::make_unique<Player>(*mClapSource);
 
     mBackingTrackSource = AAssetDataSource::newFromAssetManager(mAssetManager, "FUNKY_HOUSE.raw",
             oboe::ChannelCount::Stereo);
@@ -40,14 +40,14 @@ void Game::start() {
         return;
     }
 
-    mBackingTrack = new Player(mBackingTrackSource);
+    mBackingTrack = std::make_unique<Player>(*mBackingTrackSource);
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
     // Add the clap and backing track sounds to a mixer so that they can be played together
     // simultaneously using a single audio stream.
-    mMixer.addTrack(mClap);
-    mMixer.addTrack(mBackingTrack);
+    mMixer.addTrack(*mClap);
+    mMixer.addTrack(*mBackingTrack);
 
     // Add the audio frame numbers on which the clap sound should be played to the clap event queue.
     // The backing track tempo is 120 beats per minute, which is 2 beats per second. At a sample
@@ -94,10 +94,9 @@ void Game::stop(){
 
     if (mAudioStream != nullptr){
         mAudioStream->close();
+        mAudioStream = nullptr;
     }
 
-    delete mClap;
-    delete mBackingTrack;
     delete mClapSource;
     delete mBackingTrackSource;
 }
