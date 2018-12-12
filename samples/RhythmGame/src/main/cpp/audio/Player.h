@@ -33,15 +33,14 @@ class Player : public RenderableAudio{
 
 public:
     /**
-     * Construct a new Player from the given DataSource. Note that the Player does *not* take
-     * ownership of the source so it's up to the caller to delete the source after it's no longer
-     * needed. Players can share the same data source. For example, you could play two identical
-     * sounds concurrently by creating 2 Players with the same data source.
+     * Construct a new Player from the given DataSource. Players can share the same data source.
+     * For example, you could play two identical sounds concurrently by creating 2 Players with the
+     * same data source.
      *
      * @param source
      */
-    Player(std::unique_ptr<DataSource> source)
-        : mSource(std::move(source))
+    Player(std::shared_ptr<DataSource> source)
+        : mSource(source)
     {};
 
     void renderAudio(int16_t *targetData, int32_t numFrames);
@@ -53,7 +52,7 @@ private:
     int32_t mReadFrameIndex = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
-    std::unique_ptr<DataSource> mSource;
+    std::shared_ptr<DataSource> mSource;
 
     void renderSilence(int16_t*, int32_t);
 };
