@@ -25,23 +25,23 @@ Game::Game(AAssetManager &assetManager): mAssetManager(assetManager) {
 void Game::start() {
 
     // Load the RAW PCM data files for both the clap sound and backing track into memory.
-    std::unique_ptr<AAssetDataSource> mClapSource(AAssetDataSource::newFromAssetManager(mAssetManager,
+    std::shared_ptr<AAssetDataSource> mClapSource(AAssetDataSource::newFromAssetManager(mAssetManager,
         "CLAP.raw",
         oboe::ChannelCount::Stereo));
-    if (mClapSource.get() == nullptr){
+    if (mClapSource == nullptr){
         LOGE("Could not load source data for clap sound");
         return;
     }
-    mClap = std::make_shared<Player>(std::move(mClapSource));
+    mClap = std::make_shared<Player>(mClapSource);
 
-    std::unique_ptr<AAssetDataSource> mBackingTrackSource(AAssetDataSource::newFromAssetManager(mAssetManager,
+    std::shared_ptr<AAssetDataSource> mBackingTrackSource(AAssetDataSource::newFromAssetManager(mAssetManager,
         "FUNKY_HOUSE.raw",
         oboe::ChannelCount::Stereo));
-    if (mBackingTrackSource.get() == nullptr){
+    if (mBackingTrackSource == nullptr){
         LOGE("Could not load source data for backing track");
         return;
     }
-    mBackingTrack = std::make_shared<Player>(std::move(mBackingTrackSource));
+    mBackingTrack = std::make_shared<Player>(mBackingTrackSource);
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
@@ -95,6 +95,7 @@ void Game::stop(){
 
     if (mAudioStream != nullptr){
         mAudioStream->close();
+        delete mAudioStream;
         mAudioStream = nullptr;
     }
 }
