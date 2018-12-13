@@ -18,7 +18,7 @@
 #define RHYTHMGAME_MIXER_H
 
 
-#include "SoundRecording.h"
+#include "Player.h"
 #include "RenderableAudio.h"
 
 constexpr int32_t kBufferSize = 192*10; // Temporary buffer is used for mixing
@@ -28,15 +28,13 @@ constexpr int32_t kChannelCount = 2;
 class Mixer : public RenderableAudio {
 
 public:
-    void addTrack(RenderableAudio *renderer);
+    void addTrack(std::shared_ptr<RenderableAudio> renderer);
     void renderAudio(int16_t *audioData, int32_t numFrames);
 
 private:
-
-    int16_t *mixingBuffer = new int16_t[kBufferSize]; // TODO: smart pointer
-    RenderableAudio *mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
+    std::array<int16_t, kBufferSize> mixingBuffer;
+    std::shared_ptr<RenderableAudio> mTracks[kMaxTracks]; // TODO: this might be better as a linked list for easy track removal
     uint8_t mNextFreeTrackIndex = 0;
 };
-
 
 #endif //RHYTHMGAME_MIXER_H

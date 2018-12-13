@@ -27,29 +27,34 @@
 #include <android/asset_manager.h>
 
 #include "RenderableAudio.h"
+#include "DataSource.h"
 
-class SoundRecording : public RenderableAudio{
+class Player : public RenderableAudio{
 
 public:
-    SoundRecording(const int16_t *sourceData, int32_t numFrames)
-            : mData(sourceData)
-            , mTotalFrames(numFrames)
+    /**
+     * Construct a new Player from the given DataSource. Players can share the same data source.
+     * For example, you could play two identical sounds concurrently by creating 2 Players with the
+     * same data source.
+     *
+     * @param source
+     */
+    Player(std::shared_ptr<DataSource> source)
+        : mSource(source)
     {};
+
     void renderAudio(int16_t *targetData, int32_t numFrames);
     void resetPlayHead() { mReadFrameIndex = 0; };
     void setPlaying(bool isPlaying) { mIsPlaying = isPlaying; resetPlayHead(); };
     void setLooping(bool isLooping) { mIsLooping = isLooping; };
 
-    static SoundRecording * loadFromAssets(AAssetManager *assetManager, const char * filename);
-
 private:
-    int32_t mChannelCount = 2; // TODO: move this into a konstant and maybe add as parameter to ctor
     int32_t mReadFrameIndex = 0;
-    const int16_t* mData = nullptr;
-    int32_t mTotalFrames = 0;
     std::atomic<bool> mIsPlaying { false };
     std::atomic<bool> mIsLooping { false };
+    std::shared_ptr<DataSource> mSource;
 
+    void renderSilence(int16_t*, int32_t);
 };
 
 #endif //RHYTHMGAME_SOUNDRECORDING_H

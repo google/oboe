@@ -24,7 +24,7 @@ void Mixer::renderAudio(int16_t *audioData, int32_t numFrames) {
     }
 
     for (int i = 0; i < mNextFreeTrackIndex; ++i) {
-        mTracks[i]->renderAudio(mixingBuffer, numFrames);
+        mTracks[i]->renderAudio(mixingBuffer.data(), numFrames);
 
         for (int j = 0; j < numFrames * kChannelCount; ++j) {
             audioData[j] += mixingBuffer[j];
@@ -32,6 +32,9 @@ void Mixer::renderAudio(int16_t *audioData, int32_t numFrames) {
     }
 }
 
-void Mixer::addTrack(RenderableAudio *renderer){
+void Mixer::addTrack(std::shared_ptr<RenderableAudio> renderer){
     mTracks[mNextFreeTrackIndex++] = renderer;
+    // If we've reached our track limit then overwrite the first track
+    if (mNextFreeTrackIndex >= kMaxTracks)
+        mNextFreeTrackIndex = 0;
 };

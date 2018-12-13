@@ -1,6 +1,8 @@
 # Changelog
 
-## 1.0
+**This changelog is deprecated**. See the [Oboe releases page](https://github.com/google/oboe/releases) for the contents of each release. 
+
+## [1.0.0](https://github.com/google/oboe/releases/tag/1.0.0)
 #### 2nd October 2018
 First production ready version
 
