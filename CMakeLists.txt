@@ -26,7 +26,7 @@ add_library(oboe STATIC ${oboe_sources})
 
 # Specify directories which the compiler should look for headers
 target_include_directories(oboe
-                           PRIVATE src 
+                           PRIVATE src
                            PUBLIC include)
 
 # Compile Flags:
@@ -37,6 +37,8 @@ target_compile_options(oboe
     -std=c++11
     -Wall
     -Wextra-semi
+	-Wshadow
+	-Wshadow-field
     -Ofast
     "$<$<CONFIG:DEBUG>:-Werror>")
 
