@@ -81,8 +81,8 @@ protected:
 
     SLuint32 channelCountToChannelMaskDefault(int channelCount);
 
-    virtual Result onBeforeDestroy() { return Result::OK; };
-    virtual Result onAfterDestroy() { return Result::OK; };
+    virtual Result onBeforeDestroy() { return Result::OK; }
+    virtual Result onAfterDestroy() { return Result::OK; }
 
     static SLuint32 getDefaultByteOrder();
 

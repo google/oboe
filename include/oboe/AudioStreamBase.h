@@ -76,7 +76,7 @@ public:
      *
      * @return buffer size
      */
-    virtual int32_t getBufferSizeInFrames() { return mBufferSizeInFrames; };
+    virtual int32_t getBufferSizeInFrames() { return mBufferSizeInFrames; }
 
     /**
      * @return capacityInFrames or kUnspecified
