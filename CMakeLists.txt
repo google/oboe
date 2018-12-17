@@ -33,7 +33,12 @@ target_include_directories(oboe
 #     Enable -Werror when building debug config
 #     Enable -Ofast
 target_compile_options(oboe
-    PRIVATE -std=c++11 -Wall "$<$<CONFIG:DEBUG>:-Werror>" -Ofast)
+    PRIVATE
+    -std=c++11
+    -Wall
+    -Wextra-semi
+    -Ofast
+    "$<$<CONFIG:DEBUG>:-Werror>")
 
 # Enable logging for debug builds
 target_compile_definitions(oboe PUBLIC "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")

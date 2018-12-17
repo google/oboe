@@ -64,7 +64,7 @@ protected:
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
     bool usingFIFO() const { return getCallback() == nullptr; }
 
-    virtual Result updateServiceFrameCounter() { return Result::OK; };
+    virtual Result updateServiceFrameCounter() { return Result::OK; }
 
     void updateFramesRead() override;
     void updateFramesWritten() override;
