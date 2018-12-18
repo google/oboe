@@ -75,6 +75,9 @@ AudioStream *AudioStreamBuilder::build() {
 }
 
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
+    LOGD("%s() %s -------- Oboe version " OBOE_VERSION_TEXT " --------",
+         __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT");
+
     if (streamPP == nullptr) {
         return Result::ErrorNull;
     }
