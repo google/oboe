@@ -415,18 +415,20 @@ protected:
     virtual void updateFramesRead() = 0;
 
     /**
-     * Number of frames which have been written into the stream
+     * Number of frames which have been written into the stream.
      *
-     * TODO these should be atomic like in AAudio
+     * This is signed integer to match the counters in AAudio.
+     * At audio rates, the counter will overflow in about six million years.
      */
-    int64_t              mFramesWritten = 0;
+    std::atomic<int64_t> mFramesWritten{};
 
     /**
-     * Number of frames which have been read from the stream
+     * Number of frames which have been read from the stream.
      *
-     * TODO these should be atomic like in AAudio
+     * This is signed integer to match the counters in AAudio.
+     * At audio rates, the counter will overflow in about six million years.
      */
-    int64_t              mFramesRead = 0;
+    std::atomic<int64_t> mFramesRead{};
 
 private:
     int                  mPreviousScheduler = -1;

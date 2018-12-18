@@ -80,7 +80,7 @@ public:
 
     uint32_t getFrameCapacity() const { return mTotalFrames; }
 
-    virtual uint64_t getReadCounter() = 0;  // TODO use int64_t?
+    virtual uint64_t getReadCounter() = 0;
     virtual void setReadCounter(uint64_t n) = 0;
     virtual uint64_t getWriteCounter() = 0;
     virtual void setWriteCounter(uint64_t n) = 0;
