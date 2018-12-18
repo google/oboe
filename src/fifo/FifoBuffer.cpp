@@ -85,14 +85,13 @@ int32_t FifoBuffer::convertFramesToBytes(int32_t frames) {
 }
 
 int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
-    size_t numBytes;
     int32_t framesAvailable = mFifo->getFullFramesAvailable();
     int32_t framesToRead = numFrames;
     // Is there enough data in the FIFO
     if (framesToRead > framesAvailable) {
         framesToRead = framesAvailable;
     }
-    if (framesToRead == 0) {
+    if (framesToRead <= 0) {
         return 0;
     }
 
@@ -100,20 +99,29 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
     uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
     uint8_t *source = &mStorage[convertFramesToBytes(readIndex)];
     if ((readIndex + framesToRead) > mFrameCapacity) {
-        // read in two parts, first part here
+        // read in two parts, first part here is at the end of the mStorage buffer
         uint32_t frames1 = mFrameCapacity - readIndex;
-        uint32_t numBytes = convertFramesToBytes(frames1);
-        memcpy(destination, source, numBytes);
+        int32_t numBytes = convertFramesToBytes(frames1);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
         destination += numBytes;
-        // read second part
+        // read second part, which is at the beginning of mStorage
         source = &mStorage[0];
         int frames2 = framesToRead - frames1;
         numBytes = convertFramesToBytes(frames2);
-        memcpy(destination, source, numBytes);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
     } else {
         // just read in one shot
-        numBytes = convertFramesToBytes(framesToRead);
-        memcpy(destination, source, numBytes);
+        int32_t numBytes = convertFramesToBytes(framesToRead);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
     }
     mFifo->advanceReadIndex(framesToRead);
 
@@ -129,7 +137,6 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
         return 0;
     }
 
-    size_t numBytes;
     uint32_t writeIndex = mFifo->getWriteIndex();
     int byteIndex = convertFramesToBytes(writeIndex);
     const uint8_t *source = reinterpret_cast<const uint8_t *>(buffer);
@@ -137,18 +144,27 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
     if ((writeIndex + framesToWrite) > mFrameCapacity) {
         // write in two parts, first part here
         int frames1 = mFrameCapacity - writeIndex;
-        numBytes = convertFramesToBytes(frames1);
-        memcpy(destination, source, numBytes);
+        int32_t numBytes = convertFramesToBytes(frames1);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
         // read second part
         source += convertFramesToBytes(frames1);
         destination = &mStorage[0];
         int framesLeft = framesToWrite - frames1;
         numBytes = convertFramesToBytes(framesLeft);
-        memcpy(destination, source, numBytes);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
     } else {
         // just write in one shot
-        numBytes = convertFramesToBytes(framesToWrite);
-        memcpy(destination, source, numBytes);
+        int32_t numBytes = convertFramesToBytes(framesToWrite);
+        if (numBytes < 0) {
+            return (int32_t) Result::ErrorOutOfRange;
+        }
+        memcpy(destination, source, (size_t) numBytes);
     }
     mFifo->advanceWriteIndex(framesToWrite);
 
