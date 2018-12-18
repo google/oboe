@@ -42,7 +42,7 @@ public:
     AudioStreamAAudio();
     explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
-    ~AudioStreamAAudio();
+    virtual ~AudioStreamAAudio() = default;
 
     /**
      *
@@ -96,8 +96,6 @@ public:
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    void onErrorCallback(AAudioStream *stream, Result error);
-
     void onErrorInThread(AAudioStream *stream, Result error);
 
 
@@ -111,10 +109,7 @@ protected:
 
 private:
 
-    float               *mFloatCallbackBuffer;
-    int16_t             *mShortCallbackBuffer;
     std::atomic<bool>    mCallbackThreadEnabled;
-    std::thread         *mErrorHandlingThread = nullptr;
 
     std::mutex           mLock; // for synchronizing start/stop/close
     std::atomic<AAudioStream *> mAAudioStream{nullptr};

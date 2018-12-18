@@ -30,7 +30,7 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
 }
 
 Result AudioStream::open() {
-    // TODO validate parameters or let underlying API validate them?
+    // Parameters are validated by the underlying API.
     return Result::OK;
 }
 
@@ -69,19 +69,19 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
     StreamState state = getState();
     if (state == StreamState::Closed) {
         return Result::ErrorClosed;
+    }
+
+    StreamState nextState = state;
+    if (state == startingState && state != endingState) {
+        Result result = waitForStateChange(state, &nextState, timeoutNanoseconds);
+        if (result != Result::OK) {
+            return result;
+        }
+    }
+    if (nextState != endingState) {
+        return Result::ErrorInvalidState;
     } else {
-        StreamState nextState = state;
-        if (state == startingState && state != endingState) {
-            Result result = waitForStateChange(state, &nextState, timeoutNanoseconds);
-            if (result != Result::OK) {
-                return result;
-            }
-        }
-        if (nextState != endingState) {
-            return Result::ErrorInvalidState;
-        } else {
-            return Result::OK;
-        }
+        return Result::OK;
     }
 }
 
