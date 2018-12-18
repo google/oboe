@@ -66,20 +66,20 @@ class AAudioLoader {
     aaudio_result_t  (*builder_openStream)(AAudioStreamBuilder *builder,
                                            AAudioStream **stream);
 
-    signature_V_PBI builder_setBufferCapacityInFrames;
-    signature_V_PBI builder_setChannelCount;
-    signature_V_PBI builder_setDeviceId;
-    signature_V_PBI builder_setDirection;
-    signature_V_PBI builder_setFormat;
-    signature_V_PBI builder_setFramesPerDataCallback;
-    signature_V_PBI builder_setPerformanceMode;
-    signature_V_PBI builder_setSampleRate;
-    signature_V_PBI builder_setSharingMode;
+    signature_V_PBI builder_setBufferCapacityInFrames = nullptr;
+    signature_V_PBI builder_setChannelCount = nullptr;
+    signature_V_PBI builder_setDeviceId = nullptr;
+    signature_V_PBI builder_setDirection = nullptr;
+    signature_V_PBI builder_setFormat = nullptr;
+    signature_V_PBI builder_setFramesPerDataCallback = nullptr;
+    signature_V_PBI builder_setPerformanceMode = nullptr;
+    signature_V_PBI builder_setSampleRate = nullptr;
+    signature_V_PBI builder_setSharingMode = nullptr;
 
-    signature_V_PBI builder_setUsage;
-    signature_V_PBI builder_setContentType;
-    signature_V_PBI builder_setInputPreset;
-    signature_V_PBI builder_setSessionId;
+    signature_V_PBI builder_setUsage = nullptr;
+    signature_V_PBI builder_setContentType = nullptr;
+    signature_V_PBI builder_setInputPreset = nullptr;
+    signature_V_PBI builder_setSessionId = nullptr;
 
     void (*builder_setDataCallback)(AAudioStreamBuilder *builder,
                                     AAudioStream_dataCallback callback,
@@ -89,7 +89,7 @@ class AAudioLoader {
                                     AAudioStream_errorCallback callback,
                                     void *userData);
 
-    signature_I_PB  builder_delete;
+    signature_I_PB  builder_delete = nullptr;
 
     aaudio_format_t (*stream_getFormat)(AAudioStream *stream);
 
@@ -113,36 +113,35 @@ class AAudioLoader {
                                           int64_t *framePosition,
                                           int64_t *timeNanoseconds);
 
-    signature_I_PS   stream_close;
+    signature_I_PS   stream_close = nullptr;
 
-    signature_I_PS   stream_getChannelCount;
-    signature_I_PS   stream_getDeviceId;
-    signature_I_PS   stream_getDirection;
-    signature_I_PS   stream_getBufferSize;
-    signature_I_PS   stream_getBufferCapacity;
-    signature_I_PS   stream_getFramesPerBurst;
-    signature_I_PS   stream_getState;
-    signature_I_PS   stream_getPerformanceMode;
-    signature_I_PS   stream_getSampleRate;
-    signature_I_PS   stream_getSharingMode;
-    signature_I_PS   stream_getXRunCount;
+    signature_I_PS   stream_getChannelCount = nullptr;
+    signature_I_PS   stream_getDeviceId = nullptr;
 
-    signature_I_PSI  stream_setBufferSize;
-    signature_I_PS   stream_requestStart;
-    signature_I_PS   stream_requestPause;
-    signature_I_PS   stream_requestFlush;
-    signature_I_PS   stream_requestStop;
+    signature_I_PS   stream_getBufferSize = nullptr;
+    signature_I_PS   stream_getBufferCapacity = nullptr;
+    signature_I_PS   stream_getFramesPerBurst = nullptr;
+    signature_I_PS   stream_getState = nullptr;
+    signature_I_PS   stream_getPerformanceMode = nullptr;
+    signature_I_PS   stream_getSampleRate = nullptr;
+    signature_I_PS   stream_getSharingMode = nullptr;
+    signature_I_PS   stream_getXRunCount = nullptr;
 
-    signature_L_PS   stream_getFramesRead;
-    signature_L_PS   stream_getFramesWritten;
+    signature_I_PSI  stream_setBufferSize = nullptr;
+    signature_I_PS   stream_requestStart = nullptr;
+    signature_I_PS   stream_requestPause = nullptr;
+    signature_I_PS   stream_requestFlush = nullptr;
+    signature_I_PS   stream_requestStop = nullptr;
 
-    signature_PC_I   convertResultToText;
-    signature_PC_I   convertStreamStateToText;
+    signature_L_PS   stream_getFramesRead = nullptr;
+    signature_L_PS   stream_getFramesWritten = nullptr;
 
-    signature_I_PS   stream_getUsage;
-    signature_I_PS   stream_getContentType;
-    signature_I_PS   stream_getInputPreset;
-    signature_I_PS   stream_getSessionId;
+    signature_PC_I   convertResultToText = nullptr;
+
+    signature_I_PS   stream_getUsage = nullptr;
+    signature_I_PS   stream_getContentType = nullptr;
+    signature_I_PS   stream_getInputPreset = nullptr;
+    signature_I_PS   stream_getSessionId = nullptr;
 
   private:
     AAudioLoader() {}
