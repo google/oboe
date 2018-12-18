@@ -63,10 +63,10 @@ error:
 void EngineOpenSLES::close() {
     std::lock_guard<std::mutex> lock(mLock);
     if (--mOpenCount == 0) {
-        if (mEngineObject != NULL) {
+        if (mEngineObject != nullptr) {
             (*mEngineObject)->Destroy(mEngineObject);
-            mEngineObject = NULL;
-            mEngineInterface = NULL;
+            mEngineObject = nullptr;
+            mEngineInterface = nullptr;
         }
     }
 }
