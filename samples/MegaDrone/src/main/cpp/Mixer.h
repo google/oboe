@@ -17,7 +17,7 @@
 #ifndef RHYTHMGAME_MIXER_H
 #define RHYTHMGAME_MIXER_H
 
-#include "RenderableAudio.h"
+#include "../../../../shared/RenderableAudio.h"
 
 constexpr int32_t kBufferSize = 192*10;  // Temporary buffer is used for mixing
 constexpr uint8_t kMaxTracks = 100;
