@@ -26,10 +26,10 @@
 
 #include <android/asset_manager.h>
 
-#include "RenderableAudio.h"
+#include "../samples/shared/RenderableAudio.h"
 #include "DataSource.h"
 
-class Player : public RenderableAudio{
+class Player : public RenderableAudio<int16_t>{
 
 public:
     /**

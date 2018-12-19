@@ -21,7 +21,7 @@
 #include <oboe/Oboe.h>
 #include <vector>
 
-#include "Synth.h"
+#include "../../../../shared/Synth.h"
 
 using namespace oboe;
 
