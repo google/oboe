@@ -17,7 +17,7 @@
 #ifndef MEGADRONE_MONOTOSTEREO_H
 #define MEGADRONE_MONOTOSTEREO_H
 
-#include "RenderableAudio.h"
+#include "../../../../shared/RenderableAudio.h"
 
 template <typename T>
 class MonoToStereo : public RenderableAudio<T> {

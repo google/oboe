@@ -23,7 +23,7 @@
 #include <atomic>
 #include <math.h>
 #include <memory>
-#include "RenderableAudio.h"
+#include "../../../../shared/RenderableAudio.h"
 
 constexpr double kDefaultFrequency = 440.0;
 constexpr int32_t kDefaultSampleRate = 48000;
