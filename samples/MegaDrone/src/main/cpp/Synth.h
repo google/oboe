@@ -19,9 +19,9 @@
 
 #include <array>
 
-#include "Oscillator.h"
-#include "Mixer.h"
-#include "MonoToStereo.h"
+#include "../../../../shared/Oscillator.h"
+#include "../../../../shared/Mixer.h"
+#include "../../../../shared/MonoToStereo.h"
 
 constexpr int kNumOscillators = 100;
 constexpr float kOscBaseFrequency = 116.0;
