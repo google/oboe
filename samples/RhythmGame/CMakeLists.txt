@@ -14,7 +14,6 @@ add_library( native-lib
              # audio engine
              src/main/cpp/audio/AAssetDataSource.cpp
              src/main/cpp/audio/Player.cpp
-             src/main/cpp/audio/Mixer.cpp
 
              # UI engine
              src/main/cpp/ui/OpenGLFunctions.cpp

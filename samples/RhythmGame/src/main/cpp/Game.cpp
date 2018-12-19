@@ -19,6 +19,8 @@
 
 #include "Game.h"
 
+constexpr int32_t kChannelCount = 2;
+
 Game::Game(AAssetManager &assetManager): mAssetManager(assetManager) {
 }
 
@@ -67,7 +69,7 @@ void Game::start() {
     // Create a builder
     AudioStreamBuilder builder;
     builder.setFormat(AudioFormat::I16);
-    builder.setChannelCount(2);
+    builder.setChannelCount(kChannelCount);
     builder.setSampleRate(kSampleRateHz);
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);

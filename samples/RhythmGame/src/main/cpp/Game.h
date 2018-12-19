@@ -20,13 +20,13 @@
 #include <android/asset_manager.h>
 #include <oboe/Oboe.h>
 
-#include "audio/Mixer.h"
 #include "audio/Player.h"
 #include "audio/AAssetDataSource.h"
 #include "ui/OpenGLFunctions.h"
 #include "utils/LockFreeQueue.h"
 #include "utils/UtilityFunctions.h"
 #include "GameConstants.h"
+#include "../samples/shared/Mixer.h"
 
 using namespace oboe;
 
@@ -51,7 +51,7 @@ private:
     AudioStream *mAudioStream{nullptr};
     std::shared_ptr<Player> mClap;
     std::shared_ptr<Player> mBackingTrack;
-    Mixer mMixer;
+    Mixer<int16_t> mMixer;
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
     std::atomic<int64_t> mCurrentFrame { 0 };
