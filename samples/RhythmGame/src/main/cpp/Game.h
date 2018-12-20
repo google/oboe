@@ -20,13 +20,14 @@
 #include <android/asset_manager.h>
 #include <oboe/Oboe.h>
 
+#include "shared/Mixer.h"
+
 #include "audio/Player.h"
 #include "audio/AAssetDataSource.h"
 #include "ui/OpenGLFunctions.h"
 #include "utils/LockFreeQueue.h"
 #include "utils/UtilityFunctions.h"
 #include "GameConstants.h"
-#include "../samples/shared/Mixer.h"
 
 using namespace oboe;
 
