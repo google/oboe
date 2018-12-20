@@ -11,10 +11,9 @@ set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
 # Include the Oboe headers
-include_directories(${OBOE_DIR}/include)
+include_directories(${OBOE_DIR}/include ${OBOE_DIR}/samples)
 
 ### END OBOE INCLUDE SECTION ###
-
 
 add_library( megadrone SHARED
         src/main/cpp/native-lib.cpp
@@ -23,9 +22,6 @@ add_library( megadrone SHARED
         )
 
 target_link_libraries( megadrone log oboe )
-
-# Make the Oboe public headers available to our app
-include_directories (${OBOE_DIR}/include)
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable it after done debugging.

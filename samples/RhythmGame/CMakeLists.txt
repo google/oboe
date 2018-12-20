@@ -42,7 +42,7 @@ set (OBOE_DIR ../..)
 add_subdirectory (${OBOE_DIR} ./oboe-bin)
 
 # Specify the path to the Oboe header files.
-include_directories (${OBOE_DIR}/include)
+include_directories (${OBOE_DIR}/include ${OBOE_DIR}/samples)
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
