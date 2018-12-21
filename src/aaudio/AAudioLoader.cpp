@@ -108,12 +108,14 @@ int AAudioLoader::open() {
                                                  int64_t timeoutNanoseconds)>
             (dlsym(mLibHandle, "AAudioStream_waitForStateChange"));
 
-
     stream_getTimestamp = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
-                                           clockid_t clockid,
-                                           int64_t *framePosition,
-                                           int64_t *timeNanoseconds)>
+                                                               clockid_t clockid,
+                                                               int64_t *framePosition,
+                                                               int64_t *timeNanoseconds)>
             (dlsym(mLibHandle, "AAudioStream_getTimestamp"));
+
+    stream_isMMapUsed = reinterpret_cast<bool (*)(AAudioStream *stream)>
+            (dlsym(mLibHandle, "AAudioStream_isMMapUsed"));
 
     stream_getChannelCount    = load_I_PS("AAudioStream_getChannelCount");
     if (stream_getChannelCount == nullptr) {

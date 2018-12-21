@@ -113,6 +113,9 @@ class AAudioLoader {
                                           int64_t *framePosition,
                                           int64_t *timeNanoseconds);
 
+
+    bool            (*stream_isMMapUsed)(AAudioStream *stream) = nullptr;
+
     signature_I_PS   stream_close = nullptr;
 
     signature_I_PS   stream_getChannelCount = nullptr;

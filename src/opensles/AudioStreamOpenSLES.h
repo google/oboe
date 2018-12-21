@@ -70,12 +70,11 @@ public:
      *
      * This is public, but don't call it directly.
      */
-    SLresult processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
+    void processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
 
     Result waitForStateChange(StreamState currentState,
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
-
 
 protected:
 

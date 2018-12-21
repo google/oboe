@@ -243,13 +243,11 @@ SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueIt
     return (*bq)->Enqueue(bq, mCallbackBuffer, mBytesPerCallback);
 }
 
-SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
+void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
+    bool stopStream = false;
     // Ask the callback to fill the output buffer with data.
-    DataCallbackResult result = fireCallback(mCallbackBuffer, mFramesPerCallback);
-    if (result != DataCallbackResult::Continue) {
-        LOGE("Oboe callback returned %d", result);
-        return SL_RESULT_INTERNAL_ERROR; // TODO How should we stop OpenSL ES.
-    } else {
+    DataCallbackResult result = fireDataCallback(mCallbackBuffer, mFramesPerCallback);
+    if (result == DataCallbackResult::Continue) {
         // Update Oboe service position based on OpenSL ES position.
         updateServiceFrameCounter();
         // Update Oboe client position with frames handled by the callback.
@@ -259,7 +257,21 @@ SLresult AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueIt
             mFramesWritten += mFramesPerCallback;
         }
         // Pass the data to OpenSLES.
-        return enqueueCallbackBuffer(bq);
+        SLresult result = enqueueCallbackBuffer(bq);
+        if (result != SL_RESULT_SUCCESS) {
+            LOGE("enqueueCallbackBuffer %d", result);
+            stopStream = true;
+        }
+    } else if (result == DataCallbackResult::Stop) {
+        LOGD("Oboe callback returned Stop");
+        stopStream = true;
+    } else {
+        LOGW("Oboe callback returned unexpected value = %d", result);
+        stopStream = true;
+    }
+    if (stopStream) {
+        requestStop();
+        // launchStopThread();
     }
 }
 
