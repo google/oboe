@@ -75,17 +75,10 @@ namespace oboe {
  */
 AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
     : AudioStream(builder)
-    , mFloatCallbackBuffer(nullptr)
-    , mShortCallbackBuffer(nullptr)
     , mAAudioStream(nullptr) {
     mCallbackThreadEnabled.store(false);
     LOGD("AudioStreamAAudio() call isSupported()");
     isSupported();
-}
-
-AudioStreamAAudio::~AudioStreamAAudio() {
-    delete[] mFloatCallbackBuffer;
-    delete[] mShortCallbackBuffer;
 }
 
 bool AudioStreamAAudio::isSupported() {

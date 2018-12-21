@@ -42,7 +42,7 @@ void convertFloatToPcm16(const float *source, int16_t *destination, int32_t numS
 void convertPcm16ToFloat(const int16_t *source, float *destination, int32_t numSamples);
 
 /**
- * @return the size of a sample of the given format in bytes or OBOE_ERROR_ILLEGAL_ARGUMENT
+ * @return the size of a sample of the given format in bytes or 0 if format is invalid
  */
 int32_t convertFormatToSizeInBytes(AudioFormat format);
 

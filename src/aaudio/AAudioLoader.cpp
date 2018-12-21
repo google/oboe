@@ -125,7 +125,6 @@ int AAudioLoader::open() {
 
     stream_getBufferSize      = load_I_PS("AAudioStream_getBufferSizeInFrames");
     stream_getDeviceId        = load_I_PS("AAudioStream_getDeviceId");
-    stream_getDirection       = load_I_PS("AAudioStream_getDirection");
     stream_getBufferCapacity  = load_I_PS("AAudioStream_getBufferCapacityInFrames");
     stream_getFramesPerBurst  = load_I_PS("AAudioStream_getFramesPerBurst");
     stream_getFramesRead      = load_L_PS("AAudioStream_getFramesRead");
@@ -144,7 +143,6 @@ int AAudioLoader::open() {
     stream_setBufferSize      = load_I_PSI("AAudioStream_setBufferSizeInFrames");
 
     convertResultToText       = load_PC_I("AAudio_convertResultToText");
-    convertStreamStateToText  = load_PC_I("AAudio_convertStreamStateToText");
 
     stream_getUsage           = load_I_PS("AAudioStream_getUsage");
     stream_getContentType     = load_I_PS("AAudioStream_getContentType");
