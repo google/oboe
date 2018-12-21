@@ -94,6 +94,12 @@
 
     </LinearLayout>
 
+    <CheckBox
+        android:id="@+id/callbackReturnStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="callback returns STOP" />
+
     <TextView
         android:id="@+id/statusView"
         android:layout_width="match_parent"

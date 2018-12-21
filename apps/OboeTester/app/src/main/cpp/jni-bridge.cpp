@@ -69,7 +69,11 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_setNativeApi(JNIEnv *env,
 
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *env, jclass type,
-                                                           jboolean useCallback);
+                                                                      jboolean useCallback);
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_setCallbackReturnStop(JNIEnv *env,
+                                                                             jclass type,
+                                                                             jboolean b);
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize);
@@ -322,6 +326,12 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getFramesRead(
     return result;
 }
 
+JNIEXPORT jlong JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCallbackCount(
+        JNIEnv *env, jobject) {
+    return engine.getCallbackCount();
+}
+
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env, jobject instance) {
     if (engine.oboeStream != nullptr) {
@@ -355,9 +365,14 @@ Java_com_google_sample_oboe_manualtest_AudioInputTester_getPeakLevel(JNIEnv *env
 
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *env, jclass type,
-                                                           jboolean useCallback) {
+                                                                      jboolean useCallback) {
     engine.useCallback = useCallback;
+}
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_setCallbackReturnStop(JNIEnv *env, jclass type,
+                                                                      jboolean b) {
+    engine.setCallbackReturnStop(b);
 }
 
 JNIEXPORT void JNICALL

@@ -29,6 +29,19 @@ public:
 
     void setCallback(oboe::AudioStreamCallback *callback) {
         mCallback = callback;
+        setCallbackCount(0);
+    }
+
+    void setCallbackReturnStop(bool b) {
+        mCallbackReturnStop = b;
+    }
+
+    int64_t getCallbackCount() {
+        return mCallbackCount;
+    }
+
+    void setCallbackCount(int64_t count) {
+        mCallbackCount = count;
     }
 
     /**
@@ -45,6 +58,9 @@ public:
 
 private:
     oboe::AudioStreamCallback *mCallback = nullptr;
+
+    bool                       mCallbackReturnStop = false;
+    int64_t                    mCallbackCount = 0;
 };
 
 

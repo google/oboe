@@ -24,6 +24,7 @@ oboe::DataCallbackResult PlayRecordingCallback::onAudioReady(
         void *audioData,
         int numFrames) {
     float *floatData = (float *)audioData;
+    // Read stored data into the buffer provided.
     int32_t framesRead = mRecording->read(floatData, numFrames);
     // LOGI("%s() framesRead = %d, numFrames = %d", __func__, framesRead, numFrames);
     return framesRead > 0

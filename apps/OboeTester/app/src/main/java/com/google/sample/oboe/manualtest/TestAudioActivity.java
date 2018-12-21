@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +59,7 @@ abstract class TestAudioActivity extends Activity {
     private Button mStopButton;
     private Button mCloseButton;
     private MyStreamSniffer mStreamSniffer;
+    private CheckBox mCallbackReturnStopBox;
 
     // Periodically query the status of the stream.
     protected class MyStreamSniffer {
@@ -68,7 +70,7 @@ abstract class TestAudioActivity extends Activity {
         private int mNumUpdates = 0;
         private Handler mHandler;
 
-        // Define the code block to be executed
+        // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
@@ -113,9 +115,11 @@ abstract class TestAudioActivity extends Activity {
                     +  ((status.xRunCount < 0) ? "?" : status.xRunCount) + "\n"
                     + "frames written " + status.framesWritten + " - read " + status.framesRead
                     + " = " + (status.framesWritten - status.framesRead) + "\n"
-                    + "latency = " + latencyText
+
+                    + "# " + mNumUpdates++
+                    + ", latency = " + latencyText
                     + ", state = " + status.state
-                    + ", #updates " + mNumUpdates++
+                    + ", #callbacks " + status.callbackCount
                     ;
             runOnUiThread(new Runnable() {
                 public void run() {
@@ -173,6 +177,14 @@ abstract class TestAudioActivity extends Activity {
         mStreamConfigurationView.setOutput(isOutput());
 
         queryNativeAudioParameters();
+        mCallbackReturnStopBox = (CheckBox) findViewById(R.id.callbackReturnStop);
+        mCallbackReturnStopBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OboeAudioStream.setCallbackReturnStop(mCallbackReturnStopBox.isChecked());
+            }
+        });
+        OboeAudioStream.setCallbackReturnStop(false);
 
         mStreamSniffer = new MyStreamSniffer();
     }
