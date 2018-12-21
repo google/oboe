@@ -32,9 +32,9 @@ public:
 
     FifoBuffer(uint32_t   bytesPerFrame,
                uint32_t   capacityInFrames,
-               int64_t * readCounterAddress,
-               int64_t * writeCounterAddress,
-               uint8_t * dataStorageAddress);
+               int64_t   *readCounterAddress,
+               int64_t   *writeCounterAddress,
+               uint8_t   *dataStorageAddress);
 
     ~FifoBuffer();
 
@@ -97,7 +97,7 @@ private:
     FifoControllerBase *mFifo;
     uint64_t mFramesReadCount;
     uint64_t mFramesUnderrunCount;
-    uint32_t mUnderrunCount; // need? just use frames
+    uint32_t mUnderrunCount; // count of underruns when reading the buffer
 };
 
 } // namespace oboe
