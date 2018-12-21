@@ -21,28 +21,46 @@ namespace oboe {
 /*
  * OSLES Helpers
  */
-static const char *errStrings[] = {
-        "SL_RESULT_SUCCESS",                  // 0
-        "SL_RESULT_PRECONDITIONS_VIOLATE",    // 1
-        "SL_RESULT_PARAMETER_INVALID",        // 2
-        "SL_RESULT_MEMORY_FAILURE",           // 3
-        "SL_RESULT_RESOURCE_ERROR",           // 4
-        "SL_RESULT_RESOURCE_LOST",            // 5
-        "SL_RESULT_IO_ERROR",                 // 6
-        "SL_RESULT_BUFFER_INSUFFICIENT",      // 7
-        "SL_RESULT_CONTENT_CORRUPTED",        // 8
-        "SL_RESULT_CONTENT_UNSUPPORTED",      // 9
-        "SL_RESULT_CONTENT_NOT_FOUND",        // 10
-        "SL_RESULT_PERMISSION_DENIED",        // 11
-        "SL_RESULT_FEATURE_UNSUPPORTED",      // 12
-        "SL_RESULT_INTERNAL_ERROR",           // 13
-        "SL_RESULT_UNKNOWN_ERROR",            // 14
-        "SL_RESULT_OPERATION_ABORTED",        // 15
-        "SL_RESULT_CONTROL_LOST"              // 16
-};
 
 const char *getSLErrStr(SLresult code) {
-    return errStrings[code];
+    switch (code) {
+        case 0:
+            return "SL_RESULT_SUCCESS";
+        case 1:
+            return "SL_RESULT_PRECONDITIONS_VIOLATE";
+        case 2:
+            return "SL_RESULT_PARAMETER_INVALID";
+        case 3:
+            return "SL_RESULT_MEMORY_FAILURE";
+        case 4:
+            return "SL_RESULT_RESOURCE_ERROR";
+        case 5:
+            return "SL_RESULT_RESOURCE_LOST";
+        case 6:
+            return "SL_RESULT_IO_ERROR";
+        case 7:
+            return "SL_RESULT_BUFFER_INSUFFICIENT";
+        case 8:
+            return "SL_RESULT_CONTENT_CORRUPTED";
+        case 9:
+            return "SL_RESULT_CONTENT_UNSUPPORTED";
+        case 10:
+            return "SL_RESULT_CONTENT_NOT_FOUND";
+        case 11:
+            return "SL_RESULT_PERMISSION_DENIED";
+        case 12:
+            return "SL_RESULT_FEATURE_UNSUPPORTED";
+        case 13:
+            return "SL_RESULT_INTERNAL_ERROR";
+        case 14:
+            return "SL_RESULT_UNKNOWN_ERROR";
+        case 15:
+            return "SL_RESULT_OPERATION_ABORTED";
+        case 16:
+            return "SL_RESULT_CONTROL_LOST";
+        default:
+            return "Unknown error";
+    }
 }
 
 SLAndroidDataFormat_PCM_EX OpenSLES_createExtendedFormat(

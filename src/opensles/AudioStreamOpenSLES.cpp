@@ -35,8 +35,6 @@ using namespace oboe;
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
-    mSimpleBufferQueueInterface = NULL;
-    mFramesPerBurst = DefaultStreamValues::FramesPerBurst;
     // OpenSL ES does not support device IDs. So overwrite value from builder.
     mDeviceId = kUnspecified;
     // OpenSL ES does not support session IDs. So overwrite value from builder.
@@ -47,7 +45,7 @@ AudioStreamOpenSLES::~AudioStreamOpenSLES() {
     delete[] mCallbackBuffer;
 }
 
-constexpr uint      kAudioChannelCountMax = 30u;
+constexpr SLuint32  kAudioChannelCountMax = 30;
 constexpr SLuint32  SL_ANDROID_UNKNOWN_CHANNELMASK  = 0; // Matches name used internally.
 
 SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) {
@@ -109,10 +107,14 @@ Result AudioStreamOpenSLES::open() {
     }
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
-    delete[] mCallbackBuffer; // to prevent memory leaks
-    mCallbackBuffer = new uint8_t[mBytesPerCallback];
     LOGD("AudioStreamOpenSLES(): mFramesPerCallback = %d", mFramesPerCallback);
     LOGD("AudioStreamOpenSLES(): mBytesPerCallback = %d", mBytesPerCallback);
+    if (mBytesPerCallback <= 0) {
+        LOGE("AudioStreamOpenSLES::open() bytesPerCallback < 0, bad format?");
+        return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
+    }
+    delete[] mCallbackBuffer; // to prevent memory leaks
+    mCallbackBuffer = new uint8_t[mBytesPerCallback];
 
     mSharingMode = SharingMode::Shared;
 

@@ -55,8 +55,8 @@ private:
     std::mutex             mLock;
     int32_t                mOpenCount = 0;
 
-    SLObjectItf            mEngineObject = 0;
-    SLEngineItf            mEngineInterface;
+    SLObjectItf            mEngineObject = nullptr;
+    SLEngineItf            mEngineInterface = nullptr;
 };
 
 } // namespace oboe
