@@ -90,6 +90,7 @@ public:
 
 
     oboe::Result pause() {
+        LOGD("NativeAudioContext::%s() called", __func__);
         oboe::Result result = oboe::Result::OK;
         stopBlockingIOThread();
         if (oboeStream != nullptr) {
@@ -100,6 +101,7 @@ public:
     }
 
     oboe::Result stopAudio() {
+        LOGD("NativeAudioContext::%s() called", __func__);
         oboe::Result result = oboe::Result::OK;
         stopBlockingIOThread();
 
@@ -111,6 +113,7 @@ public:
     }
 
     oboe::Result stopPlayback() {
+        LOGD("NativeAudioContext::%s() called", __func__);
         oboe::Result result = oboe::Result::OK;
         if (playbackStream != nullptr) {
             result = playbackStream->requestStop();
@@ -139,7 +142,7 @@ public:
 
     oboe::Result startPlayback() {
         stop();
-
+        LOGD("NativeAudioContext::%s() called", __func__);
         oboe::AudioStreamBuilder builder;
         builder.setChannelCount(mChannelCount)
                 ->setSampleRate(mSampleRate)
@@ -215,11 +218,20 @@ public:
         impulseGenerator.amplitude.setValue(amplitude);
     }
 
+    void setCallbackReturnStop(bool b) {
+        oboeCallbackProxy.setCallbackReturnStop(b);
+    }
+
+    int64_t getCallbackCount() {
+        return oboeCallbackProxy.getCallbackCount();
+    }
+
     void setChannelEnabled(int channelIndex, bool enabled);
 
     oboe::AudioStream           *oboeStream = nullptr;
     InputStreamCallbackAnalyzer  mInputAnalyzer;
     bool                         useCallback = true;
+    bool                         callbackReturnStop = false;
     int                          callbackSize = 0;
     bool                         mIsMMapUsed = false;
 

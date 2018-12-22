@@ -38,7 +38,6 @@ public class TestInputActivity  extends TestAudioActivity
     private static final int AUDIO_ECHO_REQUEST = 0;
     private AudioInputTester mAudioInputTester;
     private static final int NUM_VOLUME_BARS = 4;
-    private TextView[] mVolumeTexts = new TextView[NUM_VOLUME_BARS];
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
 
     @Override boolean isOutput() { return false; }
@@ -52,13 +51,9 @@ public class TestInputActivity  extends TestAudioActivity
         super.onCreate(savedInstanceState);
         inflateActivity();
 
-        mVolumeTexts[0] = (TextView) findViewById(R.id.volumeText0);
         mVolumeBars[0] = (VolumeBarView) findViewById(R.id.volumeBar0);
-        mVolumeTexts[1] = (TextView) findViewById(R.id.volumeText1);
         mVolumeBars[1] = (VolumeBarView) findViewById(R.id.volumeBar1);
-        mVolumeTexts[2] = (TextView) findViewById(R.id.volumeText2);
         mVolumeBars[2] = (VolumeBarView) findViewById(R.id.volumeBar2);
-        mVolumeTexts[3] = (TextView) findViewById(R.id.volumeText3);
         mVolumeBars[3] = (VolumeBarView) findViewById(R.id.volumeBar3);
 
         findAudioCommon();
@@ -74,8 +69,6 @@ public class TestInputActivity  extends TestAudioActivity
         }
         for (int i = 0; i < numChannels; i++) {
             double level = mAudioInputTester.getPeakLevel(i);
-            String msg = String.format("level = %8.6f", level);
-            mVolumeTexts[i].setText(msg);
             mVolumeBars[i].setVolume((float) level);
         }
     }

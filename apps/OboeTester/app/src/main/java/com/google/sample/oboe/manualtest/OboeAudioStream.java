@@ -160,6 +160,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native boolean isMMap();
 
     @Override
+    public native long getCallbackCount();
+
+    @Override
     public native long getFramesWritten();
 
     @Override
@@ -170,6 +173,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     @Override
     public native int getState();
+
+    public static native void setCallbackReturnStop(boolean b);
 
     public static native void setUseCallback(boolean checked);
 

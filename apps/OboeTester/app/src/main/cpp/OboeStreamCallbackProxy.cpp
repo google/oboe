@@ -23,6 +23,10 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         oboe::AudioStream *audioStream,
         void *audioData,
         int numFrames) {
+    mCallbackCount++;
+    if (mCallbackReturnStop) {
+        return oboe::DataCallbackResult::Stop;
+    }
     if (mCallback != nullptr) {
         return mCallback->onAudioReady(audioStream, audioData, numFrames);
     }

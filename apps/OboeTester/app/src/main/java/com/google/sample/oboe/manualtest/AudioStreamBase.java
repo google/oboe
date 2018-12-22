@@ -34,6 +34,7 @@ public abstract class AudioStreamBase {
         status.xRunCount = getUnderrunCount();
         status.framesRead = getFramesRead();
         status.framesWritten = getFramesWritten();
+        status.callbackCount = getCallbackCount();
         status.latency = getLatency();
         status.state = getState();
         return status;
@@ -49,6 +50,7 @@ public abstract class AudioStreamBase {
         public long framesRead;
         public double latency; // msec
         public int state;
+        public long callbackCount;
     }
 
     public void open(StreamConfiguration requestedConfiguration,
@@ -94,6 +96,8 @@ public abstract class AudioStreamBase {
     public int setBufferSizeInFrames(int bufferSize) {
         throw new UnsupportedOperationException("bufferSize cannot be changed");
     }
+
+    public long getCallbackCount() { return -1; }
 
     public long getFramesWritten() { return -1; }
 
