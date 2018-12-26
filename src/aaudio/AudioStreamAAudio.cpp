@@ -441,6 +441,9 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
                                    int64_t *timeNanoseconds) {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
+        if (getState() != StreamState::Started) {
+            return Result::ErrorInvalidState;
+        }
         return static_cast<Result>(mLibLoader->stream_getTimestamp(stream, clockId,
                                                framePosition, timeNanoseconds));
     } else {
