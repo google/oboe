@@ -177,13 +177,16 @@ abstract class TestAudioActivity extends Activity {
         mStreamConfigurationView.setOutput(isOutput());
 
         queryNativeAudioParameters();
+
         mCallbackReturnStopBox = (CheckBox) findViewById(R.id.callbackReturnStop);
-        mCallbackReturnStopBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OboeAudioStream.setCallbackReturnStop(mCallbackReturnStopBox.isChecked());
-            }
-        });
+        if (mCallbackReturnStopBox != null) {
+            mCallbackReturnStopBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    OboeAudioStream.setCallbackReturnStop(mCallbackReturnStopBox.isChecked());
+                }
+            });
+        }
         OboeAudioStream.setCallbackReturnStop(false);
 
         mStreamSniffer = new MyStreamSniffer();
