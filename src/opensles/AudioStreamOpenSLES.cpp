@@ -271,7 +271,6 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
     }
     if (stopStream) {
         requestStop();
-        // launchStopThread();
     }
 }
 
