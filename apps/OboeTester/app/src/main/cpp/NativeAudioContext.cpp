@@ -192,7 +192,7 @@ int NativeAudioContext::open(jint sampleRate,
 
         if (!useCallback) {
             int numSamples = getFramesPerBlock() * mChannelCount;
-            dataBuffer = std::make_unique<float>(numSamples);
+            dataBuffer = std::make_unique<float []>(numSamples);
         }
 
         mIsMMapUsed = isMMapUsed();
