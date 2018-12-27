@@ -289,20 +289,22 @@ Result AudioOutputStreamOpenSLES::requestStart() {
             break;
     }
 
-    setDataCallbackEnabled(true);
+    if (mStreamCallback != nullptr) { // Was a callback requested?
+        setDataCallbackEnabled(true);
+    }
     setState(StreamState::Starting);
     Result result = setPlayState(SL_PLAYSTATE_PLAYING);
     if (result == Result::OK) {
         setState(StreamState::Started);
         mLock.unlock();
-        // This could call requestStop() so try to avoid a recursive lock.
+        // Enqueue the first buffer to start the streaming.
+        // This might call requestStop() so try to avoid a recursive lock.
         processBufferCallback(mSimpleBufferQueueInterface);
-        mLock.lock();
     } else {
         setState(initialState);
+        mLock.unlock();
     }
     LOGD("AudioOutputStreamOpenSLES(): %s() returning %d", __func__, result);
-    mLock.unlock();
     return result;
 }
 

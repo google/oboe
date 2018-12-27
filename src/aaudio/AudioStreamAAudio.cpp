@@ -282,7 +282,9 @@ Result AudioStreamAAudio::requestStart() {
                 return Result::OK;
             }
         }
-        setDataCallbackEnabled(true);
+        if (mStreamCallback != nullptr) { // Was a callback requested?
+            setDataCallbackEnabled(true);
+        }
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
         return Result::ErrorClosed;

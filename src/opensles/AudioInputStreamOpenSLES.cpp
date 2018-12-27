@@ -241,33 +241,31 @@ Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
 
 Result AudioInputStreamOpenSLES::requestStart() {
     LOGD("AudioInputStreamOpenSLES(): %s() called", __func__);
-    mLock.lock();
+    std::lock_guard<std::mutex> lock(mLock);
     StreamState initialState = getState();
     switch (initialState) {
         case StreamState::Starting:
         case StreamState::Started:
-            mLock.unlock();
             return Result::OK;
         case StreamState::Closed:
-            mLock.unlock();
             return Result::ErrorClosed;
         default:
             break;
     }
 
-    setDataCallbackEnabled(true);
+    if (mStreamCallback != nullptr) { // Was a callback requested?
+        setDataCallbackEnabled(true);
+    }
     setState(StreamState::Starting);
     Result result = setRecordState(SL_RECORDSTATE_RECORDING);
     if (result == Result::OK) {
-        // Enqueue the first buffer so that we have data ready in the callback.
         setState(StreamState::Started);
-        mLock.unlock();
+        // Enqueue the first buffer to start the streaming.
+        // This does not call the callback function.
         enqueueCallbackBuffer(mSimpleBufferQueueInterface);
-        mLock.lock();
     } else {
         setState(initialState);
     }
-    mLock.unlock();
     return result;
 }
 
