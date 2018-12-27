@@ -276,8 +276,8 @@ private:
     SawPingGenerator             sawPingGenerator;
     oboe::AudioStream           *playbackStream = nullptr;
 
-    std::unique_ptr<float>                  dataBuffer{};
-    std::unique_ptr<ManyToMultiConverter>            manyToMulti;
+    std::unique_ptr<float []>               dataBuffer{};
+    std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
     std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
