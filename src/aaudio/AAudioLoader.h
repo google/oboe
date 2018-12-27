@@ -61,10 +61,10 @@ class AAudioLoader {
     int open();
 
     // Function pointers into the AAudio shared library.
-    aaudio_result_t (*createStreamBuilder)(AAudioStreamBuilder **builder);
+    aaudio_result_t (*createStreamBuilder)(AAudioStreamBuilder **builder) = nullptr;
 
     aaudio_result_t  (*builder_openStream)(AAudioStreamBuilder *builder,
-                                           AAudioStream **stream);
+                                           AAudioStream **stream) = nullptr;
 
     signature_V_PBI builder_setBufferCapacityInFrames = nullptr;
     signature_V_PBI builder_setChannelCount = nullptr;
@@ -83,35 +83,35 @@ class AAudioLoader {
 
     void (*builder_setDataCallback)(AAudioStreamBuilder *builder,
                                     AAudioStream_dataCallback callback,
-                                    void *userData);
+                                    void *userData) = nullptr;
 
     void (*builder_setErrorCallback)(AAudioStreamBuilder *builder,
                                     AAudioStream_errorCallback callback,
-                                    void *userData);
+                                    void *userData) = nullptr;
 
     signature_I_PB  builder_delete = nullptr;
 
-    aaudio_format_t (*stream_getFormat)(AAudioStream *stream);
+    aaudio_format_t (*stream_getFormat)(AAudioStream *stream) = nullptr;
 
     aaudio_result_t (*stream_read)(AAudioStream* stream,
                                    void *buffer,
                                    int32_t numFrames,
-                                   int64_t timeoutNanoseconds);
+                                   int64_t timeoutNanoseconds) = nullptr;
 
     aaudio_result_t (*stream_write)(AAudioStream *stream,
                                    const void *buffer,
                                    int32_t numFrames,
-                                   int64_t timeoutNanoseconds);
+                                   int64_t timeoutNanoseconds) = nullptr;
 
     aaudio_result_t (*stream_waitForStateChange)(AAudioStream *stream,
                                                  aaudio_stream_state_t inputState,
                                                  aaudio_stream_state_t *nextState,
-                                                 int64_t timeoutNanoseconds);
+                                                 int64_t timeoutNanoseconds) = nullptr;
 
     aaudio_result_t (*stream_getTimestamp)(AAudioStream *stream,
                                           clockid_t clockid,
                                           int64_t *framePosition,
-                                          int64_t *timeNanoseconds);
+                                          int64_t *timeNanoseconds) = nullptr;
 
     signature_I_PS   stream_close = nullptr;
 
