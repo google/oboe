@@ -17,19 +17,19 @@
 #ifndef RHYTHMGAME_MIXER_H
 #define RHYTHMGAME_MIXER_H
 
-#include "RenderableAudio.h"
+#include <array>
+#include "IRenderableAudio.h"
 
 constexpr int32_t kBufferSize = 192*10;  // Temporary buffer is used for mixing
 constexpr uint8_t kMaxTracks = 100;
 
-template <typename T>
-class Mixer : public RenderableAudio<T> {
+class Mixer : public IRenderableAudio {
 
 public:
-    void renderAudio(T *audioData, int32_t numFrames) {
+    void renderAudio(float *audioData, int32_t numFrames) {
 
         // Zero out the incoming container array
-        memset(audioData, 0, sizeof(T) * numFrames);
+        memset(audioData, 0, sizeof(float) * numFrames);
 
         for (int i = 0; i < mNextFreeTrackIndex; ++i) {
             mTracks[i]->renderAudio(mixingBuffer, numFrames);
@@ -40,13 +40,13 @@ public:
         }
     }
 
-    void addTrack(std::shared_ptr<RenderableAudio<T>> renderer){
+    void addTrack(std::shared_ptr<IRenderableAudio> renderer){
         mTracks[mNextFreeTrackIndex++] = renderer;
     }
 
 private:
-    T mixingBuffer[kBufferSize];
-    std::array<std::shared_ptr<RenderableAudio<T>>, kMaxTracks> mTracks;
+    float mixingBuffer[kBufferSize];
+    std::array<std::shared_ptr<IRenderableAudio>, kMaxTracks> mTracks;
     uint8_t mNextFreeTrackIndex = 0;
 };
 

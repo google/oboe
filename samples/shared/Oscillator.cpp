@@ -17,7 +17,7 @@
 #include "Oscillator.h"
 
 // We need to calculate the amplitude value differently for each supported output format
-template<>
+/*template<>
 void Oscillator<float>::setAmplitude(float amplitude){
     mAmplitude = amplitude;
 };
@@ -25,4 +25,4 @@ void Oscillator<float>::setAmplitude(float amplitude){
 template<>
 void Oscillator<int16_t>::setAmplitude(float amplitude){
     mAmplitude = amplitude * INT16_MAX;
-};
+};*/
