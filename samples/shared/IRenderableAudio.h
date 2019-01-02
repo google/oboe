@@ -17,15 +17,14 @@
 #ifndef MEGADRONE_RENDERABLEAUDIO_H
 #define MEGADRONE_RENDERABLEAUDIO_H
 
-
 #include <cstdint>
+#include <string>
 
-template <typename T>
-class RenderableAudio {
+class IRenderableAudio {
 
 public:
-    virtual ~RenderableAudio() = default;
-    virtual void renderAudio(T *audioData, int32_t numFrames) = 0;
+    virtual ~IRenderableAudio() = default;
+    virtual void renderAudio(float *audioData, int32_t numFrames) = 0;
 };
 
 

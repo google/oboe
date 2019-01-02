@@ -25,8 +25,8 @@ set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 # specify a binary directory
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
-# Include the Oboe headers
-include_directories(${OBOE_DIR}/include)
+# Include the Oboe headers and shared sample code
+include_directories(${OBOE_DIR}/include ${OBOE_DIR}/samples)
 
 ### END OBOE INCLUDE SECTION ###
 
@@ -40,7 +40,7 @@ set (APP_DIR src/main/cpp)
 file (GLOB_RECURSE APP_SOURCES
     ${APP_DIR}/jni_bridge.cpp
     ${APP_DIR}/PlayAudioEngine.cpp
-    ${APP_DIR}/SineGenerator.cpp
+    ${APP_DIR}/SoundGenerator.cpp
 )
 
 # Build the libhello-oboe library

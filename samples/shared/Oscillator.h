@@ -15,31 +15,32 @@
  */
 
 
-#ifndef MEGADRONE_OSCILLATOR_H
-#define MEGADRONE_OSCILLATOR_H
+#ifndef SHARED_OSCILLATOR_H
+#define SHARED_OSCILLATOR_H
 
 
 #include <cstdint>
 #include <atomic>
 #include <math.h>
 #include <memory>
-#include "RenderableAudio.h"
+#include "IRenderableAudio.h"
 
 constexpr double kDefaultFrequency = 440.0;
 constexpr int32_t kDefaultSampleRate = 48000;
 constexpr double kPi = M_PI;
 constexpr double kTwoPi = kPi * 2;
 
-template <typename T>
-class Oscillator : public RenderableAudio<T> {
+class Oscillator : public IRenderableAudio {
 
 public:
 
-    void setWaveOn(bool isWaveOn){
+    ~Oscillator() = default;
+
+    void setWaveOn(bool isWaveOn) {
         mIsWaveOn.store(isWaveOn);
     };
 
-    void setSampleRate(int32_t sampleRate){
+    void setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
         updatePhaseIncrement();
     };
@@ -49,16 +50,18 @@ public:
         updatePhaseIncrement();
     };
 
-    void setAmplitude(float amplitude);
+    inline void setAmplitude(float amplitude) {
+        mAmplitude = amplitude;
+    };
 
-    // From RenderableAudio<T>
-    void renderAudio(T *audioData, int32_t numFrames) {
+    // From IRenderableAudio
+    void renderAudio(float *audioData, int32_t numFrames) override {
 
         if (mIsWaveOn){
             for (int i = 0; i < numFrames; ++i) {
 
                 // Sine wave (sinf)
-                //audioData[i*kChannelCount] = sinf(mPhase) * mAmplitude;
+                //data[i*kChannelCount] = sinf(mPhase) * mAmplitude;
 
                 // Square wave
                 if (mPhase <= kPi){
@@ -71,14 +74,14 @@ public:
                 if (mPhase > kTwoPi) mPhase -= kTwoPi;
             }
         } else {
-            memset(audioData, 0, sizeof(T) * numFrames);
+            memset(audioData, 0, sizeof(float) * numFrames);
         }
     };
 
 private:
     std::atomic<bool> mIsWaveOn { false };
     float mPhase = 0.0;
-    std::atomic<T> mAmplitude { 0 };
+    std::atomic<float> mAmplitude { 0 };
     std::atomic<double> mPhaseIncrement { 0.0 };
     double mFrequency = kDefaultFrequency;
     int32_t mSampleRate = kDefaultSampleRate;
@@ -88,4 +91,4 @@ private:
     };
 };
 
-#endif //MEGADRONE_OSCILLATOR_H
+#endif //SHARED_OSCILLATOR_H
