@@ -257,8 +257,8 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
             mFramesWritten += mFramesPerCallback;
         }
         // Pass the data to OpenSLES.
-        SLresult result = enqueueCallbackBuffer(bq);
-        if (result != SL_RESULT_SUCCESS) {
+        SLresult enqueueResult = enqueueCallbackBuffer(bq);
+        if (enqueueResult != SL_RESULT_SUCCESS) {
             LOGE("enqueueCallbackBuffer %d", result);
             stopStream = true;
         }
