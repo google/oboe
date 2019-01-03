@@ -38,9 +38,10 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         int32_t numFrames) {
 
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    if (oboeStream != NULL) {
+    if (oboeStream != nullptr) {
         return static_cast<aaudio_data_callback_result_t>(
                 oboeStream->callOnAudioReady(stream, audioData, numFrames));
+
     } else {
         return static_cast<aaudio_data_callback_result_t>(DataCallbackResult::Stop);
     }
@@ -49,7 +50,7 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
 static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
                                           AAudioStream *stream,
                                           Result error) {
-    if (oboeStream != NULL) {
+    if (oboeStream != nullptr) {
         oboeStream->onErrorInThread(stream, error);
     }
 }
@@ -231,10 +232,28 @@ Result AudioStreamAAudio::close() {
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
-    return mStreamCallback->onAudioReady(
-            this,
-            audioData,
-            numFrames);
+    DataCallbackResult result = fireDataCallback(audioData, numFrames);
+    if (result == DataCallbackResult::Continue) {
+        return result;
+    } else {
+        if (result == DataCallbackResult::Stop) {
+            LOGE("Oboe callback returned DataCallbackResult::Stop");
+        } else {
+            LOGE("Oboe callback returned unexpected value = %d", result);
+        }
+
+        if (getSdkVersion() <= __ANDROID_API_P__) {
+            launchStopThread();
+            if (isMMapUsed()) {
+                return DataCallbackResult::Stop;
+            } else {
+                // Legacy stream <= API_P cannot be restarted after returning Stop.
+                return DataCallbackResult::Continue;
+            }
+        } else {
+            return DataCallbackResult::Stop; // OK >= API_Q
+        }
+    }
 }
 
 void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
@@ -262,6 +281,9 @@ Result AudioStreamAAudio::requestStart() {
                 // WARNING: On P, AAudio is returning ErrorInvalidState for Output and OK for Input.
                 return Result::OK;
             }
+        }
+        if (mStreamCallback != nullptr) { // Was a callback requested?
+            setDataCallbackEnabled(true);
         }
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
@@ -509,6 +531,15 @@ ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
     double latencyMillis = latencyNanos / kNanosPerMillisecond;
 
     return ResultWithValue<double>(latencyMillis);
+}
+
+bool AudioStreamAAudio::isMMapUsed() {
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        return mLibLoader->stream_isMMapUsed(stream);
+    } else {
+        return false;
+    }
 }
 
 } // namespace oboe

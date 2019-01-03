@@ -206,18 +206,24 @@ Result AudioInputStreamOpenSLES::open() {
 }
 
 Result AudioInputStreamOpenSLES::close() {
-
+    LOGD("AudioInputStreamOpenSLES::%s()", __func__);
+    mLock.lock();
+    Result result = Result::OK;
     if (mState == StreamState::Closed){
-        return Result::ErrorClosed;
+        result = Result::ErrorClosed;
     } else {
+        mLock.unlock(); // avoid recursive lock
         requestStop();
+        mLock.lock();
+        // invalidate any interfaces
         mRecordInterface = NULL;
-        return AudioStreamOpenSLES::close();
+        result = AudioStreamOpenSLES::close();
     }
+    mLock.unlock(); // avoid recursive lock
+    return result;
 }
 
 Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
-
     LOGD("AudioInputStreamOpenSLES::setRecordState(%d)", newState);
     Result result = Result::OK;
 
@@ -234,16 +240,28 @@ Result AudioInputStreamOpenSLES::setRecordState(SLuint32 newState) {
 }
 
 Result AudioInputStreamOpenSLES::requestStart() {
-
-    LOGD("AudioInputStreamOpenSLES::requestStart()");
+    LOGD("AudioInputStreamOpenSLES(): %s() called", __func__);
+    std::lock_guard<std::mutex> lock(mLock);
     StreamState initialState = getState();
-    if (initialState == StreamState::Closed) return Result::ErrorClosed;
+    switch (initialState) {
+        case StreamState::Starting:
+        case StreamState::Started:
+            return Result::OK;
+        case StreamState::Closed:
+            return Result::ErrorClosed;
+        default:
+            break;
+    }
 
+    if (mStreamCallback != nullptr) { // Was a callback requested?
+        setDataCallbackEnabled(true);
+    }
     setState(StreamState::Starting);
     Result result = setRecordState(SL_RECORDSTATE_RECORDING);
     if (result == Result::OK) {
-        // Enqueue the first buffer so that we have data ready in the callback.
         setState(StreamState::Started);
+        // Enqueue the first buffer to start the streaming.
+        // This does not call the callback function.
         enqueueCallbackBuffer(mSimpleBufferQueueInterface);
     } else {
         setState(initialState);
@@ -253,22 +271,31 @@ Result AudioInputStreamOpenSLES::requestStart() {
 
 
 Result AudioInputStreamOpenSLES::requestPause() {
-    LOGW("AudioInputStreamOpenSLES::requestPause() is intentionally not implemented for input "
-         "streams");
+    LOGW("AudioInputStreamOpenSLES::%s() is intentionally not implemented for input "
+         "streams", __func__);
     return Result::ErrorUnimplemented; // Matches AAudio behavior.
 }
 
 Result AudioInputStreamOpenSLES::requestFlush() {
-    LOGW("AudioInputStreamOpenSLES::requestFlush() is intentionally not implemented for input "
-         "streams");
+    LOGW("AudioInputStreamOpenSLES::%s() is intentionally not implemented for input "
+         "streams", __func__);
     return Result::ErrorUnimplemented; // Matches AAudio behavior.
 }
 
 Result AudioInputStreamOpenSLES::requestStop() {
+    LOGD("AudioInputStreamOpenSLES(): %s() called", __func__);
 
-    LOGD("AudioInputStreamOpenSLES::requestStop()");
+    std::lock_guard<std::mutex> lock(mLock);
     StreamState initialState = getState();
-    if (initialState == StreamState::Closed) return Result::ErrorClosed;
+    switch (initialState) {
+        case StreamState::Stopping:
+        case StreamState::Stopped:
+            return Result::OK;
+        case StreamState::Closed:
+            return Result::ErrorClosed;
+        default:
+            break;
+    }
 
     setState(StreamState::Stopping);
 

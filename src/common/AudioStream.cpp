@@ -16,6 +16,7 @@
 
 #include <sys/types.h>
 #include <pthread.h>
+#include <thread>
 #include <oboe/AudioStream.h>
 #include "OboeDebug.h"
 #include <oboe/Utilities.h>
@@ -41,10 +42,15 @@ Result AudioStream::close() {
     return Result::OK;
 }
 
-DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames) {
+DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFrames) {
+    if (!isDataCallbackEnabled()) {
+        LOGW("AudioStream::%s() called with data callback disabled!", __func__);
+        return DataCallbackResult::Stop; // We should not be getting called any more.
+    }
+
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
-        LOGD("AudioStream::fireCallback() scheduler = %s",
+        LOGD("AudioStream::%s() scheduler = %s", __func__,
              ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
              ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
              ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
@@ -58,6 +64,9 @@ DataCallbackResult AudioStream::fireCallback(void *audioData, int32_t numFrames)
     } else {
         result = mStreamCallback->onAudioReady(this, audioData, numFrames);
     }
+    // On Oreo, we might get called after returning stop.
+    // So block there here.
+    setDataCallbackEnabled(result == DataCallbackResult::Continue);
 
     return result;
 }
@@ -129,6 +138,21 @@ int64_t AudioStream::getFramesRead() {
 int64_t AudioStream::getFramesWritten() {
     updateFramesWritten();
     return mFramesWritten;
+}
+
+static void oboe_stop_thread_proc(AudioStream *oboeStream) {
+    LOGD("%s() called ----)))))", __func__);
+    if (oboeStream != nullptr) {
+        oboeStream->requestStop();
+    }
+    LOGD("%s() returning (((((----", __func__);
+}
+
+void AudioStream::launchStopThread() {
+    // Stop this stream on a separate thread
+    // std::thread t(requestStop);
+    std::thread t(oboe_stop_thread_proc, this);
+    t.detach();
 }
 
 } // namespace oboe

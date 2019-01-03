@@ -371,6 +371,11 @@ public:
         return nullptr;
     }
 
+    /**
+     * Launch a thread that will stop the stream.
+     */
+    void launchStopThread();
+
 protected:
 
     /**
@@ -402,7 +407,7 @@ protected:
      * @return the result of the callback: stop or continue
      *
      */
-    DataCallbackResult fireCallback(void *audioData, int numFrames);
+    DataCallbackResult fireDataCallback(void *audioData, int numFrames);
 
     /**
      * Update mFramesWritten.
@@ -415,7 +420,22 @@ protected:
     virtual void updateFramesRead() = 0;
 
     /**
-     * Number of frames which have been written into the stream.
+     * @return true if callbacks may be called
+     */
+    bool isDataCallbackEnabled() {
+        return mDataCallbackEnabled;
+    }
+
+    /**
+     * This can be set false internally to prevent callbacks
+     * after DataCallbackResult::Stop has been returned.
+     */
+    void setDataCallbackEnabled(bool enabled) {
+        mDataCallbackEnabled = enabled;
+    }
+
+    /**
+     * Number of frames which have been written into the stream
      *
      * This is signed integer to match the counters in AAudio.
      * At audio rates, the counter will overflow in about six million years.
@@ -430,8 +450,12 @@ protected:
      */
     std::atomic<int64_t> mFramesRead{};
 
+    std::mutex           mLock; // for synchronizing start/stop/close
+
 private:
     int                  mPreviousScheduler = -1;
+
+    std::atomic<bool>    mDataCallbackEnabled{};
 
 };
 
