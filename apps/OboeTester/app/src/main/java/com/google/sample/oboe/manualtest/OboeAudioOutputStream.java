@@ -23,8 +23,9 @@ public class OboeAudioOutputStream extends OboeAudioStream {
 
     // WARNING - must match order in strings.xml
     public static final int TONE_TYPE_SAW_PING = 0;
-    public static final int TONE_TYPE_SINE_STEADY = 1;
+    public static final int TONE_TYPE_SINE = 1;
     public static final int TONE_TYPE_IMPULSE = 2;
+    public static final int TONE_TYPE_SAWTOOTH = 3;
 
     @Override
     public boolean isInput() {

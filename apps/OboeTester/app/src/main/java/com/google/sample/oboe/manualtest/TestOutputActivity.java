@@ -20,8 +20,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 
-import com.google.sample.oboe.manualtest.R;
-
 /**
  * Base class for output test activities
  */
@@ -68,7 +66,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public void startAudio() {
         super.startAudio();
-        mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SINE_STEADY);
+        mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SINE);
         mAudioOutTester.setEnabled(true);
     }
 

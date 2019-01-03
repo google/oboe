@@ -19,28 +19,24 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "flowgraph/AudioProcessorBase.h"
 #include "oboe/Oboe.h"
+
+using namespace flowgraph;
 
 /**
  * Bridge between an audio graph and an audio device.
- * Connect the audio units to the "input" and then pass
+ * Pass in an AudioSink and then pass
  * this object to the AudioStreamBuilder as a callback.
  */
-class AudioStreamGateway : public AudioProcessorBase, public oboe::AudioStreamCallback {
+class AudioStreamGateway : public oboe::AudioStreamCallback {
 public:
     AudioStreamGateway(int samplesPerFrame);
     virtual ~AudioStreamGateway();
 
-    /**
-     * Process audio for the graph.
-     * @param framePosition
-     * @param numFrames
-     * @return
-     */
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
+    void setAudioSink(flowgraph::AudioSink  *sink) {
+        mAudioSink = sink;
+    }
 
     /**
      * Called by Oboe when the stream is ready to process audio.
@@ -50,23 +46,14 @@ public:
             void *audioData,
             int numFrames) override;
 
-    AudioInputPort input;
-
     int getScheduler();
 
-    void start() override {
-        AudioProcessorBase::start();
-        mCallCounter = 0;
-        mFrameCountdown = 0;
-    }
-
 private:
-    uint64_t mFramePosition;
+    // TODO uint64_t mFramePosition;
     bool     mSchedulerChecked = false;
     int      mScheduler;
+    flowgraph::AudioSink  *mAudioSink;
 
-    int32_t  mCallCounter = 0;
-    int32_t  mFrameCountdown = 0;
 };
 
 

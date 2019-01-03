@@ -14,34 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_MANY_TO_MULTI_CONVERTER_H
-#define OBOETESTER_MANY_TO_MULTI_CONVERTER_H
+#ifndef FLOWGRAPH_SOURCE_I16_H
+#define FLOWGRAPH_SOURCE_I16_H
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <vector>
 
 #include "AudioProcessorBase.h"
 
-/**
- * Combine multiple mono inputs into one multi-channel output.
- */
-class ManyToMultiConverter : public AudioProcessorBase {
+namespace flowgraph {
+
+class SourceI16 : public AudioSource {
 public:
-    explicit ManyToMultiConverter(int32_t channelCount);
+    explicit SourceI16(int32_t channelCount);
 
-    virtual ~ManyToMultiConverter() = default;
-
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
-
-    void setEnabled(bool enabled) {};
-
-    std::vector<std::unique_ptr<AudioInputPort> > inputs;
-    AudioOutputPort output;
-
-private:
+    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
 };
 
-#endif //OBOETESTER_MANY_TO_MULTI_CONVERTER_H
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_SOURCE_I16_H

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_MONO_TO_MULTI_CONVERTER_H
-#define OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+#ifndef FLOWGRAPH_SOURCE_I24_H
+#define FLOWGRAPH_SOURCE_I24_H
 
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "AudioProcessorBase.h"
 
-/**
- * Duplicate a single mono input across multiple channels of output.
- */
-class MonoToMultiConverter : AudioProcessorBase {
+namespace flowgraph {
+
+class SourceI24 : public AudioSource {
 public:
-    explicit MonoToMultiConverter(int32_t channelCount);
+    explicit SourceI24(int32_t channelCount);
 
-    virtual ~MonoToMultiConverter() = default;
-
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
-
-    void setEnabled(bool enabled) {};
-
-    AudioInputPort input;
-    AudioOutputPort output;
-
-private:
+    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
 };
 
-#endif //OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_SOURCE_I24_H

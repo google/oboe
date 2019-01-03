@@ -14,38 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_SAWPINGGENERATOR_H
-#define NATIVEOBOE_SAWPINGGENERATOR_H
+#ifndef FLOWGRAPH_SINE_OSCILLATOR_H
+#define FLOWGRAPH_SINE_OSCILLATOR_H
 
-#include <atomic>
 #include <unistd.h>
-#include <sys/types.h>
 
-#include "flowgraph/AudioProcessorBase.h"
-#include "flowgraph/OscillatorBase.h"
+#include "OscillatorBase.h"
 
-class SawPingGenerator : public OscillatorBase {
+class SineOscillator : public OscillatorBase {
 public:
-    SawPingGenerator();
-
-    virtual ~SawPingGenerator();
+    SineOscillator();
 
     int32_t onProcess(
             int64_t framePosition,
             int numFrames) override;
-
-    void setEnabled(bool enabled);
-
-    void start() override {
-        OscillatorBase::start();
-        mAcknowledgeCount.store(mRequestCount.load());
-    }
-
-private:
-    std::atomic<int> mRequestCount; // external thread increments this to request a beep
-    std::atomic<int> mAcknowledgeCount; // audio thread sets this to acknowledge
-    double mLevel;
 };
 
-
-#endif //NATIVEOBOE_SAWPINGGENERATOR_H
+#endif //FLOWGRAPH_SINE_OSCILLATOR_H

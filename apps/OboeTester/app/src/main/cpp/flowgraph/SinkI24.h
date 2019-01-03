@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_SINEGENERATOR_H
-#define NATIVEOBOE_SINEGENERATOR_H
+#ifndef FLOWGRAPH_SINK_I24_H
+#define FLOWGRAPH_SINK_I24_H
 
 #include <unistd.h>
+#include <sys/types.h>
 
-#include "OscillatorBase.h"
+#include "AudioProcessorBase.h"
 
-class SineGenerator : public OscillatorBase {
+namespace flowgraph {
+
+class SinkI24 : public AudioSink {
 public:
-    SineGenerator();
+    explicit SinkI24(int32_t channelCount);
 
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
+    int32_t read(void *data, int32_t numFrames) override;
 };
 
+} /* namespace flowgraph */
 
-#endif //NATIVEOBOE_SINEGENERATOR_H
+#endif //FLOWGRAPH_SINK_I24_H

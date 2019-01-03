@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_IMPULSE_GENERATOR_H
-#define NATIVEOBOE_IMPULSE_GENERATOR_H
-
-#include <unistd.h>
-#include <sys/types.h>
-
-#include "AudioProcessorBase.h"
 #include "OscillatorBase.h"
 
-class ImpulseGenerator : public OscillatorBase {
-public:
-    ImpulseGenerator();
+using namespace flowgraph;
 
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames);
-
-
-
-};
-
-#endif //NATIVEOBOE_IMPULSE_GENERATOR_H
+OscillatorBase::OscillatorBase()
+        : frequency(*this, 1)
+        , amplitude(*this, 1)
+        , output(*this, 1) {
+    setSampleRate(48000);
+}

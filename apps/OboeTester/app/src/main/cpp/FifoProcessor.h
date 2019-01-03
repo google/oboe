@@ -17,10 +17,10 @@
 #ifndef NATIVEOBOE_FIFIPROCESSOR_H
 #define NATIVEOBOE_FIFIPROCESSOR_H
 
-#include "AudioProcessorBase.h"
+#include "flowgraph/AudioProcessorBase.h"
 #include "fifo/FifoBuffer.h"
 
-class FifoProcessor : public AudioProcessorBase {
+class FifoProcessor : public flowgraph::AudioProcessorBase {
 public:
     FifoProcessor(int samplesPerFrame, int numFrames, int threshold);
 
@@ -42,10 +42,10 @@ public:
         return mFifoBuffer.setThresholdFrames(threshold);
     }
 
-    AudioResult onProcess(
-            uint64_t framePosition,
+    int32_t onProcess(
+            int64_t framePosition,
             int numFrames)  override {
-        float *buffer = output.getFloatBuffer(numFrames);
+        float *buffer = output.getBlock();
         return mFifoBuffer.readNow(buffer, numFrames);
     }
 
@@ -55,7 +55,7 @@ private:
     oboe::FifoBuffer  mFifoBuffer;
 
 public:
-    AudioOutputPort output;
+    flowgraph::AudioFloatOutputPort output;
 
 };
 

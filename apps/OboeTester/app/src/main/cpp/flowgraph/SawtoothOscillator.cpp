@@ -17,28 +17,29 @@
 #include <math.h>
 #include <unistd.h>
 
-#include "SineGenerator.h"
+#include "SawtoothOscillator.h"
 
-SineGenerator::SineGenerator()
+SawtoothOscillator::SawtoothOscillator()
         : OscillatorBase() {
 }
 
-AudioResult SineGenerator::onProcess(
-        uint64_t framePosition,
+int32_t SawtoothOscillator::onProcess(
+        int64_t framePosition,
         int numFrames) {
 
     frequency.pullData(framePosition, numFrames);
     amplitude.pullData(framePosition, numFrames);
 
-    const float *frequencies = frequency.getFloatBuffer(numFrames);
-    const float *amplitudes = amplitude.getFloatBuffer(numFrames);
-    float *buffer = output.getFloatBuffer(numFrames);
+    const float *frequencies = frequency.getBlock();
+    const float *amplitudes = amplitude.getBlock();
+    float *buffer = output.getBlock();
 
-    // Generate sine wave.
+    // Use the phase directly as a non-band-limited "sawtooth".
+    // This will generate unpleasant aliasing artifacts at higher frequencies.
     for (int i = 0; i < numFrames; i++) {
-        float phase = incrementPhase(frequencies[i]);
-        *buffer++ = sinf(phase) * amplitudes[i];
+        float phase = incrementPhase(frequencies[i]); // phase ranges from -1 to +1
+        *buffer++ = phase * amplitudes[i];
     }
 
-    return AUDIO_RESULT_SUCCESS;
+    return numFrames;
 }

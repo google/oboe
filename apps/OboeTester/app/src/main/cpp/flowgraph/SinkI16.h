@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-#include "OscillatorBase.h"
+#ifndef FLOWGRAPH_SINK_I16_H
+#define FLOWGRAPH_SINK_I16_H
 
-OscillatorBase::OscillatorBase()
-        : frequency(*this, 1)
-        , amplitude(*this, 1)
-        , output(*this, 1) {
-    setSampleRate(48000);
-}
+#include <unistd.h>
+#include <sys/types.h>
+
+#include "AudioProcessorBase.h"
+
+namespace flowgraph {
+
+class SinkI16 : public AudioSink {
+public:
+    explicit SinkI16(int32_t channelCount);
+
+    int32_t read(void *data, int32_t numFrames) override;
+};
+
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_SINK_I16_H
