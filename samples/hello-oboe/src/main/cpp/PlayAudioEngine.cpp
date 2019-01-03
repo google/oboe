@@ -25,15 +25,13 @@
 #include "SoundGenerator.h"
 
 constexpr int64_t kNanosPerMillisecond = 1000000; // Use int64_t to avoid overflows in calculations
-constexpr int32_t kDefaultChannelCount = 2; // Stereo
+
 
 PlayAudioEngine::PlayAudioEngine() {
 
     // Initialize the trace functions, this enables you to output trace statements without
     // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
     Trace::initialize();
-
-    mChannelCount = kDefaultChannelCount;
     createPlaybackStream();
 }
 
