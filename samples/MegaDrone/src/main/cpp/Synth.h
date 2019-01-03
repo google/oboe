@@ -20,7 +20,7 @@
 #include <array>
 
 #include "shared/Oscillator.h"
-#include "shared/MixerMono.h"
+#include "shared/Mixer.h"
 #include "shared/MonoToStereo.h"
 
 constexpr int kNumOscillators = 100;
@@ -65,7 +65,7 @@ private:
 
     // Rendering objects
     std::array<Oscillator, kNumOscillators> mOscs;
-    MixerMono mMixer;
+    Mixer mMixer;
     std::shared_ptr<IRenderableAudio> mOutputStage;
 };
 

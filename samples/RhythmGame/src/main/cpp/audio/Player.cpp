@@ -17,7 +17,7 @@
 #include "Player.h"
 #include "utils/logging.h"
 
-void Player::renderAudio(int16_t *targetData, int32_t numFrames){
+void Player::renderAudio(float *targetData, int32_t numFrames){
 
     const int32_t channelCount = mSource->getChannelCount();
 
@@ -25,7 +25,7 @@ void Player::renderAudio(int16_t *targetData, int32_t numFrames){
 
         int32_t framesToRenderFromData = numFrames;
         int32_t totalSourceFrames = mSource->getTotalFrames();
-        const int16_t *data = mSource->getData();
+        const float *data = mSource->getData();
 
         // Check whether we're about to reach the end of the recording
         if (!mIsLooping && mReadFrameIndex + numFrames >= totalSourceFrames){
@@ -52,7 +52,7 @@ void Player::renderAudio(int16_t *targetData, int32_t numFrames){
     }
 }
 
-void Player::renderSilence(int16_t *start, int32_t numSamples){
+void Player::renderSilence(float *start, int32_t numSamples){
     for (int i = 0; i < numSamples; ++i) {
         start[i] = 0;
     }

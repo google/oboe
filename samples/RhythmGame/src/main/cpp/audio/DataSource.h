@@ -24,7 +24,7 @@ public:
     virtual ~DataSource(){};
     virtual int32_t getTotalFrames() const = 0;
     virtual int32_t getChannelCount() const  = 0;
-    virtual const int16_t* getData() const = 0;
+    virtual const float* getData() const = 0;
 };
 
 

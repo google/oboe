@@ -39,9 +39,9 @@ The sample uses the following optimizations to obtain a low latency audio stream
 
 ### Audio rendering
 
-The `RenderableAudio` interface (abstract class) represents objects which can produce frames of audio data. The `SoundRecording` and `Mixer` objects both implement this interface.
+The `IRenderableAudio` interface (abstract class) represents objects which can produce frames of audio data. The `Player` and `Mixer` objects both implement this interface.
 
-Both the clap sound and backing tracks are represented by `SoundRecording` objects which are then mixed together using a `Mixer`.
+Both the clap sound and backing tracks are represented by `Player` objects which are then mixed together using a `Mixer`.
 
 ![Audio rendering](images/4-audio-rendering.png "Audio rendering")
 

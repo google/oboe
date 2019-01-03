@@ -21,7 +21,7 @@
 #include <array>
 #include <oboe/Oboe.h>
 
-#include "shared/MixerMono.h"
+#include "shared/Mixer.h"
 
 #include "SineGenerator.h"
 #include "SoundGenerator.h"
@@ -59,7 +59,7 @@ private:
     oboe::AudioApi mAudioApi = oboe::AudioApi::Unspecified;
     int32_t mPlaybackDeviceId = oboe::kUnspecified;
     int32_t mSampleRate;
-    int32_t mChannelCount;
+    int32_t mChannelCount = 2; // Stereo
     int32_t mFramesPerBurst;
     double mCurrentOutputLatencyMillis = 0;
     int32_t mBufferSizeSelection = kBufferSizeAutomatic;

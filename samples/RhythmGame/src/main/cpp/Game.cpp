@@ -51,6 +51,7 @@ void Game::start() {
     // simultaneously using a single audio stream.
     mMixer.addTrack(mClap);
     mMixer.addTrack(mBackingTrack);
+    mMixer.setChannelCount(kChannelCount);
 
     // Add the audio frame numbers on which the clap sound should be played to the clap event queue.
     // The backing track tempo is 120 beats per minute, which is 2 beats per second. At a sample
@@ -68,7 +69,6 @@ void Game::start() {
 
     // Create a builder
     AudioStreamBuilder builder;
-    builder.setFormat(AudioFormat::I16);
     builder.setChannelCount(kChannelCount);
     builder.setSampleRate(kSampleRateHz);
     builder.setCallback(this);
@@ -78,6 +78,12 @@ void Game::start() {
     Result result = builder.openStream(&mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
+        return;
+    }
+
+    if (mAudioStream->getFormat() == AudioFormat::I16){
+        mConversionBuffer = std::make_unique<float[]>(mAudioStream->getBufferCapacityInFrames() *
+                kChannelCount);
     }
 
     // Reduce stream latency by setting the buffer size to a multiple of the burst size
@@ -138,6 +144,11 @@ void Game::onSurfaceDestroyed() {
 
 DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
 
+    // If we're outputting in 16-bit we need to render into a separate buffer then convert that
+    // buffer to int16s
+    bool is16Bit = (oboeStream->getFormat() == AudioFormat::I16);
+    float *outputBuffer = (is16Bit) ? mConversionBuffer.get() : static_cast<float *>(audioData);
+
     int64_t nextClapEvent;
 
     for (int i = 0; i < numFrames; ++i) {
@@ -146,8 +157,14 @@ DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, 
             mClap->setPlaying(true);
             mClapEvents.pop(nextClapEvent);
         }
-        mMixer.renderAudio(static_cast<int16_t*>(audioData)+(kChannelCount*i), 1);
+        mMixer.renderAudio(outputBuffer+(kChannelCount*i), 1);
         mCurrentFrame++;
+    }
+
+    if (is16Bit){
+        oboe::convertFloatToPcm16(outputBuffer,
+                                  static_cast<int16_t*>(audioData),
+                                  numFrames * kChannelCount);
     }
 
     mLastUpdateTime = nowUptimeMillis();
