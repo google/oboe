@@ -89,7 +89,7 @@ void PlayAudioEngine::createPlaybackStream() {
             int conversionBufferSamples = mPlayStream->getBufferCapacityInFrames() * channelCount;
             LOGD("Stream format is 16-bit integers, creating a temporary buffer of %d samples"
                  " for float->int16 conversion", conversionBufferSamples);
-            mConversionBuffer = new float[conversionBufferSamples];
+            mConversionBuffer = std::make_unique<float[]>(conversionBufferSamples);
         }
 
         mSoundGenerator = std::make_unique<SoundGenerator>(
@@ -144,11 +144,6 @@ void PlayAudioEngine::closeOutputStream() {
             LOGE("Error closing output stream. %s", oboe::convertToText(result));
         }
     }
-
-    if (mConversionBuffer != nullptr) {
-        delete[] mConversionBuffer;
-        mConversionBuffer = nullptr;
-    }
 }
 
 void PlayAudioEngine::setToneOn(bool isToneOn) {
@@ -191,12 +186,12 @@ PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, i
     int32_t channelCount = audioStream->getChannelCount();
 
     // If the stream is 16-bit render into a float buffer then convert that buffer to 16-bit ints
-    float *outputBuffer = (is16BitFormat) ? mConversionBuffer : static_cast<float *>(audioData);
+    float *outputBuffer = (is16BitFormat) ? mConversionBuffer.get() : static_cast<float *>(audioData);
 
     mSoundGenerator->renderAudio(outputBuffer, numFrames);
 
     if (is16BitFormat){
-        oboe::convertFloatToPcm16(mConversionBuffer,
+        oboe::convertFloatToPcm16(outputBuffer,
                                   static_cast<int16_t *>(audioData),
                                   numFrames * channelCount);
     }
