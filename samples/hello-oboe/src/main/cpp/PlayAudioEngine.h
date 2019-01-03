@@ -21,7 +21,7 @@
 #include <array>
 #include <oboe/Oboe.h>
 
-#include "shared/Mixer.h"
+#include "shared/MixerMono.h"
 
 #include "SineGenerator.h"
 #include "SoundGenerator.h"
@@ -60,7 +60,6 @@ private:
     int32_t mPlaybackDeviceId = oboe::kUnspecified;
     int32_t mSampleRate;
     int32_t mChannelCount;
-    bool mIsToneOn = false;
     int32_t mFramesPerBurst;
     double mCurrentOutputLatencyMillis = 0;
     int32_t mBufferSizeSelection = kBufferSizeAutomatic;
@@ -69,10 +68,7 @@ private:
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
     std::mutex mRestartingLock;
     std::unique_ptr<SoundGenerator> mSoundGenerator;
-    float *mConversionBuffer = nullptr;
-
-    // The SineGenerators generate audio data, feel free to replace with your own audio generators
-    //std::array<SineGenerator, kMaximumChannelCount> mOscillators;
+    std::unique_ptr<float[]> mConversionBuffer { nullptr };
 
     void createPlaybackStream();
 
@@ -81,8 +77,6 @@ private:
     void restartStream();
 
     void setupPlaybackStreamParameters(oboe::AudioStreamBuilder *builder);
-
-    void prepareOscillators(oboe::AudioFormat format, int32_t channelCount);
 
     oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream, double *latencyMillis);
 

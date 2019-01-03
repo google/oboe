@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RHYTHMGAME_MIXER_H
-#define RHYTHMGAME_MIXER_H
+#ifndef SHARED_MIXER_MONO_H
+#define SHARED_MIXER_MONO_H
 
 #include <array>
 #include "IRenderableAudio.h"
@@ -23,7 +23,10 @@
 constexpr int32_t kBufferSize = 192*10;  // Temporary buffer is used for mixing
 constexpr uint8_t kMaxTracks = 100;
 
-class Mixer : public IRenderableAudio {
+/**
+ * A Mixer object which sums the output from multiple mono tracks into a single mono output
+ */
+class MixerMono : public IRenderableAudio {
 
 public:
     void renderAudio(float *audioData, int32_t numFrames) {
@@ -51,4 +54,4 @@ private:
 };
 
 
-#endif //RHYTHMGAME_MIXER_H
+#endif //SHARED_MIXER_MONO_H
