@@ -40,9 +40,10 @@ private:
 
     StabilizedCallback *mStabilizedCallback = nullptr;
     AudioStream *mStream = nullptr;
-    std::unique_ptr<ISynth> mSynth;
+    std::unique_ptr<Synth> mSynth;
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
     bool mIsThreadAffinitySet = false;
+    std::unique_ptr<float[]> mConversionBuffer; // Used for float->int16 conversion
 
     void setThreadAffinity();
 };
