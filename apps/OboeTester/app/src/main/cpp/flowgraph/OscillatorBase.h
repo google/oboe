@@ -32,7 +32,7 @@ public:
         mFrequencyToPhaseIncrement = 1.0f / sampleRate; // scaler
     }
 
-    float setSampleRate() {
+    float getSampleRate() {
         return mSampleRate;
     }
 

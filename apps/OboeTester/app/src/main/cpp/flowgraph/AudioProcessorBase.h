@@ -30,6 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 
+// Set this to 1 if using it inside the Android framework.
 #define FLOWGRAPH_ANDROID_INTERNAL 0
 
 namespace flowgraph {
@@ -167,7 +168,8 @@ public:
      * If you connect a second output port to an input port
      * then it overwrites the previous connection.
      *
-     * This not thread safe. Do not modify the graph topology form another thread while running.
+     * This not thread safe. Do not modify the graph topology from another thread while running.
+     * Also do not delete a module while it is connected to another port if the graph is running.
      */
     void connect(AudioFloatInputPort *port);
 
