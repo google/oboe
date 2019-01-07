@@ -198,3 +198,14 @@ TEST_F(StreamOpen, PlaybackFormatI16ReturnsI16){
     ASSERT_EQ(mStream->getFormat(), AudioFormat::I16);
     closeStream();
 }
+
+TEST_F(StreamOpen, LowLatencyStreamHasBufferSizeOfTwoBursts){
+
+    if (mBuilder.isAAudioRecommended()){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+        openStream();
+        ASSERT_EQ(mStream->getBufferSizeInFrames(), mStream->getFramesPerBurst() * 2);
+        closeStream();
+    }
+}

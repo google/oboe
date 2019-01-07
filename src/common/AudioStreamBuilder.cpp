@@ -39,6 +39,8 @@ int32_t DefaultStreamValues::SampleRate = 48000; // Common rate for mobile audio
 int32_t DefaultStreamValues::FramesPerBurst = 192; // 4 msec at 48000 Hz
 int32_t DefaultStreamValues::ChannelCount = 2; // Stereo
 
+constexpr int kBufferSizeInBurstsForLowLatencyStreams = 2;
+
 #ifndef OBOE_ENABLE_AAUDIO
 // Set OBOE_ENABLE_AAUDIO to 0 if you want to disable the AAudio API.
 // This might be useful if you want to force all the unit tests to use OpenSL ES.
@@ -88,6 +90,18 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     }
     Result result = streamP->open(); // TODO review API
     if (result == Result::OK) {
+
+        // Use a reasonable default buffer size for low latency streams.
+        if (streamP->getPerformanceMode() == PerformanceMode::LowLatency){
+            int32_t optimalBufferSize = streamP->getFramesPerBurst() *
+                                        kBufferSizeInBurstsForLowLatencyStreams;
+            auto setBufferResult = streamP->setBufferSizeInFrames(optimalBufferSize);
+            if (!setBufferResult){
+                LOGW("Failed to set buffer size to %d. Error was %s",
+                     optimalBufferSize,
+                     convertToText(setBufferResult.error()));
+            }
+        }
         *streamPP = streamP;
     } else {
         delete streamP;
