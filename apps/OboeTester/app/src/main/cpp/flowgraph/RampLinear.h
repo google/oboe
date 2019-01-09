@@ -25,6 +25,14 @@
 
 namespace flowgraph {
 
+/**
+ * When the target is modified then the output will ramp smoothly
+ * between the original and the new target value.
+ * This can be used to smooth out control values and reduce pops.
+ *
+ * The target may be updated while a ramp is in progress, which will trigger
+ * a new ramp from the current value.
+ */
 class RampLinear : public AudioProcessorBase {
 public:
     explicit RampLinear(int32_t channelCount);

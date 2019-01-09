@@ -19,7 +19,15 @@
 
 #include "AudioProcessorBase.h"
 
-constexpr float TWO_PI = (float)(2.0 * M_PI);
+/**
+ * Base class for various oscillators.
+ * The oscillator has a phase that ranges from -1.0 to +1.0.
+ * That makes it easier to implement simple algebraic waveforms.
+ *
+ * Subclasses must implement onProcess().
+ *
+ * This module has "frequency" and "amplitude" ports for control.
+ */
 
 class OscillatorBase : public flowgraph::AudioProcessorBase {
 public:
@@ -51,6 +59,13 @@ public:
     flowgraph::AudioFloatOutputPort output;
 
 protected:
+    /**
+     * Increment phase based on frequency in Hz.
+     * Frequency may be positive or negative.
+     *
+     * Frequency should not exceed +/- Nyquist Rate.
+     * Nyquist Rate is sampleRate/2.
+     */
     float incrementPhase(float frequency) {
         mPhase += frequency * mFrequencyToPhaseIncrement;
         // Wrap phase in the range of -1 to +1
@@ -64,7 +79,7 @@ protected:
 
     float   mPhase = 0.0;  // phase that ranges from -1.0 to +1.0
     float   mSampleRate = 0.0f;
-    float   mFrequencyToPhaseIncrement = 0.0f; // Scaler for converting frequency to phase increment.
+    float   mFrequencyToPhaseIncrement = 0.0f; // scaler for converting frequency to phase increment
 };
 
 

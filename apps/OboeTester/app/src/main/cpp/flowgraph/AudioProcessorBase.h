@@ -83,6 +83,10 @@ private:
 /***************************************************************************/
 /**
   * This is a connector that allows data to flow between modules.
+  *
+  * The ports are the primary means of interacting with a module.
+  * So they are generally declared as public.
+  *
   */
 class AudioPort {
 public:
