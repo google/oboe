@@ -177,7 +177,7 @@ PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, i
      */
     auto underrunCountResult = audioStream->getXRunCount();
 
-    Trace::beginSection("numFrames %d, Underruns %d, buffer size %d",
+    if (Trace::isEnabled()) Trace::beginSection("numFrames %d, Underruns %d, buffer size %d",
                         numFrames, underrunCountResult.value(), bufferSize);
 
     bool is16BitFormat = (audioStream->getFormat() == oboe::AudioFormat::I16);
@@ -198,7 +198,7 @@ PlayAudioEngine::onAudioReady(oboe::AudioStream *audioStream, void *audioData, i
         calculateCurrentOutputLatencyMillis(audioStream, &mCurrentOutputLatencyMillis);
     }
 
-    Trace::endSection();
+    if (Trace::isEnabled()) Trace::endSection();
     return oboe::DataCallbackResult::Continue;
 }
 
