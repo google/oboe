@@ -30,10 +30,12 @@ FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
 {
 }
 
-FifoControllerBase::~FifoControllerBase() {
+FifoControllerBase::~FifoControllerBase() {  // Use "= default" in the header?
 }
 
 int32_t FifoControllerBase::getFullFramesAvailable() {
+    // We are casting (uint64_t - uint64_t) to int32_t. Are we sure this is a
+    // good idea to shrink the capacity?
     return static_cast<int32_t>(getWriteCounter() - getReadCounter());
 }
 

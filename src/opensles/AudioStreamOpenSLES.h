@@ -55,9 +55,9 @@ public:
      *
      * @return state or a negative error.
      */
-    StreamState getState() override { return mState; }
+    StreamState getState() override { return mState; } // const?
 
-    int32_t getFramesPerBurst() override;
+    int32_t getFramesPerBurst() override;  // const?
 
 
     AudioApi getAudioApi() const override {

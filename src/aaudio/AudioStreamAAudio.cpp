@@ -79,7 +79,7 @@ AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
     , mAAudioStream(nullptr) {
     mCallbackThreadEnabled.store(false);
     LOGD("AudioStreamAAudio() call isSupported()");
-    isSupported();
+    isSupported();  // check and/or log the result?
 }
 
 bool AudioStreamAAudio::isSupported() {

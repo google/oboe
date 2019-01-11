@@ -32,7 +32,7 @@ public:
     FifoController(uint32_t bufferSize, uint32_t threshold);
     virtual ~FifoController();
 
-    // TODO review use atomics or memory barriers
+    // TODO review use atomics or memory barriers -- +1, can this be addressed?
     virtual uint64_t getReadCounter() override {
         return mReadCounter.load(std::memory_order_acquire);
     }

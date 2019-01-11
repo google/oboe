@@ -34,7 +34,7 @@ public:
                            int64_t * writeCounterAddress);
     virtual ~FifoControllerIndirect();
 
-    // TODO review use of memory barriers, probably incorrect
+    // TODO review use of memory barriers, probably incorrect -- ???
     virtual uint64_t getReadCounter() override {
         return mReadCounterAddress->load(std::memory_order_acquire);
     }

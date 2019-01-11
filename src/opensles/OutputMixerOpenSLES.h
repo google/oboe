@@ -50,7 +50,8 @@ private:
     std::mutex            mLock;
     int32_t               mOpenCount = 0;
 
-    SLObjectItf           mOutputMixObject = 0;
+    SLObjectItf           mOutputMixObject = 0;  // this is not consistent with
+    // the code in the .cpp file, please use nullptr everywhere.
 };
 
 } // namespace oboe

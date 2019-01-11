@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <cassert>
+#include <cassert>  // AudioStreamBuffered.h uses <assert.h>, let's be consistent
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -66,7 +66,7 @@ AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &b
         : AudioStreamOpenSLES(builder) {
 }
 
-AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
+AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() { // = default; ?
 }
 
 // These will wind up in <SLES/OpenSLES_Android.h>
@@ -138,6 +138,7 @@ Result AudioOutputStreamOpenSLES::open() {
         return Result::ErrorInternal;
     }
 
+    // getBytesPerSample() returns int32_t and here we put that into an unsigned
     SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
 
     // configure audio source
@@ -196,7 +197,7 @@ Result AudioOutputStreamOpenSLES::open() {
         result = (*configItf)->SetConfiguration(configItf,
                                                 SL_ANDROID_KEY_STREAM_TYPE,
                                                 &presetValue,
-                                                sizeof(SLuint32));
+                                                sizeof(SLuint32)); // use sizeof(presetValue) instead
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }
@@ -330,7 +331,7 @@ Result AudioOutputStreamOpenSLES::requestPause() {
         int64_t framesWritten = getFramesWritten();
         if (framesWritten >= 0) {
             setFramesRead(framesWritten);
-        }
+        } // Does a negative value mean anything here? Should we log it?
         setState(StreamState::Paused);
     } else {
         setState(initialState);
@@ -344,7 +345,8 @@ Result AudioOutputStreamOpenSLES::requestPause() {
  */
 Result AudioOutputStreamOpenSLES::requestFlush() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
-    if (getState() == StreamState::Closed) return Result::ErrorClosed;
+    if (getState() == StreamState::Closed) return Result::ErrorClosed; // this
+    // doesn't look consistent with e.g. lines 416-418, please format the code
     Result result = Result::OK;
     if (mPlayInterface == NULL || mSimpleBufferQueueInterface == NULL) {
         result = Result::ErrorInvalidState;
@@ -388,7 +390,7 @@ Result AudioOutputStreamOpenSLES::requestStop() {
         int64_t framesWritten = getFramesWritten();
         if (framesWritten >= 0) {
             setFramesRead(framesWritten);
-        }
+        } // should we log a negative value?
         setState(StreamState::Stopped);
     } else {
         setState(initialState);

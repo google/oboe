@@ -30,7 +30,7 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
         : AudioStreamBase(builder) {
 }
 
-Result AudioStream::open() {
+Result AudioStream::open() { // Should this method be pure virtual?
     // Parameters are validated by the underlying API.
     return Result::OK;
 }
@@ -150,7 +150,7 @@ static void oboe_stop_thread_proc(AudioStream *oboeStream) {
 
 void AudioStream::launchStopThread() {
     // Stop this stream on a separate thread
-    // std::thread t(requestStop);
+    // std::thread t(requestStop);  -- remove or uncomment this?
     std::thread t(oboe_stop_thread_proc, this);
     t.detach();
 }

@@ -24,7 +24,10 @@ namespace oboe {
 
 const char *getSLErrStr(SLresult code) {
     switch (code) {
-        case 0:
+        case 0:  // Why is this 0 literal instead of SL_RESULT_SUCCESS macro?
+        // Same question for other values. Having literals declared twice (here
+        // and in include/SLES/OpenSLES.h) increases the risk of accidental
+        // error.
             return "SL_RESULT_SUCCESS";
         case 1:
             return "SL_RESULT_PRECONDITIONS_VIOLATE";

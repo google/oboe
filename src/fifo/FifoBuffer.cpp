@@ -81,6 +81,8 @@ FifoBuffer::~FifoBuffer() {
 
 
 int32_t FifoBuffer::convertFramesToBytes(int32_t frames) {
+    // Argument and return types should be unsigned, mBytesPerFrame is already
+    // uint32_t. Would be also good to check against potential overflows.
     return frames * mBytesPerFrame;
 }
 
@@ -101,14 +103,22 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
     if ((readIndex + framesToRead) > mFrameCapacity) {
         // read in two parts, first part here is at the end of the mStorage buffer
         uint32_t frames1 = mFrameCapacity - readIndex;
-        int32_t numBytes = convertFramesToBytes(frames1);
+        int32_t numBytes = convertFramesToBytes(frames1); // Implicitly casting
+        // `uint32_t` (frames1) to `int32_t`? Same on line 102.
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
         }
         memcpy(destination, source, static_cast<size_t>(numBytes));
         destination += numBytes;
         // read second part, which is at the beginning of mStorage
-        source = &mStorage[0];
+        source = &mStorage[0];  // I'm not sure I udnerstand this. Let's say,
+        // `readIndex` is 0, but `framesToRead > mFrameCapacity`. In this case,
+        // we will do
+        // `memcpy(buffer, mStorage, convertFramesToBytes(mFrameCapacity));`
+        // above, and the next `memcpy` call will be
+        // `memcpy(buffer + convertFramesToBytes(mFrameCapacity), mStorage,
+        //         convertFramesToBytes(framesToRead - mFrameCapacity));`
+        // and thus we will read the same data from mStorage twice?
         int frames2 = framesToRead - frames1;
         numBytes = convertFramesToBytes(frames2);
         if (numBytes < 0) {
@@ -151,7 +161,7 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
         memcpy(destination, source, static_cast<size_t>(numBytes));
         // read second part
         source += convertFramesToBytes(frames1);
-        destination = &mStorage[0];
+        destination = &mStorage[0];  // Looks like the same problem as above.
         int framesLeft = framesToWrite - frames1;
         numBytes = convertFramesToBytes(framesLeft);
         if (numBytes < 0) {

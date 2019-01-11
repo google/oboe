@@ -28,7 +28,9 @@
 #include "OpenSLESUtilities.h"
 
 #ifndef NULL
-#define NULL 0
+#define NULL 0  // Not sure if this is a good idea. Why do you need C-style NULL
+// macro at all? The code is also using nullptr and 0 in various places. Can we
+// please clean up all of those and use nullptr when a null pointer is intended?
 #endif
 
 using namespace oboe;
@@ -42,22 +44,24 @@ AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
 }
 
 AudioStreamOpenSLES::~AudioStreamOpenSLES() {
-    delete[] mCallbackBuffer;
+    delete[] mCallbackBuffer;  // is this manual memory management really needed?
+    // Why don't use e.g. std::vector<uint8_t> instead?
 }
 
 constexpr SLuint32  kAudioChannelCountMax = 30;
+// I think I asked for this last time, please run clang-format or any other linter.
 constexpr SLuint32  SL_ANDROID_UNKNOWN_CHANNELMASK  = 0; // Matches name used internally.
 
 SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) {
     if (channelCount > kAudioChannelCountMax) {
         return SL_ANDROID_UNKNOWN_CHANNELMASK;
-    } else {
+    } else { // no need for else here as we'd return above otherwise.
         SLuint32 bitfield = (1 << channelCount) - 1;
 
         // Check for OS at run-time.
         if(getSdkVersion() >= __ANDROID_API_N__) {
             return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
-        } else {
+        } else { // same here
             // Indexed channels masks were added in N.
             // For before N, the best we can do is use a positional channel mask.
             return bitfield;
@@ -113,12 +117,14 @@ Result AudioStreamOpenSLES::open() {
         LOGE("AudioStreamOpenSLES::open() bytesPerCallback < 0, bad format?");
         return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
     }
-    delete[] mCallbackBuffer; // to prevent memory leaks
+    delete[] mCallbackBuffer; // to prevent memory leaks -- let's use some STL
+    // container like vector instead of raw memory management.
     mCallbackBuffer = new uint8_t[mBytesPerCallback];
 
     mSharingMode = SharingMode::Shared;
 
     if (!usingFIFO()) {
+        // Check for integer overflow?
         mBufferCapacityInFrames = mFramesPerBurst * kBufferQueueLength;
         mBufferSizeInFrames = mBufferCapacityInFrames;
     }
@@ -215,10 +221,10 @@ SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf c
 }
 
 Result AudioStreamOpenSLES::close() {
-
+    // Is this function thread safe? Should we acquire a mutex here?
     if (mState == StreamState::Closed){
         return Result::ErrorClosed;
-    } else {
+    } else { // no need for else since we have the return above
         AudioStreamBuffered::close();
 
         onBeforeDestroy();
@@ -234,7 +240,7 @@ Result AudioStreamOpenSLES::close() {
         mSimpleBufferQueueInterface = nullptr;
         EngineOpenSLES::getInstance().close();
 
-        mState = StreamState::Closed;
+        mState = StreamState::Closed;  // use setState() method instead
         return Result::OK;
     }
 }
@@ -276,6 +282,7 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
 
 // this callback handler is called every time a buffer needs processing
 static void bqCallbackGlue(SLAndroidSimpleBufferQueueItf bq, void *context) {
+    // Any chance we could use a more distinct type here instead of `void *`?
     (reinterpret_cast<AudioStreamOpenSLES *>(context))->processBufferCallback(bq);
 }
 
@@ -313,6 +320,7 @@ Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                      int64_t timeoutNanoseconds) {
     LOGD("AudioStreamOpenSLES::waitForStateChange()");
 
+    // Make this a constexpr, since it doesn't ever change, does it?
     int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
     StreamState state = getState();
 

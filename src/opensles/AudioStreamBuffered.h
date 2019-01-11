@@ -64,6 +64,7 @@ protected:
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
     bool usingFIFO() const { return getCallback() == nullptr; }
 
+    // Should this be pure virtual?
     virtual Result updateServiceFrameCounter() { return Result::OK; }
 
     void updateFramesRead() override;
@@ -73,13 +74,14 @@ private:
 
     int64_t predictNextCallbackTime();
 
-    void markCallbackTime(int numFrames);
+    void markCallbackTime(int numFrames);  // Why argument is of int type?
+    // It gets assigned to mLastBackgroundSize, let's be consistent.
 
     // Read or write to the FIFO.
     ResultWithValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
 
     void incrementXRunCount() {
-        mXRunCount++;
+        mXRunCount++;  // ++mXRunCount instead?
     }
 
     std::unique_ptr<FifoBuffer>   mFifoBuffer{};

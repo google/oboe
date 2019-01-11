@@ -38,7 +38,7 @@ int AAudioLoader::open() {
     if (mLibHandle != nullptr) {
         return 0;
     }
-    mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
+    mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);  // RTLD_LAZY instead of 0?
     if (mLibHandle == nullptr) {
         LOGI("AAudioLoader::open() could not find " LIB_AAUDIO_NAME);
         return -1; // TODO review return code
@@ -46,7 +46,10 @@ int AAudioLoader::open() {
         LOGD("AAudioLoader():  dlopen(%s) returned %p", LIB_AAUDIO_NAME, mLibHandle);
     }
 
-    // Load all the function pointers.
+    // Load all the function pointers. - Why Some of the pointers loaded by
+    // calling `dlsym` directly, while the others use helper functions like
+    // load_V_PBI or load_I_PS? Those functions also call `AAudioLoader_check`
+    // to validate `dlsym` result. Please use helper functions for all pointers.
     createStreamBuilder = reinterpret_cast<aaudio_result_t (*)(AAudioStreamBuilder **builder)>
             (dlsym(mLibHandle, "AAudio_createStreamBuilder"));
 
@@ -76,6 +79,7 @@ int AAudioLoader::open() {
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
+    // The same question as above.
     stream_getFormat = reinterpret_cast<aaudio_format_t (*)(AAudioStream *stream)>
             (dlsym(mLibHandle, "AAudioStream_getFormat"));
 

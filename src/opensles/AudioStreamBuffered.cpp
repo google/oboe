@@ -181,6 +181,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
 }
 
 // Write to the FIFO so the callback can read from it.
+// Why buffer's type is "const void *" if we have to remove the const anyway?
 ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
                                    int32_t numFrames,
                                    int64_t timeoutNanoseconds) {
@@ -191,7 +192,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
     if (getDirection() == Direction::Input) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
-    updateServiceFrameCounter();
+    updateServiceFrameCounter();  // is the return value ignored on purpose?
     return transfer(const_cast<void *>(buffer), numFrames, timeoutNanoseconds);
 }
 
@@ -206,7 +207,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::read(void *buffer,
     if (getDirection() == Direction::Output) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
-    updateServiceFrameCounter();
+    updateServiceFrameCounter();  // is the return value ignored on purpose?
     return transfer(buffer, numFrames, timeoutNanoseconds);
 }
 
@@ -217,7 +218,9 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 
-    if (mFifoBuffer) {
+    if (mFifoBuffer) {  // this can be made a bit more readable, just inverse
+        // the condition and do a return with Result::ErrorUnimplemented, then
+        // the rest of the code would have a smaller indentation.
         if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
             requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
         } else if (requestedFrames < getFramesPerBurst()) {

@@ -92,6 +92,7 @@ Result AudioInputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult) return oboeResult;
 
+    // getBytesPerSample() returns int32_t and here we put that into an unsigned
     SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
 
     // configure audio sink

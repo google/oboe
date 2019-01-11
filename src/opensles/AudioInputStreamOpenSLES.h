@@ -53,7 +53,7 @@ protected:
 
 private:
 
-    SLuint32 channelCountToChannelMask(int chanCount);
+    SLuint32 channelCountToChannelMask(int chanCount); // const?
 
     Result setRecordState(SLuint32 newState);
 

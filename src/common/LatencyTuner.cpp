@@ -55,7 +55,7 @@ Result LatencyTuner::tune() {
             if ((xRunCountResult.value() - mPreviousXRuns) > 0) {
                 mPreviousXRuns = xRunCountResult.value();
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
-                int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
+                int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst(); // Aren't we afraid of potential integer overflows here?
 
                 // Do not request more than the maximum buffer size (which was either user-specified
                 // or was from stream->getBufferCapacityInFrames())

@@ -47,12 +47,12 @@ public:
      * This may be negative if an unthrottled reader has read beyond the available data.
      * @return number of valid frames available to read. Never read more than this.
      */
-    int32_t getFullFramesAvailable();
+    int32_t getFullFramesAvailable(); // const?
 
     /**
      * The index in a circular buffer of the next frame to read.
      */
-    uint32_t getReadIndex();
+    uint32_t getReadIndex(); // const?
 
     /**
      * @param numFrames number of frames to advance the read index
@@ -62,12 +62,12 @@ public:
     /**
      * @return number of frames that can be written. Never write more than this.
      */
-    int32_t getEmptyFramesAvailable();
+    int32_t getEmptyFramesAvailable(); // const?
 
     /**
      * The index in a circular buffer of the next frame to write.
      */
-    uint32_t getWriteIndex();
+    uint32_t getWriteIndex(); // const?
 
     /**
      * @param numFrames number of frames to advance the write index

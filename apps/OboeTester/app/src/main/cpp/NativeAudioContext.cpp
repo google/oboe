@@ -39,7 +39,7 @@ void NativeAudioContext::close() {
 bool NativeAudioContext::isMMapUsed() {
     if (oboeStream != nullptr && oboeStream->usesAAudio()) {
         if (mAAudioStream_isMMap == nullptr) {
-            mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
+            mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);  // RTLD_LAZY instead of 0?
             if (mLibHandle == nullptr) {
                 LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
                 return false;
