@@ -158,8 +158,10 @@ Result AudioStreamAAudio::open() {
     if (mStreamCallback != nullptr) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
+        // If the data callback is not being used then the write method will return an error
+        // and the app can stop and close the stream.
+        mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
     }
-    mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
 
     // ============= OPEN THE STREAM ================
     {
