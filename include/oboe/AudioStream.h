@@ -360,15 +360,12 @@ public:
     }
 
     /**
-     * Only for debugging. Do not use in production.
-     * If you need to call this method something is wrong.
-     * If you think you need it for production then please let us know
-     * so we can modify Oboe so that you don't need this.
+     * This should only be used for debugging.
      *
-     * @return nullptr or a pointer to a stream from the system API
+     * @return true if the stream uses the AAudio MMAP data path;
      */
-    virtual void *getUnderlyingStream() const {
-        return nullptr;
+    virtual bool usesMMap() {
+        return false;
     }
 
     /**

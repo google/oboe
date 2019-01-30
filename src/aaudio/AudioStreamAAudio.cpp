@@ -89,7 +89,11 @@ bool AudioStreamAAudio::isSupported() {
 }
 
 Result AudioStreamAAudio::open() {
+    std::lock_guard<std::mutex> lock(mLock); // prevent use before open finishes
+
     Result result = Result::OK;
+    AAudioStream *stream = nullptr;
+
 
     if (mAAudioStream != nullptr) {
         return Result::ErrorInvalidState;
@@ -162,39 +166,44 @@ Result AudioStreamAAudio::open() {
     mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
 
     // ============= OPEN THE STREAM ================
-    {
-        AAudioStream *stream = nullptr;
-        result = static_cast<Result>(mLibLoader->builder_openStream(aaudioBuilder, &stream));
-        mAAudioStream.store(stream);
-    }
+    mAAudioStream = std::make_shared<AAudioStreamOwner>(aaudioBuilder);
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+
+    result = static_cast<Result>(mAAudioStream->getOpenResult());
     if (result != Result::OK) {
         goto error2;
     }
 
-    // Query and cache the stream properties
-    mDeviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
-    mChannelCount = mLibLoader->stream_getChannelCount(mAAudioStream);
-    mSampleRate = mLibLoader->stream_getSampleRate(mAAudioStream);
-    mFormat = static_cast<AudioFormat>(mLibLoader->stream_getFormat(mAAudioStream));
-    mSharingMode = static_cast<SharingMode>(mLibLoader->stream_getSharingMode(mAAudioStream));
-    mPerformanceMode = static_cast<PerformanceMode>(
-            mLibLoader->stream_getPerformanceMode(mAAudioStream));
-    mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
-    mBufferSizeInFrames = mLibLoader->stream_getBufferSize(mAAudioStream);
+    // Hold onto a copy while we finish the open.
+    // Probably redundant because we are holding mLock.
+    stream = mine->getStream();
+    if (stream == nullptr) {
+        goto error2;
+    }
 
+    // Query and cache the stream properties
+    mDeviceId = mLibLoader->stream_getDeviceId(stream);
+    mChannelCount = mLibLoader->stream_getChannelCount(stream);
+    mSampleRate = mLibLoader->stream_getSampleRate(stream);
+    mFormat = static_cast<AudioFormat>(mLibLoader->stream_getFormat(stream));
+    mSharingMode = static_cast<SharingMode>(mLibLoader->stream_getSharingMode(stream));
+    mPerformanceMode = static_cast<PerformanceMode>(
+            mLibLoader->stream_getPerformanceMode(stream));
+    mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(stream);
+    mBufferSizeInFrames = mLibLoader->stream_getBufferSize(stream);
 
     // These were added in P so we have to check for the function pointer.
     if (mLibLoader->stream_getUsage != nullptr) {
-        mUsage = static_cast<Usage>(mLibLoader->stream_getUsage(mAAudioStream));
+        mUsage = static_cast<Usage>(mLibLoader->stream_getUsage(stream));
     }
     if (mLibLoader->stream_getContentType != nullptr) {
-        mContentType = static_cast<ContentType>(mLibLoader->stream_getContentType(mAAudioStream));
+        mContentType = static_cast<ContentType>(mLibLoader->stream_getContentType(stream));
     }
     if (mLibLoader->stream_getInputPreset != nullptr) {
-        mInputPreset = static_cast<InputPreset>(mLibLoader->stream_getInputPreset(mAAudioStream));
+        mInputPreset = static_cast<InputPreset>(mLibLoader->stream_getInputPreset(stream));
     }
     if (mLibLoader->stream_getSessionId != nullptr) {
-        mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
+        mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(stream));
     } else {
         mSessionId = SessionId::None;
     }
@@ -205,9 +214,9 @@ Result AudioStreamAAudio::open() {
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
-    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s, mAAudioStream = %p",
+    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s, stream = %p",
          mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)),
-         mAAudioStream.load());
+         stream);
     return result;
 }
 
@@ -221,12 +230,9 @@ Result AudioStreamAAudio::close() {
     AudioStream::close();
 
     // This will delete the AAudio stream object so we need to null out the pointer.
-    AAudioStream *stream = mAAudioStream.exchange(nullptr);
-    if (stream != nullptr) {
-        return static_cast<Result>(mLibLoader->stream_close(stream));
-    } else {
-        return Result::ErrorClosed;
-    }
+    mAAudioStream.reset();
+
+    return Result::OK;
 }
 
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
@@ -244,7 +250,7 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
 
         if (getSdkVersion() <= __ANDROID_API_P__) {
             launchStopThread();
-            if (isMMapUsed()) {
+            if (usesMMap()) {
                 return DataCallbackResult::Stop;
             } else {
                 // Legacy stream <= API_P cannot be restarted after returning Stop.
@@ -258,7 +264,6 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
 
 void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
     LOGD("onErrorInThread() - entering ===================================");
-    assert(stream == mAAudioStream.load());
     requestStop();
     if (mStreamCallback != nullptr) {
         mStreamCallback->onErrorBeforeClose(this, error);
@@ -272,11 +277,11 @@ void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
 
 Result AudioStreamAAudio::requestStart() {
     std::lock_guard<std::mutex> lock(mLock);
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
         // Avoid state machine errors in O_MR1.
         if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
-            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(aaudioStream));
             if (state == StreamState::Starting || state == StreamState::Started) {
                 // WARNING: On P, AAudio is returning ErrorInvalidState for Output and OK for Input.
                 return Result::OK;
@@ -285,7 +290,7 @@ Result AudioStreamAAudio::requestStart() {
         if (mStreamCallback != nullptr) { // Was a callback requested?
             setDataCallbackEnabled(true);
         }
-        return static_cast<Result>(mLibLoader->stream_requestStart(stream));
+        return static_cast<Result>(mLibLoader->stream_requestStart(aaudioStream));
     } else {
         return Result::ErrorClosed;
     }
@@ -293,16 +298,16 @@ Result AudioStreamAAudio::requestStart() {
 
 Result AudioStreamAAudio::requestPause() {
     std::lock_guard<std::mutex> lock(mLock);
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
         // Avoid state machine errors in O_MR1.
         if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
-            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(aaudioStream));
             if (state == StreamState::Pausing || state == StreamState::Paused) {
                 return Result::OK;
             }
         }
-        return static_cast<Result>(mLibLoader->stream_requestPause(stream));
+        return static_cast<Result>(mLibLoader->stream_requestPause(aaudioStream));
     } else {
         return Result::ErrorClosed;
     }
@@ -310,16 +315,16 @@ Result AudioStreamAAudio::requestPause() {
 
 Result AudioStreamAAudio::requestFlush() {
     std::lock_guard<std::mutex> lock(mLock);
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
         // Avoid state machine errors in O_MR1.
         if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
-            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(aaudioStream));
             if (state == StreamState::Flushing || state == StreamState::Flushed) {
                 return Result::OK;
             }
         }
-        return static_cast<Result>(mLibLoader->stream_requestFlush(stream));
+        return static_cast<Result>(mLibLoader->stream_requestFlush(aaudioStream));
     } else {
         return Result::ErrorClosed;
     }
@@ -327,16 +332,16 @@ Result AudioStreamAAudio::requestFlush() {
 
 Result AudioStreamAAudio::requestStop() {
     std::lock_guard<std::mutex> lock(mLock);
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
         // Avoid state machine errors in O_MR1.
         if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
-            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(aaudioStream));
             if (state == StreamState::Stopping || state == StreamState::Stopped) {
                 return Result::OK;
             }
         }
-        return static_cast<Result>(mLibLoader->stream_requestStop(stream));
+        return static_cast<Result>(mLibLoader->stream_requestStop(aaudioStream));
     } else {
         return Result::ErrorClosed;
     }
@@ -345,9 +350,11 @@ Result AudioStreamAAudio::requestStop() {
 ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds) {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        int32_t result = mLibLoader->stream_write(mAAudioStream, buffer,
+    // Own the stream while in use.
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        int32_t result = mLibLoader->stream_write(aaudioStream, buffer,
                                                   numFrames, timeoutNanoseconds);
         return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
@@ -358,9 +365,11 @@ ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
 ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
                                  int32_t numFrames,
                                  int64_t timeoutNanoseconds) {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        int32_t result = mLibLoader->stream_read(mAAudioStream, buffer,
+    // Own the stream while in use.
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        int32_t result = mLibLoader->stream_read(aaudioStream, buffer,
                                                  numFrames, timeoutNanoseconds);
         return ResultWithValue<int32_t>::createBasedOnSign(result);
     } else {
@@ -371,12 +380,14 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
 Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds) {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    // Own the stream while in use.
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
 
         aaudio_stream_state_t aaudioNextState;
         aaudio_result_t result = mLibLoader->stream_waitForStateChange(
-                        mAAudioStream,
+                aaudioStream,
                         static_cast<aaudio_stream_state_t>(currentState),
                         &aaudioNextState,
                         timeoutNanoseconds);
@@ -391,14 +402,16 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
 
 ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {
 
-    AAudioStream *stream = mAAudioStream.load();
+    // Own the stream while in use.
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
 
-    if (stream != nullptr) {
+    if (aaudioStream != nullptr) {
 
         if (requestedFrames > mBufferCapacityInFrames) {
             requestedFrames = mBufferCapacityInFrames;
         }
-        int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+        int32_t newBufferSize = mLibLoader->stream_setBufferSize(aaudioStream, requestedFrames);
 
         // Cache the result if it's valid
         if (newBufferSize > 0) mBufferSizeInFrames = newBufferSize;
@@ -411,48 +424,54 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
 }
 
 StreamState AudioStreamAAudio::getState() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        return static_cast<StreamState>(mLibLoader->stream_getState(stream));
+    // Own the stream while in use.
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        return static_cast<StreamState>(mLibLoader->stream_getState(aaudioStream));
     } else {
         return StreamState::Closed;
     }
 }
 
 int32_t AudioStreamAAudio::getBufferSizeInFrames() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        mBufferSizeInFrames = mLibLoader->stream_getBufferSize(stream);
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        mBufferSizeInFrames = mLibLoader->stream_getBufferSize(aaudioStream);
     }
     return mBufferSizeInFrames;
 }
 
 int32_t AudioStreamAAudio::getFramesPerBurst() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        mFramesPerBurst = mLibLoader->stream_getFramesPerBurst(stream);
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        mFramesPerBurst = mLibLoader->stream_getFramesPerBurst(aaudioStream);
     }
     return mFramesPerBurst;
 }
 
 void AudioStreamAAudio::updateFramesRead() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        mFramesRead = mLibLoader->stream_getFramesRead(stream);
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
+        mFramesRead = mLibLoader->stream_getFramesRead(aaudioStream);
     }
 }
 
 void AudioStreamAAudio::updateFramesWritten() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        mFramesWritten = mLibLoader->stream_getFramesWritten(stream);
+    AAudioStream *aaudioStream = mAAudioStream->getStream();
+    if (aaudioStream != nullptr) {
+        mFramesWritten = mLibLoader->stream_getFramesWritten(aaudioStream);
     }
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::getXRunCount() const {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        return ResultWithValue<int32_t>::createBasedOnSign(mLibLoader->stream_getXRunCount(stream));
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        return ResultWithValue<int32_t>::createBasedOnSign(
+                mLibLoader->stream_getXRunCount(aaudioStream));
     } else {
         return ResultWithValue<int32_t>(Result::ErrorNull);
     }
@@ -461,12 +480,13 @@ ResultWithValue<int32_t> AudioStreamAAudio::getXRunCount() const {
 Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
                                    int64_t *framePosition,
                                    int64_t *timeNanoseconds) {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
         if (getState() != StreamState::Started) {
             return Result::ErrorInvalidState;
         }
-        return static_cast<Result>(mLibLoader->stream_getTimestamp(stream, clockId,
+        return static_cast<Result>(mLibLoader->stream_getTimestamp(aaudioStream, clockId,
                                                framePosition, timeNanoseconds));
     } else {
         return Result::ErrorNull;
@@ -474,11 +494,11 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
 }
 
 ResultWithValue<FrameTimestamp> AudioStreamAAudio::getTimestamp(clockid_t clockId) {
-
     FrameTimestamp frame;
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        aaudio_result_t result = mLibLoader->stream_getTimestamp(stream, clockId,
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        aaudio_result_t result = mLibLoader->stream_getTimestamp(aaudioStream, clockId,
                                                                  &frame.position,
                                                                  &frame.timestamp);
         if (result == AAUDIO_OK){
@@ -492,11 +512,6 @@ ResultWithValue<FrameTimestamp> AudioStreamAAudio::getTimestamp(clockid_t clockI
 }
 
 ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream == nullptr) {
-        return ResultWithValue<double>(Result::ErrorClosed);
-    }
-
     // Get the time that a known audio frame was presented.
     int64_t hardwareFrameIndex;
     int64_t hardwareFrameHardwareTime;
@@ -533,10 +548,11 @@ ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
     return ResultWithValue<double>(latencyMillis);
 }
 
-bool AudioStreamAAudio::isMMapUsed() {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
-        return mLibLoader->stream_isMMapUsed(stream);
+bool AudioStreamAAudio::usesMMap() {
+    std::shared_ptr<AAudioStreamOwner> mine(mAAudioStream);
+    AAudioStream *aaudioStream = mine->getStream();
+    if (aaudioStream != nullptr) {
+        return mLibLoader->stream_isMMapUsed(aaudioStream);
     } else {
         return false;
     }

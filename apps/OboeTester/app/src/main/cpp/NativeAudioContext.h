@@ -284,9 +284,6 @@ private:
 
     PlayRecordingCallback        mPlayRecordingCallback;
 
-    bool                       (*mAAudioStream_isMMap)(AAudioStream *stream) = nullptr;
-    void                        *mLibHandle = nullptr;
-
 };
 
 #endif //NATIVEOBOE_NATIVEAUDIOCONTEXT_H

@@ -26,10 +26,10 @@
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStream.h"
 #include "oboe/Definitions.h"
+#include "AAudioLoader.h"
 
 namespace oboe {
 
-class AAudioLoader;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -98,24 +98,53 @@ public:
 
     void onErrorInThread(AAudioStream *stream, Result error);
 
-
-    void *getUnderlyingStream() const override {
-        return mAAudioStream.load();
-    }
+    bool usesMMap() override;
 
 protected:
     void updateFramesRead() override;
     void updateFramesWritten() override;
 
+    static AAudioLoader *mLibLoader;
+
 private:
 
-    bool                 isMMapUsed();
+    /** Define a class that wraps a 'C' style AAudioStream pointer.
+     * We can then use a std:shared_ptr to manage the ownership of that pointer.
+     */
+    class   AAudioStreamOwner {
+    public:
+
+        // Create the stream in the constructor to avoid race conditions.
+        AAudioStreamOwner(AAudioStreamBuilder *aaudioBuilder) {
+            AAudioStream *stream = nullptr;
+            mOpenResult = mLibLoader->builder_openStream(aaudioBuilder, &stream);
+            mAAudioStream.store(stream);
+        }
+
+        ~AAudioStreamOwner() {
+            if (mAAudioStream) {
+                // Calling stream_close() will free memory associated with the stream.
+                AudioStreamAAudio::mLibLoader->stream_close(mAAudioStream.load());
+                mAAudioStream.store(nullptr);
+            }
+        }
+        aaudio_result_t getOpenResult() {
+            return mOpenResult;
+        }
+
+        AAudioStream *getStream() {
+            return mAAudioStream.load();
+        }
+
+    private:
+        aaudio_result_t mOpenResult = AAUDIO_OK;
+        std::atomic<AAudioStream *> mAAudioStream{nullptr};
+    };
 
     std::atomic<bool>    mCallbackThreadEnabled;
 
-    std::atomic<AAudioStream *> mAAudioStream{nullptr};
+    std::shared_ptr<AAudioStreamOwner> mAAudioStream;
 
-    static AAudioLoader *mLibLoader;
 };
 
 } // namespace oboe
