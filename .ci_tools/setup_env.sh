@@ -41,11 +41,4 @@ while read -r version_; do
 done < $TMP_SETUP_FILENAME
 #echo "Android platforms:"; cat $TMP_SETUP_FILENAME;rm -f $TMP_SETUP_FILENAME
 
-## Retrieve constraint-layout versions
-retrieve_versions "constraint-layout:"  $TMP_SETUP_FILENAME
-while read -r version_; do
-    echo y | $ANDROID_HOME/tools/bin/sdkmanager \
-        "extras;m2repository;com;android;support;constraint;constraint-layout;$version_"
-done < $TMP_SETUP_FILENAME
-#echo "constraint-layout versions:"; cat $TMP_SETUP_FILENAME;
 rm -f $TMP_SETUP_FILENAME
