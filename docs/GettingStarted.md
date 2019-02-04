@@ -94,7 +94,7 @@ Open the stream:
 
 Check the result to make sure the stream was opened successfully. Oboe has a convenience method for converting its types into human-readable strings called `oboe::convertToText`:
 
-    if (result != Result::OK){
+    if (result != oboe::Result::OK){
         LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
     }
 
