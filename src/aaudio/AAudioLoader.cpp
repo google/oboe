@@ -38,7 +38,7 @@ int AAudioLoader::open() {
     if (mLibHandle != nullptr) {
         return 0;
     }
-    mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
+    mLibHandle = dlopen(LIB_AAUDIO_NAME, RTLD_LAZY);
     if (mLibHandle == nullptr) {
         LOGI("AAudioLoader::open() could not find " LIB_AAUDIO_NAME);
         return -1; // TODO review return code
@@ -47,17 +47,13 @@ int AAudioLoader::open() {
     }
 
     // Load all the function pointers.
-    createStreamBuilder = reinterpret_cast<aaudio_result_t (*)(AAudioStreamBuilder **builder)>
-            (dlsym(mLibHandle, "AAudio_createStreamBuilder"));
-
-    builder_openStream = reinterpret_cast<aaudio_result_t (*)(AAudioStreamBuilder *builder,
-                                              AAudioStream **stream)>
-            (dlsym(mLibHandle, "AAudioStreamBuilder_openStream"));
+    createStreamBuilder        = load_I_PPB("AAudio_createStreamBuilder");
+    builder_openStream         = load_I_PBPPS("AAudioStreamBuilder_openStream");
 
     builder_setChannelCount    = load_V_PBI("AAudioStreamBuilder_setChannelCount");
     if (builder_setChannelCount == nullptr) {
-        // Use old alias if needed.
-        builder_setChannelCount    = load_V_PBI("AAudioStreamBuilder_setSamplesPerFrame");
+        // Use old deprecated alias if needed.
+        builder_setChannelCount = load_V_PBI("AAudioStreamBuilder_setSamplesPerFrame");
     }
 
     builder_setBufferCapacityInFrames = load_V_PBI("AAudioStreamBuilder_setBufferCapacityInFrames");
@@ -76,80 +72,54 @@ int AAudioLoader::open() {
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
-    stream_getFormat = reinterpret_cast<aaudio_format_t (*)(AAudioStream *stream)>
-            (dlsym(mLibHandle, "AAudioStream_getFormat"));
 
-    builder_setDataCallback = reinterpret_cast<void (*)(AAudioStreamBuilder *builder,
-                                        AAudioStream_dataCallback callback,
-                                        void *userData)>
-            (dlsym(mLibHandle, "AAudioStreamBuilder_setDataCallback"));
+    builder_setDataCallback    = load_V_PBPDPV("AAudioStreamBuilder_setDataCallback");
+    builder_setErrorCallback   = load_V_PBPEPV("AAudioStreamBuilder_setErrorCallback");
 
-    builder_setErrorCallback = reinterpret_cast<void (*)(AAudioStreamBuilder *builder,
-                                        AAudioStream_errorCallback callback,
-                                        void *userData)>
-            (dlsym(mLibHandle, "AAudioStreamBuilder_setErrorCallback"));
+    stream_read                = load_I_PSPVIL("AAudioStream_read");
 
-    stream_read = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
-                                       void *buffer,
-                                       int32_t numFrames,
-                                       int64_t timeoutNanoseconds)>
-            (dlsym(mLibHandle, "AAudioStream_read"));
+    stream_write               = load_I_PSCPVIL("AAudioStream_write");
 
-    stream_write = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
-                                        const void *buffer,
-                                        int32_t numFrames,
-                                        int64_t timeoutNanoseconds)>
-            (dlsym(mLibHandle, "AAudioStream_write"));
+    stream_waitForStateChange  = load_I_PSTPTL("AAudioStream_waitForStateChange");
 
+    stream_getTimestamp        = load_I_PSKPLPL("AAudioStream_getTimestamp");
 
-    stream_waitForStateChange = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
-                                                 aaudio_stream_state_t inputState,
-                                                 aaudio_stream_state_t *nextState,
-                                                 int64_t timeoutNanoseconds)>
-            (dlsym(mLibHandle, "AAudioStream_waitForStateChange"));
+    stream_isMMapUsed          = load_B_PS("AAudioStream_isMMapUsed");
 
-    stream_getTimestamp = reinterpret_cast<aaudio_result_t (*)(AAudioStream *stream,
-                                                               clockid_t clockid,
-                                                               int64_t *framePosition,
-                                                               int64_t *timeNanoseconds)>
-            (dlsym(mLibHandle, "AAudioStream_getTimestamp"));
-
-    stream_isMMapUsed = reinterpret_cast<bool (*)(AAudioStream *stream)>
-            (dlsym(mLibHandle, "AAudioStream_isMMapUsed"));
-
-    stream_getChannelCount    = load_I_PS("AAudioStream_getChannelCount");
+    stream_getChannelCount     = load_I_PS("AAudioStream_getChannelCount");
     if (stream_getChannelCount == nullptr) {
         // Use old alias if needed.
         stream_getChannelCount    = load_I_PS("AAudioStream_getSamplesPerFrame");
     }
 
-    stream_close              = load_I_PS("AAudioStream_close");
+    stream_close               = load_I_PS("AAudioStream_close");
 
-    stream_getBufferSize      = load_I_PS("AAudioStream_getBufferSizeInFrames");
-    stream_getDeviceId        = load_I_PS("AAudioStream_getDeviceId");
-    stream_getBufferCapacity  = load_I_PS("AAudioStream_getBufferCapacityInFrames");
-    stream_getFramesPerBurst  = load_I_PS("AAudioStream_getFramesPerBurst");
-    stream_getFramesRead      = load_L_PS("AAudioStream_getFramesRead");
-    stream_getFramesWritten   = load_L_PS("AAudioStream_getFramesWritten");
-    stream_getPerformanceMode = load_I_PS("AAudioStream_getPerformanceMode");
-    stream_getSampleRate      = load_I_PS("AAudioStream_getSampleRate");
-    stream_getSharingMode     = load_I_PS("AAudioStream_getSharingMode");
-    stream_getState           = load_I_PS("AAudioStream_getState");
-    stream_getXRunCount       = load_I_PS("AAudioStream_getXRunCount");
+    stream_getBufferSize       = load_I_PS("AAudioStream_getBufferSizeInFrames");
+    stream_getDeviceId         = load_I_PS("AAudioStream_getDeviceId");
+    stream_getBufferCapacity   = load_I_PS("AAudioStream_getBufferCapacityInFrames");
+    stream_getFormat           = load_F_PS("AAudioStream_getFormat");
+    stream_getFramesPerBurst   = load_I_PS("AAudioStream_getFramesPerBurst");
+    stream_getFramesRead       = load_L_PS("AAudioStream_getFramesRead");
+    stream_getFramesWritten    = load_L_PS("AAudioStream_getFramesWritten");
+    stream_getPerformanceMode  = load_I_PS("AAudioStream_getPerformanceMode");
+    stream_getSampleRate       = load_I_PS("AAudioStream_getSampleRate");
+    stream_getSharingMode      = load_I_PS("AAudioStream_getSharingMode");
+    stream_getState            = load_I_PS("AAudioStream_getState");
+    stream_getXRunCount        = load_I_PS("AAudioStream_getXRunCount");
 
-    stream_requestStart       = load_I_PS("AAudioStream_requestStart");
-    stream_requestPause       = load_I_PS("AAudioStream_requestPause");
-    stream_requestFlush       = load_I_PS("AAudioStream_requestFlush");
-    stream_requestStop        = load_I_PS("AAudioStream_requestStop");
+    stream_requestStart        = load_I_PS("AAudioStream_requestStart");
+    stream_requestPause        = load_I_PS("AAudioStream_requestPause");
+    stream_requestFlush        = load_I_PS("AAudioStream_requestFlush");
+    stream_requestStop         = load_I_PS("AAudioStream_requestStop");
 
-    stream_setBufferSize      = load_I_PSI("AAudioStream_setBufferSizeInFrames");
+    stream_setBufferSize       = load_I_PSI("AAudioStream_setBufferSizeInFrames");
 
-    convertResultToText       = load_PC_I("AAudio_convertResultToText");
+    convertResultToText        = load_CPH_I("AAudio_convertResultToText");
 
-    stream_getUsage           = load_I_PS("AAudioStream_getUsage");
-    stream_getContentType     = load_I_PS("AAudioStream_getContentType");
-    stream_getInputPreset     = load_I_PS("AAudioStream_getInputPreset");
-    stream_getSessionId       = load_I_PS("AAudioStream_getSessionId");
+    stream_getUsage            = load_I_PS("AAudioStream_getUsage");
+    stream_getContentType      = load_I_PS("AAudioStream_getContentType");
+    stream_getInputPreset      = load_I_PS("AAudioStream_getInputPreset");
+    stream_getSessionId        = load_I_PS("AAudioStream_getSessionId");
 
     return 0;
 }
@@ -160,16 +130,34 @@ static void AAudioLoader_check(void *proc, const char *functionName) {
     }
 }
 
-AAudioLoader::signature_PC_I AAudioLoader::load_PC_I(const char *functionName) {
+AAudioLoader::signature_I_PPB AAudioLoader::load_I_PPB(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
-    return reinterpret_cast<signature_PC_I>(proc);
+    return reinterpret_cast<signature_I_PPB>(proc);
+}
+
+AAudioLoader::signature_CPH_I AAudioLoader::load_CPH_I(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_CPH_I>(proc);
 }
 
 AAudioLoader::signature_V_PBI AAudioLoader::load_V_PBI(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_V_PBI>(proc);
+}
+
+AAudioLoader::signature_V_PBPDPV AAudioLoader::load_V_PBPDPV(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBPDPV>(proc);
+}
+
+AAudioLoader::signature_V_PBPEPV AAudioLoader::load_V_PBPEPV(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBPEPV>(proc);
 }
 
 AAudioLoader::signature_I_PSI AAudioLoader::load_I_PSI(const char *functionName) {
@@ -190,10 +178,52 @@ AAudioLoader::signature_L_PS AAudioLoader::load_L_PS(const char *functionName) {
     return reinterpret_cast<signature_L_PS>(proc);
 }
 
+AAudioLoader::signature_F_PS AAudioLoader::load_F_PS(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_F_PS>(proc);
+}
+
+AAudioLoader::signature_B_PS AAudioLoader::load_B_PS(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_B_PS>(proc);
+}
+
 AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_I_PB>(proc);
+}
+
+AAudioLoader::signature_I_PBPPS AAudioLoader::load_I_PBPPS(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PBPPS>(proc);
+}
+
+AAudioLoader::signature_I_PSCPVIL AAudioLoader::load_I_PSCPVIL(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSCPVIL>(proc);
+}
+
+AAudioLoader::signature_I_PSPVIL AAudioLoader::load_I_PSPVIL(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSPVIL>(proc);
+}
+
+AAudioLoader::signature_I_PSTPTL AAudioLoader::load_I_PSTPTL(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSTPTL>(proc);
+}
+
+AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSKPLPL>(proc);
 }
 
 } // namespace oboe
