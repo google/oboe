@@ -343,6 +343,11 @@ Result AudioOutputStreamOpenSLES::requestPause() {
  * Flush/clear the queue buffers
  */
 Result AudioOutputStreamOpenSLES::requestFlush() {
+    std::lock_guard<std::mutex> lock(mLock);
+    return requestFlush_l();
+}
+
+Result AudioOutputStreamOpenSLES::requestFlush_l() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
     if (getState() == StreamState::Closed) return Result::ErrorClosed;
     Result result = Result::OK;
@@ -379,8 +384,9 @@ Result AudioOutputStreamOpenSLES::requestStop() {
     Result result = setPlayState(SL_PLAYSTATE_STOPPED);
     if (result == Result::OK) {
 
-        // Also clear the buffer queue so the old data won't be played if the stream is restarted
-        if (requestFlush() != Result::OK){
+        // Also clear the buffer queue so the old data won't be played if the stream is restarted.
+        // Call the _l function that expects to already be under a lock.
+        if (requestFlush_l() != Result::OK) {
             LOGW("Failed to flush the stream. Error %s", convertToText(flush()));
         }
 
