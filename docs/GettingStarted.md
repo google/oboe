@@ -76,7 +76,7 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
     class MyCallback : public oboe::AudioStreamCallback {
     public:
         oboe::DataCallbackResult
-        onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames){
+        onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
             generateSineWave(static_cast<float *>(audioData), numFrames);
             return oboe::DataCallbackResult::Continue;
         }
@@ -94,7 +94,7 @@ Open the stream:
 
 Check the result to make sure the stream was opened successfully. Oboe has a convenience method for converting its types into human-readable strings called `oboe::convertToText`:
 
-    if (result != oboe::Result::OK){
+    if (result != oboe::Result::OK) {
         LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
     }
 
