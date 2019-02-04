@@ -254,19 +254,19 @@ Result AudioOutputStreamOpenSLES::close() {
     return result;
 }
 
-Result AudioOutputStreamOpenSLES::setPlayState(SLuint32 newState) {
+Result AudioOutputStreamOpenSLES::setPlayState_l(SLuint32 newState) {
 
-    LOGD("AudioOutputStreamOpenSLES(): setPlayState()");
+    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
     Result result = Result::OK;
 
     if (mPlayInterface == nullptr){
-        LOGE("AudioOutputStreamOpenSLES::setPlayState() mPlayInterface is null");
+        LOGE("AudioOutputStreamOpenSLES::%s() mPlayInterface is null", __func__);
         return Result::ErrorInvalidState;
     }
 
     SLresult slResult = (*mPlayInterface)->SetPlayState(mPlayInterface, newState);
     if (SL_RESULT_SUCCESS != slResult) {
-        LOGD("AudioOutputStreamOpenSLES(): setPlayState() returned %s", getSLErrStr(slResult));
+        LOGD("AudioOutputStreamOpenSLES(): %s() returned %s", __func__, getSLErrStr(slResult));
         result = Result::ErrorInternal; // TODO convert slResult to Result::Error
     }
     return result;
@@ -293,7 +293,7 @@ Result AudioOutputStreamOpenSLES::requestStart() {
         setDataCallbackEnabled(true);
     }
     setState(StreamState::Starting);
-    Result result = setPlayState(SL_PLAYSTATE_PLAYING);
+    Result result = setPlayState_l(SL_PLAYSTATE_PLAYING);
     if (result == Result::OK) {
         setState(StreamState::Started);
         mLock.unlock();
@@ -324,7 +324,7 @@ Result AudioOutputStreamOpenSLES::requestPause() {
     }
 
     setState(StreamState::Pausing);
-    Result result = setPlayState(SL_PLAYSTATE_PAUSED);
+    Result result = setPlayState_l(SL_PLAYSTATE_PAUSED);
     if (result == Result::OK) {
         // Note that OpenSL ES does NOT reset its millisecond position when OUTPUT is paused.
         int64_t framesWritten = getFramesWritten();
@@ -376,7 +376,7 @@ Result AudioOutputStreamOpenSLES::requestStop() {
 
     setState(StreamState::Stopping);
 
-    Result result = setPlayState(SL_PLAYSTATE_STOPPED);
+    Result result = setPlayState_l(SL_PLAYSTATE_STOPPED);
     if (result == Result::OK) {
 
         // Also clear the buffer queue so the old data won't be played if the stream is restarted

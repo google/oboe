@@ -55,7 +55,7 @@ private:
 
     SLuint32 channelCountToChannelMask(int chanCount);
 
-    Result setRecordState(SLuint32 newState);
+    Result setRecordState_l(SLuint32 newState);
 
     SLRecordItf mRecordInterface = nullptr;
 };
