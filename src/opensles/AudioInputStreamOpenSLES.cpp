@@ -318,6 +318,8 @@ void AudioInputStreamOpenSLES::updateFramesWritten() {
 }
 
 Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
+    std::lock_guard<std::mutex> lock(mLock); // for mRecordInterface
+
     if (mRecordInterface == NULL) {
         return Result::ErrorNull;
     }

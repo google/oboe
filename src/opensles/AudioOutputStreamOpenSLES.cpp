@@ -411,6 +411,8 @@ void AudioOutputStreamOpenSLES::updateFramesRead() {
 }
 
 Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
+    std::lock_guard<std::mutex> lock(mLock); // for mPlayInterface
+
     if (mPlayInterface == NULL) {
         return Result::ErrorNull;
     }
