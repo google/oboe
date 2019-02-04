@@ -289,9 +289,10 @@ Result AudioOutputStreamOpenSLES::requestStart() {
             break;
     }
 
-    if (mStreamCallback != nullptr) { // Was a callback requested?
-        setDataCallbackEnabled(true);
-    }
+    // We use a callback if the user requests one
+    // OR if we have an internal callback to read the blocking IO buffer.
+    setDataCallbackEnabled(true);
+
     setState(StreamState::Starting);
     Result result = setPlayState(SL_PLAYSTATE_PLAYING);
     if (result == Result::OK) {
