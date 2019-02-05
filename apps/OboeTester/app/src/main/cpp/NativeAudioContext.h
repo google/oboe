@@ -171,6 +171,10 @@ public:
     }
 
     oboe::Result start() {
+        if (oboeStream == nullptr) {
+            return oboe::Result::ErrorInvalidState;
+        }
+
         stop();
 
         for (int i = 0; i < mChannelCount; i++) {
@@ -186,13 +190,13 @@ public:
         oboe::Result result = oboe::Result::OK;
         if (oboeStream != nullptr) {
             result = oboeStream->requestStart();
-        }
 
-        if (!useCallback && result == oboe::Result::OK) {
-            LOGD("OboeAudioStream_start: start thread for blocking I/O");
-            // Instead of using the callback, start a thread that reads or writes the stream.
-            threadEnabled.store(true);
-            dataThread = new std::thread(threadCallback, this);
+            if (!useCallback && result == oboe::Result::OK) {
+                LOGD("OboeAudioStream_start: start thread for blocking I/O");
+                // Instead of using the callback, start a thread that reads or writes the stream.
+                threadEnabled.store(true);
+                dataThread = new std::thread(threadCallback, this);
+            }
         }
         LOGD("OboeAudioStream_start: start returning %d", result);
         return result;
