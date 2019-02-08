@@ -70,6 +70,8 @@ Use the builder's set methods to set properties on the stream (you can read more
     builder.setDirection(oboe::Direction::Output);
     builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
     builder.setSharingMode(oboe::SharingMode::Exclusive);
+    builder.setFormat(oboe::AudioFormat::Float);
+    builder.setChannelCount(oboe::ChannelCount::Mono);
 
 Define an `AudioStreamCallback` class to receive callbacks whenever the stream requires new data.
 
@@ -77,10 +79,22 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
     public:
         oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
-            generateSineWave(static_cast<float *>(audioData), numFrames);
+            
+            // We requested AudioFormat::Float so we assume we got it. For production code always check what format
+	    // the stream has and cast to the appropriate type.
+            auto *outputData = static_cast<float *>(audioData);
+	    
+            // Generate random numbers centered around zero.
+            const float amplitude = 0.2f;
+            for (int i = 0; i < numFrames; ++i){
+                outputData[i] = ((float)drand48() - 0.5f) * 2 * amplitude;
+            }
+	    
             return oboe::DataCallbackResult::Continue;
         }
     };
+
+You can find examples of how to play sound using digital synthesis and pre-recorded audio in the [code samples](../samples). 
 
 Supply this callback class to the builder:
 
