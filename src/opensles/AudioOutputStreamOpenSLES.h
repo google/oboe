@@ -58,6 +58,8 @@ private:
 
     Result onAfterDestroy() override;
 
+    Result requestFlush_l();
+
     /**
      * Set OpenSL ES PLAYSTATE.
      *
