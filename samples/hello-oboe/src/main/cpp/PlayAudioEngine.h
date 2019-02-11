@@ -23,7 +23,6 @@
 
 #include "shared/Mixer.h"
 
-#include "SineGenerator.h"
 #include "SoundGenerator.h"
 
 constexpr int32_t kBufferSizeAutomatic = 0;
