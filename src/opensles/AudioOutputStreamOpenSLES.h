@@ -66,7 +66,7 @@ private:
      * @param newState SL_PLAYSTATE_PAUSED, SL_PLAYSTATE_PLAYING, SL_PLAYSTATE_STOPPED
      * @return
      */
-    Result setPlayState(SLuint32 newState);
+    Result setPlayState_l(SLuint32 newState);
 
     SLPlayItf      mPlayInterface = nullptr;
 
