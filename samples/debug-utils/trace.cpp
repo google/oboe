@@ -37,9 +37,9 @@ typedef bool *(*fp_ATrace_isEnabled)(void);
 bool Trace::is_enabled_ = false;
 bool Trace::has_error_been_shown_ = false;
 
-void Trace::beginSection(const char *fmt, ...){
+void Trace::beginSection(const char *fmt, ...) {
 
-  if (is_enabled_){
+  if (is_enabled_) {
     static char buff[TRACE_MAX_SECTION_NAME_LENGTH];
     va_list args;
     va_start(args, fmt);
@@ -78,7 +78,7 @@ void Trace::initialize() {
         reinterpret_cast<fp_ATrace_isEnabled >(
             dlsym(lib, "ATrace_isEnabled"));
 
-    if (ATrace_isEnabled != nullptr && ATrace_isEnabled()){
+    if (ATrace_isEnabled != nullptr && ATrace_isEnabled()) {
       is_enabled_ = true;
     }
   }
