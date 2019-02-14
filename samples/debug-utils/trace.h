@@ -22,7 +22,7 @@ class Trace {
 public:
   static void beginSection(const char *format, ...);
   static void endSection();
-  static bool isEnabled(){ return is_enabled_; };
+  static bool isEnabled() { return is_enabled_; }
   static void initialize();
 
 private:
