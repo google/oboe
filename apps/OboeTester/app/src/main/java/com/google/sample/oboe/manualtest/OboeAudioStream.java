@@ -169,6 +169,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native long getFramesRead();
 
     @Override
+    public native int getXRunCount();
+
+    @Override
     public native double getLatency();
 
     @Override
