@@ -1,12 +1,17 @@
 # Oboe Tester
 
-Test Oboe using an Interactive App
+Test Oboe using an Interactive App.
+
+Download the top level oboe repository from GitHub
+Then use Android Studio to build the app in this folder.
 
 ## Test Output
 
 Test opening, starting, stopping and closing a stream.
 
 ## Test Input
+
+Test input streams. Displays current volume
 
 ## Tap to Tone Latency
 
