@@ -32,11 +32,22 @@ namespace oboe {
 class AAudioLoader {
   public:
     // Use signatures for common functions.
-    typedef const char * (*signature_PC_I)(int32_t);
-    typedef int32_t (*signature_I_I)(int32_t);
-    typedef int32_t (*signature_I_II)(int32_t, int32_t);
-    typedef int32_t (*signature_I_IPI)(int32_t, int32_t *);
-    typedef int32_t (*signature_I_IIPI)(int32_t, int32_t, int32_t *);
+    // Key to letter abbreviations.
+    // S = Stream
+    // B = Builder
+    // I = int32_t
+    // L = int64_t
+    // T = sTate
+    // K = clocKid_t
+    // P = Pointer to following data type
+    // C = Const prefix
+    // H = cHar
+    typedef int32_t  (*signature_I_PPB)(AAudioStreamBuilder **builder);
+
+    typedef const char * (*signature_CPH_I)(int32_t);
+
+    typedef int32_t (*signature_I_PBPPS)(AAudioStreamBuilder *,
+                                      AAudioStream **stream);  // AAudioStreamBuilder_open()
 
     typedef int32_t (*signature_I_PB)(AAudioStreamBuilder *);  // AAudioStreamBuilder_delete()
     // AAudioStreamBuilder_setSampleRate()
@@ -46,6 +57,28 @@ class AAudioLoader {
     typedef int64_t (*signature_L_PS)(AAudioStream *);  // AAudioStream_getFramesRead()
     // AAudioStream_setBufferSizeInFrames()
     typedef int32_t (*signature_I_PSI)(AAudioStream *, int32_t);
+
+    typedef void    (*signature_V_PBPDPV)(AAudioStreamBuilder *,
+                                          AAudioStream_dataCallback,
+                                          void *);
+
+    typedef void    (*signature_V_PBPEPV)(AAudioStreamBuilder *,
+                                          AAudioStream_errorCallback,
+                                          void *);
+
+    typedef aaudio_format_t (*signature_F_PS)(AAudioStream *stream);
+
+    typedef int32_t (*signature_I_PSPVIL)(AAudioStream *, void *, int32_t, int64_t);
+    typedef int32_t (*signature_I_PSCPVIL)(AAudioStream *, const void *, int32_t, int64_t);
+
+    typedef int32_t (*signature_I_PSTPTL)(AAudioStream *,
+                                          aaudio_stream_state_t,
+                                          aaudio_stream_state_t *,
+                                          int64_t);
+
+    typedef int32_t (*signature_I_PSKPLPL)(AAudioStream *, clockid_t, int64_t *, int64_t *);
+
+    typedef bool    (*signature_B_PS)(AAudioStream *);
 
     static AAudioLoader* getInstance(); // singleton
 
@@ -61,10 +94,9 @@ class AAudioLoader {
     int open();
 
     // Function pointers into the AAudio shared library.
-    aaudio_result_t (*createStreamBuilder)(AAudioStreamBuilder **builder) = nullptr;
+    signature_I_PPB   createStreamBuilder = nullptr;
 
-    aaudio_result_t  (*builder_openStream)(AAudioStreamBuilder *builder,
-                                           AAudioStream **stream) = nullptr;
+    signature_I_PBPPS builder_openStream = nullptr;
 
     signature_V_PBI builder_setBufferCapacityInFrames = nullptr;
     signature_V_PBI builder_setChannelCount = nullptr;
@@ -81,40 +113,21 @@ class AAudioLoader {
     signature_V_PBI builder_setInputPreset = nullptr;
     signature_V_PBI builder_setSessionId = nullptr;
 
-    void (*builder_setDataCallback)(AAudioStreamBuilder *builder,
-                                    AAudioStream_dataCallback callback,
-                                    void *userData) = nullptr;
+    signature_V_PBPDPV  builder_setDataCallback = nullptr;
+    signature_V_PBPEPV  builder_setErrorCallback = nullptr;
 
-    void (*builder_setErrorCallback)(AAudioStreamBuilder *builder,
-                                    AAudioStream_errorCallback callback,
-                                    void *userData) = nullptr;
+    signature_I_PB      builder_delete = nullptr;
 
-    signature_I_PB  builder_delete = nullptr;
+    signature_F_PS      stream_getFormat = nullptr;
 
-    aaudio_format_t (*stream_getFormat)(AAudioStream *stream) = nullptr;
+    signature_I_PSPVIL  stream_read = nullptr;
+    signature_I_PSCPVIL stream_write = nullptr;
 
-    aaudio_result_t (*stream_read)(AAudioStream* stream,
-                                   void *buffer,
-                                   int32_t numFrames,
-                                   int64_t timeoutNanoseconds) = nullptr;
+    signature_I_PSTPTL  stream_waitForStateChange = nullptr;
 
-    aaudio_result_t (*stream_write)(AAudioStream *stream,
-                                   const void *buffer,
-                                   int32_t numFrames,
-                                   int64_t timeoutNanoseconds) = nullptr;
+    signature_I_PSKPLPL stream_getTimestamp = nullptr;
 
-    aaudio_result_t (*stream_waitForStateChange)(AAudioStream *stream,
-                                                 aaudio_stream_state_t inputState,
-                                                 aaudio_stream_state_t *nextState,
-                                                 int64_t timeoutNanoseconds) = nullptr;
-
-    aaudio_result_t (*stream_getTimestamp)(AAudioStream *stream,
-                                          clockid_t clockid,
-                                          int64_t *framePosition,
-                                          int64_t *timeNanoseconds) = nullptr;
-
-
-    bool            (*stream_isMMapUsed)(AAudioStream *stream) = nullptr;
+    signature_B_PS      stream_isMMapUsed = nullptr;
 
     signature_I_PS   stream_close = nullptr;
 
@@ -139,7 +152,7 @@ class AAudioLoader {
     signature_L_PS   stream_getFramesRead = nullptr;
     signature_L_PS   stream_getFramesWritten = nullptr;
 
-    signature_PC_I   convertResultToText = nullptr;
+    signature_CPH_I  convertResultToText = nullptr;
 
     signature_I_PS   stream_getUsage = nullptr;
     signature_I_PS   stream_getContentType = nullptr;
@@ -151,13 +164,22 @@ class AAudioLoader {
     ~AAudioLoader();
 
     // Load function pointers for specific signatures.
-    signature_PC_I   load_PC_I(const char *name);
-
-    signature_V_PBI  load_V_PBI(const char *name);
-    signature_I_PB   load_I_PB(const char *name);
-    signature_I_PS   load_I_PS(const char *name);
-    signature_L_PS   load_L_PS(const char *name);
-    signature_I_PSI  load_I_PSI(const char *name);
+    signature_I_PPB     load_I_PPB(const char *name);
+    signature_CPH_I     load_CPH_I(const char *name);
+    signature_V_PBI     load_V_PBI(const char *name);
+    signature_V_PBPDPV  load_V_PBPDPV(const char *name);
+    signature_V_PBPEPV  load_V_PBPEPV(const char *name);
+    signature_I_PB      load_I_PB(const char *name);
+    signature_I_PBPPS   load_I_PBPPS(const char *name);
+    signature_I_PS      load_I_PS(const char *name);
+    signature_L_PS      load_L_PS(const char *name);
+    signature_F_PS      load_F_PS(const char *name);
+    signature_B_PS      load_B_PS(const char *name);
+    signature_I_PSI     load_I_PSI(const char *name);
+    signature_I_PSPVIL  load_I_PSPVIL(const char *name);
+    signature_I_PSCPVIL load_I_PSCPVIL(const char *name);
+    signature_I_PSTPTL  load_I_PSTPTL(const char *name);
+    signature_I_PSKPLPL load_I_PSKPLPL(const char *name);
 
     void *mLibHandle = nullptr;
 };
