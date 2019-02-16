@@ -38,7 +38,10 @@ int AAudioLoader::open() {
     if (mLibHandle != nullptr) {
         return 0;
     }
-    mLibHandle = dlopen(LIB_AAUDIO_NAME, RTLD_LAZY);
+
+    // Use RTLD_NOW to avoid the unpredictable behavior that RTLD_LAZY can cause.
+    // Also resolving all the links now will prevent a run-time penalty later.
+    mLibHandle = dlopen(LIB_AAUDIO_NAME, RTLD_NOW);
     if (mLibHandle == nullptr) {
         LOGI("AAudioLoader::open() could not find " LIB_AAUDIO_NAME);
         return -1; // TODO review return code
