@@ -19,7 +19,6 @@
 
 #include "ui/OpenGLFunctions.h"
 
-constexpr int kSampleRateHz = 48000; // Fixed sample rate, see README
 constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 constexpr int kMaxQueueItems = 4; // Must be power of 2
 
@@ -32,5 +31,10 @@ constexpr ScreenColor kTapLateColor = PURPLE;
 // player will have 100ms before and after the centre of the tap window to tap on the screen and
 // be successful
 constexpr int kWindowCenterOffsetMs = 100;
+
+struct AudioProperties {
+    int32_t channelCount;
+    int32_t sampleRate;
+};
 
 #endif //SAMPLES_GAMECONSTANTS_H

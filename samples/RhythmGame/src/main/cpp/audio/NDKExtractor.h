@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef RHYTHMGAME_AUDIOSOURCE_H
-#define RHYTHMGAME_AUDIOSOURCE_H
+#ifndef FFMPEG_NDKMEDIAEXTRACTOR_H
+#define FFMPEG_NDKMEDIAEXTRACTOR_H
+
 
 #include <cstdint>
+#include <android/asset_manager.h>
 #include <GameConstants.h>
 
-class DataSource {
+
+class NDKExtractor {
+
 public:
-    virtual ~DataSource(){};
-    virtual int64_t getSize() const = 0;
-    virtual AudioProperties getProperties() const  = 0;
-    virtual const float* getData() const = 0;
+    static int32_t decode(AAsset *asset, uint8_t *targetData, AudioProperties targetProperties);
 };
 
 
-#endif //RHYTHMGAME_AUDIOSOURCE_H
+#endif //FFMPEG_NDKMEDIAEXTRACTOR_H

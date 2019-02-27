@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <time.h>
+#include <ctime>
 #include <chrono>
 #include <ui/OpenGLFunctions.h>
 #include <GameConstants.h>
@@ -25,18 +25,6 @@ int64_t nowUptimeMillis() {
     struct timespec res;
     clock_gettime(CLOCK_MONOTONIC, &res);
     return (res.tv_sec * kMillisecondsInSecond) + res.tv_nsec / kNanosecondsInMillisecond;
-}
-
-TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
-    if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffsetMs) {
-        if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffsetMs) {
-            return TapResult::Success;
-        } else {
-            return TapResult::Early;
-        }
-    } else {
-        return TapResult::Late;
-    }
 }
 
 void renderEvent(TapResult r){

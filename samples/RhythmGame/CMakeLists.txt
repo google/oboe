@@ -24,9 +24,36 @@ add_library( native-lib
 
              )
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+if(${USE_FFMPEG})
+    MESSAGE(STATUS "Using FFmpeg extractor")
+
+    add_definitions(-DUSE_FFMPEG=1)
+    target_sources( native-lib PRIVATE src/main/cpp/audio/FFMpegExtractor.cpp )
+
+    set(FFMPEG_DIR /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI})
+    include_directories(native-lib ${FFMPEG_DIR}/include)
+
+    add_library( avformat SHARED IMPORTED)
+    set_target_properties(avformat PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavformat.so)
+    add_library( avutil SHARED IMPORTED)
+    set_target_properties(avutil PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavutil.so)
+    add_library( avcodec SHARED IMPORTED)
+    set_target_properties(avcodec PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavcodec.so)
+    add_library( swresample SHARED IMPORTED)
+    set_target_properties(swresample PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libswresample.so)
+
+    target_link_libraries( native-lib avformat avutil avcodec swresample)
+
+else()
+    MESSAGE(STATUS "Using NDK media extractor")
+    add_definitions(-DUSE_FFMPEG=0)
+    target_sources( native-lib PRIVATE src/main/cpp/audio/NDKExtractor.cpp )
+    target_link_libraries(native-lib mediandk)
+endif()
 
 target_link_libraries( native-lib
                        log
