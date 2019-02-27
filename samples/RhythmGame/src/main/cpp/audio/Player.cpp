@@ -19,12 +19,12 @@
 
 void Player::renderAudio(float *targetData, int32_t numFrames){
 
-    const int32_t channelCount = mSource->getChannelCount();
+    const AudioProperties properties = mSource->getProperties();
 
     if (mIsPlaying){
 
-        int32_t framesToRenderFromData = numFrames;
-        int32_t totalSourceFrames = mSource->getTotalFrames();
+        int64_t framesToRenderFromData = numFrames;
+        int64_t totalSourceFrames = mSource->getSize() / properties.channelCount;
         const float *data = mSource->getData();
 
         // Check whether we're about to reach the end of the recording
@@ -34,8 +34,8 @@ void Player::renderAudio(float *targetData, int32_t numFrames){
         }
 
         for (int i = 0; i < framesToRenderFromData; ++i) {
-            for (int j = 0; j < channelCount; ++j) {
-                targetData[(i*channelCount)+j] = data[(mReadFrameIndex*channelCount)+j];
+            for (int j = 0; j < properties.channelCount; ++j) {
+                targetData[(i*properties.channelCount)+j] = data[(mReadFrameIndex*properties.channelCount)+j];
             }
 
             // Increment and handle wraparound
@@ -44,11 +44,11 @@ void Player::renderAudio(float *targetData, int32_t numFrames){
 
         if (framesToRenderFromData < numFrames){
             // fill the rest of the buffer with silence
-            renderSilence(&targetData[framesToRenderFromData], numFrames * channelCount);
+            renderSilence(&targetData[framesToRenderFromData], numFrames * properties.channelCount);
         }
 
     } else {
-        renderSilence(targetData, numFrames * channelCount);
+        renderSilence(targetData, numFrames * properties.channelCount);
     }
 }
 
