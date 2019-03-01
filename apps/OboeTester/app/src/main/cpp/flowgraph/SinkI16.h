@@ -24,6 +24,9 @@
 
 namespace flowgraph {
 
+/**
+ * AudioSink that lets you read data as 16-bit signed integers.
+ */
 class SinkI16 : public AudioSink {
 public:
     explicit SinkI16(int32_t channelCount);

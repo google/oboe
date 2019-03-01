@@ -23,7 +23,9 @@
 #include "AudioProcessorBase.h"
 
 namespace flowgraph {
-
+/**
+ * AudioSource that reads a block of pre-defined 16-bit integer data.
+ */
 class SourceI16 : public AudioSource {
 public:
     explicit SourceI16(int32_t channelCount);

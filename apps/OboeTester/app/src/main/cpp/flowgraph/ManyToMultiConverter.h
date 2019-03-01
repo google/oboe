@@ -24,7 +24,7 @@
 #include "AudioProcessorBase.h"
 
 /**
- * Combine multiple mono inputs into one multi-channel output.
+ * Combine multiple mono inputs into one interleaved multi-channel output.
  */
 class ManyToMultiConverter : public flowgraph::AudioProcessorBase {
 public:

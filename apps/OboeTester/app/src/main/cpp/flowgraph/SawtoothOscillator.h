@@ -21,6 +21,11 @@
 
 #include "OscillatorBase.h"
 
+/**
+ * Oscillator that generates a sawtooth wave at the specified frequency and amplitude.
+ *
+ * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
+ */
 class SawtoothOscillator : public OscillatorBase {
 public:
     SawtoothOscillator();

@@ -19,6 +19,10 @@
 
 #include "SineOscillator.h"
 
+/*
+ * This calls sinf() so it is not very efficient.
+ * A more efficient implementation might use a wave-table or a polynomial.
+ */
 SineOscillator::SineOscillator()
         : OscillatorBase() {
 }

@@ -21,6 +21,9 @@
 
 #include "OscillatorBase.h"
 
+/**
+ * Oscillator that generates a sine wave at the specified frequency and amplitude.
+ */
 class SineOscillator : public OscillatorBase {
 public:
     SineOscillator();

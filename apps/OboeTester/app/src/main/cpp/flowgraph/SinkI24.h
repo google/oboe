@@ -24,6 +24,10 @@
 
 namespace flowgraph {
 
+/**
+ * AudioSink that lets you read data as packed 24-bit signed integers.
+ * The sample size is 3 bytes.
+ */
 class SinkI24 : public AudioSink {
 public:
     explicit SinkI24(int32_t channelCount);

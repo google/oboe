@@ -25,6 +25,9 @@
 
 namespace flowgraph {
 
+/**
+ * AudioSink that lets you read data as 32-bit floats.
+ */
 class SinkFloat : public AudioSink {
 public:
     explicit SinkFloat(int32_t channelCount);

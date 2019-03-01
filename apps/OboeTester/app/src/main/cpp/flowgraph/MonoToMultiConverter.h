@@ -24,6 +24,10 @@
 
 namespace flowgraph {
 
+/**
+ * Convert a monophonic stream to a multi-channel stream
+ * with the same signal on each channel.
+ */
 class MonoToMultiConverter : public AudioProcessorBase {
 public:
     explicit MonoToMultiConverter(int32_t channelCount);

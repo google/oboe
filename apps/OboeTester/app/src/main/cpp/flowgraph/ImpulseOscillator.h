@@ -26,6 +26,8 @@
 /**
  * Generate a raw impulse equal to the amplitude.
  * The output baseline is zero.
+ *
+ * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
  */
 class ImpulseOscillator : public OscillatorBase {
 public:
