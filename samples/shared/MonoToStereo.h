@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef MEGADRONE_MONOTOSTEREO_H
-#define MEGADRONE_MONOTOSTEREO_H
+#ifndef SHARED_MONOTOSTEREO_H
+#define SHARED_MONOTOSTEREO_H
 
-#include "RenderableAudio.h"
+#include "IRenderableAudio.h"
 
-template <typename T>
-class MonoToStereo : public RenderableAudio<T> {
+
+class MonoToStereo : public IRenderableAudio {
 
 public:
 
-    MonoToStereo(RenderableAudio<T> *input) : mInput(input){};
+    MonoToStereo(IRenderableAudio *input) : mInput(input){};
 
-    void renderAudio(T *audioData, int32_t numFrames) override {
+    void renderAudio(float *audioData, int32_t numFrames) override {
+
+        constexpr int kChannelCountStereo = 2;
 
         mInput->renderAudio(audioData, numFrames);
 
@@ -35,13 +37,13 @@ public:
         // e.g. 123 => 112233
         for (int i = numFrames - 1; i >= 0; --i) {
 
-            audioData[i * oboe::ChannelCount::Stereo] = audioData[i];
-            audioData[i * oboe::ChannelCount::Stereo + 1] = audioData[i];
+            audioData[i * kChannelCountStereo] = audioData[i];
+            audioData[i * kChannelCountStereo + 1] = audioData[i];
         }
     }
 
-    RenderableAudio<T> *mInput;
+    IRenderableAudio *mInput;
 };
 
 
-#endif //MEGADRONE_MONOTOSTEREO_H
+#endif //SHARED_MONOTOSTEREO_H

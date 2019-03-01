@@ -326,6 +326,21 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getFramesRead(
     return result;
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getXRunCount(
+        JNIEnv *env, jobject) {
+    jint result = (jlong) oboe::Result::ErrorNull;
+    if (engine.oboeStream != nullptr) {
+        auto oboeResult  = engine.oboeStream->getXRunCount();
+        if (!oboeResult) {
+            result = (jint) oboeResult.error();
+        } else {
+            result = oboeResult.value();
+        }
+    }
+    return result;
+}
+
 JNIEXPORT jlong JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCallbackCount(
         JNIEnv *env, jobject) {

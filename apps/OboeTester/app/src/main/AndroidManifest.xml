@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.sample.oboe.manualtest"
     android:versionCode="3"
-    android:versionName="1.2.01">
+    android:versionName="1.2.02">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
 
     <uses-feature android:name="android.hardware.microphone" android:required="true" />

@@ -31,7 +31,7 @@ public abstract class AudioStreamBase {
     public StreamStatus getStreamStatus() {
         StreamStatus status = new StreamStatus();
         status.bufferSize = getBufferSizeInFrames();
-        status.xRunCount = getUnderrunCount();
+        status.xRunCount = getXRunCount();
         status.framesRead = getFramesRead();
         status.framesWritten = getFramesWritten();
         status.callbackCount = getCallbackCount();
@@ -117,9 +117,7 @@ public abstract class AudioStreamBase {
 
     public void setAmplitude(double amplitude) {}
 
-    public int getUnderrunCount() {
-        return 0;
-    }
+    public abstract int getXRunCount();
 
 //    public boolean isUnderrunCountSupported() {
 //        return false;

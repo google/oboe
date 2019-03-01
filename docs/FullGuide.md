@@ -348,12 +348,12 @@ The callback does a non-blocking read from the input stream placing the data int
 Note that in this example it is assumed the input and output streams have the same number of channels, format and sample rate. The format of the streams can be mismatched - as long as the code handles the translations properly.
 
 #### Callback do's and don'ts 
-These are things the `onAudioReady` method should NOT do:
+You should never perform an operation which could block inside `onAudioReady`. Examples of blocking operations include:
 
 - allocate memory using, for example, malloc() or new
-- any file operations such as opening, closing, reading or writing
-- any network operations such as streaming
-- use any mutexes or other synchronization primitives
+- file operations such as opening, closing, reading or writing
+- network operations such as streaming
+- use mutexes or other synchronization primitives
 - sleep
 - stop or close the stream
 - Call read() or write() on the stream which invoked it

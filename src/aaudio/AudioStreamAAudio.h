@@ -109,9 +109,10 @@ protected:
 
 private:
 
+    bool                 isMMapUsed();
+
     std::atomic<bool>    mCallbackThreadEnabled;
 
-    std::mutex           mLock; // for synchronizing start/stop/close
     std::atomic<AAudioStream *> mAAudioStream{nullptr};
 
     static AAudioLoader *mLibLoader;

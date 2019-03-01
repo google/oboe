@@ -22,10 +22,12 @@ class Trace {
 public:
   static void beginSection(const char *format, ...);
   static void endSection();
+  static bool isEnabled() { return is_enabled_; }
   static void initialize();
 
 private:
-  static bool is_tracing_supported_;
+  static bool is_enabled_;
+  static bool has_error_been_shown_;
 };
 
 #endif //SIMPLESYNTH_TRACE_H

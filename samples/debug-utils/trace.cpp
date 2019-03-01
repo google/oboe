@@ -26,31 +26,36 @@ static void *(*ATrace_beginSection)(const char *sectionName);
 
 static void *(*ATrace_endSection)(void);
 
+static bool *(*ATrace_isEnabled)(void);
+
 typedef void *(*fp_ATrace_beginSection)(const char *sectionName);
 
 typedef void *(*fp_ATrace_endSection)(void);
 
-bool Trace::is_tracing_supported_ = false;
+typedef bool *(*fp_ATrace_isEnabled)(void);
 
-void Trace::beginSection(const char *fmt, ...){
+bool Trace::is_enabled_ = false;
+bool Trace::has_error_been_shown_ = false;
 
-  static char buff[TRACE_MAX_SECTION_NAME_LENGTH];
-  va_list args;
-  va_start(args, fmt);
-  vsprintf(buff, fmt, args);
-  va_end(args);
+void Trace::beginSection(const char *fmt, ...) {
 
-  if (is_tracing_supported_) {
+  if (is_enabled_) {
+    static char buff[TRACE_MAX_SECTION_NAME_LENGTH];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buff, fmt, args);
+    va_end(args);
     ATrace_beginSection(buff);
-  } else {
+  } else if (!has_error_been_shown_) {
     LOGE("Tracing is either not initialized (call Trace::initialize()) "
-             "or not supported on this device");
+         "or not supported on this device");
+    has_error_been_shown_ = true;
   }
 }
 
 void Trace::endSection() {
 
-  if (is_tracing_supported_) {
+  if (is_enabled_) {
     ATrace_endSection();
   }
 }
@@ -69,9 +74,12 @@ void Trace::initialize() {
     ATrace_endSection =
         reinterpret_cast<fp_ATrace_endSection >(
             dlsym(lib, "ATrace_endSection"));
+    ATrace_isEnabled =
+        reinterpret_cast<fp_ATrace_isEnabled >(
+            dlsym(lib, "ATrace_isEnabled"));
 
-    if (ATrace_beginSection != nullptr && ATrace_endSection != nullptr){
-      is_tracing_supported_ = true;
+    if (ATrace_isEnabled != nullptr && ATrace_isEnabled()) {
+      is_enabled_ = true;
     }
   }
 }

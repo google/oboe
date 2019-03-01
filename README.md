@@ -31,7 +31,7 @@ Sample apps can be found in the [samples directory](samples). Also check out the
 We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
 
 ## Version history
-View the [changelog](docs/ChangeLog.md).
+View the [releases page](../../releases).
 
 ## License
 [LICENSE](LICENSE)

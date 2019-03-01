@@ -52,7 +52,8 @@ private:
     AudioStream *mAudioStream{nullptr};
     std::shared_ptr<Player> mClap;
     std::shared_ptr<Player> mBackingTrack;
-    Mixer<int16_t> mMixer;
+    Mixer mMixer;
+    std::unique_ptr<float[]> mConversionBuffer { nullptr }; // For float->int16 conversion
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
     std::atomic<int64_t> mCurrentFrame { 0 };

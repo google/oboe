@@ -16,6 +16,7 @@
 
 
 #include <utils/logging.h>
+#include <oboe/Oboe.h>
 #include "AAssetDataSource.h"
 
 
@@ -33,17 +34,23 @@ AAssetDataSource* AAssetDataSource::newFromAssetManager(AAssetManager &assetMana
 
     // Get the length of the track (we assume it is stereo 48kHz)
     off_t trackSizeInBytes = AAsset_getLength(asset);
+    auto numSamples = static_cast<int32_t>(trackSizeInBytes / sizeof(int16_t));
+    auto numFrames = static_cast<int32_t>(numSamples / channelCount);
 
-    // Load it into memory
-    auto *audioBuffer = static_cast<const int16_t*>(AAsset_getBuffer(asset));
+    // Load it into memory (we assume it is 16 bit signed integers)
+    auto *sourceBuffer = static_cast<const int16_t*>(AAsset_getBuffer(asset));
 
-    if (audioBuffer == nullptr){
+    if (sourceBuffer == nullptr){
         LOGE("Could not get buffer for track");
         return nullptr;
     }
 
-    auto numFrames = static_cast<int32_t>(trackSizeInBytes / (sizeof(int16_t) * channelCount));
-    LOGD("Opened audio data source, bytes: %ld frames: %d", trackSizeInBytes, numFrames);
+    auto outputBuffer = std::make_unique<float[]>(numSamples);
+    oboe::convertPcm16ToFloat(sourceBuffer, outputBuffer.get(), numSamples);
 
-    return new AAssetDataSource(asset, audioBuffer, numFrames, channelCount);
+    LOGD("Opened audio data source %s, bytes: %ld samples: %d frames: %d", filename, trackSizeInBytes, numSamples, numFrames);
+
+    AAsset_close(asset);
+
+    return new AAssetDataSource(std::move(outputBuffer), numFrames, channelCount);
 }

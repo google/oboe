@@ -23,31 +23,22 @@
 class AAssetDataSource : public DataSource {
 
 public:
-
-    ~AAssetDataSource(){
-
-        // Note that this will also delete the data at mBuffer
-        AAsset_close(mAsset);
-    }
-
-    int32_t getTotalFrames() const override { return mTotalFrames; } ;
-    int32_t getChannelCount() const override { return mChannelCount; } ;
-    const int16_t* getData() const override { return mBuffer;	};
+    int32_t getTotalFrames() const override { return mTotalFrames; }
+    int32_t getChannelCount() const override { return mChannelCount; }
+    const float* getData() const override { return mBuffer.get();	}
 
     static AAssetDataSource* newFromAssetManager(AAssetManager&, const char *, const int32_t);
 
 private:
 
-    AAssetDataSource(AAsset *asset, const int16_t *data, int32_t frames,
-                     int32_t channelCount)
-            : mAsset(asset)
-            , mBuffer(data)
+    AAssetDataSource(std::unique_ptr<float[]> data, int32_t frames,
+                     const int32_t channelCount)
+            : mBuffer(std::move(data))
             , mTotalFrames(frames)
             , mChannelCount(channelCount) {
-    };
+    }
 
-    AAsset *mAsset = nullptr;
-    const int16_t* mBuffer;
+    const std::unique_ptr<float[]> mBuffer;
     const int32_t mTotalFrames;
     const int32_t mChannelCount;
 

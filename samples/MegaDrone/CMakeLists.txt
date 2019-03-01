@@ -18,7 +18,6 @@ include_directories(${OBOE_DIR}/include ${OBOE_DIR}/samples)
 add_library( megadrone SHARED
         src/main/cpp/native-lib.cpp
         src/main/cpp/AudioEngine.cpp
-        ${OBOE_DIR}/samples/shared/Oscillator.cpp
         )
 
 target_link_libraries( megadrone log oboe )

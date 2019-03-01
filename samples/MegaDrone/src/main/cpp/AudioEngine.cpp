@@ -37,12 +37,17 @@ void AudioEngine::start(std::vector<int> cpuIds) {
         return;
     }
 
-    if (mStream->getFormat() == AudioFormat::Float){
-        mSynth = std::make_unique<Synth<float>>(mStream->getSampleRate(), mStream->getChannelCount());
-    } else {
-        mSynth = std::make_unique<Synth<int16_t>>(mStream->getSampleRate(), mStream->getChannelCount());
+    // If the output is 16-bit ints then create a separate float buffer to render into.
+    // This buffer will then be converted to 16-bit ints in onAudioReady
+    if (mStream->getFormat() == AudioFormat::I16){
+
+        // We use the audio stream's capacity as the maximum size since this is feasibly the
+        // largest number of frames we'd be required to render inside the audio callback
+        mConversionBuffer = std::make_unique<float[]>(mStream->getBufferCapacityInFrames() *
+                mStream->getChannelCount());
     }
 
+    mSynth = std::make_unique<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
     mStream->requestStart();
 
@@ -68,7 +73,16 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
 
     if (!mIsThreadAffinitySet) setThreadAffinity();
 
-    mSynth->renderAudio(audioData, numFrames);
+    bool is16Bit = (oboeStream->getFormat() == AudioFormat::I16);
+    float *outputBuffer = (is16Bit) ? mConversionBuffer.get() : static_cast<float*>(audioData);
+    mSynth->renderAudio(outputBuffer, numFrames);
+
+    if (is16Bit) {
+        oboe::convertFloatToPcm16(outputBuffer,
+                                  static_cast<int16_t *>(audioData),
+                                  numFrames * oboeStream->getChannelCount());
+    }
+
     return DataCallbackResult::Continue;
 }
 
