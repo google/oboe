@@ -34,7 +34,7 @@ public:
     AudioStreamGateway(int samplesPerFrame);
     virtual ~AudioStreamGateway();
 
-    void setAudioSink(flowgraph::AudioSink  *sink) {
+    void setAudioSink(std::shared_ptr<flowgraph::AudioSink>  sink) {
         mAudioSink = sink;
     }
 
@@ -52,8 +52,7 @@ private:
     // TODO uint64_t mFramePosition;
     bool     mSchedulerChecked = false;
     int      mScheduler;
-    flowgraph::AudioSink  *mAudioSink;
-
+    std::shared_ptr<flowgraph::AudioSink>  mAudioSink;
 };
 
 

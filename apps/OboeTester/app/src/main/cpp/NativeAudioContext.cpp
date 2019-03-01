@@ -35,8 +35,8 @@ void NativeAudioContext::close() {
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
     audioStreamGateway.reset(nullptr);
-    mSinkFloat.reset(nullptr);
-    mSinkI16.reset(nullptr);
+    mSinkFloat.reset();
+    mSinkI16.reset();
 }
 
 bool NativeAudioContext::isMMapUsed() {
@@ -204,9 +204,9 @@ int NativeAudioContext::open(jint sampleRate,
             // when we setup the Builder.
             audioStreamGateway = std::make_unique<AudioStreamGateway>(mChannelCount);
             if (oboeStream->getFormat() == oboe::AudioFormat::I16) {
-                audioStreamGateway->setAudioSink(mSinkI16.get());
+                audioStreamGateway->setAudioSink(mSinkI16);
             } else if (oboeStream->getFormat() == oboe::AudioFormat::Float) {
-                audioStreamGateway->setAudioSink(mSinkFloat.get());
+                audioStreamGateway->setAudioSink(mSinkFloat);
             }
 
             connectTone();

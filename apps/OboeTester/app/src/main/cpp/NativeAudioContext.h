@@ -303,8 +303,8 @@ private:
     std::unique_ptr<float []>               dataBuffer{};
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
-    std::unique_ptr<flowgraph::SinkFloat>   mSinkFloat;
-    std::unique_ptr<flowgraph::SinkI16>     mSinkI16;
+    std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
+    std::shared_ptr<flowgraph::SinkI16>     mSinkI16;
     std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
 
