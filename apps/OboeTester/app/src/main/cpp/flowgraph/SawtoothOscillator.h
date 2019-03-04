@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,25 @@
  * limitations under the License.
  */
 
+#ifndef FLOWGRAPH_SAWTOOTH_OSCILLATOR_H
+#define FLOWGRAPH_SAWTOOTH_OSCILLATOR_H
+
+#include <unistd.h>
+
 #include "OscillatorBase.h"
 
-OscillatorBase::OscillatorBase()
-        : frequency(*this, 1)
-        , amplitude(*this, 1)
-        , output(*this, 1) {
-    setSampleRate(48000);
-}
+/**
+ * Oscillator that generates a sawtooth wave at the specified frequency and amplitude.
+ *
+ * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
+ */
+class SawtoothOscillator : public OscillatorBase {
+public:
+    SawtoothOscillator();
+
+    int32_t onProcess(
+            int64_t framePosition,
+            int numFrames) override;
+};
+
+#endif //FLOWGRAPH_SAWTOOTH_OSCILLATOR_H

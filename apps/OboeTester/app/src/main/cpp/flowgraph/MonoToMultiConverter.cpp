@@ -14,31 +14,34 @@
  * limitations under the License.
  */
 
+
 #include <unistd.h>
 #include "AudioProcessorBase.h"
 #include "MonoToMultiConverter.h"
+
+using namespace flowgraph;
 
 MonoToMultiConverter::MonoToMultiConverter(int32_t channelCount)
         : input(*this, 1)
         , output(*this, channelCount) {
 }
 
-AudioResult MonoToMultiConverter::onProcess(
-        uint64_t framePosition,
-        int numFrames) {
-    input.pullData(framePosition, numFrames);
+MonoToMultiConverter::~MonoToMultiConverter() { }
 
-    const float *inputBuffer = input.getFloatBuffer(numFrames);
-    float *outputBuffer = output.getFloatBuffer(numFrames);
+int32_t MonoToMultiConverter::onProcess(int64_t framePosition, int32_t numFrames) {
+    int32_t framesToProcess = input.pullData(framePosition, numFrames);
+
+    const float *inputBuffer = input.getBlock();
+    float *outputBuffer = output.getBlock();
     int32_t channelCount = output.getSamplesPerFrame();
-
-    for (int i = 0; i < numFrames; i++) {
+    // TODO maybe move to audio_util as audio_mono_to_multi()
+    for (int i = 0; i < framesToProcess; i++) {
         // read one, write many
         float sample = *inputBuffer++;
-        for (int ch = 0; ch < channelCount; ch++) {
+        for (int channel = 0; channel < channelCount; channel++) {
             *outputBuffer++ = sample;
         }
     }
-    return AUDIO_RESULT_SUCCESS;
+    return framesToProcess;
 }
 

@@ -23,16 +23,19 @@
 #include "AudioProcessorBase.h"
 #include "OscillatorBase.h"
 
-class ImpulseGenerator : public OscillatorBase {
+/**
+ * Generate a raw impulse equal to the amplitude.
+ * The output baseline is zero.
+ *
+ * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
+ */
+class ImpulseOscillator : public OscillatorBase {
 public:
-    ImpulseGenerator();
+    ImpulseOscillator();
 
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames);
-
-
-
+    int32_t onProcess(
+            int64_t framePosition,
+            int numFrames) override;
 };
 
 #endif //NATIVEOBOE_IMPULSE_GENERATOR_H

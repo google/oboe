@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
+#include <math.h>
 #include <unistd.h>
-#include "oboe/Definitions.h"
-#include "SawPingGenerator.h"
 
-using namespace flowgraph;
+#include "SineOscillator.h"
 
-SawPingGenerator::SawPingGenerator()
-        : OscillatorBase()
-        , mRequestCount(0)
-        , mAcknowledgeCount(0)
-        , mLevel(0.0f) {
+/*
+ * This calls sinf() so it is not very efficient.
+ * A more efficient implementation might use a wave-table or a polynomial.
+ */
+SineOscillator::SineOscillator()
+        : OscillatorBase() {
 }
 
-SawPingGenerator::~SawPingGenerator() { }
-
-int32_t SawPingGenerator::onProcess(
+int32_t SineOscillator::onProcess(
         int64_t framePosition,
         int numFrames) {
 
@@ -40,31 +38,11 @@ int32_t SawPingGenerator::onProcess(
     const float *amplitudes = amplitude.getBlock();
     float *buffer = output.getBlock();
 
-    if (mRequestCount.load() > mAcknowledgeCount.load()) {
-        mPhase = -1.0f;
-        mLevel = 1.0;
-        mAcknowledgeCount++;
-    }
-
-    // Check level to prevent numeric underflow.
-    if (mLevel > 0.000001) {
-        for (int i = 0; i < numFrames; i++) {
-            float sawtooth = incrementPhase(frequencies[i]);
-            *buffer++ = (float) (sawtooth * mLevel * amplitudes[i]);
-            mLevel *= 0.999;
-        }
-    } else {
-        for (int i = 0; i < numFrames; i++) {
-            *buffer++ = 0.0f;
-        }
+    // Generate sine wave.
+    for (int i = 0; i < numFrames; i++) {
+        float phase = incrementPhase(frequencies[i]); // phase ranges from -1 to +1
+        *buffer++ = sinf(phase * M_PI) * amplitudes[i];
     }
 
     return numFrames;
 }
-
-void SawPingGenerator::setEnabled(bool enabled) {
-    if (enabled) {
-        mRequestCount++;
-    }
-}
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-#include "FifoProcessor.h"
+#ifndef FLOWGRAPH_SOURCE_I16_H
+#define FLOWGRAPH_SOURCE_I16_H
 
+#include <unistd.h>
+#include <sys/types.h>
 
-FifoProcessor::FifoProcessor(int channelCount, int numFrames, int threshold)
-        : mFifoBuffer(channelCount, numFrames)
-        , output(*this, channelCount)
-{
-    mFifoBuffer.setThresholdFrames(threshold);
-}
+#include "AudioProcessorBase.h"
 
-FifoProcessor::~FifoProcessor() {
-}
+namespace flowgraph {
+/**
+ * AudioSource that reads a block of pre-defined 16-bit integer data.
+ */
+class SourceI16 : public AudioSource {
+public:
+    explicit SourceI16(int32_t channelCount);
+
+    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
+};
+
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_SOURCE_I16_H

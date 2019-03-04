@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_MANY_TO_MULTI_CONVERTER_H
-#define OBOETESTER_MANY_TO_MULTI_CONVERTER_H
+#ifndef FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H
+#define FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <vector>
 
 #include "AudioProcessorBase.h"
 
+namespace flowgraph {
+
 /**
- * Combine multiple mono inputs into one multi-channel output.
+ * Convert a monophonic stream to a multi-channel stream
+ * with the same signal on each channel.
  */
-class ManyToMultiConverter : public AudioProcessorBase {
+class MonoToMultiConverter : public AudioProcessorBase {
 public:
-    explicit ManyToMultiConverter(int32_t channelCount);
+    explicit MonoToMultiConverter(int32_t channelCount);
 
-    virtual ~ManyToMultiConverter() = default;
+    virtual ~MonoToMultiConverter();
 
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
+    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
 
-    void setEnabled(bool enabled) {};
-
-    std::vector<std::unique_ptr<AudioInputPort> > inputs;
-    AudioOutputPort output;
-
-private:
+    AudioFloatInputPort input;
+    AudioFloatOutputPort output;
 };
 
-#endif //OBOETESTER_MANY_TO_MULTI_CONVERTER_H
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H

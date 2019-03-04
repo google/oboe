@@ -16,34 +16,33 @@
 
 #include <math.h>
 #include <unistd.h>
-#include "AudioProcessorBase.h"
 
-#include "ImpulseGenerator.h"
+#include "ImpulseOscillator.h"
 
-ImpulseGenerator::ImpulseGenerator()
+ImpulseOscillator::ImpulseOscillator()
         : OscillatorBase() {
 }
 
-AudioResult ImpulseGenerator::onProcess(
-        uint64_t framePosition,
+int32_t ImpulseOscillator::onProcess(
+        int64_t framePosition,
         int numFrames) {
 
     frequency.pullData(framePosition, numFrames);
     amplitude.pullData(framePosition, numFrames);
 
-    const float *frequencies = frequency.getFloatBuffer(numFrames);
-    const float *amplitudes = amplitude.getFloatBuffer(numFrames);
-    float *buffer = output.getFloatBuffer(numFrames);
+    const float *frequencies = frequency.getBlock();
+    const float *amplitudes = amplitude.getBlock();
+    float *buffer = output.getBlock();
 
     for (int i = 0; i < numFrames; i++) {
         float value = 0.0f;
-        mPhase += mFrequencyToPhase * frequencies[i];
-        if (mPhase >= TWO_PI) {
-            value = amplitudes[i];
-            mPhase -= TWO_PI;
+        mPhase += mFrequencyToPhaseIncrement * frequencies[i];
+        if (mPhase >= 1.0f) {
+            value = amplitudes[i]; // spike
+            mPhase -= 2.0f;
         }
         *buffer++ = value;
     }
 
-    return AUDIO_RESULT_SUCCESS;
+    return numFrames;
 }

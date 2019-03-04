@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_MONO_TO_MULTI_CONVERTER_H
-#define OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+#ifndef FLOWGRAPH_SINK_I24_H
+#define FLOWGRAPH_SINK_I24_H
 
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "AudioProcessorBase.h"
 
+namespace flowgraph {
+
 /**
- * Duplicate a single mono input across multiple channels of output.
+ * AudioSink that lets you read data as packed 24-bit signed integers.
+ * The sample size is 3 bytes.
  */
-class MonoToMultiConverter : AudioProcessorBase {
+class SinkI24 : public AudioSink {
 public:
-    explicit MonoToMultiConverter(int32_t channelCount);
+    explicit SinkI24(int32_t channelCount);
 
-    virtual ~MonoToMultiConverter() = default;
-
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
-
-    void setEnabled(bool enabled) {};
-
-    AudioInputPort input;
-    AudioOutputPort output;
-
-private:
+    int32_t read(void *data, int32_t numFrames) override;
 };
 
-#endif //OBOETESTER_MONO_TO_MULTI_CONVERTER_H
+} /* namespace flowgraph */
+
+#endif //FLOWGRAPH_SINK_I24_H

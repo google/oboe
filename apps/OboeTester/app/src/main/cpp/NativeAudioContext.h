@@ -18,6 +18,7 @@
 #define NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 
 #include <dlfcn.h>
+#include <jni.h>
 #include <thread>
 #include <vector>
 
@@ -25,20 +26,24 @@
 #include "oboe/Oboe.h"
 
 #include "AudioStreamGateway.h"
-#include "ImpulseGenerator.h"
+#include "flowgraph/ImpulseOscillator.h"
+#include "flowgraph/ManyToMultiConverter.h"
+#include "flowgraph/MonoToMultiConverter.h"
+#include "flowgraph/SinkFloat.h"
+#include "flowgraph/SinkI16.h"
+#include "flowgraph/SineOscillator.h"
+#include "flowgraph/SawtoothOscillator.h"
 #include "InputStreamCallbackAnalyzer.h"
-#include "ManyToMultiConverter.h"
-#include "MonoToMultiConverter.h"
 #include "MultiChannelRecording.h"
 #include "OboeStreamCallbackProxy.h"
 #include "PlayRecordingCallback.h"
 #include "SawPingGenerator.h"
-#include "SineGenerator.h"
 
 #define MAX_SINE_OSCILLATORS     8
 #define AMPLITUDE_SINE           1.0
+#define AMPLITUDE_SAWTOOTH       0.5
 #define FREQUENCY_SAW_PING       800.0
-#define AMPLITUDE_SAW_PING       1.0
+#define AMPLITUDE_SAW_PING       0.8
 #define AMPLITUDE_IMPULSE        0.7
 
 #define NANOS_PER_MICROSECOND    ((int64_t) 1000)
@@ -109,6 +114,7 @@ public:
             result = oboeStream->requestStop();
             printScheduler();
         }
+        LOGD("NativeAudioContext::%s() returns %d", __func__, result);
         return result;
     }
 
@@ -129,15 +135,24 @@ public:
         oboe::Result result1 = stopPlayback();
         oboe::Result result2 = stopAudio();
 
+        LOGD("NativeAudioContext::%s() stop modules", __func__);
         for (int i = 0; i < mChannelCount; i++) {
-            sineGenerators[i].stop();
+            sineOscillators[i].stop();
+            sawtoothOscillators[i].stop();
         }
         impulseGenerator.stop();
         sawPingGenerator.stop();
-        if (audioStreamGateway != nullptr) {
-            audioStreamGateway->stop();
+        if (mSinkFloat) {
+            mSinkFloat->stop();
         }
-        return (result1 != oboe::Result::OK) ? result1 : result2;
+        if (mSinkI16) {
+            mSinkI16->stop();
+        }
+
+        oboe::Result result = (result1 != oboe::Result::OK) ? result1 : result2;
+
+        LOGD("NativeAudioContext::%s() returns %d", __func__, result);
+        return result;
     }
 
     oboe::Result startPlayback() {
@@ -171,22 +186,30 @@ public:
     }
 
     oboe::Result start() {
+
+        LOGD("NativeAudioContext: %s() called", __func__);
+
         if (oboeStream == nullptr) {
             return oboe::Result::ErrorInvalidState;
         }
 
         stop();
 
+        LOGD("NativeAudioContext: %s() start modules", __func__);
         for (int i = 0; i < mChannelCount; i++) {
-            sineGenerators[i].start();
+            sineOscillators[i].start();
+            sawtoothOscillators[i].start();
         }
         impulseGenerator.start();
         sawPingGenerator.start();
-        if (audioStreamGateway != nullptr) {
-            audioStreamGateway->start();
+        if (mSinkFloat) {
+            mSinkFloat->start();
+        }
+        if (mSinkI16) {
+            mSinkI16->start();
         }
 
-        LOGD("OboeAudioStream_start: start called");
+        LOGD("NativeAudioContext: %s start stream", __func__);
         oboe::Result result = oboe::Result::OK;
         if (oboeStream != nullptr) {
             result = oboeStream->requestStart();
@@ -216,7 +239,8 @@ public:
     void setAmplitude(double amplitude) {
         LOGD("%s(%f)", __func__, amplitude);
         for (int i = 0; i < mChannelCount; i++) {
-            sineGenerators[i].amplitude.setValue(amplitude);
+            sineOscillators[i].amplitude.setValue(amplitude);
+            sawtoothOscillators[i].amplitude.setValue(amplitude);
         }
         sawPingGenerator.amplitude.setValue(amplitude);
         impulseGenerator.amplitude.setValue(amplitude);
@@ -245,7 +269,8 @@ private:
     enum ToneType {
         SawPing = 0,
         Sine = 1,
-        Impulse = 2
+        Impulse = 2,
+        Sawtooth = 3
     };
 
     void connectTone();
@@ -274,15 +299,18 @@ private:
     std::thread                 *dataThread = nullptr;
 
     OboeStreamCallbackProxy      oboeCallbackProxy;
-    std::vector<SineGenerator>   sineGenerators;
+    std::vector<SineOscillator>  sineOscillators;
+    std::vector<SawtoothOscillator>  sawtoothOscillators;
 
-    ImpulseGenerator             impulseGenerator;
+    ImpulseOscillator            impulseGenerator;
     SawPingGenerator             sawPingGenerator;
     oboe::AudioStream           *playbackStream = nullptr;
 
     std::unique_ptr<float []>               dataBuffer{};
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
+    std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
+    std::shared_ptr<flowgraph::SinkI16>     mSinkI16;
     std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
 

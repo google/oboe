@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_SINEGENERATOR_H
-#define NATIVEOBOE_SINEGENERATOR_H
-
-#include <unistd.h>
-
 #include "OscillatorBase.h"
 
-class SineGenerator : public OscillatorBase {
-public:
-    SineGenerator();
+using namespace flowgraph;
 
-    AudioResult onProcess(
-            uint64_t framePosition,
-            int numFrames) override;
-};
-
-
-#endif //NATIVEOBOE_SINEGENERATOR_H
+OscillatorBase::OscillatorBase()
+        : frequency(*this, 1)
+        , amplitude(*this, 1)
+        , output(*this, 1) {
+    setSampleRate(48000);
+}

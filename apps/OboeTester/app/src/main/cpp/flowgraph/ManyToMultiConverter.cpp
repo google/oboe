@@ -15,19 +15,21 @@
  */
 
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+
 #include "ManyToMultiConverter.h"
+
+using namespace flowgraph;
 
 ManyToMultiConverter::ManyToMultiConverter(int32_t channelCount)
         : inputs(channelCount)
         , output(*this, channelCount) {
     for (int i = 0; i < channelCount; i++) {
-        inputs[i] = std::make_unique<AudioInputPort>(*this, 1);
+        inputs[i] = std::make_unique<AudioFloatInputPort>(*this, 1);
     }
 }
 
-AudioResult ManyToMultiConverter::onProcess(
-        uint64_t framePosition,
+int32_t ManyToMultiConverter::onProcess(
+        int64_t framePosition,
         int numFrames) {
     int32_t channelCount = output.getSamplesPerFrame();
 
@@ -35,10 +37,9 @@ AudioResult ManyToMultiConverter::onProcess(
         inputs[i]->pullData(framePosition, numFrames);
     }
 
-
     for (int ch = 0; ch < channelCount; ch++) {
-        const float *inputBuffer = inputs[ch]->getFloatBuffer(numFrames);
-        float *outputBuffer = output.getFloatBuffer(numFrames) + ch;
+        const float *inputBuffer = inputs[ch]->getBlock();
+        float *outputBuffer = output.getBlock() + ch;
 
         for (int i = 0; i < numFrames; i++) {
             // read one, write into the proper interleaved output channel
@@ -47,6 +48,6 @@ AudioResult ManyToMultiConverter::onProcess(
             outputBuffer += channelCount; // advance to next multichannel frame
         }
     }
-    return AUDIO_RESULT_SUCCESS;
+    return numFrames;
 }
 

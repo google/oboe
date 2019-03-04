@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +14,34 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_SAWPINGGENERATOR_H
-#define NATIVEOBOE_SAWPINGGENERATOR_H
+#ifndef FLOWGRAPH_MANY_TO_MULTI_CONVERTER_H
+#define FLOWGRAPH_MANY_TO_MULTI_CONVERTER_H
 
-#include <atomic>
 #include <unistd.h>
 #include <sys/types.h>
+#include <vector>
 
-#include "flowgraph/AudioProcessorBase.h"
-#include "flowgraph/OscillatorBase.h"
+#include "AudioProcessorBase.h"
 
-class SawPingGenerator : public OscillatorBase {
+/**
+ * Combine multiple mono inputs into one interleaved multi-channel output.
+ */
+class ManyToMultiConverter : public flowgraph::AudioProcessorBase {
 public:
-    SawPingGenerator();
+    explicit ManyToMultiConverter(int32_t channelCount);
 
-    virtual ~SawPingGenerator();
+    virtual ~ManyToMultiConverter() = default;
 
     int32_t onProcess(
             int64_t framePosition,
             int numFrames) override;
 
-    void setEnabled(bool enabled);
+    void setEnabled(bool enabled) {};
 
-    void start() override {
-        OscillatorBase::start();
-        mAcknowledgeCount.store(mRequestCount.load());
-    }
+    std::vector<std::unique_ptr<flowgraph::AudioFloatInputPort>> inputs;
+    flowgraph::AudioFloatOutputPort output;
 
 private:
-    std::atomic<int> mRequestCount; // external thread increments this to request a beep
-    std::atomic<int> mAcknowledgeCount; // audio thread sets this to acknowledge
-    double mLevel;
 };
 
-
-#endif //NATIVEOBOE_SAWPINGGENERATOR_H
+#endif //FLOWGRAPH_MANY_TO_MULTI_CONVERTER_H
