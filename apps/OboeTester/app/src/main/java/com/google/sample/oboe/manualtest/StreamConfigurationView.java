@@ -164,7 +164,6 @@ public class StreamConfigurationView extends LinearLayout {
         }
     }
 
-
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {

@@ -19,7 +19,7 @@ package com.google.sample.oboe.manualtest;
 import java.io.IOException;
 
 /**
- * Created by philburk on 12/10/17.
+ * Implementation of an AudioStreamBase using Oboe.
  */
 
 abstract class OboeAudioStream extends AudioStreamBase {

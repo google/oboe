@@ -16,24 +16,15 @@
 
 package com.google.sample.oboe.manualtest;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AutomaticGainControl;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Activity to record and play back audio.
  */
-public class RecorderActivity extends TestInputActivity {
+public class EchoActivity extends TestInputActivity {
 
     private static final int STATE_RECORDING = 5;
-    private static final int STATE_PLAYING = 6;
+    private static final int STATE_RUNNING = 6;
     private int mRecorderState = STATE_STOPPED;
 
     @Override
@@ -41,21 +32,16 @@ public class RecorderActivity extends TestInputActivity {
         setContentView(R.layout.activity_recorder);
     }
 
-    public void onStartRecording(View view) {
+    public void onStartEcho(View view) {
         openAudio();
         startAudio();
         mRecorderState = STATE_RECORDING;
     }
 
-    public void onStopRecordPlay(View view) {
+    public void onStopEcho(View view) {
         stopAudio();
         closeAudio();
         mRecorderState = STATE_STOPPED;
-    }
-
-    public void onStartPlayback(View view) {
-        startPlayback();
-        mRecorderState = STATE_PLAYING;
     }
 
     public void startPlayback() {

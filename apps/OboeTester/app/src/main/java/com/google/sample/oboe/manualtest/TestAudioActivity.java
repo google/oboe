@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.google.sample.oboe.manualtest.R;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Base class for other Activities.
@@ -52,7 +53,7 @@ abstract class TestAudioActivity extends Activity {
     protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
     protected AudioStreamTester mAudioStreamTester;
-    protected StreamConfigurationView mStreamConfigurationView;
+    protected ArrayList<StreamConfigurationView> mStreamConfigurationViews;
     private Button mOpenButton;
     private Button mStartButton;
     private Button mPauseButton;
@@ -156,10 +157,29 @@ abstract class TestAudioActivity extends Activity {
             mStopButton.setBackgroundColor(mState == STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
             mCloseButton.setBackgroundColor(mState == STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
         }
-        mStreamConfigurationView.setChildrenEnabled(mState == STATE_CLOSED);
+        setConfigViewsEnabled(mState == STATE_CLOSED);
+    }
+
+    private void setConfigViewsEnabled(boolean b) {
+        for (StreamConfigurationView configView : mStreamConfigurationViews) {
+            configView.setChildrenEnabled(b);
+        }
     }
 
     abstract boolean isOutput();
+
+    void setupStreamConfigurationViews() {
+        StreamConfigurationView configView = (StreamConfigurationView)
+                findViewById(R.id.outputStreamConfiguration);
+        configView.setOutput(isOutput());
+        mStreamConfigurationViews.add(configView);
+    }
+
+    void updateStreamConfigurationViews() {
+        for (StreamConfigurationView configView : mStreamConfigurationViews) {
+            configView.updateDisplay();
+        }
+    }
 
     protected void findAudioCommon() {
         mStatusView = (TextView) findViewById(R.id.statusView);
@@ -171,10 +191,8 @@ abstract class TestAudioActivity extends Activity {
             mStopButton = (Button) findViewById(R.id.button_stop);
             mCloseButton = (Button) findViewById(R.id.button_close);
         }
-
-        mStreamConfigurationView = (StreamConfigurationView)
-                findViewById(R.id.outputStreamConfiguration);
-        mStreamConfigurationView.setOutput(isOutput());
+        mStreamConfigurationViews = new ArrayList<StreamConfigurationView>();
+        setupStreamConfigurationViews();
 
         queryNativeAudioParameters();
 
@@ -236,16 +254,18 @@ abstract class TestAudioActivity extends Activity {
 
     public void openAudio() {
         try {
-            StreamConfiguration requestedConfig = mStreamConfigurationView.getRequestedConfiguration();
-            requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
-            mAudioStreamTester.open(requestedConfig,
-                    mStreamConfigurationView.getActualConfiguration());
-            mState = STATE_OPEN;
-            int sessionId = mStreamConfigurationView.getActualConfiguration().getSessionId();
-            if (sessionId > 0) {
-                setupEffects(sessionId);
+            for (StreamConfigurationView configView : mStreamConfigurationViews) {
+                StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
+                requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
+                mAudioStreamTester.open(requestedConfig,
+                        configView.getActualConfiguration());
+                mState = STATE_OPEN;
+                int sessionId = configView.getActualConfiguration().getSessionId();
+                if (sessionId > 0) {
+                    setupEffects(sessionId);
+                }
+                configView.updateDisplay();
             }
-            mStreamConfigurationView.updateDisplay();
             updateEnabledWidgets();
             mStreamSniffer.startStreamSniffer();
         } catch (Exception e) {
@@ -257,9 +277,11 @@ abstract class TestAudioActivity extends Activity {
 
     public void startAudio() {
         try {
-            mAudioStreamTester.start();
             mState = STATE_STARTED;
-            mStreamConfigurationView.updateDisplay();
+            for (StreamConfigurationView configView : mStreamConfigurationViews) {
+                mAudioStreamTester.start();
+                configView.updateDisplay();
+            }
             updateEnabledWidgets();
         } catch (Exception e) {
             e.printStackTrace();
