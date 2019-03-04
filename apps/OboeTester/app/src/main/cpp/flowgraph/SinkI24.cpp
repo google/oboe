@@ -41,7 +41,7 @@ int32_t SinkI24::read(void *data, int32_t numFrames) {
         if (framesRead <= 0) {
             break;
         }
-        const float *floatData = input.getBlock();
+        const float *floatData = input.getBuffer();
         int32_t numSamples = framesRead * channelCount;
 #if FLOWGRAPH_ANDROID_INTERNAL
         memcpy_to_p24_from_float(byteData, floatData, numSamples);

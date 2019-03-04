@@ -28,8 +28,8 @@ ClipToRange::ClipToRange(int32_t channelCount)
 
 int32_t ClipToRange::onProcess(int64_t framePosition, int32_t numFrames) {
     int32_t framesToProcess = input.pullData(framePosition, numFrames);
-    const float *inputBuffer = input.getBlock();
-    float *outputBuffer = output.getBlock();
+    const float *inputBuffer = input.getBuffer();
+    float *outputBuffer = output.getBuffer();
 
     int32_t numSamples = framesToProcess * output.getSamplesPerFrame();
     for (int32_t i = 0; i < numSamples; i++) {

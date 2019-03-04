@@ -41,8 +41,8 @@ float RampLinear::interpolateCurrent() {
 
 int32_t RampLinear::onProcess(int64_t framePosition, int32_t numFrames) {
     int32_t framesToProcess = input.pullData(framePosition, numFrames);
-    const float *inputBuffer = input.getBlock();
-    float *outputBuffer = output.getBlock();
+    const float *inputBuffer = input.getBuffer();
+    float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
 
     float target = getTarget();

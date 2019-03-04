@@ -27,7 +27,7 @@ SourceFloat::SourceFloat(int32_t channelCount)
 
 int32_t SourceFloat::onProcess(int64_t framePosition, int32_t numFrames) {
 
-    float *outputBuffer = output.getBlock();
+    float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
 
     int32_t framesLeft = mSizeInFrames - mFrameIndex;

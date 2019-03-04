@@ -132,8 +132,8 @@ public:
     }
 
     oboe::Result stop() {
-        oboe::Result result1 = stopPlayback();
-        oboe::Result result2 = stopAudio();
+        oboe::Result resultStopPlayback = stopPlayback();
+        oboe::Result resultStopAudio = stopAudio();
 
         LOGD("NativeAudioContext::%s() stop modules", __func__);
         for (int i = 0; i < mChannelCount; i++) {
@@ -149,7 +149,9 @@ public:
             mSinkI16->stop();
         }
 
-        oboe::Result result = (result1 != oboe::Result::OK) ? result1 : result2;
+        oboe::Result result = (resultStopPlayback != oboe::Result::OK)
+                ? resultStopPlayback
+                : resultStopAudio;
 
         LOGD("NativeAudioContext::%s() returns %d", __func__, result);
         return result;

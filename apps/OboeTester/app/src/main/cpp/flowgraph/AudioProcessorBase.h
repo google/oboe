@@ -26,29 +26,40 @@
 #include <cassert>
 #include <cstring>
 #include <math.h>
+#include <memory>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
+// TODO Move these classes into separate files.
+// TODO Maybe remove "Audio" prefix from these class names: AudioProcessorBase to ProcessorNode
+// TODO Review use of raw pointers for connect(). Maybe use smart pointers but need to avoid
+//      run-time deallocation in audio thread.
+
 // Set this to 1 if using it inside the Android framework.
+// This code is kept here so that it can be moved easily between Oboe and AAudio.
 #define FLOWGRAPH_ANDROID_INTERNAL 0
 
 namespace flowgraph {
 
-// Default block size that can be overridden when the AudioFloatBlockPort is created.
+// Default block size that can be overridden when the AudioFloatBufferPort is created.
 // If it is too small then we will have too much overhead from switching between nodes.
 // If it is too high then we will thrash the caches.
-constexpr int kDefaultBlockSize = 8; // arbitrary
+constexpr int kDefaultBufferSize = 8; // arbitrary
 
 class AudioFloatInputPort;
 
 /***************************************************************************/
+/**
+ * Base class for all nodes in the flowgraph.
+ */
 class AudioProcessorBase {
 public:
     virtual ~AudioProcessorBase() = default;
 
     /**
-     * Perform custom function.
+     * Read from the input ports,
+     * generate multiple frames of data then write the results to the output ports.
      *
      * @param framePosition index of first frame to be processed
      * @param numFrames maximum number of frames requested for processing
@@ -112,20 +123,22 @@ private:
 
 /***************************************************************************/
 /**
- * This port contains a float type buffer.
- * The size is framesPerBlock * samplesPerFrame).
+ * This port contains a 32-bit float buffer that can contain several frames of data.
+ * Processing the data in a block improves performance.
+ *
+ * The size is framesPerBuffer * samplesPerFrame).
  */
-class AudioFloatBlockPort  : public AudioPort {
+class AudioFloatBufferPort  : public AudioPort {
 public:
-    AudioFloatBlockPort(AudioProcessorBase &mParent,
+    AudioFloatBufferPort(AudioProcessorBase &mParent,
                    int32_t samplesPerFrame,
-                   int32_t framesPerBlock = kDefaultBlockSize
+                   int32_t framesPerBuffer = kDefaultBufferSize
                 );
 
-    virtual ~AudioFloatBlockPort();
+    virtual ~AudioFloatBufferPort() = default;
 
-    int32_t getFramesPerBlock() const {
-        return mFramesPerBlock;
+    int32_t getFramesPerBuffer() const {
+        return mFramesPerBuffer;
     }
 
 protected:
@@ -133,29 +146,29 @@ protected:
     /**
      * @return buffer internal to the port or from a connected port
      */
-    virtual float *getBlock() {
-        return mSampleBlock;
+    virtual float *getBuffer() {
+        return mBuffer.get();
     }
 
 
 private:
-    const int32_t    mFramesPerBlock = 1;
-    float           *mSampleBlock = nullptr; // allocated in constructor
+    const int32_t    mFramesPerBuffer = 1;
+    std::unique_ptr<float[]> mBuffer; // allocated in constructor
 };
 
 /***************************************************************************/
 /**
-  * The results of a module are stored in the buffer of the output ports.
+  * The results of a node's processing are stored in the buffers of the output ports.
   */
-class AudioFloatOutputPort : public AudioFloatBlockPort {
+class AudioFloatOutputPort : public AudioFloatBufferPort {
 public:
     AudioFloatOutputPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : AudioFloatBlockPort(parent, samplesPerFrame) {
+            : AudioFloatBufferPort(parent, samplesPerFrame) {
     }
 
     virtual ~AudioFloatOutputPort() = default;
 
-    using AudioFloatBlockPort::getBlock;
+    using AudioFloatBufferPort::getBuffer;
 
     /**
      * Call the parent module's onProcess() method.
@@ -185,10 +198,16 @@ public:
 };
 
 /***************************************************************************/
-class AudioFloatInputPort : public AudioFloatBlockPort {
+
+/**
+ * An input port for streaming audio data.
+ * You can set a value that will be used for processing.
+ * If you connect an output port to this port then its value will be used instead.
+ */
+class AudioFloatInputPort : public AudioFloatBufferPort {
 public:
     AudioFloatInputPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : AudioFloatBlockPort(parent, samplesPerFrame) {
+            : AudioFloatBufferPort(parent, samplesPerFrame) {
     }
 
     virtual ~AudioFloatInputPort() = default;
@@ -199,7 +218,7 @@ public:
      * If not connected then it returns the input ports own buffer
      * which can be loaded using setValue().
      */
-    float *getBlock() override;
+    float *getBuffer() override;
 
     /**
      * Pull data from any output port that is connected.
@@ -212,8 +231,8 @@ public:
      * to this port.
      */
     void setValue(float value) {
-        int numFloats = kDefaultBlockSize * getSamplesPerFrame();
-        float *buffer = getBlock();
+        int numFloats = kDefaultBufferSize * getSamplesPerFrame();
+        float *buffer = getBuffer();
         for (int i = 0; i < numFloats; i++) {
             *buffer++ = value;
         }
@@ -245,6 +264,12 @@ private:
 };
 
 /***************************************************************************/
+
+/**
+ * Base class for an edge node in a graph that has no upstream nodes.
+ * It outputs data but does not consume data.
+ * By default, it will read its data from an external buffer.
+ */
 class AudioSource : public AudioProcessorBase {
 public:
     explicit AudioSource(int32_t channelCount)
@@ -255,6 +280,12 @@ public:
 
     AudioFloatOutputPort output;
 
+    /**
+     * Specify buffer that the node will read from.
+     *
+     * @param data TODO Consider using std::shared_ptr.
+     * @param numFrames
+     */
     void setData(const void *data, int32_t numFrames) {
         mData = data;
         mSizeInFrames = numFrames;
@@ -268,6 +299,12 @@ protected:
 };
 
 /***************************************************************************/
+/**
+ * Base class for an edge node in a graph that has no downstream nodes.
+ * It consumes data but does not output data.
+ * This graph will be executed when data is read() from this node
+ * by pulling data from upstream nodes.
+ */
 class AudioSink : public AudioProcessorBase {
 public:
     explicit AudioSink(int32_t channelCount)
