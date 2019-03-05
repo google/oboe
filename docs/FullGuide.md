@@ -239,7 +239,7 @@ When you are finished using a stream, close it:
 
     stream->close();
 
-After you close a stream you cannot call any of its methods.
+Do not close a stream while it is being written to or read from another thread as this will cause your app to crash. After you close a stream you cannot call any of its methods.
 
 ### Disconnected audio stream
 
