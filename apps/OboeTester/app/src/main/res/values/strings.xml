@@ -86,6 +86,7 @@
     <string name="title_activity_test_input">Test Input</string>
     <string name="title_activity_latency">Tap to Tone</string>
     <string name="title_activity_recorder">Recorder</string>
+    <string name="title_activity_echo">Echo Input to Output</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
 

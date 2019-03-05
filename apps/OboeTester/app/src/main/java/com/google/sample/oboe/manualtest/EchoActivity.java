@@ -21,7 +21,7 @@ import android.view.View;
 /**
  * Activity to record and play back audio.
  */
-public class EchoActivity extends TestInputActivity {
+public class EchoActivity extends TestAudioActivity {
 
     private static final int STATE_RECORDING = 5;
     private static final int STATE_RUNNING = 6;
@@ -29,7 +29,7 @@ public class EchoActivity extends TestInputActivity {
 
     @Override
     protected void inflateActivity() {
-        setContentView(R.layout.activity_recorder);
+        setContentView(R.layout.activity_echo);
     }
 
     public void onStartEcho(View view) {
@@ -46,15 +46,22 @@ public class EchoActivity extends TestInputActivity {
 
     public void startPlayback() {
         try {
-            mAudioStreamTester.startPlayback();
+            // mAudioStreamTester.startPlayback();
             updateStreamConfigurationViews();
             updateEnabledWidgets();
         } catch (Exception e) {
             e.printStackTrace();
-            mStatusView.setText(e.getMessage());
             showToast(e.getMessage());
         }
 
     }
 
+    @Override
+    boolean isOutput() {
+        return false;
+    }
+
+    @Override
+    public void setupEffects(int sessionId) {
+    }
 }

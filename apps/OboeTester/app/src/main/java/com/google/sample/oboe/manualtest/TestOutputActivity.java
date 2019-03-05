@@ -29,14 +29,17 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     private CheckBox[] mChannelBoxes;
 
     @Override
+    protected void inflateActivity() {
+        setContentView(R.layout.activity_test_output);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_test_output);
 
-        findAudioCommon();
         updateEnabledWidgets();
 
-        mAudioStreamTester = mAudioOutTester = AudioOutputTester.getInstance();
+        mAudioOutTester = addAudioOutputTester();
 
         mChannelBoxes = new CheckBox[MAX_CHANNEL_BOXES];
         int ic = 0;

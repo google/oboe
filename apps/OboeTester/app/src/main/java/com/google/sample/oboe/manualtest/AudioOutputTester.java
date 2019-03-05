@@ -41,6 +41,7 @@ public class AudioOutputTester extends AudioStreamTester {
     }
 
     public void setToneType(int index) {
+        Log.i(TapToToneActivity.TAG, "setToneType(" + index + ")");
         mOboeAudioOutputStream.setToneType(index);
     }
 

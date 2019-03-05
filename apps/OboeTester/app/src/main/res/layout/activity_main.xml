@@ -44,6 +44,13 @@
         android:onClick="onLaunchRecorder"
         android:text="Record and Play" />
 
+    <Button
+        android:id="@+id/buttonEcho"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchEcho"
+        android:text="Echo Input to Output" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

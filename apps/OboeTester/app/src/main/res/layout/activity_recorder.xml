@@ -11,7 +11,7 @@
     tools:context="com.google.sample.oboe.manualtest.RecorderActivity">
 
     <com.google.sample.oboe.manualtest.StreamConfigurationView
-        android:id="@+id/outputStreamConfiguration"
+        android:id="@+id/streamConfiguration"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"

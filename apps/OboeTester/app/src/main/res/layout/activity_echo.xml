@@ -11,6 +11,13 @@
     tools:context="com.google.sample.oboe.manualtest.EchoActivity">
 
     <com.google.sample.oboe.manualtest.StreamConfigurationView
+        android:id="@+id/inputStreamConfiguration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <com.google.sample.oboe.manualtest.StreamConfigurationView
         android:id="@+id/outputStreamConfiguration"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,7 +34,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:onClick="onStartPlayback"
+            android:onClick="onStartEcho"
             android:text="@string/playAudio" />
 
         <Button
@@ -35,7 +42,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:onClick="onStopRecordPlay"
+            android:onClick="onStopEcho"
             android:text="@string/stopAudio" />
 
 

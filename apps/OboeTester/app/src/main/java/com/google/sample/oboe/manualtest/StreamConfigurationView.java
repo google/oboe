@@ -49,7 +49,6 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualPerformanceView;
     private Spinner  mPerformanceSpinner;
     private CheckBox mRequestedExclusiveView;
-    private TextView mStreamInfoView;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
@@ -62,6 +61,8 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualSessionIdView;
     private CheckBox mRequestAudioEffect;
 
+    private TextView mStreamInfoView;
+    private TextView mStreamStatusView;
 
     public StreamConfigurationView(Context context) {
         super(context);
@@ -140,6 +141,8 @@ public class StreamConfigurationView extends LinearLayout {
                 - StreamConfiguration.PERFORMANCE_MODE_NONE);
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
+
+        mStreamStatusView = (TextView) findViewById(R.id.statusView);
 
         mDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.devices_spinner);
         mDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -239,6 +242,7 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestAudioEffect.setEnabled(enabled);
     }
 
+    // This must be called on the UI thread.
     void updateDisplay() {
         int value;
 
@@ -267,6 +271,11 @@ public class StreamConfigurationView extends LinearLayout {
         );
 
         mOptionTable.requestLayout();
+    }
+
+    // This must be called on the UI thread.
+    public void setStatusText(String msg) {
+        mStreamStatusView.setText(msg);
     }
 
     public StreamConfiguration getRequestedConfiguration() {

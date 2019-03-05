@@ -60,12 +60,11 @@ public class RecorderActivity extends TestInputActivity {
 
     public void startPlayback() {
         try {
-            mAudioStreamTester.startPlayback();
+            mAudioInputTester.startPlayback();
             updateStreamConfigurationViews();
             updateEnabledWidgets();
         } catch (Exception e) {
             e.printStackTrace();
-            mStatusView.setText(e.getMessage());
             showToast(e.getMessage());
         }
 

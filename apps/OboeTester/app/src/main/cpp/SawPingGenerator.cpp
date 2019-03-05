@@ -15,8 +15,10 @@
  */
 
 #include <unistd.h>
+#include "common/OboeDebug.h"
 #include "oboe/Definitions.h"
 #include "SawPingGenerator.h"
+
 
 using namespace flowgraph;
 
@@ -41,6 +43,7 @@ int32_t SawPingGenerator::onProcess(
     float *buffer = output.getBuffer();
 
     if (mRequestCount.load() > mAcknowledgeCount.load()) {
+        LOGD("%s() request count = %d", __func__, mRequestCount.load());
         mPhase = -1.0f;
         mLevel = 1.0;
         mAcknowledgeCount++;
@@ -63,6 +66,7 @@ int32_t SawPingGenerator::onProcess(
 }
 
 void SawPingGenerator::setEnabled(bool enabled) {
+    LOGD("%s(%d)", __func__, enabled ? 1 : 0);
     if (enabled) {
         mRequestCount++;
     }

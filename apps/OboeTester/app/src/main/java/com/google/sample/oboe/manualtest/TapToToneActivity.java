@@ -61,13 +61,17 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private int mLatencyMax;
 
     @Override
+    protected void inflateActivity() {
+        setContentView(R.layout.activity_tap_to_tone);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tap_to_tone);
+
+        mAudioOutTester = addAudioOutputTester();
 
         mResultView = (TextView) findViewById(R.id.resultView);
-
-        findAudioCommon();
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
             setupMidi();
@@ -158,7 +162,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
         public void onNoteOn(final int pitch) {
             runOnUiThread(new Runnable() {
                 public void run() {
-                    mStatusView.setText("MIDI pitch = " + pitch);
+                    mStreamContexts.get(0).configurationView.setStatusText("MIDI pitch = " + pitch);
                 }
             });
         }
@@ -226,7 +230,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                             mInputPort = device.openInputPort(0);
                             Log.i(TAG, "opened MIDI port = " + mInputPort + " on " + info);
                             mAudioMidiTester = AudioMidiTester.getInstance();
-                            mAudioStreamTester = mAudioOutTester = AudioOutputTester.getInstance();
+
                             Log.i(TAG, "openPort() mAudioMidiTester = " + mAudioMidiTester);
                             // Now that we have created the AudioMidiTester, close the port so we can
                             // open it later.
@@ -338,7 +342,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
         resetLatency();
         try {
             mAudioMidiTester.start();
-            mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SAW_PING);
+            if (mAudioOutTester != null) {
+                mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SAW_PING);
+            } else {
+                Log.w(TAG, "startAudioPermitted, mAudioOutTester = null, cannot setToneType(ping)");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

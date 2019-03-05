@@ -61,6 +61,12 @@
             android:screenOrientation="portrait">
         </activity>
 
+        <activity
+            android:name="com.google.sample.oboe.manualtest.EchoActivity"
+            android:label="@string/title_activity_echo"
+            android:screenOrientation="portrait">
+        </activity>
+
         <service
             android:name="com.google.sample.oboe.manualtest.AudioMidiTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">

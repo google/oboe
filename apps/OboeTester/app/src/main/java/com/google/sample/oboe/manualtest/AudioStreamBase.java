@@ -51,6 +51,32 @@ public abstract class AudioStreamBase {
         public double latency; // msec
         public int state;
         public long callbackCount;
+
+
+        // These are constantly changing.
+        String dump(int framesPerBurst) {
+            if (bufferSize < 0 || framesWritten < 0) {
+                return "idle";
+            }
+            int numBuffers = 0;
+            if (bufferSize > 0 && framesPerBurst > 0) {
+                numBuffers = bufferSize / framesPerBurst;
+            }
+            String latencyText = (latency < 0.0)
+                    ? "?"
+                    : String.format("%6.1f msec", latency);
+            return "buffer size = "
+                    + ((bufferSize < 0) ? "?" : bufferSize) + " = "
+                    + numBuffers + " * " + framesPerBurst + ", xRunCount = "
+                    +  ((xRunCount < 0) ? "?" : xRunCount) + "\n"
+                    + "frames written " + framesWritten + " - read " + framesRead
+                    + " = " + (framesWritten - framesRead) + "\n"
+
+                    + "latency = " + latencyText
+                    + ", state = " + state
+                    + ", #callbacks " + callbackCount
+                    ;
+        }
     }
 
     public void open(StreamConfiguration requestedConfiguration,
