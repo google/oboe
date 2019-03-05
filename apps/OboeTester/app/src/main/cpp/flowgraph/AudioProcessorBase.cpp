@@ -30,23 +30,19 @@ int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
 }
 
 /***************************************************************************/
-AudioFloatBlockPort::AudioFloatBlockPort(AudioProcessorBase &parent,
+AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
                                int32_t samplesPerFrame,
-                               int32_t framesPerBlock)
+                               int32_t framesPerBuffer)
         : AudioPort(parent, samplesPerFrame)
-        , mFramesPerBlock(framesPerBlock)
-        , mSampleBlock(NULL) {
-    int32_t numFloats = framesPerBlock * getSamplesPerFrame();
-    mSampleBlock = new float[numFloats]{0.0f};
-}
-
-AudioFloatBlockPort::~AudioFloatBlockPort() {
-    delete[] mSampleBlock;
+        , mFramesPerBuffer(framesPerBuffer)
+        , mBuffer(NULL) {
+    int32_t numFloats = framesPerBuffer * getSamplesPerFrame();
+    mBuffer = std::make_unique<float[]>(numFloats);
 }
 
 /***************************************************************************/
 int32_t AudioFloatOutputPort::pullData(int64_t framePosition, int32_t numFrames) {
-    numFrames = std::min(getFramesPerBlock(), numFrames);
+    numFrames = std::min(getFramesPerBuffer(), numFrames);
     return mParent.pullData(framePosition, numFrames);
 }
 
@@ -62,15 +58,15 @@ void AudioFloatOutputPort::disconnect(AudioFloatInputPort *port) {
 /***************************************************************************/
 int32_t AudioFloatInputPort::pullData(int64_t framePosition, int32_t numFrames) {
     return (mConnected == NULL)
-            ? std::min(getFramesPerBlock(), numFrames)
+            ? std::min(getFramesPerBuffer(), numFrames)
             : mConnected->pullData(framePosition, numFrames);
 }
 
-float *AudioFloatInputPort::getBlock() {
+float *AudioFloatInputPort::getBuffer() {
     if (mConnected == NULL) {
-        return AudioFloatBlockPort::getBlock(); // loaded using setValue()
+        return AudioFloatBufferPort::getBuffer(); // loaded using setValue()
     } else {
-        return mConnected->getBlock();
+        return mConnected->getBuffer();
     }
 }
 

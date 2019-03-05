@@ -31,8 +31,8 @@ MonoToMultiConverter::~MonoToMultiConverter() { }
 int32_t MonoToMultiConverter::onProcess(int64_t framePosition, int32_t numFrames) {
     int32_t framesToProcess = input.pullData(framePosition, numFrames);
 
-    const float *inputBuffer = input.getBlock();
-    float *outputBuffer = output.getBlock();
+    const float *inputBuffer = input.getBuffer();
+    float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
     // TODO maybe move to audio_util as audio_mono_to_multi()
     for (int i = 0; i < framesToProcess; i++) {

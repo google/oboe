@@ -39,7 +39,7 @@ int32_t SinkI16::read(void *data, int32_t numFrames) {
         if (framesRead <= 0) {
             break;
         }
-        const float *signal = input.getBlock();
+        const float *signal = input.getBuffer();
         int32_t numSamples = framesRead * channelCount;
 #if FLOWGRAPH_ANDROID_INTERNAL
         memcpy_to_i16_from_float(shortData, signal, numSamples);

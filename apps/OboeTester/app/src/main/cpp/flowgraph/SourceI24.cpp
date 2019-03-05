@@ -33,7 +33,7 @@ SourceI24::SourceI24(int32_t channelCount)
 }
 
 int32_t SourceI24::onProcess(int64_t framePosition, int32_t numFrames) {
-    float *floatData = output.getBlock();
+    float *floatData = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
 
     int32_t framesLeft = mSizeInFrames - mFrameIndex;

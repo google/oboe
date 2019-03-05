@@ -30,9 +30,9 @@ int32_t SawtoothOscillator::onProcess(
     frequency.pullData(framePosition, numFrames);
     amplitude.pullData(framePosition, numFrames);
 
-    const float *frequencies = frequency.getBlock();
-    const float *amplitudes = amplitude.getBlock();
-    float *buffer = output.getBlock();
+    const float *frequencies = frequency.getBuffer();
+    const float *amplitudes = amplitude.getBuffer();
+    float *buffer = output.getBuffer();
 
     // Use the phase directly as a non-band-limited "sawtooth".
     // This will generate unpleasant aliasing artifacts at higher frequencies.

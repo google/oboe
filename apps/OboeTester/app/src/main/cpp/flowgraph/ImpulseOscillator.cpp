@@ -30,9 +30,9 @@ int32_t ImpulseOscillator::onProcess(
     frequency.pullData(framePosition, numFrames);
     amplitude.pullData(framePosition, numFrames);
 
-    const float *frequencies = frequency.getBlock();
-    const float *amplitudes = amplitude.getBlock();
-    float *buffer = output.getBlock();
+    const float *frequencies = frequency.getBuffer();
+    const float *amplitudes = amplitude.getBuffer();
+    float *buffer = output.getBuffer();
 
     for (int i = 0; i < numFrames; i++) {
         float value = 0.0f;

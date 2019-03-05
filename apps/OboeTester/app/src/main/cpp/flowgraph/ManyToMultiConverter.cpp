@@ -38,8 +38,8 @@ int32_t ManyToMultiConverter::onProcess(
     }
 
     for (int ch = 0; ch < channelCount; ch++) {
-        const float *inputBuffer = inputs[ch]->getBlock();
-        float *outputBuffer = output.getBlock() + ch;
+        const float *inputBuffer = inputs[ch]->getBuffer();
+        float *outputBuffer = output.getBuffer() + ch;
 
         for (int i = 0; i < numFrames; i++) {
             // read one, write into the proper interleaved output channel

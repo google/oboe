@@ -36,7 +36,7 @@ int32_t SinkFloat::read(void *data, int32_t numFrames) {
         if (framesRead <= 0) {
             break;
         }
-        const float *signal = input.getBlock();
+        const float *signal = input.getBuffer();
         int32_t numSamples = framesRead * channelCount;
         memcpy(floatData, signal, numSamples * sizeof(float));
         floatData += numSamples;
