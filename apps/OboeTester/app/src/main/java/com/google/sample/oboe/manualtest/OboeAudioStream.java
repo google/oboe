@@ -23,6 +23,9 @@ import java.io.IOException;
  */
 
 abstract class OboeAudioStream extends AudioStreamBase {
+    private static final int INVALID_STREAM_INDEX = -1;
+    int streamIndex = INVALID_STREAM_INDEX;
+
     @Override
     public void start() throws IOException {
         int result = startNative();
@@ -84,8 +87,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public void open(StreamConfiguration requestedConfiguration,
                      StreamConfiguration actualConfiguration, int bufferSizeInFrames) throws IOException {
         super.open(requestedConfiguration, actualConfiguration, bufferSizeInFrames);
-        setNativeApi(requestedConfiguration.getNativeApi());
-        int result = openNative(requestedConfiguration.getSampleRate(),
+        int result = openNative(requestedConfiguration.getNativeApi(),
+                requestedConfiguration.getSampleRate(),
                 requestedConfiguration.getChannelCount(),
                 requestedConfiguration.getFormat(),
                 requestedConfiguration.getSharingMode(),
@@ -95,7 +98,10 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getFramesPerBurst(),
                 isInput());
         if (result < 0) {
+            streamIndex = INVALID_STREAM_INDEX;
             throw new IOException("Open failed! result = " + result);
+        } else {
+            streamIndex = result;
         }
         actualConfiguration.setNativeApi(getNativeApi());
         actualConfiguration.setSampleRate(getSampleRate());
@@ -111,6 +117,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
 
     private native int openNative(
+            int nativeApi,
             int sampleRate,
             int channelCount,
             int sharingMode,
@@ -120,13 +127,24 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int framesPerRead,
             int perRead, boolean isInput);
 
-    public native void close();
+    @Override
+    public void close() {
+        close(streamIndex);
+        streamIndex = INVALID_STREAM_INDEX;
+    }
+    public native void close(int streamIndex);
 
     @Override
-    public native int getBufferCapacityInFrames();
+    public int getBufferCapacityInFrames() {
+        return getBufferCapacityInFrames(streamIndex);
+    }
+    private native int getBufferCapacityInFrames(int streamIndex);
 
     @Override
-    public native int getBufferSizeInFrames();
+    public int getBufferSizeInFrames() {
+        return getBufferSizeInFrames(streamIndex);
+    }
+    private native int getBufferSizeInFrames(int streamIndex);
 
     @Override
     public boolean isThresholdSupported() {
@@ -134,48 +152,97 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
 
     @Override
-    public native int setBufferSizeInFrames(int thresholdFrames);
+    public int setBufferSizeInFrames(int thresholdFrames) {
+        return setBufferSizeInFrames(streamIndex, thresholdFrames);
+    }
+    private native int setBufferSizeInFrames(int streamIndex, int thresholdFrames);
 
-    public native int setNativeApi(int index);
-
-    public native int getNativeApi();
-
-    @Override
-    public native int getFramesPerBurst();
-
-    public native int getSharingMode();
-
-    public native int getPerformanceMode();
-
-    public native int getSampleRate();
-
-    public native int getFormat();
-
-    public native int getChannelCount();
-
-    public native int getDeviceId();
-
-    public native int getSessionId();
-
-    public native boolean isMMap();
+    public int getNativeApi() {
+        return getNativeApi(streamIndex);
+    }
+    public native int getNativeApi(int streamIndex);
 
     @Override
-    public native long getCallbackCount();
+    public int getFramesPerBurst() {
+        return getFramesPerBurst(streamIndex);
+    }
+    public native int getFramesPerBurst(int streamIndex);
+
+    public int getSharingMode() {
+        return getSharingMode(streamIndex);
+    }
+    public native int getSharingMode(int streamIndex);
+
+    public int getPerformanceMode() {
+        return getPerformanceMode(streamIndex);
+    }
+    public native int getPerformanceMode(int streamIndex);
+
+    public int getSampleRate() {
+        return getSampleRate(streamIndex);
+    }
+    public native int getSampleRate(int streamIndex);
+
+    public int getFormat() {
+        return getFormat(streamIndex);
+    }
+    public native int getFormat(int streamIndex);
+
+    public int getChannelCount() {
+        return getChannelCount(streamIndex);
+    }
+    public native int getChannelCount(int streamIndex);
+
+    public int getDeviceId() {
+        return getDeviceId(streamIndex);
+    }
+    public native int getDeviceId(int streamIndex);
+
+    public int getSessionId() {
+        return getSessionId(streamIndex);
+    }
+    public native int getSessionId(int streamIndex);
+
+    public boolean isMMap() {
+        return isMMap(streamIndex);
+    }
+    public native boolean isMMap(int streamIndex);
 
     @Override
-    public native long getFramesWritten();
+    public long getCallbackCount() {
+        return getCallbackCount(streamIndex);
+    }
+    public native long getCallbackCount(int streamIndex);
 
     @Override
-    public native long getFramesRead();
+    public long getFramesWritten() {
+        return getFramesWritten(streamIndex);
+    }
+    public native long getFramesWritten(int streamIndex);
 
     @Override
-    public native int getXRunCount();
+    public long getFramesRead() {
+        return getFramesRead(streamIndex);
+    }
+    public native long getFramesRead(int streamIndex);
 
     @Override
-    public native double getLatency();
+    public int getXRunCount() {
+        return getXRunCount(streamIndex);
+    }
+    public native int getXRunCount(int streamIndex);
 
     @Override
-    public native int getState();
+    public double getLatency() {
+        return getLatency(streamIndex);
+    }
+    public native double getLatency(int streamIndex);
+
+    @Override
+    public int getState() {
+        return getState(streamIndex);
+    }
+    public native int getState(int streamIndex);
 
     public static native void setCallbackReturnStop(boolean b);
 

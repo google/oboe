@@ -19,19 +19,31 @@
 #define SECONDS_TO_RECORD   10
 
 
+static oboe::AudioApi convertNativeApiToAudioApi(int nativeApi) {
+    switch (nativeApi) {
+        default:
+        case NATIVE_MODE_UNSPECIFIED:
+            return oboe::AudioApi::Unspecified;
+        case NATIVE_MODE_AAUDIO:
+            return oboe::AudioApi::AAudio;
+        case NATIVE_MODE_OPENSLES:
+            return oboe::AudioApi::OpenSLES;
+    }
+}
+
 NativeAudioContext::NativeAudioContext()
     : sineOscillators(MAX_SINE_OSCILLATORS)
     , sawtoothOscillators(MAX_SINE_OSCILLATORS) {
 }
 
-void NativeAudioContext::close() {
+void NativeAudioContext::close(int32_t streamIndex) {
     stopBlockingIOThread();
-
-    if (oboeStream != nullptr) {
-        oboeStream->close();
+    if (mOboeStreams[streamIndex] != nullptr) {
+        mOboeStreams[streamIndex]->close();
+        delete mOboeStreams[streamIndex];
+        freeStreamIndex(streamIndex);
     }
-    delete oboeStream;
-    oboeStream = nullptr;
+
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
     audioStreamGateway.reset(nullptr);
@@ -39,7 +51,8 @@ void NativeAudioContext::close() {
     mSinkI16.reset();
 }
 
-bool NativeAudioContext::isMMapUsed() {
+bool NativeAudioContext::isMMapUsed(int32_t streamIndex) {
+    oboe::AudioStream *oboeStream = getStream(streamIndex);
     if (oboeStream != nullptr && oboeStream->usesAAudio()) {
         if (mAAudioStream_isMMap == nullptr) {
             mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
@@ -114,24 +127,56 @@ void NativeAudioContext::setChannelEnabled(int channelIndex, bool enabled) {
     }
 }
 
-int NativeAudioContext::open(jint sampleRate,
-         jint channelCount,
-         jint format,
-         jint sharingMode,
-         jint performanceMode,
-         jint deviceId,
-         jint sessionId,
-         jint framesPerBurst, jboolean isInput) {
-    if (oboeStream != NULL) {
-        return (jint) oboe::Result::ErrorInvalidState;
+int32_t NativeAudioContext::allocateStreamIndex() {
+    int32_t streamIndex = -1;
+    for (int32_t i = 0; i < kMaxStreams; i++) {
+        if (mOboeStreams[i] == nullptr) {
+            streamIndex = i;
+            break;
+        }
     }
+    return streamIndex;
+}
+
+void NativeAudioContext::freeStreamIndex(int32_t streamIndex) {
+    mOboeStreams[streamIndex] = nullptr;
+}
+
+int NativeAudioContext::open(
+        jint nativeApi,
+        jint sampleRate,
+        jint channelCount,
+        jint format,
+        jint sharingMode,
+        jint performanceMode,
+        jint deviceId,
+        jint sessionId,
+        jint framesPerBurst, jboolean isInput) {
+
+    oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
+    switch (nativeApi) {
+        case NATIVE_MODE_UNSPECIFIED:
+        case NATIVE_MODE_AAUDIO:
+        case NATIVE_MODE_OPENSLES:
+            audioApi = convertNativeApiToAudioApi(nativeApi);
+            break;
+        default:
+            return (jint) oboe::Result::ErrorOutOfRange;
+    }
+
+    int32_t streamIndex = allocateStreamIndex();
+    if (streamIndex < 0) {
+        LOGE("NativeAudioContext::open() stream array full");
+        return (jint) oboe::Result::ErrorNoFreeHandles;
+    }
+
     if (channelCount < 0 || channelCount > 256) {
         LOGE("NativeAudioContext::open() channels out of range");
         return (jint) oboe::Result::ErrorOutOfRange;
     }
 
     // Create an audio output stream.
-    LOGD("NativeAudioContext::open() try to create the OboeStream");
+    LOGD("NativeAudioContext::open() try to create OboeStream #%d", streamIndex);
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(channelCount)
             ->setDirection(isInput ? oboe::Direction::Input : oboe::Direction::Output)
@@ -148,18 +193,23 @@ int NativeAudioContext::open(jint sampleRate,
         builder.setFramesPerCallback(callbackSize);
     }
 
-    if (mAudioApi == oboe::AudioApi::OpenSLES) {
+    if (audioApi == oboe::AudioApi::OpenSLES) {
         builder.setFramesPerCallback(framesPerBurst);
     }
-    builder.setAudioApi(mAudioApi);
+    builder.setAudioApi(audioApi);
 
     // Open a stream based on the builder settings.
+    oboe::AudioStream *oboeStream = nullptr;
     oboe::Result result = builder.openStream(&oboeStream);
     LOGD("NativeAudioContext::open() open(b) returned %d", result);
     if (result != oboe::Result::OK) {
         delete oboeStream;
         oboeStream = nullptr;
+        freeStreamIndex(streamIndex);
+        streamIndex = -1;
     } else {
+        mOboeStreams[streamIndex] = oboeStream;
+
         mChannelCount = oboeStream->getChannelCount();
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
@@ -172,6 +222,7 @@ int NativeAudioContext::open(jint sampleRate,
                                                                  SECONDS_TO_RECORD * mSampleRate);
             mInputAnalyzer.setRecording(mRecording.get());
         } else {
+
             double frequency = 440.0;
             for (int i = 0; i < mChannelCount; i++) {
                 sineOscillators[i].setSampleRate(oboeStream->getSampleRate());
@@ -231,15 +282,29 @@ int NativeAudioContext::open(jint sampleRate,
             dataBuffer = std::make_unique<float []>(numSamples);
         }
 
-        mIsMMapUsed = isMMapUsed();
+
     }
 
-    return (int) result;
+    return ((int)result < 0) ? (int)result : streamIndex;
 }
 
 void NativeAudioContext::runBlockingIO() {
     int32_t framesPerBlock = getFramesPerBlock();
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Continue;
+
+    // TODO rethink which stream gets the callback for full duplex
+    oboe::AudioStream *oboeStream = nullptr;
+    for (int32_t i = 0; i < kMaxStreams; i++) {
+        if (mOboeStreams[i] != nullptr) {
+            oboeStream = mOboeStreams[i];
+            break;
+        }
+    }
+    if (oboeStream == nullptr) {
+        LOGE("%s() : no stream found\n", __func__);
+        return;
+    }
+
     while (threadEnabled.load()
            && callbackResult == oboe::DataCallbackResult::Continue) {
         if (oboeStream->getDirection() == oboe::Direction::Input) {

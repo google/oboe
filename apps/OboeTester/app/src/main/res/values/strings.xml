@@ -9,7 +9,12 @@
     <string name="pauseAudio">Pause</string>
     <string name="stopAudio">Stop</string>
     <string name="closeAudio">Close</string>
+    <string name="recordAudio">Record</string>
+    <string name="playAudio">Play</string>
+
     <string name="GetParam">Get Param</string>
+    <string name="device_name">Device Name</string>
+    <string name="auto_select">Auto select</string>
 
     <string name="output_prompt">Choose an Output Mode</string>
     <string-array name="output_modes">
@@ -90,8 +95,4 @@
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
 
-    <string name="device_name">Device Name</string>
-    <string name="auto_select">Auto select</string>
-    <string name="recordAudio">Record</string>
-    <string name="playAudio">Play</string>
 </resources>

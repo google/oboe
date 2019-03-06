@@ -16,44 +16,38 @@
 
 package com.google.sample.oboe.manualtest;
 
+import android.os.Bundle;
 import android.view.View;
 
 /**
  * Activity to record and play back audio.
  */
-public class EchoActivity extends TestAudioActivity {
+public class EchoActivity extends TestInputActivity {
 
-    private static final int STATE_RECORDING = 5;
-    private static final int STATE_RUNNING = 6;
-    private int mRecorderState = STATE_STOPPED;
+    AudioOutputTester mAudioOutTester;
 
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_echo);
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        updateEnabledWidgets();
+
+        mAudioOutTester = addAudioOutputTester();
+    }
+
     public void onStartEcho(View view) {
         openAudio();
         startAudio();
-        mRecorderState = STATE_RECORDING;
     }
 
     public void onStopEcho(View view) {
         stopAudio();
         closeAudio();
-        mRecorderState = STATE_STOPPED;
-    }
-
-    public void startPlayback() {
-        try {
-            // mAudioStreamTester.startPlayback();
-            updateStreamConfigurationViews();
-            updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showToast(e.getMessage());
-        }
-
     }
 
     @Override

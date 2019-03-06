@@ -39,6 +39,11 @@
 #include "PlayRecordingCallback.h"
 #include "SawPingGenerator.h"
 
+// These must match order in strings.xml and in StreamConfiguration.java
+#define NATIVE_MODE_UNSPECIFIED  0
+#define NATIVE_MODE_OPENSLES     1
+#define NATIVE_MODE_AAUDIO       2
+
 #define MAX_SINE_OSCILLATORS     8
 #define AMPLITUDE_SINE           1.0
 #define AMPLITUDE_SAWTOOTH       0.5
@@ -63,11 +68,16 @@ public:
 
     NativeAudioContext();
 
-    void close();
+    void close(int32_t streamIndex);
 
-    bool isMMapUsed();
+    bool isMMapUsed(int32_t streamIndex);
 
-    int open(jint sampleRate,
+    oboe::AudioStream *getStream(int32_t streamIndex) {
+        return mOboeStreams[streamIndex]; // TODO range check
+    }
+
+    int open(jint nativeApi,
+             jint sampleRate,
              jint channelCount,
              jint format,
              jint sharingMode,
@@ -98,9 +108,12 @@ public:
         LOGD("NativeAudioContext::%s() called", __func__);
         oboe::Result result = oboe::Result::OK;
         stopBlockingIOThread();
-        if (oboeStream != nullptr) {
-            result = oboeStream->requestPause();
-            printScheduler();
+        for (int32_t i = 0; i < kMaxStreams; i++) {
+            oboe::AudioStream *oboeStream = mOboeStreams[i];
+            if (oboeStream != nullptr) {
+                result = oboeStream->requestPause();
+                printScheduler();
+            }
         }
         return result;
     }
@@ -110,9 +123,12 @@ public:
         oboe::Result result = oboe::Result::OK;
         stopBlockingIOThread();
 
-        if (oboeStream != nullptr) {
-            result = oboeStream->requestStop();
-            printScheduler();
+        for (int32_t i = 0; i < kMaxStreams; i++) {
+            oboe::AudioStream *oboeStream = mOboeStreams[i];
+            if (oboeStream != nullptr) {
+                result = oboeStream->requestStop();
+                printScheduler();
+            }
         }
         LOGD("NativeAudioContext::%s() returns %d", __func__, result);
         return result;
@@ -191,8 +207,14 @@ public:
 
         LOGD("NativeAudioContext: %s() called", __func__);
 
-        if (oboeStream == nullptr) {
-            return oboe::Result::ErrorInvalidState;
+        bool gotOne = false;
+        for (int32_t i = 0; i < kMaxStreams; i++) {
+            gotOne = (mOboeStreams[i] != nullptr);
+            if (gotOne) break;
+        }
+        if (!gotOne) {
+            LOGD("NativeAudioContext: %s() did not find a stream", __func__);
+            return oboe::Result::ErrorNull;
         }
 
         stop();
@@ -213,22 +235,21 @@ public:
 
         LOGD("NativeAudioContext: %s start stream", __func__);
         oboe::Result result = oboe::Result::OK;
-        if (oboeStream != nullptr) {
-            result = oboeStream->requestStart();
+        for (int32_t i = 0; i < kMaxStreams; i++) {
+            oboe::AudioStream *oboeStream = mOboeStreams[i];
+            if (oboeStream != nullptr) {
+                result = oboeStream->requestStart();
 
-            if (!useCallback && result == oboe::Result::OK) {
-                LOGD("OboeAudioStream_start: start thread for blocking I/O");
-                // Instead of using the callback, start a thread that reads or writes the stream.
-                threadEnabled.store(true);
-                dataThread = new std::thread(threadCallback, this);
+                if (!useCallback && result == oboe::Result::OK) {
+                    LOGD("OboeAudioStream_start: start thread for blocking I/O");
+                    // Instead of using the callback, start a thread that reads or writes the stream. // FIXME
+                    threadEnabled.store(true);
+                    dataThread = new std::thread(threadCallback, this);
+                }
             }
         }
         LOGD("OboeAudioStream_start: start returning %d", result);
         return result;
-    }
-
-    void setAudioApi(oboe::AudioApi audioApi) {
-        mAudioApi = audioApi;
     }
 
     void setToneEnabled(bool enabled) {
@@ -258,12 +279,10 @@ public:
 
     void setChannelEnabled(int channelIndex, bool enabled);
 
-    oboe::AudioStream           *oboeStream = nullptr;
     InputStreamCallbackAnalyzer  mInputAnalyzer;
     bool                         useCallback = true;
     bool                         callbackReturnStop = false;
     int                          callbackSize = 0;
-    bool                         mIsMMapUsed = false;
 
 private:
 
@@ -274,6 +293,11 @@ private:
         Impulse = 2,
         Sawtooth = 3
     };
+
+
+    int32_t allocateStreamIndex();
+
+    void freeStreamIndex(int32_t streamIndex);
 
     void connectTone();
 
@@ -291,10 +315,11 @@ private:
 
     }
 
-    oboe::AudioApi               mAudioApi = oboe::AudioApi::Unspecified;
-    int32_t                      mFramesPerBurst = 0;
-    int32_t                      mChannelCount = 0;
-    int32_t                      mSampleRate = 0;
+    static constexpr int         kMaxStreams = 8;
+    oboe::AudioStream           *mOboeStreams[kMaxStreams]{};
+    int32_t                      mFramesPerBurst = 0; // TODO per stream
+    int32_t                      mChannelCount = 0; // TODO per stream
+    int32_t                      mSampleRate = 0; // TODO per stream
     ToneType                     mToneType = ToneType::Sine;
 
     std::atomic<bool>            threadEnabled{false};

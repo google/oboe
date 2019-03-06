@@ -79,6 +79,13 @@ public abstract class AudioStreamBase {
         }
     }
 
+    /**
+     *
+     * @param requestedConfiguration
+     * @param actualConfiguration
+     * @param bufferSizeInFrames
+     * @throws IOException
+     */
     public void open(StreamConfiguration requestedConfiguration,
                      StreamConfiguration actualConfiguration,
                      int bufferSizeInFrames) throws IOException {

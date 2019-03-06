@@ -35,7 +35,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onStartEcho"
-            android:text="@string/playAudio" />
+            android:text="@string/startAudio" />
 
         <Button
             android:id="@+id/button_stop_echo"
