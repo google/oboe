@@ -41,6 +41,12 @@ public class RecorderActivity extends TestInputActivity {
         setContentView(R.layout.activity_recorder);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_RECORD_PLAY);
+    }
+
     public void onStartRecording(View view) {
         openAudio();
         startAudio();

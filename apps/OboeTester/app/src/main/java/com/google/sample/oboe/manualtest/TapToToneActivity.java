@@ -110,6 +110,12 @@ public class TapToToneActivity extends TestOutputActivityBase {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_TAP_TO_TONE);
+    }
+
+    @Override
     protected void onDestroy() {
         mAudioMidiTester.removeTestListener(mTestListener);
         closeMidiResources();

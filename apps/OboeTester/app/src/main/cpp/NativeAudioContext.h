@@ -206,6 +206,7 @@ public:
     oboe::Result start() {
 
         LOGD("NativeAudioContext: %s() called", __func__);
+        configureForActivityType();
 
         bool gotOne = false;
         for (int32_t i = 0; i < kMaxStreams; i++) {
@@ -279,6 +280,11 @@ public:
 
     void setChannelEnabled(int channelIndex, bool enabled);
 
+    void setActivityType(int activityType) {
+        LOGD("%s(%d)", __func__, activityType);
+        mActivityType = (ActivityType) activityType;
+    }
+
     InputStreamCallbackAnalyzer  mInputAnalyzer;
     bool                         useCallback = true;
     bool                         callbackReturnStop = false;
@@ -294,8 +300,21 @@ private:
         Sawtooth = 3
     };
 
+    // WARNING - must match definitions in TestAudioActivity.java
+    enum ActivityType {
+        Undefined = -1,
+        TestOutput = 0,
+        TestInput = 1,
+        TapToTone = 2,
+        RecordPlay = 3,
+        Echo = 4
+    };
+
+    oboe::AudioStream * getOutputStream();
 
     int32_t allocateStreamIndex();
+
+    void configureForActivityType();
 
     void freeStreamIndex(int32_t streamIndex);
 
@@ -321,6 +340,7 @@ private:
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
     ToneType                     mToneType = ToneType::Sine;
+    ActivityType                 mActivityType = ActivityType::Undefined;
 
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr;

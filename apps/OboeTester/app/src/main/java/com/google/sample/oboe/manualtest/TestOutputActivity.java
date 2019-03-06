@@ -17,6 +17,7 @@
 package com.google.sample.oboe.manualtest;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 
@@ -52,6 +53,12 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox6);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox7);
         configureChannelBoxes(0);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_TEST_OUTPUT);
     }
 
     public void openAudio() {

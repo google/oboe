@@ -48,12 +48,14 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jboolean isInput);
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_close(JNIEnv *env, jobject, jint);
+/*
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_start(JNIEnv *env, jobject);
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_startNative(JNIEnv *env, jobject);
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_pause(JNIEnv *env, jobject);
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_pauseNative(JNIEnv *env, jobject);
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_stop(JNIEnv *env, jobject);
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_stopNative(JNIEnv *env, jobject);
+*/
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setThresholdInFrames(JNIEnv *env, jobject, jint, jint);
 JNIEXPORT jint JNICALL
@@ -115,17 +117,17 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
 }
 
 JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_startNative(JNIEnv *env, jobject) {
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_startNative(JNIEnv *env, jobject) {
     return (jint) engine.start();
 }
 
 JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_pauseNative(JNIEnv *env, jobject) {
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_pauseNative(JNIEnv *env, jobject) {
     return (jint) engine.pause();
 }
 
 JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_stopNative(JNIEnv *env, jobject) {
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_stopNative(JNIEnv *env, jobject) {
     return (jint) engine.stop();
 }
 
@@ -412,6 +414,14 @@ JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
         JNIEnv *env, jobject, jint channelIndex, jboolean enabled) {
     engine.setChannelEnabled(channelIndex, enabled);
+}
+
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv *env,
+                                                                         jobject instance,
+                                                                         jint activityType) {
+    engine.setActivityType(activityType);
 }
 
 }

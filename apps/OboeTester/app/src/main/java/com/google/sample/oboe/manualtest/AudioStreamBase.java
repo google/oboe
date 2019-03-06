@@ -96,12 +96,6 @@ public abstract class AudioStreamBase {
 
     public abstract boolean isInput();
 
-    public abstract void start() throws IOException;
-
-    public abstract void pause() throws IOException;
-
-    public abstract void stop() throws IOException;
-
     public void startPlayback() throws IOException {}
 
     public void stopPlayback() throws IOException {}

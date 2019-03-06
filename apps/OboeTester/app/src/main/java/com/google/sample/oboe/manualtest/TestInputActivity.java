@@ -62,12 +62,19 @@ public class TestInputActivity  extends TestAudioActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_TEST_INPUT);
+    }
+
+    @Override
     void updateStreamDisplay() {
         int numChannels = mAudioInputTester.getCurrentAudioStream().getChannelCount();
         if (numChannels > NUM_VOLUME_BARS) {
             numChannels = NUM_VOLUME_BARS;
         }
         for (int i = 0; i < numChannels; i++) {
+            if (mVolumeBars[i] == null) break;
             double level = mAudioInputTester.getPeakLevel(i);
             mVolumeBars[i].setVolume((float) level);
         }

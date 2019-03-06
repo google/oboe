@@ -27,37 +27,6 @@ abstract class OboeAudioStream extends AudioStreamBase {
     int streamIndex = INVALID_STREAM_INDEX;
 
     @Override
-    public void start() throws IOException {
-        int result = startNative();
-        if (result < 0) {
-            throw new IOException("Start failed! result = " + result);
-        }
-    }
-
-    public native int startNative();
-
-    @Override
-    public void pause() throws IOException {
-        int result = pauseNative();
-        if (result < 0) {
-            throw new IOException("Pause failed! result = " + result);
-        }
-    }
-
-    public native int pauseNative();
-
-    @Override
-    public void stop() throws IOException {
-        int result = stopNative();
-        if (result < 0) {
-            throw new IOException("Stop failed! result = " + result);
-        }
-    }
-
-    public native int stopNative();
-
-
-    @Override
     public void stopPlayback() throws IOException {
         int result = stopPlaybackNative();
         if (result < 0) {
@@ -129,8 +98,10 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     @Override
     public void close() {
-        close(streamIndex);
-        streamIndex = INVALID_STREAM_INDEX;
+        if (streamIndex >= 0) {
+            close(streamIndex);
+            streamIndex = INVALID_STREAM_INDEX;
+        }
     }
     public native void close(int streamIndex);
 

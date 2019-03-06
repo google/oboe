@@ -18,7 +18,6 @@
 
 #define SECONDS_TO_RECORD   10
 
-
 static oboe::AudioApi convertNativeApiToAudioApi(int nativeApi) {
     switch (nativeApi) {
         default:
@@ -38,12 +37,15 @@ NativeAudioContext::NativeAudioContext()
 
 void NativeAudioContext::close(int32_t streamIndex) {
     stopBlockingIOThread();
+
+    LOGD("%s() delete stream %d ", __func__, streamIndex);
     if (mOboeStreams[streamIndex] != nullptr) {
         mOboeStreams[streamIndex]->close();
         delete mOboeStreams[streamIndex];
         freeStreamIndex(streamIndex);
     }
 
+    LOGD("%s() delete nodes", __func__);
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
     audioStreamGateway.reset(nullptr);
@@ -210,10 +212,34 @@ int NativeAudioContext::open(
     } else {
         mOboeStreams[streamIndex] = oboeStream;
 
-        mChannelCount = oboeStream->getChannelCount();
+        mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
-        if (isInput) {
+    }
+
+    return ((int)result < 0) ? (int)result : streamIndex;
+}
+
+oboe::AudioStream * NativeAudioContext::getOutputStream() {
+    for (int32_t i = 0; i < kMaxStreams; i++) {
+        oboe::AudioStream *oboeStream = mOboeStreams[i];
+        if (oboeStream != nullptr) {
+            if (oboeStream->getDirection() == oboe::Direction::Output) {
+                return oboeStream;
+            }
+        }
+    }
+    return nullptr;
+}
+
+void NativeAudioContext::configureForActivityType() {
+    oboe::AudioStream *outputStream = nullptr;
+
+    switch(mActivityType) {
+        case ActivityType::Undefined:
+            break;
+        case ActivityType::TestInput:
+        case ActivityType::RecordPlay:
             mInputAnalyzer.reset();
             if (useCallback) {
                 oboeCallbackProxy.setCallback(&mInputAnalyzer);
@@ -221,71 +247,79 @@ int NativeAudioContext::open(
             mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
                                                                  SECONDS_TO_RECORD * mSampleRate);
             mInputAnalyzer.setRecording(mRecording.get());
-        } else {
+            break;
 
-            double frequency = 440.0;
-            for (int i = 0; i < mChannelCount; i++) {
-                sineOscillators[i].setSampleRate(oboeStream->getSampleRate());
-                sineOscillators[i].frequency.setValue(frequency);
-                frequency *= 4.0 / 3.0; // each sine is at a higher frequency
-                sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
-            }
-            for (int i = 0; i < mChannelCount; i++) {
-                sawtoothOscillators[i].setSampleRate(oboeStream->getSampleRate());
-                sawtoothOscillators[i].frequency.setValue(frequency);
-                frequency *= 4.0 / 3.0; // each sawtooth is at a higher frequency
-                sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
+        case ActivityType::TestOutput:
+            outputStream = getOutputStream();
+            {
+                double frequency = 440.0;
+                for (int i = 0; i < mChannelCount; i++) {
+                    sineOscillators[i].setSampleRate(outputStream->getSampleRate());
+                    sineOscillators[i].frequency.setValue(frequency);
+                    frequency *= 4.0 / 3.0; // each sine is at a higher frequency
+                    sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
+                }
+                for (int i = 0; i < mChannelCount; i++) {
+                    sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate());
+                    sawtoothOscillators[i].frequency.setValue(frequency);
+                    frequency *= 4.0 / 3.0; // each sawtooth is at a higher frequency
+                    sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
+                }
             }
 
-            impulseGenerator.setSampleRate(oboeStream->getSampleRate());
+            impulseGenerator.setSampleRate(outputStream->getSampleRate());
             impulseGenerator.frequency.setValue(440.0);
             impulseGenerator.amplitude.setValue(AMPLITUDE_IMPULSE);
+            break;
 
-            sawPingGenerator.setSampleRate(oboeStream->getSampleRate());
+        case ActivityType::TapToTone:
+            outputStream = getOutputStream();
+            sawPingGenerator.setSampleRate(outputStream->getSampleRate());
             sawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
             sawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+            break;
 
-            manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
-            monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
-
-            mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-            mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
-
-            // We needed the proxy because we did not know the channelCount
-            // when we setup the Builder.
-            audioStreamGateway = std::make_unique<AudioStreamGateway>(mChannelCount);
-            if (oboeStream->getFormat() == oboe::AudioFormat::I16) {
-                audioStreamGateway->setAudioSink(mSinkI16);
-            } else if (oboeStream->getFormat() == oboe::AudioFormat::Float) {
-                audioStreamGateway->setAudioSink(mSinkFloat);
-            }
-
-            connectTone();
-
-            if (useCallback) {
-                oboeCallbackProxy.setCallback(audioStreamGateway.get());
-            }
-
-            // Set starting size of buffer.
-            constexpr int kDefaultNumBursts = 2; // "double buffer"
-            int32_t numBursts = kDefaultNumBursts;
-            // callbackSize is used for both callbacks and blocking write
-            numBursts = (callbackSize <= mFramesPerBurst)
-                        ? kDefaultNumBursts
-                        : ((callbackSize * kDefaultNumBursts) + mFramesPerBurst - 1)
-                          / mFramesPerBurst;
-            oboeStream->setBufferSizeInFrames(numBursts * mFramesPerBurst);
-        }
-
-        if (!useCallback) {
-            int numSamples = getFramesPerBlock() * mChannelCount;
-            dataBuffer = std::make_unique<float []>(numSamples);
-        }
-
-
+        case ActivityType::Echo:
+            break;
     }
 
-    return ((int)result < 0) ? (int)result : streamIndex;
+    if (outputStream != nullptr) {
+        manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
+        monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
+
+        mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
+        mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+
+        // We needed the proxy because we did not know the channelCount
+        // when we setup the Builder.
+        audioStreamGateway = std::make_unique<AudioStreamGateway>(mChannelCount);
+        if (outputStream->getFormat() == oboe::AudioFormat::I16) {
+            audioStreamGateway->setAudioSink(mSinkI16);
+        } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
+            audioStreamGateway->setAudioSink(mSinkFloat);
+        }
+
+        connectTone();
+
+        if (useCallback) {
+            oboeCallbackProxy.setCallback(audioStreamGateway.get());
+        }
+
+        // Set starting size of buffer.
+        constexpr int kDefaultNumBursts = 2; // "double buffer"
+        int32_t numBursts = kDefaultNumBursts;
+        // callbackSize is used for both callbacks and blocking write
+        numBursts = (callbackSize <= mFramesPerBurst)
+                    ? kDefaultNumBursts
+                    : ((callbackSize * kDefaultNumBursts) + mFramesPerBurst - 1)
+                      / mFramesPerBurst;
+        outputStream->setBufferSizeInFrames(numBursts * mFramesPerBurst);
+    }
+
+    if (!useCallback) {
+        int numSamples = getFramesPerBlock() * mChannelCount;
+        dataBuffer = std::make_unique<float[]>(numSamples);
+    }
 }
 
 void NativeAudioContext::runBlockingIO() {

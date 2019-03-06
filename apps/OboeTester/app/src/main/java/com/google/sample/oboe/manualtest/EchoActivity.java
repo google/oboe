@@ -40,6 +40,12 @@ public class EchoActivity extends TestInputActivity {
         mAudioOutTester = addAudioOutputTester();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_ECHO);
+    }
+
     public void onStartEcho(View view) {
         openAudio();
         startAudio();

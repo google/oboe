@@ -46,6 +46,14 @@ abstract class TestAudioActivity extends Activity {
     public static final int COLOR_ACTIVE = 0xFFD0D0A0;
     public static final int COLOR_IDLE = 0xFFD0D0D0;
 
+    // Pass the activity index to native so it can know how to respond to the start and stop calls.
+    // WARNING - must match definitions in NativeAudioContext.h ActivityType
+    public static final int ACTIVITY_TEST_OUTPUT = 0;
+    public static final int ACTIVITY_TEST_INPUT = 1;
+    public static final int ACTIVITY_TAP_TO_TONE = 2;
+    public static final int ACTIVITY_RECORD_PLAY = 3;
+    public static final int ACTIVITY_ECHO = 4;
+
     private int mState = STATE_CLOSED;
     protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
@@ -104,6 +112,11 @@ abstract class TestAudioActivity extends Activity {
 
     }
 
+    protected abstract void inflateActivity();
+
+    void updateStreamDisplay() {
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,20 +124,16 @@ abstract class TestAudioActivity extends Activity {
         findAudioCommon();
     }
 
-    protected abstract void inflateActivity();
-
-    void updateStreamDisplay() {
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop() called so stopping audio =========================");
+        stopAudio();
+        closeAudio();
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        try {
-            for (StreamContext streamContext : mStreamContexts) {
-                streamContext.tester.stop();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mState = STATE_CLOSED;
         super.onDestroy();
     }
@@ -225,14 +234,6 @@ abstract class TestAudioActivity extends Activity {
         Toast.makeText(this, "Error: " + message, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    protected void onStop() {
-        Log.i(TAG, "onStop() called so stopping audio =========================");
-        stopAudio();
-        closeAudio();
-        super.onStop();
-    }
-
     public void openAudio(View view) {
         openAudio();
     }
@@ -276,44 +277,43 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    // Native methods
+    private native int startNative();
+    private native int pauseNative();
+    private native int stopNative();
+    protected native void setActivityType(int activityType);
+
     public void startAudio() {
-        try {
-            mState = STATE_STARTED;
+        int result = startNative();
+        if (result < 0) {
+            showToast("Start failed with " + result);
+        } else {
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
-                streamContext.tester.start();
                 configView.updateDisplay();
             }
+            mState = STATE_STARTED;
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showToast(e.getMessage());
         }
     }
 
     public void pauseAudio() {
-        try {
-            for (StreamContext streamContext : mStreamContexts) {
-                streamContext.tester.pause();
-            }
+        int result = pauseNative();
+        if (result < 0) {
+            showToast("Pause failed with " + result);
+        } else {
             mState = STATE_PAUSED;
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showToast(e.getMessage());
         }
     }
 
     public void stopAudio() {
-        try {
-            for (StreamContext streamContext : mStreamContexts) {
-                streamContext.tester.stop();
-            }
+        int result = stopNative();
+        if (result < 0) {
+            showToast("Stop failed with " + result);
+        } else {
             mState = STATE_STOPPED;
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showToast(e.getMessage());
         }
     }
 
