@@ -22,7 +22,7 @@ set (oboe_sources
 		src/common/Trace.cpp
         )
 
-add_library(oboe STATIC ${oboe_sources})
+add_library(oboe ${oboe_sources})
 
 # Specify directories which the compiler should look for headers
 target_include_directories(oboe
