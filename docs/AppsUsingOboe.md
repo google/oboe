@@ -4,6 +4,7 @@
 |:--|:--|:--|:--|
 | [Best Piano](https://play.google.com/store/apps/details?id=com.netigen.piano) | Piano tutor app  | Netigen | Stream is opened with 44100 Hz so it will not get an MMAP stream on Pixel |
 | [CSound for Android](https://play.google.com/store/apps/details?id=com.csounds.Csound6) | Audio synthesis app, using CSound framework | Irreducible Productions | [Oboe implementation source code](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp) |
+| [Grainstorm](https://play.google.com/store/apps/details?id=me.rocks.grainstorm) | Granular synthesizer app | The Secret Laboratory | |
 | [G-Stomper apps](https://play.google.com/store/apps/dev?id=5200192441928542082) | Mobile music production software | planet-h.com | Uses AAudio if you enable it in Settings (Setup->AUD->Audio System->AAudio). |
 | [ktnes](https://github.com/felipecsl/ktnes) | A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native. | Felipe Lima | | 
 | [Les Talens Lyriques apps](https://play.google.com/store/apps/developer?id=Les+Talens+Lyriques) | Music education apps | Les Talens Lyriques |  Stream opened with 44100 Hz so it will not get an MMAP stream on Pixel |
