@@ -36,7 +36,7 @@ public:
 
     virtual ~ClipToRange() = default;
 
-    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
+    int32_t onProcess(int32_t numFrames) override;
 
     void setMinimum(float min) {
         mMinimum = min;

@@ -23,13 +23,7 @@ ImpulseOscillator::ImpulseOscillator()
         : OscillatorBase() {
 }
 
-int32_t ImpulseOscillator::onProcess(
-        int64_t framePosition,
-        int numFrames) {
-
-    frequency.pullData(framePosition, numFrames);
-    amplitude.pullData(framePosition, numFrames);
-
+int32_t ImpulseOscillator::onProcess(int numFrames) {
     const float *frequencies = frequency.getBuffer();
     const float *amplitudes = amplitude.getBuffer();
     float *buffer = output.getBuffer();

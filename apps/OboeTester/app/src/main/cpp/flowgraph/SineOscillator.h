@@ -28,9 +28,7 @@ class SineOscillator : public OscillatorBase {
 public:
     SineOscillator();
 
-    int32_t onProcess(
-            int64_t framePosition,
-            int numFrames) override;
+    int32_t onProcess(int numFrames) override;
 };
 
 #endif //FLOWGRAPH_SINE_OSCILLATOR_H

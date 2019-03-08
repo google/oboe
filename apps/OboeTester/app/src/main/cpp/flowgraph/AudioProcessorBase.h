@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <vector>
 
 // TODO Move these classes into separate files.
 // TODO Maybe remove "Audio" prefix from these class names: AudioProcessorBase to ProcessorNode
@@ -47,6 +48,7 @@ namespace flowgraph {
 // If it is too high then we will thrash the caches.
 constexpr int kDefaultBufferSize = 8; // arbitrary
 
+class AudioPort;
 class AudioFloatInputPort;
 
 /***************************************************************************/
@@ -61,11 +63,10 @@ public:
      * Read from the input ports,
      * generate multiple frames of data then write the results to the output ports.
      *
-     * @param framePosition index of first frame to be processed
      * @param numFrames maximum number of frames requested for processing
      * @return number of frames actually processed
      */
-    virtual int32_t onProcess(int64_t framePosition, int32_t numFrames) = 0;
+    virtual int32_t onProcess(int32_t numFrames) = 0;
 
     /**
      * If the framePosition is at or after the last frame position then call onProcess().
@@ -78,14 +79,18 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames);
 
-    virtual void start() {
-        mLastFramePosition = 0;
-    }
+    virtual void start() {}
 
     virtual void stop() {}
 
+    void addInputPort(AudioPort &port) {
+        mInputPorts.push_back(port);
+    }
+
 protected:
     int64_t  mLastFramePosition = -1; // Start at -1 so that the first pull works.
+
+    std::vector<std::reference_wrapper<AudioPort>> mInputPorts;
 
 private:
     int32_t  mFramesValid = 0; // num valid frames in the block
@@ -113,6 +118,8 @@ public:
     int32_t getSamplesPerFrame() const {
         return mSamplesPerFrame;
     }
+
+    virtual int32_t pullData(int64_t framePosition, int32_t numFrames) = 0;
 
 protected:
     AudioProcessorBase &mParent;
@@ -150,7 +157,6 @@ protected:
         return mBuffer.get();
     }
 
-
 private:
     const int32_t    mFramesPerBuffer = 1;
     std::unique_ptr<float[]> mBuffer; // allocated in constructor
@@ -171,14 +177,6 @@ public:
     using AudioFloatBufferPort::getBuffer;
 
     /**
-     * Call the parent module's onProcess() method.
-     * That may pull data from its inputs and recursively
-     * process the entire graph.
-     * @return number of frames actually pulled
-     */
-    int32_t pullData(int64_t framePosition, int32_t numFrames);
-
-    /**
      * Connect to the input of another module.
      * An input port can only have one connection.
      * An output port can have multiple connections.
@@ -195,6 +193,15 @@ public:
      * This not thread safe.
      */
     void disconnect(AudioFloatInputPort *port);
+
+    /**
+     * Call the parent module's onProcess() method.
+     * That may pull data from its inputs and recursively
+     * process the entire graph.
+     * @return number of frames actually pulled
+     */
+    int32_t pullData(int64_t framePosition, int32_t numFrames) override;
+
 };
 
 /***************************************************************************/
@@ -208,6 +215,8 @@ class AudioFloatInputPort : public AudioFloatBufferPort {
 public:
     AudioFloatInputPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
             : AudioFloatBufferPort(parent, samplesPerFrame) {
+        // Add to parent so it can pull data from each input.
+        parent.addInputPort(*this);
     }
 
     virtual ~AudioFloatInputPort() = default;
@@ -219,11 +228,6 @@ public:
      * which can be loaded using setValue().
      */
     float *getBuffer() override;
-
-    /**
-     * Pull data from any output port that is connected.
-     */
-    int32_t pullData(int64_t framePosition, int32_t numFrames);
 
     /**
      * Write every value of the float buffer.
@@ -258,6 +262,11 @@ public:
     void disconnect() {
         mConnected = nullptr;
     }
+
+    /**
+     * Pull data from any output port that is connected.
+     */
+    int32_t pullData(int64_t framePosition, int32_t numFrames) override;
 
 private:
     AudioFloatOutputPort *mConnected = nullptr;
@@ -318,23 +327,15 @@ public:
     /**
      * Dummy processor. The work happens in the read() method.
      *
-     * @param framePosition index of first frame to be processed
      * @param numFrames
      * @return number of frames actually processed
      */
-    int32_t onProcess(int64_t framePosition, int32_t numFrames) override {
-        (void) framePosition;
-        (void) numFrames;
-        return 0;
+    int32_t onProcess(int32_t numFrames) override {
+        return numFrames;
     };
 
-    virtual int32_t read(void *data, int32_t numFrames) = 0;
+    virtual int32_t read(int64_t framePosition, void *data, int32_t numFrames) = 0;
 
-protected:
-    int32_t pull(int32_t numFrames);
-
-private:
-    int64_t mFramePosition = 0;
 };
 
 } /* namespace flowgraph */

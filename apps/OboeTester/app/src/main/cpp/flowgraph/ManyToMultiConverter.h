@@ -32,9 +32,7 @@ public:
 
     virtual ~ManyToMultiConverter() = default;
 
-    int32_t onProcess(
-            int64_t framePosition,
-            int numFrames) override;
+    int32_t onProcess(int numFrames) override;
 
     void setEnabled(bool enabled) {};
 
