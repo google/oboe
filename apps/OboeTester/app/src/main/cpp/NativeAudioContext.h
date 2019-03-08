@@ -89,7 +89,7 @@ public:
     void setToneType(int toneType) {
         LOGI("%s(%d)", __func__, toneType);
         mToneType = (ToneType) toneType;
-        connectTone();
+        // connectTone();
     }
 
     int32_t getFramesPerBlock() {
@@ -102,7 +102,6 @@ public:
             LOGI("scheduler = 0x%08x, SCHED_FIFO = 0x%08X\n", scheduler, SCHED_FIFO);
         }
     }
-
 
     oboe::Result pause() {
         LOGD("NativeAudioContext::%s() called", __func__);
@@ -203,61 +202,11 @@ public:
         LOGD("%s: exiting", __func__);
     }
 
-    oboe::Result start() {
-
-        LOGD("NativeAudioContext: %s() called", __func__);
-        configureForActivityType();
-
-        bool gotOne = false;
-        for (int32_t i = 0; i < kMaxStreams; i++) {
-            gotOne = (mOboeStreams[i] != nullptr);
-            if (gotOne) break;
-        }
-        if (!gotOne) {
-            LOGD("NativeAudioContext: %s() did not find a stream", __func__);
-            return oboe::Result::ErrorNull;
-        }
-
-        stop();
-
-        LOGD("NativeAudioContext: %s() start modules", __func__);
-        for (int i = 0; i < mChannelCount; i++) {
-            sineOscillators[i].start();
-            sawtoothOscillators[i].start();
-        }
-        impulseGenerator.start();
-        sawPingGenerator.start();
-        if (mSinkFloat) {
-            mSinkFloat->start();
-        }
-        if (mSinkI16) {
-            mSinkI16->start();
-        }
-
-        LOGD("NativeAudioContext: %s start stream", __func__);
-        oboe::Result result = oboe::Result::OK;
-        for (int32_t i = 0; i < kMaxStreams; i++) {
-            oboe::AudioStream *oboeStream = mOboeStreams[i];
-            if (oboeStream != nullptr) {
-                result = oboeStream->requestStart();
-
-                if (!useCallback && result == oboe::Result::OK) {
-                    LOGD("OboeAudioStream_start: start thread for blocking I/O");
-                    // Instead of using the callback, start a thread that reads or writes the stream. // FIXME
-                    threadEnabled.store(true);
-                    dataThread = new std::thread(threadCallback, this);
-                }
-            }
-        }
-        LOGD("OboeAudioStream_start: start returning %d", result);
-        return result;
-    }
+    oboe::Result start();
 
     void setToneEnabled(bool enabled) {
         LOGD("%s(%d)", __func__, enabled ? 1 : 0);
-        // sineGenerator.setEnabled(enabled); // not needed
         sawPingGenerator.setEnabled(enabled);
-        // impulseGenerator.setEnabled(enabled); // not needed
     }
 
     void setAmplitude(double amplitude) {
@@ -310,6 +259,7 @@ private:
         Echo = 4
     };
 
+    oboe::AudioStream * getInputStream();
     oboe::AudioStream * getOutputStream();
 
     int32_t allocateStreamIndex();

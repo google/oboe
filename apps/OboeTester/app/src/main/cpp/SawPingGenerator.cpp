@@ -31,12 +31,7 @@ SawPingGenerator::SawPingGenerator()
 
 SawPingGenerator::~SawPingGenerator() { }
 
-int32_t SawPingGenerator::onProcess(
-        int64_t framePosition,
-        int numFrames) {
-
-    frequency.pullData(framePosition, numFrames);
-    amplitude.pullData(framePosition, numFrames);
+int32_t SawPingGenerator::onProcess(int numFrames) {
 
     const float *frequencies = frequency.getBuffer();
     const float *amplitudes = amplitude.getBuffer();
@@ -69,6 +64,8 @@ void SawPingGenerator::setEnabled(bool enabled) {
     LOGD("%s(%d)", __func__, enabled ? 1 : 0);
     if (enabled) {
         mRequestCount++;
+    } else {
+        mAcknowledgeCount.store(mRequestCount.load());
     }
 }
 

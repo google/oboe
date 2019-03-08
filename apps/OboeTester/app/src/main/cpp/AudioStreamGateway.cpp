@@ -17,7 +17,6 @@
 #include <cstring>
 #include <sched.h>
 
-#include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "AudioStreamGateway.h"
 
@@ -31,6 +30,8 @@ AudioStreamGateway::~AudioStreamGateway()
 {
 }
 
+int64_t AudioStreamGateway::mFramePosition = 0;
+
 oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
         oboe::AudioStream *audioStream,
         void *audioData,
@@ -42,7 +43,8 @@ oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
     }
 
     if (mAudioSink != nullptr) {
-        mAudioSink->read(audioData, numFrames);
+        mAudioSink->read(mFramePosition, audioData, numFrames);
+        mFramePosition += numFrames;
     }
 
     return oboe::DataCallbackResult::Continue;

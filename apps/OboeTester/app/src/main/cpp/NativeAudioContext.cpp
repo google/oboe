@@ -78,35 +78,35 @@ bool NativeAudioContext::isMMapUsed(int32_t streamIndex) {
 }
 
 void NativeAudioContext::connectTone() {
-    if (monoToMulti != nullptr) {
-        LOGI("%s() mToneType = %d", __func__, mToneType);
-        switch (mToneType) {
-            case ToneType::SawPing:
-                sawPingGenerator.output.connect(&(monoToMulti->input));
-                monoToMulti->output.connect(&(mSinkFloat.get()->input));
-                monoToMulti->output.connect(&(mSinkI16.get()->input));
-                break;
-            case ToneType::Sine:
-                for (int i = 0; i < mChannelCount; i++) {
-                    sineOscillators[i].output.connect(manyToMulti->inputs[i].get());
-                }
-                manyToMulti->output.connect(&(mSinkFloat.get()->input));
-                manyToMulti->output.connect(&(mSinkI16.get()->input));
-                break;
-            case ToneType::Impulse:
-                impulseGenerator.output.connect(&(monoToMulti->input));
-                monoToMulti->output.connect(&(mSinkFloat.get()->input));
-                monoToMulti->output.connect(&(mSinkI16.get()->input));
-                break;
-            case ToneType::Sawtooth:
-                for (int i = 0; i < mChannelCount; i++) {
-                    sawtoothOscillators[i].output.connect(manyToMulti->inputs[i].get());
-                }
-                manyToMulti->output.connect(&(mSinkFloat.get()->input));
-                manyToMulti->output.connect(&(mSinkI16.get()->input));
-                break;
-        }
-    }
+//    if (monoToMulti != nullptr) {
+//        LOGI("%s() mToneType = %d", __func__, mToneType);
+//        switch (mToneType) {
+//            case ToneType::SawPing:
+//                sawPingGenerator.output.connect(&(monoToMulti->input));
+//                monoToMulti->output.connect(&(mSinkFloat.get()->input));
+//                monoToMulti->output.connect(&(mSinkI16.get()->input));
+//                break;
+//            case ToneType::Sine:
+//                for (int i = 0; i < mChannelCount; i++) {
+//                    sineOscillators[i].output.connect(manyToMulti->inputs[i].get());
+//                }
+//                manyToMulti->output.connect(&(mSinkFloat.get()->input));
+//                manyToMulti->output.connect(&(mSinkI16.get()->input));
+//                break;
+//            case ToneType::Impulse:
+//                impulseGenerator.output.connect(&(monoToMulti->input));
+//                monoToMulti->output.connect(&(mSinkFloat.get()->input));
+//                monoToMulti->output.connect(&(mSinkI16.get()->input));
+//                break;
+//            case ToneType::Sawtooth:
+//                for (int i = 0; i < mChannelCount; i++) {
+//                    sawtoothOscillators[i].output.connect(manyToMulti->inputs[i].get());
+//                }
+//                manyToMulti->output.connect(&(mSinkFloat.get()->input));
+//                manyToMulti->output.connect(&(mSinkI16.get()->input));
+//                break;
+//        }
+//    }
 }
 
 void NativeAudioContext::setChannelEnabled(int channelIndex, bool enabled) {
@@ -191,6 +191,8 @@ int NativeAudioContext::open(
 
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
     if (useCallback) {
+        LOGD("NativeAudioContext::open() set callback to use oboeCallbackProxy, size = %d",
+             callbackSize);
         builder.setCallback(&oboeCallbackProxy);
         builder.setFramesPerCallback(callbackSize);
     }
@@ -232,8 +234,26 @@ oboe::AudioStream * NativeAudioContext::getOutputStream() {
     return nullptr;
 }
 
+oboe::AudioStream * NativeAudioContext::getInputStream() {
+    for (int32_t i = 0; i < kMaxStreams; i++) {
+        oboe::AudioStream *oboeStream = mOboeStreams[i];
+        if (oboeStream != nullptr) {
+            if (oboeStream->getDirection() == oboe::Direction::Input) {
+                return oboeStream;
+            }
+        }
+    }
+    return nullptr;
+}
+
 void NativeAudioContext::configureForActivityType() {
     oboe::AudioStream *outputStream = nullptr;
+
+    manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
+    monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
+
+    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
+    mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
 
     switch(mActivityType) {
         case ActivityType::Undefined:
@@ -258,18 +278,12 @@ void NativeAudioContext::configureForActivityType() {
                     sineOscillators[i].frequency.setValue(frequency);
                     frequency *= 4.0 / 3.0; // each sine is at a higher frequency
                     sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
-                }
-                for (int i = 0; i < mChannelCount; i++) {
-                    sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate());
-                    sawtoothOscillators[i].frequency.setValue(frequency);
-                    frequency *= 4.0 / 3.0; // each sawtooth is at a higher frequency
-                    sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
+                    sineOscillators[i].output.connect(manyToMulti->inputs[i].get());
                 }
             }
 
-            impulseGenerator.setSampleRate(outputStream->getSampleRate());
-            impulseGenerator.frequency.setValue(440.0);
-            impulseGenerator.amplitude.setValue(AMPLITUDE_IMPULSE);
+            manyToMulti->output.connect(&(mSinkFloat.get()->input));
+            manyToMulti->output.connect(&(mSinkI16.get()->input));
             break;
 
         case ActivityType::TapToTone:
@@ -277,6 +291,12 @@ void NativeAudioContext::configureForActivityType() {
             sawPingGenerator.setSampleRate(outputStream->getSampleRate());
             sawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
             sawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+
+            sawPingGenerator.output.connect(&(monoToMulti->input));
+            monoToMulti->output.connect(&(mSinkFloat.get()->input));
+            monoToMulti->output.connect(&(mSinkI16.get()->input));
+
+            sawPingGenerator.setEnabled(false);
             break;
 
         case ActivityType::Echo:
@@ -284,11 +304,9 @@ void NativeAudioContext::configureForActivityType() {
     }
 
     if (outputStream != nullptr) {
-        manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
-        monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
 
-        mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-        mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+        mSinkFloat->start();
+        mSinkI16->start();
 
         // We needed the proxy because we did not know the channelCount
         // when we setup the Builder.
@@ -298,8 +316,6 @@ void NativeAudioContext::configureForActivityType() {
         } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
             audioStreamGateway->setAudioSink(mSinkFloat);
         }
-
-        connectTone();
 
         if (useCallback) {
             oboeCallbackProxy.setCallback(audioStreamGateway.get());
@@ -320,6 +336,56 @@ void NativeAudioContext::configureForActivityType() {
         int numSamples = getFramesPerBlock() * mChannelCount;
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
+}
+
+oboe::Result NativeAudioContext::start() {
+    oboe::Result result = oboe::Result::OK;
+    oboe::AudioStream *inputStream = getInputStream();
+    oboe::AudioStream *outputStream = getOutputStream();
+    if (inputStream == nullptr && outputStream == nullptr) {
+        return oboe::Result::ErrorInvalidState; // not open
+    }
+
+    stop();
+
+    LOGD("NativeAudioContext: %s() called", __func__);
+    configureForActivityType();
+
+    switch(mActivityType) {
+        case ActivityType::Undefined:
+            break;
+        case ActivityType::TestInput:
+        case ActivityType::RecordPlay:
+            result = inputStream->requestStart();
+            if (!useCallback && result == oboe::Result::OK) {
+                LOGD("start thread for blocking I/O");
+                // Instead of using the callback, start a thread that readsthe stream.
+                threadEnabled.store(true);
+                dataThread = new std::thread(threadCallback, this);
+            }
+            break;
+
+        case ActivityType::TestOutput:
+        case ActivityType::TapToTone:
+            result = outputStream->requestStart();
+            if (!useCallback && result == oboe::Result::OK) {
+                LOGD("start thread for blocking I/O");
+                // Instead of using the callback, start a thread that writes the stream.
+                threadEnabled.store(true);
+                dataThread = new std::thread(threadCallback, this);
+            }
+            break;
+
+        case ActivityType::Echo:
+            inputStream = getInputStream();
+            outputStream = getOutputStream();
+            result = inputStream->requestStart(); // FIXME use full duplex object
+            result = outputStream->requestStart();
+            break;
+    }
+
+    LOGD("OboeAudioStream_start: start returning %d", result);
+    return result;
 }
 
 void NativeAudioContext::runBlockingIO() {
