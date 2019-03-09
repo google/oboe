@@ -55,48 +55,28 @@
         android:lines="3"
         android:text="@string/init_status" />
 
-    <TextView
-        android:id="@+id/volumeText0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\?" />
-
     <com.google.sample.oboe.manualtest.VolumeBarView
         android:id="@+id/volumeBar0"
         android:layout_width="fill_parent"
+        android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
-
-    <TextView
-        android:id="@+id/volumeText1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\?" />
 
     <com.google.sample.oboe.manualtest.VolumeBarView
         android:id="@+id/volumeBar1"
         android:layout_width="fill_parent"
+        android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
-
-    <TextView
-        android:id="@+id/volumeText2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\?" />
 
     <com.google.sample.oboe.manualtest.VolumeBarView
         android:id="@+id/volumeBar2"
         android:layout_width="fill_parent"
+        android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
-
-    <TextView
-        android:id="@+id/volumeText3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\?" />
 
     <com.google.sample.oboe.manualtest.VolumeBarView
         android:id="@+id/volumeBar3"
         android:layout_width="fill_parent"
+        android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
 
 </LinearLayout>

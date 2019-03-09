@@ -100,10 +100,8 @@ public:
     }
 
     void printScheduler() {
-        if (audioStreamGateway != nullptr) {
-            int scheduler = audioStreamGateway->getScheduler();
-            LOGI("scheduler = 0x%08x, SCHED_FIFO = 0x%08X\n", scheduler, SCHED_FIFO);
-        }
+        int scheduler = audioStreamGateway.getScheduler();
+        LOGI("scheduler = 0x%08x, SCHED_FIFO = 0x%08X\n", scheduler, SCHED_FIFO);
     }
 
     oboe::Result pause() {
@@ -237,7 +235,10 @@ public:
         mActivityType = (ActivityType) activityType;
     }
 
-    InputStreamCallbackAnalyzer  mInputAnalyzer;
+    double getPeakLevel(int index) {
+        return mInputAnalyzer.getPeakLevel(index);
+    }
+
     bool                         useCallback = true;
     bool                         callbackReturnStop = false;
     int                          callbackSize = 0;
@@ -299,6 +300,9 @@ private:
     std::thread                 *dataThread = nullptr;
 
     OboeStreamCallbackProxy      oboeCallbackProxy;
+    AudioStreamGateway           audioStreamGateway;
+    InputStreamCallbackAnalyzer  mInputAnalyzer;
+
     std::vector<SineOscillator>  sineOscillators;
     std::vector<SawtoothOscillator>  sawtoothOscillators;
 
@@ -311,7 +315,6 @@ private:
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
     std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
     std::shared_ptr<flowgraph::SinkI16>     mSinkI16;
-    std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
     std::unique_ptr<FullDuplexEcho>         mFullDuplexEcho{};
 

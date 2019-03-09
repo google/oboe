@@ -88,7 +88,7 @@ abstract class TestAudioActivity extends Activity {
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
                     int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
                     final String msg = status.dump(framesPerBurst);
-                    mStreamContexts.get(0).configurationView.setStatusText(msg);
+                    streamContext.configurationView.setStatusText(msg);
                     updateStreamDisplay();
                 }
 

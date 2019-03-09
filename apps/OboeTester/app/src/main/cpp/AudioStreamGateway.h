@@ -25,14 +25,14 @@
 using namespace flowgraph;
 
 /**
- * Bridge between an audio graph and an audio device.
+ * Bridge between an audio flowgraph and an audio device.
  * Pass in an AudioSink and then pass
  * this object to the AudioStreamBuilder as a callback.
  */
 class AudioStreamGateway : public oboe::AudioStreamCallback {
 public:
-    AudioStreamGateway(int samplesPerFrame);
-    virtual ~AudioStreamGateway();
+//    AudioStreamGateway(int samplesPerFrame);
+    virtual ~AudioStreamGateway() = default;
 
     void setAudioSink(std::shared_ptr<flowgraph::AudioSink>  sink) {
         mAudioSink = sink;

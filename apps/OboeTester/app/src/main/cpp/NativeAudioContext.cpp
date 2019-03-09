@@ -48,7 +48,6 @@ void NativeAudioContext::close(int32_t streamIndex) {
     LOGD("%s() delete nodes", __func__);
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
-    audioStreamGateway.reset(nullptr);
     mSinkFloat.reset();
     mSinkI16.reset();
 }
@@ -328,15 +327,14 @@ void NativeAudioContext::configureForActivityType() {
 
         // We needed the proxy because we did not know the channelCount
         // when we setup the Builder.
-        audioStreamGateway = std::make_unique<AudioStreamGateway>(mChannelCount);
         if (outputStream->getFormat() == oboe::AudioFormat::I16) {
-            audioStreamGateway->setAudioSink(mSinkI16);
+            audioStreamGateway.setAudioSink(mSinkI16);
         } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
-            audioStreamGateway->setAudioSink(mSinkFloat);
+            audioStreamGateway.setAudioSink(mSinkFloat);
         }
 
         if (useCallback) {
-            oboeCallbackProxy.setCallback(audioStreamGateway.get());
+            oboeCallbackProxy.setCallback(&audioStreamGateway);
         }
 
         // Set starting size of buffer.
@@ -441,9 +439,9 @@ void NativeAudioContext::runBlockingIO() {
             callbackResult = mInputAnalyzer.onAudioReady(oboeStream,
                                                          dataBuffer.get(),
                                                          framesRead);
-        } else if (audioStreamGateway != nullptr) {  // OUTPUT?
+        } else {  // OUTPUT?
             // generate output by calling the callback
-            callbackResult = audioStreamGateway->onAudioReady(oboeStream,
+            callbackResult = audioStreamGateway.onAudioReady(oboeStream,
                                                               dataBuffer.get(),
                                                               framesPerBlock);
 

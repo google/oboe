@@ -363,7 +363,7 @@ JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_AudioInputTester_getPeakLevel(JNIEnv *env,
                                                           jobject instance,
                                                           jint index) {
-    return engine.mInputAnalyzer.getPeakLevel(index);
+    return engine.getPeakLevel(index);
 }
 
 JNIEXPORT void JNICALL

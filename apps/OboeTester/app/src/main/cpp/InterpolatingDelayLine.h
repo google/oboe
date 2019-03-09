@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_FULL_DUPLEX_ECHO_H
-#define OBOETESTER_FULL_DUPLEX_ECHO_H
+#ifndef OBOETESTER_INTERPOLATING_DELAY_LINE_H
+#define OBOETESTER_INTERPOLATING_DELAY_LINE_H
 
+#include <memory>
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
 #include "FullDuplexStream.h"
-#include "InterpolatingDelayLine.h"
 
-class FullDuplexEcho : public FullDuplexStream {
+/**
+ * Monophonic delay line.
+ */
+class InterpolatingDelayLine  {
 public:
-    FullDuplexEcho() {}
+    explicit InterpolatingDelayLine(int32_t delaySize);
 
     /**
-     * Called when data is available on both streams.
-     * Caller should override this method.
+     * @param input sample to be written to the delay line
+     * @param delay number of samples to delay the output
+     * @return delayed value
      */
-    oboe::DataCallbackResult onBothStreamsReady(
-            const void *inputData,
-            int   numInputFrames,
-            void *outputData,
-            int   numOutputFrames
-    ) override;
-
-    oboe::Result start() override;
+    float process(float delay, float input);
 
 private:
-    std::unique_ptr<InterpolatingDelayLine> mDelayLine;
-    float mDelayFrames = 0.0f;
+    std::unique_ptr<float[]> mDelayLine;
+    int32_t mCursor = 0;
+    int32_t mDelaySize = 0;
 };
 
 
-#endif //OBOETESTER_FULL_DUPLEX_ECHO_H
+#endif //OBOETESTER_INTERPOLATING_DELAY_LINE_H

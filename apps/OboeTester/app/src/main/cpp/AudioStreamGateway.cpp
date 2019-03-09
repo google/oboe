@@ -22,13 +22,13 @@
 
 using namespace flowgraph;
 
-AudioStreamGateway::AudioStreamGateway(int samplesPerFrame)
-{
-}
-
-AudioStreamGateway::~AudioStreamGateway()
-{
-}
+//AudioStreamGateway::AudioStreamGateway(int samplesPerFrame)
+//{
+//}
+//
+//AudioStreamGateway::~AudioStreamGateway()
+//{
+//}
 
 int64_t AudioStreamGateway::mFramePosition = 0;
 
