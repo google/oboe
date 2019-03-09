@@ -33,6 +33,9 @@
 #include "flowgraph/SinkI16.h"
 #include "flowgraph/SineOscillator.h"
 #include "flowgraph/SawtoothOscillator.h"
+
+#include "FullDuplexEcho.h"
+#include "FullDuplexStream.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
 #include "OboeStreamCallbackProxy.h"
@@ -310,6 +313,7 @@ private:
     std::shared_ptr<flowgraph::SinkI16>     mSinkI16;
     std::unique_ptr<AudioStreamGateway>     audioStreamGateway{};
     std::unique_ptr<MultiChannelRecording>  mRecording{};
+    std::unique_ptr<FullDuplexEcho>         mFullDuplexEcho{};
 
     PlayRecordingCallback        mPlayRecordingCallback;
 

@@ -23,8 +23,10 @@ using namespace flowgraph;
 /***************************************************************************/
 int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
     int32_t frameCount = numFrames;
+    // Prevent recursion and multiple execution of nodes.
     if (framePosition > mLastFramePosition) {
         mLastFramePosition = framePosition;
+        // Pull from all the upstream nodes.
         for (auto &port : mInputPorts) {
             frameCount = port.get().pullData(framePosition, frameCount);
         }

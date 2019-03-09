@@ -189,12 +189,22 @@ int NativeAudioContext::open(
             ->setSampleRate(sampleRate)
             ->setFormat((oboe::AudioFormat) format);
 
-    // We needed the proxy because we did not know the channelCount when we setup the Builder.
-    if (useCallback) {
-        LOGD("NativeAudioContext::open() set callback to use oboeCallbackProxy, size = %d",
-             callbackSize);
-        builder.setCallback(&oboeCallbackProxy);
-        builder.setFramesPerCallback(callbackSize);
+    if (mActivityType == ActivityType::Echo) {
+        if (mFullDuplexEcho.get() == nullptr) {
+            mFullDuplexEcho = std::make_unique<FullDuplexEcho>();
+        }
+        // only output uses a callback, input is polled
+        if (!isInput) {
+            builder.setCallback(mFullDuplexEcho.get());
+        }
+    } else {
+        // We needed the proxy because we did not know the channelCount when we setup the Builder.
+        if (useCallback) {
+            LOGD("NativeAudioContext::open() set callback to use oboeCallbackProxy, size = %d",
+                 callbackSize);
+            builder.setCallback(&oboeCallbackProxy);
+            builder.setFramesPerCallback(callbackSize);
+        }
     }
 
     if (audioApi == oboe::AudioApi::OpenSLES) {
@@ -217,6 +227,14 @@ int NativeAudioContext::open(
         mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
+
+        if (mActivityType == ActivityType::Echo) {
+            if (isInput) {
+                mFullDuplexEcho->setInputStream(oboeStream);
+            } else {
+                mFullDuplexEcho->setOutputStream(oboeStream);
+            }
+        }
     }
 
     return ((int)result < 0) ? (int)result : streamIndex;
@@ -377,10 +395,7 @@ oboe::Result NativeAudioContext::start() {
             break;
 
         case ActivityType::Echo:
-            inputStream = getInputStream();
-            outputStream = getOutputStream();
-            result = inputStream->requestStart(); // FIXME use full duplex object
-            result = outputStream->requestStart();
+            result = mFullDuplexEcho->start();
             break;
     }
 
