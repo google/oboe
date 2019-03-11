@@ -272,6 +272,7 @@ void NativeAudioContext::configureForActivityType() {
     mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
     mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
 
+    // TODO Use ActivityContext classes instead of switches.
     switch(mActivityType) {
         case ActivityType::Undefined:
             break;

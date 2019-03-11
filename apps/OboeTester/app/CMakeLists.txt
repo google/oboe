@@ -28,7 +28,6 @@ include_directories(
 
 ### END OBOE INCLUDE SECTION ###
 
-
 # link to oboe
 target_link_libraries(oboetester log oboe atomic)
 

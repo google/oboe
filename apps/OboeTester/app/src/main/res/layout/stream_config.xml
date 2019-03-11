@@ -6,6 +6,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <TextView   android:id="@+id/toggle_stream_config"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#C0F0E0"
+            android:clickable="true"
+            android:text="@string/hint_hide_settings" />
+
         <TableLayout
             android:id="@+id/optionTable"
             android:layout_width="wrap_content"
@@ -167,30 +174,24 @@
                     android:text="\?" />
 
             </TableRow>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device: " />
+
+                <com.google.sample.audio_device.AudioDeviceSpinner
+                    android:id="@+id/devices_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </TableRow>
+
         </TableLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Device: " />
-
-            <com.google.sample.audio_device.AudioDeviceSpinner
-                android:id="@+id/devices_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-
-<!--        <TextView
-            android:id="@+id/device_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="\?" />-->
 
         <TextView
             android:id="@+id/streamInfo"
