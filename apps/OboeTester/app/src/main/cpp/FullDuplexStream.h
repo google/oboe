@@ -43,6 +43,7 @@ public:
     }
 
     virtual oboe::Result start();
+
     virtual oboe::Result stop();
 
     /**
