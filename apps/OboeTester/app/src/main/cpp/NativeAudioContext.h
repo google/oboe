@@ -338,6 +338,12 @@ public:
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
+    void setDelayTime(double delayTimeSeconds) {
+        if (mFullDuplexEcho) {
+            mFullDuplexEcho->setDelayTime(delayTimeSeconds);
+        }
+    }
+
 protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
@@ -377,6 +383,10 @@ public:
                 currentActivity = &mActivityEcho;
                 break;
         }
+    }
+
+    void setDelayTime(double delayTimeMillis) {
+        mActivityEcho.setDelayTime(delayTimeMillis);
     }
 
 private:

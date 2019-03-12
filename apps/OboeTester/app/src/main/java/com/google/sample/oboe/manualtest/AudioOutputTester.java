@@ -65,4 +65,5 @@ public class AudioOutputTester extends AudioStreamTester {
     public void setChannelEnabled(int channelIndex, boolean enabled)  {
         mOboeAudioOutputStream.setChannelEnabled(channelIndex, enabled);
     }
+
 }

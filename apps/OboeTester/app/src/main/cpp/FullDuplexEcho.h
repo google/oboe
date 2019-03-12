@@ -41,9 +41,14 @@ public:
 
     oboe::Result start() override;
 
+    void setDelayTime(double delayTimeSeconds) {
+        mDelayTimeSeconds = delayTimeSeconds;
+    }
+
 private:
     std::unique_ptr<InterpolatingDelayLine> mDelayLine;
-    float mDelayFrames = 0.0f;
+    static constexpr double kMaxDelayTimeSeconds = 4.0;
+    double mDelayTimeSeconds = kMaxDelayTimeSeconds;
 };
 
 

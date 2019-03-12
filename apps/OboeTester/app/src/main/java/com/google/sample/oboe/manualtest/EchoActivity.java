@@ -18,13 +18,40 @@ package com.google.sample.oboe.manualtest;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 /**
- * Activity to record and play back audio.
+ * Activity to capture audio and then send a delayed copy to output.
+ * There is a fader for setting delay time
  */
 public class EchoActivity extends TestInputActivity {
 
     AudioOutputTester mAudioOutTester;
+
+    protected TextView mTextDelayTime;
+    protected SeekBar mFaderDelayTime;
+    protected ExponentialTaper mTaperDelayTime;
+    private static final double MIN_DELAY_TIME_SECONDS = 0.004;
+    private static final double MAX_DELAY_TIME_SECONDS = 0.400;
+    private double mDelayTime;
+
+    protected static final int MAX_DELAY_TIME_PROGRESS = 1000;
+
+    private SeekBar.OnSeekBarChangeListener mDelayListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            setDelayTimeByPosition(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    };
 
     @Override
     protected void inflateActivity() {
@@ -38,7 +65,22 @@ public class EchoActivity extends TestInputActivity {
         updateEnabledWidgets();
 
         mAudioOutTester = addAudioOutputTester();
+
+        mTextDelayTime = (TextView) findViewById(R.id.text_delay_time);
+        mFaderDelayTime = (SeekBar) findViewById(R.id.fader_delay_time);
+        mFaderDelayTime.setOnSeekBarChangeListener(mDelayListener);
+        mTaperDelayTime = new ExponentialTaper(MAX_DELAY_TIME_PROGRESS,
+                MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS);
+        mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
     }
+
+    private void setDelayTimeByPosition(int progress) {
+        mDelayTime = mTaperDelayTime.linearToExponential(progress);
+        setDelayTime(mDelayTime);
+        mTextDelayTime.setText("DelayLine: " + (int)(mDelayTime * 1000) + " (msec)");
+    }
+
+    private native void setDelayTime(double delayTimeSeconds);
 
     @Override
     protected void onStart() {
@@ -49,6 +91,7 @@ public class EchoActivity extends TestInputActivity {
     public void onStartEcho(View view) {
         openAudio();
         startAudio();
+        setDelayTime(mDelayTime);
     }
 
     public void onStopEcho(View view) {

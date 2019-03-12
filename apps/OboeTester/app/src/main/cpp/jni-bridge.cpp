@@ -417,4 +417,11 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv 
     engine.setActivityType(activityType);
 }
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
+                                                                         jobject instance,
+                                                                         jdouble delayTimeSeconds) {
+    engine.setDelayTime(delayTimeSeconds);
+}
+
 }

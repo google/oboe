@@ -18,9 +18,8 @@
 #include "FullDuplexEcho.h"
 
 oboe::Result  FullDuplexEcho::start() {
-    int32_t delaySize = 3 * getOutputStream()->getSampleRate();
-    mDelayFrames = delaySize - 2;
-    mDelayLine = std::make_unique<InterpolatingDelayLine>(delaySize);
+    int32_t delayFrames = (int32_t) (mDelayTimeSeconds * getOutputStream()->getSampleRate());
+    mDelayLine = std::make_unique<InterpolatingDelayLine>(delayFrames);
     return FullDuplexStream::start();
 }
 
@@ -38,14 +37,15 @@ oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
     float *outputFloat = (float *)outputData;
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
+    float delayFrames = mDelayTimeSeconds * getOutputStream()->getSampleRate();
     if (outputStride == 1) {
         while (framesToEcho-- > 0) {
-            *outputFloat++ = mDelayLine->process(mDelayFrames, *inputFloat); // mono delay
+            *outputFloat++ = mDelayLine->process(delayFrames, *inputFloat); // mono delay
             inputFloat += inputStride;
         }
     } else if (outputStride == 2) {
         while (framesToEcho-- > 0) {
-            *outputFloat++ = mDelayLine->process(mDelayFrames, *inputFloat); // mono delay
+            *outputFloat++ = mDelayLine->process(delayFrames, *inputFloat); // mono delay
             *outputFloat++ = 0.0f; // FIXME *inputFloat; // mono
             inputFloat += inputStride;
         }

@@ -18,7 +18,7 @@
             android:id="@+id/textThreshold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Threshold" />
+            android:text="BufferSize" />
 
         <SeekBar
             android:id="@+id/faderThreshold"
