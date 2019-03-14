@@ -22,9 +22,17 @@ using namespace flowgraph;
 
 /***************************************************************************/
 int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
+    int32_t frameCount = numFrames;
+    // Prevent recursion and multiple execution of nodes.
     if (framePosition > mLastFramePosition) {
         mLastFramePosition = framePosition;
-        mFramesValid = onProcess(framePosition, numFrames);
+        // Pull from all the upstream nodes.
+        for (auto &port : mInputPorts) {
+            frameCount = port.get().pullData(framePosition, frameCount);
+        }
+        if (frameCount > 0) {
+            mFramesValid = onProcess(frameCount);
+        }
     }
     return mFramesValid;
 }
@@ -68,11 +76,4 @@ float *AudioFloatInputPort::getBuffer() {
     } else {
         return mConnected->getBuffer();
     }
-}
-
-/***************************************************************************/
-int32_t AudioSink::pull(int32_t numFrames) {
-    int32_t actualFrames = input.pullData(mFramePosition, numFrames);
-    mFramePosition += actualFrames;
-    return actualFrames;
 }

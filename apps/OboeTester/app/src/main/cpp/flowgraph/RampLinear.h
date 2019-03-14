@@ -39,7 +39,7 @@ public:
 
     virtual ~RampLinear() = default;
 
-    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
+    int32_t onProcess(int32_t numFrames) override;
 
     /**
      * This is used for the next ramp.

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.sample.oboe.manualtest"
-    android:versionCode="3"
-    android:versionName="1.2.02">
+    android:versionCode="4"
+    android:versionName="1.3.00">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
 
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
@@ -58,6 +58,12 @@
         <activity
             android:name="com.google.sample.oboe.manualtest.RecorderActivity"
             android:label="@string/title_activity_recorder"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.EchoActivity"
+            android:label="@string/title_activity_echo"
             android:screenOrientation="portrait">
         </activity>
 

@@ -36,12 +36,13 @@ public class TestInputActivity  extends TestAudioActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int AUDIO_ECHO_REQUEST = 0;
-    private AudioInputTester mAudioInputTester;
+    protected AudioInputTester mAudioInputTester;
     private static final int NUM_VOLUME_BARS = 4;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
 
     @Override boolean isOutput() { return false; }
 
+    @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_test_input);
     }
@@ -49,30 +50,37 @@ public class TestInputActivity  extends TestAudioActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        inflateActivity();
 
         mVolumeBars[0] = (VolumeBarView) findViewById(R.id.volumeBar0);
         mVolumeBars[1] = (VolumeBarView) findViewById(R.id.volumeBar1);
         mVolumeBars[2] = (VolumeBarView) findViewById(R.id.volumeBar2);
         mVolumeBars[3] = (VolumeBarView) findViewById(R.id.volumeBar3);
 
-        findAudioCommon();
         updateEnabledWidgets();
 
-        mAudioStreamTester = mAudioInputTester = AudioInputTester.getInstance();
+        mAudioInputTester = addAudioInputTester();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_TEST_INPUT);
+    }
+
+    @Override
     void updateStreamDisplay() {
         int numChannels = mAudioInputTester.getCurrentAudioStream().getChannelCount();
         if (numChannels > NUM_VOLUME_BARS) {
             numChannels = NUM_VOLUME_BARS;
         }
         for (int i = 0; i < numChannels; i++) {
+            if (mVolumeBars[i] == null) break;
             double level = mAudioInputTester.getPeakLevel(i);
             mVolumeBars[i].setVolume((float) level);
         }
     }
 
+    @Override
     public void openAudio() {
         if (!isRecordPermissionGranted()){
             requestRecordPermission();

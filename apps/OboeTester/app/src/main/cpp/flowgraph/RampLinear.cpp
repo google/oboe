@@ -39,8 +39,7 @@ float RampLinear::interpolateCurrent() {
     return mLevelTo - (mRemaining * mScaler);
 }
 
-int32_t RampLinear::onProcess(int64_t framePosition, int32_t numFrames) {
-    int32_t framesToProcess = input.pullData(framePosition, numFrames);
+int32_t RampLinear::onProcess(int32_t numFrames) {
     const float *inputBuffer = input.getBuffer();
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
@@ -54,7 +53,7 @@ int32_t RampLinear::onProcess(int64_t framePosition, int32_t numFrames) {
         mScaler = (mLevelTo - mLevelFrom) / mLengthInFrames; // for interpolation
     }
 
-    int32_t framesLeft = framesToProcess;
+    int32_t framesLeft = numFrames;
 
     if (mRemaining > 0) { // Ramping? This doesn't happen very often.
         int32_t framesToRamp = std::min(framesLeft, mRemaining);
@@ -75,5 +74,5 @@ int32_t RampLinear::onProcess(int64_t framePosition, int32_t numFrames) {
         *outputBuffer++ = *inputBuffer++ * mLevelTo;
     }
 
-    return framesToProcess;
+    return numFrames;
 }

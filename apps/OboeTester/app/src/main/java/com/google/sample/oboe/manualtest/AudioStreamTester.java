@@ -31,18 +31,6 @@ class AudioStreamTester {
                 -1);
     }
 
-    public void start() throws IOException {
-        mCurrentAudioStream.start();
-    }
-
-    public void stop() throws IOException  {
-        mCurrentAudioStream.stop();
-    }
-
-    public void pause() throws IOException {
-        mCurrentAudioStream.pause();
-    }
-
     public void close() {
         mCurrentAudioStream.close();
     }

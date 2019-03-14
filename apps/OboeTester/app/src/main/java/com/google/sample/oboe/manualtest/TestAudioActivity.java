@@ -19,18 +19,17 @@ package com.google.sample.oboe.manualtest;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.sample.oboe.manualtest.R;
-
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Base class for other Activities.
@@ -47,12 +46,18 @@ abstract class TestAudioActivity extends Activity {
     public static final int COLOR_ACTIVE = 0xFFD0D0A0;
     public static final int COLOR_IDLE = 0xFFD0D0D0;
 
+    // Pass the activity index to native so it can know how to respond to the start and stop calls.
+    // WARNING - must match definitions in NativeAudioContext.h ActivityType
+    public static final int ACTIVITY_TEST_OUTPUT = 0;
+    public static final int ACTIVITY_TEST_INPUT = 1;
+    public static final int ACTIVITY_TAP_TO_TONE = 2;
+    public static final int ACTIVITY_RECORD_PLAY = 3;
+    public static final int ACTIVITY_ECHO = 4;
+
     private int mState = STATE_CLOSED;
-    protected TextView mStatusView;
     protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
-    protected AudioStreamTester mAudioStreamTester;
-    protected StreamConfigurationView mStreamConfigurationView;
+    protected ArrayList<StreamContext> mStreamContexts;
     private Button mOpenButton;
     private Button mStartButton;
     private Button mPauseButton;
@@ -61,22 +66,32 @@ abstract class TestAudioActivity extends Activity {
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
 
+    public static class StreamContext {
+        StreamConfigurationView configurationView;
+        AudioStreamTester tester;
+    }
+
     // Periodically query the status of the stream.
     protected class MyStreamSniffer {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
 
-        private int mFramesPerBurst = 1;
-        private int mNumUpdates = 0;
         private Handler mHandler;
 
         // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                // Handler runs this on the main UI thread.
-                AudioStreamBase.StreamStatus status = mAudioStreamTester.getCurrentAudioStream().getStreamStatus();
-                updateStreamStatusView(status);
+
+                for (StreamContext streamContext : mStreamContexts) {
+                    // Handler runs this on the main UI thread.
+                    AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
+                    int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
+                    final String msg = status.dump(framesPerBurst);
+                    streamContext.configurationView.setStatusText(msg);
+                    updateStreamDisplay();
+                }
+
                 // Repeat this runnable code block again.
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
@@ -84,10 +99,8 @@ abstract class TestAudioActivity extends Activity {
 
         private void startStreamSniffer() {
             stopStreamSniffer();
-            mNumUpdates = 0;
             mHandler = new Handler(Looper.getMainLooper());
             // Start the initial runnable task by posting through the handler
-            mFramesPerBurst = mAudioStreamTester.getCurrentAudioStream().getFramesPerBurst();
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
         }
 
@@ -97,49 +110,30 @@ abstract class TestAudioActivity extends Activity {
             }
         }
 
-        // These are constantly changing.
-        private void updateStreamStatusView(final AudioStreamBase.StreamStatus status) {
-            if (status.bufferSize < 0 || status.framesWritten < 0) {
-                return;
-            }
-            int numBuffers = 0;
-            if (status.bufferSize > 0 && mFramesPerBurst > 0) {
-                numBuffers = status.bufferSize / mFramesPerBurst;
-            }
-            String latencyText = (status.latency < 0.0)
-                    ? "?"
-                    : String.format("%6.1f msec", status.latency);
-            final String msg = "buffer size = "
-                    + ((status.bufferSize < 0) ? "?" : status.bufferSize) + " = "
-                    + numBuffers + " * " + mFramesPerBurst + ", xRunCount = "
-                    +  ((status.xRunCount < 0) ? "?" : status.xRunCount) + "\n"
-                    + "frames written " + status.framesWritten + " - read " + status.framesRead
-                    + " = " + (status.framesWritten - status.framesRead) + "\n"
-
-                    + "# " + mNumUpdates++
-                    + ", latency = " + latencyText
-                    + ", state = " + status.state
-                    + ", #callbacks " + status.callbackCount
-                    ;
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    mStatusView.setText(msg);
-                    updateStreamDisplay();
-                }
-            });
-        }
     }
+
+    protected abstract void inflateActivity();
 
     void updateStreamDisplay() {
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        inflateActivity();
+        findAudioCommon();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop() called so stopping audio =========================");
+        stopAudio();
+        closeAudio();
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
-        try {
-            mAudioStreamTester.stop();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mState = STATE_CLOSED;
         super.onDestroy();
     }
@@ -156,14 +150,52 @@ abstract class TestAudioActivity extends Activity {
             mStopButton.setBackgroundColor(mState == STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
             mCloseButton.setBackgroundColor(mState == STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
         }
-        mStreamConfigurationView.setChildrenEnabled(mState == STATE_CLOSED);
+        setConfigViewsEnabled(mState == STATE_CLOSED);
+    }
+
+    private void setConfigViewsEnabled(boolean b) {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.configurationView.setChildrenEnabled(b);
+        }
     }
 
     abstract boolean isOutput();
 
-    protected void findAudioCommon() {
-        mStatusView = (TextView) findViewById(R.id.statusView);
+    public AudioOutputTester addAudioOutputTester() {
+        StreamContext streamContext = new StreamContext();
+        streamContext.configurationView =(StreamConfigurationView)
+                findViewById(R.id.outputStreamConfiguration);
+        if (streamContext.configurationView == null) {
+            streamContext.configurationView =(StreamConfigurationView)
+                    findViewById(R.id.streamConfiguration);
+        }
+        streamContext.configurationView.setOutput(true);
+        streamContext.tester = AudioOutputTester.getInstance();
+        mStreamContexts.add(streamContext);
+        return (AudioOutputTester) streamContext.tester;
+    }
 
+    public AudioInputTester addAudioInputTester() {
+        StreamContext streamContext = new StreamContext();
+        streamContext.configurationView =(StreamConfigurationView)
+                findViewById(R.id.inputStreamConfiguration);
+        if (streamContext.configurationView == null) {
+            streamContext.configurationView =(StreamConfigurationView)
+                    findViewById(R.id.streamConfiguration);
+        }
+        streamContext.configurationView.setOutput(false);
+        streamContext.tester = AudioInputTester.getInstance();
+        mStreamContexts.add(streamContext);
+        return (AudioInputTester) streamContext.tester;
+    }
+
+    void updateStreamConfigurationViews() {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.configurationView.updateDisplay();
+        }
+    }
+
+    protected void findAudioCommon() {
         mOpenButton = (Button) findViewById(R.id.button_open);
         if (mOpenButton != null) {
             mStartButton = (Button) findViewById(R.id.button_start);
@@ -171,10 +203,7 @@ abstract class TestAudioActivity extends Activity {
             mStopButton = (Button) findViewById(R.id.button_stop);
             mCloseButton = (Button) findViewById(R.id.button_close);
         }
-
-        mStreamConfigurationView = (StreamConfigurationView)
-                findViewById(R.id.outputStreamConfiguration);
-        mStreamConfigurationView.setOutput(isOutput());
+        mStreamContexts = new ArrayList<StreamContext>();
 
         queryNativeAudioParameters();
 
@@ -205,14 +234,6 @@ abstract class TestAudioActivity extends Activity {
         Toast.makeText(this, "Error: " + message, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    protected void onStop() {
-        Log.i(TAG, "onStop() called so stopping audio =========================");
-        stopAudio();
-        closeAudio();
-        super.onStop();
-    }
-
     public void openAudio(View view) {
         openAudio();
     }
@@ -236,65 +257,71 @@ abstract class TestAudioActivity extends Activity {
 
     public void openAudio() {
         try {
-            StreamConfiguration requestedConfig = mStreamConfigurationView.getRequestedConfiguration();
-            requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
-            mAudioStreamTester.open(requestedConfig,
-                    mStreamConfigurationView.getActualConfiguration());
-            mState = STATE_OPEN;
-            int sessionId = mStreamConfigurationView.getActualConfiguration().getSessionId();
-            if (sessionId > 0) {
-                setupEffects(sessionId);
+            for (StreamContext streamContext : mStreamContexts) {
+                StreamConfigurationView configView = streamContext.configurationView;
+                StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
+                requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
+                streamContext.tester.open(requestedConfig, configView.getActualConfiguration());
+                mState = STATE_OPEN;
+                int sessionId = configView.getActualConfiguration().getSessionId();
+                if (sessionId > 0) {
+                    setupEffects(sessionId);
+                }
+                configView.updateDisplay();
             }
-            mStreamConfigurationView.updateDisplay();
             updateEnabledWidgets();
             mStreamSniffer.startStreamSniffer();
         } catch (Exception e) {
             e.printStackTrace();
-            mStatusView.setText(e.getMessage());
             showToast(e.getMessage());
         }
     }
 
+    // Native methods
+    private native int startNative();
+    private native int pauseNative();
+    private native int stopNative();
+    protected native void setActivityType(int activityType);
+
     public void startAudio() {
-        try {
-            mAudioStreamTester.start();
+        int result = startNative();
+        if (result < 0) {
+            showToast("Start failed with " + result);
+        } else {
+            for (StreamContext streamContext : mStreamContexts) {
+                StreamConfigurationView configView = streamContext.configurationView;
+                configView.updateDisplay();
+            }
             mState = STATE_STARTED;
-            mStreamConfigurationView.updateDisplay();
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            mStatusView.setText(e.getMessage());
-            showToast(e.getMessage());
         }
     }
 
     public void pauseAudio() {
-        try {
-            mAudioStreamTester.pause();
+        int result = pauseNative();
+        if (result < 0) {
+            showToast("Pause failed with " + result);
+        } else {
             mState = STATE_PAUSED;
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            mStatusView.setText(e.getMessage());
-            showToast(e.getMessage());
         }
     }
 
     public void stopAudio() {
-        try {
-            mAudioStreamTester.stop();
+        int result = stopNative();
+        if (result < 0) {
+            showToast("Stop failed with " + result);
+        } else {
             mState = STATE_STOPPED;
             updateEnabledWidgets();
-        } catch (Exception e) {
-            e.printStackTrace();
-            mStatusView.setText(e.getMessage());
-            showToast(e.getMessage());
         }
     }
 
     public void closeAudio() {
         mStreamSniffer.stopStreamSniffer();
-        mAudioStreamTester.close();
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.tester.close();
+        }
         mState = STATE_CLOSED;
         updateEnabledWidgets();
     }

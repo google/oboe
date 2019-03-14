@@ -33,9 +33,7 @@ class ImpulseOscillator : public OscillatorBase {
 public:
     ImpulseOscillator();
 
-    int32_t onProcess(
-            int64_t framePosition,
-            int numFrames) override;
+    int32_t onProcess(int numFrames) override;
 };
 
 #endif //NATIVEOBOE_IMPULSE_GENERATOR_H

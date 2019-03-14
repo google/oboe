@@ -32,7 +32,6 @@ import android.widget.Toast;
  */
 public class RecorderActivity extends TestInputActivity {
 
-
     private static final int STATE_RECORDING = 5;
     private static final int STATE_PLAYING = 6;
     private int mRecorderState = STATE_STOPPED;
@@ -40,6 +39,12 @@ public class RecorderActivity extends TestInputActivity {
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_recorder);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setActivityType(ACTIVITY_RECORD_PLAY);
     }
 
     public void onStartRecording(View view) {
@@ -61,12 +66,11 @@ public class RecorderActivity extends TestInputActivity {
 
     public void startPlayback() {
         try {
-            mAudioStreamTester.startPlayback();
-            mStreamConfigurationView.updateDisplay();
+            mAudioInputTester.startPlayback();
+            updateStreamConfigurationViews();
             updateEnabledWidgets();
         } catch (Exception e) {
             e.printStackTrace();
-            mStatusView.setText(e.getMessage());
             showToast(e.getMessage());
         }
 

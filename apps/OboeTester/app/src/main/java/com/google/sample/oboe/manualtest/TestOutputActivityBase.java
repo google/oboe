@@ -25,7 +25,7 @@ import android.widget.TextView;
 import com.google.sample.oboe.manualtest.R;
 
 
-class TestOutputActivityBase extends TestAudioActivity {
+abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
 
     protected TextView mTextThreshold;
@@ -39,9 +39,11 @@ class TestOutputActivityBase extends TestAudioActivity {
 
     protected void updateEnabledWidgets() {
         super.updateEnabledWidgets();
-        boolean thresholdSupported = (mAudioStreamTester == null) ? false :
-                mAudioStreamTester.getCurrentAudioStream().isThresholdSupported();
-        mFaderThreshold.setEnabled(getState() == STATE_STARTED && thresholdSupported);
+        for (StreamContext streamContext : mStreamContexts) {
+            boolean thresholdSupported = (streamContext.tester == null) ? false :
+                    streamContext.tester.getCurrentAudioStream().isThresholdSupported();
+            mFaderThreshold.setEnabled(getState() == STATE_STARTED && thresholdSupported);
+        }
     }
 
     private SeekBar.OnSeekBarChangeListener mAmplitudeListener = new SeekBar.OnSeekBarChangeListener() {
@@ -80,11 +82,11 @@ class TestOutputActivityBase extends TestAudioActivity {
         double normalizedThreshold = mTaperThreshold.linearToExponential(progress);
         if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
         else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
-        if (mAudioStreamTester != null) {
+        if (mAudioOutTester != null) {
             mAudioOutTester.setNormalizedThreshold(normalizedThreshold);
             int percent = (int) (normalizedThreshold * 100);
-            int bufferSize = mAudioStreamTester.getCurrentAudioStream().getBufferSizeInFrames();
-            int bufferCapacity = mAudioStreamTester.getCurrentAudioStream().getBufferCapacityInFrames();
+            int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
+            int bufferCapacity = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
             mTextThreshold.setText("bufferSize = " + percent + "% = "
                     + bufferSize + " / " + bufferCapacity);
         }
@@ -96,13 +98,13 @@ class TestOutputActivityBase extends TestAudioActivity {
         mTextThreshold = (TextView) findViewById(R.id.textThreshold);
         mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
         mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
-        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.01, 1.0);
+        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 1.0, 10.0);
         mFaderThreshold.setProgress(FADER_THRESHOLD_MAX / 2);
 
         mTextAmplitude = (TextView) findViewById(R.id.textAmplitude);
         mFaderAmplitude = (SeekBar) findViewById(R.id.faderAmplitude);
         mFaderAmplitude.setOnSeekBarChangeListener(mAmplitudeListener);
-        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.01, 4.0);
+        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 4.0, 100.0);
     }
 
     public void pauseAudio() {

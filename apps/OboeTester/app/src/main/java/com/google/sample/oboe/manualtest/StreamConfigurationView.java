@@ -19,6 +19,7 @@ package com.google.sample.oboe.manualtest;
 import android.content.Context;
 import android.media.AudioManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -49,7 +50,6 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualPerformanceView;
     private Spinner  mPerformanceSpinner;
     private CheckBox mRequestedExclusiveView;
-    private TextView mStreamInfoView;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
@@ -62,6 +62,24 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualSessionIdView;
     private CheckBox mRequestAudioEffect;
 
+    private TextView mStreamInfoView;
+    private TextView mStreamStatusView;
+    private TextView mOptionExpander;
+    private String mHideSettingsText;
+    private String mShowSettingsText;
+
+    // Create an anonymous implementation of OnClickListener
+    private View.OnClickListener mToggleListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            if (mOptionTable.isShown()) {
+                mOptionTable.setVisibility(View.GONE);
+                mOptionExpander.setText(mShowSettingsText);
+            } else {
+                mOptionTable.setVisibility(View.VISIBLE);
+                mOptionExpander.setText(mHideSettingsText);
+            }
+        }
+    };
 
     public StreamConfigurationView(Context context) {
         super(context);
@@ -91,7 +109,13 @@ public class StreamConfigurationView extends LinearLayout {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.stream_config, this);
 
+        mHideSettingsText = getResources().getString(R.string.hint_hide_settings);
+        mShowSettingsText = getResources().getString(R.string.hint_show_settings);
+
         mOptionTable = (TableLayout) findViewById(R.id.optionTable);
+
+        mOptionExpander = (TextView) findViewById(R.id.toggle_stream_config);
+        mOptionExpander.setOnClickListener(mToggleListener);
 
         mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerNativeApi);
         mNativeApiSpinner.setOnItemSelectedListener(new NativeApiSpinnerListener());
@@ -141,6 +165,8 @@ public class StreamConfigurationView extends LinearLayout {
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
+        mStreamStatusView = (TextView) findViewById(R.id.statusView);
+
         mDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.devices_spinner);
         mDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -156,6 +182,7 @@ public class StreamConfigurationView extends LinearLayout {
         });
     }
 
+
     public void setOutput(boolean output) {
         if (output) {
             mDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_OUTPUTS);
@@ -163,7 +190,6 @@ public class StreamConfigurationView extends LinearLayout {
             mDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_INPUTS);
         }
     }
-
 
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -240,6 +266,7 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestAudioEffect.setEnabled(enabled);
     }
 
+    // This must be called on the UI thread.
     void updateDisplay() {
         int value;
 
@@ -268,6 +295,11 @@ public class StreamConfigurationView extends LinearLayout {
         );
 
         mOptionTable.requestLayout();
+    }
+
+    // This must be called on the UI thread.
+    public void setStatusText(String msg) {
+        mStreamStatusView.setText(msg);
     }
 
     public StreamConfiguration getRequestedConfiguration() {

@@ -6,23 +6,28 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <TextView   android:id="@+id/toggle_stream_config"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#C0F0E0"
+            android:clickable="true"
+            android:text="@string/hint_hide_settings" />
+
         <TableLayout
             android:id="@+id/optionTable"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:shrinkColumns="1"
             >
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
+            <TableRow>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="API:" />
                 <Spinner
                     android:id="@+id/spinnerNativeApi"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:entries="@array/output_modes"
@@ -34,9 +39,7 @@
                     android:text="\?" />
             </TableRow>
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <TableRow>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -58,9 +61,7 @@
 
             </TableRow>
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <TableRow>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -82,9 +83,7 @@
 
             </TableRow>
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <TableRow>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -106,9 +105,7 @@
 
             </TableRow>
 
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <TableRow>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -129,10 +126,30 @@
                     android:text="\?" />
 
             </TableRow>
-
             <TableRow
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device: " />
+
+                <com.google.sample.audio_device.AudioDeviceSpinner
+                    android:id="@+id/devices_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </TableRow>
+        </TableLayout>
+
+        <TableLayout
+            android:id="@+id/flagTable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shrinkColumns="*"
+            >
+            <TableRow>
 
                 <CheckBox
                     android:id="@+id/requestedExclusiveMode"
@@ -147,11 +164,6 @@
                     android:layout_height="wrap_content"
                     android:text="\?" />
 
-            </TableRow>
-
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
 
                 <CheckBox
                     android:id="@+id/requestAudioEffect"
@@ -167,30 +179,9 @@
                     android:text="\?" />
 
             </TableRow>
+
         </TableLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Device: " />
-
-            <com.google.sample.audio_device.AudioDeviceSpinner
-                android:id="@+id/devices_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-
-<!--        <TextView
-            android:id="@+id/device_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="\?" />-->
 
         <TextView
             android:id="@+id/streamInfo"
@@ -198,6 +189,12 @@
             android:layout_height="wrap_content"
             android:text="info:" />
 
+        <TextView
+            android:id="@+id/statusView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lines="3"
+            android:text="@string/init_status" />
     </LinearLayout>
 
 </merge>

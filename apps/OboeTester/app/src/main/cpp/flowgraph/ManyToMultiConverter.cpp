@@ -28,14 +28,8 @@ ManyToMultiConverter::ManyToMultiConverter(int32_t channelCount)
     }
 }
 
-int32_t ManyToMultiConverter::onProcess(
-        int64_t framePosition,
-        int numFrames) {
+int32_t ManyToMultiConverter::onProcess(int32_t numFrames) {
     int32_t channelCount = output.getSamplesPerFrame();
-
-    for (int i = 0; i < channelCount; i++) {
-        inputs[i]->pullData(framePosition, numFrames);
-    }
 
     for (int ch = 0; ch < channelCount; ch++) {
         const float *inputBuffer = inputs[ch]->getBuffer();

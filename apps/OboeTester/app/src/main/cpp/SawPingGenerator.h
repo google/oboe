@@ -30,16 +30,9 @@ public:
 
     virtual ~SawPingGenerator();
 
-    int32_t onProcess(
-            int64_t framePosition,
-            int numFrames) override;
+    int32_t onProcess(int numFrames) override;
 
     void setEnabled(bool enabled);
-
-    void start() override {
-        OscillatorBase::start();
-        mAcknowledgeCount.store(mRequestCount.load());
-    }
 
 private:
     std::atomic<int> mRequestCount; // external thread increments this to request a beep

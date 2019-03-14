@@ -31,7 +31,7 @@ class SourceI24 : public AudioSource {
 public:
     explicit SourceI24(int32_t channelCount);
 
-    int32_t onProcess(int64_t framePosition, int32_t numFrames) override;
+    int32_t onProcess(int32_t numFrames) override;
 };
 
 } /* namespace flowgraph */
