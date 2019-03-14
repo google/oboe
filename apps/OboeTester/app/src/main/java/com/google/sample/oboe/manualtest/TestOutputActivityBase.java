@@ -98,13 +98,13 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         mTextThreshold = (TextView) findViewById(R.id.textThreshold);
         mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
         mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
-        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.01, 1.0);
+        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 1.0, 10.0);
         mFaderThreshold.setProgress(FADER_THRESHOLD_MAX / 2);
 
         mTextAmplitude = (TextView) findViewById(R.id.textAmplitude);
         mFaderAmplitude = (SeekBar) findViewById(R.id.faderAmplitude);
         mFaderAmplitude.setOnSeekBarChangeListener(mAmplitudeListener);
-        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.01, 4.0);
+        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 4.0, 100.0);
     }
 
     public void pauseAudio() {

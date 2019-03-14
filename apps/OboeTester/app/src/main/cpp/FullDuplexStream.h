@@ -66,10 +66,27 @@ public:
             int numFrames) override;
 
 private:
-    oboe::AudioStream *mInputStream = nullptr;
-    oboe::AudioStream *mOutputStream = nullptr;
+
+    // TODO add getters and setters
+    int32_t kNumCallbacksToDrain   = 20;
+    int32_t kNumCallbacksToNotRead =  0; // let input fill back up, usually 0 or 1
+    int32_t kNumCallbacksToDiscard = 20;
+
+    // We want to reach a state where the input buffer is empty and
+    // the output buffer is full.
+    // These are used in order.
+    // Drain several callback so that input is empty.
+    int32_t              mCountCallbacksToDrain = kNumCallbacksToDrain;
+    // Let the input fill back up slightly so we don't run dry.
+    int32_t              mCountCallbacksToNotRead = kNumCallbacksToNotRead;
+    // Discard some callbacks so the input and output reach equilibrium.
+    int32_t              mCountCallbacksToDiscard = kNumCallbacksToDiscard;
+
+    oboe::AudioStream   *mInputStream = nullptr;
+    oboe::AudioStream   *mOutputStream = nullptr;
+
+    int32_t              mBufferSize = 0;
     std::unique_ptr<float[]> mInputBuffer;
-    int32_t            mBufferSize = 0;
 };
 
 

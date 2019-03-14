@@ -18,7 +18,7 @@
 #include "FullDuplexEcho.h"
 
 oboe::Result  FullDuplexEcho::start() {
-    int32_t delayFrames = (int32_t) (mDelayTimeSeconds * getOutputStream()->getSampleRate());
+    int32_t delayFrames = (int32_t) (kMaxDelayTimeSeconds * getOutputStream()->getSampleRate());
     mDelayLine = std::make_unique<InterpolatingDelayLine>(delayFrames);
     return FullDuplexStream::start();
 }

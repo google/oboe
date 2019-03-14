@@ -32,8 +32,8 @@ public class EchoActivity extends TestInputActivity {
     protected TextView mTextDelayTime;
     protected SeekBar mFaderDelayTime;
     protected ExponentialTaper mTaperDelayTime;
-    private static final double MIN_DELAY_TIME_SECONDS = 0.004;
-    private static final double MAX_DELAY_TIME_SECONDS = 0.400;
+    private static final double MIN_DELAY_TIME_SECONDS = 0.0;
+    private static final double MAX_DELAY_TIME_SECONDS = 3.0;
     private double mDelayTime;
 
     protected static final int MAX_DELAY_TIME_PROGRESS = 1000;
@@ -70,7 +70,7 @@ public class EchoActivity extends TestInputActivity {
         mFaderDelayTime = (SeekBar) findViewById(R.id.fader_delay_time);
         mFaderDelayTime.setOnSeekBarChangeListener(mDelayListener);
         mTaperDelayTime = new ExponentialTaper(MAX_DELAY_TIME_PROGRESS,
-                MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS);
+                MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS, 100.0);
         mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
     }
 
