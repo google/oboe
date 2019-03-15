@@ -51,6 +51,13 @@
         android:onClick="onLaunchEcho"
         android:text="Echo Input to Output" />
 
+    <Button
+        android:id="@+id/button_rt_latency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchRoundTripLatency"
+        android:text="Round Trip Latency" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

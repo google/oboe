@@ -424,4 +424,28 @@ Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
     engine.setDelayTime(delayTimeSeconds);
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgress(JNIEnv *env,
+                                                                 jobject instance) {
+    return engine.mActivityRoundTripLatency.getAnalyzerProgress();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_isAnalyzerDone(JNIEnv *env,
+                                                                                    jobject instance) {
+    return engine.mActivityRoundTripLatency.isAnalyzerDone();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredLatency(JNIEnv *env,
+                                                                                   jobject instance) {
+    return engine.mActivityRoundTripLatency.getMeasuredLatency();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfidence(JNIEnv *env,
+                                                                                   jobject instance) {
+    return engine.mActivityRoundTripLatency.getMeasuredConfidence();
+}
+
 }

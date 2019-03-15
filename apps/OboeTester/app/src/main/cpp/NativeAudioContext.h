@@ -35,6 +35,7 @@
 #include "flowgraph/SawtoothOscillator.h"
 
 #include "FullDuplexEcho.h"
+#include "FullDuplexLatency.h"
 #include "FullDuplexStream.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
@@ -327,7 +328,7 @@ public:
 };
 
 /**
- * Echo input to outp[ut through a delay line.
+ * Echo input to output through a delay line.
  */
 class ActivityEcho : public ActivityContext {
 public:
@@ -349,6 +350,45 @@ protected:
 
 private:
     std::unique_ptr<FullDuplexEcho>   mFullDuplexEcho{};
+};
+
+/**
+ * Measure Round Trip Latency
+ */
+class ActivityRoundTripLatency : public ActivityContext {
+public:
+
+    oboe::Result startStreams() override {
+        return mFullDuplexLatency->start();
+    }
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    int getAnalyzerProgress() {
+        return mFullDuplexLatency->getAnalyzerProgress();
+    }
+    double getMeasuredLatency() {
+        return mFullDuplexLatency->getMeasuredLatency();
+    }
+    double getMeasuredConfidence() {
+        return mFullDuplexLatency->getMeasuredConfidence();
+    }
+
+    bool isAnalyzerDone() {
+        return mFullDuplexLatency->isDone();
+    }
+
+    void analyze() {
+        LOGD("Generate Latency report ************************************* >>>>>>>>>>>>>>>>");
+        mFullDuplexLatency->report();
+        LOGD("Finished Latency report ************************************* <<<<<<<<<<<<<<<<<");
+    }
+
+protected:
+    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+
+private:
+    std::unique_ptr<FullDuplexLatency>   mFullDuplexLatency{};
 };
 
 /**
@@ -382,12 +422,22 @@ public:
             case ActivityType::Echo:
                 currentActivity = &mActivityEcho;
                 break;
+            case ActivityType::RoundTripLatency:
+                currentActivity = &mActivityRoundTripLatency;
+                break;
         }
     }
 
     void setDelayTime(double delayTimeMillis) {
         mActivityEcho.setDelayTime(delayTimeMillis);
     }
+
+    ActivityTestOutput           mActivityTestOutput;
+    ActivityTestInput            mActivityTestInput;
+    ActivityTapToTone            mActivityTapToTone;
+    ActivityRecording            mActivityRecording;
+    ActivityEcho                 mActivityEcho;
+    ActivityRoundTripLatency     mActivityRoundTripLatency;
 
 private:
 
@@ -398,16 +448,11 @@ private:
         TestInput = 1,
         TapToTone = 2,
         RecordPlay = 3,
-        Echo = 4
+        Echo = 4,
+        RoundTripLatency = 5,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;
-    ActivityTestOutput           mActivityTestOutput;
-    ActivityTestInput            mActivityTestInput;
-    ActivityTapToTone            mActivityTapToTone;
-    ActivityRecording            mActivityRecording;
-    ActivityEcho                 mActivityEcho;
-
     ActivityContext             *currentActivity = &mActivityTestOutput;
 
 };

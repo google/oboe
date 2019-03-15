@@ -484,3 +484,22 @@ void ActivityEcho::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
         mFullDuplexEcho->setOutputStream(oboeStream);
     }
 }
+
+// ======================================================================= ActivityRoundTripLatency
+void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    if (mFullDuplexLatency.get() == nullptr) {
+        mFullDuplexLatency = std::make_unique<FullDuplexLatency>();
+    }
+    // only output uses a callback, input is polled
+    if (!isInput) {
+        builder.setCallback(mFullDuplexLatency.get());
+    }
+}
+
+void ActivityRoundTripLatency::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+    if (isInput) {
+        mFullDuplexLatency->setInputStream(oboeStream);
+    } else {
+        mFullDuplexLatency->setOutputStream(oboeStream);
+    }
+}
