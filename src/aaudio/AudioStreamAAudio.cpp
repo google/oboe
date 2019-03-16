@@ -373,9 +373,9 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
 Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds) {
+    std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-
         aaudio_stream_state_t aaudioNextState;
         aaudio_result_t result = mLibLoader->stream_waitForStateChange(
                         mAAudioStream,
