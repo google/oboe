@@ -200,13 +200,6 @@ public:
     virtual int32_t getFramesPerBurst() = 0;
 
     /**
-     * Indicates whether the audio stream is playing.
-     *
-     * @deprecated check the stream state directly using `AudioStream::getState`.
-     */
-    bool isPlaying();
-
-    /**
      * Get the number of bytes in each audio frame. This is calculated using the channel count
      * and the sample format. For example, a 2 channel floating point stream will have
      * 2 * 4 = 8 bytes per frame.
