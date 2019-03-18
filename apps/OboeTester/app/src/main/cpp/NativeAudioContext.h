@@ -262,7 +262,7 @@ public:
     void close(int32_t streamIndex) override;
 
     oboe::Result startStreams() override {
-        return getOutputStream()->requestStart();
+        return getOutputStream()->start();
     }
 
     void configureForStart() override;
@@ -366,6 +366,9 @@ public:
 
     int getAnalyzerProgress() {
         return mFullDuplexLatency->getAnalyzerProgress();
+    }
+    int getAnalyzerState() {
+        return mFullDuplexLatency->getAnalyzerState();
     }
     double getMeasuredLatency() {
         return mFullDuplexLatency->getMeasuredLatency();

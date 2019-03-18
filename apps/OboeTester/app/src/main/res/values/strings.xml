@@ -12,6 +12,7 @@
     <string name="recordAudio">Record</string>
     <string name="playAudio">Play</string>
     <string name="measure">Measure</string>
+    <string name="cancel">Cancel</string>
 
     <string name="GetParam">Get Param</string>
     <string name="device_name">Device Name</string>

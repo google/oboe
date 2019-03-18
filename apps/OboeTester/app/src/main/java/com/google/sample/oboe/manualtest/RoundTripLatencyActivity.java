@@ -32,6 +32,7 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     AudioOutputTester mAudioOutTester;
     private TextView mAnalyzerView;
     private Button mMeasureButton;
+    private Button mCancelButton;
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
@@ -45,8 +46,8 @@ public class RoundTripLatencyActivity extends TestInputActivity {
             @Override
             public void run() {
                 int progress = getAnalyzerProgress();
-                setAnalyzerText("progress = " + progress
-                        + ", done = " + isAnalyzerDone());
+                int state = getAnalyzerState();
+                setAnalyzerText("progress = " + progress + ", state = " + state);
 
                 if (isAnalyzerDone()) {
                     onAnalyzerDone();
@@ -78,12 +79,12 @@ public class RoundTripLatencyActivity extends TestInputActivity {
 
         mMeasureButton.setEnabled(true);
 
-        stopAudio();
-        closeAudio();
+        onCancel();
     }
 
     private LatencySniffer mLatencySniffer = new LatencySniffer();
 
+    native int getAnalyzerState();
     native int getAnalyzerProgress();
     native boolean isAnalyzerDone();
     native double getMeasuredLatency();
@@ -103,6 +104,7 @@ public class RoundTripLatencyActivity extends TestInputActivity {
         super.onCreate(savedInstanceState);
 
         mMeasureButton = (Button) findViewById(R.id.button_measure);
+        mCancelButton = (Button) findViewById(R.id.button_cancel);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
 
         updateEnabledWidgets();
@@ -127,6 +129,15 @@ public class RoundTripLatencyActivity extends TestInputActivity {
         startAudio();
         mLatencySniffer.startSniffer();
         mMeasureButton.setEnabled(false);
+        mCancelButton.setEnabled(true);
+    }
+
+    public void onCancel(View view) {
+        mLatencySniffer.stopSniffer();
+        stopAudio();
+        closeAudio();
+        mMeasureButton.setEnabled(true);
+        mCancelButton.setEnabled(false);
     }
 
     @Override

@@ -49,6 +49,9 @@ public:
     int getAnalyzerProgress() {
         return mEchoAnalyzer.getProgress();
     }
+    int getAnalyzerState() {
+        return mEchoAnalyzer.getState();
+    }
 
     double getMeasuredLatency() {
         return mEchoAnalyzer.getMeasuredLatency();

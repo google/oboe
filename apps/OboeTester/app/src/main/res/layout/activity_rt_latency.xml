@@ -37,6 +37,15 @@
             android:onClick="onMeasure"
             android:text="@string/measure" />
 
+        <Button
+            android:id="@+id/button_cancel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:onClick="onCancel"
+            android:text="@string/cancel" />
+
     </LinearLayout>
 
     <TextView

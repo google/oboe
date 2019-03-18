@@ -426,8 +426,14 @@ Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
 
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgress(JNIEnv *env,
-                                                                 jobject instance) {
+                                                                                    jobject instance) {
     return engine.mActivityRoundTripLatency.getAnalyzerProgress();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerState(JNIEnv *env,
+                                                                                    jobject instance) {
+    return engine.mActivityRoundTripLatency.getAnalyzerState();
 }
 
 JNIEXPORT jboolean JNICALL

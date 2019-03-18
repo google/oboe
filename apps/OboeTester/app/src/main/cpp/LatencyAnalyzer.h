@@ -674,10 +674,10 @@ public:
                 }
                 mDownCounter -= numFrames;
                 if (mDownCounter <= 0) {
-//                    LOGD("state => STATE_MEASURING_GAIN, gathered %d frames",
-//                            mAudioRecording.size());
+                    LOGD("state => STATE_MEASURING_GAIN, gathered %d frames",
+                            mAudioRecording.size());
                     nextState = STATE_MEASURING_GAIN;
-                    //LOGD("%5d: switch to STATE_MEASURING_GAIN\n", mLoopCounter);
+                    LOGD("%5d: switch to STATE_MEASURING_GAIN\n", mLoopCounter);
                     mDownCounter = getBlockFrames() * 2;
                 }
                 break;
@@ -689,8 +689,8 @@ public:
                 if (peak > mPulseThreshold) {
                     mDownCounter -= numFrames;
                     if (mDownCounter <= 0) {
-                        //LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f\n",
-                        //       mLoopCounter, peak);
+                        LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f\n",
+                               mLoopCounter, peak);
                         mDownCounter = getBlockFrames();
                         mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
                         mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
@@ -700,11 +700,13 @@ public:
                             LOGE("ERROR - loop gain too low. Increase the volume.\n");
                             nextState = STATE_FAILED;
                         } else {
-//                            LOGD("state => STATE_WAITING_FOR_SILENCE");
+                            LOGD("state => STATE_WAITING_FOR_SILENCE");
                             nextState = STATE_WAITING_FOR_SILENCE;
                         }
                     }
                 } else if (numFrames > kImpulseSizeInFrames){ // ignore short callbacks
+                    LOGD("STATE_MEASURING_GAIN - reset down counter, numFrames = %d, mDownCounter = %d",
+                            numFrames, mDownCounter);
                     mDownCounter = getBlockFrames();
                 }
                 break;
@@ -722,7 +724,7 @@ public:
                     if (mDownCounter <= 0) {
                         LOGD("state => STATE_SENDING_PULSE");
                         nextState = STATE_SENDING_PULSE;
-                        //LOGD("%5d: switch to STATE_SENDING_PULSE\n", mLoopCounter);
+                        LOGD("%5d: switch to STATE_SENDING_PULSE\n", mLoopCounter);
                         mDownCounter = getBlockFrames();
                     }
                 } else {
@@ -735,12 +737,12 @@ public:
                 sendOneImpulse(outputData, outputChannelCount);
                 LOGD("state => STATE_GATHERING_ECHOS, gathered %d frames", mAudioRecording.size());
                 nextState = STATE_GATHERING_ECHOS;
-                //LOGD("%5d: switch to STATE_GATHERING_ECHOS\n", mLoopCounter);
+                LOGD("%5d: switch to STATE_GATHERING_ECHOS\n", mLoopCounter);
                 break;
 
             case STATE_GATHERING_ECHOS:
-//                LOGD("STATE_GATHERING_ECHOS, numFrames = %d, size = %d",
-//                        numFrames, mAudioRecording.size());
+                LOGD("STATE_GATHERING_ECHOS, numFrames = %d, size = %d",
+                        numFrames, mAudioRecording.size());
                 numWritten = mAudioRecording.write(inputData, inputChannelCount, numFrames);
                 peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
                 if (peak > mMeasuredLoopGain) {
