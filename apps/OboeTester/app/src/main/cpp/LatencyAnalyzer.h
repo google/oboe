@@ -171,8 +171,13 @@ private:
 
 
 typedef struct LatencyReport_s {
-    double latencyInFrames;
-    double confidence;
+    double latencyInFrames = 0.0;
+    double confidence = 0.0;
+
+    void reset() {
+        latencyInFrames = 0.0;
+        confidence = 0.0;
+    }
 } LatencyReport;
 
 static double calculateCorrelation(const float *a,
@@ -432,15 +437,24 @@ class LoopbackProcessor {
 public:
     virtual ~LoopbackProcessor() = default;
 
-
-    enum process_result {
-        PROCESS_RESULT_OK,
-        PROCESS_RESULT_GLITCH
+    // Note that these values must match the switch in RoundTripLatencyActivity.h
+    enum result_code {
+        RESULT_OK = 0,
+        ERROR_NOISY = -99,
+        ERROR_VOLUME_TOO_LOW,
+        ERROR_VOLUME_TOO_HIGH,
+        ERROR_CONFIDENCE,
+        ERROR_INVALID_STATE,
+        ERROR_GLITCHES,
+        ERROR_NO_LOCK
     };
 
-    virtual void reset() {}
+    virtual void reset() {
+        mSampleRate = kDefaultSampleRate;
+        mResult = 0;
+    }
 
-    virtual process_result process(float *inputData, int inputChannelCount,
+    virtual result_code process(float *inputData, int inputChannelCount,
                  float *outputData, int outputChannelCount,
                  int numFrames) = 0;
 
@@ -479,7 +493,7 @@ public:
         return mSampleRate;
     }
 
-    // Measure peak amplitude of buffer.
+    // Measure peak amplitude of first channel of buffer.
     static float measurePeakAmplitude(float *inputData, int inputChannelCount, int numFrames) {
         float peak = 0.0f;
         for (int i = 0; i < numFrames; i++) {
@@ -514,23 +528,41 @@ private:
     float  mPrevious = 0.0f;
 };
 */
+
+class LatencyAnalyzer : public LoopbackProcessor {
+public:
+
+    LatencyAnalyzer() : LoopbackProcessor() {}
+    virtual ~LatencyAnalyzer() = default;
+
+    virtual int32_t getProgress() = 0;
+
+    virtual int getState() = 0;
+
+    virtual double getMeasuredLatency() = 0;
+
+    virtual double getMeasuredConfidence() = 0;
+
+};
+
 // ====================================================================================
 /**
  * Measure latency given a loopback stream data.
+ * Use Larsen effect.
  * Uses a state machine to cycle through various stages including:
  *
  */
-class EchoAnalyzer : public LoopbackProcessor {
+class EchoAnalyzer : public LatencyAnalyzer {
 public:
 
-    EchoAnalyzer() : LoopbackProcessor() {
+    EchoAnalyzer() : LatencyAnalyzer() {
         int32_t framesToRecord = 1 * getSampleRate();
         LOGD("EchoAnalyzer: allocate recording with %d frames", framesToRecord);
         mAudioRecording.allocate(framesToRecord);
         mAudioRecording.setSampleRate(getSampleRate());
     }
 
-    int getState() {
+    int getState() override {
         return mState;
     }
 
@@ -540,13 +572,17 @@ public:
     }
 
     void reset() override {
-        LOGD("EchoAnalyzer: %s() called", __func__);
+        LoopbackProcessor::reset();
         mDownCounter = getSampleRate() / 2;
         mLoopCounter = 0;
         mMeasuredLoopGain = 0.0f;
         mEchoGain = 1.0f;
+
+        LOGD("state reset to STATE_INITIAL_SILENCE");
         mState = STATE_INITIAL_SILENCE;
         mAudioRecording.clear();
+        mLatencyReport.reset();
+        mTimeoutCounter = 4 * getSampleRate();
     }
 
     bool hasEnoughData() {
@@ -557,7 +593,7 @@ public:
         return mState == STATE_DONE || mState == STATE_FAILED;
     }
 
-    int32_t getProgress() {
+    int32_t getProgress() override {
         return mAudioRecording.size();
     }
 
@@ -575,31 +611,32 @@ public:
     }
 
     void report() override {
-        LOGD("EchoAnalyzer ---------------\n");
-        LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d\n", mState);
-        LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s\n", convertStateToText(mState));
+        LOGD("EchoAnalyzer ---------------");
+        LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d", mState);
+        LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s", convertStateToText(mState));
 
-        // LOGD("LowPassFilter test %s\n", testLowPassFilter() ? "PASSED" : "FAILED");
+        // LOGD("LowPassFilter test %s", testLowPassFilter() ? "PASSED" : "FAILED");
 
-        LOGD(LOOPBACK_RESULT_TAG "measured.gain          = %8f\n", mMeasuredLoopGain);
-        LOGD(LOOPBACK_RESULT_TAG "echo.gain              = %8f\n", mEchoGain);
+        LOGD(LOOPBACK_RESULT_TAG "measured.gain          = %8f", mMeasuredLoopGain);
+        LOGD(LOOPBACK_RESULT_TAG "echo.gain              = %8f", mEchoGain);
 
+        int32_t newResult = RESULT_OK;
         if (mState == STATE_WAITING_FOR_SILENCE) {
-            LOGW("Stuck waiting for silence. Input may be too noisy!\n");
-            setResult(ERROR_NOISY);
+            LOGW("Stuck waiting for silence. Input may be too noisy!");
+            newResult = ERROR_NOISY;
         } else if (mMeasuredLoopGain >= 0.9999) {
-            LOGE("Clipping, turn down volume slightly\n");
-            setResult(ERROR_CLIPPING);
+            LOGE("Clipping, turn down volume slightly");
+            newResult = ERROR_VOLUME_TOO_HIGH;
         } else if (mState != STATE_DONE && mState != STATE_GATHERING_ECHOS) {
-            LOGD("WARNING - Bad state. Check volume on device.\n");
-            setResult(ERROR_INVALID_STATE);
+            LOGD("WARNING - Bad state. Check volume on device.");
+            // setResult(ERROR_INVALID_STATE);
         } else {
             // Cleanup the signal to improve the auto-correlation.
             mAudioRecording.dcBlocker();
             mAudioRecording.square();
             mAudioRecording.lowPassFilter();
 
-            LOGD("Please wait several seconds for auto-correlation to complete.\n");
+            LOGD("Please wait several seconds for auto-correlation to complete.");
             measureLatencyFromEchos(mAudioRecording.getData(),
                                     mAudioRecording.size(),
                                     getSampleRate(),
@@ -607,25 +644,28 @@ public:
 
             double latencyMillis = kMillisPerSecond * (double) mLatencyReport.latencyInFrames
                                    / getSampleRate();
-            LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8.2f\n",
+            LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8.2f",
                    mLatencyReport.latencyInFrames);
-            LOGD(LOOPBACK_RESULT_TAG "latency.msec           = %8.2f\n",
+            LOGD(LOOPBACK_RESULT_TAG "latency.msec           = %8.2f",
                    latencyMillis);
-            LOGD(LOOPBACK_RESULT_TAG "latency.confidence     = %8.6f\n",
+            LOGD(LOOPBACK_RESULT_TAG "latency.confidence     = %8.6f",
                    mLatencyReport.confidence);
             if (mLatencyReport.confidence < kMinimumConfidence) {
-                LOGD("   ERROR - confidence too low!\n");
-                setResult(ERROR_CONFIDENCE);
+                LOGD("   ERROR - confidence too low!");
+                newResult = ERROR_CONFIDENCE;
             }
         }
         mState = STATE_DONE;
+        if (getResult() == RESULT_OK) {
+            setResult(newResult);
+        }
     }
 
-    double getMeasuredLatency() {
+    double getMeasuredLatency() override {
         return mLatencyReport.latencyInFrames;
     }
 
-    double getMeasuredConfidence() {
+    double getMeasuredConfidence() override {
         return mLatencyReport.confidence;
     }
 
@@ -633,35 +673,35 @@ public:
         LOGD("st = %d, echo gain = %f ", mState, mEchoGain);
     }
 
-    void sendImpulses(float *outputData, int outputChannelCount, int numFrames) {
-        while (numFrames-- > 0) {
-            float sample = s_Impulse[mSampleIndex++];
-            if (mSampleIndex >= kImpulseSizeInFrames) {
-                mSampleIndex = 0;
-            }
-
-            *outputData = sample;
-            outputData += outputChannelCount;
-        }
+    int32_t getMaxLatencyFrames() {
+        return 1 * getSampleRate();
     }
 
-    void sendOneImpulse(float *outputData, int outputChannelCount) {
-        mSampleIndex = 0;
-        sendImpulses(outputData, outputChannelCount, kImpulseSizeInFrames);
-    }
-
-    // @return number of frames for a typical block of processing
-    int32_t getBlockFrames() {
-        return getSampleRate() / 8;
-    }
-
-    process_result process(float *inputData, int inputChannelCount,
+    result_code process(float *inputData, int inputChannelCount,
                  float *outputData, int outputChannelCount,
                  int numFrames) override {
         int channelsValid = std::min(inputChannelCount, outputChannelCount);
         float peak = 0.0f;
         int numWritten;
         int numSamples;
+        mLoopCounter++;
+
+        mTimeoutCounter -= numFrames;
+        if (!isDone() && mTimeoutCounter < 0) {
+            LOGW("EchoAnalyzer timed out.");
+            switch (mState) {
+                case STATE_MEASURING_GAIN:
+                    setResult(ERROR_VOLUME_TOO_LOW);
+                    break;
+                case STATE_WAITING_FOR_SILENCE:
+                    setResult(ERROR_NOISY);
+                    break;
+                default:
+                    break;
+            }
+            mState = STATE_FAILED;
+            return RESULT_OK;
+        }
 
         echo_state nextState = mState;
 
@@ -677,7 +717,7 @@ public:
                     LOGD("state => STATE_MEASURING_GAIN, gathered %d frames",
                             mAudioRecording.size());
                     nextState = STATE_MEASURING_GAIN;
-                    LOGD("%5d: switch to STATE_MEASURING_GAIN\n", mLoopCounter);
+                    LOGD("%5d: switch to STATE_MEASURING_GAIN", mLoopCounter);
                     mDownCounter = getBlockFrames() * 2;
                 }
                 break;
@@ -689,25 +729,26 @@ public:
                 if (peak > mPulseThreshold) {
                     mDownCounter -= numFrames;
                     if (mDownCounter <= 0) {
-                        LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f\n",
-                               mLoopCounter, peak);
                         mDownCounter = getBlockFrames();
                         mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
                         mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
                         // Calculate gain that will give us a nice decaying echo.
                         mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
                         if (mEchoGain > kMaxEchoGain) {
-                            LOGE("ERROR - loop gain too low. Increase the volume.\n");
+                            LOGE("ERROR - loop gain too low. Increase the volume.");
+                            setResult(ERROR_VOLUME_TOO_LOW);
                             nextState = STATE_FAILED;
                         } else {
-                            LOGD("state => STATE_WAITING_FOR_SILENCE");
+                            LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f",
+                                 mLoopCounter, peak);
                             nextState = STATE_WAITING_FOR_SILENCE;
+                            mDownCounter = getMaxLatencyFrames();
                         }
                     }
                 } else if (numFrames > kImpulseSizeInFrames){ // ignore short callbacks
-                    LOGD("STATE_MEASURING_GAIN - reset down counter, numFrames = %d, mDownCounter = %d",
-                            numFrames, mDownCounter);
-                    mDownCounter = getBlockFrames();
+                    LOGD("STATE_MEASURING_GAIN - reset, numFrames = %3d, peak = %f",
+                            numFrames, peak);
+                    mDownCounter = getBlockFrames() * 2;
                 }
                 break;
 
@@ -718,17 +759,15 @@ public:
                     outputData[i] = 0;
                 }
                 peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
+                LOGD("state is STATE_WAITING_FOR_SILENCE, measured peak = %f", peak);
                 // If we get several in a row then go to next state.
                 if (peak < mSilenceThreshold) {
                     mDownCounter -= numFrames;
                     if (mDownCounter <= 0) {
                         LOGD("state => STATE_SENDING_PULSE");
                         nextState = STATE_SENDING_PULSE;
-                        LOGD("%5d: switch to STATE_SENDING_PULSE\n", mLoopCounter);
-                        mDownCounter = getBlockFrames();
+                        LOGD("%5d: switch to STATE_SENDING_PULSE", mLoopCounter);
                     }
-                } else {
-                    mDownCounter = getBlockFrames();
                 }
                 break;
 
@@ -737,10 +776,11 @@ public:
                 sendOneImpulse(outputData, outputChannelCount);
                 LOGD("state => STATE_GATHERING_ECHOS, gathered %d frames", mAudioRecording.size());
                 nextState = STATE_GATHERING_ECHOS;
-                LOGD("%5d: switch to STATE_GATHERING_ECHOS\n", mLoopCounter);
+                LOGD("%5d: switch to STATE_GATHERING_ECHOS", mLoopCounter);
                 break;
 
             case STATE_GATHERING_ECHOS:
+                // Record input until the mAudioRecording is full.
                 LOGD("STATE_GATHERING_ECHOS, numFrames = %d, size = %d",
                         numFrames, mAudioRecording.size());
                 numWritten = mAudioRecording.write(inputData, inputChannelCount, numFrames);
@@ -768,6 +808,7 @@ public:
                 }
                 break;
 
+            case STATE_GOT_DATA:
             case STATE_DONE:
             case STATE_FAILED:
             default:
@@ -775,8 +816,7 @@ public:
         }
 
         mState = nextState;
-        mLoopCounter++;
-        return PROCESS_RESULT_OK;
+        return RESULT_OK;
     }
 /*
     int save(const char *fileName) override {
@@ -792,13 +832,27 @@ public:
 */
 private:
 
-    enum error_code {
-        ERROR_OK = 0,
-        ERROR_NOISY = -99,
-        ERROR_CLIPPING,
-        ERROR_CONFIDENCE,
-        ERROR_INVALID_STATE
-    };
+    void sendImpulses(float *outputData, int outputChannelCount, int numFrames) {
+        while (numFrames-- > 0) {
+            float sample = s_Impulse[mSampleIndex++];
+            if (mSampleIndex >= kImpulseSizeInFrames) {
+                mSampleIndex = 0;
+            }
+
+            *outputData = sample;
+            outputData += outputChannelCount;
+        }
+    }
+
+    void sendOneImpulse(float *outputData, int outputChannelCount) {
+        mSampleIndex = 0;
+        sendImpulses(outputData, outputChannelCount, kImpulseSizeInFrames);
+    }
+
+    // @return number of frames for a typical block of processing
+    int32_t getBlockFrames() {
+        return getSampleRate() / 8;
+    }
 
     enum echo_state {
         STATE_INITIAL_SILENCE,
@@ -844,10 +898,12 @@ private:
 
 
     int32_t         mDownCounter = 500;
+    int32_t         mTimeoutCounter = 0; // timeout in frames so we don't stall
     int32_t         mLoopCounter = 0;
     int32_t         mSampleIndex = 0;
-    float           mPulseThreshold = 0.02f;
-    float           mSilenceThreshold = 0.002f;
+    float           mPulseThreshold = 0.10f;
+    static constexpr float kSilenceThreshold = 0.04f;
+    float           mSilenceThreshold = kSilenceThreshold;
     float           mMeasuredLoopGain = 0.0f;
     float           mDesiredEchoGain = 0.95f;
     float           mEchoGain = 1.0f;
@@ -870,35 +926,35 @@ class SineAnalyzer : public LoopbackProcessor {
 public:
 
     void report() override {
-        LOGD("SineAnalyzer ------------------\n");
-        LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f\n", mPeakAmplitude);
-        LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f\n", mMagnitude);
-        LOGD(LOOPBACK_RESULT_TAG "peak.noise         = %8f\n", mPeakNoise);
-        LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f\n", mRootMeanSquareNoise);
+        LOGD("SineAnalyzer ------------------");
+        LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", mPeakAmplitude);
+        LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);
+        LOGD(LOOPBACK_RESULT_TAG "peak.noise         = %8f", mPeakNoise);
+        LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f", mRootMeanSquareNoise);
         float amplitudeRatio = mMagnitude / mPeakNoise;
         float signalToNoise = amplitudeRatio * amplitudeRatio;
-        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise    = %8.2f\n", signalToNoise);
+        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise    = %8.2f", signalToNoise);
         float signalToNoiseDB = 10.0 * log(signalToNoise);
-        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f\n", signalToNoiseDB);
+        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f", signalToNoiseDB);
         if (signalToNoiseDB < MIN_SNRATIO_DB) {
-            LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.\n", MIN_SNRATIO_DB);
-            setResult(ERROR_NOISY);
+            LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.", MIN_SNRATIO_DB);
+            setResult(ERROR_VOLUME_TOO_LOW);
         }
-        LOGD(LOOPBACK_RESULT_TAG "frames.accumulated = %8d\n", mFramesAccumulated);
-        LOGD(LOOPBACK_RESULT_TAG "sine.period        = %8d\n", mSinePeriod);
-        LOGD(LOOPBACK_RESULT_TAG "test.state         = %8d\n", mState);
-        LOGD(LOOPBACK_RESULT_TAG "frame.count        = %8d\n", mFrameCounter);
+        LOGD(LOOPBACK_RESULT_TAG "frames.accumulated = %8d", mFramesAccumulated);
+        LOGD(LOOPBACK_RESULT_TAG "sine.period        = %8d", mSinePeriod);
+        LOGD(LOOPBACK_RESULT_TAG "test.state         = %8d", mState);
+        LOGD(LOOPBACK_RESULT_TAG "frame.count        = %8d", mFrameCounter);
         // Did we ever get a lock?
         bool gotLock = (mState == STATE_LOCKED) || (mGlitchCount > 0);
         if (!gotLock) {
-            LOGD("ERROR - failed to lock on reference sine tone\n");
+            LOGD("ERROR - failed to lock on reference sine tone");
             setResult(ERROR_NO_LOCK);
         } else {
             // Only print if meaningful.
-            LOGD(LOOPBACK_RESULT_TAG "glitch.count       = %8d\n", mGlitchCount);
-            LOGD(LOOPBACK_RESULT_TAG "max.glitch         = %8f\n", mMaxGlitchDelta);
+            LOGD(LOOPBACK_RESULT_TAG "glitch.count       = %8d", mGlitchCount);
+            LOGD(LOOPBACK_RESULT_TAG "max.glitch         = %8f", mMaxGlitchDelta);
             if (mGlitchCount > 0) {
-                LOGD("ERROR - number of glitches > 0\n");
+                LOGD("ERROR - number of glitches > 0");
                 setResult(ERROR_GLITCHES);
             }
         }
@@ -927,10 +983,10 @@ public:
      * @param inputData contains microphone data with sine signal feedback
      * @param outputData contains the reference sine wave
      */
-    process_result process(float *inputData, int inputChannelCount,
+    result_code process(float *inputData, int inputChannelCount,
                  float *outputData, int outputChannelCount,
                  int numFrames) override {
-        process_result result = PROCESS_RESULT_OK;
+        result_code result = RESULT_OK;
         mProcessCount++;
 
         float peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
@@ -976,7 +1032,7 @@ public:
                 case STATE_WAITING_FOR_SIGNAL:
                     if (peak > mThreshold) {
                         mState = STATE_WAITING_FOR_LOCK;
-                        //LOGD("%5d: switch to STATE_WAITING_FOR_LOCK\n", mFrameCounter);
+                        //LOGD("%5d: switch to STATE_WAITING_FOR_LOCK", mFrameCounter);
                         resetAccumulator();
                     }
                     break;
@@ -992,7 +1048,7 @@ public:
                         if (mMagnitude > mThreshold) {
                             if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
                                 mState = STATE_LOCKED;
-                                //LOGD("%5d: switch to STATE_LOCKED\n", mFrameCounter);
+                                //LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                             }
                             mPreviousPhaseOffset = mPhaseOffset;
                         }
@@ -1003,15 +1059,15 @@ public:
                 case STATE_LOCKED: {
                     // Predict next sine value
                     float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
-                    // LOGD("    predicted = %f, actual = %f\n", predicted, sample);
+                    // LOGD("    predicted = %f, actual = %f", predicted, sample);
 
                     float diff = predicted - sample;
                     float absDiff = fabs(diff);
                     mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                     if (absDiff > mTolerance) {
                         mGlitchCount++;
-                        result = PROCESS_RESULT_GLITCH;
-                        //LOGD("%5d: Got a glitch # %d, predicted = %f, actual = %f\n",
+                        result = ERROR_GLITCHES;
+                        //LOGD("%5d: Got a glitch # %d, predicted = %f, actual = %f",
                         //       mFrameCounter, mGlitchCount, predicted, sample);
                         mState = STATE_IMMUNE;
                         mDownCounter = mSinePeriod * PERIODS_IMMUNE;
@@ -1039,7 +1095,7 @@ public:
             if (sineEnabled) {
                 output = (sinOut * mOutputAmplitude)
                          + (mWhiteNoise.nextRandomDouble() * mNoiseAmplitude);
-                // LOGD("%5d: sin(%f) = %f, %f\n", i, mPhase, sinOut,  mPhaseIncrement);
+                // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
                 // advance and wrap phase
                 mPhase += mPhaseIncrement;
                 if (mPhase > M_PI) {
@@ -1047,8 +1103,6 @@ public:
                 }
             }
             outputData[i * outputChannelCount] = output;
-
-
             mFrameCounter++;
         }
         return result;
@@ -1075,13 +1129,6 @@ public:
     }
 
 private:
-
-    enum error_code {
-        OK,
-        ERROR_NO_LOCK = -80,
-        ERROR_GLITCHES,
-        ERROR_NOISY
-    };
 
     enum sine_state_t {
         STATE_IDLE,

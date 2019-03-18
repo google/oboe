@@ -46,27 +46,16 @@ public:
         mEchoAnalyzer.report();
     }
 
-    int getAnalyzerProgress() {
-        return mEchoAnalyzer.getProgress();
-    }
-    int getAnalyzerState() {
-        return mEchoAnalyzer.getState();
-    }
-
-    double getMeasuredLatency() {
-        return mEchoAnalyzer.getMeasuredLatency();
-    }
-
-    double getMeasuredConfidence() {
-        return mEchoAnalyzer.getMeasuredConfidence();
-    }
-
     bool isDone() {
         return mEchoAnalyzer.isDone();
     }
 
     void analyzeData() {
         mEchoAnalyzer.report();
+    }
+
+    LatencyAnalyzer *getLatencyAnalyzer() {
+        return &mEchoAnalyzer;
     }
 
 private:

@@ -427,13 +427,13 @@ Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgress(JNIEnv *env,
                                                                                     jobject instance) {
-    return engine.mActivityRoundTripLatency.getAnalyzerProgress();
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getProgress();
 }
 
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerState(JNIEnv *env,
                                                                                     jobject instance) {
-    return engine.mActivityRoundTripLatency.getAnalyzerState();
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getState();
 }
 
 JNIEXPORT jboolean JNICALL
@@ -445,13 +445,19 @@ Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_isAnalyzerDone(J
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredLatency(JNIEnv *env,
                                                                                    jobject instance) {
-    return engine.mActivityRoundTripLatency.getMeasuredLatency();
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredLatency();
 }
 
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfidence(JNIEnv *env,
-                                                                                   jobject instance) {
-    return engine.mActivityRoundTripLatency.getMeasuredConfidence();
+                                                                                      jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredConfidence();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredResult(JNIEnv *env,
+                                                                                      jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
 }
 
 }

@@ -34,6 +34,30 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     private Button mMeasureButton;
     private Button mCancelButton;
 
+    // Note that these string must match the enum result_code in LatencyAnalyzer.h
+    String resultCodeToString(int resultCode) {
+        switch (resultCode) {
+            case 0:
+                return "OK";
+            case -99:
+                return "ERROR_NOISY";
+            case -98:
+                return "ERROR_VOLUME_TOO_LOW";
+            case -97:
+                return "ERROR_VOLUME_TOO_HIGH";
+            case -96:
+                return "ERROR_CONFIDENCE";
+            case -95:
+                return "ERROR_INVALID_STATE";
+            case -94:
+                return "ERROR_GLITCHES";
+            case -93:
+                return "ERROR_NO_LOCK";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
     // Periodically query the status of the stream.
     protected class LatencySniffer {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
@@ -71,15 +95,23 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     }
 
     private void onAnalyzerDone() {
+        int progress = getAnalyzerProgress();
+        int state = getAnalyzerState();
+        int result = getMeasuredResult();
         double latencyFrames = getMeasuredLatency();
         double confidence = getMeasuredConfidence();
         double latencyMillis = latencyFrames * 1000 / getSampleRate();
-        setAnalyzerText(String.format("latency = %6.1f frames = %6.2f msec\nconfidence = %6.3f",
+        setAnalyzerText(String.format("progress = %d, state = %d\n"
+                + "result = %d = %s\n"
+                + "latency = %6.1f frames = %6.2f msec\nconfidence = %6.3f",
+                progress,
+                state,
+                result, resultCodeToString(result),
                 latencyFrames, latencyMillis, confidence));
 
         mMeasureButton.setEnabled(true);
 
-        onCancel();
+        stopAudioTest();
     }
 
     private LatencySniffer mLatencySniffer = new LatencySniffer();
@@ -87,6 +119,7 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     native int getAnalyzerState();
     native int getAnalyzerProgress();
     native boolean isAnalyzerDone();
+    native int getMeasuredResult();
     native double getMeasuredLatency();
     native double getMeasuredConfidence();
 
@@ -133,6 +166,11 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     }
 
     public void onCancel(View view) {
+        stopAudioTest();
+    }
+
+    // Call on UI thread
+    public void stopAudioTest() {
         mLatencySniffer.stopSniffer();
         stopAudio();
         closeAudio();

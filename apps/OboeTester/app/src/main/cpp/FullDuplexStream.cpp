@@ -108,7 +108,10 @@ oboe::Result FullDuplexStream::start() {
         mInputBuffer = std::make_unique<float[]>(bufferSize);
         mBufferSize = bufferSize;
     }
-    getInputStream()->requestStart();
+    oboe::Result result = getInputStream()->requestStart();
+    if (result != oboe::Result::OK) {
+        return result;
+    }
     return getOutputStream()->requestStart();
 }
 

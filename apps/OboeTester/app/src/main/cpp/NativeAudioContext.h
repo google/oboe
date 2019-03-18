@@ -364,17 +364,8 @@ public:
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
-    int getAnalyzerProgress() {
-        return mFullDuplexLatency->getAnalyzerProgress();
-    }
-    int getAnalyzerState() {
-        return mFullDuplexLatency->getAnalyzerState();
-    }
-    double getMeasuredLatency() {
-        return mFullDuplexLatency->getMeasuredLatency();
-    }
-    double getMeasuredConfidence() {
-        return mFullDuplexLatency->getMeasuredConfidence();
+    LatencyAnalyzer *getLatencyAnalyzer() {
+        return mFullDuplexLatency->getLatencyAnalyzer();
     }
 
     bool isAnalyzerDone() {
