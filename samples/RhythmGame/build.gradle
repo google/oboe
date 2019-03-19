@@ -33,7 +33,7 @@ android {
     }
     flavorDimensions "extractorLibrary"
     productFlavors {
-        ndkDecoder {
+        ndkExtractor {
             dimension "extractorLibrary"
 
             // Oboe has a minimum API of 16, but AMediaExtractor (used to extract the MP3 assets)
@@ -46,7 +46,9 @@ android {
                 }
             }
         }
-        ffmpegDecoder {
+        /*
+        Uncomment this block to use the FFmpeg extractor
+        ffmpegExtractor {
             dimension "extractorLibrary"
             minSdkVersion 16
             externalNativeBuild {
@@ -54,7 +56,7 @@ android {
                     arguments "-DUSE_FFMPEG=1"
                 }
             }
-        }
+        }*/
     }
 
     splits {
