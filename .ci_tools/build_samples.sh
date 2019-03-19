@@ -21,10 +21,10 @@ done
 declare apks=(
     samples/hello-oboe/build/outputs/apk/debug/hello-oboe-debug.apk
     samples/MegaDrone/build/outputs/apk/debug/MegaDrone-debug.apk
-    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-ndkExtractor-x86-debug.apk
-    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-ndkExtractor-x86_64-debug.apk
-    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-ndkExtractor-arm64-v8a-debug.apk
-    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-ndkExtractor-armeabi-v7a-debug.apk
+    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-x86-debug.apk
+    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-x86_64-debug.apk
+    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-arm64-v8a-debug.apk
+    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-armeabi-v7a-debug.apk
     samples/LiveEffect/build/outputs/apk/debug/LiveEffect-debug.apk
 )
 
