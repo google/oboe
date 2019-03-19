@@ -21,7 +21,7 @@ done
 declare apks=(
     samples/hello-oboe/build/outputs/apk/debug/hello-oboe-debug.apk
     samples/MegaDrone/build/outputs/apk/debug/MegaDrone-debug.apk
-    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-debug.apk
+    samples/RhythmGame/build/outputs/apk/debug/RhythmGame-ndkExtractorDebug.apk
     samples/LiveEffect/build/outputs/apk/debug/LiveEffect-debug.apk
 )
 
