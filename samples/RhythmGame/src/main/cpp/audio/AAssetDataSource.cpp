@@ -16,6 +16,7 @@
 
 
 #include <utils/logging.h>
+#include <oboe/Oboe.h>
 
 #include "AAssetDataSource.h"
 
