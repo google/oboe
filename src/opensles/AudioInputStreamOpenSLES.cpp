@@ -319,18 +319,25 @@ void AudioInputStreamOpenSLES::updateFramesWritten() {
 }
 
 Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
-    if (mRecordInterface == NULL) {
-        return Result::ErrorNull;
-    }
-    SLmillisecond msec = 0;
-    SLresult slResult = (*mRecordInterface)->GetPosition(mRecordInterface, &msec);
     Result result = Result::OK;
-    if(SL_RESULT_SUCCESS != slResult) {
-        LOGD("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
-        // set result based on SLresult
-        result = Result::ErrorInternal;
-    } else {
-        mPositionMillis.update32(msec);
+    // Avoid deadlock if another thread is trying to stop or close this stream
+    // and this is being called from a callback.
+    if (mLock.try_lock()) {
+
+        if (mRecordInterface == NULL) {
+            mLock.unlock();
+            return Result::ErrorNull;
+        }
+        SLmillisecond msec = 0;
+        SLresult slResult = (*mRecordInterface)->GetPosition(mRecordInterface, &msec);
+        if (SL_RESULT_SUCCESS != slResult) {
+            LOGD("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
+            // set result based on SLresult
+            result = Result::ErrorInternal;
+        } else {
+            mPositionMillis.update32(msec);
+        }
+        mLock.unlock();
     }
     return result;
 }
