@@ -183,7 +183,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
             mWaveformView.clearSampleData();
         } else {
             if (result.events.length < 2) {
-                text = "Not enough edges.\n";
+                text = "Not enough edges. Use fingernail.\n";
                 mWaveformView.setCursorData(null);
             } else if (result.events.length > 2) {
                 text = "Too many edges.\n";

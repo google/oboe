@@ -19,6 +19,7 @@
     <string name="auto_select">Auto select</string>
     <string name="hint_hide_settings">Hide Settings</string>
     <string name="hint_show_settings">Show Settings</string>
+    <string name="use_loopback">Hide Settings to make more room.\nRequires a loopback adapter!</string>
 
     <string name="output_prompt">Choose an Output Mode</string>
     <string-array name="output_modes">

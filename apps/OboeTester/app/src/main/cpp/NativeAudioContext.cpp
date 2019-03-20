@@ -466,8 +466,23 @@ void ActivityTapToTone::configureForStart() {
     configureStreamGateway();
 }
 
+// ======================================================================= ActivityRoundTripLatency
+void ActivityFullDuplex::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    if (isInput) {
+        // Ideally the output streams should be opened first.
+        oboe::AudioStream *outputStream = getOutputStream();
+        if (outputStream != nullptr) {
+            // Make sure the capacity is bigger than two bursts.
+            int32_t burst = outputStream->getFramesPerBurst();
+            builder.setBufferCapacityInFrames(2 * burst);
+        }
+    }
+}
+
 // ======================================================================= ActivityEcho
 void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityFullDuplex::configureBuilder(isInput, builder);
+
     if (mFullDuplexEcho.get() == nullptr) {
         mFullDuplexEcho = std::make_unique<FullDuplexEcho>();
     }
@@ -487,11 +502,13 @@ void ActivityEcho::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
 
 // ======================================================================= ActivityRoundTripLatency
 void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityFullDuplex::configureBuilder(isInput, builder);
+
     if (mFullDuplexLatency.get() == nullptr) {
         mFullDuplexLatency = std::make_unique<FullDuplexLatency>();
     }
-    // only output uses a callback, input is polled
     if (!isInput) {
+        // only output uses a callback, input is polled
         builder.setCallback(mFullDuplexLatency.get());
     }
 }

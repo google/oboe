@@ -71,6 +71,10 @@ abstract class TestAudioActivity extends Activity {
     public static class StreamContext {
         StreamConfigurationView configurationView;
         AudioStreamTester tester;
+
+        boolean isInput() {
+            return tester.getCurrentAudioStream().isInput();
+        }
     }
 
     // Periodically query the status of the stream.
@@ -263,18 +267,18 @@ abstract class TestAudioActivity extends Activity {
     
     public void openAudio() {
         try {
+            // Open output streams then open input streams.
+            // This is so that the capacity of input stream can be expanded to
+            // match the burst size of the output for full duplex.
             for (StreamContext streamContext : mStreamContexts) {
-                StreamConfigurationView configView = streamContext.configurationView;
-                StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
-                requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
-                streamContext.tester.open(requestedConfig, configView.getActualConfiguration());
-                mSampleRate = configView.getActualConfiguration().getSampleRate();
-                mState = STATE_OPEN;
-                int sessionId = configView.getActualConfiguration().getSessionId();
-                if (sessionId > 0) {
-                    setupEffects(sessionId);
+                if (!streamContext.isInput()) {
+                    openStreamContext(streamContext);
                 }
-                configView.updateDisplay();
+            }
+            for (StreamContext streamContext : mStreamContexts) {
+                if (streamContext.isInput()) {
+                    openStreamContext(streamContext);
+                }
             }
             updateEnabledWidgets();
             mStreamSniffer.startStreamSniffer();
@@ -282,6 +286,20 @@ abstract class TestAudioActivity extends Activity {
             e.printStackTrace();
             showToast(e.getMessage());
         }
+    }
+
+    private void openStreamContext(StreamContext streamContext) throws IOException {
+        StreamConfigurationView configView = streamContext.configurationView;
+        StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
+        requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
+        streamContext.tester.open(requestedConfig, configView.getActualConfiguration());
+        mSampleRate = configView.getActualConfiguration().getSampleRate();
+        mState = STATE_OPEN;
+        int sessionId = configView.getActualConfiguration().getSessionId();
+        if (sessionId > 0) {
+            setupEffects(sessionId);
+        }
+        configView.updateDisplay();
     }
 
     // Native methods

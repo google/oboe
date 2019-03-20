@@ -627,7 +627,7 @@ public:
         } else if (mMeasuredLoopGain >= 0.9999) {
             LOGE("Clipping, turn down volume slightly");
             newResult = ERROR_VOLUME_TOO_HIGH;
-        } else if (mState != STATE_DONE && mState != STATE_GATHERING_ECHOS) {
+        } else if (mState != STATE_GOT_DATA) {
             LOGD("WARNING - Bad state. Check volume on device.");
             // setResult(ERROR_INVALID_STATE);
         } else {
@@ -682,7 +682,6 @@ public:
                  int numFrames) override {
         int channelsValid = std::min(inputChannelCount, outputChannelCount);
         float peak = 0.0f;
-        int numWritten;
         int numSamples;
         mLoopCounter++;
 
@@ -717,38 +716,40 @@ public:
                     LOGD("state => STATE_MEASURING_GAIN, gathered %d frames",
                             mAudioRecording.size());
                     nextState = STATE_MEASURING_GAIN;
-                    LOGD("%5d: switch to STATE_MEASURING_GAIN", mLoopCounter);
                     mDownCounter = getBlockFrames() * 2;
                 }
                 break;
 
             case STATE_MEASURING_GAIN:
                 sendImpulses(outputData, outputChannelCount, numFrames);
-                peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
-                // If we get several in a row then go to next state.
-                if (peak > mPulseThreshold) {
-                    mDownCounter -= numFrames;
-                    if (mDownCounter <= 0) {
-                        mDownCounter = getBlockFrames();
-                        mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
-                        mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
-                        // Calculate gain that will give us a nice decaying echo.
-                        mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
-                        if (mEchoGain > kMaxEchoGain) {
-                            LOGE("ERROR - loop gain too low. Increase the volume.");
-                            setResult(ERROR_VOLUME_TOO_LOW);
-                            nextState = STATE_FAILED;
-                        } else {
-                            LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f",
-                                 mLoopCounter, peak);
-                            nextState = STATE_WAITING_FOR_SILENCE;
-                            mDownCounter = getMaxLatencyFrames();
+                // Do we have enough data to get a reasonable measurement?
+                if (numFrames > kImpulseSizeInFrames) {
+                    peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
+                    // If we get several in a row then go to next state.
+                    if (peak > mPulseThreshold) {
+                        mDownCounter -= numFrames;
+                        if (mDownCounter <= 0) {
+                            mDownCounter = getBlockFrames();
+                            mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
+                            mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
+                            // Calculate gain that will give us a nice decaying echo.
+                            mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
+                            if (mEchoGain > kMaxEchoGain) {
+                                LOGE("ERROR - loop gain too low. Increase the volume.");
+                                setResult(ERROR_VOLUME_TOO_LOW);
+                                nextState = STATE_FAILED;
+                            } else {
+                                LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f",
+                                     mLoopCounter, peak);
+                                nextState = STATE_WAITING_FOR_SILENCE;
+                                mDownCounter = getMaxLatencyFrames();
+                            }
                         }
+                    } else {
+//                    LOGD("STATE_MEASURING_GAIN - reset, numFrames = %4d, peak = %7.5f",
+//                            numFrames, peak);
+                        mDownCounter = getBlockFrames() * 2;
                     }
-                } else if (numFrames > kImpulseSizeInFrames){ // ignore short callbacks
-                    LOGD("STATE_MEASURING_GAIN - reset, numFrames = %3d, peak = %f",
-                            numFrames, peak);
-                    mDownCounter = getBlockFrames() * 2;
                 }
                 break;
 
@@ -759,7 +760,8 @@ public:
                     outputData[i] = 0;
                 }
                 peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
-                LOGD("state is STATE_WAITING_FOR_SILENCE, measured peak = %f", peak);
+//                LOGD("state is STATE_WAITING_FOR_SILENCE, numFrames = %4d, measured peak = %7.5f, cnt = %5d",
+//                        numFrames, peak, mDownCounter);
                 // If we get several in a row then go to next state.
                 if (peak < mSilenceThreshold) {
                     mDownCounter -= numFrames;
@@ -774,22 +776,27 @@ public:
             case STATE_SENDING_PULSE:
                 mAudioRecording.write(inputData, inputChannelCount, numFrames);
                 sendOneImpulse(outputData, outputChannelCount);
-                LOGD("state => STATE_GATHERING_ECHOS, gathered %d frames", mAudioRecording.size());
+                LOGD("state => STATE_GATHERING_ECHOS");
                 nextState = STATE_GATHERING_ECHOS;
-                LOGD("%5d: switch to STATE_GATHERING_ECHOS", mLoopCounter);
                 break;
 
             case STATE_GATHERING_ECHOS:
                 // Record input until the mAudioRecording is full.
-                LOGD("STATE_GATHERING_ECHOS, numFrames = %d, size = %d",
-                        numFrames, mAudioRecording.size());
-                numWritten = mAudioRecording.write(inputData, inputChannelCount, numFrames);
+//                LOGD("STATE_GATHERING_ECHOS, numFrames = %4d, size = %5d",
+//                        numFrames, mAudioRecording.size());
+                mAudioRecording.write(inputData, inputChannelCount, numFrames);
+                if (hasEnoughData()) {
+                    LOGD("state => STATE_GOT_DATA, gathered %d frames", mAudioRecording.size());
+                    nextState = STATE_GOT_DATA;
+                }
+
                 peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
                 if (peak > mMeasuredLoopGain) {
                     mMeasuredLoopGain = peak;  // AGC might be raising gain so adjust it on the fly.
                     // Recalculate gain that will give us a nice decaying echo.
                     mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
                 }
+
                 // Echo input to output.
                 for (int i = 0; i < numFrames; i++) {
                     int ic;
@@ -801,10 +808,6 @@ public:
                     }
                     inputData += inputChannelCount;
                     outputData += outputChannelCount;
-                }
-                if (numWritten  < numFrames) {
-                    LOGD("state => STATE_GOT_DATA, gathered %d frames", mAudioRecording.size());
-                    nextState = STATE_GOT_DATA;
                 }
                 break;
 

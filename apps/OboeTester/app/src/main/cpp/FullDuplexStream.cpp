@@ -50,6 +50,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
     } else if (mCountCallbacksToNotRead > 0) {
         // Let the input fill up a bit so we are not so close to the write pointer.
         mCountCallbacksToNotRead--;
+
     } else if (mCountCallbacksToDiscard > 0) {
         // Ignore. Allow the input to reach to equilibrium with the output.
         oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
@@ -60,36 +61,22 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
             callbackResult = oboe::DataCallbackResult::Stop;
         }
         mCountCallbacksToDiscard--;
-    } else {
 
-        // Process in multiple bursts to fit in the buffer.
-        int32_t framesLeft = numFrames;
-//        LOGD("%s() stable numFrames = %d\n", __func__, numFrames);
-        while (framesLeft > 0) {
-            // Read data into input buffer.
-            int32_t framesToRead = std::min(framesLeft, outputStream->getFramesPerBurst());
-            oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                                                           framesToRead,
-                                                                           0 /* timeout */);
-            if (!result) {
-                LOGE("%s() read() returned %s\n", __func__, convertToText(result.error()));
-                break;
-            }
+    } else {
+        // Read data into input buffer.
+        oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
+                                                                       numFrames,
+                                                                       0 /* timeout */);
+        if (!result) {
+            LOGE("%s() read() returned %s\n", __func__, convertToText(result.error()));
+            callbackResult = oboe::DataCallbackResult::Stop;
+        } else {
             int32_t framesRead = result.value();
-//            LOGD("%s() framesToRead = %d, framesRead = %d\n", __func__, framesToRead, framesRead);
 
             callbackResult = onBothStreamsReady(
                     mInputBuffer.get(), framesRead,
-                    audioData, framesToRead
+                    audioData, numFrames
             );
-            if (callbackResult != oboe::DataCallbackResult::Continue) {
-                break;
-            }
-
-            framesLeft -= framesToRead;
-            audioData = ((uint8_t *) audioData) +
-                        (framesToRead * outputStream->getChannelCount() *
-                         outputStream->getBytesPerSample());
         }
     }
 
@@ -101,7 +88,8 @@ oboe::Result FullDuplexStream::start() {
     mCountCallbacksToNotRead = kNumCallbacksToNotRead;
     mCountCallbacksToDiscard = kNumCallbacksToDiscard;
 
-    int32_t bufferSize = getOutputStream()->getFramesPerBurst()
+    // Determine maximum size that could possible be called.
+    int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
             * getOutputStream()->getChannelCount();
     if (bufferSize > mBufferSize) {
         LOGE("FullDuplexStream::%s() allocating bufferSize = %d", __func__, bufferSize);

@@ -29,6 +29,8 @@ import android.widget.TextView;
  */
 public class RoundTripLatencyActivity extends TestInputActivity {
 
+    private static final int STATE_GOT_DATA = 5; // Defined in LatencyAnalyzer.h
+    
     AudioOutputTester mAudioOutTester;
     private TextView mAnalyzerView;
     private Button mMeasureButton;
@@ -71,7 +73,11 @@ public class RoundTripLatencyActivity extends TestInputActivity {
             public void run() {
                 int progress = getAnalyzerProgress();
                 int state = getAnalyzerState();
-                setAnalyzerText("progress = " + progress + ", state = " + state);
+                String message = "progress = " + progress + ", state = " + state;
+                if (state == STATE_GOT_DATA) {
+                    message += "\nAnalyzing - please wait...";
+                }
+                setAnalyzerText(message);
 
                 if (isAnalyzerDone()) {
                     onAnalyzerDone();
@@ -135,13 +141,10 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mMeasureButton = (Button) findViewById(R.id.button_measure);
         mCancelButton = (Button) findViewById(R.id.button_cancel);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
-
         updateEnabledWidgets();
-
         mAudioOutTester = addAudioOutputTester();
     }
 
