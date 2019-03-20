@@ -37,9 +37,8 @@ using namespace oboe;
 enum class GameState {
     Loading,
     Playing,
-    Paused
+    FailedToLoad
 };
-
 
 class Game : public AudioStreamCallback {
 public:
@@ -71,11 +70,14 @@ private:
     LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
     LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
     std::atomic<int64_t> mLastUpdateTime { 0 };
-    std::atomic<bool> mIsLoading { true };
+    std::atomic<GameState> mGameState { GameState::Loading };
     std::future<void> mLoadingResult;
 
     void load();
     TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis);
+    bool openStream();
+    bool setupAudioSources();
+    void scheduleSongEvents();
 };
 
 

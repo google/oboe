@@ -12,9 +12,11 @@ Screenshots
 The UI is deliberately very simple - just tap anywhere in the grey area after hearing the claps. The UI will change color to indicate the game state. The colors are: 
 
 - Yellow: Game is loading (assets are being decompressed)
+- Grey: Game is being played
 - Orange: You tapped too early
 - Green: You tapped on time
 - Purple: You tapped too late
+- Red: There was a problem loading the game (check logcat output)
 
 ![RhythmGame Screenshot](images/RhythmGame-screenshot.png)
 

@@ -24,6 +24,8 @@ add_library( native-lib
 
              )
 
+set (TARGET_LIBS log android oboe GLESv2)
+
 if(${USE_FFMPEG})
 
     MESSAGE(STATUS "Using FFmpeg extractor")
@@ -49,22 +51,17 @@ if(${USE_FFMPEG})
     add_library( swresample SHARED IMPORTED)
     set_target_properties(swresample PROPERTIES IMPORTED_LOCATION
             ${FFMPEG_DIR}/lib/libswresample.so)
-
-    target_link_libraries( native-lib avformat avutil avcodec swresample)
+    set (TARGET_LIBS ${TARGET_LIBS} avformat avutil avcodec swresample)
 
 else()
     MESSAGE(STATUS "Using NDK media extractor")
     add_definitions(-DUSE_FFMPEG=0)
     target_sources( native-lib PRIVATE src/main/cpp/audio/NDKExtractor.cpp )
-    target_link_libraries(native-lib mediandk)
+    set (TARGET_LIBS ${TARGET_LIBS} mediandk)
 endif()
 
-target_link_libraries( native-lib
-                       log
-                       android
-                       oboe
-                       GLESv2
-                       )
+target_link_libraries( native-lib ${TARGET_LIBS} )
+
 
 # Set the path to the Oboe directory.
 set (OBOE_DIR ../..)

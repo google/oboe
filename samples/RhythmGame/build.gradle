@@ -46,8 +46,13 @@ android {
                 }
             }
         }
+        /**
+         * To use FFmpeg for asset extraction do the following:
+         * - Uncomment this block
+         * - Change the build variant to ffmpegExtractor
+         * - Update the FFMPEG_DIR variable in CMakeLists.txt to the local FFmpeg path
+        */
         /*
-        Uncomment this block to use the FFmpeg extractor
         ffmpegExtractor {
             dimension "extractorLibrary"
             minSdkVersion 16
