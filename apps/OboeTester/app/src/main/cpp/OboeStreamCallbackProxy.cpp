@@ -31,8 +31,6 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     if (mCallback != nullptr) {
         return mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
-    LOGD("OboeStreamCallbackProxy: %s() called", __func__);
-//    memset(audioData, 0, numFrames * audioStream->getChannelCount() * audioStream->getBytesPerSample()); // FIXME
     return oboe::DataCallbackResult::Stop;
 }
 

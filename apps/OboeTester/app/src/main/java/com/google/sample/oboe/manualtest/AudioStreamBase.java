@@ -52,7 +52,6 @@ public abstract class AudioStreamBase {
         public int state;
         public long callbackCount;
 
-
         // These are constantly changing.
         String dump(int framesPerBurst) {
             if (bufferSize < 0 || framesWritten < 0) {
@@ -138,15 +137,8 @@ public abstract class AudioStreamBase {
         return false;
     }
 
-//    public boolean isLowLatencySupported() {
-//        return false;
-//    }
-
     public void setAmplitude(double amplitude) {}
 
     public abstract int getXRunCount();
 
-//    public boolean isUnderrunCountSupported() {
-//        return false;
-//    }
 }

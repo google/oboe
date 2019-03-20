@@ -51,7 +51,7 @@
 
         <activity
             android:name="com.google.sample.oboe.manualtest.TapToToneActivity"
-            android:label="@string/title_activity_latency"
+            android:label="@string/title_activity_output_latency"
             android:screenOrientation="portrait">
         </activity>
 
@@ -64,6 +64,12 @@
         <activity
             android:name="com.google.sample.oboe.manualtest.EchoActivity"
             android:label="@string/title_activity_echo"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.RoundTripLatencyActivity"
+            android:label="@string/title_activity_rt_latency"
             android:screenOrientation="portrait">
         </activity>
 

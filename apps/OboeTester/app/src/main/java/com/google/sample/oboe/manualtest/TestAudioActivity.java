@@ -53,6 +53,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_TAP_TO_TONE = 2;
     public static final int ACTIVITY_RECORD_PLAY = 3;
     public static final int ACTIVITY_ECHO = 4;
+    public static final int ACTIVITY_RT_LATENCY = 5;
 
     private int mState = STATE_CLOSED;
     protected String audioManagerSampleRate;
@@ -65,6 +66,7 @@ abstract class TestAudioActivity extends Activity {
     private Button mCloseButton;
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
+    private int mSampleRate;
 
     public static class StreamContext {
         StreamConfigurationView configurationView;
@@ -255,6 +257,10 @@ abstract class TestAudioActivity extends Activity {
         closeAudio();
     }
 
+    public int getSampleRate() {
+        return mSampleRate;
+    }
+    
     public void openAudio() {
         try {
             for (StreamContext streamContext : mStreamContexts) {
@@ -262,6 +268,7 @@ abstract class TestAudioActivity extends Activity {
                 StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
                 requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
                 streamContext.tester.open(requestedConfig, configView.getActualConfiguration());
+                mSampleRate = configView.getActualConfiguration().getSampleRate();
                 mState = STATE_OPEN;
                 int sessionId = configView.getActualConfiguration().getSessionId();
                 if (sessionId > 0) {
