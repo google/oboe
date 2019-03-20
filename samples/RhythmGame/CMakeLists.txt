@@ -25,12 +25,16 @@ add_library( native-lib
              )
 
 if(${USE_FFMPEG})
+
     MESSAGE(STATUS "Using FFmpeg extractor")
 
     add_definitions(-DUSE_FFMPEG=1)
     target_sources( native-lib PRIVATE src/main/cpp/audio/FFMpegExtractor.cpp )
 
-    set(FFMPEG_DIR /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI})
+    # Add the local path to FFmpeg, you can use the ${ANDROID_ABI} variable to specify the ABI name
+    # e.g. /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI}
+    set(FFMPEG_DIR "/path/to/ffmpeg")
+
     include_directories(native-lib ${FFMPEG_DIR}/include)
 
     add_library( avformat SHARED IMPORTED)
