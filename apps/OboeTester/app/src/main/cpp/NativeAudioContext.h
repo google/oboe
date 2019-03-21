@@ -330,7 +330,17 @@ public:
 /**
  * Echo input to output through a delay line.
  */
-class ActivityEcho : public ActivityContext {
+class ActivityFullDuplex : public ActivityContext {
+public:
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+};
+
+/**
+ * Echo input to output through a delay line.
+ */
+class ActivityEcho : public ActivityFullDuplex {
 public:
 
     oboe::Result startStreams() override {
@@ -355,7 +365,7 @@ private:
 /**
  * Measure Round Trip Latency
  */
-class ActivityRoundTripLatency : public ActivityContext {
+class ActivityRoundTripLatency : public ActivityFullDuplex {
 public:
 
     oboe::Result startStreams() override {
@@ -370,12 +380,6 @@ public:
 
     bool isAnalyzerDone() {
         return mFullDuplexLatency->isDone();
-    }
-
-    void analyze() {
-        LOGD("Generate Latency report ************************************* >>>>>>>>>>>>>>>>");
-        mFullDuplexLatency->report();
-        LOGD("Finished Latency report ************************************* <<<<<<<<<<<<<<<<<");
     }
 
 protected:

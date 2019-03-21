@@ -53,7 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:lines="8"
-        android:text="analyzer:"
+        android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />
 
