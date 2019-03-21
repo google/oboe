@@ -409,7 +409,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
     engine.getCurrentActivity()->setChannelEnabled(channelIndex, enabled);
 }
 
-
+// ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv *env,
                                                                          jobject instance,
@@ -417,6 +417,7 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv 
     engine.setActivityType(activityType);
 }
 
+// ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,
@@ -424,22 +425,11 @@ Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
     engine.setDelayTime(delayTimeSeconds);
 }
 
+// ==========================================================================
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgress(JNIEnv *env,
                                                                                     jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getProgress();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerState(JNIEnv *env,
-                                                                                    jobject instance) {
-    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getState();
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_isAnalyzerDone(JNIEnv *env,
-                                                                                    jobject instance) {
-    return engine.mActivityRoundTripLatency.isAnalyzerDone();
 }
 
 JNIEXPORT jdouble JNICALL
@@ -454,10 +444,41 @@ Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfi
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredConfidence();
 }
 
+// ==========================================================================
 JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredResult(JNIEnv *env,
-                                                                                      jobject instance) {
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getAnalyzerState(JNIEnv *env,
+                                                                         jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->getState();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_isAnalyzerDone(JNIEnv *env,
+                                                                       jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->isAnalyzerDone();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
+                                                                          jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
+}
+
+
+// ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getGlitchCount(JNIEnv *env,
+                                                                     jobject instance) {
+    LOGD("%s() engine.mActivityGlitches.getGlitchAnalyzer() = %p",
+         __func__, engine.mActivityGlitches.getGlitchAnalyzer());
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getSignalToNoiseDB(JNIEnv *env,
+                                                                         jobject instance) {
+    LOGD("%s() engine.mActivityGlitches.getGlitchAnalyzer() = %p",
+         __func__, engine.mActivityGlitches.getGlitchAnalyzer());
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getSignalToNoiseDB();
 }
 
 }

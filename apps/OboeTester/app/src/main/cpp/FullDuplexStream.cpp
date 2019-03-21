@@ -33,8 +33,8 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         int32_t totalFramesRead = 0;
         do {
             oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                            numFrames,
-                                            0 /* timeout */);
+                                                                           numFrames,
+                                                                           0 /* timeout */);
             if (!result) {
                 // Ignore errors because input stream may not be started yet.
                 break;
@@ -54,8 +54,8 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
     } else if (mCountCallbacksToDiscard > 0) {
         // Ignore. Allow the input to reach to equilibrium with the output.
         oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                        numFrames,
-                                        0 /* timeout */);
+                                                                       numFrames,
+                                                                       0 /* timeout */);
         if (!result) {
             LOGE("%s() read() returned %s\n", __func__, convertToText(result.error()));
             callbackResult = oboe::DataCallbackResult::Stop;
@@ -78,6 +78,10 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
                     audioData, numFrames
             );
         }
+    }
+
+    if (callbackResult == oboe::DataCallbackResult::Stop) {
+        getInputStream()->requestStop();
     }
 
     return callbackResult;

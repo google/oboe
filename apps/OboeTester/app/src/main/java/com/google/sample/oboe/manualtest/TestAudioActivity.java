@@ -54,6 +54,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_RECORD_PLAY = 3;
     public static final int ACTIVITY_ECHO = 4;
     public static final int ACTIVITY_RT_LATENCY = 5;
+    public static final int ACTIVITY_GLITCHES = 6;
 
     private int mState = STATE_CLOSED;
     protected String audioManagerSampleRate;
@@ -128,6 +129,12 @@ abstract class TestAudioActivity extends Activity {
         super.onCreate(savedInstanceState);
         inflateActivity();
         findAudioCommon();
+    }
+
+    public void hideSettingsViews() {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.configurationView.hideSettingsView();
+        }
     }
 
     @Override

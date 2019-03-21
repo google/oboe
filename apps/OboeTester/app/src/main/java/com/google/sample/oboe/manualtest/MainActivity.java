@@ -125,6 +125,12 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void onLaunchGlitchTest(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, GlitchActivity.class);
+        startActivity(intent);
+    }
+
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());

@@ -14,40 +14,33 @@
  * limitations under the License.
  */
 
-#include <thread>
-
 #include "common/OboeDebug.h"
-#include "FullDuplexLatency.h"
+#include "FullDuplexAnalyzer.h"
 
-oboe::Result  FullDuplexLatency::start() {
-    mEchoAnalyzer.reset();
+oboe::Result  FullDuplexAnalyzer::start() {
+    getLoopbackProcessor()->reset();
     return FullDuplexStream::start();
 }
 
-static void analyze_data(FullDuplexLatency *fullDuplexLatency) {
-    fullDuplexLatency->analyzeData();
-}
-
-oboe::DataCallbackResult FullDuplexLatency::onBothStreamsReady(
+oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
         const void *inputData,
         int   numInputFrames,
         void *outputData,
         int   numOutputFrames) {
+    // TODO Pull up into superclass
     // reset analyzer if we miss some input data
     if (numInputFrames < numOutputFrames) {
-        LOGD("%s() numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
-             __func__, numInputFrames, numOutputFrames);
-        mEchoAnalyzer.reset();
+        LOGD("numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
+             numInputFrames, numOutputFrames);
+        getLoopbackProcessor()->reset();
     } else {
-        LOGD("%s() numInputFrames = %4d, numOutputFrames = %4d",
-             __func__, numInputFrames, numOutputFrames);
         float *inputFloat = (float *) inputData;
         float *outputFloat = (float *) outputData;
         int32_t outputStride = getOutputStream()->getChannelCount();
 
-        (void) mEchoAnalyzer.process(inputFloat, getInputStream()->getChannelCount(),
-                                     outputFloat, outputStride,
-                                     numOutputFrames);
+        (void) getLoopbackProcessor()->process(inputFloat, getInputStream()->getChannelCount(),
+                                       outputFloat, outputStride,
+                                       numOutputFrames);
 
         // zero out remainder of output array
         int32_t framesLeft = numOutputFrames - numInputFrames;
@@ -57,13 +50,5 @@ oboe::DataCallbackResult FullDuplexLatency::onBothStreamsReady(
             memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
         }
     }
-    // Are we done?
-    if (mEchoAnalyzer.hasEnoughData()) {
-        // Crunch the numbers on a separate thread.
-        std::thread t(analyze_data, this);
-        t.detach();
-        return oboe::DataCallbackResult::Stop;
-    } else {
-        return oboe::DataCallbackResult::Continue;
-    }
+    return oboe::DataCallbackResult::Continue;
 };

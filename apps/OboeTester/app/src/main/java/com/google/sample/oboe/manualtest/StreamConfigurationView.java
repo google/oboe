@@ -72,14 +72,22 @@ public class StreamConfigurationView extends LinearLayout {
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
         public void onClick(View v) {
             if (mOptionTable.isShown()) {
-                mOptionTable.setVisibility(View.GONE);
-                mOptionExpander.setText(mShowSettingsText);
+                hideSettingsView();
             } else {
-                mOptionTable.setVisibility(View.VISIBLE);
-                mOptionExpander.setText(mHideSettingsText);
+                showSettingsView();
             }
         }
     };
+
+    public void showSettingsView() {
+        mOptionTable.setVisibility(View.VISIBLE);
+        mOptionExpander.setText(mHideSettingsText);
+    }
+
+    public void hideSettingsView() {
+        mOptionTable.setVisibility(View.GONE);
+        mOptionExpander.setText(mShowSettingsText);
+    }
 
     public StreamConfigurationView(Context context) {
         super(context);

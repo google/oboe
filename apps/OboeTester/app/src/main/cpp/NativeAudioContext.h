@@ -35,6 +35,7 @@
 #include "flowgraph/SawtoothOscillator.h"
 
 #include "FullDuplexEcho.h"
+#include "FullDuplexGlitches.h"
 #include "FullDuplexLatency.h"
 #include "FullDuplexStream.h"
 #include "InputStreamCallbackAnalyzer.h"
@@ -335,6 +336,9 @@ public:
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
+    virtual int32_t getState() { return -1; }
+    virtual int32_t getResult() { return -1; }
+    virtual bool isAnalyzerDone() { return false; }
 };
 
 /**
@@ -378,7 +382,13 @@ public:
         return mFullDuplexLatency->getLatencyAnalyzer();
     }
 
-    bool isAnalyzerDone() {
+    int32_t getState() override {
+        return getLatencyAnalyzer()->getState();
+    }
+    int32_t getResult() override {
+        return getLatencyAnalyzer()->getState();
+    }
+    bool isAnalyzerDone() override {
         return mFullDuplexLatency->isDone();
     }
 
@@ -387,6 +397,40 @@ protected:
 
 private:
     std::unique_ptr<FullDuplexLatency>   mFullDuplexLatency{};
+};
+
+/**
+ * Measure Glitches
+ */
+class ActivityGlitches : public ActivityFullDuplex {
+public:
+
+    oboe::Result startStreams() override {
+        return mFullDuplexGlitches->start();
+    }
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    GlitchAnalyzer *getGlitchAnalyzer() {
+        LOGD("%s() mFullDuplexGlitches = %p", __func__, mFullDuplexGlitches.get());
+        return mFullDuplexGlitches->getGlitchAnalyzer();
+    }
+
+    int32_t getState() override {
+        return getGlitchAnalyzer()->getState();
+    }
+    int32_t getResult() override {
+        return getGlitchAnalyzer()->getResult();
+    }
+    bool isAnalyzerDone() override {
+        return mFullDuplexGlitches->isDone();
+    }
+
+protected:
+    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+
+private:
+    std::unique_ptr<FullDuplexGlitches>   mFullDuplexGlitches{};
 };
 
 /**
@@ -423,6 +467,9 @@ public:
             case ActivityType::RoundTripLatency:
                 currentActivity = &mActivityRoundTripLatency;
                 break;
+            case ActivityType::Glitches:
+                currentActivity = &mActivityGlitches;
+                break;
         }
     }
 
@@ -436,6 +483,7 @@ public:
     ActivityRecording            mActivityRecording;
     ActivityEcho                 mActivityEcho;
     ActivityRoundTripLatency     mActivityRoundTripLatency;
+    ActivityGlitches             mActivityGlitches;
 
 private:
 
@@ -448,6 +496,7 @@ private:
         RecordPlay = 3,
         Echo = 4,
         RoundTripLatency = 5,
+        Glitches = 6,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;

@@ -908,11 +908,39 @@ private:
  * Use a cosine transform to measure the predicted magnitude and relative phase of the
  * looped back sine wave. Then generate a predicted signal and compare with the actual signal.
  */
-class SineAnalyzer : public LoopbackProcessor {
+class GlitchAnalyzer : public LoopbackProcessor {
 public:
 
+    int32_t getState() {
+        return mState;
+    }
+
+    int32_t getGlitchCount() {
+        return mGlitchCount;
+    }
+
+    double getSignalToNoiseDB() {
+        static const double threshold = 1.0e-10;
+        LOGD(LOOPBACK_RESULT_TAG "mMagnitude     = %8f", mMagnitude);
+        LOGD(LOOPBACK_RESULT_TAG "mPeakNoise     = %8f", mPeakNoise);
+        if (mMagnitude < threshold || mPeakNoise < threshold) {
+            return 0.0;
+        } else {
+            double amplitudeRatio = mMagnitude / mPeakNoise;
+            double signalToNoise = amplitudeRatio * amplitudeRatio;
+            double signalToNoiseDB = 10.0 * log(signalToNoise);
+            LOGD(LOOPBACK_RESULT_TAG "signalToNoiseDB     = %8f", signalToNoiseDB);
+            if (signalToNoiseDB < MIN_SNRATIO_DB) {
+                LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
+                     MIN_SNRATIO_DB);
+                setResult(ERROR_VOLUME_TOO_LOW);
+            }
+            return signalToNoiseDB;
+        }
+    }
+
     void analyze() override {
-        LOGD("SineAnalyzer ------------------");
+        LOGD("GlitchAnalyzer ------------------");
         LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", mPeakAmplitude);
         LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);
         LOGD(LOOPBACK_RESULT_TAG "peak.noise         = %8f", mPeakNoise);
@@ -1051,12 +1079,8 @@ public:
                     float absDiff = fabs(diff);
                     mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                     if (absDiff > mTolerance) {
-                        mGlitchCount++;
                         result = ERROR_GLITCHES;
-                        //LOGD("%5d: Got a glitch # %d, predicted = %f, actual = %f",
-                        //       mFrameCounter, mGlitchCount, predicted, sample);
-                        mState = STATE_IMMUNE;
-                        mDownCounter = mSinePeriod * PERIODS_IMMUNE;
+                        addGlitch();
                     }
 
                     // Track incoming signal and slowly adjust magnitude to account
@@ -1072,6 +1096,11 @@ public:
                         // One pole averaging filter.
                         mMagnitude = (mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient);
                         resetAccumulator();
+
+                        if (mMagnitude < mThreshold) {
+                            result = ERROR_GLITCHES;
+                            addGlitch();
+                        }
                     }
                 } break;
             }
@@ -1092,6 +1121,14 @@ public:
             mFrameCounter++;
         }
         return result;
+    }
+
+    void addGlitch() {
+        mGlitchCount++;
+//        LOGD("%5d: Got a glitch # %d, predicted = %f, actual = %f",
+//        mFrameCounter, mGlitchCount, predicted, sample);
+        mState = STATE_IMMUNE;
+        mDownCounter = mSinePeriod * PERIODS_IMMUNE;
     }
 
     void resetAccumulator() {

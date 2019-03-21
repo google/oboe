@@ -27,38 +27,13 @@ import android.widget.TextView;
 /**
  * Activity to measure latency on a full duplex stream.
  */
-public class RoundTripLatencyActivity extends TestInputActivity {
+public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     private static final int STATE_GOT_DATA = 5; // Defined in LatencyAnalyzer.h
-    
-    AudioOutputTester mAudioOutTester;
+
     private TextView mAnalyzerView;
     private Button mMeasureButton;
     private Button mCancelButton;
-
-    // Note that these string must match the enum result_code in LatencyAnalyzer.h
-    String resultCodeToString(int resultCode) {
-        switch (resultCode) {
-            case 0:
-                return "OK";
-            case -99:
-                return "ERROR_NOISY";
-            case -98:
-                return "ERROR_VOLUME_TOO_LOW";
-            case -97:
-                return "ERROR_VOLUME_TOO_HIGH";
-            case -96:
-                return "ERROR_CONFIDENCE";
-            case -95:
-                return "ERROR_INVALID_STATE";
-            case -94:
-                return "ERROR_GLITCHES";
-            case -93:
-                return "ERROR_NO_LOCK";
-            default:
-                return "UNKNOWN";
-        }
-    }
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
@@ -122,10 +97,7 @@ public class RoundTripLatencyActivity extends TestInputActivity {
 
     private LatencySniffer mLatencySniffer = new LatencySniffer();
 
-    native int getAnalyzerState();
     native int getAnalyzerProgress();
-    native boolean isAnalyzerDone();
-    native int getMeasuredResult();
     native double getMeasuredLatency();
     native double getMeasuredConfidence();
 
@@ -146,6 +118,8 @@ public class RoundTripLatencyActivity extends TestInputActivity {
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
         mAudioOutTester = addAudioOutputTester();
+
+        hideSettingsViews();
     }
 
     @Override
@@ -175,10 +149,10 @@ public class RoundTripLatencyActivity extends TestInputActivity {
     // Call on UI thread
     public void stopAudioTest() {
         mLatencySniffer.stopSniffer();
-        stopAudio();
-        closeAudio();
         mMeasureButton.setEnabled(true);
         mCancelButton.setEnabled(false);
+        stopAudio();
+        closeAudio();
     }
 
     @Override

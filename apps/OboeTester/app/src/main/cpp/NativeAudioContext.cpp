@@ -520,3 +520,24 @@ void ActivityRoundTripLatency::finishOpen(bool isInput, oboe::AudioStream *oboeS
         mFullDuplexLatency->setOutputStream(oboeStream);
     }
 }
+
+// ======================================================================= ActivityGlitches
+void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityFullDuplex::configureBuilder(isInput, builder);
+
+    if (mFullDuplexGlitches.get() == nullptr) {
+        mFullDuplexGlitches = std::make_unique<FullDuplexGlitches>();
+    }
+    if (!isInput) {
+        // only output uses a callback, input is polled
+        builder.setCallback(mFullDuplexGlitches.get());
+    }
+}
+
+void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+    if (isInput) {
+        mFullDuplexGlitches->setInputStream(oboeStream);
+    } else {
+        mFullDuplexGlitches->setOutputStream(oboeStream);
+    }
+}
