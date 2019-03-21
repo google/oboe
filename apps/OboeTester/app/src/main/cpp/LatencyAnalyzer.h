@@ -64,11 +64,11 @@ static const float sFilterTaps8000[FILTER_TAP_NUM] = {
         -0.05944219353343189f,
         -0.07303434839503208f,
         -0.037690487672689066f,
-        0.1870480506596512f,
-        0.3910337357836833f,
-        0.5333672385425637f,
-        0.3910337357836833f,
-        0.1870480506596512f,
+         0.1870480506596512f,
+         0.3910337357836833f,
+         0.5333672385425637f,
+         0.3910337357836833f,
+         0.1870480506596512f,
         -0.037690487672689066f,
         -0.07303434839503208f,
         -0.05944219353343189f
@@ -459,7 +459,7 @@ public:
                  int numFrames) = 0;
 
 
-    virtual void report() = 0;
+    virtual void analyze() = 0;
 
     virtual void printStatus() {};
 
@@ -597,26 +597,23 @@ public:
         return mAudioRecording.size();
     }
 
-    void setGain(float gain) {
-        mEchoGain = gain;
-    }
+//    void setGain(float gain) {
+//        mEchoGain = gain;
+//    }
+//
+//    float getGain() {
+//        return mEchoGain;
+//    }
+//
+//    bool testLowPassFilter() {
+//        LowPassFilter filter;
+//        return filter.test();
+//    }
 
-    float getGain() {
-        return mEchoGain;
-    }
-
-    bool testLowPassFilter() {
-        LowPassFilter filter;
-        return filter.test();
-    }
-
-    void report() override {
+    void analyze() override {
         LOGD("EchoAnalyzer ---------------");
         LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d", mState);
         LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s", convertStateToText(mState));
-
-        // LOGD("LowPassFilter test %s", testLowPassFilter() ? "PASSED" : "FAILED");
-
         LOGD(LOOPBACK_RESULT_TAG "measured.gain          = %8f", mMeasuredLoopGain);
         LOGD(LOOPBACK_RESULT_TAG "echo.gain              = %8f", mEchoGain);
 
@@ -713,8 +710,6 @@ public:
                 }
                 mDownCounter -= numFrames;
                 if (mDownCounter <= 0) {
-                    LOGD("state => STATE_MEASURING_GAIN, gathered %d frames",
-                            mAudioRecording.size());
                     nextState = STATE_MEASURING_GAIN;
                     mDownCounter = getBlockFrames() * 2;
                 }
@@ -739,15 +734,11 @@ public:
                                 setResult(ERROR_VOLUME_TOO_LOW);
                                 nextState = STATE_FAILED;
                             } else {
-                                LOGD("%5d: switch to STATE_WAITING_FOR_SILENCE, measured peak = %f",
-                                     mLoopCounter, peak);
                                 nextState = STATE_WAITING_FOR_SILENCE;
                                 mDownCounter = getMaxLatencyFrames();
                             }
                         }
                     } else {
-//                    LOGD("STATE_MEASURING_GAIN - reset, numFrames = %4d, peak = %7.5f",
-//                            numFrames, peak);
                         mDownCounter = getBlockFrames() * 2;
                     }
                 }
@@ -760,15 +751,11 @@ public:
                     outputData[i] = 0;
                 }
                 peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
-//                LOGD("state is STATE_WAITING_FOR_SILENCE, numFrames = %4d, measured peak = %7.5f, cnt = %5d",
-//                        numFrames, peak, mDownCounter);
                 // If we get several in a row then go to next state.
                 if (peak < mSilenceThreshold) {
                     mDownCounter -= numFrames;
                     if (mDownCounter <= 0) {
-                        LOGD("state => STATE_SENDING_PULSE");
                         nextState = STATE_SENDING_PULSE;
-                        LOGD("%5d: switch to STATE_SENDING_PULSE", mLoopCounter);
                     }
                 }
                 break;
@@ -776,17 +763,13 @@ public:
             case STATE_SENDING_PULSE:
                 mAudioRecording.write(inputData, inputChannelCount, numFrames);
                 sendOneImpulse(outputData, outputChannelCount);
-                LOGD("state => STATE_GATHERING_ECHOS");
                 nextState = STATE_GATHERING_ECHOS;
                 break;
 
             case STATE_GATHERING_ECHOS:
                 // Record input until the mAudioRecording is full.
-//                LOGD("STATE_GATHERING_ECHOS, numFrames = %4d, size = %5d",
-//                        numFrames, mAudioRecording.size());
                 mAudioRecording.write(inputData, inputChannelCount, numFrames);
                 if (hasEnoughData()) {
-                    LOGD("state => STATE_GOT_DATA, gathered %d frames", mAudioRecording.size());
                     nextState = STATE_GOT_DATA;
                 }
 
@@ -928,7 +911,7 @@ private:
 class SineAnalyzer : public LoopbackProcessor {
 public:
 
-    void report() override {
+    void analyze() override {
         LOGD("SineAnalyzer ------------------");
         LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", mPeakAmplitude);
         LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);

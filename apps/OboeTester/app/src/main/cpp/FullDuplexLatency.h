@@ -42,16 +42,12 @@ public:
 
     oboe::Result start() override;
 
-    void report() {
-        mEchoAnalyzer.report();
-    }
-
     bool isDone() {
         return mEchoAnalyzer.isDone();
     }
 
     void analyzeData() {
-        mEchoAnalyzer.report();
+        mEchoAnalyzer.analyze();
     }
 
     LatencyAnalyzer *getLatencyAnalyzer() {

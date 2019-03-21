@@ -88,7 +88,7 @@ oboe::Result FullDuplexStream::start() {
     mCountCallbacksToNotRead = kNumCallbacksToNotRead;
     mCountCallbacksToDiscard = kNumCallbacksToDiscard;
 
-    // Determine maximum size that could possible be called.
+    // Determine maximum size that could possibly be called.
     int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
             * getOutputStream()->getChannelCount();
     if (bufferSize > mBufferSize) {
