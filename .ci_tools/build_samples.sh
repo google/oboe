@@ -12,27 +12,24 @@ declare projects=(
 
 for d in "${projects[@]}"; do
     pushd ${REPO_ROOT_DIR}/${d} >/dev/null
-    TERM=dumb ./gradlew  -q clean assembleDebug
+    TERM=dumb ./gradlew  -q clean bundleDebug
     popd >/dev/null
 done
 
 
 # Check the apks that all get built fine (RhythmGame uses split APKs so we have to specify each one)
 declare apks=(
-    samples/hello-oboe/build/outputs/apk/debug/hello-oboe-debug.apk
-    samples/MegaDrone/build/outputs/apk/debug/MegaDrone-debug.apk
-    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-x86-debug.apk
-    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-x86_64-debug.apk
-    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-arm64-v8a-debug.apk
-    samples/RhythmGame/build/outputs/apk/ndkExtractor/debug/RhythmGame-ndkExtractor-armeabi-v7a-debug.apk
-    samples/LiveEffect/build/outputs/apk/debug/LiveEffect-debug.apk
+    samples/hello-oboe/build/outputs/bundle/debug/hello-oboe.aab
+    samples/MegaDrone/build/outputs/bundle/debug/MegaDrone.aab
+    samples/RhythmGame/build/outputs/bundle/ndkExtractorDebug/RhythmGame.aab
+    samples/LiveEffect/build/outputs/bundle/debug/LiveEffect.aab
 )
 
 rm -fr ${BUILD_RESULT_FILE}
-for apk in "${apks[@]}"; do
-  if [ ! -f ${REPO_ROOT_DIR}/${apk} ]; then
+for bundle in "${bundles[@]}"; do
+  if [ ! -f ${REPO_ROOT_DIR}/${bundle} ]; then
     export SAMPLE_CI_RESULT=1
-    echo ${apk} does not build >> ${BUILD_RESULT_FILE}
+    echo ${bundle} does not build >> ${BUILD_RESULT_FILE}
   fi
 done
 
