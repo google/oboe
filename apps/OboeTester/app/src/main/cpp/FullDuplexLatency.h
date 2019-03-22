@@ -21,11 +21,9 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "FullDuplexStream.h"
-#include "InterpolatingDelayLine.h"
-#include "LatencyAnalyzer.h"
+#include "FullDuplexAnalyzer.h"
 
-class FullDuplexLatency : public FullDuplexStream {
+class FullDuplexLatency : public FullDuplexAnalyzer {
 public:
     FullDuplexLatency() {}
 
@@ -40,7 +38,6 @@ public:
             int   numOutputFrames
     ) override;
 
-    oboe::Result start() override;
 
     bool isDone() {
         return mEchoAnalyzer.isDone();
@@ -52,6 +49,10 @@ public:
 
     LatencyAnalyzer *getLatencyAnalyzer() {
         return &mEchoAnalyzer;
+    }
+
+    LoopbackProcessor *getLoopbackProcessor() override {
+        return (LoopbackProcessor *) &mEchoAnalyzer;
     }
 
 private:

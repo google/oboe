@@ -452,6 +452,7 @@ public:
     virtual void reset() {
         mSampleRate = kDefaultSampleRate;
         mResult = 0;
+        mResetCount++;
     }
 
     virtual result_code process(float *inputData, int inputChannelCount,
@@ -506,6 +507,13 @@ public:
         return peak;
     }
 
+
+    int32_t getResetCount() {
+        return mResetCount;
+    }
+
+protected:
+    int32_t   mResetCount = 0;
 
 private:
     int32_t mSampleRate = kDefaultSampleRate;
@@ -897,7 +905,6 @@ private:
 
     AudioRecording  mAudioRecording; // contains only the input after the gain detection burst
     LatencyReport   mLatencyReport;
-    // PeakAnalyzer    mPeakAnalyzer;
 };
 
 
@@ -921,15 +928,12 @@ public:
 
     double getSignalToNoiseDB() {
         static const double threshold = 1.0e-10;
-        LOGD(LOOPBACK_RESULT_TAG "mMagnitude     = %8f", mMagnitude);
-        LOGD(LOOPBACK_RESULT_TAG "mPeakNoise     = %8f", mPeakNoise);
         if (mMagnitude < threshold || mPeakNoise < threshold) {
             return 0.0;
         } else {
             double amplitudeRatio = mMagnitude / mPeakNoise;
             double signalToNoise = amplitudeRatio * amplitudeRatio;
             double signalToNoiseDB = 10.0 * log(signalToNoise);
-            LOGD(LOOPBACK_RESULT_TAG "signalToNoiseDB     = %8f", signalToNoiseDB);
             if (signalToNoiseDB < MIN_SNRATIO_DB) {
                 LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
                      MIN_SNRATIO_DB);
@@ -945,15 +949,7 @@ public:
         LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);
         LOGD(LOOPBACK_RESULT_TAG "peak.noise         = %8f", mPeakNoise);
         LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f", mRootMeanSquareNoise);
-        float amplitudeRatio = mMagnitude / mPeakNoise;
-        float signalToNoise = amplitudeRatio * amplitudeRatio;
-        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise    = %8.2f", signalToNoise);
-        float signalToNoiseDB = 10.0 * log(signalToNoise);
-        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f", signalToNoiseDB);
-        if (signalToNoiseDB < MIN_SNRATIO_DB) {
-            LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.", MIN_SNRATIO_DB);
-            setResult(ERROR_VOLUME_TOO_LOW);
-        }
+        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f", getSignalToNoiseDB());
         LOGD(LOOPBACK_RESULT_TAG "frames.accumulated = %8d", mFramesAccumulated);
         LOGD(LOOPBACK_RESULT_TAG "sine.period        = %8d", mSinePeriod);
         LOGD(LOOPBACK_RESULT_TAG "test.state         = %8d", mState);
@@ -1138,6 +1134,7 @@ public:
     }
 
     void reset() override {
+        LoopbackProcessor::reset();
         mGlitchCount = 0;
         mState = STATE_IDLE;
         mDownCounter = IDLE_FRAME_COUNT;

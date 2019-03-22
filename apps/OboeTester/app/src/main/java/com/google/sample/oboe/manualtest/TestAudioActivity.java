@@ -89,7 +89,7 @@ abstract class TestAudioActivity extends Activity {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-
+                boolean streamClosed = false;
                 for (StreamContext streamContext : mStreamContexts) {
                     // Handler runs this on the main UI thread.
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
@@ -97,10 +97,16 @@ abstract class TestAudioActivity extends Activity {
                     final String msg = status.dump(framesPerBurst);
                     streamContext.configurationView.setStatusText(msg);
                     updateStreamDisplay();
+
+                    streamClosed = streamClosed || (status.state >= 12);
                 }
 
-                // Repeat this runnable code block again.
-                mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                if (streamClosed) {
+                    onStreamClosed();
+                } else {
+                    // Repeat this runnable code block again.
+                    mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                }
             }
         };
 
@@ -117,6 +123,9 @@ abstract class TestAudioActivity extends Activity {
             }
         }
 
+    }
+
+    public void onStreamClosed() {
     }
 
     protected abstract void inflateActivity();

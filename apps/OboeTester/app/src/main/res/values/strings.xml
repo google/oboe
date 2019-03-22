@@ -21,7 +21,7 @@
     <string name="hint_show_settings">Show Settings</string>
     <string name="use_loopback">Click Show Settings to configure stream.\nRequires a loopback adapter!</string>
 
-    <string name="output_prompt">Choose an Output Mode</string>
+    <string name="api_prompt">Choose an API</string>
     <string-array name="output_modes">
         <item>Unspecified</item>
         <item>OpenSL ES</item>

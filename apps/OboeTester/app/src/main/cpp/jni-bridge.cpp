@@ -463,21 +463,22 @@ Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getResetCount(JNIEnv *env,
+                                                                          jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->getResetCount();
+}
 
 // ==========================================================================
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_GlitchActivity_getGlitchCount(JNIEnv *env,
                                                                      jobject instance) {
-    LOGD("%s() engine.mActivityGlitches.getGlitchAnalyzer() = %p",
-         __func__, engine.mActivityGlitches.getGlitchAnalyzer());
     return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
 }
 
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_GlitchActivity_getSignalToNoiseDB(JNIEnv *env,
                                                                          jobject instance) {
-    LOGD("%s() engine.mActivityGlitches.getGlitchAnalyzer() = %p",
-         __func__, engine.mActivityGlitches.getGlitchAnalyzer());
     return engine.mActivityGlitches.getGlitchAnalyzer()->getSignalToNoiseDB();
 }
 

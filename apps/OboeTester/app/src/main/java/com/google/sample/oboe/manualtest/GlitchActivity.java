@@ -22,6 +22,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Activity to measure the number of glitches.
@@ -64,12 +65,15 @@ public class GlitchActivity extends AnalyzerActivity {
     protected class GlitchSniffer {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 100;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
-        long timeStarted = 0;
-        long timeSinceLock = 0;
-        int lastGlitchCount = 0;
-        int previousState = STATE_IDLE;
-        boolean gotLock = false;
 
+        private long mTimeStarted;
+        private long mTimeSinceLock;
+        private double mMaxSecondsWithoutGlitches;
+        private int mLastGlitchCount;
+        private int mLastResetCount;
+        private int mPreviousState = STATE_IDLE;
+        private boolean mGotLock = false;
+        private double mSignalToNoiseDB;
         private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
 
         // Display status info for the stream.
@@ -78,54 +82,75 @@ public class GlitchActivity extends AnalyzerActivity {
             public void run() {
                 int state = getAnalyzerState();
                 int glitchCount = getGlitchCount();
-                double signalToNoiseDB = getSignalToNoiseDB();
+                int resetCount = getResetCount();
+                mSignalToNoiseDB = getSignalToNoiseDB();
 
                 boolean locked = (state == STATE_LOCKED);
-                if (locked && (previousState != STATE_LOCKED)) {
-                    timeSinceLock = System.currentTimeMillis();
+                if (locked && (mPreviousState != STATE_LOCKED)) {
+                    mTimeSinceLock = System.currentTimeMillis();
                 }
-                previousState = state;
-                gotLock = gotLock || locked;
-                if (glitchCount > lastGlitchCount) {
-                    timeSinceLock = System.currentTimeMillis();
-                    lastGlitchCount = glitchCount;
+                mPreviousState = state;
+                mGotLock = mGotLock || locked;
+                if (glitchCount != mLastGlitchCount) {
+                    mTimeSinceLock = System.currentTimeMillis();
+                    mLastGlitchCount = glitchCount;
+                }
+                if (resetCount > mLastResetCount) {
+                    mTimeSinceLock = System.currentTimeMillis();
+                    mLastResetCount = resetCount;
                 }
 
-                long now = System.currentTimeMillis();
-                double totalSeconds = (now - timeStarted) / 1000.0;
-
-                StringBuffer message = new StringBuffer();
-                message.append("state = " + state + " = " + stateToString(state) + "\n");
-                message.append(String.format("signal to noise = %5.1f dB\n", signalToNoiseDB));
-                message.append(String.format("Time total = %8.2f seconds\n", totalSeconds));
-                double goodSeconds = (locked && (timeSinceLock > 0))
-                        ? ((now - timeSinceLock) / 1000.0)
-                        : 0.0;
-                message.append(String.format("Time without glitches = %8.2f seconds\n",
-                        goodSeconds));
-                if (gotLock) {
-                    message.append("glitchCount = " + glitchCount+ "\n");
-                }
-                setAnalyzerText(message.toString());
+                updateStatusText(locked);
 
                 // Reschedule so this task repeats
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
         };
 
+        private void updateStatusText(boolean locked) {
+            long now = System.currentTimeMillis();
+            double totalSeconds = (now - mTimeStarted) / 1000.0;
+            double goodSeconds = (locked && (mTimeSinceLock > 0))
+                    ? ((now - mTimeSinceLock) / 1000.0)
+                    : 0.0;
+            if (goodSeconds > mMaxSecondsWithoutGlitches) {
+                mMaxSecondsWithoutGlitches = goodSeconds;
+            }
+
+            StringBuffer message = new StringBuffer();
+            message.append("state = " + mPreviousState + " = " + stateToString(mPreviousState) + "\n");
+            message.append(String.format("signal to noise ratio = %5.1f dB\n", mSignalToNoiseDB));
+            message.append(String.format("time total = %8.2f seconds\n", totalSeconds));
+            message.append(String.format("time without glitches = %8.2f sec\n",
+                    goodSeconds));
+            message.append(String.format("max time wout glitches = %8.2f sec\n",
+                    mMaxSecondsWithoutGlitches));
+            message.append("resetCount = " + mLastResetCount);
+
+            if (mGotLock) {
+                message.append(", glitchCount = " + mLastGlitchCount +"\n");
+            } else {
+                message.append("\n");
+            }
+            setAnalyzerText(message.toString());
+        }
+
         private void startSniffer() {
             // Start the initial runnable task by posting through the handler
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
-            timeStarted = System.currentTimeMillis();
-            timeSinceLock = 0;
-            lastGlitchCount = 0;
-            gotLock = false;
+            mTimeStarted = System.currentTimeMillis();
+            mTimeSinceLock = 0;
+            mLastGlitchCount = 0;
+            mMaxSecondsWithoutGlitches = 0.0;
+            mGotLock = false;
         }
 
         private void stopSniffer() {
             if (mHandler != null) {
                 mHandler.removeCallbacks(runnableCode);
             }
+            mPreviousState = STATE_IDLE;
+            updateStatusText(true);
         }
     }
 
@@ -160,6 +185,8 @@ public class GlitchActivity extends AnalyzerActivity {
     protected void onStart() {
         super.onStart();
         setActivityType(ACTIVITY_GLITCHES);
+        mStartButton.setEnabled(true);
+        mStopButton.setEnabled(false);
     }
 
     @Override

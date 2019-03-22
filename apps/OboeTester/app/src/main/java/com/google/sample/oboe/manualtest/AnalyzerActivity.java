@@ -22,6 +22,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Activity to measure latency on a full duplex stream.
@@ -57,5 +58,16 @@ public class AnalyzerActivity extends TestInputActivity {
     public native int getAnalyzerState();
     public native boolean isAnalyzerDone();
     public native int getMeasuredResult();
+    public native int getResetCount();
 
+    public void onStreamClosed() {
+        Toast.makeText(getApplicationContext(),
+                "Stream was closed or disconnected!",
+                Toast.LENGTH_SHORT)
+                .show();
+        stopAudioTest();
+    }
+
+    public void stopAudioTest() {
+    }
 }

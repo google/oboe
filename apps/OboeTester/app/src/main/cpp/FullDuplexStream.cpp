@@ -96,7 +96,6 @@ oboe::Result FullDuplexStream::start() {
     int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
             * getOutputStream()->getChannelCount();
     if (bufferSize > mBufferSize) {
-        LOGE("FullDuplexStream::%s() allocating bufferSize = %d", __func__, bufferSize);
         mInputBuffer = std::make_unique<float[]>(bufferSize);
         mBufferSize = bufferSize;
     }

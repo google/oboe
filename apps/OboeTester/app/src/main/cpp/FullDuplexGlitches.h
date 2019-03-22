@@ -22,7 +22,6 @@
 
 #include "oboe/Oboe.h"
 #include "FullDuplexAnalyzer.h"
-#include "LatencyAnalyzer.h"
 
 class FullDuplexGlitches : public FullDuplexAnalyzer {
 public:
@@ -39,6 +38,7 @@ public:
     LoopbackProcessor *getLoopbackProcessor() override {
         return (LoopbackProcessor *) &mGlitchAnalyzer;
     }
+
 private:
 
     GlitchAnalyzer  mGlitchAnalyzer;

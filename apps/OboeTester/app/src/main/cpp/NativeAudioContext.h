@@ -339,6 +339,12 @@ public:
     virtual int32_t getState() { return -1; }
     virtual int32_t getResult() { return -1; }
     virtual bool isAnalyzerDone() { return false; }
+
+    virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() = 0;
+
+    int32_t getResetCount() {
+        return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+    }
 };
 
 /**
@@ -357,6 +363,10 @@ public:
         if (mFullDuplexEcho) {
             mFullDuplexEcho->setDelayTime(delayTimeSeconds);
         }
+    }
+
+    virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexEcho.get();
     }
 
 protected:
@@ -392,6 +402,10 @@ public:
         return mFullDuplexLatency->isDone();
     }
 
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexLatency.get();
+    }
+
 protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
@@ -412,7 +426,6 @@ public:
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     GlitchAnalyzer *getGlitchAnalyzer() {
-        LOGD("%s() mFullDuplexGlitches = %p", __func__, mFullDuplexGlitches.get());
         return mFullDuplexGlitches->getGlitchAnalyzer();
     }
 
@@ -424,6 +437,10 @@ public:
     }
     bool isAnalyzerDone() override {
         return mFullDuplexGlitches->isDone();
+    }
+
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexGlitches.get();
     }
 
 protected:

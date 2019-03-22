@@ -19,11 +19,6 @@
 #include "common/OboeDebug.h"
 #include "FullDuplexLatency.h"
 
-oboe::Result  FullDuplexLatency::start() {
-    mEchoAnalyzer.reset();
-    return FullDuplexStream::start();
-}
-
 static void analyze_data(FullDuplexLatency *fullDuplexLatency) {
     fullDuplexLatency->analyzeData();
 }
@@ -33,37 +28,17 @@ oboe::DataCallbackResult FullDuplexLatency::onBothStreamsReady(
         int   numInputFrames,
         void *outputData,
         int   numOutputFrames) {
-    // reset analyzer if we miss some input data
-    if (numInputFrames < numOutputFrames) {
-        LOGD("%s() numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
-             __func__, numInputFrames, numOutputFrames);
-        mEchoAnalyzer.reset();
-    } else {
-        LOGD("%s() numInputFrames = %4d, numOutputFrames = %4d",
-             __func__, numInputFrames, numOutputFrames);
-        float *inputFloat = (float *) inputData;
-        float *outputFloat = (float *) outputData;
-        int32_t outputStride = getOutputStream()->getChannelCount();
 
-        (void) mEchoAnalyzer.process(inputFloat, getInputStream()->getChannelCount(),
-                                     outputFloat, outputStride,
-                                     numOutputFrames);
+    oboe::DataCallbackResult callbackResult = FullDuplexAnalyzer::onBothStreamsReady(
+            inputData, numInputFrames, outputData, numOutputFrames);
 
-        // zero out remainder of output array
-        int32_t framesLeft = numOutputFrames - numInputFrames;
-        outputFloat += numOutputFrames * outputStride;
-
-        if (framesLeft > 0) {
-            memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
-        }
-    }
     // Are we done?
     if (mEchoAnalyzer.hasEnoughData()) {
         // Crunch the numbers on a separate thread.
         std::thread t(analyze_data, this);
         t.detach();
-        return oboe::DataCallbackResult::Stop;
-    } else {
-        return oboe::DataCallbackResult::Continue;
+        callbackResult = oboe::DataCallbackResult::Stop;
     }
+
+    return callbackResult;
 };
