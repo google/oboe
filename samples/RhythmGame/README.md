@@ -90,4 +90,4 @@ There are some limitations with this approach:
 - No resampling: The extracted output format will match the input format of the MP3. In this case a sample rate of 48000. If your audio stream's sample rate doesn't match the assets will not be extracted and an error will be displayed in logcat. 
 - 16-bit output only. 
 
-A faster, more versatile solution is to use [FFmpeg](https://www.ffmpeg.org/). To do this follow [the instructions here](TODO: Update this link when article is live) and use the `ffmpegExtractor` build variant found in `app.gradle`. The extraction will then be done by `FFmpegExtractor`.
+A faster, more versatile solution is to use [FFmpeg](https://www.ffmpeg.org/). To do this follow [the instructions here](https://medium.com/@donturner/using-ffmpeg-for-faster-audio-decoding-967894e94e71) and use the `ffmpegExtractor` build variant found in `app.gradle`. The extraction will then be done by `FFmpegExtractor`.
