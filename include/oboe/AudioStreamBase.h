@@ -48,7 +48,7 @@ public:
     /**
      * @return number of channels, for example 2 for stereo, or kUnspecified
      */
-    int getChannelCount() const { return mChannelCount; }
+    int32_t getChannelCount() const { return mChannelCount; }
 
     /**
      * @return Direction::Input or Direction::Output
@@ -63,7 +63,7 @@ public:
     /**
      * @return the number of frames in each callback or kUnspecified.
      */
-    int getFramesPerCallback() const { return mFramesPerCallback; }
+    int32_t getFramesPerCallback() const { return mFramesPerCallback; }
 
     /**
      * @return the audio sample format (e.g. Float or I16)
