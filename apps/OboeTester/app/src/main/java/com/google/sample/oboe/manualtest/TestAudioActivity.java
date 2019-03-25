@@ -54,6 +54,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_RECORD_PLAY = 3;
     public static final int ACTIVITY_ECHO = 4;
     public static final int ACTIVITY_RT_LATENCY = 5;
+    public static final int ACTIVITY_GLITCHES = 6;
 
     private int mState = STATE_CLOSED;
     protected String audioManagerSampleRate;
@@ -88,7 +89,7 @@ abstract class TestAudioActivity extends Activity {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-
+                boolean streamClosed = false;
                 for (StreamContext streamContext : mStreamContexts) {
                     // Handler runs this on the main UI thread.
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
@@ -96,10 +97,16 @@ abstract class TestAudioActivity extends Activity {
                     final String msg = status.dump(framesPerBurst);
                     streamContext.configurationView.setStatusText(msg);
                     updateStreamDisplay();
+
+                    streamClosed = streamClosed || (status.state >= 12);
                 }
 
-                // Repeat this runnable code block again.
-                mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                if (streamClosed) {
+                    onStreamClosed();
+                } else {
+                    // Repeat this runnable code block again.
+                    mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                }
             }
         };
 
@@ -118,6 +125,9 @@ abstract class TestAudioActivity extends Activity {
 
     }
 
+    public void onStreamClosed() {
+    }
+
     protected abstract void inflateActivity();
 
     void updateStreamDisplay() {
@@ -128,6 +138,12 @@ abstract class TestAudioActivity extends Activity {
         super.onCreate(savedInstanceState);
         inflateActivity();
         findAudioCommon();
+    }
+
+    public void hideSettingsViews() {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.configurationView.hideSettingsView();
+        }
     }
 
     @Override

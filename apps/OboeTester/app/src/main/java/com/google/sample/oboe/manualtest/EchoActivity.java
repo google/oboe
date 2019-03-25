@@ -79,6 +79,8 @@ public class EchoActivity extends TestInputActivity {
         mTaperDelayTime = new ExponentialTaper(MAX_DELAY_TIME_PROGRESS,
                 MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS, 100.0);
         mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
+
+        hideSettingsViews();
     }
 
     private void setDelayTimeByPosition(int progress) {

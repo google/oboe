@@ -29,9 +29,8 @@
                     android:id="@+id/spinnerNativeApi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
                     android:entries="@array/output_modes"
-                    android:prompt="@string/output_prompt" />
+                    android:prompt="@string/api_prompt" />
                 <TextView
                     android:id="@+id/actualNativeApi"
                     android:layout_width="wrap_content"

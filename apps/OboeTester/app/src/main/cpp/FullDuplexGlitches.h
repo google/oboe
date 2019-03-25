@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_FULL_DUPLEX_LATENCY_H
-#define OBOETESTER_FULL_DUPLEX_LATENCY_H
+#ifndef OBOETESTER_FULL_DUPLEX_GLITCHES_H
+#define OBOETESTER_FULL_DUPLEX_GLITCHES_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -23,43 +23,28 @@
 #include "oboe/Oboe.h"
 #include "FullDuplexAnalyzer.h"
 
-class FullDuplexLatency : public FullDuplexAnalyzer {
+class FullDuplexGlitches : public FullDuplexAnalyzer {
 public:
-    FullDuplexLatency() {}
-
-    /**
-     * Called when data is available on both streams.
-     * Caller should override this method.
-     */
-    oboe::DataCallbackResult onBothStreamsReady(
-            const void *inputData,
-            int   numInputFrames,
-            void *outputData,
-            int   numOutputFrames
-    ) override;
-
+    FullDuplexGlitches() {}
 
     bool isDone() {
-        return mEchoAnalyzer.isDone();
+        return false;
     }
 
-    void analyzeData() {
-        mEchoAnalyzer.analyze();
-    }
-
-    LatencyAnalyzer *getLatencyAnalyzer() {
-        return &mEchoAnalyzer;
+    GlitchAnalyzer *getGlitchAnalyzer() {
+        return &mGlitchAnalyzer;
     }
 
     LoopbackProcessor *getLoopbackProcessor() override {
-        return (LoopbackProcessor *) &mEchoAnalyzer;
+        return (LoopbackProcessor *) &mGlitchAnalyzer;
     }
 
 private:
 
-    EchoAnalyzer  mEchoAnalyzer;
+    GlitchAnalyzer  mGlitchAnalyzer;
 
 };
 
 
-#endif //OBOETESTER_FULL_DUPLEX_LATENCY_H
+#endif //OBOETESTER_FULL_DUPLEX_GLITCHES_H
+

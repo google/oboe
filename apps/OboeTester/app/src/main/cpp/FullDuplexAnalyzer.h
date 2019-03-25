@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_FULL_DUPLEX_LATENCY_H
-#define OBOETESTER_FULL_DUPLEX_LATENCY_H
+#ifndef OBOETESTER_FULL_DUPLEX_ANALYZER_H
+#define OBOETESTER_FULL_DUPLEX_ANALYZER_H
 
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "FullDuplexAnalyzer.h"
+#include "FullDuplexStream.h"
+#include "LatencyAnalyzer.h"
 
-class FullDuplexLatency : public FullDuplexAnalyzer {
+class FullDuplexAnalyzer : public FullDuplexStream {
 public:
-    FullDuplexLatency() {}
+    FullDuplexAnalyzer() {}
 
     /**
      * Called when data is available on both streams.
@@ -38,28 +39,16 @@ public:
             int   numOutputFrames
     ) override;
 
+    oboe::Result start() override;
 
     bool isDone() {
-        return mEchoAnalyzer.isDone();
+        return false;
     }
 
-    void analyzeData() {
-        mEchoAnalyzer.analyze();
-    }
-
-    LatencyAnalyzer *getLatencyAnalyzer() {
-        return &mEchoAnalyzer;
-    }
-
-    LoopbackProcessor *getLoopbackProcessor() override {
-        return (LoopbackProcessor *) &mEchoAnalyzer;
-    }
-
-private:
-
-    EchoAnalyzer  mEchoAnalyzer;
+    virtual LoopbackProcessor *getLoopbackProcessor() = 0;
 
 };
 
 
-#endif //OBOETESTER_FULL_DUPLEX_LATENCY_H
+#endif //OBOETESTER_FULL_DUPLEX_ANALYZER_H
+

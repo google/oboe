@@ -58,6 +58,13 @@
         android:onClick="onLaunchRoundTripLatency"
         android:text="Round Trip Latency" />
 
+    <Button
+        android:id="@+id/button_glitches"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchGlitchTest"
+        android:text="Test Glitches" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
