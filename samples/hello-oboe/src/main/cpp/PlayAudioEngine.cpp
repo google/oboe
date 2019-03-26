@@ -72,7 +72,7 @@ void PlayAudioEngine::createPlaybackStream() {
         mSampleRate = mPlayStream->getSampleRate();
         mFramesPerBurst = mPlayStream->getFramesPerBurst();
 
-        int channelCount = mPlayStream->getChannelCount();
+        int32_t channelCount = mPlayStream->getChannelCount();
         if (channelCount != mChannelCount){
             LOGW("Requested %d channels but received %d", mChannelCount, channelCount);
         }
