@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
 
             // read any errors from the attempted command
             while ((s = stdError.readLine()) != null) {
-                Log.d(TAG, "ERROR: " + s);
-                outputText.append("ERROR: " + s);
+                Log.e(TAG, "ERROR: " + s);
+                output.append("ERROR: " + s + "\n");
             }
 
             process.waitFor();
