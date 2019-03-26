@@ -16,9 +16,9 @@
 # Script to build and run the Oboe tests on an attached Android device or emulator
 #
 # Prerequisites: 
-# - CMake on PATH
+# - CMake on PATH. This is usually found in $ANDROID_HOME/cmake/bin. 
 # - ANDROID_NDK environment variable is set to your Android NDK location
-# e.g. /Library/Android/sdk/ndk-bundle
+# e.g. $HOME/Library/Android/sdk/ndk-bundle
 # - Android device or emulator attached and accessible via adb
 #
 # Instructions:
