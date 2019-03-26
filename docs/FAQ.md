@@ -24,5 +24,15 @@ If you don't need the lowest possible audio latency you may want to investigate 
 - [MediaPlayer](https://developer.android.com/reference/android/media/MediaPlayer)
 - [SoundPool](https://developer.android.com/reference/android/media/SoundPool)
 
+## Android Studio doesn't find the Oboe symbols, how can I fix this?
+Start by ensuring that your project builds successfully. The main thing to do is ensure that the Oboe include paths are set correctly in your project's `CMakeLists.txt`. [Full instructions here](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#2-update-cmakeliststxt).
+
+If that doesn't fix it try the following: 
+
+1) Invalidate the Android Studio cache by going to File->Invalidate Caches / Restart
+2) Delete the contents of `$HOME/Library/Caches/AndroidStudio<version>`
+
+We have had several reports of this happening and are keen to understand the root cause. If this happens to you please file an issue with your Android Studio version and we'll investigate further. 
+
 ## My question isn't listed, where can I ask it?
 Please ask questions on [Stack Overflow](https://stackoverflow.com/questions/ask) with the [Oboe tag](https://stackoverflow.com/tags/oboe). 
