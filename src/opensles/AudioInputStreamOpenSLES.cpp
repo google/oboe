@@ -209,7 +209,7 @@ Result AudioInputStreamOpenSLES::close() {
     LOGD("AudioInputStreamOpenSLES::%s()", __func__);
     mLock.lock();
     Result result = Result::OK;
-    if (mState == StreamState::Closed){
+    if (getState() == StreamState::Closed){
         result = Result::ErrorClosed;
     } else {
         mLock.unlock(); // avoid recursive lock

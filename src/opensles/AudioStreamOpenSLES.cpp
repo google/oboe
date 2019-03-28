@@ -234,7 +234,7 @@ Result AudioStreamOpenSLES::close() {
         mSimpleBufferQueueInterface = nullptr;
         EngineOpenSLES::getInstance().close();
 
-        mState = StreamState::Closed;
+        setState(StreamState::Closed);
         return Result::OK;
     }
 }

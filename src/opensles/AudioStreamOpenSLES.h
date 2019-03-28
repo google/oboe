@@ -55,7 +55,7 @@ public:
      *
      * @return state or a negative error.
      */
-    StreamState getState() override { return mState; }
+    StreamState getState() override { return mState.load(); }
 
     int32_t getFramesPerBurst() override;
 
@@ -101,7 +101,7 @@ protected:
      * Use this instead of directly setting the internal state variable.
      */
     void setState(StreamState state) {
-        mState = state;
+        mState.store(state);
     }
 
     int64_t getFramesProcessedByServer() const;
@@ -110,11 +110,13 @@ protected:
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
 
-    uint8_t              *mCallbackBuffer = nullptr;
-    int32_t               mBytesPerCallback = oboe::kUnspecified;
-    std::atomic<StreamState>           mState{StreamState::Uninitialized};
+    uint8_t                      *mCallbackBuffer = nullptr;
+    int32_t                       mBytesPerCallback = oboe::kUnspecified;
+    MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
-    MonotonicCounter      mPositionMillis; // for tracking OpenSL ES service position
+private:
+    std::atomic<StreamState>      mState{StreamState::Uninitialized};
+
 };
 
 } // namespace oboe
