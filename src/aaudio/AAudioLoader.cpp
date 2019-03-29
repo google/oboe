@@ -229,4 +229,62 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
     return reinterpret_cast<signature_I_PSKPLPL>(proc);
 }
 
+// These asserts help verify that the Oboe definitions match the equivalent AAudio definitions.
+// This code is in this .cpp file so it only gets tested once.
+#if (OBOE_INCLUDE_AAUDIO == 1)
+    #define SAMSG "Oboe constants must match AAudio constants."
+    static_assert((int32_t)StreamState::Uninitialized == AAUDIO_STREAM_STATE_UNINITIALIZED, SAMSG);
+    static_assert((int32_t)StreamState::Unknown == AAUDIO_STREAM_STATE_UNKNOWN, SAMSG);
+    static_assert((int32_t)StreamState::Open == AAUDIO_STREAM_STATE_OPEN, SAMSG);
+    static_assert((int32_t)StreamState::Starting == AAUDIO_STREAM_STATE_STARTING, SAMSG);
+    static_assert((int32_t)StreamState::Started == AAUDIO_STREAM_STATE_STARTED, SAMSG);
+    static_assert((int32_t)StreamState::Pausing == AAUDIO_STREAM_STATE_PAUSING, SAMSG);
+    static_assert((int32_t)StreamState::Paused == AAUDIO_STREAM_STATE_PAUSED, SAMSG);
+    static_assert((int32_t)StreamState::Flushing == AAUDIO_STREAM_STATE_FLUSHING, SAMSG);
+    static_assert((int32_t)StreamState::Flushed == AAUDIO_STREAM_STATE_FLUSHED, SAMSG);
+    static_assert((int32_t)StreamState::Stopping == AAUDIO_STREAM_STATE_STOPPING, SAMSG);
+    static_assert((int32_t)StreamState::Stopped == AAUDIO_STREAM_STATE_STOPPED, SAMSG);
+    static_assert((int32_t)StreamState::Closing == AAUDIO_STREAM_STATE_CLOSING, SAMSG);
+    static_assert((int32_t)StreamState::Closed == AAUDIO_STREAM_STATE_CLOSED, SAMSG);
+    static_assert((int32_t)StreamState::Disconnected == AAUDIO_STREAM_STATE_DISCONNECTED, SAMSG);
+
+    static_assert((int32_t)Direction::Output == AAUDIO_DIRECTION_OUTPUT, SAMSG);
+    static_assert((int32_t)Direction::Input == AAUDIO_DIRECTION_INPUT, SAMSG);
+
+    static_assert((int32_t)AudioFormat::Invalid == AAUDIO_FORMAT_INVALID, SAMSG);
+    static_assert((int32_t)AudioFormat::Unspecified == AAUDIO_FORMAT_UNSPECIFIED, SAMSG);
+    static_assert((int32_t)AudioFormat::I16 == AAUDIO_FORMAT_PCM_I16, SAMSG);
+    static_assert((int32_t)AudioFormat::Float == AAUDIO_FORMAT_PCM_FLOAT, SAMSG);
+
+    static_assert((int32_t)DataCallbackResult::Continue == AAUDIO_CALLBACK_RESULT_CONTINUE, SAMSG);
+    static_assert((int32_t)DataCallbackResult::Stop == AAUDIO_CALLBACK_RESULT_STOP, SAMSG);
+
+    static_assert((int32_t)Result::OK == AAUDIO_OK, SAMSG);
+    static_assert((int32_t)Result::ErrorBase == AAUDIO_ERROR_BASE, SAMSG);
+    static_assert((int32_t)Result::ErrorDisconnected == AAUDIO_ERROR_DISCONNECTED, SAMSG);
+    static_assert((int32_t)Result::ErrorIllegalArgument == AAUDIO_ERROR_ILLEGAL_ARGUMENT, SAMSG);
+    static_assert((int32_t)Result::ErrorInternal == AAUDIO_ERROR_INTERNAL, SAMSG);
+    static_assert((int32_t)Result::ErrorInvalidState == AAUDIO_ERROR_INVALID_STATE, SAMSG);
+    static_assert((int32_t)Result::ErrorInvalidHandle == AAUDIO_ERROR_INVALID_HANDLE, SAMSG);
+    static_assert((int32_t)Result::ErrorUnimplemented == AAUDIO_ERROR_UNIMPLEMENTED, SAMSG);
+    static_assert((int32_t)Result::ErrorUnavailable == AAUDIO_ERROR_UNAVAILABLE, SAMSG);
+    static_assert((int32_t)Result::ErrorNoFreeHandles == AAUDIO_ERROR_NO_FREE_HANDLES, SAMSG);
+    static_assert((int32_t)Result::ErrorNoMemory == AAUDIO_ERROR_NO_MEMORY, SAMSG);
+    static_assert((int32_t)Result::ErrorNull == AAUDIO_ERROR_NULL, SAMSG);
+    static_assert((int32_t)Result::ErrorTimeout == AAUDIO_ERROR_TIMEOUT, SAMSG);
+    static_assert((int32_t)Result::ErrorWouldBlock == AAUDIO_ERROR_WOULD_BLOCK, SAMSG);
+    static_assert((int32_t)Result::ErrorInvalidFormat == AAUDIO_ERROR_INVALID_FORMAT, SAMSG);
+    static_assert((int32_t)Result::ErrorOutOfRange == AAUDIO_ERROR_OUT_OF_RANGE, SAMSG);
+    static_assert((int32_t)Result::ErrorNoService == AAUDIO_ERROR_NO_SERVICE, SAMSG);
+    static_assert((int32_t)Result::ErrorInvalidRate == AAUDIO_ERROR_INVALID_RATE, SAMSG);
+
+    static_assert((int32_t)SharingMode::Exclusive == AAUDIO_SHARING_MODE_EXCLUSIVE, SAMSG);
+    static_assert((int32_t)SharingMode::Shared == AAUDIO_SHARING_MODE_SHARED, SAMSG);
+
+    static_assert((int32_t)PerformanceMode::None == AAUDIO_PERFORMANCE_MODE_NONE, SAMSG);
+    static_assert((int32_t)PerformanceMode::PowerSaving == AAUDIO_PERFORMANCE_MODE_POWER_SAVING, SAMSG);
+    static_assert((int32_t)PerformanceMode::LowLatency == AAUDIO_PERFORMANCE_MODE_LOW_LATENCY, SAMSG);
+    // TODO test P constants
+#endif
+
 } // namespace oboe

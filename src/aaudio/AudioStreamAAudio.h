@@ -21,15 +21,12 @@
 #include <mutex>
 #include <thread>
 
-#include "aaudio/AAudio.h"
-
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStream.h"
 #include "oboe/Definitions.h"
+#include "AAudioLoader.h"
 
 namespace oboe {
-
-class AAudioLoader;
 
 /**
  * Implementation of OboeStream that uses AAudio.

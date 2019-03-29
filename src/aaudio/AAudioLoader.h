@@ -20,9 +20,24 @@
 #include <unistd.h>
 #include "oboe/Definitions.h"
 
-#include "aaudio/AAudio.h"
+#if (OBOE_INCLUDE_AAUDIO == 0)
+typedef struct AAudioStreamStruct         AAudioStream;
+typedef struct AAudioStreamBuilderStruct  AAudioStreamBuilder;
+
+typedef aaudio_data_callback_result_t (*AAudioStream_dataCallback)(
+        AAudioStream *stream,
+        void *userData,
+        void *audioData,
+        int32_t numFrames);
+
+typedef void (*AAudioStream_errorCallback)(
+        AAudioStream *stream,
+        void *userData,
+        aaudio_result_t error);
+#endif
 
 namespace oboe {
+
 
 /**
  * The AAudio API was not available in early versions of Android.
