@@ -20,7 +20,19 @@
 #include <unistd.h>
 #include "oboe/Definitions.h"
 
-#if (OBOE_INCLUDE_AAUDIO == 0)
+// If the NDK is before O then define this in your build
+// so that AAudio.h will not be included.
+#ifdef OBOE_NO_INCLUDE_AAUDIO
+
+// Define missing types from AAudio.h
+typedef int32_t aaudio_stream_state_t;
+typedef int32_t aaudio_direction_t;
+typedef int32_t aaudio_format_t;
+typedef int32_t aaudio_data_callback_result_t;
+typedef int32_t aaudio_result_t;
+typedef int32_t aaudio_sharing_mode_t;
+typedef int32_t aaudio_performance_mode_t;
+
 typedef struct AAudioStreamStruct         AAudioStream;
 typedef struct AAudioStreamBuilderStruct  AAudioStreamBuilder;
 
@@ -34,6 +46,19 @@ typedef void (*AAudioStream_errorCallback)(
         AAudioStream *stream,
         void *userData,
         aaudio_result_t error);
+
+// These were defined in P
+typedef int32_t aaudio_usage_t;
+typedef int32_t aaudio_content_type_t;
+typedef int32_t aaudio_input_preset_t;
+typedef int32_t aaudio_session_id_t;
+#else
+#include <aaudio/AAudio.h>
+#include <android/ndk-version.h>
+#endif
+
+#ifndef __NDK_MAJOR__
+#define __NDK_MAJOR__ 0
 #endif
 
 namespace oboe {

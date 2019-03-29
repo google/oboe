@@ -17,47 +17,9 @@
 #ifndef OBOE_DEFINITIONS_H
 #define OBOE_DEFINITIONS_H
 
-// If the NDK is before P then do not include AAudio.h
-#ifndef OBOE_INCLUDE_AAUDIO
-#if __ANDROID_API_LEVEL__ >= __ANDROID_API_P__
-#define OBOE_INCLUDE_AAUDIO 1
-#else
-#define OBOE_INCLUDE_AAUDIO 0
-#endif
-#endif // OBOE_INCLUDE_AAUDIO
 
 #include <cstdint>
 #include <type_traits>
-
-#if (OBOE_INCLUDE_AAUDIO == 1)
-#include <aaudio/AAudio.h>
-
-// Ensure that all AAudio primitive data types are int32_t
-#define ASSERT_INT32(type) static_assert(std::is_same<int32_t, type>::value, \
-#type" must be int32_t")
-
-ASSERT_INT32(aaudio_stream_state_t);
-ASSERT_INT32(aaudio_direction_t);
-ASSERT_INT32(aaudio_format_t);
-ASSERT_INT32(aaudio_data_callback_result_t);
-ASSERT_INT32(aaudio_result_t);
-ASSERT_INT32(aaudio_sharing_mode_t);
-ASSERT_INT32(aaudio_performance_mode_t);
-#else
-// Define missing types from AAudio.h
-typedef int32_t aaudio_stream_state_t;
-typedef int32_t aaudio_direction_t;
-typedef int32_t aaudio_format_t;
-typedef int32_t aaudio_data_callback_result_t;
-typedef int32_t aaudio_result_t;
-typedef int32_t aaudio_sharing_mode_t;
-typedef int32_t aaudio_performance_mode_t;
-// These were defined in P
-typedef int32_t aaudio_usage_t;
-typedef int32_t aaudio_content_type_t;
-typedef int32_t aaudio_input_preset_t;
-typedef int32_t aaudio_session_id_t;
-#endif
 
 // Oboe needs to be able to build on old NDKs so we use hard coded constants.
 // The correctness of these constants is verified in "aaudio/AAudioLoader.cpp".
@@ -93,7 +55,7 @@ namespace oboe {
     /**
      * The state of the audio stream.
      */
-    enum class StreamState : aaudio_stream_state_t {
+    enum class StreamState : int32_t { // aaudio_stream_state_t
         Uninitialized = 0, // AAUDIO_STREAM_STATE_UNINITIALIZED,
         Unknown = 1, // AAUDIO_STREAM_STATE_UNKNOWN,
         Open = 2, // AAUDIO_STREAM_STATE_OPEN,
@@ -113,7 +75,7 @@ namespace oboe {
     /**
      * The direction of the stream.
      */
-    enum class Direction : aaudio_direction_t {
+    enum class Direction : int32_t { // aaudio_direction_t
 
         /**
          * Used for playback.
@@ -129,7 +91,7 @@ namespace oboe {
     /**
      * The format of audio samples.
      */
-    enum class AudioFormat : aaudio_format_t {
+    enum class AudioFormat : int32_t { // aaudio_format_t
         /**
          * Invalid format.
          */
@@ -154,7 +116,7 @@ namespace oboe {
     /**
      * The result of an audio callback.
      */
-    enum class DataCallbackResult : aaudio_data_callback_result_t {
+    enum class DataCallbackResult : int32_t { // aaudio_data_callback_result_t
         // Indicates to the caller that the callbacks should continue.
         Continue = 0, // AAUDIO_CALLBACK_RESULT_CONTINUE,
 
@@ -166,7 +128,7 @@ namespace oboe {
      * The result of an operation. All except the `OK` result indicates that an error occurred.
      * The `Result` can be converted into a human readable string using `convertToText`.
      */
-    enum class Result : aaudio_result_t {
+    enum class Result : int32_t { // aaudio_result_t
         OK = 0, // AAUDIO_OK
         ErrorBase = -900, // AAUDIO_ERROR_BASE,
         ErrorDisconnected = -899, // AAUDIO_ERROR_DISCONNECTED,
@@ -202,7 +164,7 @@ namespace oboe {
     /**
      * The sharing mode of the audio stream.
      */
-    enum class SharingMode : aaudio_sharing_mode_t {
+    enum class SharingMode : int32_t { // aaudio_sharing_mode_t
 
         /**
          * This will be the only stream using a particular source or sink.
@@ -227,7 +189,7 @@ namespace oboe {
     /**
      * The performance mode of the audio stream.
      */
-    enum class PerformanceMode : aaudio_performance_mode_t {
+    enum class PerformanceMode : int32_t { // aaudio_performance_mode_t
 
         /**
          * No particular performance needs. Default.
@@ -274,7 +236,7 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum class Usage : aaudio_usage_t {
+    enum class Usage : int32_t { // aaudio_usage_t
         /**
          * Use this for streaming media, music performance, video, podcasts, etcetera.
          */
@@ -350,7 +312,7 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum ContentType : aaudio_content_type_t {
+    enum ContentType : int32_t { // aaudio_content_type_t
 
         /**
          * Use this for spoken voice, audio books, etcetera.
@@ -383,7 +345,7 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum InputPreset : aaudio_input_preset_t {
+    enum InputPreset : int32_t { // aaudio_input_preset_t
         /**
          * Use this preset when other presets do not apply.
          */

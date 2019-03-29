@@ -229,10 +229,24 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
     return reinterpret_cast<signature_I_PSKPLPL>(proc);
 }
 
+// Ensure that all AAudio primitive data types are int32_t
+#define ASSERT_INT32(type) static_assert(std::is_same<int32_t, type>::value, \
+#type" must be int32_t")
+
+#define SAMSG "Oboe constants must match AAudio constants."
+
 // These asserts help verify that the Oboe definitions match the equivalent AAudio definitions.
 // This code is in this .cpp file so it only gets tested once.
-#if (OBOE_INCLUDE_AAUDIO == 1)
-    #define SAMSG "Oboe constants must match AAudio constants."
+#ifdef AAUDIO_AAUDIO_H
+
+    ASSERT_INT32(aaudio_stream_state_t);
+    ASSERT_INT32(aaudio_direction_t);
+    ASSERT_INT32(aaudio_format_t);
+    ASSERT_INT32(aaudio_data_callback_result_t);
+    ASSERT_INT32(aaudio_result_t);
+    ASSERT_INT32(aaudio_sharing_mode_t);
+    ASSERT_INT32(aaudio_performance_mode_t);
+
     static_assert((int32_t)StreamState::Uninitialized == AAUDIO_STREAM_STATE_UNINITIALIZED, SAMSG);
     static_assert((int32_t)StreamState::Unknown == AAUDIO_STREAM_STATE_UNKNOWN, SAMSG);
     static_assert((int32_t)StreamState::Open == AAUDIO_STREAM_STATE_OPEN, SAMSG);
@@ -284,7 +298,41 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
     static_assert((int32_t)PerformanceMode::None == AAUDIO_PERFORMANCE_MODE_NONE, SAMSG);
     static_assert((int32_t)PerformanceMode::PowerSaving == AAUDIO_PERFORMANCE_MODE_POWER_SAVING, SAMSG);
     static_assert((int32_t)PerformanceMode::LowLatency == AAUDIO_PERFORMANCE_MODE_LOW_LATENCY, SAMSG);
-    // TODO test P constants
+#endif
+
+// These were added in P.
+#if __NDK_MAJOR__ >= 17
+
+    ASSERT_INT32(aaudio_usage_t);
+    ASSERT_INT32(aaudio_content_type_t);
+    ASSERT_INT32(aaudio_input_preset_t);
+
+    static_assert((int32_t)Usage::Media == AAUDIO_USAGE_MEDIA, SAMSG);
+    static_assert((int32_t)Usage::VoiceCommunication == AAUDIO_USAGE_VOICE_COMMUNICATION, SAMSG);
+    static_assert((int32_t)Usage::VoiceCommunicationSignalling == AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING, SAMSG);
+    static_assert((int32_t)Usage::Alarm == AAUDIO_USAGE_ALARM, SAMSG);
+    static_assert((int32_t)Usage::Notification == AAUDIO_USAGE_NOTIFICATION, SAMSG);
+    static_assert((int32_t)Usage::NotificationRingtone == AAUDIO_USAGE_NOTIFICATION_RINGTONE, SAMSG);
+    static_assert((int32_t)Usage::NotificationEvent == AAUDIO_USAGE_NOTIFICATION_EVENT, SAMSG);
+    static_assert((int32_t)Usage::AssistanceAccessibility == AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY, SAMSG);
+    static_assert((int32_t)Usage::AssistanceNavigationGuidance == AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE, SAMSG);
+    static_assert((int32_t)Usage::AssistanceSonification == AAUDIO_USAGE_ASSISTANCE_SONIFICATION, SAMSG);
+    static_assert((int32_t)Usage::Game == AAUDIO_USAGE_GAME, SAMSG);
+    static_assert((int32_t)Usage::Assistant == AAUDIO_USAGE_ASSISTANT, SAMSG);
+
+    static_assert((int32_t)ContentType::Speech == AAUDIO_CONTENT_TYPE_SPEECH, SAMSG);
+    static_assert((int32_t)ContentType::Music == AAUDIO_CONTENT_TYPE_MUSIC, SAMSG);
+    static_assert((int32_t)ContentType::Movie == AAUDIO_CONTENT_TYPE_MOVIE, SAMSG);
+    static_assert((int32_t)ContentType::Sonification == AAUDIO_CONTENT_TYPE_SONIFICATION, SAMSG);
+
+    static_assert((int32_t)InputPreset::Generic == AAUDIO_INPUT_PRESET_GENERIC, SAMSG);
+    static_assert((int32_t)InputPreset::Camcorder == AAUDIO_INPUT_PRESET_CAMCORDER, SAMSG);
+    static_assert((int32_t)InputPreset::VoiceRecognition == AAUDIO_INPUT_PRESET_VOICE_RECOGNITION, SAMSG);
+    static_assert((int32_t)InputPreset::VoiceCommunication == AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION, SAMSG);
+    static_assert((int32_t)InputPreset::Unprocessed == AAUDIO_INPUT_PRESET_UNPROCESSED, SAMSG);
+
+    static_assert((int32_t)SessionId::None == AAUDIO_SESSION_ID_NONE, SAMSG);
+    static_assert((int32_t)SessionId::Allocate == AAUDIO_SESSION_ID_ALLOCATE, SAMSG);
 #endif
 
 } // namespace oboe
