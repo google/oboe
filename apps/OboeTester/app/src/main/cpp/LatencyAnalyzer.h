@@ -478,12 +478,12 @@ public:
 
     virtual int save(const char *fileName) {
         (void) fileName;
-        return AAUDIO_ERROR_UNIMPLEMENTED;
+        return -1;
     }
 
     virtual int load(const char *fileName) {
         (void) fileName;
-        return AAUDIO_ERROR_UNIMPLEMENTED;
+        return -1;
     }
 
     virtual void setSampleRate(int32_t sampleRate) {
