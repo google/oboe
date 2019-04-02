@@ -20,6 +20,7 @@ To build Oboe you will need the Android NDK r17 or above. It can be installed us
 - [API reference](https://google.github.io/oboe/reference)
 - [History of Audio features/bugs by Android version](docs/AndroidAudioHistory.md)
 - [Frequently Asked Questions](docs/FAQ.md) (FAQ)
+- [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment 
 
 ## Sample code
 Sample apps can be found in the [samples directory](samples). Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
