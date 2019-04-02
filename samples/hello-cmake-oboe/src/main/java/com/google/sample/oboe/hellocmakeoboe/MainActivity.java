@@ -12,13 +12,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-include ':audio-device'
-include ':hello-oboe'
-include ':hello-cmake-oboe'
-include ':RhythmGame'
-include ':MegaDrone'
-include ':LiveEffect'
+package com.google.sample.oboe.hellocmakeoboe;
 
+import android.os.Bundle;
+import android.app.Activity;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+
+    static {
+        System.loadLibrary("hello_cmake_oboe");
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        TextView mHelloCMakeOboeText = findViewById(R.id.tvHelloCMakeOboe);
+        mHelloCMakeOboeText.setText(HelloFromOboe());
+    }
+
+    private native String HelloFromOboe();
+}

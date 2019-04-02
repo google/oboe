@@ -12,13 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-include ':audio-device'
-include ':hello-oboe'
-include ':hello-cmake-oboe'
-include ':RhythmGame'
-include ':MegaDrone'
-include ':LiveEffect'
+#include <jni.h>
+#include <oboe/Oboe.h>
 
+extern "C" {
+
+JNIEXPORT jstring JNICALL
+Java_com_google_sample_oboe_hellocmakeoboe_MainActivity_HelloFromOboe(JNIEnv *env, jclass) {
+
+    return env->NewStringUTF(oboe::Version::Text);
+}
+}
