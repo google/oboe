@@ -409,7 +409,7 @@ Calls that return stream settings, like `AudioStream::getSampleRate()` and `Audi
 These calls are also thread safe:
 
 * `convertToText()`
-* `AudioStream::get*()` except for `getTimestamp()`
+* `AudioStream::get*()` except for `getTimestamp()` and `getState()`
 
 <b>Note:</b> When a stream uses a callback function, it's safe to read/write from the callback thread while also closing the stream
 from the thread in which it is running.
