@@ -28,22 +28,23 @@ import com.google.sample.oboe.manualtest.R;
 abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
 
-    protected TextView mTextThreshold;
-    protected SeekBar mFaderThreshold;
-    protected ExponentialTaper mTaperThreshold;
+//    protected TextView mTextThreshold;
+//    protected SeekBar mFaderThreshold;
+//    protected ExponentialTaper mTaperThreshold;
     protected TextView mTextAmplitude;
     protected SeekBar mFaderAmplitude;
     protected ExponentialTaper mTaperAmplitude;
+    private BufferSizeView mBufferSizeView;
 
     @Override boolean isOutput() { return true; }
 
     protected void updateEnabledWidgets() {
         super.updateEnabledWidgets();
-        for (StreamContext streamContext : mStreamContexts) {
-            boolean thresholdSupported = (streamContext.tester == null) ? false :
-                    streamContext.tester.getCurrentAudioStream().isThresholdSupported();
-            mFaderThreshold.setEnabled(getState() == STATE_STARTED && thresholdSupported);
-        }
+//        for (StreamContext streamContext : mStreamContexts) {
+//            boolean thresholdSupported = (streamContext.tester == null) ? false :
+//                    streamContext.tester.getCurrentAudioStream().isThresholdSupported();
+//            mFaderThreshold.setEnabled(getState() == STATE_STARTED && thresholdSupported);
+//        }
     }
 
     private SeekBar.OnSeekBarChangeListener mAmplitudeListener = new SeekBar.OnSeekBarChangeListener() {
@@ -62,49 +63,51 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         public void onStopTrackingTouch(SeekBar seekBar) {
         }
     };
-
-    private SeekBar.OnSeekBarChangeListener mThresholdListener = new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            setBufferSizeByPosition(progress);
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-        }
-    };
-
-    private void setBufferSizeByPosition(int progress) {
-        double normalizedThreshold = mTaperThreshold.linearToExponential(progress);
-        if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
-        else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
-        if (mAudioOutTester != null) {
-            mAudioOutTester.setNormalizedThreshold(normalizedThreshold);
-            int percent = (int) (normalizedThreshold * 100);
-            int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
-            int bufferCapacity = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
-            mTextThreshold.setText("bufferSize = " + percent + "% = "
-                    + bufferSize + " / " + bufferCapacity);
-        }
-    }
+//
+//    private SeekBar.OnSeekBarChangeListener mThresholdListener = new SeekBar.OnSeekBarChangeListener() {
+//        @Override
+//        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//            setBufferSizeByPosition(progress);
+//        }
+//
+//        @Override
+//        public void onStartTrackingTouch(SeekBar seekBar) {
+//        }
+//
+//        @Override
+//        public void onStopTrackingTouch(SeekBar seekBar) {
+//        }
+//    };
+//
+//    private void setBufferSizeByPosition(int progress) {
+//        double normalizedThreshold = mTaperThreshold.linearToExponential(progress);
+//        if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
+//        else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
+//        if (mAudioOutTester != null) {
+//            mAudioOutTester.setNormalizedThreshold(normalizedThreshold);
+//            int percent = (int) (normalizedThreshold * 100);
+//            int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
+//            int bufferCapacity = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
+//            mTextThreshold.setText("bufferSize = " + percent + "% = "
+//                    + bufferSize + " / " + bufferCapacity);
+//        }
+//    }
 
     protected void findAudioCommon() {
         super.findAudioCommon();
 
-        mTextThreshold = (TextView) findViewById(R.id.textThreshold);
-        mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
-        mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
-        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 1.0, 10.0);
-        mFaderThreshold.setProgress(FADER_THRESHOLD_MAX / 2);
-
+        mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
         mTextAmplitude = (TextView) findViewById(R.id.textAmplitude);
         mFaderAmplitude = (SeekBar) findViewById(R.id.faderAmplitude);
         mFaderAmplitude.setOnSeekBarChangeListener(mAmplitudeListener);
         mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 4.0, 100.0);
+    }
+
+    @Override
+    public AudioOutputTester addAudioOutputTester() {
+        AudioOutputTester audioOutTester = super.addAudioOutputTester();
+        mBufferSizeView.setAudioOutTester(audioOutTester);
+        return audioOutTester;
     }
 
     public void pauseAudio() {

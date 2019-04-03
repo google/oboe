@@ -40,7 +40,6 @@ public class GlitchActivity extends AnalyzerActivity {
     final static int STATE_WAITING_FOR_LOCK = 4;
     final static int STATE_LOCKED = 5;
 
-
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
     String stateToString(int resultCode) {
         switch (resultCode) {
@@ -176,7 +175,8 @@ public class GlitchActivity extends AnalyzerActivity {
         mStopButton.setEnabled(false);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
-        mAudioOutTester = addAudioOutputTester();
+        
+        // TODO mAudioOutTester = addAudioOutputTester();
 
         hideSettingsViews();
     }
