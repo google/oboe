@@ -20,6 +20,7 @@
 #include <dlfcn.h>
 #include <jni.h>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 #include "common/OboeDebug.h"
@@ -73,7 +74,12 @@ public:
     virtual ~ActivityContext() = default;
 
     oboe::AudioStream *getStream(int32_t streamIndex) {
-        return mOboeStreams[streamIndex]; // TODO range check
+        auto it = mOboeStreams.find(streamIndex);
+        if (it != mOboeStreams.end()) {
+            return it->second;
+        } else {
+            return nullptr;
+        }
     }
 
     virtual void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder);
@@ -176,8 +182,8 @@ protected:
     AudioStreamGateway           audioStreamGateway;
     OboeStreamCallbackProxy      oboeCallbackProxy;
 
-    static constexpr int         kMaxStreams = 8;
-    oboe::AudioStream           *mOboeStreams[kMaxStreams]{};
+    int32_t                      mNextStreamHandle = 0;
+    std::unordered_map<int32_t, oboe::AudioStream *>  mOboeStreams;
     int32_t                      mFramesPerBurst = 0; // TODO per stream
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream

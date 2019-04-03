@@ -35,20 +35,18 @@ bool ActivityContext::callbackReturnStop = false;
 int  ActivityContext::callbackSize = 0;
 
 oboe::AudioStream * ActivityContext::getOutputStream() {
-    for (int32_t i = 0; i < kMaxStreams; i++) {
-        oboe::AudioStream *oboeStream = mOboeStreams[i];
-        if (oboeStream != nullptr) {
-            if (oboeStream->getDirection() == oboe::Direction::Output) {
-                return oboeStream;
-            }
+    for (auto entry : mOboeStreams) {
+        oboe::AudioStream *oboeStream = entry.second;
+        if (oboeStream->getDirection() == oboe::Direction::Output) {
+            return oboeStream;
         }
     }
     return nullptr;
 }
 
 oboe::AudioStream * ActivityContext::getInputStream() {
-    for (int32_t i = 0; i < kMaxStreams; i++) {
-        oboe::AudioStream *oboeStream = mOboeStreams[i];
+    for (auto entry : mOboeStreams) {
+        oboe::AudioStream *oboeStream = entry.second;
         if (oboeStream != nullptr) {
             if (oboeStream->getDirection() == oboe::Direction::Input) {
                 return oboeStream;
@@ -59,27 +57,21 @@ oboe::AudioStream * ActivityContext::getInputStream() {
 }
 
 void ActivityContext::freeStreamIndex(int32_t streamIndex) {
-    mOboeStreams[streamIndex] = nullptr;
+    mOboeStreams.erase(streamIndex);
 }
 
 int32_t ActivityContext::allocateStreamIndex() {
-    int32_t streamIndex = -1;
-    for (int32_t i = 0; i < kMaxStreams; i++) {
-        if (mOboeStreams[i] == nullptr) {
-            streamIndex = i;
-            break;
-        }
-    }
-    return streamIndex;
+    return mNextStreamHandle++;
 }
 
 void ActivityContext::close(int32_t streamIndex) {
     stopBlockingIOThread();
 
     LOGD("%s() delete stream %d ", __func__, streamIndex);
-    if (mOboeStreams[streamIndex] != nullptr) {
-        mOboeStreams[streamIndex]->close();
-        delete mOboeStreams[streamIndex];
+    oboe::AudioStream *oboeStream = getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        oboeStream->close();
+        delete oboeStream;
         freeStreamIndex(streamIndex);
     }
 }
@@ -112,12 +104,10 @@ oboe::Result ActivityContext::pause() {
     LOGD("NativeAudioContext::%s() called", __func__);
     oboe::Result result = oboe::Result::OK;
     stopBlockingIOThread();
-    for (int32_t i = 0; i < kMaxStreams; i++) {
-        oboe::AudioStream *oboeStream = mOboeStreams[i];
-        if (oboeStream != nullptr) {
-            result = oboeStream->requestPause();
-            printScheduler();
-        }
+    for (auto entry : mOboeStreams) {
+        oboe::AudioStream *oboeStream = entry.second;
+        result = oboeStream->requestPause();
+        printScheduler();
     }
     return result;
 }
@@ -125,13 +115,13 @@ oboe::Result ActivityContext::pause() {
 oboe::Result ActivityContext::stopAllStreams() {
     oboe::Result result = oboe::Result::OK;
     stopBlockingIOThread();
-
-    for (int32_t i = 0; i < kMaxStreams; i++) {
-        oboe::AudioStream *oboeStream = mOboeStreams[i];
-        if (oboeStream != nullptr) {
-            result = oboeStream->requestStop();
-            printScheduler();
-        }
+    LOGD("ActivityContext::stopAllStreams() called");
+    for (auto entry : mOboeStreams) {
+        LOGD("ActivityContext::stopAllStreams() handle = %d, stream %p",
+             entry.first, entry.second);
+        oboe::AudioStream *oboeStream = entry.second;
+        result = oboeStream->requestStop();
+        printScheduler();
     }
     return result;
 }
