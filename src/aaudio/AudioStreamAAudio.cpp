@@ -379,7 +379,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
 Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds) {
-    Result oboeResult = (timeoutNanoseconds <= 0) ? Result::OK : Result::ErrorTimeout;
+    Result oboeResult = Result::ErrorTimeout;
     int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
     aaudio_stream_state_t currentAAudioState = static_cast<aaudio_stream_state_t>(currentState);
 
@@ -409,14 +409,8 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
             *nextState = static_cast<StreamState>(aaudioNextState);
         }
         if (result != AAUDIO_OK) {
-            if (result == AAUDIO_ERROR_TIMEOUT) {
-                // bug in AAudio pre-Q caused it to return this
-                result = AAUDIO_OK;
-            } else {
-                LOGD("%s() stream_waitForStateChange returned %d", __func__, result);
-                oboeResult = static_cast<Result>(result);
-                break;
-            }
+            oboeResult = static_cast<Result>(result);
+            break;
         }
         if (currentAAudioState != aaudioNextState) { // state changed?
             oboeResult = Result::OK;
