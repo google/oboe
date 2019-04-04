@@ -75,13 +75,9 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
                                            StreamState endingState,
                                            int64_t timeoutNanoseconds)
 {
-    StreamState state;
-    {
-        std::lock_guard<std::mutex> lock(mLock);
-        state = getState();
-        if (state == StreamState::Closed || state == StreamState::Disconnected) {
-            return Result::ErrorClosed;
-        }
+    StreamState state = getState();
+    if (state == StreamState::Closed) {
+        return Result::ErrorClosed;
     }
 
     StreamState nextState = state;
@@ -91,7 +87,6 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
             return result;
         }
     }
-
     if (nextState != endingState) {
         return Result::ErrorInvalidState;
     } else {
@@ -103,7 +98,6 @@ Result AudioStream::start(int64_t timeoutNanoseconds)
 {
     Result result = requestStart();
     if (result != Result::OK) return result;
-    if (timeoutNanoseconds <= 0) return result;
     return waitForStateTransition(StreamState::Starting,
                                   StreamState::Started, timeoutNanoseconds);
 }
@@ -112,7 +106,6 @@ Result AudioStream::pause(int64_t timeoutNanoseconds)
 {
     Result result = requestPause();
     if (result != Result::OK) return result;
-    if (timeoutNanoseconds <= 0) return result;
     return waitForStateTransition(StreamState::Pausing,
                                   StreamState::Paused, timeoutNanoseconds);
 }
@@ -121,7 +114,6 @@ Result AudioStream::flush(int64_t timeoutNanoseconds)
 {
     Result result = requestFlush();
     if (result != Result::OK) return result;
-    if (timeoutNanoseconds <= 0) return result;
     return waitForStateTransition(StreamState::Flushing,
                                   StreamState::Flushed, timeoutNanoseconds);
 }
@@ -130,7 +122,6 @@ Result AudioStream::stop(int64_t timeoutNanoseconds)
 {
     Result result = requestStop();
     if (result != Result::OK) return result;
-    if (timeoutNanoseconds <= 0) return result;
     return waitForStateTransition(StreamState::Stopping,
                                   StreamState::Stopped, timeoutNanoseconds);
 }

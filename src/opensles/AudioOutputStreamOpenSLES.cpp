@@ -240,7 +240,7 @@ Result AudioOutputStreamOpenSLES::onAfterDestroy() {
 Result AudioOutputStreamOpenSLES::close() {
     mLock.lock();
     Result result = Result::OK;
-    if (getState() == StreamState::Closed){
+    if (mState == StreamState::Closed){
         result = Result::ErrorClosed;
     } else {
         mLock.unlock(); // avoid recursive lock
