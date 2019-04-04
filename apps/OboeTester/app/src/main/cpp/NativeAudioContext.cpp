@@ -281,7 +281,7 @@ void ActivityTestOutput::configureForStart() {
 
     oboe::AudioStream *outputStream = getOutputStream();
     {
-        double frequency = 440.0;
+        double frequency = 660.0;
         for (int i = 0; i < mChannelCount; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
