@@ -117,7 +117,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mCancelButton = (Button) findViewById(R.id.button_cancel);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
-        mAudioOutTester = addAudioOutputTester();
 
         hideSettingsViews();
     }
