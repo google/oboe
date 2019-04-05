@@ -234,7 +234,7 @@ Result AudioStreamOpenSLES::close() {
         mSimpleBufferQueueInterface = nullptr;
         EngineOpenSLES::getInstance().close();
 
-        mState = StreamState::Closed;
+        setState(StreamState::Closed);
         return Result::OK;
     }
 }
@@ -311,23 +311,30 @@ int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
 Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                      StreamState *nextState,
                                                      int64_t timeoutNanoseconds) {
-    LOGD("AudioStreamOpenSLES::waitForStateChange()");
-
+    Result oboeResult = (timeoutNanoseconds <= 0) ? Result::OK : Result::ErrorTimeout;
     int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
-    StreamState state = getState();
 
-    while (state == currentState && timeoutNanoseconds > 0){
+    while (true) {
+        const StreamState state = getState(); // this does not require a lock
+        if (nextState != nullptr) {
+            *nextState = state;
+        }
+        if (currentState != state) { // state changed?
+            oboeResult = Result::OK;
+            break;
+        }
+
+        // Did we timeout or did user ask for non-blocking?
+        if (timeoutNanoseconds <= 0) {
+            break;
+        }
+
         if (durationNanos > timeoutNanoseconds){
             durationNanos = timeoutNanoseconds;
         }
         AudioClock::sleepForNanos(durationNanos);
         timeoutNanoseconds -= durationNanos;
-
-        state = getState();
-    }
-    if (nextState != nullptr) {
-        *nextState = state;
     }
 
-    return (state == currentState) ? Result::ErrorTimeout : Result::OK;
+    return oboeResult;
 }

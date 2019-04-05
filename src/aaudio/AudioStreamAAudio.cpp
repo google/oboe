@@ -20,6 +20,7 @@
 
 #include "aaudio/AAudioLoader.h"
 #include "aaudio/AudioStreamAAudio.h"
+#include "common/AudioClock.h"
 #include "common/OboeDebug.h"
 #include "oboe/Utilities.h"
 
@@ -370,25 +371,69 @@ ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
     }
 }
 
+
+// AAudioStream_waitForStateChange() can crash if it is waiting on a stream and that stream
+// is closed from another thread.  We do not want to lock the stream for the duration of the call.
+// So we call AAudioStream_waitForStateChange() with a timeout of zero so that it will not block.
+// Then we can do our own sleep with the lock unlocked.
 Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds) {
-    AAudioStream *stream = mAAudioStream.load();
-    if (stream != nullptr) {
+    Result oboeResult = Result::ErrorTimeout;
+    int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
+    aaudio_stream_state_t currentAAudioState = static_cast<aaudio_stream_state_t>(currentState);
 
-        aaudio_stream_state_t aaudioNextState;
-        aaudio_result_t result = mLibLoader->stream_waitForStateChange(
-                        mAAudioStream,
-                        static_cast<aaudio_stream_state_t>(currentState),
-                        &aaudioNextState,
-                        timeoutNanoseconds);
-        *nextState = static_cast<StreamState>(aaudioNextState);
-        return static_cast<Result>(result);
-    } else {
-        *nextState = StreamState::Closed;
+    aaudio_stream_state_t aaudioNextState;
+    aaudio_result_t result = AAUDIO_OK;
+    int64_t timeLeftNanos = timeoutNanoseconds;
+
+    mLock.lock();
+    while (true) {
+        // Do we still have an AAudio stream? If not then stream must have been closed.
+        AAudioStream *stream = mAAudioStream.load();
+        if (stream == nullptr) {
+            if (nextState != nullptr) {
+                *nextState = StreamState::Closed;
+            }
+            oboeResult = Result::ErrorClosed;
+            break;
+        }
+
+        // Update and query state change with no blocking.
+        result = mLibLoader->stream_waitForStateChange(
+                mAAudioStream,
+                currentAAudioState,
+                &aaudioNextState,
+                0); // timeout=0 for non-blocking
+        if (nextState != nullptr) {
+            *nextState = static_cast<StreamState>(aaudioNextState);
+        }
+        if (result != AAUDIO_OK) {
+            oboeResult = static_cast<Result>(result);
+            break;
+        }
+        if (currentAAudioState != aaudioNextState) { // state changed?
+            oboeResult = Result::OK;
+            break;
+        }
+
+        // Did we timeout or did user ask for non-blocking?
+        if (timeLeftNanos <= 0) {
+            break;
+        }
+
+        // No change yet so sleep.
+        mLock.unlock(); // Don't sleep while locked.
+        if (durationNanos > timeLeftNanos) {
+            durationNanos = timeLeftNanos; // last little bit
+        }
+        AudioClock::sleepForNanos(durationNanos);
+        timeLeftNanos -= durationNanos;
+        mLock.lock();
     }
 
-    return (currentState != *nextState) ? Result::OK : Result::ErrorTimeout;
+    mLock.unlock();
+    return oboeResult;
 }
 
 ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t requestedFrames) {
