@@ -113,6 +113,7 @@ private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
 
+    // pointer to the underlying AAudio stream, valid if open, null if closed
     std::atomic<AAudioStream *> mAAudioStream{nullptr};
 
     static AAudioLoader *mLibLoader;
