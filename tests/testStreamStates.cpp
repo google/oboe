@@ -66,7 +66,7 @@ protected:
 
         StreamState next = StreamState::Unknown;
         auto r = mStream->requestStart();
-        EXPECT_EQ(r, Result::OK);
+        EXPECT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
         r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
         EXPECT_EQ(r, Result::OK);
         EXPECT_EQ(next, StreamState::Started);
@@ -149,7 +149,6 @@ TEST_F(StreamStates, OutputStreamStateIsStartedAfterStarting){
 
     r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
     EXPECT_EQ(r, Result::OK);
-
     ASSERT_EQ(next, StreamState::Started);
 
     closeStream();

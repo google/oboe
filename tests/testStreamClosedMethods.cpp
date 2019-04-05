@@ -305,12 +305,12 @@ TEST_F(StreamClosedReturnValues, StreamStateControlsReturnClosed){
     EXPECT_EQ(mStream->requestStop(), Result::ErrorClosed);
 }
 
-TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsOK){
+TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsClosed){
 
     openAndCloseStream();
     StreamState next;
     Result r = mStream->waitForStateChange(StreamState::Open, &next, 0);
-    ASSERT_EQ(r, Result::OK) << convertToText(r);
+    ASSERT_EQ(r, Result::ErrorClosed) << convertToText(r);
 }
 
 TEST_F(StreamClosedReturnValues, SetBufferSizeInFramesReturnsClosed){
