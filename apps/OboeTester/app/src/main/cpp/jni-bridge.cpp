@@ -368,7 +368,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *en
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setCallbackReturnStop(JNIEnv *env, jclass type,
                                                                       jboolean b) {
-    ActivityContext::callbackReturnStop = b;
+    OboeStreamCallbackProxy::setCallbackReturnStop(b);
 }
 
 JNIEXPORT void JNICALL

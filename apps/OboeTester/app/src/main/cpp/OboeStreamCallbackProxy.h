@@ -32,7 +32,7 @@ public:
         setCallbackCount(0);
     }
 
-    void setCallbackReturnStop(bool b) {
+    static void setCallbackReturnStop(bool b) {
         mCallbackReturnStop = b;
     }
 
@@ -57,9 +57,9 @@ public:
     void onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result error) override;
 
 private:
-    oboe::AudioStreamCallback *mCallback = nullptr;
 
-    bool                       mCallbackReturnStop = false;
+    oboe::AudioStreamCallback *mCallback = nullptr;
+    static bool                mCallbackReturnStop;
     int64_t                    mCallbackCount = 0;
 };
 

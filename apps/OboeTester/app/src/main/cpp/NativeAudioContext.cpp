@@ -31,7 +31,6 @@ static oboe::AudioApi convertNativeApiToAudioApi(int nativeApi) {
 }
 
 bool ActivityContext::useCallback = true;
-bool ActivityContext::callbackReturnStop = false;
 int  ActivityContext::callbackSize = 0;
 
 oboe::AudioStream * ActivityContext::getOutputStream() {
