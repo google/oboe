@@ -165,7 +165,6 @@ public:
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
     static bool   useCallback;
-    static bool   callbackReturnStop;
     static int    callbackSize;
 
 

@@ -17,6 +17,8 @@
 #include "common/OboeDebug.h"
 #include "OboeStreamCallbackProxy.h"
 
+bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
+
 OboeStreamCallbackProxy::~OboeStreamCallbackProxy() {
 }
 
