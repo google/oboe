@@ -79,12 +79,15 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
     {
         std::lock_guard<std::mutex> lock(mLock);
         state = getState();
-        if (state == StreamState::Closed || state == StreamState::Disconnected) {
+        if (state == StreamState::Closed) {
             return Result::ErrorClosed;
+        } else if (state == StreamState::Disconnected) {
+            return Result::ErrorDisconnected;
         }
     }
 
     StreamState nextState = state;
+    // TODO Should this be a while()?!
     if (state == startingState && state != endingState) {
         Result result = waitForStateChange(state, &nextState, timeoutNanoseconds);
         if (result != Result::OK) {
