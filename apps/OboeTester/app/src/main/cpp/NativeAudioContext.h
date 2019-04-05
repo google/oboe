@@ -64,6 +64,8 @@
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 
+typedef struct AAudioStreamStruct         AAudioStream;
+
 /**
  * Abstract base class that corresponds to a test at the Java level.
  */

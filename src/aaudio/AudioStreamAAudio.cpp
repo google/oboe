@@ -540,7 +540,7 @@ ResultWithValue<FrameTimestamp> AudioStreamAAudio::getTimestamp(clockid_t clockI
         aaudio_result_t result = mLibLoader->stream_getTimestamp(stream, clockId,
                                                                  &frame.position,
                                                                  &frame.timestamp);
-        if (result == AAUDIO_OK){
+        if (result == static_cast<aaudio_result_t>(Result::OK)){
             return ResultWithValue<FrameTimestamp>(frame);
         } else {
             return ResultWithValue<FrameTimestamp>(static_cast<Result>(result));

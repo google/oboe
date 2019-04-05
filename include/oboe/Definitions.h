@@ -17,21 +17,12 @@
 #ifndef OBOE_DEFINITIONS_H
 #define OBOE_DEFINITIONS_H
 
+
 #include <cstdint>
 #include <type_traits>
-#include <aaudio/AAudio.h>
 
-// Ensure that all AAudio primitive data types are int32_t
-#define ASSERT_INT32(type) static_assert(std::is_same<int32_t, type>::value, \
-#type" must be int32_t")
-
-ASSERT_INT32(aaudio_stream_state_t);
-ASSERT_INT32(aaudio_direction_t);
-ASSERT_INT32(aaudio_format_t);
-ASSERT_INT32(aaudio_data_callback_result_t);
-ASSERT_INT32(aaudio_result_t);
-ASSERT_INT32(aaudio_sharing_mode_t);
-ASSERT_INT32(aaudio_performance_mode_t);
+// Oboe needs to be able to build on old NDKs so we use hard coded constants.
+// The correctness of these constants is verified in "aaudio/AAudioLoader.cpp".
 
 namespace oboe {
 
@@ -64,98 +55,98 @@ namespace oboe {
     /**
      * The state of the audio stream.
      */
-    enum class StreamState : aaudio_stream_state_t {
-        Uninitialized = AAUDIO_STREAM_STATE_UNINITIALIZED,
-        Unknown = AAUDIO_STREAM_STATE_UNKNOWN,
-        Open = AAUDIO_STREAM_STATE_OPEN,
-        Starting = AAUDIO_STREAM_STATE_STARTING,
-        Started = AAUDIO_STREAM_STATE_STARTED,
-        Pausing = AAUDIO_STREAM_STATE_PAUSING,
-        Paused = AAUDIO_STREAM_STATE_PAUSED,
-        Flushing = AAUDIO_STREAM_STATE_FLUSHING,
-        Flushed = AAUDIO_STREAM_STATE_FLUSHED,
-        Stopping = AAUDIO_STREAM_STATE_STOPPING,
-        Stopped = AAUDIO_STREAM_STATE_STOPPED,
-        Closing = AAUDIO_STREAM_STATE_CLOSING,
-        Closed = AAUDIO_STREAM_STATE_CLOSED,
-        Disconnected = AAUDIO_STREAM_STATE_DISCONNECTED,
+    enum class StreamState : int32_t { // aaudio_stream_state_t
+        Uninitialized = 0, // AAUDIO_STREAM_STATE_UNINITIALIZED,
+        Unknown = 1, // AAUDIO_STREAM_STATE_UNKNOWN,
+        Open = 2, // AAUDIO_STREAM_STATE_OPEN,
+        Starting = 3, // AAUDIO_STREAM_STATE_STARTING,
+        Started = 4, // AAUDIO_STREAM_STATE_STARTED,
+        Pausing = 5, // AAUDIO_STREAM_STATE_PAUSING,
+        Paused = 6, // AAUDIO_STREAM_STATE_PAUSED,
+        Flushing = 7, // AAUDIO_STREAM_STATE_FLUSHING,
+        Flushed = 8, // AAUDIO_STREAM_STATE_FLUSHED,
+        Stopping = 9, // AAUDIO_STREAM_STATE_STOPPING,
+        Stopped = 10, // AAUDIO_STREAM_STATE_STOPPED,
+        Closing = 11, // AAUDIO_STREAM_STATE_CLOSING,
+        Closed = 12, // AAUDIO_STREAM_STATE_CLOSED,
+        Disconnected = 13, // AAUDIO_STREAM_STATE_DISCONNECTED,
     };
 
     /**
      * The direction of the stream.
      */
-    enum class Direction : aaudio_direction_t {
+    enum class Direction : int32_t { // aaudio_direction_t
 
         /**
          * Used for playback.
          */
-        Output = AAUDIO_DIRECTION_OUTPUT,
+        Output = 0, // AAUDIO_DIRECTION_OUTPUT,
 
         /**
          * Used for recording.
          */
-        Input = AAUDIO_DIRECTION_INPUT,
+        Input = 1, // AAUDIO_DIRECTION_INPUT,
     };
 
     /**
      * The format of audio samples.
      */
-    enum class AudioFormat : aaudio_format_t {
+    enum class AudioFormat : int32_t { // aaudio_format_t
         /**
          * Invalid format.
          */
-        Invalid = AAUDIO_FORMAT_INVALID,
+        Invalid = -1, // AAUDIO_FORMAT_INVALID,
 
         /**
          * Unspecified format. Format will be decided by Oboe.
          */
-        Unspecified = AAUDIO_FORMAT_UNSPECIFIED,
+        Unspecified = 0, // AAUDIO_FORMAT_UNSPECIFIED,
 
         /**
          * Signed 16-bit integers.
          */
-        I16 = AAUDIO_FORMAT_PCM_I16,
+        I16 = 1, // AAUDIO_FORMAT_PCM_I16,
 
         /**
          * Single precision floating points.
          */
-        Float = AAUDIO_FORMAT_PCM_FLOAT,
+        Float = 2, // AAUDIO_FORMAT_PCM_FLOAT,
     };
 
     /**
      * The result of an audio callback.
      */
-    enum class DataCallbackResult : aaudio_data_callback_result_t {
+    enum class DataCallbackResult : int32_t { // aaudio_data_callback_result_t
         // Indicates to the caller that the callbacks should continue.
-        Continue = AAUDIO_CALLBACK_RESULT_CONTINUE,
+        Continue = 0, // AAUDIO_CALLBACK_RESULT_CONTINUE,
 
         // Indicates to the caller that the callbacks should stop immediately.
-        Stop = AAUDIO_CALLBACK_RESULT_STOP,
+        Stop = 1, // AAUDIO_CALLBACK_RESULT_STOP,
     };
 
     /**
      * The result of an operation. All except the `OK` result indicates that an error occurred.
      * The `Result` can be converted into a human readable string using `convertToText`.
      */
-    enum class Result : aaudio_result_t {
-        OK,
-        ErrorBase = AAUDIO_ERROR_BASE,
-        ErrorDisconnected = AAUDIO_ERROR_DISCONNECTED,
-        ErrorIllegalArgument = AAUDIO_ERROR_ILLEGAL_ARGUMENT,
-        ErrorInternal = AAUDIO_ERROR_INTERNAL,
-        ErrorInvalidState = AAUDIO_ERROR_INVALID_STATE,
-        ErrorInvalidHandle = AAUDIO_ERROR_INVALID_HANDLE,
-        ErrorUnimplemented = AAUDIO_ERROR_UNIMPLEMENTED,
-        ErrorUnavailable = AAUDIO_ERROR_UNAVAILABLE,
-        ErrorNoFreeHandles = AAUDIO_ERROR_NO_FREE_HANDLES,
-        ErrorNoMemory = AAUDIO_ERROR_NO_MEMORY,
-        ErrorNull = AAUDIO_ERROR_NULL,
-        ErrorTimeout = AAUDIO_ERROR_TIMEOUT,
-        ErrorWouldBlock = AAUDIO_ERROR_WOULD_BLOCK,
-        ErrorInvalidFormat = AAUDIO_ERROR_INVALID_FORMAT,
-        ErrorOutOfRange = AAUDIO_ERROR_OUT_OF_RANGE,
-        ErrorNoService = AAUDIO_ERROR_NO_SERVICE,
-        ErrorInvalidRate = AAUDIO_ERROR_INVALID_RATE,
+    enum class Result : int32_t { // aaudio_result_t
+        OK = 0, // AAUDIO_OK
+        ErrorBase = -900, // AAUDIO_ERROR_BASE,
+        ErrorDisconnected = -899, // AAUDIO_ERROR_DISCONNECTED,
+        ErrorIllegalArgument = -898, // AAUDIO_ERROR_ILLEGAL_ARGUMENT,
+        ErrorInternal = -896, // AAUDIO_ERROR_INTERNAL,
+        ErrorInvalidState = -895, // AAUDIO_ERROR_INVALID_STATE,
+        ErrorInvalidHandle = -892, // AAUDIO_ERROR_INVALID_HANDLE,
+        ErrorUnimplemented = -890, // AAUDIO_ERROR_UNIMPLEMENTED,
+        ErrorUnavailable = -889, // AAUDIO_ERROR_UNAVAILABLE,
+        ErrorNoFreeHandles = -888, // AAUDIO_ERROR_NO_FREE_HANDLES,
+        ErrorNoMemory = -887, // AAUDIO_ERROR_NO_MEMORY,
+        ErrorNull = -886, // AAUDIO_ERROR_NULL,
+        ErrorTimeout = -885, // AAUDIO_ERROR_TIMEOUT,
+        ErrorWouldBlock = -884, // AAUDIO_ERROR_WOULD_BLOCK,
+        ErrorInvalidFormat = -883, // AAUDIO_ERROR_INVALID_FORMAT,
+        ErrorOutOfRange = -882, // AAUDIO_ERROR_OUT_OF_RANGE,
+        ErrorNoService = -881, // AAUDIO_ERROR_NO_SERVICE,
+        ErrorInvalidRate = -880, // AAUDIO_ERROR_INVALID_RATE,
         // Reserved for future AAudio result types
         Reserved1,
         Reserved2,
@@ -173,7 +164,7 @@ namespace oboe {
     /**
      * The sharing mode of the audio stream.
      */
-    enum class SharingMode : aaudio_sharing_mode_t {
+    enum class SharingMode : int32_t { // aaudio_sharing_mode_t
 
         /**
          * This will be the only stream using a particular source or sink.
@@ -183,7 +174,7 @@ namespace oboe {
          * If you do not need the lowest possible latency then we recommend using Shared,
          * which is the default.
          */
-        Exclusive = AAUDIO_SHARING_MODE_EXCLUSIVE,
+        Exclusive = 0, // AAUDIO_SHARING_MODE_EXCLUSIVE,
 
         /**
          * Multiple applications can share the same device.
@@ -192,28 +183,28 @@ namespace oboe {
          *
          * This will have higher latency than the EXCLUSIVE mode.
          */
-        Shared = AAUDIO_SHARING_MODE_SHARED,
+        Shared = 1, // AAUDIO_SHARING_MODE_SHARED,
     };
 
     /**
      * The performance mode of the audio stream.
      */
-    enum class PerformanceMode : aaudio_performance_mode_t {
+    enum class PerformanceMode : int32_t { // aaudio_performance_mode_t
 
         /**
          * No particular performance needs. Default.
          */
-        None = AAUDIO_PERFORMANCE_MODE_NONE,
+        None = 10, // AAUDIO_PERFORMANCE_MODE_NONE,
 
         /**
          * Extending battery life is most important.
          */
-        PowerSaving = AAUDIO_PERFORMANCE_MODE_POWER_SAVING,
+        PowerSaving = 11, // AAUDIO_PERFORMANCE_MODE_POWER_SAVING,
 
         /**
          * Reducing latency is most important.
          */
-        LowLatency = AAUDIO_PERFORMANCE_MODE_LOW_LATENCY
+        LowLatency = 12, // AAUDIO_PERFORMANCE_MODE_LOW_LATENCY
     };
 
     /**
@@ -236,13 +227,6 @@ namespace oboe {
         AAudio
     };
 
-// Hard code constants so they can be compiled with versions of the NDK before P.
-#if __ANDROID_API_LEVEL__ >= __ANDROID_API_P__
-#define CONSTANT_API_P(hard_constant, soft_constant) (soft_constant)
-#else
-#define CONSTANT_API_P(hard_constant, soft_constant) (hard_constant)
-#endif
-
     /**
      * The Usage attribute expresses *why* you are playing a sound, what is this sound used for.
      * This information is used by certain platforms or routing policies
@@ -252,69 +236,67 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum class Usage : aaudio_usage_t {
+    enum class Usage : int32_t { // aaudio_usage_t
         /**
          * Use this for streaming media, music performance, video, podcasts, etcetera.
          */
-        Media = CONSTANT_API_P(1, AAUDIO_USAGE_MEDIA),
+        Media =  1, // AAUDIO_USAGE_MEDIA
 
         /**
          * Use this for voice over IP, telephony, etcetera.
          */
-        VoiceCommunication = CONSTANT_API_P(2, AAUDIO_USAGE_VOICE_COMMUNICATION),
+        VoiceCommunication = 2, // AAUDIO_USAGE_VOICE_COMMUNICATION
 
         /**
          * Use this for sounds associated with telephony such as busy tones, DTMF, etcetera.
          */
-        VoiceCommunicationSignalling = CONSTANT_API_P(3,
-                                                      AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING),
+        VoiceCommunicationSignalling = 3, // AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING
 
         /**
          * Use this to demand the users attention.
          */
-        Alarm = CONSTANT_API_P(4, AAUDIO_USAGE_ALARM),
+        Alarm = 4, // AAUDIO_USAGE_ALARM
 
         /**
          * Use this for notifying the user when a message has arrived or some
          * other background event has occured.
          */
-        Notification = CONSTANT_API_P(5, AAUDIO_USAGE_NOTIFICATION),
+        Notification = 5, // AAUDIO_USAGE_NOTIFICATION
 
         /**
          * Use this when the phone rings.
          */
-        NotificationRingtone = CONSTANT_API_P(6, AAUDIO_USAGE_NOTIFICATION_RINGTONE),
+        NotificationRingtone = 6, // AAUDIO_USAGE_NOTIFICATION_RINGTONE
 
         /**
          * Use this to attract the users attention when, for example, the battery is low.
          */
-        NotificationEvent = CONSTANT_API_P(10, AAUDIO_USAGE_NOTIFICATION_EVENT),
+        NotificationEvent = 10, // AAUDIO_USAGE_NOTIFICATION_EVENT
 
         /**
          * Use this for screen readers, etcetera.
          */
-        AssistanceAccessibility = CONSTANT_API_P(11, AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY),
+        AssistanceAccessibility = 11, // AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY
 
         /**
          * Use this for driving or navigation directions.
          */
-        AssistanceNavigationGuidance = CONSTANT_API_P(12,
-                                                      AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE),
+        AssistanceNavigationGuidance = 12, // AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE
 
         /**
          * Use this for user interface sounds, beeps, etcetera.
          */
-        AssistanceSonification = CONSTANT_API_P(13, AAUDIO_USAGE_ASSISTANCE_SONIFICATION),
+        AssistanceSonification = 13, // AAUDIO_USAGE_ASSISTANCE_SONIFICATION
 
         /**
          * Use this for game audio and sound effects.
          */
-        Game = CONSTANT_API_P(14, AAUDIO_USAGE_GAME),
+        Game = 14, // AAUDIO_USAGE_GAME
 
         /**
          * Use this for audio responses to user queries, audio instructions or help utterances.
          */
-        Assistant = CONSTANT_API_P(16, AAUDIO_USAGE_ASSISTANT),
+        Assistant = 16, // AAUDIO_USAGE_ASSISTANT
     };
 
 
@@ -330,28 +312,28 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum ContentType : aaudio_content_type_t {
+    enum ContentType : int32_t { // aaudio_content_type_t
 
         /**
          * Use this for spoken voice, audio books, etcetera.
          */
-        Speech = CONSTANT_API_P(1, AAUDIO_CONTENT_TYPE_SPEECH),
+        Speech = 1, // AAUDIO_CONTENT_TYPE_SPEECH
 
         /**
          * Use this for pre-recorded or live music.
          */
-        Music = CONSTANT_API_P(2, AAUDIO_CONTENT_TYPE_MUSIC),
+        Music = 2, // AAUDIO_CONTENT_TYPE_MUSIC
 
         /**
          * Use this for a movie or video soundtrack.
          */
-        Movie = CONSTANT_API_P(3, AAUDIO_CONTENT_TYPE_MOVIE),
+        Movie = 3, // AAUDIO_CONTENT_TYPE_MOVIE
 
         /**
          * Use this for sound is designed to accompany a user action,
          * such as a click or beep sound made when the user presses a button.
          */
-        Sonification = CONSTANT_API_P(4, AAUDIO_CONTENT_TYPE_SONIFICATION),
+        Sonification = 4, // AAUDIO_CONTENT_TYPE_SONIFICATION
     };
 
     /**
@@ -363,33 +345,33 @@ namespace oboe {
      *
      * This attribute only has an effect on Android API 28+.
      */
-    enum InputPreset : aaudio_input_preset_t {
+    enum InputPreset : int32_t { // aaudio_input_preset_t
         /**
          * Use this preset when other presets do not apply.
          */
-        Generic = CONSTANT_API_P(1, AAUDIO_INPUT_PRESET_GENERIC),
+        Generic = 1, // AAUDIO_INPUT_PRESET_GENERIC
 
         /**
          * Use this preset when recording video.
          */
-        Camcorder = CONSTANT_API_P(5, AAUDIO_INPUT_PRESET_CAMCORDER),
+        Camcorder = 5, // AAUDIO_INPUT_PRESET_CAMCORDER
 
         /**
          * Use this preset when doing speech recognition.
          */
-        VoiceRecognition = CONSTANT_API_P(6, AAUDIO_INPUT_PRESET_VOICE_RECOGNITION),
+        VoiceRecognition = 6, // AAUDIO_INPUT_PRESET_VOICE_RECOGNITION
 
         /**
          * Use this preset when doing telephony or voice messaging.
          */
-        VoiceCommunication = CONSTANT_API_P(7, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION),
+        VoiceCommunication = 7, // AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION
 
         /**
          * Use this preset to obtain an input with no effects.
          * Note that this input will not have automatic gain control
          * so the recorded volume may be very low.
          */
-        Unprocessed = CONSTANT_API_P(9, AAUDIO_INPUT_PRESET_UNPROCESSED),
+        Unprocessed = 9, // AAUDIO_INPUT_PRESET_UNPROCESSED
     };
 
     /**
@@ -403,7 +385,7 @@ namespace oboe {
          * Effects cannot be used with this stream.
          * Default.
          */
-         None = CONSTANT_API_P(-1, AAUDIO_SESSION_ID_NONE),
+         None = -1, // AAUDIO_SESSION_ID_NONE
 
         /**
          * Allocate a session ID that can be used to attach and control
@@ -412,7 +394,7 @@ namespace oboe {
          *
          * Note that this matches the value of AudioManager.AUDIO_SESSION_ID_GENERATE.
          */
-         Allocate = CONSTANT_API_P(0, AAUDIO_SESSION_ID_ALLOCATE),
+         Allocate = 0, // AAUDIO_SESSION_ID_ALLOCATE
     };
 
     /**
@@ -441,8 +423,6 @@ namespace oboe {
        */
       Stereo = 2,
     };
-
-#undef CONSTANT_API_P
 
     /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
@@ -482,7 +462,6 @@ namespace oboe {
         int64_t position; // in frames
         int64_t timestamp; // in nanoseconds
     };
-
 
 } // namespace oboe
 
