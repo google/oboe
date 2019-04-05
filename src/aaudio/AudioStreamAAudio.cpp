@@ -405,13 +405,21 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                 currentAAudioState,
                 &aaudioNextState,
                 0); // timeout=0 for non-blocking
+
+        // Workaround state problems in AAudio
+        // TODO Which versions does this occur in? Verify fixed in Q.
+        if (aaudioNextState == static_cast<aaudio_stream_state_t >(StreamState::Starting)) {
+            aaudioNextState = static_cast<aaudio_stream_state_t >(StreamState::Started);
+        }
         if (nextState != nullptr) {
             *nextState = static_cast<StreamState>(aaudioNextState);
         }
-        if (result != AAUDIO_OK) {
+        // AAudio will return AAUDIO_ERROR_TIMEOUT if timeout=0 and the state does not change.
+        if (result != AAUDIO_OK && result != AAUDIO_ERROR_TIMEOUT) {
             oboeResult = static_cast<Result>(result);
             break;
         }
+
         if (currentAAudioState != aaudioNextState) { // state changed?
             oboeResult = Result::OK;
             break;
@@ -460,7 +468,11 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
 StreamState AudioStreamAAudio::getState() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        return static_cast<StreamState>(mLibLoader->stream_getState(stream));
+        aaudio_stream_state_t aaudioState = mLibLoader->stream_getState(stream);
+        if (aaudioState == AAUDIO_STREAM_STATE_STARTING) {
+            aaudioState = AAUDIO_STREAM_STATE_STARTED;
+        }
+        return static_cast<StreamState>(aaudioState);
     } else {
         return StreamState::Closed;
     }
