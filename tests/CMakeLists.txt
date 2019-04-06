@@ -23,6 +23,7 @@ add_executable(testOboe
         testUtilities.cpp
         testStreamClosedMethods.cpp
         testStreamStates.cpp
+        testStreamWaitState.cpp
 		testStreamOpen.cpp
         testXRunBehaviour.cpp
         )

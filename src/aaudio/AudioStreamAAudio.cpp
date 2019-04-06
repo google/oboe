@@ -380,7 +380,7 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
                                         StreamState *nextState,
                                         int64_t timeoutNanoseconds) {
     Result oboeResult = Result::ErrorTimeout;
-    int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
+    int64_t sleepTimeNanos = 20 * kNanosPerMillisecond; // arbitrary
     aaudio_stream_state_t currentAAudioState = static_cast<aaudio_stream_state_t>(currentState);
 
     aaudio_stream_state_t aaudioNextState;
@@ -432,11 +432,11 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
 
         // No change yet so sleep.
         mLock.unlock(); // Don't sleep while locked.
-        if (durationNanos > timeLeftNanos) {
-            durationNanos = timeLeftNanos; // last little bit
+        if (sleepTimeNanos > timeLeftNanos) {
+            sleepTimeNanos = timeLeftNanos; // last little bit
         }
-        AudioClock::sleepForNanos(durationNanos);
-        timeLeftNanos -= durationNanos;
+        AudioClock::sleepForNanos(sleepTimeNanos);
+        timeLeftNanos -= sleepTimeNanos;
         mLock.lock();
     }
 

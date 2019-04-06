@@ -311,8 +311,9 @@ int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
 Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
                                                      StreamState *nextState,
                                                      int64_t timeoutNanoseconds) {
-    Result oboeResult = (timeoutNanoseconds <= 0) ? Result::OK : Result::ErrorTimeout;
-    int64_t durationNanos = 20 * kNanosPerMillisecond; // arbitrary
+    Result oboeResult = Result::ErrorTimeout;
+    int64_t sleepTimeNanos = 20 * kNanosPerMillisecond; // arbitrary
+    int64_t timeLeftNanos = timeoutNanoseconds;
 
     while (true) {
         const StreamState state = getState(); // this does not require a lock
@@ -329,11 +330,11 @@ Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
             break;
         }
 
-        if (durationNanos > timeoutNanoseconds){
-            durationNanos = timeoutNanoseconds;
+        if (sleepTimeNanos > timeLeftNanos){
+            sleepTimeNanos = timeLeftNanos;
         }
-        AudioClock::sleepForNanos(durationNanos);
-        timeoutNanoseconds -= durationNanos;
+        AudioClock::sleepForNanos(sleepTimeNanos);
+        timeLeftNanos -= sleepTimeNanos;
     }
 
     return oboeResult;
