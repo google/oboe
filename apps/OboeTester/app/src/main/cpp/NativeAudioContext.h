@@ -101,7 +101,9 @@ public:
     virtual void close(int32_t streamIndex);
 
     void printScheduler() {
+#if OBOE_ENABLE_LOGGING
         int scheduler = audioStreamGateway.getScheduler();
+#endif
         LOGI("scheduler = 0x%08x, SCHED_FIFO = 0x%08X\n", scheduler, SCHED_FIFO);
     }
 
