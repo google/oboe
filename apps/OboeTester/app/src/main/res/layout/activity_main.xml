@@ -59,11 +59,18 @@
         android:text="Round Trip Latency" />
 
     <Button
-        android:id="@+id/button_glitches"
+        android:id="@+id/button_manual_glitches"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="onLaunchGlitchTest"
-        android:text="Test Glitches" />
+        android:onClick="onLaunchManualGlitchTest"
+        android:text="Manual Glitches" />
+
+    <Button
+        android:id="@+id/button_auto_glitches"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchAutoGlitchTest"
+        android:text="Auto Glitches" />
 
     <LinearLayout
         android:layout_width="match_parent"

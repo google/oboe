@@ -20,13 +20,14 @@ import java.io.IOException;
 
 class AudioStreamTester {
     protected AudioStreamBase mCurrentAudioStream;
+    StreamConfiguration  requestedConfiguration = new StreamConfiguration();
+    StreamConfiguration  actualConfiguration = new StreamConfiguration();
 
     AudioStreamBase getCurrentAudioStream() {
         return mCurrentAudioStream;
     }
 
-    public void open(StreamConfiguration requestedConfiguration,
-                    StreamConfiguration actualConfiguration) throws IOException {
+    public void open() throws IOException {
         mCurrentAudioStream.open(requestedConfiguration, actualConfiguration,
                 -1);
     }

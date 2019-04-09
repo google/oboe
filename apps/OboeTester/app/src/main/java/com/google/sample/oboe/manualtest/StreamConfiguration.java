@@ -26,7 +26,7 @@ package com.google.sample.oboe.manualtest;
 public class StreamConfiguration {
     public static final int UNSPECIFIED = 0;
 
-    // These must match order in Spinner and in native code.
+    // These must match order in Spinner and in native code and in AAudio.h
     public static final int NATIVE_API_UNSPECIFIED = 0;
     public static final int NATIVE_API_OPENSLES = 1;
     public static final int NATIVE_API_AAUDIO = 2;
@@ -111,9 +111,9 @@ public class StreamConfiguration {
             case PERFORMANCE_MODE_NONE:
                 return "NONE";
             case PERFORMANCE_MODE_POWER_SAVING:
-                return "POWER_SAVING";
+                return "PWRSAV";
             case PERFORMANCE_MODE_LOW_LATENCY:
-                return "LOW_LATENCY";
+                return "LOWLAT";
             default:
                 return "INVALID";
         }

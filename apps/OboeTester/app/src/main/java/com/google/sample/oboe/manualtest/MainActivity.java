@@ -125,9 +125,15 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    public void onLaunchGlitchTest(View view) {
+    public void onLaunchManualGlitchTest(View view) {
         updateCallbackSize();
-        Intent intent = new Intent(this, GlitchActivity.class);
+        Intent intent = new Intent(this, ManualGlitchActivity.class);
+        startActivity(intent);
+    }
+
+    public void onLaunchAutoGlitchTest(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, AutoGlitchActivity.class);
         startActivity(intent);
     }
 
