@@ -647,8 +647,10 @@ public:
                                     getSampleRate(),
                                     &mLatencyReport);
 
+#if OBOE_ENABLE_LOGGING
             double latencyMillis = kMillisPerSecond * (double) mLatencyReport.latencyInFrames
                                    / getSampleRate();
+#endif
             LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8.2f",
                    mLatencyReport.latencyInFrames);
             LOGD(LOOPBACK_RESULT_TAG "latency.msec           = %8.2f",
