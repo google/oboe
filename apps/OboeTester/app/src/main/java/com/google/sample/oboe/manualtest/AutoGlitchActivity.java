@@ -9,13 +9,15 @@ import java.util.Date;
 
 public class AutoGlitchActivity extends GlitchActivity implements Runnable {
 
-    private static final int SETUP_TIME_SECONDS = 3;
+    private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
+    private static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
+    private static final int DEFAULT_GAP_MILLIS = 400; // Run time for each test.
 
     private Thread mAutoThread;
     private TextView mAutoTextView;
     private volatile boolean mThreadEnabled = false;
-    private int mDurationSeconds = 6;
-    private int mGapMillis = 400;
+    private int mDurationSeconds = DEFAULT_DURATION_SECONDS;
+    private int mGapMillis = DEFAULT_GAP_MILLIS;
 
     @Override
     protected void inflateActivity() {
