@@ -28,5 +28,14 @@ If that doesn't fix it try the following:
 
 We have had several reports of this happening and are keen to understand the root cause. If this happens to you please file an issue with your Android Studio version and we'll investigate further. 
 
+## I requested a stream with `PerformanceMode::LowLatency`, but didn't get it. Why not?
+Usually if you leave the `AudioStreamBuilder` default values and only call `builder.setPerformanceMode(PerformanceMode::LowLatency)` you will get a `LowLatency` stream. The most common reasons for not obtaining a `LowLatency` stream are: 
+
+- You are not using a callback
+- You requested a sample rate which does not match the audio device's native sample rate. This means that the data you supply into that stream will need to be resampled. The resampler adds latency and therefore providing a `LowLatency` stream is not possible
+- The audio device does not support `LowLatency` streams
+- You requested a channel count which is not supported natively by the audio device. On most devices and Android API levels it is possible to obtain a `LowLatency` stream for both mono and stereo output, however, there are a few exceptions. 
+
+
 ## My question isn't listed, where can I ask it?
 Please ask questions on [Stack Overflow](https://stackoverflow.com/questions/ask) with the [Oboe tag](https://stackoverflow.com/tags/oboe). 
