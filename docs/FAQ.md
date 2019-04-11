@@ -29,12 +29,12 @@ If that doesn't fix it try the following:
 We have had several reports of this happening and are keen to understand the root cause. If this happens to you please file an issue with your Android Studio version and we'll investigate further. 
 
 ## I requested a stream with `PerformanceMode::LowLatency`, but didn't get it. Why not?
-Usually if you leave the `AudioStreamBuilder` default values and only call `builder.setPerformanceMode(PerformanceMode::LowLatency)` you will get a `LowLatency` stream. The most common reasons for not obtaining a `LowLatency` stream are: 
+Usually if you call `builder.setPerformanceMode(PerformanceMode::LowLatency)` and don't specify other stream properties you will get a `LowLatency` stream. The most common reasons for not receiving one are: 
 
-- You are not using a callback
-- You requested a sample rate which does not match the audio device's native sample rate. This means that the data you supply into that stream will need to be resampled. The resampler adds latency and therefore providing a `LowLatency` stream is not possible
-- The audio device does not support `LowLatency` streams
-- You requested a channel count which is not supported natively by the audio device. On most devices and Android API levels it is possible to obtain a `LowLatency` stream for both mono and stereo output, however, there are a few exceptions. 
+- Playback streams only: you are not using a callback.
+- You requested a sample rate which does not match the audio device's native sample rate. This means that the data you supply into or read from that stream will need to be resampled. The resampler adds latency and therefore providing a `LowLatency` stream is not possible. On API 26 and below you must specify default values for buffer size and sample rate [as detailed here](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency).
+- The audio device does not support `LowLatency` streams. 
+- You requested a channel count which is not supported natively by the audio device. On most devices and Android API levels it is possible to obtain a `LowLatency` stream for both mono and stereo, however, there are a few exceptions, some of which are listed [here](https://github.com/google/oboe/blob/master/docs/AndroidAudioHistory.md). 
 
 
 ## My question isn't listed, where can I ask it?
