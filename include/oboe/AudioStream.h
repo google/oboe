@@ -19,6 +19,8 @@
 
 #include <cstdint>
 #include <ctime>
+#include <atomic>
+#include <mutex>
 #include "oboe/Definitions.h"
 #include "oboe/ResultWithValue.h"
 #include "oboe/AudioStreamBuilder.h"
