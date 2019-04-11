@@ -71,6 +71,12 @@
         <item>9</item>
     </string-array>
 
+    <string-array name="glitch_times">
+        <item>10</item>
+        <item>70</item>
+        <item>310</item>
+    </string-array>
+
     <string name="performance_prompt">Perf:</string>
     <string-array name="performance_modes">
         <item>NONE</item>
@@ -102,5 +108,9 @@
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
+    <string name="seconds_per_test">seconds per test</string>
+    <string name="duration">Duration:</string>
+    <string name="auto_glitch_instructions">Use loopback adapter or speakers.</string>
+    <string name="log_of_glitch_tests">Log of Glitch Tests</string>
 
 </resources>

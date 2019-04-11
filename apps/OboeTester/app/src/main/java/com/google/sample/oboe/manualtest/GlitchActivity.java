@@ -19,7 +19,6 @@ package com.google.sample.oboe.manualtest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,7 +30,6 @@ public class GlitchActivity extends AnalyzerActivity {
     TextView mAnalyzerTextView;
     Button mStartButton;
     Button mStopButton;
-//    private Object mLock = new Object();
 
     // These must match the values in LatencyAnalyzer.h
     final static int STATE_IDLE = 0;
@@ -64,13 +62,13 @@ public class GlitchActivity extends AnalyzerActivity {
         }
     }
 
-    // Periodically query the status of the stream.
+    // Periodically query for glitches from the native detector.
     protected class GlitchSniffer {
-        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 100;
+        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 50;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
 
-        private long mTimeStarted;
-        private long mTimeSinceLock;
+        private long mTimeAtStart;
+        private long mTimeAtLock;
         private double mMaxSecondsWithoutGlitches;
         private int mLastGlitchCount;
         private int mLastResetCount;
@@ -79,9 +77,7 @@ public class GlitchActivity extends AnalyzerActivity {
         private double mSignalToNoiseDB;
         private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
         private volatile boolean mEnabled = true;
-        private int mCounter = 0;
 
-        // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
@@ -92,16 +88,16 @@ public class GlitchActivity extends AnalyzerActivity {
 
                 boolean locked = (state == STATE_LOCKED);
                 if (locked && (mPreviousState != STATE_LOCKED)) {
-                    mTimeSinceLock = System.currentTimeMillis();
+                    mTimeAtLock = System.currentTimeMillis();
                 }
                 mPreviousState = state;
                 mGotLock = mGotLock || locked;
                 if (glitchCount != mLastGlitchCount) {
-                    mTimeSinceLock = System.currentTimeMillis();
+                    mTimeAtLock = System.currentTimeMillis();
                     mLastGlitchCount = glitchCount;
                 }
                 if (resetCount > mLastResetCount) {
-                    mTimeSinceLock = System.currentTimeMillis();
+                    mTimeAtLock = System.currentTimeMillis();
                     mLastResetCount = resetCount;
                 }
 
@@ -116,9 +112,9 @@ public class GlitchActivity extends AnalyzerActivity {
 
         private void updateStatusText(boolean locked) {
             long now = System.currentTimeMillis();
-            double totalSeconds = (now - mTimeStarted) / 1000.0;
-            double goodSeconds = (locked && (mTimeSinceLock > 0))
-                    ? ((now - mTimeSinceLock) / 1000.0)
+            double totalSeconds = (now - mTimeAtStart) / 1000.0;
+            double goodSeconds = (locked && (mTimeAtLock > 0))
+                    ? ((now - mTimeAtLock) / 1000.0)
                     : 0.0;
             if (goodSeconds > mMaxSecondsWithoutGlitches) {
                 mMaxSecondsWithoutGlitches = goodSeconds;
@@ -143,8 +139,8 @@ public class GlitchActivity extends AnalyzerActivity {
         }
 
         private void startSniffer() {
-            mTimeStarted = System.currentTimeMillis();
-            mTimeSinceLock = 0;
+            mTimeAtStart = System.currentTimeMillis();
+            mTimeAtLock = 0;
             mLastGlitchCount = 0;
             mMaxSecondsWithoutGlitches = 0.0;
             mGotLock = false;
@@ -192,7 +188,6 @@ public class GlitchActivity extends AnalyzerActivity {
         mStopButton.setEnabled(false);
         mAnalyzerTextView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
-
         hideSettingsViews();
     }
 
@@ -218,15 +213,14 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public void startAudioTest() {
-            openAudio();
-            startAudio();
-            mGlitchSniffer.startSniffer();
+        openAudio();
+        startAudio();
+        mGlitchSniffer.startSniffer();
     }
 
     public void onCancel(View view) {
         stopAudioTest();
-        mStartButton.setEnabled(true);
-        mStopButton.setEnabled(false);
+        onTestFinished();
     }
 
     // Called on UI thread
