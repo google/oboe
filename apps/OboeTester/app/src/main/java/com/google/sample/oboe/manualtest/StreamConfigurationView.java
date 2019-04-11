@@ -40,8 +40,8 @@ import com.google.sample.oboe.manualtest.R;
 
 public class StreamConfigurationView extends LinearLayout {
 
-    private StreamConfiguration  mRequestedConfiguration = new StreamConfiguration();
-    private StreamConfiguration  mActualConfiguration = new StreamConfiguration();
+    private StreamConfiguration  mRequestedConfiguration;
+    private StreamConfiguration  mActualConfiguration;
 
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
@@ -325,11 +325,18 @@ public class StreamConfigurationView extends LinearLayout {
         mStreamStatusView.setText(msg);
     }
 
-    public StreamConfiguration getRequestedConfiguration() {
+    protected StreamConfiguration getRequestedConfiguration() {
         return mRequestedConfiguration;
     }
+    public void setRequestedConfiguration(StreamConfiguration configuration) {
+        mRequestedConfiguration = configuration;
+    }
 
-    public StreamConfiguration getActualConfiguration() {
+    protected StreamConfiguration getActualConfiguration() {
         return mActualConfiguration;
     }
+    public void setActualConfiguration(StreamConfiguration configuration) {
+        mActualConfiguration = configuration;
+    }
+
 }

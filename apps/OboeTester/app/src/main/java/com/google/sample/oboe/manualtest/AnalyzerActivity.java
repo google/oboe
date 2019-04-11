@@ -64,19 +64,25 @@ public class AnalyzerActivity extends TestInputActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
         mAudioOutTester = addAudioOutputTester();
-        mBufferSizeView.setAudioOutTester(mAudioOutTester);
+        mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
+        if (mBufferSizeView != null) {
+            mBufferSizeView.setAudioOutTester(mAudioOutTester);
+        }
     }
 
     public void startAudio() {
-        mBufferSizeView.updateBufferSize();
-        mBufferSizeView.setEnabled(false);
+        if (mBufferSizeView != null) {
+            mBufferSizeView.updateBufferSize();
+            mBufferSizeView.setEnabled(false);
+        }
         super.startAudio();
     }
 
     public void stopAudio() {
-        mBufferSizeView.setEnabled(true);
+        if (mBufferSizeView != null) {
+            mBufferSizeView.setEnabled(true);
+        }
         super.stopAudio();
     }
 

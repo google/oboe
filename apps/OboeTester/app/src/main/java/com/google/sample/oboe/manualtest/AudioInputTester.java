@@ -26,6 +26,7 @@ class AudioInputTester extends AudioStreamTester{
         Log.i(TapToToneActivity.TAG, "create OboeAudioStream ---------");
 
         mCurrentAudioStream = new OboeAudioInputStream();
+        requestedConfiguration.setDirection(StreamConfiguration.DIRECTION_INPUT);
     }
 
     public static synchronized AudioInputTester getInstance() {

@@ -78,7 +78,7 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
-    // Periodically query the status of the stream.
+    // Periodically query the status of the streams.
     protected class MyStreamSniffer {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
@@ -90,13 +90,17 @@ abstract class TestAudioActivity extends Activity {
             @Override
             public void run() {
                 boolean streamClosed = false;
+                boolean gotViews = false;
                 for (StreamContext streamContext : mStreamContexts) {
-                    // Handler runs this on the main UI thread.
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
-                    int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
-                    final String msg = status.dump(framesPerBurst);
-                    streamContext.configurationView.setStatusText(msg);
-                    updateStreamDisplay();
+                    if (streamContext.configurationView != null) {
+                        // Handler runs this on the main UI thread.
+                        int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
+                        final String msg = status.dump(framesPerBurst);
+                        streamContext.configurationView.setStatusText(msg);
+                        updateStreamDisplay();
+                        gotViews = true;
+                    }
 
                     streamClosed = streamClosed || (status.state >= 12);
                 }
@@ -105,7 +109,9 @@ abstract class TestAudioActivity extends Activity {
                     onStreamClosed();
                 } else {
                     // Repeat this runnable code block again.
-                    mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                    if (gotViews) {
+                        mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                    }
                 }
             }
         };
@@ -142,7 +148,9 @@ abstract class TestAudioActivity extends Activity {
 
     public void hideSettingsViews() {
         for (StreamContext streamContext : mStreamContexts) {
-            streamContext.configurationView.hideSettingsView();
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.hideSettingsView();
+            }
         }
     }
 
@@ -177,43 +185,67 @@ abstract class TestAudioActivity extends Activity {
 
     private void setConfigViewsEnabled(boolean b) {
         for (StreamContext streamContext : mStreamContexts) {
-            streamContext.configurationView.setChildrenEnabled(b);
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.setChildrenEnabled(b);
+            }
         }
     }
 
     abstract boolean isOutput();
 
-    public AudioOutputTester addAudioOutputTester() {
+    public StreamContext addOutputStreamContext() {
         StreamContext streamContext = new StreamContext();
-        streamContext.configurationView =(StreamConfigurationView)
+        streamContext.tester = AudioOutputTester.getInstance();
+        streamContext.configurationView = (StreamConfigurationView)
                 findViewById(R.id.outputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView =(StreamConfigurationView)
+            streamContext.configurationView = (StreamConfigurationView)
                     findViewById(R.id.streamConfiguration);
         }
-        streamContext.configurationView.setOutput(true);
-        streamContext.tester = AudioOutputTester.getInstance();
+        if (streamContext.configurationView != null) {
+            streamContext.configurationView.setOutput(true);
+            streamContext.configurationView.setRequestedConfiguration(streamContext.tester.requestedConfiguration);
+            streamContext.configurationView.setActualConfiguration(streamContext.tester.actualConfiguration);
+        }
         mStreamContexts.add(streamContext);
+        return streamContext;
+    }
+
+
+    public AudioOutputTester addAudioOutputTester() {
+        StreamContext streamContext = addOutputStreamContext();
         return (AudioOutputTester) streamContext.tester;
     }
 
-    public AudioInputTester addAudioInputTester() {
+    public StreamContext addInputStreamContext() {
         StreamContext streamContext = new StreamContext();
-        streamContext.configurationView =(StreamConfigurationView)
+        streamContext.tester = AudioInputTester.getInstance();
+        streamContext.configurationView = (StreamConfigurationView)
                 findViewById(R.id.inputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView =(StreamConfigurationView)
+            streamContext.configurationView = (StreamConfigurationView)
                     findViewById(R.id.streamConfiguration);
         }
-        streamContext.configurationView.setOutput(false);
+        if (streamContext.configurationView != null) {
+            streamContext.configurationView.setOutput(false);
+            streamContext.configurationView.setRequestedConfiguration(streamContext.tester.requestedConfiguration);
+            streamContext.configurationView.setActualConfiguration(streamContext.tester.actualConfiguration);
+        }
         streamContext.tester = AudioInputTester.getInstance();
         mStreamContexts.add(streamContext);
+        return streamContext;
+    }
+
+    public AudioInputTester addAudioInputTester() {
+        StreamContext streamContext = addInputStreamContext();
         return (AudioInputTester) streamContext.tester;
     }
 
     void updateStreamConfigurationViews() {
         for (StreamContext streamContext : mStreamContexts) {
-            streamContext.configurationView.updateDisplay();
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.updateDisplay();
+            }
         }
     }
 
@@ -252,8 +284,14 @@ abstract class TestAudioActivity extends Activity {
 
     abstract public void setupEffects(int sessionId);
 
-    protected void showToast(String message) {
-        Toast.makeText(this, "Error: " + message, Toast.LENGTH_SHORT).show();
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(TestAudioActivity.this,
+                        "Error: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void openAudio(View view) {
@@ -305,17 +343,20 @@ abstract class TestAudioActivity extends Activity {
     }
 
     private void openStreamContext(StreamContext streamContext) throws IOException {
-        StreamConfigurationView configView = streamContext.configurationView;
-        StreamConfiguration requestedConfig = configView.getRequestedConfiguration();
+        StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
+        StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
+
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
-        streamContext.tester.open(requestedConfig, configView.getActualConfiguration());
-        mSampleRate = configView.getActualConfiguration().getSampleRate();
+        streamContext.tester.open();
+        mSampleRate = actualConfig.getSampleRate();
         mState = STATE_OPEN;
-        int sessionId = configView.getActualConfiguration().getSessionId();
+        int sessionId = actualConfig.getSessionId();
         if (sessionId > 0) {
             setupEffects(sessionId);
         }
-        configView.updateDisplay();
+        if (streamContext.configurationView != null) {
+            streamContext.configurationView.updateDisplay();
+        }
     }
 
     // Native methods
@@ -331,7 +372,9 @@ abstract class TestAudioActivity extends Activity {
         } else {
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
-                configView.updateDisplay();
+                if (configView != null) {
+                    configView.updateDisplay();
+                }
             }
             mState = STATE_STARTED;
             updateEnabledWidgets();

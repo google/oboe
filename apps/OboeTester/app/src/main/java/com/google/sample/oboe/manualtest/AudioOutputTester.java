@@ -38,6 +38,7 @@ public class AudioOutputTester extends AudioStreamTester {
         mCurrentAudioStream = mOboeAudioOutputStream;
         setToneType(OboeAudioOutputStream.TONE_TYPE_SINE);
         setEnabled(false);
+        requestedConfiguration.setDirection(StreamConfiguration.DIRECTION_OUTPUT);
     }
 
     public void setToneType(int index) {
