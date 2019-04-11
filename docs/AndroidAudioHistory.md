@@ -12,11 +12,13 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 - Oboe uses AAudio by default.
 - AAudio MMAP data path enabled on Pixel devices. PerformanceMode::Exclusive supported.
 - Fixed: [AAudio] RefBase issue
+- Fixed: Requesting a stereo recording stream can result in sub-optimal latency. 
 
 ### 8.0 Oreo - API 26 (August 21, 2017)
 - [AAudio API introduced](https://developer.android.com/ndk/guides/audio/aaudio/aaudio)
 - Bug: RefBase issue causes crash after stream closed. This why AAudio is not recommended for 8.0. Oboe will use OpenSL ES for 8.0 and earlier.
   https://github.com/google/oboe/issues/40
+- Bug: Requesting a stereo recording stream can result in sub-optimal latency. [Details](https://issuetracker.google.com/issues/68666622)
 
 ### 7.1 Nougat MR1 - API 25
 - OpenSL adds supports for setting and querying of PerformanceMode.
