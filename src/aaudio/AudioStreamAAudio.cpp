@@ -28,6 +28,12 @@
 #include <sys/system_properties.h>
 #endif
 
+#ifndef OBOE_FIX_FORCE_STARTING_TO_STARTED
+// Workaround state problems in AAudio
+// TODO Which versions does this occur in? Verify fixed in Q.
+#define OBOE_FIX_FORCE_STARTING_TO_STARTED 1
+#endif // OBOE_FIX_FORCE_STARTING_TO_STARTED
+
 using namespace oboe;
 AAudioLoader *AudioStreamAAudio::mLibLoader = nullptr;
 
@@ -383,7 +389,6 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
     int64_t sleepTimeNanos = 20 * kNanosPerMillisecond; // arbitrary
     aaudio_stream_state_t currentAAudioState = static_cast<aaudio_stream_state_t>(currentState);
 
-    aaudio_stream_state_t aaudioNextState;
     aaudio_result_t result = AAUDIO_OK;
     int64_t timeLeftNanos = timeoutNanoseconds;
 
@@ -400,26 +405,25 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
         }
 
         // Update and query state change with no blocking.
+        aaudio_stream_state_t aaudioNextState;
         result = mLibLoader->stream_waitForStateChange(
                 mAAudioStream,
                 currentAAudioState,
                 &aaudioNextState,
                 0); // timeout=0 for non-blocking
-
-        // Workaround state problems in AAudio
-        // TODO Which versions does this occur in? Verify fixed in Q.
-        if (aaudioNextState == static_cast<aaudio_stream_state_t >(StreamState::Starting)) {
-            aaudioNextState = static_cast<aaudio_stream_state_t >(StreamState::Started);
-        }
-        if (nextState != nullptr) {
-            *nextState = static_cast<StreamState>(aaudioNextState);
-        }
         // AAudio will return AAUDIO_ERROR_TIMEOUT if timeout=0 and the state does not change.
         if (result != AAUDIO_OK && result != AAUDIO_ERROR_TIMEOUT) {
             oboeResult = static_cast<Result>(result);
             break;
         }
-
+#if OBOE_FIX_FORCE_STARTING_TO_STARTED
+        if (aaudioNextState == static_cast<aaudio_stream_state_t >(StreamState::Starting)) {
+            aaudioNextState = static_cast<aaudio_stream_state_t >(StreamState::Started);
+        }
+#endif // OBOE_FIX_FORCE_STARTING_TO_STARTED
+        if (nextState != nullptr) {
+            *nextState = static_cast<StreamState>(aaudioNextState);
+        }
         if (currentAAudioState != aaudioNextState) { // state changed?
             oboeResult = Result::OK;
             break;
@@ -469,9 +473,11 @@ StreamState AudioStreamAAudio::getState() {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         aaudio_stream_state_t aaudioState = mLibLoader->stream_getState(stream);
+#if OBOE_FIX_FORCE_STARTING_TO_STARTED
         if (aaudioState == AAUDIO_STREAM_STATE_STARTING) {
             aaudioState = AAUDIO_STREAM_STATE_STARTED;
         }
+#endif // OBOE_FIX_FORCE_STARTING_TO_STARTED
         return static_cast<StreamState>(aaudioState);
     } else {
         return StreamState::Closed;
