@@ -30,6 +30,14 @@
             android:layout_height="wrap_content"
             android:onClick="onStopAudioTest"
             android:text="@string/stopAudio" />
+
+        <Button
+            android:id="@+id/button_share"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onShareResult"
+            android:text="@string/share" />
     </LinearLayout>
 
     <TextView

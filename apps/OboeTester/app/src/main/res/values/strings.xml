@@ -101,5 +101,6 @@
     <string name="title_activity_glitches">Test Glitches</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
+    <string name="share">Share</string>
 
 </resources>
