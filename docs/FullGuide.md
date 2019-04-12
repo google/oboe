@@ -252,12 +252,14 @@ An audio stream can become disconnected at any time if one of these events happe
 When a stream is disconnected, it has the state "Disconnected" and calls to `write()` or other functions will return `Result::ErrorDisconnected`.  When a stream is disconnected, all you can do is close it.
 
 If you need to be informed when an audio device is disconnected, write a class
-which extends `AudioStreamCallback` and implements one of the following methods: 
+which extends `AudioStreamCallback` and then register your class using `builder.setCallback(yourCallbackClass)`.
+If you register a callback, then it will automatically close the stream in a separate thread.
+Note that registering this callback will enable callbacks for both data and errors. So `onAudioReady()` will be called. See the "high priority callback" section below.
 
-* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns).
+Your callback can implement the following methods: 
+
+* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns). You can also inform any other threads that may be calling the stream to stop doing so.
 * `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be referenced. 
-
-Register your class using `builder.setCallback(yourCallbackClass)`.
 
 The `onError*()` methods will be called in a new thread created by Oboe just for this callback. So you can safely open a new stream in the `onErrorAfterClose()` method. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst).
 
