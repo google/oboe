@@ -32,10 +32,10 @@ We have had several reports of this happening and are keen to understand the roo
 Usually if you call `builder.setPerformanceMode(PerformanceMode::LowLatency)` and don't specify other stream properties you will get a `LowLatency` stream. The most common reasons for not receiving one are: 
 
 - Playback streams only: you are not using a callback.
-- You requested a sample rate which does not match the audio device's native sample rate. This means that the data you supply into or read from that stream will need to be resampled. The resampler adds latency and therefore providing a `LowLatency` stream is not possible. On API 26 and below you must specify default values for buffer size and sample rate [as detailed here](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency).
+- You requested a sample rate which does not match the audio device's native sample rate. For playback streams, this means the audio data you write into the stream must be resampled before it's sent to the audio device. For recording streams, the  audio data must be resampled before you can read it. In both cases the resampling process (performed by the Android audio framework) adds latency and therefore providing a `LowLatency` stream is not possible. To avoid the resampler on API 26 and below you must specify a default value for the sample rate [as detailed here](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency).
 - The audio device does not support `LowLatency` streams. 
 - You requested a channel count which is not supported natively by the audio device. On most devices and Android API levels it is possible to obtain a `LowLatency` stream for both mono and stereo, however, there are a few exceptions, some of which are listed [here](https://github.com/google/oboe/blob/master/docs/AndroidAudioHistory.md). 
-
+- The maximum number of `LowLatency` streams has been reached. This could be by your app, or by other apps. This is often caused by opening multiple playback streams for different "tracks". To avoid this open a single audio stream and perform your own mixing in the app. 
 
 ## My question isn't listed, where can I ask it?
 Please ask questions on [Stack Overflow](https://stackoverflow.com/questions/ask) with the [Oboe tag](https://stackoverflow.com/tags/oboe). 
