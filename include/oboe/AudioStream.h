@@ -17,9 +17,9 @@
 #ifndef OBOE_STREAM_H_
 #define OBOE_STREAM_H_
 
+#include <atomic>
 #include <cstdint>
 #include <ctime>
-#include <atomic>
 #include <mutex>
 #include "oboe/Definitions.h"
 #include "oboe/ResultWithValue.h"
