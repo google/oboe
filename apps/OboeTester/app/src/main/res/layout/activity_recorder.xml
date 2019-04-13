@@ -21,14 +21,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
         <Button
             android:id="@+id/button_start_recording"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onStartRecording"
-            android:text="@string/recordAudio" />
+            android:text="@string/recordAudio"
+            />
 
         <Button
             android:id="@+id/button_stop_record_play"
@@ -36,7 +36,8 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onStopRecordPlay"
-            android:text="@string/stopAudio" />
+            android:text="@string/stopAudio"
+            />
 
         <Button
             android:id="@+id/button_start_playback"
@@ -44,8 +45,17 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onStartPlayback"
-            android:text="@string/playAudio" />
+            android:text="@string/playAudio"
+            />
 
+        <Button
+            android:id="@+id/button_share"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onShareFile"
+            android:text="@string/share"
+            />
     </LinearLayout>
 
     <TextView

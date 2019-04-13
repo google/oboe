@@ -166,6 +166,10 @@ public:
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
+    virtual int32_t saveWaveFile(const char *filename) {
+        return -1;
+    }
+
     static bool   useCallback;
     static int    callbackSize;
 
@@ -252,6 +256,8 @@ public:
     oboe::Result startPlayback() override;
 
     oboe::Result stopPlayback() override;
+
+    int32_t saveWaveFile(const char *filename) override;
 
     PlayRecordingCallback        mPlayRecordingCallback;
     oboe::AudioStream           *playbackStream = nullptr;

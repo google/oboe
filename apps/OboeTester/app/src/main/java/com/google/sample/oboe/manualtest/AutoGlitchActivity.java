@@ -11,9 +11,6 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 public class AutoGlitchActivity extends GlitchActivity implements Runnable {
@@ -128,12 +125,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     private static final int[] CHANNEL_COUNTS = {1, 2};
 
     private static final int[] SAMPLE_RATES = {48000, 44100};
-
-    private String getTimestampString() {
-        DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
-        Date now = Calendar.getInstance().getTime();
-        return df.format(now);
-    }
 
     // Share text from log via GMail, Drive or other method.
     public void onShareResult(View view) {

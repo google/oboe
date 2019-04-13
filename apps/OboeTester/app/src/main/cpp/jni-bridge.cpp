@@ -418,6 +418,18 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv 
 }
 
 // ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_TestInputActivity_saveWaveFile(JNIEnv *env,
+                                                                        jobject instance,
+                                                                        jstring fileName) {
+    const char *str = env->GetStringUTFChars(fileName, nullptr);
+    LOGD("nativeSaveFile(%s)", str);
+    jint result = engine.getCurrentActivity()->saveWaveFile(str);
+    env->ReleaseStringUTFChars(fileName, str);
+    return result;
+}
+
+// ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,

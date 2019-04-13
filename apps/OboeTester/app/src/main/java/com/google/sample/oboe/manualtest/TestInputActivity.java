@@ -135,4 +135,7 @@ public class TestInputActivity  extends TestAudioActivity
     public void setupEffects(int sessionId) {
         setupAEC(sessionId);
     }
+
+
+    public native int saveWaveFile(String absolutePath);
 }

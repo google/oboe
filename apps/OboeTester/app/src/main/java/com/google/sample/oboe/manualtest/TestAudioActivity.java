@@ -29,7 +29,11 @@ import android.widget.CheckBox;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Base class for other Activities.
@@ -284,12 +288,17 @@ abstract class TestAudioActivity extends Activity {
 
     abstract public void setupEffects(int sessionId);
 
+    protected void showErrorToast(String message) {
+        showToast("Error: " + message);
+    }
+
     protected void showToast(final String message) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Toast.makeText(TestAudioActivity.this,
-                        "Error: " + message, Toast.LENGTH_SHORT).show();
+                        message,
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -338,7 +347,7 @@ abstract class TestAudioActivity extends Activity {
             mStreamSniffer.startStreamSniffer();
         } catch (Exception e) {
             e.printStackTrace();
-            showToast(e.getMessage());
+            showErrorToast(e.getMessage());
         }
     }
 
@@ -368,7 +377,7 @@ abstract class TestAudioActivity extends Activity {
     public void startAudio() {
         int result = startNative();
         if (result < 0) {
-            showToast("Start failed with " + result);
+            showErrorToast("Start failed with " + result);
         } else {
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
@@ -384,7 +393,7 @@ abstract class TestAudioActivity extends Activity {
     public void pauseAudio() {
         int result = pauseNative();
         if (result < 0) {
-            showToast("Pause failed with " + result);
+            showErrorToast("Pause failed with " + result);
         } else {
             mState = STATE_PAUSED;
             updateEnabledWidgets();
@@ -394,7 +403,7 @@ abstract class TestAudioActivity extends Activity {
     public void stopAudio() {
         int result = stopNative();
         if (result < 0) {
-            showToast("Stop failed with " + result);
+            showErrorToast("Stop failed with " + result);
         } else {
             mState = STATE_STOPPED;
             updateEnabledWidgets();
@@ -409,4 +418,11 @@ abstract class TestAudioActivity extends Activity {
         mState = STATE_CLOSED;
         updateEnabledWidgets();
     }
+
+    String getTimestampString() {
+        DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        Date now = Calendar.getInstance().getTime();
+        return df.format(now);
+    }
+
 }
