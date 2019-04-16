@@ -29,6 +29,7 @@ protected:
     }
 
     bool openStream(Direction direction) {
+        usleep(100 * 1000);
         mBuilder.setDirection(direction);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
@@ -126,7 +127,7 @@ protected:
 
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
-    static constexpr int kTimeoutInNanos = 100 * kNanosPerMillisecond;
+    static constexpr int kTimeoutInNanos = 500 * kNanosPerMillisecond;
 
 };
 

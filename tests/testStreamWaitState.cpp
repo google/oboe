@@ -68,7 +68,7 @@ protected:
         EXPECT_EQ(r, Result::OK);
         r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
         EXPECT_EQ(r, Result::OK);
-        EXPECT_EQ(next, StreamState::Started);
+        EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
         AudioStream *str = mStream;
         std::thread stopper([str] {
@@ -79,8 +79,12 @@ protected:
         r = mStream->waitForStateChange(StreamState::Started, &next, 1000 * kNanosPerMillisecond);
         stopper.join();
         EXPECT_EQ(r, Result::OK);
+        // May have caught in stopping transition. Wait for full stop.
+        if (next == StreamState::Stopping) {
+            r = mStream->waitForStateChange(StreamState::Stopping, &next, 1000 * kNanosPerMillisecond);
+            EXPECT_EQ(r, Result::OK);
+        }
         ASSERT_EQ(next, StreamState::Stopped) << "next = " << convertToText(next);
-
     }
 
     void checkCloseWhileWaiting() {
@@ -89,7 +93,7 @@ protected:
         EXPECT_EQ(r, Result::OK);
         r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
         EXPECT_EQ(r, Result::OK);
-        EXPECT_EQ(next, StreamState::Started);
+        EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
         AudioStream *str = mStream;
         std::thread closer([str] {
