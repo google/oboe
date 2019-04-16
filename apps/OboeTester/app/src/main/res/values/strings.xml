@@ -112,5 +112,6 @@
     <string name="duration">Duration:</string>
     <string name="auto_glitch_instructions">Use loopback adapter or speakers.</string>
     <string name="log_of_glitch_tests">Log of Glitch Tests</string>
+    <string name="save_file">Save</string>
 
 </resources>

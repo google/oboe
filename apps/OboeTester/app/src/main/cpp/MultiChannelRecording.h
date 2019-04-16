@@ -37,9 +37,24 @@ public:
         mCursor = 0;
     }
 
+    int32_t getChannelCount() {
+        return mChannelCount;
+    }
+
+    int32_t getSizeInFrames() {
+        return mValidFrames;
+    }
+
+    /**
+     * @return pointer to data owned by this object
+     */
+    float *getData() {
+        return mData;
+    }
+
     /**
      * Write numFrames from the short buffer into the recording, if there is room.
-     * Convert shoirts to floats.
+     * Convert shorts to floats.
      *
      * @param buffer
      * @param numFrames
