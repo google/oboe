@@ -19,6 +19,10 @@
 
 using namespace oboe;
 
+// Sleep between close and open to avoid a race condition inside Android Audio.
+// On a Pixel 2 emulator on a fast Linux host, the minimum value is around 16 msec.
+constexpr int kOboeOpenCloseSleepMSec = 100;
+
 class StreamStates : public ::testing::Test {
 
 protected:
@@ -115,6 +119,8 @@ protected:
         // It should be safe to close without stopping.
         // The underlying API should stop the stream.
         closeStream();
+
+        usleep(kOboeOpenCloseSleepMSec * 1000); // avoid race condition in emulator
 
         openInputStream();
         r = mStream->requestStart();
