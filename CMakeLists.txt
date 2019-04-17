@@ -20,6 +20,7 @@ set (oboe_sources
         src/opensles/OutputMixerOpenSLES.cpp
         src/common/StabilizedCallback.cpp
 		src/common/Trace.cpp
+		src/common/Version.cpp
         )
 
 add_library(oboe ${oboe_sources})

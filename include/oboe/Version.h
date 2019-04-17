@@ -17,6 +17,8 @@
 #ifndef OBOE_VERSIONINFO_H
 #define OBOE_VERSIONINFO_H
 
+#include <cstdint>
+
 /**
  * A note on use of preprocessor defines:
  *
@@ -50,6 +52,8 @@
 #define OBOE_VERSION_NUMBER ((OBOE_VERSION_MAJOR << 24) | (OBOE_VERSION_MINOR << 16) | OBOE_VERSION_PATCH)
 
 namespace oboe {
+
+const char * getVersionText();
 
 /**
  * Oboe versioning object
