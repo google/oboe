@@ -17,12 +17,12 @@
 
 namespace oboe {
 
-	// This variable enables the version information to be read from the resulting binary e.g.
-	// by running `objdump -s --section=.data <binary>`
-	// Please do not optimize or change in any way.
-	char kVersionText[] = "OboeVersion" OBOE_VERSION_TEXT;
+    // This variable enables the version information to be read from the resulting binary e.g.
+    // by running `objdump -s --section=.data <binary>`
+    // Please do not optimize or change in any way.
+    char kVersionText[] = "OboeVersion" OBOE_VERSION_TEXT;
 
-	const char * getVersionText(){
-		return kVersionText;
-	}
+    const char * getVersionText(){
+        return kVersionText;
+    }
 } // namespace oboe
