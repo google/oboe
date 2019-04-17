@@ -85,14 +85,39 @@ TEST_F(StreamOpen, OutputForOpenSLESPerformanceModeShouldBeNone){
 
 TEST_F(StreamOpen, InputForOpenSLESPerformanceModeShouldBeNone){
     // We will not get a LowLatency stream if we request 16000 Hz.
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setSampleRate(16000);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     mBuilder.setDirection(Direction::Input);
-    mBuilder.setAudioApi(AudioApi::OpenSLES);
 	openStream();
+	ASSERT_EQ((int)AudioApi::OpenSLES, (int)mStream->getAudioApi());
 	ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
     closeStream();
 }
+
+TEST_F(StreamOpen, ForOpenSlesIllegalFormatRejectedOutput) {
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    mBuilder.setFormat(static_cast<AudioFormat>(666));
+    Result r = mBuilder.openStream(&mStream);
+    EXPECT_NE(r, Result::OK) << "Should not open stream " << convertToText(r);
+    if (mStream != nullptr) {
+        mStream->close(); // just in case it accidentally opened
+    }
+}
+
+TEST_F(StreamOpen, ForOpenSlesIllegalFormatRejectedInput) {
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    mBuilder.setDirection(Direction::Input);
+    mBuilder.setFormat(static_cast<AudioFormat>(666));
+    Result r = mBuilder.openStream(&mStream);
+    EXPECT_NE(r, Result::OK) << "Should not open stream " << convertToText(r);
+    if (mStream != nullptr) {
+        mStream->close(); // just in case it accidentally opened
+    }
+}
+
 TEST_F(StreamOpen, RecordingFormatUnspecifiedReturnsI16BeforeMarshmallow){
 
     if (getSdkVersion() < __ANDROID_API_M__){
