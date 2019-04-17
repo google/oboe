@@ -34,7 +34,7 @@ public:
     }
 
     void rewind() {
-        mCursor = 0;
+        mCursorSample = 0;
     }
 
     int32_t getChannelCount() {
@@ -97,23 +97,30 @@ public:
         return numFrames;
     }
 
+    float read() {
+        return mData[mCursorSample++];
+    }
+
     /**
      * Read numFrames from the recording into the buffer, if there is enough data.
+     * Start at the cursor position, aligned up to the next frame.
      * @param buffer
      * @param numFrames
      * @return number of frames actually read.
      */
     int32_t read(float *buffer, int32_t numFrames) {
-        int32_t framesLeft = mValidFrames - mCursor;
+        // round up to nearest frame
+        mCursorSample += mChannelCount - (mCursorSample % mChannelCount);
+        int32_t framesLeft = mValidFrames - mCursorSample;
         if (numFrames > framesLeft) {
             numFrames = framesLeft;
         }
         if (numFrames > 0) {
             int32_t numSamples = numFrames * mChannelCount;
             memcpy(buffer,
-                   &mData[mCursor * mChannelCount],
+                   &mData[mCursorSample],
                    (numSamples * sizeof(float)));
-            mCursor += numFrames;
+            mCursorSample += numSamples;
         }
         return numFrames;
     }
@@ -121,7 +128,7 @@ public:
 private:
     float          *mData = nullptr;
     int32_t         mValidFrames = 0;
-    int32_t         mCursor = 0;
+    int32_t         mCursorSample = 0;
     const int32_t   mChannelCount;
     const int32_t   mMaxFrames;
 };

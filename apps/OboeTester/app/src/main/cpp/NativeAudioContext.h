@@ -166,17 +166,15 @@ public:
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
-    virtual int32_t saveWaveFile(const char *filename) {
-        return -1;
-    }
+    virtual int32_t saveWaveFile(const char *filename);
 
     static bool   useCallback;
     static int    callbackSize;
 
 
 protected:
-    oboe::AudioStream * getInputStream();
-    oboe::AudioStream * getOutputStream();
+    oboe::AudioStream *getInputStream();
+    oboe::AudioStream *getOutputStream();
     int32_t allocateStreamIndex();
     void freeStreamIndex(int32_t streamIndex);
 
@@ -188,6 +186,8 @@ protected:
 
     AudioStreamGateway           audioStreamGateway;
     OboeStreamCallbackProxy      oboeCallbackProxy;
+
+    std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     int32_t                      mNextStreamHandle = 0;
     std::unordered_map<int32_t, oboe::AudioStream *>  mOboeStreams;
@@ -220,8 +220,6 @@ public:
     }
 
     void runBlockingIO() override;
-
-    std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     InputStreamCallbackAnalyzer  mInputAnalyzer;
 
@@ -256,8 +254,6 @@ public:
     oboe::Result startPlayback() override;
 
     oboe::Result stopPlayback() override;
-
-    int32_t saveWaveFile(const char *filename) override;
 
     PlayRecordingCallback        mPlayRecordingCallback;
     oboe::AudioStream           *playbackStream = nullptr;

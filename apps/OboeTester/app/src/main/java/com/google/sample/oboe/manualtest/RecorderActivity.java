@@ -91,43 +91,7 @@ public class RecorderActivity extends TestInputActivity {
 
     }
 
-    protected int saveWaveFile(File file) {
-        // Pass filename to native to write WAV file
-        int result = saveWaveFile(file.getAbsolutePath());
-        if (result < 0) {
-            showErrorToast("Save returned " + result);
-        } else {
-            showToast("Saved " + result + " bytes.");
-        }
-        return result;
-    }
-
-    @NonNull
-    private File createFileName() {
-        // Get directory and filename
-        File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        return new File(dir, "oboe_recording.wav");
-    }
-
     public void onShareFile(View view) {
         shareWaveFile();
-    }
-
-    public void shareWaveFile() {
-        // Share text from log via GMail, Drive or other method.
-        File file = createFileName();
-        int result = saveWaveFile(file);
-        if (result > 0) {
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-            sharingIntent.setType("audio/wav");
-            String subjectText = "OboeTester recording at " + getTimestampString();
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
-            Uri uri = FileProvider.getUriForFile(this,
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    file);
-            sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(sharingIntent, "Share WAV using:"));
-        }
     }
 }
