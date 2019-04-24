@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
@@ -310,14 +311,25 @@ abstract class TestAudioActivity extends Activity {
     public void startAudio(View view) {
         Log.i(TAG, "startAudio() called =======================================");
         startAudio();
+        keepScreenOn(true);
+    }
+
+    protected void keepScreenOn(boolean on) {
+        if (on) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     public void stopAudio(View view) {
         stopAudio();
+        keepScreenOn(false);
     }
 
     public void pauseAudio(View view) {
         pauseAudio();
+        keepScreenOn(false);
     }
 
     public void closeAudio(View view) {

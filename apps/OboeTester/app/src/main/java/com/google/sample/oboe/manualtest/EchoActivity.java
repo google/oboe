@@ -103,6 +103,7 @@ public class EchoActivity extends TestInputActivity {
         setDelayTime(mDelayTime);
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
+        keepScreenOn(true);
     }
 
     public void onStopEcho(View view) {
@@ -110,6 +111,7 @@ public class EchoActivity extends TestInputActivity {
         closeAudio();
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
+        keepScreenOn(false);
     }
 
     @Override
