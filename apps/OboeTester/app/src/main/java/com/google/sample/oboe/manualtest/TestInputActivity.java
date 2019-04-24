@@ -17,16 +17,23 @@
 package com.google.sample.oboe.manualtest;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.AutomaticGainControl;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.sample.oboe.manualtest.R;
+
+import java.io.File;
 
 /**
  * Test Oboe Capture
@@ -138,4 +145,48 @@ public class TestInputActivity  extends TestAudioActivity
 
 
     public native int saveWaveFile(String absolutePath);
+
+    protected int saveWaveFile(File file) {
+        // Pass filename to native to write WAV file
+        int result = saveWaveFile(file.getAbsolutePath());
+        if (result < 0) {
+            showErrorToast("Save returned " + result);
+        } else {
+            showToast("Saved " + result + " bytes.");
+        }
+        return result;
+    }
+
+    String getWaveTag() {
+        return "input";
+    }
+
+    @NonNull
+    private File createFileName() {
+        // Get directory and filename
+        File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        return new File(dir, "oboe_" +  getWaveTag() + ".wav");
+    }
+
+    public void shareWaveFile() {
+        // Share WAVE file via GMail, Drive or other method.
+        File file = createFileName();
+        int result = saveWaveFile(file);
+        if (result > 0) {
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("audio/wav");
+            String subjectText = "OboeTester " +  getWaveTag() + " at " + getTimestampString();
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
+            Uri uri = FileProvider.getUriForFile(this,
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    file);
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(sharingIntent, "Share WAV using:"));
+        }
+    }
+
+    public void onShareFile(View view) {
+        shareWaveFile();
+    }
 }

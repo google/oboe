@@ -64,6 +64,8 @@
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 
+#define SECONDS_TO_RECORD        10
+
 typedef struct AAudioStreamStruct         AAudioStream;
 
 /**
@@ -166,19 +168,22 @@ public:
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
-    virtual int32_t saveWaveFile(const char *filename) {
-        return -1;
-    }
+    virtual int32_t saveWaveFile(const char *filename);
 
     static bool   useCallback;
     static int    callbackSize;
 
 
 protected:
-    oboe::AudioStream * getInputStream();
-    oboe::AudioStream * getOutputStream();
+    oboe::AudioStream *getInputStream();
+    oboe::AudioStream *getOutputStream();
     int32_t allocateStreamIndex();
     void freeStreamIndex(int32_t streamIndex);
+
+    virtual void createRecording() {
+        mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
+                                                             SECONDS_TO_RECORD * mSampleRate);
+    }
 
     virtual void finishOpen(bool isInput, oboe::AudioStream *oboeStream) {}
 
@@ -188,6 +193,8 @@ protected:
 
     AudioStreamGateway           audioStreamGateway;
     OboeStreamCallbackProxy      oboeCallbackProxy;
+
+    std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     int32_t                      mNextStreamHandle = 0;
     std::unordered_map<int32_t, oboe::AudioStream *>  mOboeStreams;
@@ -220,8 +227,6 @@ public:
     }
 
     void runBlockingIO() override;
-
-    std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     InputStreamCallbackAnalyzer  mInputAnalyzer;
 
@@ -256,8 +261,6 @@ public:
     oboe::Result startPlayback() override;
 
     oboe::Result stopPlayback() override;
-
-    int32_t saveWaveFile(const char *filename) override;
 
     PlayRecordingCallback        mPlayRecordingCallback;
     oboe::AudioStream           *playbackStream = nullptr;
@@ -359,6 +362,12 @@ public:
 
     int32_t getResetCount() {
         return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+    }
+
+protected:
+    void createRecording() override {
+        mRecording = std::make_unique<MultiChannelRecording>(2, // output and input
+                                                             SECONDS_TO_RECORD * mSampleRate);
     }
 };
 

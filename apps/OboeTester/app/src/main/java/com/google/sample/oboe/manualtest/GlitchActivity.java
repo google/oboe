@@ -27,9 +27,10 @@ import android.widget.TextView;
  * Activity to measure the number of glitches.
  */
 public class GlitchActivity extends AnalyzerActivity {
-    TextView mAnalyzerTextView;
-    Button mStartButton;
-    Button mStopButton;
+    private TextView mAnalyzerTextView;
+    private Button mStartButton;
+    private Button mStopButton;
+    private Button mShareButton;
 
     // These must match the values in LatencyAnalyzer.h
     final static int STATE_IDLE = 0;
@@ -186,6 +187,8 @@ public class GlitchActivity extends AnalyzerActivity {
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
         mStopButton.setEnabled(false);
+        mShareButton = (Button) findViewById(R.id.button_share);
+        mShareButton.setEnabled(false);
         mAnalyzerTextView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
         hideSettingsViews();
@@ -197,6 +200,7 @@ public class GlitchActivity extends AnalyzerActivity {
         setActivityType(ACTIVITY_GLITCHES);
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
+        mShareButton.setEnabled(false);
     }
 
     @Override
@@ -210,6 +214,7 @@ public class GlitchActivity extends AnalyzerActivity {
         startAudioTest();
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
+        mShareButton.setEnabled(false);
     }
 
     public void startAudioTest() {
@@ -233,6 +238,7 @@ public class GlitchActivity extends AnalyzerActivity {
     public void onTestFinished() {
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
+        mShareButton.setEnabled(true);
     }
 
     public void stopAudioTest() {
@@ -256,5 +262,10 @@ public class GlitchActivity extends AnalyzerActivity {
 
     public int getLastGlitchCount() {
         return mGlitchSniffer.geMLastGlitchCount();
+    }
+
+    @Override
+    String getWaveTag() {
+        return "glitches";
     }
 }
