@@ -39,7 +39,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     public static final String TEXT_FAIL = "FAIL !!!!";
 
     private TextView mAutoTextView;
-    private Button mButtonShare;
 
     private Thread mAutoThread;
     private volatile boolean mThreadEnabled = false;
@@ -71,9 +70,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mButtonShare = (Button) findViewById(R.id.button_share);
-        mButtonShare.setEnabled(false);
-
         mAutoTextView = (TextView) findViewById(R.id.text_auto_result);
         mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
 
@@ -93,14 +89,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     }
 
     public void startAudioTest() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mButtonShare.setEnabled(false);
-                // Keep screen on because the test takes a while and sleep might cause glitches.
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            }
-        });
         mThreadEnabled = true;
         mAutoThread = new Thread(this);
         mAutoThread.start();
@@ -109,8 +97,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     // Only call from UI thread.
     @Override
     public void onTestFinished() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mButtonShare.setEnabled(true);
         super.onTestFinished();
     }
 

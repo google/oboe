@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -215,6 +216,7 @@ public class GlitchActivity extends AnalyzerActivity {
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
         mShareButton.setEnabled(false);
+        keepScreenOn(true);
     }
 
     public void startAudioTest() {
@@ -232,6 +234,7 @@ public class GlitchActivity extends AnalyzerActivity {
     public void onStopAudioTest(View view) {
         stopAudioTest();
         onTestFinished();
+        keepScreenOn(false);
     }
 
     // Must be called on UI thread.
