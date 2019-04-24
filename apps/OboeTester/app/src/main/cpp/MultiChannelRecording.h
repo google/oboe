@@ -21,6 +21,13 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+/**
+ * Store multi-channel audio data in float format.
+ * The most recent data will be saved.
+ * Old data may be overwritten.
+ *
+ * Note that this is not thread safe. Do not read and write from separate threads.
+ */
 class MultiChannelRecording {
 public:
     MultiChannelRecording(int32_t channelCount, int32_t maxFrames)
@@ -34,7 +41,12 @@ public:
     }
 
     void rewind() {
-        mCursorSample = 0;
+        mReadCursorFrames = mWriteCursorFrames - getSizeInFrames();
+    }
+
+    void clear() {
+        mReadCursorFrames = 0;
+        mWriteCursorFrames = 0;
     }
 
     int32_t getChannelCount() {
@@ -42,14 +54,14 @@ public:
     }
 
     int32_t getSizeInFrames() {
-        return mValidFrames;
+        return (int32_t) std::min(mWriteCursorFrames, static_cast<int64_t>(mMaxFrames));
     }
 
-    /**
-     * @return pointer to data owned by this object
-     */
-    float *getData() {
-        return mData;
+    int32_t getReadIndex() {
+        return mReadCursorFrames % mMaxFrames;
+    }
+    int32_t getWriteIndex() {
+        return mWriteCursorFrames % mMaxFrames;
     }
 
     /**
@@ -61,44 +73,50 @@ public:
      * @return number of frames actually written.
      */
     int32_t write(int16_t *buffer, int32_t numFrames) {
-        int32_t framesEmpty = mMaxFrames - mValidFrames;
-        if (numFrames > framesEmpty) {
-            numFrames = framesEmpty;
-        }
-        if (numFrames > 0) {
-            int32_t numSamples = numFrames * mChannelCount;
-            int32_t index = mValidFrames * mChannelCount;
+        int32_t framesLeft = numFrames;
+        while (framesLeft > 0) {
+            int32_t indexFrame = getWriteIndex();
+            // contiguous writes
+            int32_t framesToEnd = mMaxFrames - indexFrame;
+            int32_t framesNow = std::min(framesLeft, framesToEnd);
+            int32_t numSamples = framesNow * mChannelCount;
+            int32_t sampleIndex = indexFrame * mChannelCount;
+
             for (int i = 0; i < numSamples; i++) {
-                mData[index++] = buffer[i * mChannelCount] * (1.0f / 32768);
+                mData[sampleIndex++] = buffer[i * mChannelCount] * (1.0f / 32768);
             }
-            mValidFrames += numFrames;
+
+            mWriteCursorFrames += framesNow;
+            framesLeft -= framesNow;
         }
         return numFrames;
     }
 
     /**
-     * Write numFrames from the float buffer into the recording, if there is room.
+     * Write all numFrames from the float buffer into the recording.
+     * Overwrite old data if full.
      * @param buffer
      * @param numFrames
      * @return number of frames actually written.
      */
     int32_t write(float *buffer, int32_t numFrames) {
-        int32_t framesEmpty = mMaxFrames - mValidFrames;
-        if (numFrames > framesEmpty) {
-            numFrames = framesEmpty;
-        }
-        if (numFrames > 0) {
-            int32_t numSamples = numFrames * mChannelCount;
-            memcpy(mData + (mValidFrames * mChannelCount),
+        int32_t framesLeft = numFrames;
+        while (framesLeft > 0) {
+            int32_t indexFrame = getWriteIndex();
+            // contiguous writes
+            int32_t framesToEnd = mMaxFrames - indexFrame;
+            int32_t framesNow = std::min(framesLeft, framesToEnd);
+            int32_t numSamples = framesNow * mChannelCount;
+            int32_t sampleIndex = indexFrame * mChannelCount;
+
+            memcpy(&mData[sampleIndex],
                    buffer,
                    (numSamples * sizeof(float)));
-            mValidFrames += numFrames;
+
+            mWriteCursorFrames += framesNow;
+            framesLeft -= framesNow;
         }
         return numFrames;
-    }
-
-    float read() {
-        return mData[mCursorSample++];
     }
 
     /**
@@ -109,26 +127,32 @@ public:
      * @return number of frames actually read.
      */
     int32_t read(float *buffer, int32_t numFrames) {
-        // round up to nearest frame
-        mCursorSample += mChannelCount - (mCursorSample % mChannelCount);
-        int32_t framesLeft = mValidFrames - mCursorSample;
-        if (numFrames > framesLeft) {
-            numFrames = framesLeft;
-        }
-        if (numFrames > 0) {
-            int32_t numSamples = numFrames * mChannelCount;
+        int32_t framesRead = 0;
+        int32_t framesLeft = std::min(numFrames,
+                std::min(mMaxFrames, (int32_t)(mWriteCursorFrames - mReadCursorFrames)));
+        while (framesLeft > 0) {
+            int32_t indexFrame = getReadIndex();
+            // contiguous reads
+            int32_t framesToEnd = mMaxFrames - indexFrame;
+            int32_t framesNow = std::min(framesLeft, framesToEnd);
+            int32_t numSamples = framesNow * mChannelCount;
+            int32_t sampleIndex = indexFrame * mChannelCount;
+
             memcpy(buffer,
-                   &mData[mCursorSample],
+                   &mData[sampleIndex],
                    (numSamples * sizeof(float)));
-            mCursorSample += numSamples;
+
+            mReadCursorFrames += framesNow;
+            framesLeft -= framesNow;
+            framesRead += framesNow;
         }
-        return numFrames;
+        return framesRead;
     }
 
 private:
     float          *mData = nullptr;
-    int32_t         mValidFrames = 0;
-    int32_t         mCursorSample = 0;
+    int64_t         mReadCursorFrames = 0;
+    int64_t         mWriteCursorFrames = 0; // monotonically increasing
     const int32_t   mChannelCount;
     const int32_t   mMaxFrames;
 };

@@ -64,6 +64,8 @@
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 
+#define SECONDS_TO_RECORD        10
+
 typedef struct AAudioStreamStruct         AAudioStream;
 
 /**
@@ -177,6 +179,11 @@ protected:
     oboe::AudioStream *getOutputStream();
     int32_t allocateStreamIndex();
     void freeStreamIndex(int32_t streamIndex);
+
+    virtual void createRecording() {
+        mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
+                                                             SECONDS_TO_RECORD * mSampleRate);
+    }
 
     virtual void finishOpen(bool isInput, oboe::AudioStream *oboeStream) {}
 
@@ -355,6 +362,12 @@ public:
 
     int32_t getResetCount() {
         return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+    }
+
+protected:
+    void createRecording() override {
+        mRecording = std::make_unique<MultiChannelRecording>(2, // output and input
+                                                             SECONDS_TO_RECORD * mSampleRate);
     }
 };
 

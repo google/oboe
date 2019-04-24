@@ -22,8 +22,6 @@
 
 #include "NativeAudioContext.h"
 
-#define SECONDS_TO_RECORD   10
-
 static oboe::AudioApi convertNativeApiToAudioApi(int nativeApi) {
     switch (nativeApi) {
         default:
@@ -229,7 +227,10 @@ int ActivityContext::open(
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
 
+        createRecording();
+
         finishOpen(isInput, oboeStream);
+
     }
 
     if (!useCallback) {
@@ -237,8 +238,6 @@ int ActivityContext::open(
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
 
-    mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
-                                                         SECONDS_TO_RECORD * mSampleRate);
 
     return ((int)result < 0) ? (int)result : streamIndex;
 }
@@ -279,16 +278,19 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     writer.setFrameRate(mSampleRate);
     writer.setSamplesPerFrame(mRecording->getChannelCount());
     writer.setBitsPerSample(24);
-    int32_t numSamples = mRecording->getSizeInFrames() * mRecording->getChannelCount();
+    float buffer[mRecording->getChannelCount()];
     // Read samples from start to finish.
     mRecording->rewind();
-    for (int32_t i = 0; i < numSamples; i++) {
-        writer.write(mRecording->read());
+    for (int32_t frameIndex = 0; frameIndex < mRecording->getSizeInFrames(); frameIndex++) {
+        mRecording->read(buffer, 1 /* numFrames */);
+        for (int32_t i = 0; i < mRecording->getChannelCount(); i++) {
+            writer.write(buffer[i]);
+        }
     }
     writer.close();
 
     auto myfile = std::ofstream(filename, std::ios::out | std::ios::binary);
-    myfile.write((char *)outStream.getData(), outStream.length());
+    myfile.write((char *) outStream.getData(), outStream.length());
     myfile.close();
 
     return outStream.length();
@@ -575,6 +577,7 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
 void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
     if (isInput) {
         mFullDuplexGlitches->setInputStream(oboeStream);
+        mFullDuplexGlitches->setRecording(mRecording.get());
     } else {
         mFullDuplexGlitches->setOutputStream(oboeStream);
     }

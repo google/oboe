@@ -6,8 +6,8 @@ android {
         applicationId = "com.google.sample.oboe.manualtest"
         minSdkVersion 26
         targetSdkVersion 26
-        versionCode 10
-        versionName "1.4.01"
+        versionCode 11
+        versionName "1.4.02"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {

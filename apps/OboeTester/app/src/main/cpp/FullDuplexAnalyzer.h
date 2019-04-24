@@ -23,6 +23,7 @@
 #include "oboe/Oboe.h"
 #include "FullDuplexStream.h"
 #include "LatencyAnalyzer.h"
+#include "MultiChannelRecording.h"
 
 class FullDuplexAnalyzer : public FullDuplexStream {
 public:
@@ -46,6 +47,13 @@ public:
     }
 
     virtual LoopbackProcessor *getLoopbackProcessor() = 0;
+
+    void setRecording(MultiChannelRecording *recording) {
+        mRecording = recording;
+    }
+
+private:
+    MultiChannelRecording  *mRecording = nullptr;
 
 };
 

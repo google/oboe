@@ -91,7 +91,9 @@ public class RecorderActivity extends TestInputActivity {
 
     }
 
-    public void onShareFile(View view) {
-        shareWaveFile();
+    @Override
+    String getWaveTag() {
+        return "recording";
     }
+
 }

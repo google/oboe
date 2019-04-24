@@ -27,6 +27,10 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
         int   numInputFrames,
         void *outputData,
         int   numOutputFrames) {
+
+    int32_t inputStride = getInputStream()->getChannelCount();
+    int32_t outputStride = getOutputStream()->getChannelCount();
+
     // TODO Pull up into superclass
     // reset analyzer if we miss some input data
     if (numInputFrames < numOutputFrames) {
@@ -36,9 +40,8 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
     } else {
         float *inputFloat = (float *) inputData;
         float *outputFloat = (float *) outputData;
-        int32_t outputStride = getOutputStream()->getChannelCount();
 
-        (void) getLoopbackProcessor()->process(inputFloat, getInputStream()->getChannelCount(),
+        (void) getLoopbackProcessor()->process(inputFloat, inputStride,
                                        outputFloat, outputStride,
                                        numOutputFrames);
 
@@ -48,6 +51,24 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
 
         if (framesLeft > 0) {
             memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
+        }
+    }
+
+    // write the first channel of output and input to the recorder
+    if (mRecording != nullptr) {
+        float buffer[2];
+        float *inputFloat = (float *) inputData;
+        float *outputFloat = (float *) outputData;
+        for (int i = 0; i < numOutputFrames; i++) {
+            buffer[0] = *outputFloat;
+            outputFloat += outputStride;
+            if (i < numInputFrames) {
+                buffer[1] = *inputFloat;
+                inputFloat += inputStride;
+            } else {
+                buffer[1] = 0.0f;
+            }
+            mRecording->write(buffer, 1);
         }
     }
     return oboe::DataCallbackResult::Continue;

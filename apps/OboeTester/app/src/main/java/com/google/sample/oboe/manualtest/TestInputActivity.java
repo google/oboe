@@ -27,6 +27,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -156,11 +157,15 @@ public class TestInputActivity  extends TestAudioActivity
         return result;
     }
 
+    String getWaveTag() {
+        return "input";
+    }
+
     @NonNull
     private File createFileName() {
         // Get directory and filename
         File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        return new File(dir, "oboe_recording.wav");
+        return new File(dir, "oboe_" +  getWaveTag() + ".wav");
     }
 
     public void shareWaveFile() {
@@ -170,7 +175,7 @@ public class TestInputActivity  extends TestAudioActivity
         if (result > 0) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("audio/wav");
-            String subjectText = "OboeTester recording at " + getTimestampString();
+            String subjectText = "OboeTester " +  getWaveTag() + " at " + getTimestampString();
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
             Uri uri = FileProvider.getUriForFile(this,
                     BuildConfig.APPLICATION_ID + ".provider",
@@ -181,4 +186,7 @@ public class TestInputActivity  extends TestAudioActivity
         }
     }
 
+    public void onShareFile(View view) {
+        shareWaveFile();
+    }
 }
