@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -35,22 +34,20 @@ public class GlitchActivity extends AnalyzerActivity {
 
     // These must match the values in LatencyAnalyzer.h
     final static int STATE_IDLE = 0;
-    final static int STATE_MEASURE_NOISE =1;
-    final static int STATE_IMMUNE = 2;
-    final static int STATE_WAITING_FOR_SIGNAL = 3;
-    final static int STATE_WAITING_FOR_LOCK = 4;
-    final static int STATE_LOCKED = 5;
+    final static int STATE_IMMUNE = 1;
+    final static int STATE_WAITING_FOR_SIGNAL = 2;
+    final static int STATE_WAITING_FOR_LOCK = 3;
+    final static int STATE_LOCKED = 4;
 
     native int getGlitchCount();
     native double getSignalToNoiseDB();
+    native double getPeakAmplitude();
 
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
     String stateToString(int resultCode) {
         switch (resultCode) {
             case STATE_IDLE:
                 return "IDLE";
-            case STATE_MEASURE_NOISE:
-                return "MEASURE_NOISE";
             case STATE_IMMUNE:
                 return "IMMUNE";
             case STATE_WAITING_FOR_SIGNAL:
@@ -77,6 +74,7 @@ public class GlitchActivity extends AnalyzerActivity {
         private int mPreviousState = STATE_IDLE;
         private boolean mGotLock = false;
         private double mSignalToNoiseDB;
+        private double mPeakAmplitude;
         private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
         private volatile boolean mEnabled = true;
 
@@ -87,6 +85,7 @@ public class GlitchActivity extends AnalyzerActivity {
                 int glitchCount = getGlitchCount();
                 int resetCount = getResetCount();
                 mSignalToNoiseDB = getSignalToNoiseDB();
+                mPeakAmplitude = getPeakAmplitude();
 
                 boolean locked = (state == STATE_LOCKED);
                 if (locked && (mPreviousState != STATE_LOCKED)) {
@@ -125,6 +124,7 @@ public class GlitchActivity extends AnalyzerActivity {
             StringBuffer message = new StringBuffer();
             message.append("state = " + mPreviousState + " = " + stateToString(mPreviousState) + "\n");
             message.append(String.format("signal to noise ratio = %5.1f dB\n", mSignalToNoiseDB));
+            message.append(String.format("peak amplitude = %8.6f\n", mPeakAmplitude));
             message.append(String.format("time total = %8.2f seconds\n", totalSeconds));
             message.append(String.format("time without glitches = %8.2f sec\n",
                     goodSeconds));
@@ -193,6 +193,13 @@ public class GlitchActivity extends AnalyzerActivity {
         mAnalyzerTextView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
         hideSettingsViews();
+        // TODO hide sample rate menu
+        StreamContext streamContext = getFirstInputStreamContext();
+        if (streamContext != null) {
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.hideSampleRateMenu();
+            }
+        }
     }
 
     @Override

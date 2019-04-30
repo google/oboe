@@ -25,7 +25,9 @@
 
 class FullDuplexGlitches : public FullDuplexAnalyzer {
 public:
-    FullDuplexGlitches() {}
+    FullDuplexGlitches() {
+        setMNumInputBurstsCushion(1);
+    }
 
     bool isDone() {
         return false;

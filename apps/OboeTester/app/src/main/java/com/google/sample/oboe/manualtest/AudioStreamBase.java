@@ -57,24 +57,29 @@ public abstract class AudioStreamBase {
             if (bufferSize < 0 || framesWritten < 0) {
                 return "idle";
             }
-            int numBuffers = 0;
-            if (bufferSize > 0 && framesPerBurst > 0) {
-                numBuffers = bufferSize / framesPerBurst;
-            }
+            StringBuffer buffer = new StringBuffer();
+
+            buffer.append("frames written " + framesWritten + " - read " + framesRead
+                    + " = " + (framesWritten - framesRead) + "\n");
+
             String latencyText = (latency < 0.0)
                     ? "?"
                     : String.format("%6.1f msec", latency);
-            return "buffer size = "
-                    + ((bufferSize < 0) ? "?" : bufferSize) + " = "
-                    + numBuffers + " * " + framesPerBurst + ", xRunCount = "
-                    +  ((xRunCount < 0) ? "?" : xRunCount) + "\n"
-                    + "frames written " + framesWritten + " - read " + framesRead
-                    + " = " + (framesWritten - framesRead) + "\n"
-
-                    + "latency = " + latencyText
+            buffer.append("latency = " + latencyText
                     + ", state = " + state
-                    + ", #callbacks " + callbackCount
-                    ;
+                    + ", #callbacks " + callbackCount+ "\n");
+
+            buffer.append("buffer size = ");
+            if (bufferSize < 0) {
+                buffer.append("?");
+            } else {
+                int numBuffers = bufferSize / framesPerBurst;
+                int remainder = bufferSize - (numBuffers * framesPerBurst);
+                buffer.append(bufferSize + " = (" + numBuffers + " * " + framesPerBurst + ") + " + remainder);
+            }
+            buffer.append(",   xRun# = " + ((xRunCount < 0) ? "?" : xRunCount) + "\n");
+
+            return buffer.toString();
         }
     }
 

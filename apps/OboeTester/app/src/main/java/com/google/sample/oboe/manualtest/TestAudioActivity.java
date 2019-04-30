@@ -254,6 +254,14 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    StreamContext getFirstInputStreamContext() {
+        for (StreamContext streamContext : mStreamContexts) {
+            if (streamContext.isInput())
+                return streamContext;
+        }
+        return null;
+    }
+
     protected void findAudioCommon() {
         mOpenButton = (Button) findViewById(R.id.button_open);
         if (mOpenButton != null) {
@@ -341,6 +349,7 @@ abstract class TestAudioActivity extends Activity {
     }
     
     public void openAudio() {
+        int sampleRate = 0;
         try {
             // Open output streams then open input streams.
             // This is so that the capacity of input stream can be expanded to
@@ -348,10 +357,17 @@ abstract class TestAudioActivity extends Activity {
             for (StreamContext streamContext : mStreamContexts) {
                 if (!streamContext.isInput()) {
                     openStreamContext(streamContext);
+                    int streamSampleRate = streamContext.tester.actualConfiguration.getSampleRate();
+                    if (sampleRate == 0) {
+                        sampleRate = streamSampleRate;
+                    }
                 }
             }
             for (StreamContext streamContext : mStreamContexts) {
                 if (streamContext.isInput()) {
+                    if (sampleRate != 0) {
+                        streamContext.tester.requestedConfiguration.setSampleRate(sampleRate);
+                    }
                     openStreamContext(streamContext);
                 }
             }

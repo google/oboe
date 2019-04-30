@@ -30,7 +30,7 @@ import android.widget.Toast;
 public class AnalyzerActivity extends TestInputActivity {
 
     AudioOutputTester mAudioOutTester;
-    private BufferSizeView mBufferSizeView;
+    protected BufferSizeView mBufferSizeView;
 
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
     String resultCodeToString(int resultCode) {

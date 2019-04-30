@@ -29,7 +29,7 @@ import android.widget.TextView;
  */
 public class RoundTripLatencyActivity extends AnalyzerActivity {
 
-    private static final int STATE_GOT_DATA = 5; // Defined in LatencyAnalyzer.h
+    private static final int STATE_GOT_DATA = 6; // Defined in LatencyAnalyzer.h
 
     private TextView mAnalyzerView;
     private Button mMeasureButton;
@@ -119,6 +119,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         updateEnabledWidgets();
 
         hideSettingsViews();
+
+        mBufferSizeView.setFaderNormalizedProgress(0.0); // for lowest latency
     }
 
     @Override

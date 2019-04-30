@@ -169,6 +169,25 @@ private:
     int64_t mSeed = 99887766;
 };
 
+class PeakFollower {
+public:
+    float process(float input) {
+        mPrevious *= kDecayCoefficient;
+        const float positive = abs(input);
+        if (positive > mPrevious) {
+            mPrevious = positive;
+        }
+        return mPrevious;
+    }
+
+    float get() {
+        return mPrevious;
+    }
+
+private:
+    static constexpr float kDecayCoefficient = 0.99f;
+    float mPrevious = 0.0f;
+};
 
 typedef struct LatencyReport_s {
     double latencyInFrames = 0.0;
@@ -450,7 +469,6 @@ public:
     };
 
     virtual void reset() {
-        mSampleRate = kDefaultSampleRate;
         mResult = 0;
         mResetCount++;
     }
@@ -493,20 +511,6 @@ public:
     int32_t getSampleRate() {
         return mSampleRate;
     }
-
-    // Measure peak amplitude of first channel of buffer.
-    static float measurePeakAmplitude(float *inputData, int inputChannelCount, int numFrames) {
-        float peak = 0.0f;
-        for (int i = 0; i < numFrames; i++) {
-            const float pos = fabs(*inputData);
-            if (pos > peak) {
-                peak = pos;
-            }
-            inputData += inputChannelCount;
-        }
-        return peak;
-    }
-
 
     int32_t getResetCount() {
         return mResetCount;
@@ -684,106 +688,82 @@ public:
         return 1 * getSampleRate();
     }
 
-    result_code process(float *inputData, int inputChannelCount,
-                 float *outputData, int outputChannelCount,
-                 int numFrames) override {
+    result_code processOneFrame(float *inputData, int inputChannelCount,
+                                float *outputData, int outputChannelCount) {
         int channelsValid = std::min(inputChannelCount, outputChannelCount);
-        float peak = 0.0f;
-        int numSamples;
-        mLoopCounter++;
-
-        mTimeoutCounter -= numFrames;
-        if (!isDone() && mTimeoutCounter < 0) {
-            LOGW("EchoAnalyzer timed out.");
-            switch (mState) {
-                case STATE_MEASURING_GAIN:
-                    setResult(ERROR_VOLUME_TOO_LOW);
-                    break;
-                case STATE_WAITING_FOR_SILENCE:
-                    setResult(ERROR_NOISY);
-                    break;
-                default:
-                    break;
-            }
-            mState = STATE_FAILED;
-            return RESULT_OK;
-        }
-
         echo_state nextState = mState;
+        float peak = mPeakFollower.process(*inputData);
 
         switch (mState) {
             case STATE_INITIAL_SILENCE:
                 // Output silence at the beginning.
-                numSamples = numFrames * outputChannelCount;
-                for (int i = 0; i < numSamples; i++) {
+                for (int i = 0; i < outputChannelCount; i++) {
                     outputData[i] = 0;
                 }
-                mDownCounter -= numFrames;
+                mDownCounter--;
                 if (mDownCounter <= 0) {
+                    nextState = STATE_SENDING_MANY_PULSES;
+                }
+                break;
+
+            case STATE_SENDING_MANY_PULSES:
+                sendImpulseLoop(outputData, outputChannelCount);
+                peak = mPeakFollower.process(*inputData);
+                // If we get several in a row then go to next state.
+                if (peak > mPulseThreshold) {
                     nextState = STATE_MEASURING_GAIN;
                     mDownCounter = getBlockFrames() * 2;
                 }
                 break;
-
             case STATE_MEASURING_GAIN:
-                sendImpulses(outputData, outputChannelCount, numFrames);
-                // Do we have enough data to get a reasonable measurement?
-                if (numFrames > kImpulseSizeInFrames) {
-                    peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
-                    // If we get several in a row then go to next state.
-                    if (peak > mPulseThreshold) {
-                        mDownCounter -= numFrames;
-                        if (mDownCounter <= 0) {
-                            mDownCounter = getBlockFrames();
-                            mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
-                            mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
-                            // Calculate gain that will give us a nice decaying echo.
-                            mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
-                            if (mEchoGain > kMaxEchoGain) {
-                                LOGE("ERROR - loop gain too low. Increase the volume.");
-                                setResult(ERROR_VOLUME_TOO_LOW);
-                                nextState = STATE_FAILED;
-                            } else {
-                                nextState = STATE_WAITING_FOR_SILENCE;
-                                mDownCounter = getMaxLatencyFrames();
-                            }
-                        }
+                sendImpulseLoop(outputData, outputChannelCount);
+                mDownCounter--;
+                if (mDownCounter <= 0) {
+                    mDownCounter = getBlockFrames();
+                    mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
+                    mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
+                    // Calculate gain that will give us a nice decaying echo.
+                    mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
+                    if (mEchoGain > kMaxEchoGain) {
+                        LOGE("ERROR - loop gain too low. Increase the volume.");
+                        setResult(ERROR_VOLUME_TOO_LOW);
+                        nextState = STATE_FAILED;
                     } else {
-                        mDownCounter = getBlockFrames() * 2;
+                        nextState = STATE_WAITING_FOR_SILENCE;
+                        mDownCounter = getMaxLatencyFrames();
                     }
                 }
                 break;
 
             case STATE_WAITING_FOR_SILENCE:
                 // Output silence and wait for the echos to die down.
-                numSamples = numFrames * outputChannelCount;
-                for (int i = 0; i < numSamples; i++) {
+                for (int i = 0; i < outputChannelCount; i++) {
                     outputData[i] = 0;
                 }
-                peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
                 // If we get several in a row then go to next state.
                 if (peak < mSilenceThreshold) {
-                    mDownCounter -= numFrames;
+                    mDownCounter--;
                     if (mDownCounter <= 0) {
                         nextState = STATE_SENDING_PULSE;
+                        resetImpulse();
                     }
                 }
                 break;
 
             case STATE_SENDING_PULSE:
-                mAudioRecording.write(inputData, inputChannelCount, numFrames);
-                sendOneImpulse(outputData, outputChannelCount);
-                nextState = STATE_GATHERING_ECHOS;
+                mAudioRecording.write(inputData, inputChannelCount, 1);
+                if (sendOneImpulse(outputData, outputChannelCount)) {
+                    nextState = STATE_GATHERING_ECHOS;
+                }
                 break;
 
             case STATE_GATHERING_ECHOS:
                 // Record input until the mAudioRecording is full.
-                mAudioRecording.write(inputData, inputChannelCount, numFrames);
+                mAudioRecording.write(inputData, inputChannelCount, 1);
                 if (hasEnoughData()) {
                     nextState = STATE_GOT_DATA;
                 }
 
-                peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
                 if (peak > mMeasuredLoopGain) {
                     mMeasuredLoopGain = peak;  // AGC might be raising gain so adjust it on the fly.
                     // Recalculate gain that will give us a nice decaying echo.
@@ -791,7 +771,7 @@ public:
                 }
 
                 // Echo input to output.
-                for (int i = 0; i < numFrames; i++) {
+                {
                     int ic;
                     for (ic = 0; ic < channelsValid; ic++) {
                         outputData[ic] = inputData[ic] * mEchoGain;
@@ -814,6 +794,40 @@ public:
         mState = nextState;
         return RESULT_OK;
     }
+
+    result_code process(float *inputData, int inputChannelCount,
+                        float *outputData, int outputChannelCount,
+                        int numFrames) override {
+        result_code result = RESULT_OK;
+        mLoopCounter++;
+        mTimeoutCounter -= numFrames;
+        if (!isDone() && mTimeoutCounter < 0) {
+            LOGW("EchoAnalyzer timed out.");
+            switch (mState) {
+                case STATE_MEASURING_GAIN:
+                    setResult(ERROR_VOLUME_TOO_LOW);
+                    break;
+                case STATE_WAITING_FOR_SILENCE:
+                    setResult(ERROR_NOISY);
+                    break;
+                default:
+                    break;
+            }
+            mState = STATE_FAILED;
+            return RESULT_OK;
+        }
+
+        // Process one frame at a time.
+        for (int i = 0; i < numFrames; i++) {
+            result = processOneFrame(inputData, inputChannelCount, outputData, outputChannelCount);
+            inputData += inputChannelCount;
+            outputData += outputChannelCount;
+            if (result != RESULT_OK) {
+                break;
+            }
+        }
+        return result;
+    }
 /*
     int save(const char *fileName) override {
         return mAudioRecording.save(fileName);
@@ -828,21 +842,31 @@ public:
 */
 private:
 
-    void sendImpulses(float *outputData, int outputChannelCount, int numFrames) {
-        while (numFrames-- > 0) {
-            float sample = s_Impulse[mSampleIndex++];
-            if (mSampleIndex >= kImpulseSizeInFrames) {
-                mSampleIndex = 0;
-            }
-
-            *outputData = sample;
-            outputData += outputChannelCount;
+    void sendImpulseLoop(float *outputData, int outputChannelCount) {
+        float sample = s_Impulse[mSampleIndex++];
+        if (mSampleIndex >= kImpulseSizeInFrames) {
+            mSampleIndex = 0;
+        }
+        while (outputChannelCount-- > 0) {
+            *outputData++ = sample;
         }
     }
 
-    void sendOneImpulse(float *outputData, int outputChannelCount) {
+    void resetImpulse() {
         mSampleIndex = 0;
-        sendImpulses(outputData, outputChannelCount, kImpulseSizeInFrames);
+    }
+
+    bool sendOneImpulse(float *outputData, int outputChannelCount) {
+        bool done = true;
+        float sample = 0.0f;
+        if (mSampleIndex < kImpulseSizeInFrames) {
+            sample = s_Impulse[mSampleIndex++];
+            done = false;
+        }
+        while (outputChannelCount-- > 0) {
+            *outputData++ = sample;
+        }
+        return done;
     }
 
     // @return number of frames for a typical block of processing
@@ -852,11 +876,12 @@ private:
 
     enum echo_state {
         STATE_INITIAL_SILENCE,
+        STATE_SENDING_MANY_PULSES,
         STATE_MEASURING_GAIN,
         STATE_WAITING_FOR_SILENCE,
         STATE_SENDING_PULSE,
         STATE_GATHERING_ECHOS,
-        STATE_GOT_DATA,
+        STATE_GOT_DATA, // must match RoundTripLatencyActivity.java
         STATE_DONE,
         STATE_FAILED
     };
@@ -866,6 +891,9 @@ private:
         switch(state) {
             case STATE_INITIAL_SILENCE:
                 result = "INIT";
+                break;
+            case STATE_SENDING_MANY_PULSES:
+                result = "TONE";
                 break;
             case STATE_MEASURING_GAIN:
                 result = "GAIN";
@@ -892,7 +920,7 @@ private:
         return result;
     }
 
-
+    PeakFollower    mPeakFollower;
     int32_t         mDownCounter = 500;
     int32_t         mTimeoutCounter = 0; // timeout in frames so we don't stall
     int32_t         mLoopCounter = 0;
@@ -924,17 +952,20 @@ public:
         return mState;
     }
 
+    float getPeakAmplitude() {
+        return mPeakFollower.get();
+    }
+
     int32_t getGlitchCount() {
         return mGlitchCount;
     }
 
     double getSignalToNoiseDB() {
-        static const double threshold = 1.0e-10;
-        if (mMagnitude < threshold || mPeakNoise < threshold) {
+        static const double threshold = 1.0e-14;
+        if (mMeanSquareSignal < threshold || mMeanSquareNoise < threshold) {
             return 0.0;
         } else {
-            double amplitudeRatio = mMagnitude / mPeakNoise;
-            double signalToNoise = amplitudeRatio * amplitudeRatio;
+            double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio
             double signalToNoiseDB = 10.0 * log(signalToNoise);
             if (signalToNoiseDB < MIN_SNRATIO_DB) {
                 LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
@@ -947,10 +978,9 @@ public:
 
     void analyze() override {
         LOGD("GlitchAnalyzer ------------------");
-        LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", mPeakAmplitude);
+        LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", getPeakAmplitude());
         LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);
-        LOGD(LOOPBACK_RESULT_TAG "peak.noise         = %8f", mPeakNoise);
-        LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f", mRootMeanSquareNoise);
+        LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f", mMeanSquareNoise);
         LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f", getSignalToNoiseDB());
         LOGD(LOOPBACK_RESULT_TAG "frames.accumulated = %8d", mFramesAccumulated);
         LOGD(LOOPBACK_RESULT_TAG "sine.period        = %8d", mSinePeriod);
@@ -995,92 +1025,76 @@ public:
      * @param inputData contains microphone data with sine signal feedback
      * @param outputData contains the reference sine wave
      */
-    result_code process(float *inputData, int inputChannelCount,
-                 float *outputData, int outputChannelCount,
-                 int numFrames) override {
+    result_code processOneFrame(float *inputData, int inputChannelCount,
+                                float *outputData, int outputChannelCount) {
         result_code result = RESULT_OK;
-        mProcessCount++;
+        bool sineEnabled = true;
 
-        float peak = measurePeakAmplitude(inputData, inputChannelCount, numFrames);
-        if (peak > mPeakAmplitude) {
-            mPeakAmplitude = peak;
-        }
+        float peak = mPeakFollower.process(*inputData);
 
-        for (int i = 0; i < numFrames; i++) {
-            bool sineEnabled = true;
-            float sample = inputData[i * inputChannelCount];
+        float sample = inputData[0];
+        float sinOut = sinf(mPhase);
 
-            float sinOut = sinf(mPhase);
+        switch (mState) {
+            case STATE_IDLE:
+                sineEnabled = false;
+                mDownCounter--;
+                if (mDownCounter <= 0) {
+                    mState = STATE_WAITING_FOR_SIGNAL;
+                    mDownCounter = NOISE_FRAME_COUNT;
+                    mPhase = 0.0; // prevent spike at start
+                }
+                break;
 
-            switch (mState) {
-                case STATE_IDLE:
-                    sineEnabled = false;
-                    mDownCounter--;
-                    if (mDownCounter <= 0) {
-                        mState = STATE_MEASURE_NOISE;
-                        mDownCounter = NOISE_FRAME_COUNT;
-                    }
-                    break;
-                case STATE_MEASURE_NOISE:
-                    sineEnabled = false;
-                    mPeakNoise = std::max(abs(sample), mPeakNoise);
-                    mNoiseSumSquared += sample * sample;
-                    mDownCounter--;
-                    if (mDownCounter <= 0) {
-                        mState = STATE_WAITING_FOR_SIGNAL;
-                        mRootMeanSquareNoise = sqrt(mNoiseSumSquared / NOISE_FRAME_COUNT);
-                        mTolerance = std::max(MIN_TOLERANCE, mPeakNoise * 2.0f);
-                        mPhase = 0.0; // prevent spike at start
-                    }
-                    break;
+            case STATE_IMMUNE:
+                mDownCounter--;
+                if (mDownCounter <= 0) {
+                    mState = STATE_WAITING_FOR_SIGNAL;
+                }
+                break;
 
-                case STATE_IMMUNE:
-                    mDownCounter--;
-                    if (mDownCounter <= 0) {
-                        mState = STATE_WAITING_FOR_SIGNAL;
-                    }
-                    break;
+            case STATE_WAITING_FOR_SIGNAL:
+                if (peak > mThreshold) {
+                    mState = STATE_WAITING_FOR_LOCK;
+                    //LOGD("%5d: switch to STATE_WAITING_FOR_LOCK", mFrameCounter);
+                    resetAccumulator();
+                }
+                break;
 
-                case STATE_WAITING_FOR_SIGNAL:
-                    if (peak > mThreshold) {
-                        mState = STATE_WAITING_FOR_LOCK;
-                        //LOGD("%5d: switch to STATE_WAITING_FOR_LOCK", mFrameCounter);
-                        resetAccumulator();
-                    }
-                    break;
-
-                case STATE_WAITING_FOR_LOCK:
-                    mSinAccumulator += sample * sinOut;
-                    mCosAccumulator += sample * cosf(mPhase);
-                    mFramesAccumulated++;
-                    // Must be a multiple of the period or the calculation will not be accurate.
-                    if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
-                        mPhaseOffset = 0.0;
-                        mMagnitude = calculateMagnitude(&mPhaseOffset);
-                        if (mMagnitude > mThreshold) {
-                            if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
-                                mState = STATE_LOCKED;
-                                //LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
-                            }
-                            mPreviousPhaseOffset = mPhaseOffset;
+            case STATE_WAITING_FOR_LOCK:
+                mSinAccumulator += sample * sinOut;
+                mCosAccumulator += sample * cosf(mPhase);
+                mFramesAccumulated++;
+                // Must be a multiple of the period or the calculation will not be accurate.
+                if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
+                    mPhaseOffset = 0.0;
+                    mMagnitude = calculateMagnitude(&mPhaseOffset);
+                    if (mMagnitude > mThreshold) {
+                        if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
+                            mState = STATE_LOCKED;
+                            mScaledTolerance = mMagnitude * kTolerance;
+                            //LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
-                        resetAccumulator();
+                        mPreviousPhaseOffset = mPhaseOffset;
                     }
-                    break;
+                    resetAccumulator();
+                }
+                break;
 
-                case STATE_LOCKED: {
-                    // Predict next sine value
-                    float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
-                    // LOGD("    predicted = %f, actual = %f", predicted, sample);
+            case STATE_LOCKED: {
+                // Predict next sine value
+                float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
+                // LOGD("    predicted = %f, actual = %f", predicted, sample);
 
-                    float diff = predicted - sample;
-                    float absDiff = fabs(diff);
-                    mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
-                    if (absDiff > mTolerance) {
-                        result = ERROR_GLITCHES;
-                        addGlitch();
-                    }
-
+                float diff = predicted - sample;
+                mSumSquareSignal += predicted * predicted;
+                mSumSquareNoise += diff * diff;
+                float absDiff = fabs(diff);
+                mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
+                if (absDiff > mScaledTolerance) {
+                    result = ERROR_GLITCHES;
+                    addGlitch();
+                } else {
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
                     mSinAccumulator += sample * sinOut;
@@ -1093,6 +1107,10 @@ public:
                         double magnitude = calculateMagnitude(&phaseOffset);
                         // One pole averaging filter.
                         mMagnitude = (mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient);
+                        mScaledTolerance = mMagnitude * kTolerance;
+
+                        mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
+                        mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();
 
                         if (mMagnitude < mThreshold) {
@@ -1100,23 +1118,41 @@ public:
                             addGlitch();
                         }
                     }
-                } break;
-            }
-
-            float output = 0.0f;
-            // Output sine wave so we can measure it.
-            if (sineEnabled) {
-                output = (sinOut * mOutputAmplitude)
-                         + (mWhiteNoise.nextRandomDouble() * mNoiseAmplitude);
-                // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
-                // advance and wrap phase
-                mPhase += mPhaseIncrement;
-                if (mPhase > M_PI) {
-                    mPhase -= (2.0 * M_PI);
                 }
+            } break;
+        }
+
+        float output = 0.0f;
+        // Output sine wave so we can measure it.
+        if (sineEnabled) {
+            output = (sinOut * mOutputAmplitude)
+                     + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
+            // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
+            // advance and wrap phase
+            mPhase += mPhaseIncrement;
+            if (mPhase > M_PI) {
+                mPhase -= (2.0 * M_PI);
             }
-            outputData[i * outputChannelCount] = output;
-            mFrameCounter++;
+        }
+        outputData[0] = output;
+        mFrameCounter++;
+
+        return result;
+    }
+
+    result_code process(float *inputData, int inputChannelCount,
+                        float *outputData, int outputChannelCount,
+                        int numFrames) override {
+        result_code result = RESULT_OK;
+        // Process one frame at a time.
+        for (int i = 0; i < numFrames; i++) {
+            result_code tempResult = processOneFrame(inputData, inputChannelCount, outputData,
+                                                     outputChannelCount);
+            if (tempResult != RESULT_OK) {
+                result = tempResult;
+            }
+            inputData += inputChannelCount;
+            outputData += outputChannelCount;
         }
         return result;
     }
@@ -1127,12 +1163,15 @@ public:
 //        mFrameCounter, mGlitchCount, predicted, sample);
         mState = STATE_IMMUNE;
         mDownCounter = mSinePeriod * PERIODS_IMMUNE;
+        resetAccumulator();
     }
 
     void resetAccumulator() {
         mFramesAccumulated = 0;
         mSinAccumulator = 0.0;
         mCosAccumulator = 0.0;
+        mSumSquareSignal = 0.0;
+        mSumSquareNoise = 0.0;
     }
 
     void reset() override {
@@ -1140,21 +1179,19 @@ public:
         mGlitchCount = 0;
         mState = STATE_IDLE;
         mDownCounter = IDLE_FRAME_COUNT;
-        mPhaseIncrement = 2.0 * M_PI / mSinePeriod;
-        resetAccumulator();
-        mProcessCount = 0;
-        mPeakNoise = 0.0f;
-        mNoiseSumSquared = 0.0;
-        mRootMeanSquareNoise = 0.0;
+        mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
+        mInverseSinePeriod = 1.0 / mSinePeriod;
+        mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
         mPhase = 0.0f;
         mMaxGlitchDelta = 0.0;
+        resetAccumulator();
     }
 
 private:
 
+    // These must match the values in GlitchActivity.java
     enum sine_state_t {
         STATE_IDLE,
-        STATE_MEASURE_NOISE,
         STATE_IMMUNE,
         STATE_WAITING_FOR_SIGNAL,
         STATE_WAITING_FOR_LOCK,
@@ -1170,34 +1207,37 @@ private:
         MIN_SNRATIO_DB = 65
     };
 
-    static constexpr float MIN_TOLERANCE = 0.01;
+    static constexpr float kTolerance = 0.10; // scale from 0.0 to 1.0
+    static constexpr float kNoiseAmplitude = 0.01; // Used to experiment with warbling caused by DRC.
+    static constexpr int kTargetGlitchFrequency = 607;
+    double  mThreshold = 0.005;
+    int     mSinePeriod = 1; // this will be set before use
+    double  mInverseSinePeriod = 1.0;
 
-    int     mSinePeriod = 79;
     double  mPhaseIncrement = 0.0;
     double  mPhase = 0.0;
     double  mPhaseOffset = 0.0;
     double  mPreviousPhaseOffset = 0.0;
     double  mMagnitude = 0.0;
-    double  mThreshold = 0.005;
-    double  mTolerance = MIN_TOLERANCE;
     int32_t mFramesAccumulated = 0;
-    int32_t mProcessCount = 0;
     double  mSinAccumulator = 0.0;
     double  mCosAccumulator = 0.0;
     float   mMaxGlitchDelta = 0.0f;
     int32_t mGlitchCount = 0;
-    double  mPeakAmplitude = 0.0;
+    float   mScaledTolerance = 0.0;
     int     mDownCounter = IDLE_FRAME_COUNT;
     int32_t mFrameCounter = 0;
     float   mOutputAmplitude = 0.75;
 
-    // measure background noise
-    float   mPeakNoise = 0.0f;
-    double  mNoiseSumSquared = 0.0;
-    double  mRootMeanSquareNoise = 0.0;
+    // measure background noise continuously as a deviation from the expected signal
+    double  mSumSquareSignal = 0.0;
+    double  mSumSquareNoise = 0.0;
+    double  mMeanSquareSignal = 0.0;
+    double  mMeanSquareNoise = 0.0;
+
+    PeakFollower  mPeakFollower;
 
     PseudoRandom  mWhiteNoise;
-    float   mNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
 
     sine_state_t  mState = STATE_IDLE;
 };

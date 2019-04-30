@@ -26,7 +26,9 @@
 
 class FullDuplexEcho : public FullDuplexStream {
 public:
-    FullDuplexEcho() {}
+    FullDuplexEcho() {
+        setMNumInputBurstsCushion(0);
+    }
 
     /**
      * Called when data is available on both streams.
