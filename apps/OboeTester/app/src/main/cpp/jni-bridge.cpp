@@ -493,5 +493,10 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_getSignalToNoiseDB(JNIEnv 
                                                                          jobject instance) {
     return engine.mActivityGlitches.getGlitchAnalyzer()->getSignalToNoiseDB();
 }
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getPeakAmplitude(JNIEnv *env,
+                                                                         jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getPeakAmplitude();
+}
 
 }

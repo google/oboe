@@ -47,23 +47,39 @@ public class StreamConfiguration {
     public static final int PERFORMANCE_MODE_POWER_SAVING = 11; // must match AAUDIO
     public static final int PERFORMANCE_MODE_LOW_LATENCY = 12; // must match AAUDIO
 
-
     private int mNativeApi;
-    private int mBufferCapacityInFrames = UNSPECIFIED;
-    private int mChannelCount = UNSPECIFIED;
-    private int mDeviceId = UNSPECIFIED;
-    private int mSessionId = -1;
-    private int mDirection = DIRECTION_OUTPUT;
-    private int mFormat = AUDIO_FORMAT_PCM_FLOAT;
-    private int mSampleRate = UNSPECIFIED;
-    private int mSharingMode = SHARING_MODE_SHARED;
-    private int mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
+    private int mBufferCapacityInFrames;
+    private int mChannelCount;
+    private int mDeviceId;
+    private int mSessionId;
+    private int mDirection;
+    private int mFormat;
+    private int mSampleRate;
+    private int mSharingMode;
+    private int mPerformanceMode;
+
     private int mFramesPerBurst = 29; // TODO review
     private boolean mMMap = false;
+
+    public StreamConfiguration() {
+        reset();
+    }
 
     public void setReasonableDefaults() {
         mChannelCount = 2;
         mSampleRate = 48000;
+    }
+
+    public void reset() {
+        mNativeApi = NATIVE_API_UNSPECIFIED;
+        mBufferCapacityInFrames = UNSPECIFIED;
+        mChannelCount = UNSPECIFIED;
+        mDeviceId = UNSPECIFIED;
+        mSessionId = -1;
+        mFormat = AUDIO_FORMAT_PCM_FLOAT;
+        mSampleRate = UNSPECIFIED;
+        mSharingMode = SHARING_MODE_SHARED;
+        mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
     }
 
     public int getFramesPerBurst() {

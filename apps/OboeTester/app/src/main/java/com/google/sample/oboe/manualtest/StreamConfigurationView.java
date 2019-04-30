@@ -92,6 +92,12 @@ public class StreamConfigurationView extends LinearLayout {
         updateSettingsViewText();
     }
 
+    public void hideSampleRateMenu() {
+        if (mSampleRateSpinner != null) {
+            mSampleRateSpinner.setVisibility(View.GONE);
+        }
+    }
+
     public void hideSettingsView() {
         mOptionTable.setVisibility(View.GONE);
         updateSettingsViewText();
@@ -213,6 +219,7 @@ public class StreamConfigurationView extends LinearLayout {
         mShowSettingsText = getResources().getString(R.string.hint_show_settings) + " - " + ioText;
         updateSettingsViewText();
     }
+
 
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
