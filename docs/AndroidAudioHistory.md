@@ -29,6 +29,7 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 ### 6.0 Marshmallow - API 23 (October 5, 2015)
 - Floating point recording supported. But it does not allow a FAST "low latency" path.
 - [MIDI API introduced](https://developer.android.com/reference/android/media/midi/package-summary)
+- Sound output is broken on the API 23 emulator
 
 ### 5.0 Lollipop - API 21 (November 12, 2014)
 - Floating point playback supported.
