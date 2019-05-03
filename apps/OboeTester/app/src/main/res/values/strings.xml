@@ -11,14 +11,17 @@
     <string name="closeAudio">Close</string>
     <string name="recordAudio">Record</string>
     <string name="playAudio">Play</string>
+    <string name="measure">Measure</string>
+    <string name="cancel">Cancel</string>
 
     <string name="GetParam">Get Param</string>
     <string name="device_name">Device Name</string>
     <string name="auto_select">Auto select</string>
     <string name="hint_hide_settings">Hide Settings</string>
     <string name="hint_show_settings">Show Settings</string>
+    <string name="use_loopback">Click Show Settings to configure stream.\nRequires a loopback adapter!</string>
 
-    <string name="output_prompt">Choose an Output Mode</string>
+    <string name="api_prompt">Choose an API</string>
     <string-array name="output_modes">
         <item>Unspecified</item>
         <item>OpenSL ES</item>
@@ -68,6 +71,12 @@
         <item>9</item>
     </string-array>
 
+    <string-array name="glitch_times">
+        <item>10</item>
+        <item>70</item>
+        <item>310</item>
+    </string-array>
+
     <string name="performance_prompt">Perf:</string>
     <string-array name="performance_modes">
         <item>NONE</item>
@@ -91,10 +100,18 @@
     <string name="title_activity_main">Test Oboe</string>
     <string name="title_activity_test_output">Test Output</string>
     <string name="title_activity_test_input">Test Input</string>
-    <string name="title_activity_latency">Tap to Tone</string>
+    <string name="title_activity_output_latency">Tap to Tone</string>
     <string name="title_activity_recorder">Recorder</string>
     <string name="title_activity_echo">Echo Input to Output</string>
+    <string name="title_activity_rt_latency">Round Trip Latency</string>
+    <string name="title_activity_glitches">Test Glitches</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
+    <string name="share">Share</string>
+    <string name="seconds_per_test">seconds per test</string>
+    <string name="duration">Duration:</string>
+    <string name="auto_glitch_instructions">Use loopback adapter or speakers.</string>
+    <string name="log_of_glitch_tests">Log of Glitch Tests</string>
+    <string name="save_file">Save</string>
 
 </resources>

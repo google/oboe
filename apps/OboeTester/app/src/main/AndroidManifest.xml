@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.sample.oboe.manualtest"
-    android:versionCode="4"
-    android:versionName="1.3.00">
+    android:versionCode="15"
+    android:versionName="1.4.05">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
 
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
@@ -51,7 +51,7 @@
 
         <activity
             android:name="com.google.sample.oboe.manualtest.TapToToneActivity"
-            android:label="@string/title_activity_latency"
+            android:label="@string/title_activity_output_latency"
             android:screenOrientation="portrait">
         </activity>
 
@@ -67,6 +67,24 @@
             android:screenOrientation="portrait">
         </activity>
 
+        <activity
+            android:name="com.google.sample.oboe.manualtest.RoundTripLatencyActivity"
+            android:label="@string/title_activity_rt_latency"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.ManualGlitchActivity"
+            android:label="@string/title_activity_glitches"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name="com.google.sample.oboe.manualtest.AutoGlitchActivity"
+            android:label="@string/title_activity_glitches"
+            android:screenOrientation="portrait">
+        </activity>
+
         <service
             android:name="com.google.sample.oboe.manualtest.AudioMidiTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">
@@ -79,6 +97,15 @@
                 android:resource="@xml/service_device_info" />
         </service>
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

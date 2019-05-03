@@ -9,24 +9,12 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
-    <LinearLayout
+    <com.google.sample.oboe.manualtest.BufferSizeView
+        android:id="@+id/buffer_size_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/textThreshold"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BufferSize" />
-
-        <SeekBar
-            android:id="@+id/faderThreshold"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="1000"
-            android:progress="1000" />
-    </LinearLayout>
+        android:gravity="center"
+        android:orientation="horizontal" />
 
     <LinearLayout
         android:layout_width="match_parent"

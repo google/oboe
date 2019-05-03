@@ -29,8 +29,6 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.sample.oboe.manualtest.R;
-
 /**
  * Select various Audio tests.
  */
@@ -118,6 +116,24 @@ public class MainActivity extends Activity {
     public void onLaunchEcho(View view) {
         updateCallbackSize();
         Intent intent = new Intent(this, EchoActivity.class);
+        startActivity(intent);
+    }
+
+    public void onLaunchRoundTripLatency(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, RoundTripLatencyActivity.class);
+        startActivity(intent);
+    }
+
+    public void onLaunchManualGlitchTest(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, ManualGlitchActivity.class);
+        startActivity(intent);
+    }
+
+    public void onLaunchAutoGlitchTest(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, AutoGlitchActivity.class);
         startActivity(intent);
     }
 

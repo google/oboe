@@ -40,8 +40,8 @@ import com.google.sample.oboe.manualtest.R;
 
 public class StreamConfigurationView extends LinearLayout {
 
-    private StreamConfiguration  mRequestedConfiguration = new StreamConfiguration();
-    private StreamConfiguration  mActualConfiguration = new StreamConfiguration();
+    private StreamConfiguration  mRequestedConfiguration;
+    private StreamConfiguration  mActualConfiguration;
 
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
@@ -72,14 +72,36 @@ public class StreamConfigurationView extends LinearLayout {
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
         public void onClick(View v) {
             if (mOptionTable.isShown()) {
-                mOptionTable.setVisibility(View.GONE);
-                mOptionExpander.setText(mShowSettingsText);
+                hideSettingsView();
             } else {
-                mOptionTable.setVisibility(View.VISIBLE);
-                mOptionExpander.setText(mHideSettingsText);
+                showSettingsView();
             }
         }
     };
+
+    private void updateSettingsViewText() {
+        if (mOptionTable.isShown()) {
+            mOptionExpander.setText(mHideSettingsText);
+        } else {
+            mOptionExpander.setText(mShowSettingsText);
+        }
+    }
+
+    public void showSettingsView() {
+        mOptionTable.setVisibility(View.VISIBLE);
+        updateSettingsViewText();
+    }
+
+    public void hideSampleRateMenu() {
+        if (mSampleRateSpinner != null) {
+            mSampleRateSpinner.setVisibility(View.GONE);
+        }
+    }
+
+    public void hideSettingsView() {
+        mOptionTable.setVisibility(View.GONE);
+        updateSettingsViewText();
+    }
 
     public StreamConfigurationView(Context context) {
         super(context);
@@ -180,16 +202,24 @@ public class StreamConfigurationView extends LinearLayout {
                 mRequestedConfiguration.setDeviceId(StreamConfiguration.UNSPECIFIED);
             }
         });
-    }
 
+        showSettingsView();
+    }
 
     public void setOutput(boolean output) {
+        String ioText;
         if (output) {
             mDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_OUTPUTS);
+            ioText = "OUTPUT";
         } else {
             mDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_INPUTS);
+            ioText = "INPUT";
         }
+        mHideSettingsText = getResources().getString(R.string.hint_hide_settings) + " - " + ioText;
+        mShowSettingsText = getResources().getString(R.string.hint_show_settings) + " - " + ioText;
+        updateSettingsViewText();
     }
+
 
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -302,11 +332,18 @@ public class StreamConfigurationView extends LinearLayout {
         mStreamStatusView.setText(msg);
     }
 
-    public StreamConfiguration getRequestedConfiguration() {
+    protected StreamConfiguration getRequestedConfiguration() {
         return mRequestedConfiguration;
     }
+    public void setRequestedConfiguration(StreamConfiguration configuration) {
+        mRequestedConfiguration = configuration;
+    }
 
-    public StreamConfiguration getActualConfiguration() {
+    protected StreamConfiguration getActualConfiguration() {
         return mActualConfiguration;
     }
+    public void setActualConfiguration(StreamConfiguration configuration) {
+        mActualConfiguration = configuration;
+    }
+
 }

@@ -17,8 +17,10 @@
 #ifndef OBOE_STREAM_H_
 #define OBOE_STREAM_H_
 
+#include <atomic>
 #include <cstdint>
 #include <ctime>
+#include <mutex>
 #include "oboe/Definitions.h"
 #include "oboe/ResultWithValue.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -133,7 +135,7 @@ public:
      * changing between calls.
      *
      * Note that generally applications do not need to call this. It is considered
-     * an advanced technique.
+     * an advanced technique and is mostly used for testing.
      *
      * <pre><code>
      * int64_t timeoutNanos = 500 * kNanosPerMillisecond; // arbitrary 1/2 second
@@ -146,7 +148,10 @@ public:
      * }
      * </code></pre>
      *
-     * @param inputState The state we want to avoid.
+     * If the state does not change within the timeout period then it will
+     * return ErrorTimeout. This is true even if timeoutNanoseconds is zero.
+     *
+     * @param inputState The state we want to change away from.
      * @param nextState Pointer to a variable that will be set to the new state.
      * @param timeoutNanoseconds The maximum time to wait in nanoseconds.
      * @return Result::OK or a Result::Error.
@@ -198,13 +203,6 @@ public:
      * @return burst size
      */
     virtual int32_t getFramesPerBurst() = 0;
-
-    /**
-     * Indicates whether the audio stream is playing.
-     *
-     * @deprecated check the stream state directly using `AudioStream::getState`.
-     */
-    bool isPlaying();
 
     /**
      * Get the number of bytes in each audio frame. This is calculated using the channel count

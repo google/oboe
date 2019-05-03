@@ -20,6 +20,7 @@
 #include <dlfcn.h>
 #include <jni.h>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 #include "common/OboeDebug.h"
@@ -35,6 +36,8 @@
 #include "flowgraph/SawtoothOscillator.h"
 
 #include "FullDuplexEcho.h"
+#include "FullDuplexGlitches.h"
+#include "FullDuplexLatency.h"
 #include "FullDuplexStream.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
@@ -61,6 +64,10 @@
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 
+#define SECONDS_TO_RECORD        10
+
+typedef struct AAudioStreamStruct         AAudioStream;
+
 /**
  * Abstract base class that corresponds to a test at the Java level.
  */
@@ -71,7 +78,12 @@ public:
     virtual ~ActivityContext() = default;
 
     oboe::AudioStream *getStream(int32_t streamIndex) {
-        return mOboeStreams[streamIndex]; // TODO range check
+        auto it = mOboeStreams.find(streamIndex);
+        if (it != mOboeStreams.end()) {
+            return it->second;
+        } else {
+            return nullptr;
+        }
     }
 
     virtual void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder);
@@ -91,7 +103,9 @@ public:
     virtual void close(int32_t streamIndex);
 
     void printScheduler() {
+#if OBOE_ENABLE_LOGGING
         int scheduler = audioStreamGateway.getScheduler();
+#endif
         LOGI("scheduler = 0x%08x, SCHED_FIFO = 0x%08X\n", scheduler, SCHED_FIFO);
     }
 
@@ -154,16 +168,22 @@ public:
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
+    virtual int32_t saveWaveFile(const char *filename);
+
     static bool   useCallback;
-    static bool   callbackReturnStop;
     static int    callbackSize;
 
 
 protected:
-    oboe::AudioStream * getInputStream();
-    oboe::AudioStream * getOutputStream();
+    oboe::AudioStream *getInputStream();
+    oboe::AudioStream *getOutputStream();
     int32_t allocateStreamIndex();
     void freeStreamIndex(int32_t streamIndex);
+
+    virtual void createRecording() {
+        mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
+                                                             SECONDS_TO_RECORD * mSampleRate);
+    }
 
     virtual void finishOpen(bool isInput, oboe::AudioStream *oboeStream) {}
 
@@ -174,8 +194,10 @@ protected:
     AudioStreamGateway           audioStreamGateway;
     OboeStreamCallbackProxy      oboeCallbackProxy;
 
-    static constexpr int         kMaxStreams = 8;
-    oboe::AudioStream           *mOboeStreams[kMaxStreams]{};
+    std::unique_ptr<MultiChannelRecording>  mRecording{};
+
+    int32_t                      mNextStreamHandle = 0;
+    std::unordered_map<int32_t, oboe::AudioStream *>  mOboeStreams;
     int32_t                      mFramesPerBurst = 0; // TODO per stream
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
@@ -205,8 +227,6 @@ public:
     }
 
     void runBlockingIO() override;
-
-    std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     InputStreamCallbackAnalyzer  mInputAnalyzer;
 
@@ -261,7 +281,7 @@ public:
     void close(int32_t streamIndex) override;
 
     oboe::Result startStreams() override {
-        return getOutputStream()->requestStart();
+        return getOutputStream()->start();
     }
 
     void configureForStart() override;
@@ -327,9 +347,34 @@ public:
 };
 
 /**
- * Echo input to outp[ut through a delay line.
+ * Echo input to output through a delay line.
  */
-class ActivityEcho : public ActivityContext {
+class ActivityFullDuplex : public ActivityContext {
+public:
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    virtual int32_t getState() { return -1; }
+    virtual int32_t getResult() { return -1; }
+    virtual bool isAnalyzerDone() { return false; }
+
+    virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() = 0;
+
+    int32_t getResetCount() {
+        return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+    }
+
+protected:
+    void createRecording() override {
+        mRecording = std::make_unique<MultiChannelRecording>(2, // output and input
+                                                             SECONDS_TO_RECORD * mSampleRate);
+    }
+};
+
+/**
+ * Echo input to output through a delay line.
+ */
+class ActivityEcho : public ActivityFullDuplex {
 public:
 
     oboe::Result startStreams() override {
@@ -344,11 +389,89 @@ public:
         }
     }
 
+    virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexEcho.get();
+    }
+
 protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
 private:
     std::unique_ptr<FullDuplexEcho>   mFullDuplexEcho{};
+};
+
+/**
+ * Measure Round Trip Latency
+ */
+class ActivityRoundTripLatency : public ActivityFullDuplex {
+public:
+
+    oboe::Result startStreams() override {
+        return mFullDuplexLatency->start();
+    }
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    LatencyAnalyzer *getLatencyAnalyzer() {
+        return mFullDuplexLatency->getLatencyAnalyzer();
+    }
+
+    int32_t getState() override {
+        return getLatencyAnalyzer()->getState();
+    }
+    int32_t getResult() override {
+        return getLatencyAnalyzer()->getState();
+    }
+    bool isAnalyzerDone() override {
+        return mFullDuplexLatency->isDone();
+    }
+
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexLatency.get();
+    }
+
+protected:
+    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+
+private:
+    std::unique_ptr<FullDuplexLatency>   mFullDuplexLatency{};
+};
+
+/**
+ * Measure Glitches
+ */
+class ActivityGlitches : public ActivityFullDuplex {
+public:
+
+    oboe::Result startStreams() override {
+        return mFullDuplexGlitches->start();
+    }
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    GlitchAnalyzer *getGlitchAnalyzer() {
+        return mFullDuplexGlitches->getGlitchAnalyzer();
+    }
+
+    int32_t getState() override {
+        return getGlitchAnalyzer()->getState();
+    }
+    int32_t getResult() override {
+        return getGlitchAnalyzer()->getResult();
+    }
+    bool isAnalyzerDone() override {
+        return mFullDuplexGlitches->isDone();
+    }
+
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexGlitches.get();
+    }
+
+protected:
+    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+
+private:
+    std::unique_ptr<FullDuplexGlitches>   mFullDuplexGlitches{};
 };
 
 /**
@@ -382,12 +505,26 @@ public:
             case ActivityType::Echo:
                 currentActivity = &mActivityEcho;
                 break;
+            case ActivityType::RoundTripLatency:
+                currentActivity = &mActivityRoundTripLatency;
+                break;
+            case ActivityType::Glitches:
+                currentActivity = &mActivityGlitches;
+                break;
         }
     }
 
     void setDelayTime(double delayTimeMillis) {
         mActivityEcho.setDelayTime(delayTimeMillis);
     }
+
+    ActivityTestOutput           mActivityTestOutput;
+    ActivityTestInput            mActivityTestInput;
+    ActivityTapToTone            mActivityTapToTone;
+    ActivityRecording            mActivityRecording;
+    ActivityEcho                 mActivityEcho;
+    ActivityRoundTripLatency     mActivityRoundTripLatency;
+    ActivityGlitches             mActivityGlitches;
 
 private:
 
@@ -398,16 +535,12 @@ private:
         TestInput = 1,
         TapToTone = 2,
         RecordPlay = 3,
-        Echo = 4
+        Echo = 4,
+        RoundTripLatency = 5,
+        Glitches = 6,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;
-    ActivityTestOutput           mActivityTestOutput;
-    ActivityTestInput            mActivityTestInput;
-    ActivityTapToTone            mActivityTapToTone;
-    ActivityRecording            mActivityRecording;
-    ActivityEcho                 mActivityEcho;
-
     ActivityContext             *currentActivity = &mActivityTestOutput;
 
 };

@@ -18,12 +18,13 @@
 #define RHYTHMGAME_AUDIOSOURCE_H
 
 #include <cstdint>
+#include <GameConstants.h>
 
 class DataSource {
 public:
     virtual ~DataSource(){};
-    virtual int32_t getTotalFrames() const = 0;
-    virtual int32_t getChannelCount() const  = 0;
+    virtual int64_t getSize() const = 0;
+    virtual AudioProperties getProperties() const  = 0;
     virtual const float* getData() const = 0;
 };
 

@@ -18,29 +18,33 @@
 #define RHYTHMGAME_AASSETDATASOURCE_H
 
 #include <android/asset_manager.h>
+#include <GameConstants.h>
 #include "DataSource.h"
 
 class AAssetDataSource : public DataSource {
 
 public:
-    int32_t getTotalFrames() const override { return mTotalFrames; }
-    int32_t getChannelCount() const override { return mChannelCount; }
-    const float* getData() const override { return mBuffer.get();	}
+    int64_t getSize() const override { return mBufferSize; }
+    AudioProperties getProperties() const override { return mProperties; }
+    const float* getData() const override { return mBuffer.get(); }
 
-    static AAssetDataSource* newFromAssetManager(AAssetManager&, const char *, const int32_t);
+    static AAssetDataSource* newFromCompressedAsset(
+            AAssetManager &assetManager,
+            const char *filename,
+            AudioProperties targetProperties);
 
 private:
 
-    AAssetDataSource(std::unique_ptr<float[]> data, int32_t frames,
-                     const int32_t channelCount)
+    AAssetDataSource(std::unique_ptr<float[]> data, size_t size,
+                     const AudioProperties properties)
             : mBuffer(std::move(data))
-            , mTotalFrames(frames)
-            , mChannelCount(channelCount) {
+            , mBufferSize(size)
+            , mProperties(properties) {
     }
 
     const std::unique_ptr<float[]> mBuffer;
-    const int32_t mTotalFrames;
-    const int32_t mChannelCount;
+    const int64_t mBufferSize;
+    const AudioProperties mProperties;
 
 };
 #endif //RHYTHMGAME_AASSETDATASOURCE_H

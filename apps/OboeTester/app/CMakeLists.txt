@@ -26,9 +26,10 @@ include_directories(
     ${OBOE_DIR}/src
 )
 
+
 ### END OBOE INCLUDE SECTION ###
 
 # link to oboe
 target_link_libraries(oboetester log oboe atomic)
 
-
+# bump 1 to resync CMake

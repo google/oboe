@@ -24,16 +24,44 @@ add_library( native-lib
 
              )
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
+set (TARGET_LIBS log android oboe GLESv2)
 
-target_link_libraries( native-lib
-                       log
-                       android
-                       oboe
-                       GLESv2
-                       )
+if(${USE_FFMPEG})
+
+    MESSAGE(STATUS "Using FFmpeg extractor")
+
+    add_definitions(-DUSE_FFMPEG=1)
+    target_sources( native-lib PRIVATE src/main/cpp/audio/FFMpegExtractor.cpp )
+
+    # Add the local path to FFmpeg, you can use the ${ANDROID_ABI} variable to specify the ABI name
+    # e.g. /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI}
+    set(FFMPEG_DIR "/path/to/ffmpeg")
+
+    include_directories(native-lib ${FFMPEG_DIR}/include)
+
+    add_library( avformat SHARED IMPORTED)
+    set_target_properties(avformat PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavformat.so)
+    add_library( avutil SHARED IMPORTED)
+    set_target_properties(avutil PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavutil.so)
+    add_library( avcodec SHARED IMPORTED)
+    set_target_properties(avcodec PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libavcodec.so)
+    add_library( swresample SHARED IMPORTED)
+    set_target_properties(swresample PROPERTIES IMPORTED_LOCATION
+            ${FFMPEG_DIR}/lib/libswresample.so)
+    set (TARGET_LIBS ${TARGET_LIBS} avformat avutil avcodec swresample)
+
+else()
+    MESSAGE(STATUS "Using NDK media extractor")
+    add_definitions(-DUSE_FFMPEG=0)
+    target_sources( native-lib PRIVATE src/main/cpp/audio/NDKExtractor.cpp )
+    set (TARGET_LIBS ${TARGET_LIBS} mediandk)
+endif()
+
+target_link_libraries( native-lib ${TARGET_LIBS} )
+
 
 # Set the path to the Oboe directory.
 set (OBOE_DIR ../..)

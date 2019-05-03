@@ -33,7 +33,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.sample.oboe.manualtest.R;
 import com.mobileer.miditools.MidiOutputPortConnectionSelector;
 import com.mobileer.miditools.MidiPortConnector;
 import com.mobileer.miditools.MidiTools;
@@ -183,7 +182,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
             mWaveformView.clearSampleData();
         } else {
             if (result.events.length < 2) {
-                text = "Not enough edges.\n";
+                text = "Not enough edges. Use fingernail.\n";
                 mWaveformView.setCursorData(null);
             } else if (result.events.length > 2) {
                 text = "Too many edges.\n";
@@ -321,7 +320,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
         // If the user previously denied this permission then show a message explaining why
         // this permission is needed
         if (shouldShowRequestPermissionRationale(requiredPermission)) {
-            showToast("This app needs to record audio through the microphone....");
+            showErrorToast("This app needs to record audio through the microphone....");
         }
 
         // request the permission.

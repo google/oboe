@@ -18,6 +18,7 @@ package com.google.sample.oboe.manualtest;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -35,6 +36,8 @@ public class EchoActivity extends TestInputActivity {
     private static final double MIN_DELAY_TIME_SECONDS = 0.0;
     private static final double MAX_DELAY_TIME_SECONDS = 3.0;
     private double mDelayTime;
+    private Button mStartButton;
+    private Button mStopButton;
 
     protected static final int MAX_DELAY_TIME_PROGRESS = 1000;
 
@@ -66,12 +69,18 @@ public class EchoActivity extends TestInputActivity {
 
         mAudioOutTester = addAudioOutputTester();
 
+        mStartButton = (Button) findViewById(R.id.button_start_echo);
+        mStopButton = (Button) findViewById(R.id.button_stop_echo);
+        mStopButton.setEnabled(false);
+
         mTextDelayTime = (TextView) findViewById(R.id.text_delay_time);
         mFaderDelayTime = (SeekBar) findViewById(R.id.fader_delay_time);
         mFaderDelayTime.setOnSeekBarChangeListener(mDelayListener);
         mTaperDelayTime = new ExponentialTaper(MAX_DELAY_TIME_PROGRESS,
                 MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS, 100.0);
         mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
+
+        hideSettingsViews();
     }
 
     private void setDelayTimeByPosition(int progress) {
@@ -92,11 +101,17 @@ public class EchoActivity extends TestInputActivity {
         openAudio();
         startAudio();
         setDelayTime(mDelayTime);
+        mStartButton.setEnabled(false);
+        mStopButton.setEnabled(true);
+        keepScreenOn(true);
     }
 
     public void onStopEcho(View view) {
         stopAudio();
         closeAudio();
+        mStartButton.setEnabled(true);
+        mStopButton.setEnabled(false);
+        keepScreenOn(false);
     }
 
     @Override

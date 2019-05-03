@@ -21,15 +21,12 @@
 #include <mutex>
 #include <thread>
 
-#include "aaudio/AAudio.h"
-
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStream.h"
 #include "oboe/Definitions.h"
+#include "AAudioLoader.h"
 
 namespace oboe {
-
-class AAudioLoader;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -113,6 +110,7 @@ private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
 
+    // pointer to the underlying AAudio stream, valid if open, null if closed
     std::atomic<AAudioStream *> mAAudioStream{nullptr};
 
     static AAudioLoader *mLibLoader;

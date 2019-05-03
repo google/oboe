@@ -83,6 +83,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setSessionId(getSessionId());
         actualConfiguration.setFormat(getFormat());
         actualConfiguration.setMMap(isMMap());
+        actualConfiguration.setDirection(isInput()
+                ? StreamConfiguration.DIRECTION_INPUT
+                : StreamConfiguration.DIRECTION_OUTPUT);
     }
 
     private native int openNative(

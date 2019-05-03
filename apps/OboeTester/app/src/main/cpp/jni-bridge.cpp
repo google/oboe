@@ -368,7 +368,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *en
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setCallbackReturnStop(JNIEnv *env, jclass type,
                                                                       jboolean b) {
-    ActivityContext::callbackReturnStop = b;
+    OboeStreamCallbackProxy::setCallbackReturnStop(b);
 }
 
 JNIEXPORT void JNICALL
@@ -409,7 +409,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
     engine.getCurrentActivity()->setChannelEnabled(channelIndex, enabled);
 }
 
-
+// ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv *env,
                                                                          jobject instance,
@@ -417,11 +417,86 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv 
     engine.setActivityType(activityType);
 }
 
+// ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_TestInputActivity_saveWaveFile(JNIEnv *env,
+                                                                        jobject instance,
+                                                                        jstring fileName) {
+    const char *str = env->GetStringUTFChars(fileName, nullptr);
+    LOGD("nativeSaveFile(%s)", str);
+    jint result = engine.getCurrentActivity()->saveWaveFile(str);
+    env->ReleaseStringUTFChars(fileName, str);
+    return result;
+}
+
+// ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,
                                                                          jdouble delayTimeSeconds) {
     engine.setDelayTime(delayTimeSeconds);
+}
+
+// ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgress(JNIEnv *env,
+                                                                                    jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getProgress();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredLatency(JNIEnv *env,
+                                                                                   jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredLatency();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfidence(JNIEnv *env,
+                                                                                      jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredConfidence();
+}
+
+// ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getAnalyzerState(JNIEnv *env,
+                                                                         jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->getState();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_isAnalyzerDone(JNIEnv *env,
+                                                                       jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->isAnalyzerDone();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
+                                                                          jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getResetCount(JNIEnv *env,
+                                                                          jobject instance) {
+    return ((ActivityFullDuplex *)engine.getCurrentActivity())->getResetCount();
+}
+
+// ==========================================================================
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getGlitchCount(JNIEnv *env,
+                                                                     jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getSignalToNoiseDB(JNIEnv *env,
+                                                                         jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getSignalToNoiseDB();
+}
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getPeakAmplitude(JNIEnv *env,
+                                                                         jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getPeakAmplitude();
 }
 
 }

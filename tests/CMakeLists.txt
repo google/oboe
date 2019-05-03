@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-# TODO: Remove this line and inherit it from the host environment
-set(ANDROID_NDK $ENV{HOME}/Library/Android/sdk/ndk-bundle)
+# Usually this file is called from run_tests.sh which requires the $ANDROID_NDK variable to be set so there's no need
+# to set it here. Comments below are left in intentionally in case they're useful in future.
+# This may work on Mac OS.
+# set(ANDROID_NDK $ENV{HOME}/Library/Android/sdk/ndk-bundle)
+# This may work on Linux.
+# set(ANDROID_NDK $ENV{HOME}/Android/sdk/ndk-bundle)
 
 # Include GoogleTest library
 set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest)
@@ -14,14 +18,12 @@ set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 include_directories(${OBOE_DIR}/include)
 
-# include android headers
-include_directories(${ANDROID_NDK}/sysroot/usr/include)
-
 # Build the test binary
 add_executable(testOboe
         testUtilities.cpp
         testStreamClosedMethods.cpp
         testStreamStates.cpp
+        testStreamWaitState.cpp
 		testStreamOpen.cpp
         testXRunBehaviour.cpp
         )

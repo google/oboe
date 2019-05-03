@@ -16,16 +16,16 @@
 
 package com.google.sample.oboe.manualtest;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AutomaticGainControl;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
+
+import java.io.File;
 
 /**
  * Activity to record and play back audio.
@@ -35,10 +35,22 @@ public class RecorderActivity extends TestInputActivity {
     private static final int STATE_RECORDING = 5;
     private static final int STATE_PLAYING = 6;
     private int mRecorderState = STATE_STOPPED;
+    private Button mShareButton;
+    private Button mPlayButton;
 
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_recorder);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mPlayButton = (Button) findViewById(R.id.button_start_playback);
+        mShareButton = (Button) findViewById(R.id.button_share);
+        mPlayButton.setEnabled(false);
+        mShareButton.setEnabled(false);
     }
 
     @Override
@@ -51,12 +63,15 @@ public class RecorderActivity extends TestInputActivity {
         openAudio();
         startAudio();
         mRecorderState = STATE_RECORDING;
+
     }
 
     public void onStopRecordPlay(View view) {
         stopAudio();
         closeAudio();
         mRecorderState = STATE_STOPPED;
+        mPlayButton.setEnabled(true);
+        mShareButton.setEnabled(true);
     }
 
     public void onStartPlayback(View view) {
@@ -71,9 +86,14 @@ public class RecorderActivity extends TestInputActivity {
             updateEnabledWidgets();
         } catch (Exception e) {
             e.printStackTrace();
-            showToast(e.getMessage());
+            showErrorToast(e.getMessage());
         }
 
+    }
+
+    @Override
+    String getWaveTag() {
+        return "recording";
     }
 
 }

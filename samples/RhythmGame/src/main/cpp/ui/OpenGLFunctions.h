@@ -32,6 +32,7 @@ constexpr ScreenColor BLUE { 0.0f, 0.0f, 1.0f, 1.0f };
 constexpr ScreenColor PURPLE { 1.0f, 0.0f, 1.0f, 1.0f };
 constexpr ScreenColor ORANGE { 1.0f, 0.5f, 0.0f, 1.0f };
 constexpr ScreenColor GREY { 0.3f, 0.3f, 0.3f, 0.3f };
+constexpr ScreenColor YELLOW { 1.0f, 1.0f, 0.0f, 1.0f };
 
 #ifdef GL3
 #include <GLES3/gl3.h>

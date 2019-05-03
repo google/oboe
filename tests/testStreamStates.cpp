@@ -19,6 +19,10 @@
 
 using namespace oboe;
 
+// Sleep between close and open to avoid a race condition inside Android Audio.
+// On a Pixel 2 emulator on a fast Linux host, the minimum value is around 16 msec.
+constexpr int kOboeOpenCloseSleepMSec = 100;
+
 class StreamStates : public ::testing::Test {
 
 protected:
@@ -29,6 +33,7 @@ protected:
     }
 
     bool openStream(Direction direction) {
+        usleep(100 * 1000);
         mBuilder.setDirection(direction);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
@@ -66,7 +71,7 @@ protected:
 
         StreamState next = StreamState::Unknown;
         auto r = mStream->requestStart();
-        EXPECT_EQ(r, Result::OK);
+        EXPECT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
         r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
         EXPECT_EQ(r, Result::OK);
         EXPECT_EQ(next, StreamState::Started);
@@ -115,6 +120,8 @@ protected:
         // The underlying API should stop the stream.
         closeStream();
 
+        usleep(kOboeOpenCloseSleepMSec * 1000); // avoid race condition in emulator
+
         openInputStream();
         r = mStream->requestStart();
         ASSERT_EQ(r, Result::OK) << "requestStart returned: " << convertToText(r);
@@ -126,7 +133,7 @@ protected:
 
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
-    static constexpr int kTimeoutInNanos = 100 * kNanosPerMillisecond;
+    static constexpr int kTimeoutInNanos = 500 * kNanosPerMillisecond;
 
 };
 
@@ -149,7 +156,6 @@ TEST_F(StreamStates, OutputStreamStateIsStartedAfterStarting){
 
     r = mStream->waitForStateChange(StreamState::Starting, &next, kTimeoutInNanos);
     EXPECT_EQ(r, Result::OK);
-
     ASSERT_EQ(next, StreamState::Started);
 
     closeStream();
