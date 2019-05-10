@@ -66,7 +66,7 @@ public abstract class AudioStreamBase {
                     ? "?"
                     : String.format("%6.1f msec", latency);
             buffer.append("latency = " + latencyText
-                    + ", " + parseState(state)
+                    + ", " + convertStateToString(state)
                     + ", #callbacks " + callbackCount+ "\n");
 
             buffer.append("buffer size = ");
@@ -82,13 +82,13 @@ public abstract class AudioStreamBase {
             return buffer.toString();
         }
         /**
-         *Converts ints from JNI to human-readable stream state
+         * Converts ints from Oboe index to human-readable stream state
          */
-        private String parseState(int stateId) {
-            final String[] STATE_ARRAY = {"Uninit", "Unknown", "Open", "Starting", "Started",
+        private String convertStateToString(int stateId) {
+            final String[] STATE_ARRAY = {"Uninit.", "Unknown", "Open", "Starting", "Started",
                     "Pausing", "Paused", "Flushing", "Flushed",
-                    "Stopping", "Stopped", "Closing", "Closed", "Disconnected"};
-            if (stateId < 0 || stateId > STATE_ARRAY.length) {
+                    "Stopping", "Stopped", "Closing", "Closed", "Disconn."};
+            if (stateId < 0 || stateId >= STATE_ARRAY.length) {
                 return "Invalid - " + stateId;
             }
             return STATE_ARRAY[stateId];
