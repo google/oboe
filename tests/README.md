@@ -1,5 +1,13 @@
-Before running the tests you must define $ANDROID_NDK
-and make sure cmake is in the PATH.
+## Oboe unit tests
+This directory contains the Oboe unit tests. They are run using the bash script `run_tests.sh`. 
+
+### Running the tests
+
+1. Connect an Android device or start the Android emulator
+2. Open a terminal window and execute `run_tests.sh`
+
+### Prerequisites/caveats
+Before running the tests you must define `ANDROID_NDK` as an environment variable and make sure `cmake` is on your path.
 
 To test this on Mac or Linux enter:
 
@@ -7,7 +15,7 @@ To test this on Mac or Linux enter:
     echo $ANDROID_NDK
     cmake --version
 
-If you need to set ANDROID_NDK then this may work on Mac OS:
+If you need to set `ANDROID_NDK` then this may work on Mac OS:
 
     export ANDROID_HOME=$HOME/Library/Android/sdk
     export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
@@ -17,7 +25,7 @@ This may work on Linux:
     export ANDROID_HOME=$HOME/Android/Sdk
     export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
 
-If you need to add cmake to the path then you can find it by entering:
+If you need to add `cmake` to your path then you can find it by entering:
 
     ls $ANDROID_HOME/cmake
     
@@ -41,4 +49,4 @@ If you get this error:
 
 then uninstall the app "UnitTestRunner" from the Android device.
 
-See run_tests.sh for more documentation
+See `run_tests.sh` for more documentation
