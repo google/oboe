@@ -3,7 +3,7 @@
 Test Oboe using an Interactive App.
 
 Download the top level oboe repository from GitHub
-Then use Android Studio to build the app in this folder.
+Then use Android Studio (3.3 or above) to build the app in this folder.
 
 ## Test Output
 
