@@ -26,7 +26,6 @@ include_directories(
     ${OBOE_DIR}/src
 )
 
-
 ### END OBOE INCLUDE SECTION ###
 
 # link to oboe

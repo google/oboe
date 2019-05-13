@@ -34,7 +34,7 @@ public:
 
     int32_t onProcess(int numFrames) override;
 
-    void setEnabled(bool enabled) {};
+    void setEnabled(bool enabled) {}
 
     std::vector<std::unique_ptr<flowgraph::AudioFloatInputPort>> inputs;
     flowgraph::AudioFloatOutputPort output;

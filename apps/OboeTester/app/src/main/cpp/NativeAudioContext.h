@@ -27,13 +27,13 @@
 #include "oboe/Oboe.h"
 
 #include "AudioStreamGateway.h"
-#include "flowgraph/ImpulseOscillator.h"
+#include "flowunits/ImpulseOscillator.h"
 #include "flowgraph/ManyToMultiConverter.h"
 #include "flowgraph/MonoToMultiConverter.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
-#include "flowgraph/SineOscillator.h"
-#include "flowgraph/SawtoothOscillator.h"
+#include "flowunits/SineOscillator.h"
+#include "flowunits/SawtoothOscillator.h"
 
 #include "FullDuplexEcho.h"
 #include "FullDuplexGlitches.h"
