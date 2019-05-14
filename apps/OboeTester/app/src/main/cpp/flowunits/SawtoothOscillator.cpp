@@ -29,7 +29,7 @@ int32_t SawtoothOscillator::onProcess(int numFrames) {
     float *buffer = output.getBuffer();
 
     // Use the phase directly as a non-band-limited "sawtooth".
-    // This will generate unpleasant aliasing artifacts at higher frequencies.
+    // WARNING: This will generate unpleasant aliasing artifacts at higher frequencies.
     for (int i = 0; i < numFrames; i++) {
         float phase = incrementPhase(frequencies[i]); // phase ranges from -1 to +1
         *buffer++ = phase * amplitudes[i];

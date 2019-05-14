@@ -22,7 +22,7 @@
 #include <sys/types.h>
 
 #include "flowgraph/AudioProcessorBase.h"
-#include "flowgraph/OscillatorBase.h"
+#include "flowunits/OscillatorBase.h"
 
 class SawPingGenerator : public OscillatorBase {
 public:

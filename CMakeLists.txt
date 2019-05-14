@@ -11,6 +11,17 @@ set (oboe_sources
         src/fifo/FifoController.cpp
         src/fifo/FifoControllerBase.cpp
         src/fifo/FifoControllerIndirect.cpp
+	src/flowgraph/AudioProcessorBase.cpp
+	src/flowgraph/ClipToRange.cpp
+	src/flowgraph/ManyToMultiConverter.cpp
+	src/flowgraph/MonoToMultiConverter.cpp
+	src/flowgraph/RampLinear.cpp
+	src/flowgraph/SinkFloat.cpp
+	src/flowgraph/SinkI16.cpp
+	src/flowgraph/SinkI24.cpp
+	src/flowgraph/SourceFloat.cpp
+	src/flowgraph/SourceI16.cpp
+	src/flowgraph/SourceI24.cpp
         src/opensles/AudioInputStreamOpenSLES.cpp
         src/opensles/AudioOutputStreamOpenSLES.cpp
         src/opensles/AudioStreamBuffered.cpp
@@ -35,7 +46,7 @@ target_include_directories(oboe
 #     Enable -Ofast
 target_compile_options(oboe
     PRIVATE
-    -std=c++11
+    -std=c++14
     -Wall
     -Wextra-semi
     -Wshadow

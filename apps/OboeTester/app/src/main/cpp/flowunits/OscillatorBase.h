@@ -17,7 +17,7 @@
 #ifndef NATIVEOBOE_OSCILLATORBASE_H
 #define NATIVEOBOE_OSCILLATORBASE_H
 
-#include "AudioProcessorBase.h"
+#include "flowgraph/AudioProcessorBase.h"
 
 /**
  * Base class for various oscillators.
