@@ -1208,7 +1208,7 @@ private:
     };
 
     static constexpr float kTolerance = 0.10; // scale from 0.0 to 1.0
-    static constexpr float kNoiseAmplitude = 0.01; // Used to experiment with warbling caused by DRC.
+    static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
     static constexpr int kTargetGlitchFrequency = 607;
     double  mThreshold = 0.005;
     int     mSinePeriod = 1; // this will be set before use
