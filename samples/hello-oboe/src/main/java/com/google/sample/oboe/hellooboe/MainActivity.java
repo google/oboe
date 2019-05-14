@@ -22,6 +22,8 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.core.view.MotionEventCompat;
+
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -81,18 +83,34 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mLatencyText = findViewById(R.id.latencyText);
         setupAudioApiSpinner();
         setupPlaybackDeviceSpinner();
         setupChannelCountSpinner();
         setupBufferSizeSpinner();
 
-        // initialize native audio system
+    }
+    /*
+    * Creating engine in onResume() and destroying in onPause() so the stream retains exclusive
+    * mode only while in focus. This allows other apps to reclaim exclusive stream mode.
+    */
+    @Override
+    protected void onResume() {
+        super.onResume();
         PlaybackEngine.create(this);
-
-        // Periodically update the UI with the output stream latency
-        mLatencyText = findViewById(R.id.latencyText);
         setupLatencyUpdater();
+        // Return to defaults
+        mChannelCountSpinner.setSelection(1);
+        mPlaybackDeviceSpinner.setSelection(0);
+        mBufferSizeSpinner.setSelection(0);
+        mAudioApiSpinner.setSelection(0);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mLatencyUpdater != null) mLatencyUpdater.cancel();
+        PlaybackEngine.delete();
     }
 
     private void setupChannelCountSpinner() {
@@ -203,11 +221,8 @@ public class MainActivity extends Activity {
         TimerTask latencyUpdateTask = new TimerTask() {
             @Override
             public void run() {
-
                 final String latencyStr;
-
                 if (PlaybackEngine.isLatencyDetectionSupported()) {
-
                     double latency = PlaybackEngine.getCurrentOutputLatencyMillis();
                     if (latency >= 0) {
                         latencyStr = String.format(Locale.getDefault(), "%.2fms", latency);
@@ -234,8 +249,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (mLatencyUpdater != null) mLatencyUpdater.cancel();
-        PlaybackEngine.delete();
         super.onDestroy();
     }
 
