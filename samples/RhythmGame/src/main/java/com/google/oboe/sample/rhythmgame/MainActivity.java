@@ -35,13 +35,13 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    protected void onStart(){
-        super.onStart();
+    protected void onResume(){
+        super.onResume();
         native_onStart(getAssets());
     }
 
-    protected void onStop(){
-        super.onStop();
+    protected void onPause(){
+        super.onPause();
         native_onStop();
     }
 
