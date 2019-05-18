@@ -300,9 +300,7 @@ public:
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
      */
-	virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId){
-        return Result::ErrorUnimplemented;
-    }
+	ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId);
 
     // ============== I/O ===========================
     /**
@@ -374,6 +372,31 @@ public:
      */
     void launchStopThread();
 
+    /**
+     * Update mFramesWritten.
+     * For internal use only.
+     */
+    virtual void updateFramesWritten() = 0;
+
+    /**
+     * Update mFramesRead.
+     * For internal use only.
+     */
+    virtual void updateFramesRead() = 0;
+
+    /*
+     * Swap old callback for new callback.
+     * This not atomic.
+     * This should only be used internally.
+     * @param streamCallback
+     * @return previous streamCallback
+     */
+    AudioStreamCallback *swapCallback(AudioStreamCallback *streamCallback) {
+        AudioStreamCallback *previousCallback = mStreamCallback;
+        mStreamCallback = streamCallback;
+        return previousCallback;
+    }
+
 protected:
 
     /**
@@ -406,16 +429,6 @@ protected:
      *
      */
     DataCallbackResult fireDataCallback(void *audioData, int numFrames);
-
-    /**
-     * Update mFramesWritten.
-     */
-    virtual void updateFramesWritten() = 0;
-
-    /**
-     * Update mFramesRead.
-     */
-    virtual void updateFramesRead() = 0;
 
     /**
      * @return true if callbacks may be called
@@ -454,6 +467,7 @@ private:
     int                  mPreviousScheduler = -1;
 
     std::atomic<bool>    mDataCallbackEnabled{};
+
 
 };
 

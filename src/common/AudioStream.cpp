@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 #include <thread>
+
 #include <oboe/AudioStream.h>
 #include "OboeDebug.h"
 #include <oboe/Utilities.h>
@@ -48,6 +49,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         return DataCallbackResult::Stop; // We should not be getting called any more.
     }
 
+    // TODO remove
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
         LOGD("AudioStream::%s() scheduler = %s", __func__,
@@ -65,7 +67,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         result = mStreamCallback->onAudioReady(this, audioData, numFrames);
     }
     // On Oreo, we might get called after returning stop.
-    // So block there here.
+    // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
 
     return result;
@@ -150,6 +152,16 @@ int64_t AudioStream::getFramesRead() {
 int64_t AudioStream::getFramesWritten() {
     updateFramesWritten();
     return mFramesWritten;
+}
+
+ResultWithValue<FrameTimestamp> AudioStream::getTimestamp(clockid_t clockId) {
+    FrameTimestamp frame;
+    Result result = getTimestamp(clockId, &frame.position, &frame.timestamp);
+    if (result == Result::OK){
+        return ResultWithValue<FrameTimestamp>(frame);
+    } else {
+        return ResultWithValue<FrameTimestamp>(static_cast<Result>(result));
+    }
 }
 
 static void oboe_stop_thread_proc(AudioStream *oboeStream) {

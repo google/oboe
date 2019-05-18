@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "common/OboeDebug.h"
 #include <algorithm>
 #include <unistd.h>
 #include "AudioProcessorBase.h"
@@ -26,22 +27,24 @@ SinkFloat::SinkFloat(int32_t channelCount)
 }
 
 int32_t SinkFloat::read(int64_t framePosition, void *data, int32_t numFrames) {
+    LOGD("SinkFloat::read(,,%d)", numFrames);
     float *floatData = (float *) data;
     int32_t channelCount = input.getSamplesPerFrame();
 
     int32_t framesLeft = numFrames;
     while (framesLeft > 0) {
         // Run the graph and pull data through the input port.
-        int32_t framePulled = pullData(framePosition, framesLeft);
-        if (framePulled <= 0) {
+        int32_t framesPulled = pullData(framePosition, framesLeft);
+        LOGD("SinkFloat::read: framesLeft = %d, framesPulled = %d", framesLeft, framesPulled);
+        if (framesPulled <= 0) {
             break;
         }
         const float *signal = input.getBuffer();
-        int32_t numSamples = framePulled * channelCount;
+        int32_t numSamples = framesPulled * channelCount;
         memcpy(floatData, signal, numSamples * sizeof(float));
         floatData += numSamples;
-        framesLeft -= framePulled;
-        framePosition += framePulled;
+        framesLeft -= framesPulled;
+        framePosition += framesPulled;
     }
     return numFrames - framesLeft;
 }

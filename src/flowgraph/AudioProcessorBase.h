@@ -79,12 +79,25 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames);
 
-//    virtual void start() {}
-//
-//    virtual void stop() {}
-
     void addInputPort(AudioPort &port) {
         mInputPorts.push_back(port);
+    }
+
+    bool isDataPulledAutomatically() const {
+        return mDataPulledAutomatically;
+    }
+
+    /**
+     * Set true if you want the data pulled through the graph automatically.
+     * This is the default.
+     *
+     * Set false if you want to pull the data from the input ports in the process method.
+     * You might do this, for example, in a sample rate converting node.
+     *
+     * @param automatic
+     */
+    void setDataPulledAutomatically(bool automatic) {
+        mDataPulledAutomatically = automatic;
     }
 
 protected:
@@ -93,7 +106,9 @@ protected:
     std::vector<std::reference_wrapper<AudioPort>> mInputPorts;
 
 private:
-    int32_t  mFramesValid = 0; // num valid frames in the block
+    // FIXME int32_t  mFramesValid = 0; // num valid frames in the block
+    bool     mDataPulledAutomatically = true;
+
 };
 
 /***************************************************************************/
