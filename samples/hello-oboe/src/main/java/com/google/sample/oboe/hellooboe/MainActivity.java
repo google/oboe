@@ -17,13 +17,11 @@
 package com.google.sample.oboe.hellooboe;
 
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.core.view.MotionEventCompat;
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -99,7 +97,7 @@ public class MainActivity extends Activity {
         super.onResume();
         PlaybackEngine.create(this);
         setupLatencyUpdater();
-        // Return to defaults
+        // Return the spinner states to their default value
         mChannelCountSpinner.setSelection(1);
         mPlaybackDeviceSpinner.setSelection(0);
         mBufferSizeSpinner.setSelection(0);
@@ -108,9 +106,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
-        super.onPause();
-        if (mLatencyUpdater != null) mLatencyUpdater.cancel();
-        PlaybackEngine.delete();
+       if (mLatencyUpdater != null) mLatencyUpdater.cancel();
+       PlaybackEngine.delete();
+       super.onPause();
     }
 
     private void setupChannelCountSpinner() {
@@ -216,7 +214,6 @@ public class MainActivity extends Activity {
     }
 
     private void setupLatencyUpdater() {
-
         //Update the latency every 1s
         TimerTask latencyUpdateTask = new TimerTask() {
             @Override
@@ -241,15 +238,8 @@ public class MainActivity extends Activity {
                 });
             }
         };
-
         mLatencyUpdater = new Timer();
         mLatencyUpdater.schedule(latencyUpdateTask, 0, UPDATE_LATENCY_EVERY_MILLIS);
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     /**
