@@ -26,15 +26,18 @@ int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
     // Prevent recursion and multiple execution of nodes.
     if (framePosition > mLastFramePosition) {
         mLastFramePosition = framePosition;
-        // Pull from all the upstream nodes.
-        for (auto &port : mInputPorts) {
-            frameCount = port.get().pullData(framePosition, frameCount);
+        if (mDataPulledAutomatically) {
+            // Pull from all the upstream nodes.
+            for (auto &port : mInputPorts) {
+                // TODO fix bug of leaving unused data in some ports
+                frameCount = port.get().pullData(framePosition, frameCount);
+            }
         }
         if (frameCount > 0) {
-            mFramesValid = onProcess(frameCount);
+            frameCount = onProcess(frameCount);
         }
     }
-    return mFramesValid;
+    return frameCount;
 }
 
 /***************************************************************************/

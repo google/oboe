@@ -17,6 +17,7 @@
 #include <sys/types.h>
 
 #include "aaudio/AudioStreamAAudio.h"
+#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -84,10 +85,56 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         return Result::ErrorNull;
     }
     *streamPP = nullptr;
-    AudioStream *streamP = build();
-    if (streamP == nullptr) {
-        return Result::ErrorNull;
+
+    AudioStream *streamP = nullptr;
+
+    // Maybe make a FilterInputStream
+    // TODO refactor this into a QuirksManager
+    if (getPerformanceMode() == PerformanceMode::LowLatency
+        && getSampleRate() != oboe::Unspecified) {
+        AudioStreamBuilder childBuilder = *this;
+        childBuilder.setSampleRate(oboe::Unspecified);
+        AudioStream *tempStream;
+        Result childResult = childBuilder.openStream(&tempStream);
+        if (childResult != Result::OK) {
+            return childResult;
+        }
+
+        if (getSampleRate() == tempStream->getSampleRate()) {
+            // We can just use the child stream directly.
+            *streamPP = tempStream;
+            return childResult;
+        } else {
+            AudioStreamBuilder parentBuilder = *this;
+            // Build a stream that is as close as possible to the childStream.
+            if (getFormat() == oboe::AudioFormat::Unspecified) {
+                parentBuilder.setFormat(tempStream->getFormat());
+            }
+            if (getChannelCount() == oboe::Unspecified) {
+                parentBuilder.setChannelCount(tempStream->getChannelCount());
+            }
+
+            // Use childStream in a FilterAudioStream.
+            std::shared_ptr<AudioStream> childStream(tempStream);
+            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, childStream);
+            childResult = filterStream->configureFlowGraph();
+            if (childResult !=  Result::OK) {
+                filterStream->close();
+                delete filterStream;
+                // Just open streamP the old way.
+            } else {
+                streamP = static_cast<AudioStream *>(filterStream);
+            }
+        }
     }
+
+    if (streamP == nullptr) {
+        streamP = build();
+        if (streamP == nullptr) {
+            return Result::ErrorNull;
+        }
+    }
+
     Result result = streamP->open(); // TODO review API
     if (result == Result::OK) {
 

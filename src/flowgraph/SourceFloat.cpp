@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "common/OboeDebug.h"
 #include <algorithm>
 #include <unistd.h>
 #include "AudioProcessorBase.h"
@@ -27,6 +28,7 @@ SourceFloat::SourceFloat(int32_t channelCount)
 
 int32_t SourceFloat::onProcess(int32_t numFrames) {
 
+    LOGD("SourceFloat::onProcess(%d)", numFrames);
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
 
@@ -38,6 +40,7 @@ int32_t SourceFloat::onProcess(int32_t numFrames) {
     const float *floatData = &floatBase[mFrameIndex * channelCount];
     memcpy(outputBuffer, floatData, numSamples * sizeof(float));
     mFrameIndex += framesToProcess;
+    LOGD("SourceFloat::onProcess: returns %d", framesToProcess);
     return framesToProcess;
 }
 
