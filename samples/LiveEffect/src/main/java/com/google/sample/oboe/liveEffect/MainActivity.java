@@ -121,10 +121,7 @@ public class MainActivity extends Activity
             }
         });
 
-        LiveEffectEngine.create();
-        aaudioSupported = LiveEffectEngine.isAAudioSupported();
-        EnableAudioApiUI(true);
-        LiveEffectEngine.setAPI(apiSelection);
+
     }
 
     private void EnableAudioApiUI(boolean enable) {
@@ -149,9 +146,18 @@ public class MainActivity extends Activity
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onResume() {
+        super.onResume();
+        LiveEffectEngine.create();
+        aaudioSupported = LiveEffectEngine.isAAudioSupported();
+        EnableAudioApiUI(true);
+        LiveEffectEngine.setAPI(apiSelection);
+    }
+    @Override
+    protected void onPause() {
+        stopEffect();
         LiveEffectEngine.delete();
-        super.onDestroy();
+        super.onPause();
     }
 
     public void toggleEffect() {
