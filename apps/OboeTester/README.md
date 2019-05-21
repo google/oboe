@@ -56,7 +56,7 @@ This test works best with a loopback adapter. But it can also work in a quiet ro
 It plays a sine wave and then tries to record and lock onto that sine wave.
 If the actual input does not match the expected sine wave value then it is counted as a glitch.
 The test will display the maximum time that it ran without seeing a glitch.
-A "reset" occurs if there is not enough input data causing a gap in the signal.
+A "reset" occurs if there is not enough input data, which causes a gap in the signal.
 Some resets are common at the beginnng.
 
 ### Auto Glitch Test
