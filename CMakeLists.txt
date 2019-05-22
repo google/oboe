@@ -11,17 +11,17 @@ set (oboe_sources
         src/fifo/FifoController.cpp
         src/fifo/FifoControllerBase.cpp
         src/fifo/FifoControllerIndirect.cpp
-	src/flowgraph/AudioProcessorBase.cpp
-	src/flowgraph/ClipToRange.cpp
-	src/flowgraph/ManyToMultiConverter.cpp
-	src/flowgraph/MonoToMultiConverter.cpp
-	src/flowgraph/RampLinear.cpp
-	src/flowgraph/SinkFloat.cpp
-	src/flowgraph/SinkI16.cpp
-	src/flowgraph/SinkI24.cpp
-	src/flowgraph/SourceFloat.cpp
-	src/flowgraph/SourceI16.cpp
-	src/flowgraph/SourceI24.cpp
+        src/flowgraph/AudioProcessorBase.cpp
+        src/flowgraph/ClipToRange.cpp
+        src/flowgraph/ManyToMultiConverter.cpp
+        src/flowgraph/MonoToMultiConverter.cpp
+        src/flowgraph/RampLinear.cpp
+        src/flowgraph/SinkFloat.cpp
+        src/flowgraph/SinkI16.cpp
+        src/flowgraph/SinkI24.cpp
+        src/flowgraph/SourceFloat.cpp
+        src/flowgraph/SourceI16.cpp
+        src/flowgraph/SourceI24.cpp
         src/opensles/AudioInputStreamOpenSLES.cpp
         src/opensles/AudioOutputStreamOpenSLES.cpp
         src/opensles/AudioStreamBuffered.cpp
@@ -30,29 +30,29 @@ set (oboe_sources
         src/opensles/OpenSLESUtilities.cpp
         src/opensles/OutputMixerOpenSLES.cpp
         src/common/StabilizedCallback.cpp
-		src/common/Trace.cpp
-		src/common/Version.cpp
+        src/common/Trace.cpp
+        src/common/Version.cpp
         )
 
 add_library(oboe ${oboe_sources})
 
 # Specify directories which the compiler should look for headers
 target_include_directories(oboe
-                           PRIVATE src
-                           PUBLIC include)
+        PRIVATE src
+        PUBLIC include)
 
 # Compile Flags:
 #     Enable -Werror when building debug config
 #     Enable -Ofast
 target_compile_options(oboe
-    PRIVATE
-    -std=c++14
-    -Wall
-    -Wextra-semi
-    -Wshadow
-    -Wshadow-field
-    -Ofast
-    "$<$<CONFIG:DEBUG>:-Werror>")
+        PRIVATE
+        -std=c++14
+        -Wall
+        -Wextra-semi
+        -Wshadow
+        -Wshadow-field
+        -Ofast
+        "$<$<CONFIG:DEBUG>:-Werror>")
 
 # Enable logging for debug builds
 target_compile_definitions(oboe PUBLIC "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")
