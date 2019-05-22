@@ -137,7 +137,7 @@ private:
  */
 class AudioFloatBufferPort  : public AudioPort {
 public:
-    AudioFloatBufferPort(AudioProcessorBase &mParent,
+    AudioFloatBufferPort(AudioProcessorBase &parent,
                    int32_t samplesPerFrame,
                    int32_t framesPerBuffer = kDefaultBufferSize
                 );
