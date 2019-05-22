@@ -37,7 +37,6 @@ std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
 }
 
 extern "C" {
-
 /**
  * Start the audio engine
  *
@@ -100,6 +99,15 @@ Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv * /*unused*/, jobject /*
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }
+}
+
+JNIEXPORT void JNICALL
+Java_com_example_oboe_megadrone_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+                                                                            jclass type,
+                                                                            jint sampleRate,
+                                                                            jint framesPerBurst) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
 
 } // extern "C"

@@ -121,7 +121,7 @@ public class MainActivity extends Activity
             }
         });
 
-
+        LiveEffectEngine.setDefaultStreamValues(this);
     }
 
     private void EnableAudioApiUI(boolean enable) {
