@@ -49,6 +49,8 @@ public class MainActivity extends Activity {
     private static final int CHANNEL_COUNT_DEFAULT_OPTION_INDEX = 1;
     private static final int[] BUFFER_SIZE_OPTIONS = {0, 1, 2, 4, 8};
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
+    // Default all other spinners to the first option on the list
+    private static final int SPINNER_DEFAULT_OPTION_INDEX = 0;
 
     private Spinner mAudioApiSpinner;
     private AudioDeviceSpinner mPlaybackDeviceSpinner;
@@ -98,10 +100,10 @@ public class MainActivity extends Activity {
         PlaybackEngine.create(this);
         setupLatencyUpdater();
         // Return the spinner states to their default value
-        mChannelCountSpinner.setSelection(1);
-        mPlaybackDeviceSpinner.setSelection(0);
-        mBufferSizeSpinner.setSelection(0);
-        mAudioApiSpinner.setSelection(0);
+        mChannelCountSpinner.setSelection(CHANNEL_COUNT_DEFAULT_OPTION_INDEX);
+        mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        mBufferSizeSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
     }
 
     @Override
