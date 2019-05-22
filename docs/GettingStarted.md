@@ -150,23 +150,17 @@ Here's a code sample showing how the default values for built-in devices can be 
 	    String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
 	    int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
 
-	    native_setDefaultSampleRate(defaultSampleRate);
-	    native_setDefaultFramesPerBurst(defaultFramesPerBurst);
+	    native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
 	}
 
 *jni-bridge.cpp*
 
 	JNIEXPORT void JNICALL
-	Java_com_google_sample_oboe_hellooboe_MainActivity_native_1setDefaultSampleRate(JNIEnv *env,
+	Java_com_google_sample_oboe_hellooboe_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
 	                                                                                  jclass type,
-	                                                                                  jint sampleRate) {
+	                                                                                  jint sampleRate,
+	                                                                                  jint framesPerBurst) {
 	    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
-	}
-
-	JNIEXPORT void JNICALL
-	Java_com_google_sample_oboe_hellooboe_MainActivity_native_1setDefaultFramesPerBurst(JNIEnv *env,
-	                                                                                      jclass type,
-	                                                                                      jint framesPerBurst) {
 	    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 	}
 
