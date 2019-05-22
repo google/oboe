@@ -150,19 +150,12 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionS
     return (engine->isLatencyDetectionSupported() ? JNI_TRUE : JNI_FALSE);
 }
 
-
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultSampleRate(JNIEnv *env,
+Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultStreamValues(JNIEnv *env,
                                                                                   jclass type,
-                                                                                  jint sampleRate) {
+                                                                                  jint sampleRate,
+                                                                                  jint framesPerBurst) {
     oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
-}
-
-JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultFramesPerBurst(JNIEnv *env,
-                                                                                      jclass type,
-                                                                                      jint framesPerBurst) {
     oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
-
-}
+} // extern "C"

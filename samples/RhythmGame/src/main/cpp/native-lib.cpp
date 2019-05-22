@@ -81,4 +81,13 @@ Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onStop(JNIEnv *env, 
 
     game->stop();
 }
+
+JNIEXPORT void JNICALL
+Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+                                                                                  jclass type,
+                                                                                  jint sampleRate,
+                                                                                  jint framesPerBurst) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
+} // extern "C"

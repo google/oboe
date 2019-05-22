@@ -17,6 +17,9 @@ package com.example.oboe.megadrone;
  */
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private native void stopEngine(long engineHandle);
     private native void tap(long engineHandle, boolean isDown);
 
+    private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
+
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("megadrone");
@@ -40,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        setDefaultStreamValues(this);
     }
 
     @Override
@@ -83,6 +88,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return exclusiveCores;
+    }
+
+    static void setDefaultStreamValues(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            AudioManager myAudioMgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+            int defaultSampleRate = Integer.parseInt(sampleRateStr);
+            String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+            int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+
+            native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
+        }
     }
 }
 
