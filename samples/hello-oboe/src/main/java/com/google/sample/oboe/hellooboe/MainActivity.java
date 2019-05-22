@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
     private static final int CHANNEL_COUNT_DEFAULT_OPTION_INDEX = 1;
     private static final int[] BUFFER_SIZE_OPTIONS = {0, 1, 2, 4, 8};
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
+    // Default all other spinners to the first option on the list
     private static final int SPINNER_DEFAULT_OPTION_INDEX = 0;
 
     private Spinner mAudioApiSpinner;
