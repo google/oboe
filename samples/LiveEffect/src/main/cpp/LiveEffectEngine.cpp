@@ -50,14 +50,15 @@ bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
     return true;
 }
 void LiveEffectEngine::setEffectOn(bool isOn) {
-    bindStreams();
     if (isOn != mIsEffectOn) {
         mIsEffectOn = isOn;
-
         if (isOn) {
+            bindStreams();
             mFullDuplexPass.start();
         } else {
             mFullDuplexPass.stop();
+            closeStream(mRecordingStream);
+            closeStream(mPlayStream);
         }
     }
 }
@@ -139,6 +140,7 @@ void LiveEffectEngine::closeStream(oboe::AudioStream *stream) {
         if (result != oboe::Result::OK) {
             LOGE("Error closing stream. %s", oboe::convertToText(result));
         }
+        LOGW("Successfully closed streams");
     }
 }
 
