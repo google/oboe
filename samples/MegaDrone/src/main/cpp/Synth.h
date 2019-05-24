@@ -22,6 +22,7 @@
 #include "shared/Oscillator.h"
 #include "shared/Mixer.h"
 #include "shared/MonoToStereo.h"
+#include "../../../../../src/common/OboeDebug.h"
 
 constexpr int kNumOscillators = 100;
 constexpr float kOscBaseFrequency = 116.0;
@@ -44,9 +45,9 @@ public:
         }
 
         if (channelCount == oboe::ChannelCount::Stereo){
-            mOutputStage = std::make_shared<MonoToStereo>(&mMixer);
+            mOutputStage = new MonoToStereo(&mMixer); // This only contains a pointer as data, so mem is safe
         } else {
-            mOutputStage.reset(&mMixer);
+            mOutputStage = &mMixer;
         }
     }
 
@@ -60,13 +61,17 @@ public:
         mOutputStage->renderAudio(audioData, numFrames);
     };
 
-    virtual ~Synth() {}
+    virtual ~Synth() {
+    }
 private:
 
     // Rendering objects
     std::array<Oscillator, kNumOscillators> mOscs;
-    Mixer mMixer;
-    std::shared_ptr<IRenderableAudio> mOutputStage;
+    Mixer mMixer;//This is the same as mOutputStage
+    //mMixer attempts to delete the oscillators, its a shared ptr, but they have already been deleted
+    //they were not made shared. Either the synth or the mixer should have ownership here.
+    IRenderableAudio *mOutputStage; //Replaced with pointer bc shared pointer
+    // is ambigious when referring to heap or stack, this design should be changed
 };
 
 
