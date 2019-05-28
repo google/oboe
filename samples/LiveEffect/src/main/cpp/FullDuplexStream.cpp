@@ -104,8 +104,13 @@ oboe::Result FullDuplexStream::start() {
 }
 
 oboe::Result FullDuplexStream::stop() {
-    getOutputStream()->requestStop(); // TODO result?
-    return getInputStream()->requestStop();
+    oboe::Result outputResult = getOutputStream()->requestStop();
+    oboe::Result inputResult = getInputStream()->requestStop();
+    if (outputResult != oboe::Result::OK) {
+        return outputResult;
+    } else {
+        return inputResult;
+    }
 }
 
 int32_t FullDuplexStream::getMNumInputBurstsCushion() const {

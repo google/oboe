@@ -53,23 +53,37 @@ void LiveEffectEngine::setEffectOn(bool isOn) {
     if (isOn != mIsEffectOn) {
         mIsEffectOn = isOn;
         if (isOn) {
-            bindStreams();
+            openStreams();
             mFullDuplexPass.start();
         } else {
             mFullDuplexPass.stop();
-            closeStream(mRecordingStream);
+            /*
+            * Note: The order of events is important here.
+            * The playback stream must be closed before the recording stream. If the
+            * recording stream were to be closed first the playback stream's
+            * callback may attempt to read from the recording stream
+            * which would cause the app to crash since the recording stream would be
+            * null.
+            */
             closeStream(mPlayStream);
-        }
+            closeStream(mRecordingStream);
+       }
     }
 }
-void LiveEffectEngine::bindStreams() {
+void LiveEffectEngine::openStreams() {
+    // Note: The order of stream creation is important. We create the playback
+    // stream first, then use properties from the playback stream
+    // (e.g. sample rate) to create the recording stream. By matching the
+    // properties we should get the lowest latency path
     oboe::AudioStreamBuilder inBuilder, outBuilder;
-    setupRecordingStreamParameters(&inBuilder);
-    inBuilder.openStream(&mRecordingStream);
-    warnIfNotLowLatency(mRecordingStream);
     setupPlaybackStreamParameters(&outBuilder);
     outBuilder.openStream(&mPlayStream);
     warnIfNotLowLatency(mPlayStream);
+
+    setupRecordingStreamParameters(&inBuilder);
+    inBuilder.openStream(&mRecordingStream);
+    warnIfNotLowLatency(mRecordingStream);
+
     mFullDuplexPass.setInputStream(mRecordingStream);
     mFullDuplexPass.setOutputStream(mPlayStream);
 }

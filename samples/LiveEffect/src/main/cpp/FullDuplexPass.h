@@ -20,11 +20,14 @@
 
 class FullDuplexPass : public FullDuplexStream {
 public:
-    const int BYTES_PER_FRAME = 4;
     virtual oboe::DataCallbackResult
     onBothStreamsReady(const void *inputData, int numInputFrames, void *outputData,
                        int numOutputFrames) {
-        memcpy(outputData, inputData, numInputFrames * BYTES_PER_FRAME);
+        size_t bytesPerFrame = this->getOutputStream()->getBytesPerFrame();
+        size_t bytesToWrite = numInputFrames * bytesPerFrame;
+        size_t bytesToZero = (numOutputFrames - numInputFrames) * bytesPerFrame > 0 ? : 0;
+        memcpy(outputData, inputData, bytesToWrite);
+        memset((u_char*) outputData + bytesToWrite, 0, bytesToZero);
         return oboe::DataCallbackResult::Continue;
     }
 };

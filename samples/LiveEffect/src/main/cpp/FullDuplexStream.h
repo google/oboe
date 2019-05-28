@@ -83,7 +83,7 @@ private:
     static constexpr int32_t kNumCallbacksToDiscard = 30;
 
     // let input fill back up, usually 0 or 1
-    int32_t mNumInputBurstsCushion = 0;
+    int32_t mNumInputBurstsCushion = 1;
 
     // We want to reach a state where the input buffer is empty and
     // the output buffer is full.

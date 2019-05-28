@@ -30,7 +30,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
     void setEffectOn(bool isOn);
-    void bindStreams();
+    void openStreams();
 
     /*
      * oboe::AudioStreamCallback interface implementation
