@@ -27,6 +27,7 @@ constexpr uint8_t kMaxTracks = 100;
  * A Mixer object which sums the output from multiple tracks into a single output. The number of
  * input channels on each track must match the number of output channels (default 1=mono). This can
  * be changed by calling `setChannelCount`.
+ * The inputs to the mixer are not owned by the mixer, they should not be deleted while rendering.
  */
 class Mixer : public IRenderableAudio {
 
