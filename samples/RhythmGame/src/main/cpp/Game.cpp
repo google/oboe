@@ -60,8 +60,6 @@ void Game::stop(){
         mAudioStream->close();
         delete mAudioStream;
         mAudioStream = nullptr;
-        delete mClap;
-        delete mBackingTrack;
     }
 }
 
@@ -221,7 +219,7 @@ bool Game::setupAudioSources() {
         LOGE("Could not load source data for clap sound");
         return false;
     }
-    mClap = new Player(mClapSource);
+    mClap = std::make_unique<Player>(mClapSource);
 
     // Create a data source and player for our backing track
     std::shared_ptr<AAssetDataSource> backingTrackSource {
@@ -231,13 +229,13 @@ bool Game::setupAudioSources() {
         LOGE("Could not load source data for backing track");
         return false;
     }
-    mBackingTrack = new Player(backingTrackSource);
+    mBackingTrack = std::make_unique<Player>(backingTrackSource);
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
     // Add both players to a mixer
-    mMixer.addTrack(mClap);
-    mMixer.addTrack(mBackingTrack);
+    mMixer.addTrack(mClap.get());
+    mMixer.addTrack(mBackingTrack.get());
 
     return true;
 }
