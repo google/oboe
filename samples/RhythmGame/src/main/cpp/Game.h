@@ -59,8 +59,8 @@ public:
 private:
     AAssetManager& mAssetManager;
     AudioStream *mAudioStream { nullptr };
-    std::shared_ptr<Player> mClap;
-    std::shared_ptr<Player> mBackingTrack;
+    Player *mClap;
+    Player *mBackingTrack;
     Mixer mMixer;
     std::unique_ptr<float[]> mConversionBuffer { nullptr }; // For float->int16 conversion
 
