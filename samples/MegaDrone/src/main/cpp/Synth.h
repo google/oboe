@@ -32,19 +32,20 @@ constexpr float kOscAmplitude = 0.009;
 class Synth : public IRenderableAudio {
 public:
 
-    Synth(int32_t sampleRate, int32_t channelCount):
-    mOutputStage(channelCount == oboe::ChannelCount::Stereo ?
-    static_cast<IRenderableAudio*>(&mConverter) : static_cast<IRenderableAudio*>(&mMixer)) {
-
+    Synth(int32_t sampleRate, int32_t channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
             mOscs[i].setSampleRate(sampleRate);
             mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));
             mOscs[i].setAmplitude(kOscAmplitude);
             mMixer.addTrack(&mOscs[i]);
         }
+        if (channelCount == oboe::ChannelCount::Stereo) {
+            mOutputStage =  &mConverter;
+        } else {
+            mOutputStage = &mMixer;
+        }
     }
 
-    // From ISynth
     void setWaveOn(bool isEnabled) {
         for (auto &osc : mOscs) osc.setWaveOn(isEnabled);
     };
@@ -61,7 +62,7 @@ private:
     std::array<Oscillator, kNumOscillators> mOscs;
     Mixer mMixer;
     MonoToStereo mConverter = MonoToStereo(&mMixer);
-    IRenderableAudio * const mOutputStage; // This will point to either the mixer or converter
+    IRenderableAudio *mOutputStage; // This will point to either the mixer or converter, so it needs to be raw
 };
 
 
