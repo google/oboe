@@ -37,13 +37,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    protected void onStart(){
-        super.onStart();
+    protected void onResume(){
+        super.onResume();
         startEngine(getExclusiveCores());
     }
 
-    protected void onStop(){
-        super.onStop();
+    protected void onPause(){
+        super.onPause();
         stopEngine();
     }
 

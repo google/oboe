@@ -125,11 +125,14 @@ Now start the stream.
 
 At this point you should start receiving callbacks.
 
-When you are done with the stream you should close it:
+### Closing the stream
+It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. To do this use: 
 
     stream->close();
 
-Note that `close()` is a blocking call which also stops the stream.
+`close()` is a blocking call which also stops the stream.
+
+It is usually advisable to close your stream when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
 ## Obtaining optimal latency
 One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened. 

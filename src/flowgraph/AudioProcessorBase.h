@@ -79,9 +79,9 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames);
 
-    virtual void start() {}
-
-    virtual void stop() {}
+//    virtual void start() {}
+//
+//    virtual void stop() {}
 
     void addInputPort(AudioPort &port) {
         mInputPorts.push_back(port);
@@ -137,7 +137,7 @@ private:
  */
 class AudioFloatBufferPort  : public AudioPort {
 public:
-    AudioFloatBufferPort(AudioProcessorBase &mParent,
+    AudioFloatBufferPort(AudioProcessorBase &parent,
                    int32_t samplesPerFrame,
                    int32_t framesPerBuffer = kDefaultBufferSize
                 );
@@ -332,7 +332,7 @@ public:
      */
     int32_t onProcess(int32_t numFrames) override {
         return numFrames;
-    };
+    }
 
     virtual int32_t read(int64_t framePosition, void *data, int32_t numFrames) = 0;
 

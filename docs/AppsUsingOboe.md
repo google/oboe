@@ -2,6 +2,7 @@
 
 | Name | Description | Publisher | Notes |
 |:--|:--|:--|:--|
+| [Audio Evolution Mobile Studio](https://play.google.com/store/apps/details?id=com.extreamsd.aemobile) | Digital Audio Workstation app | eXtream Software Development | Oboe implemented in version 4.9.8.1 |
 | [Best Piano](https://play.google.com/store/apps/details?id=com.netigen.piano) | Piano tutor app  | Netigen | Stream is opened with 44100 Hz so it will not get an MMAP stream on Pixel |
 | [CSound for Android](https://play.google.com/store/apps/details?id=com.csounds.Csound6) | Audio synthesis app, using CSound framework | Irreducible Productions | [Oboe implementation source code](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp) |
 | [Grainstorm](https://play.google.com/store/apps/details?id=me.rocks.grainstorm) | Granular synthesizer app | The Secret Laboratory | |

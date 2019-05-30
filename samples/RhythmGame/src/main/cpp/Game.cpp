@@ -198,6 +198,8 @@ bool Game::openStream() {
         LOGW("Failed to set buffer size. Error: %s", convertToText(setBufferSizeResult.error()));
     }
 
+    mMixer.setChannelCount(mAudioStream->getChannelCount());
+
     return true;
 }
 

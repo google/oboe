@@ -15,6 +15,17 @@ set(oboe_sources
   src/fifo/FifoController.cpp
   src/fifo/FifoControllerBase.cpp
   src/fifo/FifoControllerIndirect.cpp
+  src/flowgraph/AudioProcessorBase.cpp
+  src/flowgraph/ClipToRange.cpp
+  src/flowgraph/ManyToMultiConverter.cpp
+  src/flowgraph/MonoToMultiConverter.cpp
+  src/flowgraph/RampLinear.cpp
+  src/flowgraph/SinkFloat.cpp
+  src/flowgraph/SinkI16.cpp
+  src/flowgraph/SinkI24.cpp
+  src/flowgraph/SourceFloat.cpp
+  src/flowgraph/SourceI16.cpp
+  src/flowgraph/SourceI24.cpp
   src/opensles/AudioInputStreamOpenSLES.cpp
   src/opensles/AudioOutputStreamOpenSLES.cpp
   src/opensles/AudioStreamBuffered.cpp
@@ -34,7 +45,7 @@ target_include_directories(oboe
     $<INSTALL_INTERFACE:include>)
 
 set_target_properties(oboe PROPERTIES
-  CXX_STANDARD 11
+  CXX_STANDARD 14
   CXX_STANDARD_REQUIRED YES
   CXX_EXTENSIONS NO)
 

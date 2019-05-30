@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "flowgraph/AudioProcessorBase.h"
 #include "OscillatorBase.h"
 
 /**
