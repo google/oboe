@@ -25,7 +25,8 @@ public:
                        int numOutputFrames) {
         size_t bytesPerFrame = this->getOutputStream()->getBytesPerFrame();
         size_t bytesToWrite = numInputFrames * bytesPerFrame;
-        size_t bytesToZero = (numOutputFrames - numInputFrames) * bytesPerFrame > 0 ? : 0;
+        size_t byteDiff = (numOutputFrames - numInputFrames) * bytesPerFrame;
+        size_t bytesToZero = (byteDiff > 0) ? byteDiff : 0;
         memcpy(outputData, inputData, bytesToWrite);
         memset((u_char*) outputData + bytesToWrite, 0, bytesToZero);
         return oboe::DataCallbackResult::Continue;
