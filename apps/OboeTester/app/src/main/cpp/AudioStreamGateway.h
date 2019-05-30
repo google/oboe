@@ -36,6 +36,7 @@ public:
 
     void setAudioSink(std::shared_ptr<flowgraph::AudioSink>  sink) {
         mAudioSink = sink;
+        mFramePosition = sink->getLastFramePosition();
     }
 
     /**
@@ -49,10 +50,7 @@ public:
     int getScheduler();
 
 private:
-    // Use a static position so that it will monotonically increase.
-    // Note only one gateway can be used.
-    // TODO remove single gateway limitation. Add Graph class.
-    static int64_t mFramePosition;
+    int64_t  mFramePosition = 0;
     bool     mSchedulerChecked = false;
     int      mScheduler;
     std::shared_ptr<flowgraph::AudioSink>  mAudioSink;

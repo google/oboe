@@ -17,6 +17,6 @@
 <resources>
     <color name="waveform_line">#ff101080</color>
     <color name="waveform_background">#ffc0f0c0</color>
-    <color name="version_draft">#ffffe0c0</color>
+    <color name="version_draft">#ffffb0b0</color>
     <color name="version_release">#fff0f0f0</color>
 </resources>

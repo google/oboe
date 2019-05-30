@@ -34,7 +34,6 @@ using namespace oboe;
 using namespace flowgraph;
 
 void OboeFlowGraph::setSource(const void *buffer, int32_t numFrames) {
-    LOGE("OboeFlowGraph::setSource(,%d) ===================", numFrames);
     mSource->setData(buffer, numFrames);
 }
 
@@ -116,6 +115,8 @@ Result OboeFlowGraph::configure(AudioStream *stream,
             return Result::ErrorIllegalArgument;;
     }
     lastOutput->connect(&mSink->input);
+
+    mFramePosition = 0;
 
     return Result::OK;
 }

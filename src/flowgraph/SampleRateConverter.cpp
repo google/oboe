@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
 #include "SampleRateConverter.h"
 
 using namespace flowgraph;
@@ -26,14 +25,14 @@ SampleRateConverter::SampleRateConverter(int32_t channelCount)
     setDataPulledAutomatically(false);
 }
 
-int32_t SampleRateConverter::checkInputFrames() {
+// Return true if these is a sample available.
+bool SampleRateConverter::isInputAvailable() {
     if (mInputCursor >= mInputValid) {
         mInputValid = input.pullData(mInputFramePosition, input.getFramesPerBuffer());
-        LOGD("SampleRateConverter::checkInputFrames: pulled %d", mInputValid);
         mInputFramePosition += mInputValid;
         mInputCursor = 0;
     }
-    return mInputValid;
+    return (mInputCursor < mInputValid);
 }
 
 const float *SampleRateConverter::getNextInputFrame() {
@@ -44,14 +43,11 @@ const float *SampleRateConverter::getNextInputFrame() {
 int32_t SampleRateConverter::onProcess(int32_t numFrames) {
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
-
     int framesLeft = numFrames;
     while (framesLeft > 0) {
         // Gather input samples as needed.
         while(mPhase >= 1.0) {
-            if (checkInputFrames() <= 0) {
-                break;
-            }
+            if (!isInputAvailable()) break;
             mPhase -= 1.0;
             const float *frame = getNextInputFrame();
             mResampler.writeFrame(frame);

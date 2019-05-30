@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
 #include <algorithm>
 #include <unistd.h>
 #include "AudioProcessorBase.h"
@@ -27,7 +26,7 @@ SinkFloat::SinkFloat(int32_t channelCount)
 }
 
 int32_t SinkFloat::read(int64_t framePosition, void *data, int32_t numFrames) {
-    LOGD("SinkFloat::read(,,%d)", numFrames);
+    // printf("SinkFloat::read(,,%d)\n", numFrames);
     float *floatData = (float *) data;
     int32_t channelCount = input.getSamplesPerFrame();
 
@@ -35,7 +34,7 @@ int32_t SinkFloat::read(int64_t framePosition, void *data, int32_t numFrames) {
     while (framesLeft > 0) {
         // Run the graph and pull data through the input port.
         int32_t framesPulled = pullData(framePosition, framesLeft);
-        LOGD("SinkFloat::read: framesLeft = %d, framesPulled = %d", framesLeft, framesPulled);
+        // printf("SinkFloat::read: framesLeft = %d, framesPulled = %d\n", framesLeft, framesPulled);
         if (framesPulled <= 0) {
             break;
         }
@@ -46,5 +45,6 @@ int32_t SinkFloat::read(int64_t framePosition, void *data, int32_t numFrames) {
         framesLeft -= framesPulled;
         framePosition += framesPulled;
     }
+    // printf("SinkFloat returning %d\n", numFrames - framesLeft);
     return numFrames - framesLeft;
 }

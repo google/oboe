@@ -18,6 +18,8 @@
  * Test FlowGraph
  */
 
+#include "stdio.h"
+
 #include <iostream>
 
 #include <gtest/gtest.h>
@@ -163,11 +165,13 @@ TEST(test_flowgraph, module_sample_rate_converter) {
 //void foo() {
     static const double rateScaler = 0.5;
     static const float input[] = {0.0, 1.0, 2.0};
-    static const float expected[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 1.5};
+    static const float expected[] = {0.0, 0.0, 0.0, 0.5, 1.0, 1.5};
     float output[100];
     SourceFloat sourceFloat{1};
     SampleRateConverter resampler{1};
     SinkFloat sinkFloat{1};
+
+    // printf("test_flowgraph::module_sample_rate_converter ===========================\n");
 
     resampler.setPhaseIncrement(rateScaler);
 
@@ -179,12 +183,16 @@ TEST(test_flowgraph, module_sample_rate_converter) {
 
     int numExpectedFrames = sizeof(expected) / sizeof(expected[0]);
     int numOutputFrames = sizeof(output) / sizeof(output[0]);
+    // printf("test_flowgraph::module_sample_rate_converter first read -------------\n");
     int32_t numRead = sinkFloat.read(0 /* framePosition */, output, numOutputFrames);
     EXPECT_EQ(numExpectedFrames, numRead);
     constexpr float tolerance = 0.000001f; // arbitrary
     for (int i = 0; i < numRead; i++) {
         EXPECT_NEAR(expected[i], output[i], tolerance);
+        // printf("test_flowgraph::module_sample_rate_converter output = %f\n", output[i]);
     }
+
+    // printf("test_flowgraph::module_sample_rate_converter second read -------------\n");
     numRead = sinkFloat.read(numRead /* framePosition */, output, numOutputFrames);
     EXPECT_EQ(0, numRead);
 }

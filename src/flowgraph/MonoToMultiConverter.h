@@ -36,6 +36,10 @@ public:
 
     int32_t onProcess(int32_t numFrames) override;
 
+    const char *getName() override {
+        return "MonoToMultiConverter";
+    }
+
     AudioFloatInputPort input;
     AudioFloatOutputPort output;
 };

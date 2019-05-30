@@ -74,6 +74,10 @@ public:
         mLevelTo = level;
     }
 
+    const char *getName() override {
+        return "RampLinear";
+    }
+
     AudioFloatInputPort input;
     AudioFloatOutputPort output;
 

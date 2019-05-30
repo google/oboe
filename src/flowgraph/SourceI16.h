@@ -31,6 +31,10 @@ public:
     explicit SourceI16(int32_t channelCount);
 
     int32_t onProcess(int32_t numFrames) override;
+
+    const char *getName() override {
+        return "SourceI16";
+    }
 };
 
 } /* namespace flowgraph */

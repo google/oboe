@@ -79,6 +79,16 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames);
 
+    /**
+     * Recursively reset all the nodes in the graph, starting from a Sink.
+     */
+    void pullReset();
+
+    /**
+     * Reset framePosition counters.
+     */
+    virtual void reset();
+
     void addInputPort(AudioPort &port) {
         mInputPorts.push_back(port);
     }
@@ -100,14 +110,23 @@ public:
         mDataPulledAutomatically = automatic;
     }
 
+    virtual const char *getName() {
+        return "AudioProcessorBase";
+    }
+
+    int64_t getLastFramePosition() {
+        return mLastFramePosition;
+    }
+
 protected:
-    int64_t  mLastFramePosition = -1; // Start at -1 so that the first pull works.
+    int64_t  mLastFramePosition = 0;
 
     std::vector<std::reference_wrapper<AudioPort>> mInputPorts;
 
 private:
-    // FIXME int32_t  mFramesValid = 0; // num valid frames in the block
     bool     mDataPulledAutomatically = true;
+    bool     mBlockRecursion = false;
+    int32_t  mLastFrameCount = 0;
 
 };
 
@@ -135,6 +154,8 @@ public:
     }
 
     virtual int32_t pullData(int64_t framePosition, int32_t numFrames) = 0;
+
+    virtual void pullReset() {}
 
 protected:
     AudioProcessorBase &mParent;
@@ -217,6 +238,9 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames) override;
 
+
+    void pullReset() override;
+
 };
 
 /***************************************************************************/
@@ -282,6 +306,8 @@ public:
      * Pull data from any output port that is connected.
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames) override;
+
+    void pullReset() override;
 
 private:
     AudioFloatOutputPort *mConnected = nullptr;

@@ -33,6 +33,10 @@ public:
     explicit SinkI24(int32_t channelCount);
 
     int32_t read(int64_t framePosition, void *data, int32_t numFrames) override;
+
+    const char *getName() override {
+        return "SinkI24";
+    }
 };
 
 } /* namespace flowgraph */

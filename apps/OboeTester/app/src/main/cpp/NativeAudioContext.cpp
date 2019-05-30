@@ -347,6 +347,10 @@ void ActivityTestOutput::configureForStart() {
     manyToMulti->output.connect(&(mSinkFloat.get()->input));
     manyToMulti->output.connect(&(mSinkI16.get()->input));
 
+    // Clear framePosition in sine oscillators.
+    mSinkFloat->pullReset();
+    mSinkI16->pullReset();
+
     configureStreamGateway();
 }
 

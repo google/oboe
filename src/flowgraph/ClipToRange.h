@@ -57,6 +57,10 @@ public:
     AudioFloatInputPort input;
     AudioFloatOutputPort output;
 
+    const char *getName() override {
+        return "ClipToRange";
+    }
+
 private:
     float mMinimum = kDefaultMinHeadroom;
     float mMaximum = kDefaultMaxHeadroom;

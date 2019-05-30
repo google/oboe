@@ -33,7 +33,6 @@ class AudioStream;
 class AudioSourceCaller;
 
 class OboeFlowGraph {
-
 public:
 
     void setSource(const void *buffer, int32_t numFrames);

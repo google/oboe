@@ -28,10 +28,10 @@ add_executable(
 		testOboe
         testUtilities.cpp
 		testFlowgraph.cpp
-#        testStreamClosedMethods.cpp
-#        testStreamStates.cpp
-#        testStreamWaitState.cpp
-#		testStreamOpen.cpp
-#        testXRunBehaviour.cpp
+        testStreamClosedMethods.cpp
+        testStreamStates.cpp
+        testStreamWaitState.cpp
+		testStreamOpen.cpp
+        testXRunBehaviour.cpp
         )
 target_link_libraries(testOboe gtest oboe)

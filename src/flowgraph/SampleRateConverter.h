@@ -44,14 +44,19 @@ public:
     AudioFloatInputPort input;
     AudioFloatOutputPort output;
 
+    const char *getName() override {
+        return "SampleRateConverter";
+    }
+
 private:
 
-    int32_t checkInputFrames();
+    // Return true if these is a sample available.
+    bool isInputAvailable();
 
     const float *getNextInputFrame();
 
     MultiChannelRateConverter mResampler;
-    double  mPhase = 0.0;
+    double  mPhase = 1.0;
     double  mPhaseIncrement = 1.0;
     int32_t mInputCursor = 0;
     int32_t mInputValid = 0;
