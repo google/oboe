@@ -21,8 +21,8 @@
 #include "oboe/AudioStreamBase.h"
 
 namespace oboe {
-
-    struct streamDeleterFunctor; // This depends on AudioStream, so we use forward declaration
+    // This depends on AudioStream, so we use forward declaration, it will close and delete the stream
+    struct streamDeleterFunctor;
     using ManagedStream = std::unique_ptr<AudioStream, streamDeleterFunctor>;
 /**
  * Factory class for an audio Stream.
@@ -326,6 +326,15 @@ public:
      */
     Result openStream(AudioStream **stream);
 
+    /**
+     * Create and open a ManagedStream object based on the current builder state.
+     *
+     * The caller must create a unique ptr, and pass by reference so it can be
+     * modified to point to an opened stream. The caller owns the unique ptr,
+     * and it will be automatically closed and cleaned up upon going out of scope.
+     * @param stream Reference to the ManagedStream (uniqueptr) used to keep track of stream
+     * @return OBOE_OK if successful or a negative error code.
+     */
     Result openManagedStream(ManagedStream &stream);
 
 protected:

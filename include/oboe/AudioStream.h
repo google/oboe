@@ -456,7 +456,10 @@ private:
     std::atomic<bool>    mDataCallbackEnabled{};
 
 };
-
+/**
+ * This struct is a stateless functor which closes a audiostream prior to its deletion.
+ * This means it can be used to safely delete a smart pointer referring to an open stream.
+ */
 struct streamDeleterFunctor {
     void operator()(AudioStream  *audioStream) {
         if (audioStream) {
