@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -44,6 +45,7 @@ public class MainActivity extends Activity {
     private TextView mCallbackSizeTextView;
     protected TextView mDeviceView;
     private TextView mVersionTextView;
+    private TextView mBuildTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,9 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
+
+        mBuildTextView = (TextView) findViewById(R.id.text_build_info);
+        mBuildTextView.setText(Build.DISPLAY);
     }
 
     private void updateNativeAudioUI() {
