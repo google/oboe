@@ -30,7 +30,7 @@ int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
         if (mDataPulledAutomatically) {
             // Pull from all the upstream nodes.
             for (auto &port : mInputPorts) {
-                // TODO fix bug of leaving unused data in some ports
+                // TODO fix bug of leaving unused data in some ports if using multiple AudioSource
                 frameCount = port.get().pullData(framePosition, frameCount);
             }
         }

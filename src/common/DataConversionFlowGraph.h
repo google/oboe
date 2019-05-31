@@ -32,7 +32,7 @@ namespace oboe {
 class AudioStream;
 class AudioSourceCaller;
 
-class OboeFlowGraph {
+class DataConversionFlowGraph {
 public:
 
     void setSource(const void *buffer, int32_t numFrames);

@@ -22,7 +22,7 @@ using namespace oboe;
 using namespace flowgraph;
 
 Result FilterAudioStream::configureFlowGraph() {
-    mFlowGraph = std::make_unique<OboeFlowGraph>();
+    mFlowGraph = std::make_unique<DataConversionFlowGraph>();
 
     const oboe::AudioFormat sourceFormat = getFormat();
     const int32_t sourceChannelCount = getChannelCount();

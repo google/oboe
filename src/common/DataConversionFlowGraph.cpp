@@ -17,7 +17,7 @@
 #include <memory>
 
 #include "OboeDebug.h"
-#include "OboeFlowGraph.h"
+#include "DataConversionFlowGraph.h"
 #include "SourceFloatCaller.h"
 
 #include <flowgraph/ClipToRange.h>
@@ -33,12 +33,12 @@
 using namespace oboe;
 using namespace flowgraph;
 
-void OboeFlowGraph::setSource(const void *buffer, int32_t numFrames) {
+void DataConversionFlowGraph::setSource(const void *buffer, int32_t numFrames) {
     mSource->setData(buffer, numFrames);
 }
 
 // Chain together multiple processors.
-Result OboeFlowGraph::configure(AudioStream *stream,
+Result DataConversionFlowGraph::configure(AudioStream *stream,
                                 AudioFormat sourceFormat,
                                 int32_t sourceChannelCount,
                                 int32_t sourceSampleRate,
@@ -121,7 +121,7 @@ Result OboeFlowGraph::configure(AudioStream *stream,
     return Result::OK;
 }
 
-int32_t OboeFlowGraph::read(void *buffer, int32_t numFrames) {
+int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames) {
     // TODO This only works for OUTPUT. Fix for INPUT.
     int32_t numRead = mSink->read(mFramePosition, buffer, numFrames);
     mFramePosition += numRead;

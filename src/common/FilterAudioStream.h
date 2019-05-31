@@ -19,7 +19,7 @@
 
 #include <memory>
 #include <oboe/AudioStream.h>
-#include "OboeFlowGraph.h"
+#include "DataConversionFlowGraph.h"
 
 namespace oboe {
 
@@ -188,7 +188,7 @@ private:
 
     FilterAudioStreamCallback      mFilterCallback; // callback that will do the conversion
     std::shared_ptr<AudioStream>   mChildStream;    // this stream wraps the child stream
-    std::unique_ptr<OboeFlowGraph> mFlowGraph;      // for converting data
+    std::unique_ptr<DataConversionFlowGraph> mFlowGraph;      // for converting data
     std::unique_ptr<uint8_t[]>     mBlockingBuffer; // temp buffer for write()
     double                         mRateScaler = 1.0; // ratio of parent/child sample rates
 };
