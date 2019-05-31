@@ -20,7 +20,7 @@
 
 #include "AudioEngine.h"
 
-AudioEngine engine;
+AudioEngine *engine;
 
 std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
 
@@ -41,17 +41,17 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
                                                          jintArray jCpuIds) {
-
+    engine = new AudioEngine;
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    engine.start(cpuIds);
+    engine->start(cpuIds);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance) {
 
-    engine.stop();
-
+    engine->stop();
+    delete engine;
 }
 
 
@@ -59,5 +59,5 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
 
-    engine.tap(b);
+    engine->tap(b);
 }
