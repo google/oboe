@@ -17,11 +17,7 @@
 #ifndef OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
 #define OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
 
-#include <thread>
-#include <array>
 #include <oboe/Oboe.h>
-
-#include "shared/Mixer.h"
 
 #include "SoundGenerator.h"
 
@@ -31,8 +27,6 @@ class PlayAudioEngine : oboe::AudioStreamCallback {
 
 public:
     PlayAudioEngine();
-
-    ~PlayAudioEngine();
 
     void setAudioApi(oboe::AudioApi audioApi);
 
@@ -57,7 +51,6 @@ public:
 
 
 private:
-    oboe::AudioStream *mPlayStream;
     double mCurrentOutputLatencyMillis = 0;
     int32_t mBufferSizeSelection = kBufferSizeAutomatic; // Used to keep track if we are auto tuning
     bool mIsLatencyDetectionSupported = false;
@@ -68,12 +61,11 @@ private:
 
     void createPlaybackStream(oboe::AudioStreamBuilder *builder);
 
-    void closeOutputStream();
-
     void restartStream(oboe::AudioStreamBuilder *builder);
 
     oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream, double *latencyMillis);
 
+    oboe::ManagedStream playstream_;
 };
 
 #endif //OBOE_HELLOOBOE_PLAYAUDIOENGINE_H

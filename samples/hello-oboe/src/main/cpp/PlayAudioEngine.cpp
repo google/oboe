@@ -36,9 +36,6 @@ PlayAudioEngine::PlayAudioEngine() {
     createPlaybackStream(&builder_);
 }
 
-PlayAudioEngine::~PlayAudioEngine() {
-    closeOutputStream();
-}
 /**
  * Creates an audio stream for playback. Takes in a builder pointer which contains stream params
  */
@@ -46,54 +43,40 @@ void PlayAudioEngine::createPlaybackStream(oboe::AudioStreamBuilder *builder) {
     oboe::Result result = builder->setSharingMode(oboe::SharingMode::Exclusive)
     ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
     ->setCallback(this)
-    ->openStream(&mPlayStream);
-    if (result == oboe::Result::OK && mPlayStream != nullptr) {
+    ->openManagedStream(playstream_);
+    if (result == oboe::Result::OK && playstream_ != nullptr) {
         // Set the buffer size to the burst size - this will give us the minimum possible latency
-        mPlayStream->setBufferSizeInFrames(mPlayStream->getFramesPerBurst());
+        playstream_->setBufferSizeInFrames(playstream_->getFramesPerBurst());
 
         // TODO: Implement Oboe_convertStreamToText
-        // PrintAudioStreamInfo(mPlayStream);
-        if (mPlayStream->getFormat() == oboe::AudioFormat::I16){
+        // PrintAudioStreamInfo(playstream_);
+        if (playstream_->getFormat() == oboe::AudioFormat::I16){
             // create a buffer of floats which we can render our audio data into
-            int conversionBufferSamples = mPlayStream->getBufferCapacityInFrames() * mPlayStream->getChannelCount();
+            int conversionBufferSamples = playstream_->getBufferCapacityInFrames() * playstream_->getChannelCount();
             LOGD("Stream format is 16-bit integers, creating a temporary buffer of %d samples"
                  " for float->int16 conversion", conversionBufferSamples);
             mConversionBuffer = std::make_unique<float[]>(conversionBufferSamples);
         }
 
         mSoundGenerator = std::make_unique<SoundGenerator>(
-                mPlayStream->getSampleRate(),
-                mPlayStream->getBufferCapacityInFrames(),
-                mPlayStream->getChannelCount()
+                playstream_->getSampleRate(),
+                playstream_->getBufferCapacityInFrames(),
+                playstream_->getChannelCount()
             );
 
         // Create a latency tuner which will automatically tune our buffer size.
-        mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*mPlayStream);
+        mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*playstream_);
         // Start the stream - the dataCallback function will start being called
-        result = mPlayStream->requestStart();
+        result = playstream_->requestStart();
         if (result != oboe::Result::OK) {
             LOGE("Error starting stream. %s", oboe::convertToText(result));
         }
 
-        mIsLatencyDetectionSupported = (mPlayStream->getTimestamp(CLOCK_MONOTONIC, 0, 0) !=
+        mIsLatencyDetectionSupported = (playstream_->getTimestamp(CLOCK_MONOTONIC, 0, 0) !=
                                         oboe::Result::ErrorUnimplemented);
 
     } else {
         LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
-    }
-}
-
-void PlayAudioEngine::closeOutputStream() {
-    if (mPlayStream != nullptr) {
-        oboe::Result result = mPlayStream->requestStop();
-        if (result != oboe::Result::OK) {
-            LOGE("Error stopping output stream. %s", oboe::convertToText(result));
-        }
-
-        result = mPlayStream->close();
-        if (result != oboe::Result::OK) {
-            LOGE("Error closing output stream. %s", oboe::convertToText(result));
-        }
     }
 }
 
@@ -104,7 +87,7 @@ void PlayAudioEngine::setToneOn(bool isToneOn) {
 /**
  * Every time the playback stream requires data this method will be called.
  *
- * @param audioStream the audio stream which is requesting data, this is the mPlayStream object
+ * @param audioStream the audio stream which is requesting data, this is the playstream_ object
  * @param audioData an empty buffer into which we can write our audio data
  * @param numFrames the number of audio frames which are required
  * @return Either oboe::DataCallbackResult::Continue if the stream should continue requesting data
@@ -223,7 +206,6 @@ void PlayAudioEngine::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Res
 
 void PlayAudioEngine::restartStream(oboe::AudioStreamBuilder *builder) {
     LOGI("Restarting stream");
-    closeOutputStream();
     createPlaybackStream(builder);
 }
 
@@ -233,8 +215,8 @@ double PlayAudioEngine::getCurrentOutputLatencyMillis() {
 
 void PlayAudioEngine::setBufferSizeInBursts(int32_t numBursts) {
     mBufferSizeSelection = numBursts;
-    auto result = mPlayStream->setBufferSizeInFrames(
-            mBufferSizeSelection * mPlayStream->getFramesPerBurst());
+    auto result = playstream_->setBufferSizeInFrames(
+            mBufferSizeSelection * playstream_->getFramesPerBurst());
     if (result) {
         LOGD("Buffer size successfully changed to %d", result.value());
     } else {
@@ -246,15 +228,15 @@ bool PlayAudioEngine::isLatencyDetectionSupported() {
     return mIsLatencyDetectionSupported;
 }
 void PlayAudioEngine::setAudioApi(oboe::AudioApi audioApi) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setAudioApi(audioApi);
+    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*playstream_).setAudioApi(audioApi);
     restartStream(&builder_);
-    LOGD("AudioAPI is now %d", mPlayStream->getAudioApi());
+    LOGD("AudioAPI is now %d", playstream_->getAudioApi());
 }
 
 void PlayAudioEngine::setChannelCount(int channelCount) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setChannelCount(channelCount);
+    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*playstream_).setChannelCount(channelCount);
     restartStream(&builder_);
-    LOGD("Channel count is now %d", mPlayStream->getChannelCount());
+    LOGD("Channel count is now %d", playstream_->getChannelCount());
 }
 
 /**
@@ -266,8 +248,8 @@ void PlayAudioEngine::setChannelCount(int channelCount) {
  * using Java/JNI.
  */
 void PlayAudioEngine::setDeviceId(int32_t deviceId) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setDeviceId(deviceId);
+    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*playstream_).setDeviceId(deviceId);
     restartStream(&builder_);
-    LOGD("Device ID is now %d", mPlayStream->getDeviceId());
+    LOGD("Device ID is now %d", playstream_->getDeviceId());
 }
 
