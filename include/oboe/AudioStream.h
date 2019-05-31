@@ -457,6 +457,14 @@ private:
 
 };
 
+struct streamDeleterFunctor {
+    void operator()(AudioStream  *audioStream) {
+        if (audioStream) {
+            audioStream->close();
+        }
+        delete audioStream;
+    }
+};
 } // namespace oboe
 
 #endif /* OBOE_STREAM_H_ */
