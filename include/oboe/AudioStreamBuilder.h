@@ -32,6 +32,8 @@ public:
 
     AudioStreamBuilder() : AudioStreamBase() {}
 
+    AudioStreamBuilder(const AudioStreamBase &audioStreamBase): AudioStreamBase(audioStreamBase) {}
+
     /**
      * Request a specific number of channels.
      *
