@@ -21,6 +21,7 @@
 #include <oboe/Oboe.h>
 #include <string>
 #include <thread>
+#include "FullDuplexPass.h"
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
    public:
@@ -29,6 +30,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
     void setEffectOn(bool isOn);
+    void openStreams();
 
     /*
      * oboe::AudioStreamCallback interface implementation
@@ -42,9 +44,8 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     bool isAAudioSupported(void);
 
    private:
+    FullDuplexPass mFullDuplexPass;
     bool mIsEffectOn = false;
-    uint64_t mProcessedFrameCount = 0;
-    uint64_t mSystemStartupFrames = 0;
     int32_t mRecordingDeviceId = oboe::kUnspecified;
     int32_t mPlaybackDeviceId = oboe::kUnspecified;
     oboe::AudioFormat mFormat = oboe::AudioFormat::I16;
@@ -53,19 +54,10 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
     oboe::AudioStream *mRecordingStream = nullptr;
     oboe::AudioStream *mPlayStream = nullptr;
-    std::mutex mRestartingLock;
     oboe::AudioApi mAudioApi = oboe::AudioApi::AAudio;
 
-    void openRecordingStream();
-    void openPlaybackStream();
-
-    void startStream(oboe::AudioStream *stream);
-    void stopStream(oboe::AudioStream *stream);
     void closeStream(oboe::AudioStream *stream);
 
-    void openAllStreams();
-    void closeAllStreams();
-    void restartStreams();
 
     oboe::AudioStreamBuilder *setupCommonStreamParameters(
         oboe::AudioStreamBuilder *builder);
