@@ -65,7 +65,8 @@ public:
     }
 
     /**
-     * Write numFrames from the short buffer into the recording, if there is room.
+     * Write numFrames from the short buffer into the recording.
+     * Overwrite old data if necessary.
      * Convert shorts to floats.
      *
      * @param buffer
@@ -77,19 +78,19 @@ public:
         while (framesLeft > 0) {
             int32_t indexFrame = getWriteIndex();
             // contiguous writes
-            int32_t framesToEnd = mMaxFrames - indexFrame;
-            int32_t framesNow = std::min(framesLeft, framesToEnd);
+            int32_t framesToEndOfBuffer = mMaxFrames - indexFrame;
+            int32_t framesNow = std::min(framesLeft, framesToEndOfBuffer);
             int32_t numSamples = framesNow * mChannelCount;
             int32_t sampleIndex = indexFrame * mChannelCount;
 
             for (int i = 0; i < numSamples; i++) {
-                mData[sampleIndex++] = buffer[i * mChannelCount] * (1.0f / 32768);
+                mData[sampleIndex++] = *buffer++ * (1.0f / 32768);
             }
 
             mWriteCursorFrames += framesNow;
             framesLeft -= framesNow;
         }
-        return numFrames;
+        return numFrames - framesLeft;
     }
 
     /**
@@ -112,7 +113,7 @@ public:
             memcpy(&mData[sampleIndex],
                    buffer,
                    (numSamples * sizeof(float)));
-
+            buffer += numSamples;
             mWriteCursorFrames += framesNow;
             framesLeft -= framesNow;
         }
