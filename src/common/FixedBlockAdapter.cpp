@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The Android Open Source Project
+ * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-#include <algorithm>
-#include <unistd.h>
-#include "flowgraph/AudioProcessorBase.h"
-#include "SourceFloatCaller.h"
+#include <stdint.h>
 
-using namespace oboe;
-using namespace flowgraph;
+#include "FixedBlockAdapter.h"
 
-int32_t SourceFloatCaller::onProcess(int32_t numFrames) {
-    mBlockReader.processVariableBlock((uint8_t *)output.getBuffer(),
-                                      mStream->getBytesPerFrame() * numFrames);
-    return numFrames;
+FixedBlockAdapter::~FixedBlockAdapter() {
+    close();
+}
+
+int32_t FixedBlockAdapter::open(int32_t bytesPerFixedBlock)
+{
+    mSize = bytesPerFixedBlock;
+    mStorage = new uint8_t[bytesPerFixedBlock];
+    mPosition = 0;
+    return 0;
+}
+
+int32_t FixedBlockAdapter::close()
+{
+    delete[] mStorage;
+    mStorage = nullptr;
+    mSize = 0;
+    mPosition = 0;
+    return 0;
 }

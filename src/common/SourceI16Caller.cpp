@@ -17,13 +17,30 @@
 #include <algorithm>
 #include <unistd.h>
 #include "flowgraph/AudioProcessorBase.h"
-#include "SourceFloatCaller.h"
+#include "SourceI16Caller.h"
+
+#if FLOWGRAPH_ANDROID_INTERNAL
+#include <audio_utils/primitives.h>
+#endif
 
 using namespace oboe;
 using namespace flowgraph;
 
-int32_t SourceFloatCaller::onProcess(int32_t numFrames) {
-    mBlockReader.processVariableBlock((uint8_t *)output.getBuffer(),
+int32_t SourceI16Caller::onProcess(int32_t numFrames) {
+    mBlockReader.processVariableBlock((uint8_t *)mConversionBuffer.get(),
                                       mStream->getBytesPerFrame() * numFrames);
+
+    float *floatData = output.getBuffer();
+    const int16_t *shortData = mConversionBuffer.get();
+    int32_t numSamples = numFrames * output.getSamplesPerFrame();
+
+#if FLOWGRAPH_ANDROID_INTERNAL
+    memcpy_to_float_from_i16(floatData, shortData, numSamples);
+#else
+    for (int i = 0; i < numSamples; i++) {
+        *floatData++ = *shortData++ * (1.0f / 32768);
+    }
+#endif
+
     return numFrames;
 }

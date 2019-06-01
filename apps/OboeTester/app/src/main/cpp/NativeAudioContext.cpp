@@ -52,7 +52,7 @@ private:
     std::vector<uint8_t> mData;
 };
 
-bool ActivityContext::useCallback = true;
+bool ActivityContext::mUseCallback = true;
 int  ActivityContext::callbackSize = 0;
 
 oboe::AudioStream * ActivityContext::getOutputStream() {
@@ -150,7 +150,7 @@ oboe::Result ActivityContext::stopAllStreams() {
 
 void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
-    if (useCallback) {
+    if (mUseCallback) {
         LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, size = %d",
              callbackSize);
         builder.setCallback(&oboeCallbackProxy);
@@ -233,7 +233,7 @@ int ActivityContext::open(
 
     }
 
-    if (!useCallback) {
+    if (!mUseCallback) {
         int numSamples = getFramesPerBlock() * mChannelCount;
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
@@ -258,7 +258,7 @@ oboe::Result ActivityContext::start() {
 
     result = startStreams();
 
-    if (!useCallback && result == oboe::Result::OK) {
+    if (!mUseCallback && result == oboe::Result::OK) {
         LOGD("start thread for blocking I/O");
         // Instead of using the callback, start a thread that writes the stream.
         threadEnabled.store(true);
@@ -304,7 +304,6 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     mSinkFloat.reset();
     mSinkI16.reset();
 }
-
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
     if (manyToMulti == nullptr) {
@@ -362,7 +361,7 @@ void ActivityTestOutput::configureStreamGateway() {
         audioStreamGateway.setAudioSink(mSinkFloat);
     }
 
-    if (useCallback) {
+    if (mUseCallback) {
         oboeCallbackProxy.setCallback(&audioStreamGateway);
     }
 
@@ -414,7 +413,7 @@ void ActivityTestOutput::runBlockingIO() {
 // ======================================================================= ActivityTestInput
 void ActivityTestInput::configureForStart() {
     mInputAnalyzer.reset();
-    if (useCallback) {
+    if (mUseCallback) {
         oboeCallbackProxy.setCallback(&mInputAnalyzer);
     }
     mInputAnalyzer.setRecording(mRecording.get());
@@ -468,7 +467,7 @@ oboe::Result ActivityRecording::stopPlayback() {
 
 oboe::Result ActivityRecording::startPlayback() {
     stop();
-    LOGD("ActivityRecording::%s() called", __func__);
+    LOGD("ActivityRecording::%s() called, mSampleRate = %d", __func__, mSampleRate);
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(mChannelCount)
             ->setSampleRate(mSampleRate)

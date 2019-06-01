@@ -21,6 +21,7 @@
 #include "oboe/Oboe.h"
 
 #include "flowgraph/AudioProcessorBase.h"
+#include "FixedBlockReader.h"
 
 namespace oboe {
 
@@ -28,13 +29,13 @@ class AudioStreamCallback;
 class AudioStream;
 
 // TODO Refactor so all AudioSources have a shared superclass.
-class AudioSourceCaller : public flowgraph::AudioProcessorBase {
+class AudioSourceCaller : public flowgraph::AudioProcessorBase, public FixedBlockProcessor {
 public:
-    explicit AudioSourceCaller(int32_t channelCount)
-            : output(*this, channelCount) {
+    AudioSourceCaller(int32_t channelCount, int32_t framesPerCallback, int32_t bytesPerSample)
+            : output(*this, channelCount)
+            , mBlockReader(*this) {
+        mBlockReader.open(channelCount * framesPerCallback * bytesPerSample);
     }
-
-    virtual ~AudioSourceCaller() = default;
 
     flowgraph::AudioFloatOutputPort output;
 
@@ -46,9 +47,14 @@ public:
         mStream = stream;
     }
 
+    int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
+
 protected:
     oboe::AudioStreamCallback *mStreamCallback = nullptr;
-    oboe::AudioStream *mStream = nullptr;
+    oboe::AudioStream         *mStream = nullptr;
+
+    FixedBlockReader           mBlockReader;
+    DataCallbackResult         mCallbackResult = DataCallbackResult::Continue;
 };
 
 }

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SOURCE_FLOAT_CALLER_H
-#define OBOE_SOURCE_FLOAT_CALLER_H
+#ifndef OBOE_SOURCE_I16_CALLER_H
+#define OBOE_SOURCE_I16_CALLER_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,19 +26,23 @@
 
 namespace oboe {
 /**
- * AudioSource that uses callback to get more float data.
+ * AudioSource that uses callback to get more data.
  */
-class SourceFloatCaller : public AudioSourceCaller {
+class SourceI16Caller : public AudioSourceCaller {
 public:
-    SourceFloatCaller(int32_t channelCount, int32_t framesPerCallback)
-    : AudioSourceCaller(channelCount, framesPerCallback, (int32_t)sizeof(float)) {}
+    SourceI16Caller(int32_t channelCount, int32_t framesPerCallback)
+    : AudioSourceCaller(channelCount, framesPerCallback, sizeof(int16_t)) {
+        mConversionBuffer = std::make_unique<int16_t[]>(channelCount * output.getFramesPerBuffer());
+    }
 
     int32_t onProcess(int32_t numFrames) override;
 
     const char *getName() override {
-        return "SourceFloatCaller";
+        return "SourceI16Caller";
     }
+private:
+    std::unique_ptr<int16_t[]>  mConversionBuffer;
 };
 
 }
-#endif //OBOE_SOURCE_FLOAT_CALLER_H
+#endif //OBOE_SOURCE_I16_CALLER_H

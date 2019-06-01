@@ -57,6 +57,7 @@ class AudioFloatInputPort;
  */
 class AudioProcessorBase {
 public:
+    AudioProcessorBase() {}
     virtual ~AudioProcessorBase() = default;
 
     /**

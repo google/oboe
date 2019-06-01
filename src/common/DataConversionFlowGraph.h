@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #ifndef OBOE_OBOE_FLOW_GRAPH_H
 #define OBOE_OBOE_FLOW_GRAPH_H
 
@@ -26,14 +25,25 @@
 #include <flowgraph/SampleRateConverter.h>
 #include <oboe/Definitions.h>
 #include "AudioSourceCaller.h"
+#include "FixedBlockWriter.h"
 
 namespace oboe {
 
 class AudioStream;
 class AudioSourceCaller;
 
-class DataConversionFlowGraph {
+// TODO support INPUT
+// TODO support mono<=>stereo
+// TODO support block size adaptation to reduce # callbacks to app
+
+/**
+ * Convert PCM channels, format and sample rate for optimal latency.
+ */
+class DataConversionFlowGraph : public FixedBlockProcessor {
 public:
+
+    DataConversionFlowGraph()
+    : mBlockWriter(*this) {}
 
     void setSource(const void *buffer, int32_t numFrames);
 
@@ -56,6 +66,9 @@ public:
 
     int32_t read(void *buffer, int32_t numFrames);
 
+    int32_t write(void *buffer, int32_t numFrames);
+
+    int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
 
 private:
     std::unique_ptr<flowgraph::AudioSource>          mSource;
@@ -63,6 +76,11 @@ private:
     std::unique_ptr<flowgraph::MonoToMultiConverter> mChannelConverter;
     std::unique_ptr<flowgraph::SampleRateConverter>  mRateConverter;
     std::unique_ptr<flowgraph::AudioSink>            mSink;
+
+    FixedBlockWriter                                 mBlockWriter;
+    DataCallbackResult                               mCallbackResult = DataCallbackResult::Continue;
+    AudioStream                                     *mFilterStream = nullptr;
+    std::unique_ptr<uint8_t[]>                       mAppBuffer;
 
     int64_t mFramePosition = 0;
 };

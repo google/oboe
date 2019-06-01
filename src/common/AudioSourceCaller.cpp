@@ -15,3 +15,13 @@
  */
 
 #include "AudioSourceCaller.h"
+
+using namespace::oboe;
+using namespace flowgraph;
+
+int32_t AudioSourceCaller::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
+    int32_t numFrames = numBytes / mStream->getBytesPerFrame();
+    mCallbackResult = mStreamCallback->onAudioReady(mStream, buffer, numFrames);
+    // TODO handle STOP from callback, process data remaining in the block adapter
+    return 0;
+}

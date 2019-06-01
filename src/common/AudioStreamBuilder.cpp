@@ -78,6 +78,7 @@ AudioStream *AudioStreamBuilder::build() {
 }
 
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
+    Result result = Result::OK;
     LOGD("%s() %s -------- %s --------",
          __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
 
@@ -95,15 +96,15 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         AudioStreamBuilder childBuilder = *this;
         childBuilder.setSampleRate(oboe::Unspecified);
         AudioStream *tempStream;
-        Result childResult = childBuilder.openStream(&tempStream);
-        if (childResult != Result::OK) {
-            return childResult;
+        result = childBuilder.openStream(&tempStream);
+        if (result != Result::OK) {
+            return result;
         }
 
         if (getSampleRate() == tempStream->getSampleRate()) {
             // We can just use the child stream directly.
             *streamPP = tempStream;
-            return childResult;
+            return result;
         } else {
             AudioStreamBuilder parentBuilder = *this;
             // Build a stream that is as close as possible to the childStream.
@@ -117,8 +118,8 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             // Use childStream in a FilterAudioStream.
             std::shared_ptr<AudioStream> childStream(tempStream);
             FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, childStream);
-            childResult = filterStream->configureFlowGraph();
-            if (childResult !=  Result::OK) {
+            result = filterStream->configureFlowGraph();
+            if (result !=  Result::OK) {
                 filterStream->close();
                 delete filterStream;
                 // Just open streamP the old way.
@@ -135,7 +136,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         }
     }
 
-    Result result = streamP->open(); // TODO review API
+    result = streamP->open(); // TODO review API
     if (result == Result::OK) {
 
         // Use a reasonable default buffer size for low latency streams.

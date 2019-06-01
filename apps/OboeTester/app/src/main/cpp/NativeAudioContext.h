@@ -170,7 +170,7 @@ public:
 
     virtual int32_t saveWaveFile(const char *filename);
 
-    static bool   useCallback;
+    static bool   mUseCallback;
     static int    callbackSize;
 
 
@@ -235,7 +235,6 @@ protected:
         return getInputStream()->requestStart();
     }
 
-private:
 };
 
 /**
@@ -252,10 +251,7 @@ public:
         oboe::Result resultStopPlayback = stopPlayback();
         oboe::Result resultStopAudio = ActivityContext::stop();
 
-        oboe::Result result = (resultStopPlayback != oboe::Result::OK)
-                              ? resultStopPlayback
-                              : resultStopAudio;
-        return result;
+        return (resultStopPlayback != oboe::Result::OK) ? resultStopPlayback : resultStopAudio;
     }
 
     oboe::Result startPlayback() override;

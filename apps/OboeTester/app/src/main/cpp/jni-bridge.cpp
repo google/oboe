@@ -362,7 +362,7 @@ Java_com_google_sample_oboe_manualtest_AudioInputTester_getPeakLevel(JNIEnv *env
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *env, jclass type,
                                                                       jboolean useCallback) {
-    ActivityContext::useCallback = useCallback;
+    ActivityContext::mUseCallback = useCallback;
 }
 
 JNIEXPORT void JNICALL

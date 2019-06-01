@@ -27,7 +27,7 @@ namespace oboe {
  * An AudioStream that wraps another AudioStream and provides audio data conversion.
  * Operations may include channel conversion, data format conversion and/or sample rate conversion.
  */
-class FilterAudioStream : public AudioStream {
+class FilterAudioStream : public AudioStream, AudioStreamCallback {
 public:
 
     /**
@@ -40,11 +40,10 @@ public:
     FilterAudioStream(const AudioStreamBuilder &builder,
             std::shared_ptr<oboe::AudioStream> childStream)
     : AudioStream(builder)
-    , mFilterCallback(this)
     , mChildStream(childStream) {
         // Intercept the callback if used.
         if (builder.getCallback() != nullptr) {
-            mStreamCallback = mChildStream->swapCallback(&mFilterCallback);
+            mStreamCallback = mChildStream->swapCallback(this);
         } else {
             const int size = childStream->getFramesPerBurst() * childStream->getBytesPerFrame();
             mBlockingBuffer = std::make_unique<uint8_t[]>(size);
@@ -167,26 +166,24 @@ public:
         return result;
     }
 
-private:
-
-    class FilterAudioStreamCallback : public AudioStreamCallback {
-    public:
-        explicit FilterAudioStreamCallback(FilterAudioStream *parent)
-        : mParent(parent) {}
-
-        DataCallbackResult onAudioReady(
-                AudioStream *oboeStream,
-                void *audioData,
-                int32_t numFrames) override {
-            mParent->mFlowGraph->read(audioData, numFrames);
-            return DataCallbackResult::Continue; // FIXME get from flowgraph
+    DataCallbackResult onAudioReady(
+            AudioStream *oboeStream,
+            void *audioData,
+            int32_t numFrames) override {
+        // TODO bypass mFlowGraph if not needed.
+        if (oboeStream->getDirection() == Direction::Output) {
+            mFlowGraph->read(audioData, numFrames);
+        } else {
+            mFlowGraph->write(audioData, numFrames);
         }
+        return DataCallbackResult::Continue; // FIXME get from flowgraph
+    }
 
-    private:
-        FilterAudioStream *mParent = nullptr;
-    };
+    void onErrorBeforeClose(AudioStream *oboeStream, Result error) override {}
 
-    FilterAudioStreamCallback      mFilterCallback; // callback that will do the conversion
+    void onErrorAfterClose(AudioStream *oboeStream, Result error) override {}
+
+private:
     std::shared_ptr<AudioStream>   mChildStream;    // this stream wraps the child stream
     std::unique_ptr<DataConversionFlowGraph> mFlowGraph;      // for converting data
     std::unique_ptr<uint8_t[]>     mBlockingBuffer; // temp buffer for write()

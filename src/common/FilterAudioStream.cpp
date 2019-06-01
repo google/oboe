@@ -23,14 +23,15 @@ using namespace flowgraph;
 
 Result FilterAudioStream::configureFlowGraph() {
     mFlowGraph = std::make_unique<DataConversionFlowGraph>();
+    bool isOutput = getDirection() == Direction::Output;
 
-    const oboe::AudioFormat sourceFormat = getFormat();
-    const int32_t sourceChannelCount = getChannelCount();
-    const int32_t sourceSampleRate = getSampleRate();
+    const oboe::AudioFormat sourceFormat = isOutput ? getFormat() : mChildStream->getFormat();
+    const int32_t sourceChannelCount = isOutput ? getChannelCount() : mChildStream->getChannelCount();
+    const int32_t sourceSampleRate = isOutput ? getSampleRate() : mChildStream->getSampleRate();
 
-    const oboe::AudioFormat sinkFormat = mChildStream->getFormat();
-    const int32_t sinkChannelCount = mChildStream->getChannelCount();
-    const int32_t sinkSampleRate = mChildStream->getSampleRate();
+    const oboe::AudioFormat sinkFormat = isOutput ? mChildStream->getFormat() : getFormat();
+    const int32_t sinkChannelCount = isOutput ? mChildStream->getChannelCount() : getChannelCount();
+    const int32_t sinkSampleRate = isOutput ? mChildStream->getSampleRate() : getSampleRate();
 
     mRateScaler = ((double) sourceSampleRate) / sinkSampleRate;
 

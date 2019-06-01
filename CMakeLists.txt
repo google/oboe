@@ -7,9 +7,13 @@ set (oboe_sources
     src/common/AudioStream.cpp
     src/common/AudioStreamBuilder.cpp
     src/common/FilterAudioStream.cpp
+    src/common/FixedBlockAdapter.cpp
+    src/common/FixedBlockReader.cpp
+    src/common/FixedBlockWriter.cpp
     src/common/LatencyTuner.cpp
     src/common/DataConversionFlowGraph.cpp
     src/common/SourceFloatCaller.cpp
+    src/common/SourceI16Caller.cpp
     src/common/Utilities.cpp
     src/fifo/FifoBuffer.cpp
     src/fifo/FifoController.cpp

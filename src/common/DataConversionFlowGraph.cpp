@@ -19,6 +19,7 @@
 #include "OboeDebug.h"
 #include "DataConversionFlowGraph.h"
 #include "SourceFloatCaller.h"
+#include "SourceI16Caller.h"
 
 #include <flowgraph/ClipToRange.h>
 #include <flowgraph/MonoToMultiConverter.h>
@@ -47,6 +48,7 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
                                 int32_t sinkSampleRate
                                 ) {
     AudioFloatOutputPort *lastOutput = nullptr;
+    mFilterStream = stream;
 
     LOGD("%s() flow convert format = %d to %d, channel = %d to %d, rate = %d to %d",
             __func__, sourceFormat, sinkFormat,
@@ -54,13 +56,15 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
             sourceSampleRate, sinkSampleRate);
 
     // Source
-    if (stream->getCallback() != nullptr) {
+    if (stream->getCallback() != nullptr && stream->getDirection() == Direction::Output) {
         switch (sourceFormat) {
             case AudioFormat::Float:
-                mSourceCaller = std::make_unique<SourceFloatCaller>(sourceChannelCount);
+                mSourceCaller = std::make_unique<SourceFloatCaller>(sourceChannelCount,
+                        stream->getFramesPerBurst()); // TODO use requested frames per callback
                 break;
             case AudioFormat::I16:
-                // TODO mSource = std::make_unique<SourceI16>(sourceChannelCount);
+                mSourceCaller = std::make_unique<SourceI16Caller>(sourceChannelCount,
+                        stream->getFramesPerBurst());
                 break;
             default:
                 LOGE("%s() Unsupported source caller format = %d", __func__, sourceFormat);
@@ -84,10 +88,16 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
         lastOutput = &mSource->output;
     }
 
+    if (stream->getCallback() != nullptr && stream->getDirection() == Direction::Input) {
+        // TODO use requested frames per callback
+        mBlockWriter.open(stream->getFramesPerBurst() * stream->getBytesPerFrame());
+        mAppBuffer = std::make_unique<uint8_t[]>(kDefaultBufferSize * stream->getBytesPerFrame());
+    }
+
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
         mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount);
-        mRateConverter->setPhaseIncrement(((double)sourceSampleRate / sinkSampleRate));
+        mRateConverter->setPhaseIncrement((double)sourceSampleRate / sinkSampleRate);
         lastOutput->connect(&mRateConverter->input);
         lastOutput = &mRateConverter->output;
     }
@@ -121,9 +131,31 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
     return Result::OK;
 }
 
+// This is only used for OUTPUT streams.
 int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames) {
-    // TODO This only works for OUTPUT. Fix for INPUT.
     int32_t numRead = mSink->read(mFramePosition, buffer, numFrames);
     mFramePosition += numRead;
     return numRead;
+}
+
+// This is only used for INPUT streams. It is like pushing data through the flowgraph.
+int32_t DataConversionFlowGraph::write(void *childBuffer, int32_t numFrames) {
+    // Put the data from the INPUT callback at the head of the flowgraph.
+    mSource->setData(childBuffer, numFrames);
+    while (true) {
+        // Pull and read some data in app format into a small buffer.
+        int32_t numRead = mSink->read(mFramePosition, mAppBuffer.get(), flowgraph::kDefaultBufferSize);
+        mFramePosition += numRead;
+        if (numRead <= 0) break;
+        // Write to a block adapter, which will call the app whenever it has enough data.
+        mBlockWriter.processVariableBlock(mAppBuffer.get(), numRead * mFilterStream->getBytesPerFrame());
+    }
+    return numFrames;
+}
+
+int32_t DataConversionFlowGraph::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
+    int32_t numFrames = numBytes / mFilterStream->getBytesPerFrame();
+    mCallbackResult = mFilterStream->getCallback()->onAudioReady(mFilterStream, buffer, numFrames);
+    // TODO handle STOP from callback, process data remaining in the block adapter
+    return 0;
 }
