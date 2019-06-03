@@ -374,6 +374,17 @@ public:
      */
     void launchStopThread();
 
+    /**
+     * This can be called to prevent handling more than one error callback from a stream.
+     * These were bugs in some versions of Android that caused multiple error callbacks.
+     * Internal bug b/63087953
+     *
+     * @return true if the error callback was already called, otherwise false
+     */
+    bool wasErrorCallbackCalled() {
+        return mErrorCallbackCalled.exchange(true);
+    }
+
 protected:
 
     /**
@@ -453,7 +464,8 @@ protected:
 private:
     int                  mPreviousScheduler = -1;
 
-    std::atomic<bool>    mDataCallbackEnabled{};
+    std::atomic<bool>    mDataCallbackEnabled{false};
+    std::atomic<bool>    mErrorCallbackCalled{false};
 
 };
 

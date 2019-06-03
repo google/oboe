@@ -54,24 +54,41 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
     }
 }
 
+// This runs in its own thread.
+// Call error callback from a static function in case the stream gets deleted.
 static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
-                                          AAudioStream *stream,
                                           Result error) {
-    if (oboeStream != nullptr) {
-        oboeStream->onErrorInThread(stream, error);
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    oboeStream->requestStop();
+    if (oboeStream->getCallback() != nullptr) {
+        oboeStream->getCallback()->onErrorBeforeClose(oboeStream, error);
     }
+    oboeStream->close();
+    if (oboeStream->getCallback() != nullptr) {
+        // Warning, oboeStream may get deleted by this callback.
+        oboeStream->getCallback()->onErrorAfterClose(oboeStream, error);
+    }
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
-// 'C' wrapper for the error callback method
+// 'C' wrapper for the error callback method.
+// Launch a thread to handle the error.
+// That other thread can safely stop, close and delete the stream.
 static void oboe_aaudio_error_callback_proc(
         AAudioStream *stream,
         void *userData,
         aaudio_result_t error) {
-
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    if (oboeStream != NULL) {
-        // Handle error on a separate thread
-        std::thread t(oboe_aaudio_error_thread_proc, oboeStream, stream, static_cast<Result>(error));
+    if (oboeStream == nullptr) {
+        LOGE("%s() oboeStream is NULL!", __func__);
+    } else if (oboeStream->wasErrorCallbackCalled()) { // block double error callbacks
+        LOGE("%s() multiple error callbacks called!", __func__);
+    } else if (stream != oboeStream->getUnderlyingStream()) {
+        LOGD("%s() stream already closed", __func__);
+    } else {
+        // Handle error on a separate thread.
+        std::thread t(oboe_aaudio_error_thread_proc, oboeStream,
+                      static_cast<Result>(error));
         t.detach();
     }
 }
@@ -263,20 +280,6 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
             return DataCallbackResult::Stop; // OK >= API_Q
         }
     }
-}
-
-void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
-    LOGD("onErrorInThread() - entering ===================================");
-    assert(stream == mAAudioStream.load());
-    requestStop();
-    if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorBeforeClose(this, error);
-    }
-    close();
-    if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorAfterClose(this, error);
-    }
-    LOGD("onErrorInThread() - exiting ===================================");
 }
 
 Result AudioStreamAAudio::requestStart() {

@@ -93,8 +93,6 @@ public:
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    void onErrorInThread(AAudioStream *stream, Result error);
-
 
     void *getUnderlyingStream() const override {
         return mAAudioStream.load();
