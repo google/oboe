@@ -32,13 +32,10 @@ PlayAudioEngine::PlayAudioEngine() {
     // Initialize the trace functions, this enables you to output trace statements without
     // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
     Trace::initialize();
-    oboe::AudioStreamBuilder builder_ = oboe::AudioStreamBuilder();
-    createPlaybackStream(&builder_);
+    oboe::AudioStreamBuilder builder = oboe::AudioStreamBuilder();
+    createPlaybackStream(&builder);
 }
 
-PlayAudioEngine::~PlayAudioEngine() {
-    closeOutputStream();
-}
 /**
  * Creates an audio stream for playback. Takes in a builder pointer which contains stream params
  */
@@ -46,8 +43,8 @@ void PlayAudioEngine::createPlaybackStream(oboe::AudioStreamBuilder *builder) {
     oboe::Result result = builder->setSharingMode(oboe::SharingMode::Exclusive)
     ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
     ->setCallback(this)
-    ->openStream(&mPlayStream);
-    if (result == oboe::Result::OK && mPlayStream != nullptr) {
+    ->openManagedStream(mPlayStream);
+    if (result == oboe::Result::OK && mPlayStream.get() != nullptr) {
         // Set the buffer size to the burst size - this will give us the minimum possible latency
         mPlayStream->setBufferSizeInFrames(mPlayStream->getFramesPerBurst());
 
@@ -80,20 +77,6 @@ void PlayAudioEngine::createPlaybackStream(oboe::AudioStreamBuilder *builder) {
 
     } else {
         LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
-    }
-}
-
-void PlayAudioEngine::closeOutputStream() {
-    if (mPlayStream != nullptr) {
-        oboe::Result result = mPlayStream->requestStop();
-        if (result != oboe::Result::OK) {
-            LOGE("Error stopping output stream. %s", oboe::convertToText(result));
-        }
-
-        result = mPlayStream->close();
-        if (result != oboe::Result::OK) {
-            LOGE("Error closing output stream. %s", oboe::convertToText(result));
-        }
     }
 }
 
@@ -223,7 +206,6 @@ void PlayAudioEngine::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Res
 
 void PlayAudioEngine::restartStream(oboe::AudioStreamBuilder *builder) {
     LOGI("Restarting stream");
-    closeOutputStream();
     createPlaybackStream(builder);
 }
 
@@ -246,14 +228,14 @@ bool PlayAudioEngine::isLatencyDetectionSupported() {
     return mIsLatencyDetectionSupported;
 }
 void PlayAudioEngine::setAudioApi(oboe::AudioApi audioApi) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setAudioApi(audioApi);
-    restartStream(&builder_);
+    oboe::AudioStreamBuilder *builder = oboe::AudioStreamBuilder(*mPlayStream).setAudioApi(audioApi);
+    restartStream(builder);
     LOGD("AudioAPI is now %d", mPlayStream->getAudioApi());
 }
 
 void PlayAudioEngine::setChannelCount(int channelCount) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setChannelCount(channelCount);
-    restartStream(&builder_);
+    oboe::AudioStreamBuilder *builder = oboe::AudioStreamBuilder(*mPlayStream).setChannelCount(channelCount);
+    restartStream(builder);
     LOGD("Channel count is now %d", mPlayStream->getChannelCount());
 }
 
@@ -266,8 +248,8 @@ void PlayAudioEngine::setChannelCount(int channelCount) {
  * using Java/JNI.
  */
 void PlayAudioEngine::setDeviceId(int32_t deviceId) {
-    oboe::AudioStreamBuilder builder_ = *oboe::AudioStreamBuilder(*mPlayStream).setDeviceId(deviceId);
-    restartStream(&builder_);
+    oboe::AudioStreamBuilder *builder = oboe::AudioStreamBuilder(*mPlayStream).setDeviceId(deviceId);
+    restartStream(builder);
     LOGD("Device ID is now %d", mPlayStream->getDeviceId());
 }
 
