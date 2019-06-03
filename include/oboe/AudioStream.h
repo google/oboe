@@ -374,8 +374,10 @@ public:
      */
     void launchStopThread();
 
+protected:
+
     /**
-     * This can be called to prevent handling more than one error callback from a stream.
+     * This is used to detect more than one error callback from a stream.
      * These were bugs in some versions of Android that caused multiple error callbacks.
      * Internal bug b/63087953
      *
@@ -384,8 +386,6 @@ public:
     bool wasErrorCallbackCalled() {
         return mErrorCallbackCalled.exchange(true);
     }
-
-protected:
 
     /**
      * Wait for a transition from one state to another.

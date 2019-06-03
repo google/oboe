@@ -71,28 +71,6 @@ static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
-// 'C' wrapper for the error callback method.
-// Launch a thread to handle the error.
-// That other thread can safely stop, close and delete the stream.
-static void oboe_aaudio_error_callback_proc(
-        AAudioStream *stream,
-        void *userData,
-        aaudio_result_t error) {
-    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    if (oboeStream == nullptr) {
-        LOGE("%s() oboeStream is NULL!", __func__);
-    } else if (oboeStream->wasErrorCallbackCalled()) { // block double error callbacks
-        LOGE("%s() multiple error callbacks called!", __func__);
-    } else if (stream != oboeStream->getUnderlyingStream()) {
-        LOGD("%s() stream already closed", __func__);
-    } else {
-        // Handle error on a separate thread.
-        std::thread t(oboe_aaudio_error_thread_proc, oboeStream,
-                      static_cast<Result>(error));
-        t.detach();
-    }
-}
-
 namespace oboe {
 
 /*
@@ -110,6 +88,28 @@ bool AudioStreamAAudio::isSupported() {
     mLibLoader = AAudioLoader::getInstance();
     int openResult = mLibLoader->open();
     return openResult == 0;
+}
+
+// Static 'C' wrapper for the error callback method.
+// Launch a thread to handle the error.
+// That other thread can safely stop, close and delete the stream.
+void AudioStreamAAudio::internalErrorCallback(
+        AAudioStream *stream,
+        void *userData,
+        aaudio_result_t error) {
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    if (oboeStream == nullptr) {
+        LOGE("%s() oboeStream is NULL!", __func__);
+    } else if (oboeStream->wasErrorCallbackCalled()) { // block double error callbacks
+        LOGE("%s() multiple error callbacks called!", __func__);
+    } else if (stream != oboeStream->getUnderlyingStream()) {
+        LOGD("%s() stream already closed", __func__);
+    } else {
+        // Handle error on a separate thread.
+        std::thread t(oboe_aaudio_error_thread_proc, oboeStream,
+                      static_cast<Result>(error));
+        t.detach();
+    }
 }
 
 Result AudioStreamAAudio::open() {
@@ -184,7 +184,7 @@ Result AudioStreamAAudio::open() {
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
         // If the data callback is not being used then the write method will return an error
         // and the app can stop and close the stream.
-        mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
+        mLibLoader->builder_setErrorCallback(aaudioBuilder, internalErrorCallback, this);
     }
 
     // ============= OPEN THE STREAM ================
