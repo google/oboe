@@ -109,4 +109,11 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     return result;
 }
 
+Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
+    auto streamptr = stream.release();
+    auto result = openStream(&streamptr);
+    stream.reset(streamptr);
+    return result;
+}
+
 } // namespace oboe

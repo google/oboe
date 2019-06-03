@@ -461,7 +461,7 @@ private:
  * This struct is a stateless functor which closes a audiostream prior to its deletion.
  * This means it can be used to safely delete a smart pointer referring to an open stream.
  */
-    struct streamDeleterFunctor {
+    struct StreamDeleterFunctor {
         void operator()(AudioStream  *audioStream) {
             if (audioStream) {
                 audioStream->close();
