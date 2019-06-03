@@ -164,6 +164,11 @@ protected:
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
+
+    // Control whether Oboe can convert channel counts to achieve optimal results.
+    bool                            mAllowChannelConversion = true;
+    // Control whether Oboe can convert data formats to achieve optimal results.
+    bool                            mAllowFormatConversion = true;
 };
 
 } // namespace oboe
