@@ -30,6 +30,8 @@ public:
 
     AudioStreamBuilder() : AudioStreamBase() {}
 
+    AudioStreamBuilder(const AudioStreamBase &audioStreamBase): AudioStreamBase(audioStreamBase) {}
+
     /**
      * Request a specific number of channels.
      *
@@ -312,6 +314,41 @@ public:
         return this;
     }
 
+    /**
+     * If true then Oboe might convert channel counts to achieve optimal results.
+     * On some versions of Android for example, stereo streams could not use a FAST track.
+     * So a mono stream might be used instead and duplicated to two channels.
+     * On some devices, mono streams might be broken, so a stereo stream might be opened
+     * and converted to mono.
+     *
+     * Default is true.
+     */
+    void setChannelConversionAllowed(bool allowed) {
+        mChannelConversionAllowed = allowed;
+    }
+
+    /**
+     * If true then  Oboe might convert data formats to achieve optimal results.
+     * On some versions of Android, for example, a float stream could not get a
+     * low latency data path. So an I16 stream might be opened and converted to float.
+     *
+     * Default is true.
+     */
+    void setFormatConversionAllowed(bool allowed) {
+        mFormatConversionAllowed = allowed;
+    }
+
+    /**
+     * If set to None then Oboe will not do sample rate conversion. But the underlying APIs
+     * might do sample rate conversion. Unfortunately sample rate conversion in Android typically
+     * prevents one from getting a low latency stream. So we can do the conversion in Android
+     * and still get a low latency stream.
+     *
+     * Default is SampleRateConversionType::Sinc. TODO currently Linear
+     */
+    void setSampleRateConversionType(SampleRateConversionType type) {
+        mSampleRateConversionType = type;
+    }
     /**
      * Create and open a stream object based on the current settings.
      *

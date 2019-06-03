@@ -125,6 +125,27 @@ public:
      */
     SessionId getSessionId() const { return mSessionId; }
 
+    /**
+     * @return true if Oboe can convert channel counts to achieve optimal results.
+     */
+    bool isChannelConversionAllowed() {
+        return mChannelConversionAllowed;
+    }
+
+    /**
+     * @return true if  Oboe can convert data formats to achieve optimal results.
+     */
+    bool  isFormatConversionAllowed() {
+        return mFormatConversionAllowed;
+    }
+
+    /**
+     * @return whether and how Oboe can convert sample rates to achieve optimal results.
+     */
+    SampleRateConversionType getSampleRateConversionType() {
+        return mSampleRateConversionType;
+    }
+
 protected:
 
     /** The callback which will be fired when new data is ready to be read/written **/
@@ -166,9 +187,11 @@ protected:
     SessionId                       mSessionId = SessionId::None;
 
     // Control whether Oboe can convert channel counts to achieve optimal results.
-    bool                            mAllowChannelConversion = true;
+    bool                            mChannelConversionAllowed = true;
     // Control whether Oboe can convert data formats to achieve optimal results.
-    bool                            mAllowFormatConversion = true;
+    bool                            mFormatConversionAllowed = true;
+    // Control whether and how Oboe can convert sample rates to achieve optimal results.
+    SampleRateConversionType        mSampleRateConversionType = SampleRateConversionType::Linear;
 };
 
 } // namespace oboe

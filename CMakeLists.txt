@@ -15,6 +15,7 @@ set (oboe_sources
     src/common/SourceFloatCaller.cpp
     src/common/SourceI16Caller.cpp
     src/common/Utilities.cpp
+    src/common/QuirksManager.cpp
     src/fifo/FifoBuffer.cpp
     src/fifo/FifoController.cpp
     src/fifo/FifoControllerBase.cpp

@@ -24,6 +24,7 @@
 #include "opensles/AudioInputStreamOpenSLES.h"
 #include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
+#include "QuirksManager.h"
 
 namespace oboe {
 
@@ -90,12 +91,12 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     AudioStream *streamP = nullptr;
 
     // Maybe make a FilterInputStream
-    // TODO refactor this into a QuirksManager
-    if (getPerformanceMode() == PerformanceMode::LowLatency
-        && getSampleRate() != oboe::Unspecified) {
-        AudioStreamBuilder childBuilder = *this;
-        childBuilder.setSampleRate(oboe::Unspecified);
+    AudioStreamBuilder childBuilder(*this);
+    bool conversionNeeded = QuirksManager::getInstance()->isConversionNeeded(*this, childBuilder);
+    // Do we need to make a child stream and convert.
+    if (conversionNeeded) {
         AudioStream *tempStream;
+
         result = childBuilder.openStream(&tempStream);
         if (result != Result::OK) {
             return result;
