@@ -113,10 +113,10 @@ oboe::Result FullDuplexStream::stop() {
     }
 }
 
-int32_t FullDuplexStream::getMNumInputBurstsCushion() const {
+int32_t FullDuplexStream::getNumInputBurstsCushion() const {
     return mNumInputBurstsCushion;
 }
 
-void FullDuplexStream::setMNumInputBurstsCushion(int32_t numBursts) {
+void FullDuplexStream::setNumInputBurstsCushion(int32_t numBursts) {
     FullDuplexStream::mNumInputBurstsCushion = numBursts;
 }
