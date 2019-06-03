@@ -167,4 +167,11 @@ void AudioStream::launchStopThread() {
     t.detach();
 }
 
+Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
+    auto streamptr = stream.get();
+    auto result = openStream(&streamptr);
+    stream.reset(streamptr);
+    return result;
+}
+
 } // namespace oboe
