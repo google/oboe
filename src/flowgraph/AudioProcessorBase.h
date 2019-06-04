@@ -380,6 +380,25 @@ public:
 
 };
 
+/***************************************************************************/
+/**
+ * Base class for an node that has an input and an output with the same number of channels.
+ * This may include traditional filters, eg. FIR, but also include
+ * any processing node that converts input to output.
+ */
+class AudioFilter : public AudioProcessorBase {
+public:
+    explicit AudioFilter(int32_t channelCount)
+            : input(*this, channelCount)
+            , output(*this, channelCount) {
+    }
+
+    virtual ~AudioFilter() = default;
+
+    AudioFloatInputPort input;
+    AudioFloatOutputPort output;
+};
+
 } /* namespace flowgraph */
 
 #endif /* FLOWGRAPH_AUDIO_PROCESSOR_BASE_H */

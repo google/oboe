@@ -25,7 +25,7 @@
 
 namespace flowgraph {
 
-class SampleRateConverter : public AudioProcessorBase {
+class SampleRateConverter : public AudioFilter {
 public:
     explicit SampleRateConverter(int32_t channelCount);
 
@@ -40,9 +40,6 @@ public:
     void setPhaseIncrement(double phaseIncrement) {
         mPhaseIncrement = phaseIncrement;
     }
-
-    AudioFloatInputPort input;
-    AudioFloatOutputPort output;
 
     const char *getName() override {
         return "SampleRateConverter";

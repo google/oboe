@@ -62,11 +62,7 @@ bool AudioStreamBuilder::isAAudioRecommended() {
 
 AudioStream *AudioStreamBuilder::build() {
     AudioStream *stream = nullptr;
-    if (mAudioApi == AudioApi::AAudio && isAAudioSupported()) {
-        stream = new AudioStreamAAudio(*this);
-
-    // If unspecified, only use AAudio if recommended.
-    } else if (mAudioApi == AudioApi::Unspecified && isAAudioRecommended()) {
+    if (willUseAAudio()) {
         stream = new AudioStreamAAudio(*this);
     } else {
         if (getDirection() == oboe::Direction::Output) {
@@ -90,8 +86,9 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
 
     AudioStream *streamP = nullptr;
 
-    // Maybe make a FilterInputStream
+    // Maybe make a FilterInputStream.
     AudioStreamBuilder childBuilder(*this);
+    // Check need for conversion and modify childBuilder for optimal stream.
     bool conversionNeeded = QuirksManager::getInstance()->isConversionNeeded(*this, childBuilder);
     // Do we need to make a child stream and convert.
     if (conversionNeeded) {
@@ -102,8 +99,12 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             return result;
         }
 
-        if (getSampleRate() == tempStream->getSampleRate()) {
-            // We can just use the child stream directly.
+        // TODO define isCompatible()
+        if (getSampleRate() == tempStream->getSampleRate()
+                && getFormat() == tempStream->getFormat()
+                && getChannelCount() == tempStream->getChannelCount()
+            ) {
+            // Everything matches so we can just use the child stream directly.
             *streamPP = tempStream;
             return result;
         } else {
@@ -114,6 +115,9 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             }
             if (getChannelCount() == oboe::Unspecified) {
                 parentBuilder.setChannelCount(tempStream->getChannelCount());
+            }
+            if (getSampleRate() == oboe::Unspecified) {
+                parentBuilder.setSampleRate(tempStream->getSampleRate());
             }
 
             // Use childStream in a FilterAudioStream.

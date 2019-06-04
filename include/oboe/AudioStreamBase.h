@@ -128,21 +128,21 @@ public:
     /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
-    bool isChannelConversionAllowed() {
+    bool isChannelConversionAllowed()const {
         return mChannelConversionAllowed;
     }
 
     /**
      * @return true if  Oboe can convert data formats to achieve optimal results.
      */
-    bool  isFormatConversionAllowed() {
+    bool  isFormatConversionAllowed() const {
         return mFormatConversionAllowed;
     }
 
     /**
      * @return whether and how Oboe can convert sample rates to achieve optimal results.
      */
-    SampleRateConversionType getSampleRateConversionType() {
+    SampleRateConversionType getSampleRateConversionType() const {
         return mSampleRateConversionType;
     }
 

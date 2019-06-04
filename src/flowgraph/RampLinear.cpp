@@ -22,8 +22,7 @@
 using namespace flowgraph;
 
 RampLinear::RampLinear(int32_t channelCount)
-        : input(*this, channelCount)
-        , output(*this, channelCount) {
+        : AudioFilter(channelCount) {
     mTarget.store(1.0f);
 }
 

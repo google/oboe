@@ -37,7 +37,7 @@ public:
         return mInstance;
     }
 
-    bool isConversionNeeded(AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
+    bool isConversionNeeded(const AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
 
 private:
     static QuirksManager *mInstance;

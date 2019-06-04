@@ -349,6 +349,15 @@ public:
     void setSampleRateConversionType(SampleRateConversionType type) {
         mSampleRateConversionType = type;
     }
+
+    /**
+     * @return true if AAudio will be used based on the current settings.
+     */
+    bool willUseAAudio() const { // TODO How can this be const if isSupported() is not const?
+        return (mAudioApi == AudioApi::AAudio && isAAudioSupported())
+                || (mAudioApi == AudioApi::Unspecified && isAAudioRecommended());
+    }
+
     /**
      * Create and open a stream object based on the current settings.
      *

@@ -33,7 +33,7 @@ namespace flowgraph {
  * The target may be updated while a ramp is in progress, which will trigger
  * a new ramp from the current value.
  */
-class RampLinear : public AudioProcessorBase {
+class RampLinear : public AudioFilter {
 public:
     explicit RampLinear(int32_t channelCount);
 
@@ -77,9 +77,6 @@ public:
     const char *getName() override {
         return "RampLinear";
     }
-
-    AudioFloatInputPort input;
-    AudioFloatOutputPort output;
 
 private:
 

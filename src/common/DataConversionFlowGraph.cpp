@@ -50,7 +50,7 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
     AudioFloatOutputPort *lastOutput = nullptr;
     mFilterStream = stream;
 
-    LOGD("%s() flow convert format = %d to %d, channel = %d to %d, rate = %d to %d",
+    LOGD("%s() flowgraph converts format: %d to %d, channels: %d to %d, rate: %d to %d",
             __func__, sourceFormat, sinkFormat,
             sourceChannelCount, sinkChannelCount,
             sourceSampleRate, sinkSampleRate);

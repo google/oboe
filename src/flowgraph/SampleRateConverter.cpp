@@ -19,8 +19,7 @@
 using namespace flowgraph;
 
 SampleRateConverter::SampleRateConverter(int32_t channelCount)
-        : input(*this, channelCount)
-        , output(*this, channelCount)
+        : AudioFilter(channelCount)
         , mResampler(channelCount) {
     setDataPulledAutomatically(false);
 }

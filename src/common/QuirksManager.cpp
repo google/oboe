@@ -15,6 +15,7 @@
  */
 
 #include <oboe/AudioStreamBuilder.h>
+#include <oboe/Oboe.h>
 #include "QuirksManager.h"
 
 using namespace oboe;
@@ -22,14 +23,53 @@ using namespace oboe;
 QuirksManager *QuirksManager::mInstance = nullptr;
 
 bool QuirksManager::isConversionNeeded(
-        AudioStreamBuilder &builder,
+        const AudioStreamBuilder &builder,
         AudioStreamBuilder &childBuilder) {
     bool conversionNeeded = false;
-    if (builder.getSampleRateConversionType() != SampleRateConversionType::None
-            && builder.getPerformanceMode() == PerformanceMode::LowLatency
-            && builder.getSampleRate() != oboe::Unspecified) {
+    const bool isLowLatency = builder.getPerformanceMode() == PerformanceMode::LowLatency;
+    const bool isInput = builder.getDirection() == Direction::Input;
+    const bool isFloat = builder.getFormat() == AudioFormat::Float;
+
+    // If a SAMPLE RATE is specified then let the native code choose an optimal rate.
+    if (builder.getSampleRate() != oboe::Unspecified
+            && builder.getSampleRateConversionType() != SampleRateConversionType::None
+            && isLowLatency
+            ) {
         childBuilder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
         conversionNeeded = true;
+    }
+
+    // Data Format
+    // OpenSL ES and AAudio <P do not support FAST for FLOAT capture.
+    if (builder.getFormat() != AudioFormat::Unspecified
+            && builder.isFormatConversionAllowed()
+            && isInput
+            && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
+            && isLowLatency
+            && isFloat
+            ) {
+        childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
+        conversionNeeded = true;
+    }
+
+    // Channel Count
+    if (builder.getChannelCount() != oboe::Unspecified && builder.isChannelConversionAllowed()) {
+        if (builder.getChannelCount() == 2 // stereo?
+                && isInput
+                && isLowLatency
+                && (!builder.willUseAAudio() && (getSdkVersion() == __ANDROID_API_O__))) {
+            // temporary heap size regression, b/66967812
+            childBuilder.setChannelCount(1);
+            conversionNeeded = true;
+        } else if (builder.getChannelCount() == 1 // mono?
+                   && !isInput
+                   && isLowLatency
+                   // TODO isMMapEnabled
+                   && (builder.willUseAAudio() && (getSdkVersion() < __ANDROID_API_P__))) {
+            // MMAP does not support mono in 8.1
+            childBuilder.setChannelCount(2);
+            conversionNeeded = true;
+        }
     }
     return conversionNeeded;
 }
