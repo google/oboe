@@ -94,6 +94,9 @@ public:
      * The underlying stream will already be stopped by Oboe but not yet closed.
      * So the stream can be queried.
      *
+     * Do not close or delete the stream in this method because it will be
+     * closed after this method returns.
+     *
      * @param oboeStream pointer to the associated stream
      * @param error
      */
@@ -101,10 +104,12 @@ public:
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected.
-     * The underlying stream will already be stopped AND closed by Oboe.
-     * So the underlyng stream cannot be referenced.
+     * The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe.
+     * So the underlying stream cannot be referenced.
+     * But you can still query most parameters.
      *
      * This callback could be used to reopen a new stream on another device.
+     * You can safely delete the old AudioStream in this method.
      *
      * @param oboeStream pointer to the associated stream
      * @param error

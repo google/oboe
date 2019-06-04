@@ -55,7 +55,8 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
 }
 
 // This runs in its own thread.
-// Call error callback from a static function in case the stream gets deleted.
+// Only one of these threads will be launched from internalErrorCallback().
+// It calls app error callbacks from a static function in case the stream gets deleted.
 static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
                                           Result error) {
     LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
@@ -98,12 +99,12 @@ void AudioStreamAAudio::internalErrorCallback(
         void *userData,
         aaudio_result_t error) {
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    if (oboeStream == nullptr) {
-        LOGE("%s() oboeStream is NULL!", __func__);
-    } else if (oboeStream->wasErrorCallbackCalled()) { // block double error callbacks
+    // These checks should be enough because we assume that the stream close()
+    // will join() any active callback threads and will not allow new callbacks.
+    if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
         LOGE("%s() multiple error callbacks called!", __func__);
     } else if (stream != oboeStream->getUnderlyingStream()) {
-        LOGD("%s() stream already closed", __func__);
+        LOGD("%s() stream already closed", __func__); // can happen if there are bugs
     } else {
         // Handle error on a separate thread.
         std::thread t(oboe_aaudio_error_thread_proc, oboeStream,

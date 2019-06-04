@@ -381,7 +381,9 @@ protected:
      * These were bugs in some versions of Android that caused multiple error callbacks.
      * Internal bug b/63087953
      *
-     * @return true if the error callback was already called, otherwise false
+     * Calling this sets an atomic<bool> true and returns the previous value.
+     *
+     * @return false on first call, true on subsequent calls
      */
     bool wasErrorCallbackCalled() {
         return mErrorCallbackCalled.exchange(true);
