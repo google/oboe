@@ -377,6 +377,19 @@ public:
 protected:
 
     /**
+     * This is used to detect more than one error callback from a stream.
+     * These were bugs in some versions of Android that caused multiple error callbacks.
+     * Internal bug b/63087953
+     *
+     * Calling this sets an atomic<bool> true and returns the previous value.
+     *
+     * @return false on first call, true on subsequent calls
+     */
+    bool wasErrorCallbackCalled() {
+        return mErrorCallbackCalled.exchange(true);
+    }
+
+    /**
      * Wait for a transition from one state to another.
      * @return OK if the endingState was observed, or ErrorUnexpectedState
      *   if any state that was not the startingState or endingState was observed
@@ -453,7 +466,8 @@ protected:
 private:
     int                  mPreviousScheduler = -1;
 
-    std::atomic<bool>    mDataCallbackEnabled{};
+    std::atomic<bool>    mDataCallbackEnabled{false};
+    std::atomic<bool>    mErrorCallbackCalled{false};
 
 };
 

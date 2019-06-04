@@ -54,26 +54,22 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
     }
 }
 
+// This runs in its own thread.
+// Only one of these threads will be launched from internalErrorCallback().
+// It calls app error callbacks from a static function in case the stream gets deleted.
 static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
-                                          AAudioStream *stream,
                                           Result error) {
-    if (oboeStream != nullptr) {
-        oboeStream->onErrorInThread(stream, error);
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    oboeStream->requestStop();
+    if (oboeStream->getCallback() != nullptr) {
+        oboeStream->getCallback()->onErrorBeforeClose(oboeStream, error);
     }
-}
-
-// 'C' wrapper for the error callback method
-static void oboe_aaudio_error_callback_proc(
-        AAudioStream *stream,
-        void *userData,
-        aaudio_result_t error) {
-
-    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    if (oboeStream != NULL) {
-        // Handle error on a separate thread
-        std::thread t(oboe_aaudio_error_thread_proc, oboeStream, stream, static_cast<Result>(error));
-        t.detach();
+    oboeStream->close();
+    if (oboeStream->getCallback() != nullptr) {
+        // Warning, oboeStream may get deleted by this callback.
+        oboeStream->getCallback()->onErrorAfterClose(oboeStream, error);
     }
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
 namespace oboe {
@@ -93,6 +89,28 @@ bool AudioStreamAAudio::isSupported() {
     mLibLoader = AAudioLoader::getInstance();
     int openResult = mLibLoader->open();
     return openResult == 0;
+}
+
+// Static 'C' wrapper for the error callback method.
+// Launch a thread to handle the error.
+// That other thread can safely stop, close and delete the stream.
+void AudioStreamAAudio::internalErrorCallback(
+        AAudioStream *stream,
+        void *userData,
+        aaudio_result_t error) {
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    // These checks should be enough because we assume that the stream close()
+    // will join() any active callback threads and will not allow new callbacks.
+    if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
+        LOGE("%s() multiple error callbacks called!", __func__);
+    } else if (stream != oboeStream->getUnderlyingStream()) {
+        LOGD("%s() stream already closed", __func__); // can happen if there are bugs
+    } else {
+        // Handle error on a separate thread.
+        std::thread t(oboe_aaudio_error_thread_proc, oboeStream,
+                      static_cast<Result>(error));
+        t.detach();
+    }
 }
 
 Result AudioStreamAAudio::open() {
@@ -167,7 +185,7 @@ Result AudioStreamAAudio::open() {
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
         // If the data callback is not being used then the write method will return an error
         // and the app can stop and close the stream.
-        mLibLoader->builder_setErrorCallback(aaudioBuilder, oboe_aaudio_error_callback_proc, this);
+        mLibLoader->builder_setErrorCallback(aaudioBuilder, internalErrorCallback, this);
     }
 
     // ============= OPEN THE STREAM ================
@@ -263,20 +281,6 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
             return DataCallbackResult::Stop; // OK >= API_Q
         }
     }
-}
-
-void AudioStreamAAudio::onErrorInThread(AAudioStream *stream, Result error) {
-    LOGD("onErrorInThread() - entering ===================================");
-    assert(stream == mAAudioStream.load());
-    requestStop();
-    if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorBeforeClose(this, error);
-    }
-    close();
-    if (mStreamCallback != nullptr) {
-        mStreamCallback->onErrorAfterClose(this, error);
-    }
-    LOGD("onErrorInThread() - exiting ===================================");
 }
 
 Result AudioStreamAAudio::requestStart() {
