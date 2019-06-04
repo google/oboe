@@ -29,6 +29,7 @@
 #include "flowgraph/MonoToMultiConverter.h"
 #include "flowgraph/SourceFloat.h"
 #include "flowgraph/RampLinear.h"
+#include "flowgraph/LinearResampler.h"
 #include "flowgraph/SampleRateConverter.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
@@ -168,18 +169,19 @@ TEST(test_flowgraph, module_sample_rate_converter) {
     static const float expected[] = {0.0, 0.0, 0.0, 0.5, 1.0, 1.5};
     float output[100];
     SourceFloat sourceFloat{1};
-    SampleRateConverter resampler{1};
+    LinearResampler linear{1};
+    SampleRateConverter rateConverter{1, linear};
     SinkFloat sinkFloat{1};
 
     // printf("test_flowgraph::module_sample_rate_converter ===========================\n");
 
-    resampler.setPhaseIncrement(rateScaler);
+    rateConverter.setPhaseIncrement(rateScaler);
 
     int numInputFrames = sizeof(input) / sizeof(input[0]);
     sourceFloat.setData(input, numInputFrames);
 
-    sourceFloat.output.connect(&resampler.input);
-    resampler.output.connect(&sinkFloat.input);
+    sourceFloat.output.connect(&rateConverter.input);
+    rateConverter.output.connect(&sinkFloat.input);
 
     int numExpectedFrames = sizeof(expected) / sizeof(expected[0]);
     int numOutputFrames = sizeof(output) / sizeof(output[0]);
@@ -195,4 +197,37 @@ TEST(test_flowgraph, module_sample_rate_converter) {
     // printf("test_flowgraph::module_sample_rate_converter second read -------------\n");
     numRead = sinkFloat.read(numRead /* framePosition */, output, numOutputFrames);
     EXPECT_EQ(0, numRead);
+}
+
+TEST(test_flowgraph, module_sinc_resampler) {
+//void foo() {
+    static const float zeroFrame[] = {0.0};
+    static const float oneFrame[] = {0.0};
+    float output = 0.0f;
+    SincResampler sincResampler{1};
+
+    printf("test_flowgraph::module_sinc_resampler ===========================\n");
+    fflush(stdout);
+
+    for (int i = 0; i <= (sincResampler.getSpread()*2*10); i++) {
+        float phase = i / 10.0;
+        float sinc = sincResampler.calculateWindowedSinc(phase);
+        printf("test_flowgraph::calculateWindowedSinc(%f) => %f\n", phase , sinc);
+        fflush(stdout);
+    }
+
+    for (int i = 0; i < 20; i++) {
+        printf("test_flowgraph: writeFrame %d\n", i);
+        fflush(stdout);
+        sincResampler.writeFrame(zeroFrame);
+    }
+    sincResampler.writeFrame(oneFrame); // write an impulse
+    for (int i = 0; i < 20; i++) {
+        sincResampler.writeFrame(zeroFrame);
+        printf("test_flowgraph: readFrame %d\n", i);
+        fflush(stdout);
+        sincResampler.readFrame(&output, 0.0);
+        printf("test_flowgraph::module_sinc_resampler output = %f\n", output);
+    }
+
 }

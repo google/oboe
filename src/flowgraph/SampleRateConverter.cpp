@@ -18,13 +18,13 @@
 
 using namespace flowgraph;
 
-SampleRateConverter::SampleRateConverter(int32_t channelCount)
+SampleRateConverter::SampleRateConverter(int32_t channelCount, MultiChannelResampler &resampler)
         : AudioFilter(channelCount)
-        , mResampler(channelCount) {
+        , mResampler(resampler) {
     setDataPulledAutomatically(false);
 }
 
-// Return true if these is a sample available.
+// Return true if there is a sample available.
 bool SampleRateConverter::isInputAvailable() {
     if (mInputCursor >= mInputValid) {
         mInputValid = input.pullData(mInputFramePosition, input.getFramesPerBuffer());

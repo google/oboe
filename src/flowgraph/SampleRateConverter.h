@@ -21,13 +21,15 @@
 #include <sys/types.h>
 
 #include "AudioProcessorBase.h"
-#include "MultiChannelRateConverter.h"
+#include "MultiChannelResampler.h"
+#include "LinearResampler.h"
+#include "SincResampler.h"
 
 namespace flowgraph {
 
 class SampleRateConverter : public AudioFilter {
 public:
-    explicit SampleRateConverter(int32_t channelCount);
+    explicit SampleRateConverter(int32_t channelCount, MultiChannelResampler &mResampler);
 
     virtual ~SampleRateConverter() = default;
 
@@ -52,7 +54,8 @@ private:
 
     const float *getNextInputFrame();
 
-    MultiChannelRateConverter mResampler;
+    MultiChannelResampler &mResampler;
+
     double  mPhase = 1.0;
     double  mPhaseIncrement = 1.0;
     int32_t mInputCursor = 0;

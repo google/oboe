@@ -22,11 +22,13 @@ set (oboe_sources
     src/fifo/FifoControllerIndirect.cpp
     src/flowgraph/AudioProcessorBase.cpp
     src/flowgraph/ClipToRange.cpp
+    src/flowgraph/LinearResampler.cpp
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoToMultiConverter.cpp
-    src/flowgraph/MultiChannelRateConverter.cpp
+    src/flowgraph/MultiChannelResampler.cpp
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp
+    src/flowgraph/SincResampler.cpp
     src/flowgraph/SinkFloat.cpp
     src/flowgraph/SinkI16.cpp
     src/flowgraph/SinkI24.cpp

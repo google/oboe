@@ -96,7 +96,8 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
 
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
-        mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount);
+        mResampler = std::make_unique<SincResampler>(sourceChannelCount);
+        mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount, *mResampler.get());
         mRateConverter->setPhaseIncrement((double)sourceSampleRate / sinkSampleRate);
         lastOutput->connect(&mRateConverter->input);
         lastOutput = &mRateConverter->output;
