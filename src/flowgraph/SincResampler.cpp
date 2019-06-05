@@ -15,7 +15,7 @@
  */
 
 #include <math.h>
-#include "common/OboeDebug.h"
+//#include "common/OboeDebug.h"
 #include "SincResampler.h"
 
 using namespace flowgraph;
@@ -30,34 +30,31 @@ SincResampler::SincResampler(int32_t channelCount)
 
 void SincResampler::writeFrame(const float *frame) {
     int xIndex = mCursor * getChannelCount();
+    int offset = kNumTaps * getChannelCount();
     float *dest = &mX[xIndex];
     for (int channel = 0; channel < getChannelCount(); channel++) {
-        *dest++ = frame[channel];
+        // Write twice so we avoid having to wrap.
+        dest[channel] = dest[channel + offset] = frame[channel];
     }
-    // Write twice so we avoid having to wrap.
-    xIndex = (mCursor + kNumTaps) * getChannelCount();
-    dest = &mX[xIndex];
-    for (int channel = 0; channel < getChannelCount(); channel++) {
-        *dest++ = frame[channel];
-    }
-
     if (++mCursor >= kNumTaps) {
         mCursor = 0;
     }
 }
 
 void SincResampler::readFrame(float *frame, float phase) {
-    // Zero accumulator
+    // Clear accumulator for mix.
     for (int channel = 0; channel < getChannelCount(); channel++) {
-        mSingleFrame[channel] = 0.0f;
+        mSingleFrame[channel] = 0.0;
     }
     // Multiply input times windowed sinc function.
-    int xIndex = mCursor * getChannelCount();
+    int xIndex = (mCursor + kNumTaps - 1) * getChannelCount();
     for (int i = 0; i < kNumTaps; i++) {
-        float coefficient = calculateWindowedSinc(phase);
+        float coefficient = interpolateWindowedSinc(phase);
+        float *xFrame = &mX[xIndex];
         for (int channel = 0; channel < getChannelCount(); channel++) {
-            mSingleFrame[channel] += coefficient * mX[xIndex++];
+            mSingleFrame[channel] += coefficient * xFrame[channel];
         }
+        xIndex -= getChannelCount();
         phase += 1.0;
     }
     // Copy accumulator to output.
@@ -67,7 +64,7 @@ void SincResampler::readFrame(float *frame, float phase) {
 }
 
 float SincResampler::interpolateWindowedSinc(float phase) {
-    float tablePhase = (phase * kNumPoints) / (2 * kSpread);
+    float tablePhase = phase * kTablePhaseScaler;
     int tableIndex = int(tablePhase);
     float fraction = tablePhase - tableIndex;
     float low = mWindowedSinc[tableIndex];
@@ -77,20 +74,19 @@ float SincResampler::interpolateWindowedSinc(float phase) {
 
 float SincResampler::calculateWindowedSinc(float phase) {
     const float realPhase = phase - kSpread;
-    if (abs(realPhase) < 0.00000001) return 1.0f; // avoid /0
-
-    static const float alpha = 0.54f;
-    const float windowPhase = (realPhase * M_PI);
-    // const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
-    const float sincPhase = (realPhase * M_PI) * kSpread;
+    if (abs(realPhase) < 0.00000001) return 1.0f; // avoid divide by zero
+    // Hamming window TODO try Kaiser window
+    const float alpha = 0.54f;
+    const float windowPhase = realPhase * M_PI * kSpreadInverse;
+    const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
+    const float sincPhase = realPhase * M_PI;
     const float sinc = sinf(sincPhase) / sincPhase;
-    return sinc;
+    return window * sinc;
 }
 
 void SincResampler::generateLookupTable() {
     for (int i = 0; i < mWindowedSinc.size(); i++) {
         float phase = (i * 2.0 * kSpread) / kNumPoints;
         mWindowedSinc[i] = calculateWindowedSinc(phase);
-        LOGD("SincResampler::%s() %f => %f", __func__, phase, mWindowedSinc[i]);
     }
 }

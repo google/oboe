@@ -52,10 +52,12 @@ public:
 private:
     void generateLookupTable();
 
-    static constexpr int kSpread = 3; // number of zero crossing on one side of central lobe
-    static constexpr int kNumTaps = kSpread * 2;
+    static constexpr int kSpread = 10; // number of zero crossing on one side of central lobe
+    static constexpr int kNumTaps = (kSpread * 2) + 1;
+    static constexpr float kSpreadInverse = 1.0 / kSpread;
     static constexpr int kNumGuardPoints = 1;
-    static constexpr int kNumPoints = 1024;
+    static constexpr int kNumPoints = 4096;
+    static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
 
     std::vector<float> mX;
     std::vector<float> mSingleFrame;
