@@ -17,74 +17,36 @@
 
 #include <memory>
 #include "AudioEngine.h"
-#include "../../../../../src/common/OboeDebug.h"
 
 void AudioEngine::start(std::vector<int> cpuIds) {
 
-    //LOGD("In start()");
-
     mCpuIds = cpuIds;
     AudioStreamBuilder builder;
+    Result result = builder.setCallback(mStabilizedCallback.get())
+            ->setPerformanceMode(PerformanceMode::LowLatency)
+            ->setSharingMode(SharingMode::Exclusive)
+            ->setFormat(AudioFormat::Float)
+            ->openManagedStream(mStream);
 
-    mStabilizedCallback = new StabilizedCallback(this);
-    builder.setCallback(mStabilizedCallback);
-    builder.setPerformanceMode(PerformanceMode::LowLatency);
-    builder.setSharingMode(SharingMode::Exclusive);
-
-    Result result = builder.openStream(&mStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
         return;
     }
 
-    // If the output is 16-bit ints then create a separate float buffer to render into.
-    // This buffer will then be converted to 16-bit ints in onAudioReady
-    if (mStream->getFormat() == AudioFormat::I16){
-
-        // We use the audio stream's capacity as the maximum size since this is feasibly the
-        // largest number of frames we'd be required to render inside the audio callback
-        mConversionBuffer = std::make_unique<float[]>(mStream->getBufferCapacityInFrames() *
-                mStream->getChannelCount());
-    }
-
-    mSynth = std::make_unique<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
+    mCallback.mSynth = std::make_unique<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
     mStream->requestStart();
 
-    //LOGD("Finished start()");
-}
-
-void AudioEngine::stop() {
-
-    //LOGD("In stop()");
-
-    if (mStream != nullptr){
-        mStream->close();
+    if (!mIsThreadAffinitySet) {
+        setThreadAffinity();
+        mIsThreadAffinitySet = true;
     }
-    //LOGD("Finished stop()");
 }
 
 void AudioEngine::tap(bool isOn) {
-    mSynth->setWaveOn(isOn);
+    mCallback.mSynth->setWaveOn(isOn);
 }
 
-DataCallbackResult
-AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-
-    if (!mIsThreadAffinitySet) setThreadAffinity();
-
-    bool is16Bit = (oboeStream->getFormat() == AudioFormat::I16);
-    float *outputBuffer = (is16Bit) ? mConversionBuffer.get() : static_cast<float*>(audioData);
-    mSynth->renderAudio(outputBuffer, numFrames);
-
-    if (is16Bit) {
-        oboe::convertFloatToPcm16(outputBuffer,
-                                  static_cast<int16_t *>(audioData),
-                                  numFrames * oboeStream->getChannelCount());
-    }
-
-    return DataCallbackResult::Continue;
-}
 
 /**
  * Set the thread affinity for the current thread to mCpuIds. This can be useful to call on the

@@ -20,32 +20,44 @@
 
 #include <oboe/Oboe.h>
 #include <vector>
+#include <debug-utils/logging_macros.h>
 
 #include "Synth.h"
 
 using namespace oboe;
 
-class AudioEngine : public AudioStreamCallback {
+class AudioEngine {
 
 public:
     void start(std::vector<int> cpuIds);
     void tap(bool isOn);
 
-    DataCallbackResult
-    onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
-
-    void stop();
-
 private:
-
-    StabilizedCallback *mStabilizedCallback = nullptr;
-    AudioStream *mStream = nullptr;
+    ManagedStream mStream;
+    std::unique_ptr<StabilizedCallback> mStabilizedCallback =
+            std::make_unique<StabilizedCallback>(&mCallback);
     std::unique_ptr<Synth> mSynth;
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
     bool mIsThreadAffinitySet = false;
-    std::unique_ptr<float[]> mConversionBuffer; // Used for float->int16 conversion
-
     void setThreadAffinity();
+
+private:
+    struct : AudioStreamCallback {
+    public:
+        std::unique_ptr<Synth> mSynth;
+
+        DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
+            float *outputBuffer = static_cast<float*>(audioData);
+            mSynth->renderAudio(outputBuffer, numFrames);
+            return DataCallbackResult::Continue;
+        }
+        void onErrorAfterClose(AudioStream *oboeStream, Result error) {
+            // Restart the stream when it errors out
+            AudioStreamBuilder builder = {*oboeStream};
+            LOGE("Restarting AudioStream after close");
+            builder.openStream(&oboeStream);
+        }
+    } mCallback;
 };
 
 

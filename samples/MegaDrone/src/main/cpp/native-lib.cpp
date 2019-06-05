@@ -19,7 +19,8 @@
 #include <vector>
 
 #include "AudioEngine.h"
-#include "../../../../../src/common/OboeDebug.h"
+
+AudioEngine *engine; // This should be passed back as a long
 
 std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
 
@@ -36,70 +37,24 @@ std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
     return v;
 }
 
-extern "C" {
-
-/**
- * Start the audio engine
- *
- * @param env
- * @param instance
- * @param jCpuIds - CPU core IDs which the audio process should affine to
- * @return a pointer to the audio engine. This should be passed to other methods
- */
-JNIEXPORT jlong JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
                                                          jintArray jCpuIds) {
-    // We use std::nothrow so `new` returns a nullptr if the engine creation fails
-    AudioEngine *engine = new(std::nothrow) AudioEngine();
-    if (engine) {
-        std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-        engine->start(cpuIds);
-        LOGD("Engine started");
-    } else {
-        LOGE("Failed to create audio engine");
-    }
-    return reinterpret_cast<jlong>(engine);
+    engine = new AudioEngine;
+    std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
+    engine->start(cpuIds);
 }
 
-/**
- * Stop the audio engine
- *
- * @param env
- * @param instance
- * @param jEngineHandle - pointer to the audio engine
- */
+extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_stopEngine( JNIEnv * /*unused*/, jobject /*unused*/,
-                                                         jlong jEngineHandle) {
-    auto *engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
-    if (engine) {
-        engine->stop();
-        delete engine;
-        LOGD("Engine stopped");
-    } else {
-        LOGE("Engine handle is invalid, call startEngine() to create a new one");
-        return;
-    }
+Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance) {
+    delete engine;
 }
 
-/**
- * Send a tap event to the audio engine
- *
- * @param env
- * @param instance
- * @param jEngineHandle - pointer to audio engine
- * @param isDown - true if user is tapping down on screen, false user is lifting finger off screen
- */
+
+extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv * /*unused*/, jobject /*unused*/,
-                                                 jlong jEngineHandle,
-                                                 jboolean isDown) {
-    auto *engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
-    if (engine){
-        engine->tap(isDown);
-    } else {
-        LOGE("Engine handle is invalid, call createEngine() to create a new one");
-    }
+Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
+    engine->tap(b);
 }
-
-} // extern "C"
