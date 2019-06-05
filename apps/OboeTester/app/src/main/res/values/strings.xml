@@ -114,4 +114,13 @@
     <string name="log_of_glitch_tests">Log of Glitch Tests</string>
     <string name="save_file">Save</string>
 
+    <string name="src_prompt">SRC:</string>
+    <string-array name="conversion_qualities">
+        <item>None</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Best</item>
+    </string-array>
+
 </resources>

@@ -142,8 +142,8 @@ public:
     /**
      * @return whether and how Oboe can convert sample rates to achieve optimal results.
      */
-    SampleRateConversionType getSampleRateConversionType() const {
-        return mSampleRateConversionType;
+    SampleRateConversionQuality getSampleRateConversionType() const {
+        return mSampleRateConversionQuality;
     }
 
 protected:
@@ -191,7 +191,7 @@ protected:
     // Control whether Oboe can convert data formats to achieve optimal results.
     bool                            mFormatConversionAllowed = true;
     // Control whether and how Oboe can convert sample rates to achieve optimal results.
-    SampleRateConversionType        mSampleRateConversionType = SampleRateConversionType::Linear;
+    SampleRateConversionQuality        mSampleRateConversionQuality = SampleRateConversionQuality::Medium;
 };
 
 } // namespace oboe

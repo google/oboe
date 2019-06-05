@@ -15,7 +15,6 @@
  */
 
 #include <math.h>
-//#include "common/OboeDebug.h"
 #include "SincResampler.h"
 
 using namespace flowgraph;
@@ -33,7 +32,7 @@ void SincResampler::writeFrame(const float *frame) {
     int offset = kNumTaps * getChannelCount();
     float *dest = &mX[xIndex];
     for (int channel = 0; channel < getChannelCount(); channel++) {
-        // Write twice so we avoid having to wrap.
+        // Write twice so we avoid having to wrap when running the FIR.
         dest[channel] = dest[channel + offset] = frame[channel];
     }
     if (++mCursor >= kNumTaps) {
@@ -47,7 +46,7 @@ void SincResampler::readFrame(float *frame, float phase) {
         mSingleFrame[channel] = 0.0;
     }
     // Multiply input times windowed sinc function.
-    int xIndex = (mCursor + kNumTaps - 1) * getChannelCount();
+    int xIndex = (mCursor + kNumTaps) * getChannelCount();
     for (int i = 0; i < kNumTaps; i++) {
         float coefficient = interpolateWindowedSinc(phase);
         float *xFrame = &mX[xIndex];
@@ -85,6 +84,7 @@ float SincResampler::calculateWindowedSinc(float phase) {
 }
 
 void SincResampler::generateLookupTable() {
+    // TODO store only half of function and use symmetry
     for (int i = 0; i < mWindowedSinc.size(); i++) {
         float phase = (i * 2.0 * kSpread) / kNumPoints;
         mWindowedSinc[i] = calculateWindowedSinc(phase);

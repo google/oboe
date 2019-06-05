@@ -38,6 +38,20 @@ void DataConversionFlowGraph::setSource(const void *buffer, int32_t numFrames) {
     mSource->setData(buffer, numFrames);
 }
 
+static MultiChannelResampler::Quality convertOboeSRQualityToMCR(SampleRateConversionQuality quality) {
+    switch (quality) {
+        case SampleRateConversionQuality::Low:
+            return MultiChannelResampler::Quality::Low;
+        case SampleRateConversionQuality::Medium:
+            return MultiChannelResampler::Quality::Medium;
+        default:
+        case SampleRateConversionQuality::High:
+            return MultiChannelResampler::Quality::High;
+        case SampleRateConversionQuality::Best:
+            return MultiChannelResampler::Quality::Best;
+    }
+}
+
 // Chain together multiple processors.
 Result DataConversionFlowGraph::configure(AudioStream *stream,
                                 AudioFormat sourceFormat,
@@ -96,7 +110,10 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
 
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
-        mResampler = std::make_unique<SincResampler>(sourceChannelCount);
+
+        mResampler.reset(MultiChannelResampler::make(sourceChannelCount,
+                                                     convertOboeSRQualityToMCR(
+                                                             stream->getSampleRateConversionType())));
         mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount,
                                                                *mResampler.get());
         mRateConverter->setPhaseIncrement((double) sourceSampleRate / sinkSampleRate);

@@ -13,6 +13,12 @@
             android:clickable="true"
             android:text="@string/hint_hide_settings" />
 
+    <LinearLayout
+        android:id="@+id/hideableView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
         <TableLayout
             android:id="@+id/optionTable"
             android:layout_width="wrap_content"
@@ -142,6 +148,39 @@
             </TableRow>
         </TableLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Convert:" />
+            <CheckBox
+                android:id="@+id/checkChannelConversion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chan, " />
+            <CheckBox
+                android:id="@+id/checkFormatConversion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Format, " />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/src_prompt" />
+            <Spinner
+                android:id="@+id/spinnerSRCQuality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/conversion_qualities"
+                android:prompt="@string/src_prompt" />
+
+        </LinearLayout>
+
         <TableLayout
             android:id="@+id/flagTable"
             android:layout_width="wrap_content"
@@ -180,6 +219,7 @@
             </TableRow>
 
         </TableLayout>
+    </LinearLayout>
 
 
         <TextView

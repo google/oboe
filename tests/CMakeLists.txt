@@ -27,7 +27,7 @@ include_directories(
 add_executable(
 		testOboe
         testUtilities.cpp
-		testFlowgraph.cpp
+#		testFlowgraph.cpp
         testStreamClosedMethods.cpp
         testStreamStates.cpp
         testStreamWaitState.cpp

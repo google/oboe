@@ -346,8 +346,8 @@ public:
      *
      * Default is SampleRateConversionType::Sinc. TODO currently Linear
      */
-    void setSampleRateConversionType(SampleRateConversionType type) {
-        mSampleRateConversionType = type;
+    void setSampleRateConversionType(SampleRateConversionQuality type) {
+        mSampleRateConversionQuality = type;
     }
 
     /**

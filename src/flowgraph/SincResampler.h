@@ -52,11 +52,17 @@ public:
 private:
     void generateLookupTable();
 
-    static constexpr int kSpread = 10; // number of zero crossing on one side of central lobe
-    static constexpr int kNumTaps = (kSpread * 2) + 1;
-    static constexpr float kSpreadInverse = 1.0 / kSpread;
     static constexpr int kNumGuardPoints = 1;
+    // Size of the lookup table.
+    // Higher numbers provide higher accuracy and quality but use more memory.
     static constexpr int kNumPoints = 4096;
+
+    // Number of zero crossings on one side of central lobe.
+    // Higher numbers provide higher quality but use more CPU.
+    // 2 is the minimum one should use.
+    static constexpr int kSpread = 10;
+    static constexpr int kNumTaps = kSpread * 2;
+    static constexpr float kSpreadInverse = 1.0 / kSpread;
     static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
 
     std::vector<float> mX;

@@ -15,3 +15,19 @@
  */
 
 #include "MultiChannelResampler.h"
+#include "LinearResampler.h"
+#include "SincResampler.h"
+
+using namespace flowgraph;
+
+MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount, Quality quality) {
+    switch (quality) {
+        case Quality::Low:
+        case Quality::Medium: // TODO polynomial
+            return new LinearResampler(channelCount);
+        default:
+        case Quality::High:
+        case Quality::Best:
+            return new SincResampler(channelCount); // TODO pass spread
+    }
+}

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_MULTICHANNEL_RATE_CONVERTER_H
-#define OBOE_MULTICHANNEL_RATE_CONVERTER_H
+#ifndef FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
+#define FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
 
 #include <memory>
 #include <sys/types.h>
@@ -47,9 +47,18 @@ public:
         return mChannelCount;
     }
 
+    enum class Quality : int32_t {
+        Low,
+        Medium,
+        High,
+        Best,
+    };
+
+    static MultiChannelResampler *make(int32_t channelCount, Quality quality);
+
 private:
     const int mChannelCount;
 };
 
 }
-#endif //OBOE_MULTICHANNEL_RATE_CONVERTER_H
+#endif //FLOWGRAPH_MULTICHANNEL_RESAMPLER_H

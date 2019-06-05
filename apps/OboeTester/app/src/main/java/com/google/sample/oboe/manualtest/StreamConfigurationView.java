@@ -19,7 +19,6 @@ package com.google.sample.oboe.manualtest;
 import android.content.Context;
 import android.media.AudioManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,7 +30,6 @@ import android.widget.LinearLayout;
 
 import com.google.sample.audio_device.AudioDeviceListEntry;
 import com.google.sample.audio_device.AudioDeviceSpinner;
-import com.google.sample.oboe.manualtest.R;
 
 /**
  * View for Editing a requested StreamConfiguration
@@ -56,7 +54,7 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private TextView mActualSampleRateView;
-    private TableLayout mOptionTable;
+    private LinearLayout mHideableView;
 
     private AudioDeviceSpinner mDeviceSpinner;
     private TextView mActualSessionIdView;
@@ -71,7 +69,7 @@ public class StreamConfigurationView extends LinearLayout {
     // Create an anonymous implementation of OnClickListener
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
         public void onClick(View v) {
-            if (mOptionTable.isShown()) {
+            if (mHideableView.isShown()) {
                 hideSettingsView();
             } else {
                 showSettingsView();
@@ -80,7 +78,7 @@ public class StreamConfigurationView extends LinearLayout {
     };
 
     private void updateSettingsViewText() {
-        if (mOptionTable.isShown()) {
+        if (mHideableView.isShown()) {
             mOptionExpander.setText(mHideSettingsText);
         } else {
             mOptionExpander.setText(mShowSettingsText);
@@ -88,7 +86,7 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void showSettingsView() {
-        mOptionTable.setVisibility(View.VISIBLE);
+        mHideableView.setVisibility(View.VISIBLE);
         updateSettingsViewText();
     }
 
@@ -99,7 +97,7 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void hideSettingsView() {
-        mOptionTable.setVisibility(View.GONE);
+        mHideableView.setVisibility(View.GONE);
         updateSettingsViewText();
     }
 
@@ -134,7 +132,7 @@ public class StreamConfigurationView extends LinearLayout {
         mHideSettingsText = getResources().getString(R.string.hint_hide_settings);
         mShowSettingsText = getResources().getString(R.string.hint_show_settings);
 
-        mOptionTable = (TableLayout) findViewById(R.id.optionTable);
+        mHideableView = (LinearLayout) findViewById(R.id.hideableView);
 
         mOptionExpander = (TextView) findViewById(R.id.toggle_stream_config);
         mOptionExpander.setOnClickListener(mToggleListener);
@@ -324,7 +322,7 @@ public class StreamConfigurationView extends LinearLayout {
                 + ", " + (mActualConfiguration.isMMap() ? "MMAP" : "Legacy")
         );
 
-        mOptionTable.requestLayout();
+        mHideableView.requestLayout();
     }
 
     // This must be called on the UI thread.

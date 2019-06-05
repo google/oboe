@@ -32,7 +32,7 @@ bool QuirksManager::isConversionNeeded(
 
     // If a SAMPLE RATE is specified then let the native code choose an optimal rate.
     if (builder.getSampleRate() != oboe::Unspecified
-            && builder.getSampleRateConversionType() != SampleRateConversionType::None
+            && builder.getSampleRateConversionType() != SampleRateConversionQuality::None
             && isLowLatency
             ) {
         childBuilder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
