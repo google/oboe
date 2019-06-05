@@ -18,35 +18,13 @@
 #include <memory>
 #include "AudioEngine.h"
 
-void AudioEngine::start(std::vector<int> cpuIds) {
-
+AudioEngine::AudioEngine(std::vector<int> cpuIds) : TapAudioEngine() {
     mCpuIds = cpuIds;
-    AudioStreamBuilder builder;
-    Result result = builder.setCallback(mStabilizedCallback.get())
-            ->setPerformanceMode(PerformanceMode::LowLatency)
-            ->setSharingMode(SharingMode::Exclusive)
-            ->setFormat(AudioFormat::Float)
-            ->openManagedStream(mStream);
-
-    if (result != Result::OK){
-        LOGE("Failed to open stream. Error: %s", convertToText(result));
-        return;
-    }
-
-    mCallback.mSynth = std::make_unique<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
-    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
-    mStream->requestStart();
-
     if (!mIsThreadAffinitySet) {
         setThreadAffinity();
         mIsThreadAffinitySet = true;
     }
 }
-
-void AudioEngine::tap(bool isOn) {
-    mCallback.mSynth->setWaveOn(isOn);
-}
-
 
 /**
  * Set the thread affinity for the current thread to mCpuIds. This can be useful to call on the

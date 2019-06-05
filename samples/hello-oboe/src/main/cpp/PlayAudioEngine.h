@@ -28,7 +28,6 @@ class PlayAudioEngine : oboe::AudioStreamCallback {
 public:
     PlayAudioEngine();
 
-
     void setAudioApi(oboe::AudioApi audioApi);
 
     void setDeviceId(int32_t deviceId);
@@ -61,11 +60,11 @@ private:
     std::unique_ptr<float[]> mConversionBuffer { nullptr };
     // We will handle conversion to avoid getting kicked off the fast track as penalty
 
-    void createPlaybackStream(oboe::AudioStreamBuilder *builder);
-
-    void restartStream(oboe::AudioStreamBuilder *builder);
+    void createPlaybackStream(oboe::AudioStreamBuilder &builder); // This will delete old stream
 
     oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream, double *latencyMillis);
+
+private:
 
 };
 

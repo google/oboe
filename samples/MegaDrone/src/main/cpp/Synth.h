@@ -18,6 +18,7 @@
 #define MEGADRONE_SYNTH_H
 
 #include <array>
+#include <shared/RenderableTap.h>
 
 #include "shared/Oscillator.h"
 #include "shared/Mixer.h"
@@ -29,25 +30,26 @@ constexpr float kOscDivisor = 33;
 constexpr float kOscAmplitude = 0.009;
 
 
-class Synth : public IRenderableAudio {
+class Synth : public RenderableTap {
 public:
 
-    Synth(int32_t sampleRate, int32_t channelCount) {
+    Synth(int32_t sampleRate, int32_t maxFrames, int32_t channelCount) :
+    RenderableTap(sampleRate, maxFrames, channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
-            mOscs[i].setSampleRate(sampleRate);
+            mOscs[i].setSampleRate(mSampleRate);
             mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));
             mOscs[i].setAmplitude(kOscAmplitude);
             mMixer.addTrack(&mOscs[i]);
         }
-        if (channelCount == oboe::ChannelCount::Stereo) {
+        if (mChannelCount == oboe::ChannelCount::Stereo) {
             mOutputStage =  &mConverter;
         } else {
             mOutputStage = &mMixer;
         }
     }
 
-    void setWaveOn(bool isEnabled) {
-        for (auto &osc : mOscs) osc.setWaveOn(isEnabled);
+    void setToneOn(bool isOn) override {
+        for (auto &osc : mOscs) osc.setWaveOn(isOn);
     };
 
     // From IRenderableAudio

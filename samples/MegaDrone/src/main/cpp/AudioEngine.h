@@ -23,41 +23,19 @@
 #include <debug-utils/logging_macros.h>
 
 #include "Synth.h"
+#include "shared/TapAudioEngine.h"
 
 using namespace oboe;
 
-class AudioEngine {
+class AudioEngine : public TapAudioEngine<Synth> {
 
 public:
-    void start(std::vector<int> cpuIds);
-    void tap(bool isOn);
+    AudioEngine(std::vector<int> cpuIds);
 
 private:
-    ManagedStream mStream;
-    std::unique_ptr<StabilizedCallback> mStabilizedCallback =
-            std::make_unique<StabilizedCallback>(&mCallback);
-    std::unique_ptr<Synth> mSynth;
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
     bool mIsThreadAffinitySet = false;
     void setThreadAffinity();
-
-private:
-    struct : AudioStreamCallback {
-    public:
-        std::unique_ptr<Synth> mSynth;
-
-        DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-            float *outputBuffer = static_cast<float*>(audioData);
-            mSynth->renderAudio(outputBuffer, numFrames);
-            return DataCallbackResult::Continue;
-        }
-        void onErrorAfterClose(AudioStream *oboeStream, Result error) {
-            // Restart the stream when it errors out
-            AudioStreamBuilder builder = {*oboeStream};
-            LOGE("Restarting AudioStream after close");
-            builder.openStream(&oboeStream);
-        }
-    } mCallback;
 };
 
 

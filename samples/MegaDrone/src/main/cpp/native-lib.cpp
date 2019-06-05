@@ -41,9 +41,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
                                                          jintArray jCpuIds) {
-    engine = new AudioEngine;
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    engine->start(cpuIds);
+    engine = new AudioEngine(cpuIds);
 }
 
 extern "C"
@@ -56,5 +55,5 @@ Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject ins
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
-    engine->tap(b);
+    engine->toggleTone();
 }
