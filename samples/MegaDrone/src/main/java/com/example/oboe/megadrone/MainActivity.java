@@ -25,6 +25,11 @@ import android.view.MotionEvent;
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = MainActivity.class.toString();
+    private static long mEngineHandle = 0;
+
+    private native long startEngine(int[] cpuIds);
+    private native void stopEngine(long engineHandle);
+    private native void tap(long engineHandle, boolean isDown);
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -35,32 +40,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
     }
 
+    @Override
     protected void onResume(){
+        mEngineHandle = startEngine(getExclusiveCores());
         super.onResume();
-        startEngine(getExclusiveCores());
     }
 
+    @Override
     protected void onPause(){
-        stopEngine();
+        stopEngine(mEngineHandle);
         super.onPause();
     }
-
-    private native void stopEngine();
-
-    private native void startEngine(int[] cpuIds);
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         if (event.getAction() == MotionEvent.ACTION_DOWN){
-            tap(true);
+            tap(mEngineHandle, true);
         } else if (event.getAction() == MotionEvent.ACTION_UP){
-            tap(false);
+            tap(mEngineHandle, false);
         }
-
-
         return super.onTouchEvent(event);
     }
 
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     // bound to these cores to avoids the risk of it being migrated to slower or more contended
     // core(s).
     private int[] getExclusiveCores(){
-        int exclusiveCores[] = {};
+        int[] exclusiveCores = {};
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(TAG, "getExclusiveCores() not supported. Only available on API " +
@@ -82,10 +84,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return exclusiveCores;
     }
-
-    private native void tap(boolean b);
-
-
 }
 
 
