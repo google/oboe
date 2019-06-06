@@ -48,11 +48,13 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualPerformanceView;
     private Spinner  mPerformanceSpinner;
     private CheckBox mRequestedExclusiveView;
+    private CheckBox mChannelConversionBox;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
+    private Spinner  mRateConversionQualitySpinner;
     private TextView mActualSampleRateView;
     private LinearLayout mHideableView;
 
@@ -143,6 +145,14 @@ public class StreamConfigurationView extends LinearLayout {
 
         mActualNativeApiView = (TextView) findViewById(R.id.actualNativeApi);
 
+        mChannelConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
+        mChannelConversionBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestedConfiguration.setChannelConversionAllowed(mChannelConversionBox.isChecked());
+            }
+        });
+
         mActualExclusiveView = (TextView) findViewById(R.id.actualExclusiveMode);
         mRequestedExclusiveView = (CheckBox) findViewById(R.id.requestedExclusiveMode);
         mRequestedExclusiveView.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +186,9 @@ public class StreamConfigurationView extends LinearLayout {
         mActualFormatView = (TextView) findViewById(R.id.actualAudioFormat);
         mFormatSpinner = (Spinner) findViewById(R.id.spinnerFormat);
         mFormatSpinner.setOnItemSelectedListener(new FormatSpinnerListener());
+
+        mRateConversionQualitySpinner = (Spinner) findViewById(R.id.spinnerSRCQuality);
+        mRateConversionQualitySpinner.setOnItemSelectedListener(new RateConversionQualitySpinnerListener());
 
         mActualPerformanceView = (TextView) findViewById(R.id.actualPerformanceMode);
         mPerformanceSpinner = (Spinner) findViewById(R.id.spinnerPerformanceMode);
@@ -280,6 +293,20 @@ public class StreamConfigurationView extends LinearLayout {
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
             mRequestedConfiguration.setPerformanceMode(StreamConfiguration.UNSPECIFIED);
+        }
+    }
+
+    private class RateConversionQualitySpinnerListener
+            implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            // Menu position matches actual enum value!
+            mRequestedConfiguration.setRateConversionQuality(pos);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mRequestedConfiguration.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_HIGH);
         }
     }
 

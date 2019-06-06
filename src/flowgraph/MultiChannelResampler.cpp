@@ -17,6 +17,7 @@
 #include "MultiChannelResampler.h"
 #include "LinearResampler.h"
 #include "SincResampler.h"
+#include "SincResamplerStereo.h"
 
 using namespace flowgraph;
 
@@ -28,6 +29,10 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount, Quality
         default:
         case Quality::High:
         case Quality::Best:
-            return new SincResampler(channelCount); // TODO pass spread
+            if (channelCount == 2) {
+                return new SincResamplerStereo(); // TODO pass spread
+            } else {
+                return new SincResampler(channelCount); // TODO pass spread
+            }
     }
 }

@@ -168,6 +168,8 @@ int ActivityContext::open(
         jint deviceId,
         jint sessionId,
         jint framesPerBurst,
+        jboolean channelConversionAllowed,
+        jint rateConversionQuality,
         jboolean isInput) {
 
     oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
@@ -202,7 +204,10 @@ int ActivityContext::open(
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)
-            ->setFormat((oboe::AudioFormat) format);
+            ->setFormat((oboe::AudioFormat) format)
+            ->setChannelConversionAllowed(channelConversionAllowed)
+            ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
+            ;
 
     configureBuilder(isInput, builder);
 

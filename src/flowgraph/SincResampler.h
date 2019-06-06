@@ -29,6 +29,8 @@ class SincResampler : public MultiChannelResampler{
 public:
     explicit SincResampler(int32_t channelCount);
 
+    virtual ~SincResampler() = default;
+
     void writeFrame(const float *frame) override;
 
     void readFrame(float *frame, float mPhase) override;
@@ -49,26 +51,29 @@ public:
      */
     float calculateWindowedSinc(float phase);
 
-private:
-    void generateLookupTable();
-
-    static constexpr int kNumGuardPoints = 1;
-    // Size of the lookup table.
-    // Higher numbers provide higher accuracy and quality but use more memory.
-    static constexpr int kNumPoints = 4096;
-
+protected:
     // Number of zero crossings on one side of central lobe.
     // Higher numbers provide higher quality but use more CPU.
     // 2 is the minimum one should use.
-    static constexpr int kSpread = 10;
-    static constexpr int kNumTaps = kSpread * 2;
+    static constexpr int   kSpread = 5;
+    static constexpr int   kNumTaps = kSpread * 2;
     static constexpr float kSpreadInverse = 1.0 / kSpread;
-    static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
 
     std::vector<float> mX;
     std::vector<float> mSingleFrame;
     std::vector<float> mWindowedSinc;
-    int mCursor = 0;
+    int                mCursor = 0;
+
+private:
+    void generateLookupTable();
+
+    // Size of the lookup table.
+    // Higher numbers provide higher accuracy and quality but use more memory.
+    static constexpr int   kNumPoints = 4096;
+    static constexpr int   kNumGuardPoints = 1;
+
+    static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
+
 };
 
 }

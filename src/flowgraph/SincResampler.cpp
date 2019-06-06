@@ -64,11 +64,12 @@ void SincResampler::readFrame(float *frame, float phase) {
 
 float SincResampler::interpolateWindowedSinc(float phase) {
     float tablePhase = phase * kTablePhaseScaler;
-    int tableIndex = int(tablePhase);
+    // int tableIndex = (int)tablePhase;
+    long tableIndex = lrintf(tablePhase);
     float fraction = tablePhase - tableIndex;
     float low = mWindowedSinc[tableIndex];
     float high = mWindowedSinc[tableIndex + 1]; // OK because of guard point
-    return (float) (low + (fraction * (high - low)));
+    return low + (fraction * (high - low));
 }
 
 float SincResampler::calculateWindowedSinc(float phase) {

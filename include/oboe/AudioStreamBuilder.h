@@ -323,8 +323,9 @@ public:
      *
      * Default is true.
      */
-    void setChannelConversionAllowed(bool allowed) {
+    AudioStreamBuilder *setChannelConversionAllowed(bool allowed) {
         mChannelConversionAllowed = allowed;
+        return this;
     }
 
     /**
@@ -334,8 +335,9 @@ public:
      *
      * Default is true.
      */
-    void setFormatConversionAllowed(bool allowed) {
+    AudioStreamBuilder *setFormatConversionAllowed(bool allowed) {
         mFormatConversionAllowed = allowed;
+        return this;
     }
 
     /**
@@ -346,8 +348,9 @@ public:
      *
      * Default is SampleRateConversionType::Sinc. TODO currently Linear
      */
-    void setSampleRateConversionType(SampleRateConversionQuality type) {
-        mSampleRateConversionQuality = type;
+    AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
+        mSampleRateConversionQuality = quality;
+        return this;
     }
 
     /**

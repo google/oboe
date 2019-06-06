@@ -29,6 +29,7 @@ set (oboe_sources
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp
     src/flowgraph/SincResampler.cpp
+    src/flowgraph/SincResamplerStereo.cpp
     src/flowgraph/SinkFloat.cpp
     src/flowgraph/SinkI16.cpp
     src/flowgraph/SinkI24.cpp
