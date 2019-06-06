@@ -18,12 +18,14 @@
 #define OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
 
 #include <oboe/Oboe.h>
+#include <shared/TapAudioEngine.h>
 
 #include "SoundGenerator.h"
+#include "CustomAudioStreamCallback.h"
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
-class PlayAudioEngine : oboe::AudioStreamCallback {
+class PlayAudioEngine : public TapAudioEngine<SoundGenerator, CustomAudioStreamCallback> {
 
 public:
     PlayAudioEngine();
@@ -36,36 +38,17 @@ public:
 
     void setBufferSizeInBursts(int32_t numBursts);
 
-    void setToneOn(bool isToneOn);
-
     double getCurrentOutputLatencyMillis();
 
     bool isLatencyDetectionSupported();
 
-    // oboe::StreamCallback methods
-    oboe::DataCallbackResult
-    onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames);
-
-    void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error);
-
-
+protected:
+    void createPlaybackStream(oboe::AudioStreamBuilder &builder) override; // This will delete old stream
 
 private:
-    oboe::ManagedStream mPlayStream;
     double mCurrentOutputLatencyMillis = 0;
-    int32_t mBufferSizeSelection = kBufferSizeAutomatic; // Used to keep track if we are auto tuning
     bool mIsLatencyDetectionSupported = false;
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
-    std::unique_ptr<SoundGenerator> mSoundGenerator;
-    std::unique_ptr<float[]> mConversionBuffer { nullptr };
-    // We will handle conversion to avoid getting kicked off the fast track as penalty
-
-    void createPlaybackStream(oboe::AudioStreamBuilder &builder); // This will delete old stream
-
-    oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream, double *latencyMillis);
-
-private:
-
 };
 
 #endif //OBOE_HELLOOBOE_PLAYAUDIOENGINE_H

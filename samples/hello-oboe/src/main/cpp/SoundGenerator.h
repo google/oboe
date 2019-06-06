@@ -20,11 +20,12 @@
 
 #include <shared/IRenderableAudio.h>
 #include <shared/Oscillator.h>
+#include <shared/RenderableTap.h>
 
 /**
  * Generates a fixed frequency tone for each channel.
  */
-class SoundGenerator : public IRenderableAudio {
+class SoundGenerator : public RenderableTap {
 public:
     /**
      * Create a new SoundGenerator object.
@@ -40,14 +41,12 @@ public:
     ~SoundGenerator() = default;
 
     // Switch the tones on
-    void setTonesOn(bool isOn);
+    void setToneOn(bool isOn) override;
 
     // From IRenderableAudio
     void renderAudio(float *audioData, int32_t numFrames) override;
 
 private:
-    const int32_t mSampleRate;
-    const int32_t mChannelCount;
     const std::unique_ptr<Oscillator[]> mOscillators;
     const std::unique_ptr<float[]> mBuffer;
 };
