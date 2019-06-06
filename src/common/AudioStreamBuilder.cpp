@@ -111,9 +111,9 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
 
 Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
     stream.reset();
-    AudioStream *streamptr;
-    auto result = openStream(&streamptr);
-    stream.reset(streamptr);
+    AudioStream *ptr;
+    auto result = openStream(&ptr);
+    stream.reset(ptr);
     return result;
 }
 

@@ -20,7 +20,6 @@
 
 #include <oboe/Oboe.h>
 #include <vector>
-#include <debug-utils/logging_macros.h>
 
 #include "Synth.h"
 #include "shared/TapAudioEngine.h"
@@ -31,6 +30,11 @@ class AudioEngine : public TapAudioEngine<Synth> {
 
 public:
     AudioEngine(std::vector<int> cpuIds);
+
+protected:
+    void createPlaybackStream(oboe::AudioStreamBuilder &builder) override {
+        TapAudioEngine::createPlaybackStream(builder);
+    }
 
 private:
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
