@@ -28,15 +28,16 @@ SincResampler::SincResampler(int32_t channelCount)
 }
 
 void SincResampler::writeFrame(const float *frame) {
+    // Advance cursor before write so that cursor points to last written frame in read.
+    if (++mCursor >= kNumTaps) {
+        mCursor = 0;
+    }
     int xIndex = mCursor * getChannelCount();
     int offset = kNumTaps * getChannelCount();
     float *dest = &mX[xIndex];
     for (int channel = 0; channel < getChannelCount(); channel++) {
         // Write twice so we avoid having to wrap when running the FIR.
         dest[channel] = dest[channel + offset] = frame[channel];
-    }
-    if (++mCursor >= kNumTaps) {
-        mCursor = 0;
     }
 }
 
@@ -61,14 +62,30 @@ void SincResampler::readFrame(float *frame, float phase) {
         frame[channel] = mSingleFrame[channel];
     }
 }
+#if 0
+static inline uint16_t fast_int_from_float(float f)
+{
+    // Offset is used to expand the valid range of [-1.0, 1.0) into the 16 lsbs of the
+    // floating point significand.
+    static const float offset = (float)(3 << 22);
+    union {
+        float f;
+        int32_t i;
+    } u;
+    u.f = (f - 0.5) + offset; // recenter valid range
+    return u.i & 0x0FFFF; // Return lower 16 bits, the part of interest in the significand.
+}
+#endif
 
 float SincResampler::interpolateWindowedSinc(float phase) {
+    // convert from 0 to 2*kSpread range to 0 to table size range
     float tablePhase = phase * kTablePhaseScaler;
-    // int tableIndex = (int)tablePhase;
+    //uint16_t tableIndex = fast_int_from_float(tablePhase);
     long tableIndex = lrintf(tablePhase);
-    float fraction = tablePhase - tableIndex;
+    //int tableIndex = int(tablePhase);
     float low = mWindowedSinc[tableIndex];
     float high = mWindowedSinc[tableIndex + 1]; // OK because of guard point
+    float fraction = tablePhase - tableIndex;
     return low + (fraction * (high - low));
 }
 
@@ -86,6 +103,7 @@ float SincResampler::calculateWindowedSinc(float phase) {
 
 void SincResampler::generateLookupTable() {
     // TODO store only half of function and use symmetry
+    // By iterating over the table size we also set the guard point.
     for (int i = 0; i < mWindowedSinc.size(); i++) {
         float phase = (i * 2.0 * kSpread) / kNumPoints;
         mWindowedSinc[i] = calculateWindowedSinc(phase);

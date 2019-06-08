@@ -34,11 +34,11 @@ public:
      * Construct an `AudioStream` using the given `AudioStreamBuilder` and a child AudioStream.
      *
      * This should only be called internally by AudioStreamBuilder.
+     * Ownership of childStream will be passed to this object.
      *
      * @param builder containing all the stream's attributes
      */
-    FilterAudioStream(const AudioStreamBuilder &builder,
-            std::shared_ptr<oboe::AudioStream> childStream)
+    FilterAudioStream(const AudioStreamBuilder &builder, AudioStream *childStream)
     : AudioStream(builder)
     , mChildStream(childStream) {
         // Intercept the callback if used.
@@ -102,16 +102,16 @@ public:
     }
 
     ResultWithValue<int32_t> write(const void *buffer,
-                                           int32_t numFrames,
-                                           int64_t timeoutNanoseconds) override;
+            int32_t numFrames,
+            int64_t timeoutNanoseconds) override;
 
     StreamState getState() override {
         return mChildStream->getState();
     }
 
     Result waitForStateChange(StreamState inputState,
-                                      StreamState *nextState,
-                                      int64_t timeoutNanoseconds) override {
+            StreamState *nextState,
+            int64_t timeoutNanoseconds) override {
         return mChildStream->waitForStateChange(inputState, nextState, timeoutNanoseconds);
     }
 
@@ -158,8 +158,8 @@ public:
     }
 
     Result getTimestamp(clockid_t clockId,
-                                int64_t *framePosition,
-                                int64_t *timeNanoseconds) override {
+            int64_t *framePosition,
+            int64_t *timeNanoseconds) override {
         int64_t childPosition = 0;
         Result result = mChildStream->getTimestamp(clockId, &childPosition, timeNanoseconds);
         *framePosition = childPosition * mRateScaler;
@@ -170,7 +170,6 @@ public:
             AudioStream *oboeStream,
             void *audioData,
             int32_t numFrames) override {
-        // TODO bypass mFlowGraph if not needed.
         if (oboeStream->getDirection() == Direction::Output) {
             mFlowGraph->read(audioData, numFrames);
         } else {
@@ -184,10 +183,10 @@ public:
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override {}
 
 private:
-    std::shared_ptr<AudioStream>   mChildStream;    // this stream wraps the child stream
-    std::unique_ptr<DataConversionFlowGraph> mFlowGraph;      // for converting data
-    std::unique_ptr<uint8_t[]>     mBlockingBuffer; // temp buffer for write()
-    double                         mRateScaler = 1.0; // ratio of parent/child sample rates
+    std::unique_ptr<AudioStream>             mChildStream; // this stream wraps the child stream
+    std::unique_ptr<DataConversionFlowGraph> mFlowGraph; // for converting data
+    std::unique_ptr<uint8_t[]>               mBlockingBuffer; // temp buffer for write()
+    double                                   mRateScaler = 1.0; // ratio of parent/child sample rates
 };
 
 } // oboe

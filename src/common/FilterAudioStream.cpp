@@ -49,12 +49,9 @@ Result FilterAudioStream::configureFlowGraph() {
 ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
                                int32_t numFrames,
                                int64_t timeoutNanoseconds) {
-    int framesTooMany = numFrames * 10;
     mFlowGraph->setSource(buffer, numFrames);
-    LOGD("FilterAudioStream::write(,%d,)", numFrames);
     while (true) {
         int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(), getFramesPerBurst());
-        LOGD("FilterAudioStream::write: numRead = %d", numRead);
         if (numRead < 0) {
             return ResultWithValue<int32_t>::createBasedOnSign(numFrames);
         }
@@ -66,12 +63,6 @@ ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
                                                timeoutNanoseconds);
         if (!writeResult) {
             return writeResult;
-        }
-        LOGD("FilterAudioStream::write: numWritten = %d", writeResult.value());
-        // Check for endless loop.
-        framesTooMany -= numRead;
-        if (framesTooMany <= 0) {
-            return ResultWithValue<int32_t>(Result::ErrorInternal);
         }
     }
 // This doesn't account for frames left in the flowgraph if there is a timeout.

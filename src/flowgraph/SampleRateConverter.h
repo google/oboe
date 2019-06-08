@@ -49,7 +49,7 @@ public:
 
 private:
 
-    // Return true if these is a sample available.
+    // Return true if there is a sample available.
     bool isInputAvailable();
 
     const float *getNextInputFrame();

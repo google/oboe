@@ -55,7 +55,7 @@ protected:
     // Number of zero crossings on one side of central lobe.
     // Higher numbers provide higher quality but use more CPU.
     // 2 is the minimum one should use.
-    static constexpr int   kSpread = 5;
+    static constexpr int   kSpread = 10;
     static constexpr int   kNumTaps = kSpread * 2;
     static constexpr float kSpreadInverse = 1.0 / kSpread;
 

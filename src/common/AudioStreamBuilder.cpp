@@ -121,8 +121,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             }
 
             // Use childStream in a FilterAudioStream.
-            std::shared_ptr<AudioStream> childStream(tempStream);
-            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, childStream);
+            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
             result = filterStream->configureFlowGraph();
             if (result !=  Result::OK) {
                 filterStream->close();
