@@ -423,10 +423,9 @@ Code samples are available in the [samples folder](../samples).
 
 ## Known Issues
 
-The following methods are defined, but will return `Result::ErrorUnimplemented`:
+The following methods are defined, but will return `Result::ErrorUnimplemented` for OpenSLES streams:
 
-* `setBufferSizeInFrames()`
-* `getBufferSizeInFrames()`
-* `getXRunCount()`
 * `getFramesRead()`
 * `getTimestamp()`
+
+Additionally, `setDeviceId()` will not be respected by OpenSLES streams.
