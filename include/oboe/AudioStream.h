@@ -275,6 +275,8 @@ public:
      * The time is based on the implementation's best effort, using whatever knowledge is available
      * to the system, but cannot account for any delay unknown to the implementation.
      *
+     * @deprecated since 1.0, use AudioStream::getTimestamp(clockid_t clockId) instead, which
+     * returns ResultWithValue
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @param framePosition the frame number to query
      * @param timeNanoseconds an output parameter which will contain the presentation timestamp
