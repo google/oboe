@@ -37,7 +37,7 @@ PlayAudioEngine::PlayAudioEngine() : TapAudioEngine() {
 void PlayAudioEngine::createPlaybackStream(oboe::AudioStreamBuilder &builder) {
 
         TapAudioEngine::createPlaybackStream(builder);
-        mIsLatencyDetectionSupported = (mStream->getTimestamp(CLOCK_MONOTONIC, 0, 0) !=
+        mIsLatencyDetectionSupported = (mStream->getTimestamp(CLOCK_MONOTONIC) !=
                                         oboe::Result::ErrorUnimplemented);
         getCallbackPtr()->setLatencyDetectionEnabled(mIsLatencyDetectionSupported);
         getCallbackPtr()->setOutputLatencyMillis(&mCurrentOutputLatencyMillis);
