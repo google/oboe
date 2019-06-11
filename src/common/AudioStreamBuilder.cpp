@@ -60,12 +60,11 @@ bool AudioStreamBuilder::isAAudioRecommended() {
 
 AudioStream *AudioStreamBuilder::build() {
     AudioStream *stream = nullptr;
-    if (mAudioApi == AudioApi::AAudio && isAAudioSupported()) {
+    if (isAAudioRecommended() && mAudioApi != AudioApi::OpenSLES) {
         stream = new AudioStreamAAudio(*this);
-
-    // If unspecified, only use AAudio if recommended.
-    } else if (mAudioApi == AudioApi::Unspecified && isAAudioRecommended()) {
+    } else if (isAAudioSupported() && mAudioApi == AudioApi::AAudio) {
         stream = new AudioStreamAAudio(*this);
+        LOGE("Creating AAudio stream on 8.0 because it was specified. This is error prone.");
     } else {
         if (getDirection() == oboe::Direction::Output) {
             stream = new AudioOutputStreamOpenSLES(*this);
