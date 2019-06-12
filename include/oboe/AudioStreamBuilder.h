@@ -135,6 +135,10 @@ public:
      * If you leave this unspecified then Oboe will choose the best API
      * for the device and SDK version at runtime.
      *
+     * This should almost always be left unspecified, except for debugging purposes.
+     * Specifying AAudio will force Oboe to use AAudio on 8.0, which is extremely risky.
+     * Specifying OpenSLES should mainly be used to test legacy performance/functionality.
+     *
      * If the caller requests AAudio and it is supported then AAudio will be used.
      *
      * @param audioApi Must be AudioApi::Unspecified, AudioApi::OpenSLES or AudioApi::AAudio.
