@@ -426,6 +426,7 @@ Code samples are available in the [samples folder](../samples).
 The following methods are defined, but will return `Result::ErrorUnimplemented` for OpenSLES streams:
 
 * `getFramesRead()`
+* `getFramesWritten()`
 * `getTimestamp()`
 
 Additionally, `setDeviceId()` will not be respected by OpenSLES streams.
