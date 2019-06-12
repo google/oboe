@@ -275,10 +275,16 @@ public:
     }
 
     /**
-     * Request an audio device identified device using an ID.
-     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * Request a stream to a specific audio input/output device given an audio device ID.
      *
-     * By default, the primary device will be used.
+     * In most cases, the primary device will be the appropriate device to use, and the
+     * deviceId can be left kUnspecified.
+     *
+     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * AudioManager.getDevices() returns an array of AudioDeviceInfo[], which contains
+     * a getId() method (as well as other type information), that should be passed
+     * to this method.
+     *
      *
      * Note that when using OpenSL ES, this will be ignored and the created
      * stream will have deviceId kUnspecified.
