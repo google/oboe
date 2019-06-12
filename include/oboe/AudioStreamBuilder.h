@@ -281,7 +281,7 @@ public:
      * deviceId can be left kUnspecified.
      *
      * On Android, for example, the ID could be obtained from the Java AudioManager.
-     * AudioManager::getDevices returns an array of AudioDeviceInfo[], which contains
+     * AudioManager.getDevices() returns an array of AudioDeviceInfo[], which contains
      * a getId() method (as well as other type information), that should be passed
      * to this method.
      *
