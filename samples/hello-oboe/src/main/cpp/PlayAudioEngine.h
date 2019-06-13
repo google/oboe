@@ -18,14 +18,14 @@
 #define OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
 
 #include <oboe/Oboe.h>
-#include <shared/TapAudioEngine.h>
+#include <shared/AudioEngine.h>
 
 #include "SoundGenerator.h"
-#include "CustomAudioStreamCallback.h"
+#include "LatencyTuningCallback.h"
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
-class PlayAudioEngine : public TapAudioEngine<SoundGenerator, CustomAudioStreamCallback> {
+class PlayAudioEngine : public AudioEngine<SoundGenerator, LatencyTuningCallback> {
 
 public:
     PlayAudioEngine();
@@ -41,9 +41,6 @@ public:
     double getCurrentOutputLatencyMillis();
 
     bool isLatencyDetectionSupported();
-
-protected:
-    void createPlaybackStream(oboe::AudioStreamBuilder &builder) override; // This will delete old stream
 
 private:
     double mCurrentOutputLatencyMillis = 0;

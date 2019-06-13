@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_RENDERABLETAP_H
-#define SAMPLES_RENDERABLETAP_H
+#ifndef SAMPLES_AUDIOENGINEBASE_H
+#define SAMPLES_AUDIOENGINEBASE_H
 
-#include <stdint.h>
-
-#include "IRenderableAudio.h"
-/**
- * This class renders Float audio, but can be zeroed out.
- */
-class RenderableTap : public IRenderableAudio {
+class AudioEngineBase {
 public:
-    RenderableTap(int32_t sampleRate, int32_t channelCount) :
-    mSampleRate(sampleRate), mChannelCount(channelCount) { }
-    virtual void setToneOn(bool isOn) = 0;
-    const int32_t mSampleRate;
-    const int32_t mChannelCount;
+    virtual void restartStream() = 0;
 };
 
-#endif //SAMPLES_RENDERABLETAP_H
+#endif //SAMPLES_AUDIOENGINEBASE_H

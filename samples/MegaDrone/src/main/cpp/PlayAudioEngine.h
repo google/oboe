@@ -22,19 +22,14 @@
 #include <vector>
 
 #include "Synth.h"
-#include "shared/TapAudioEngine.h"
+#include "shared/AudioEngine.h"
 
 using namespace oboe;
 
-class AudioEngine : public TapAudioEngine<Synth> {
+class PlayAudioEngine : public AudioEngine<Synth> {
 
 public:
-    AudioEngine(std::vector<int> cpuIds);
-
-protected:
-    void createPlaybackStream(oboe::AudioStreamBuilder &builder) override {
-        TapAudioEngine::createPlaybackStream(builder);
-    }
+    PlayAudioEngine(std::vector<int> cpuIds);
 
 private:
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to

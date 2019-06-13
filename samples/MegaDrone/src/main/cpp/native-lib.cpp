@@ -18,9 +18,9 @@
 #include <string>
 #include <vector>
 
-#include "AudioEngine.h"
+#include "PlayAudioEngine.h"
 
-AudioEngine *engine; // This should be passed back as a long
+PlayAudioEngine *engine; // This should be passed back as a long
 
 std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
 
@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    engine = new AudioEngine(cpuIds);
+    engine = new PlayAudioEngine(cpuIds);
 }
 
 extern "C"
@@ -55,5 +55,9 @@ Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject ins
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
+    LOGD("Beginning Tap tone");
+    if (!engine) {
+        LOGE("Engine has not been created");
+    }
     engine->toggleTone();
 }

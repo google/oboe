@@ -26,6 +26,7 @@
  * Generates a fixed frequency tone for each channel.
  */
 class SoundGenerator : public RenderableTap {
+    const size_t kSharedBufferSize = 1024;
 public:
     /**
      * Create a new SoundGenerator object.
@@ -37,18 +38,17 @@ public:
      * channel, the output will be interlaced.
      *
      */
-    SoundGenerator(int32_t sampleRate, int32_t maxFrames, int32_t channelCount);
+    SoundGenerator(int32_t sampleRate, int32_t channelCount);
     ~SoundGenerator() = default;
 
     // Switch the tones on
     void setToneOn(bool isOn) override;
 
-    // From IRenderableAudio
     void renderAudio(float *audioData, int32_t numFrames) override;
 
 private:
     const std::unique_ptr<Oscillator[]> mOscillators;
-    const std::unique_ptr<float[]> mBuffer;
+    const std::unique_ptr<float[]> mBuffer = std::make_unique<float[]>(kSharedBufferSize);
 };
 
 

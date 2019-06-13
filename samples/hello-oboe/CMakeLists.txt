@@ -41,6 +41,7 @@ file (GLOB_RECURSE APP_SOURCES
     ${APP_DIR}/jni_bridge.cpp
     ${APP_DIR}/PlayAudioEngine.cpp
     ${APP_DIR}/SoundGenerator.cpp
+    ${APP_DIR}/LatencyTuningCallback.cpp
 )
 
 # Build the libhello-oboe library

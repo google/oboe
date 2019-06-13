@@ -33,8 +33,8 @@ constexpr float kOscAmplitude = 0.009;
 class Synth : public RenderableTap {
 public:
 
-    Synth(int32_t sampleRate, int32_t maxFrames, int32_t channelCount) :
-    RenderableTap(sampleRate, maxFrames, channelCount) {
+    Synth(int32_t sampleRate, int32_t channelCount) :
+    RenderableTap(sampleRate, channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
             mOscs[i].setSampleRate(mSampleRate);
             mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));

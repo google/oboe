@@ -17,10 +17,9 @@
 #include "SoundGenerator.h"
 #include "../../../../../src/common/OboeDebug.h"
 
-SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t maxFrames, int32_t channelCount) :
-        RenderableTap(sampleRate, maxFrames, channelCount)
-        , mOscillators(std::make_unique<Oscillator[]>(channelCount))
-        , mBuffer(std::make_unique<float[]>(maxFrames)){
+SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t channelCount) :
+        RenderableTap(sampleRate, channelCount)
+        , mOscillators(std::make_unique<Oscillator[]>(channelCount)){
     double frequency = 440.0;
     constexpr double interval = 110.0;
     constexpr float amplitude = 1.0;
@@ -36,6 +35,7 @@ SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t maxFrames, int32_t ch
 
 void SoundGenerator::renderAudio(float *audioData, int32_t numFrames) {
     // Render each oscillator into its own channel
+    memset(mBuffer.get(), 0, kSharedBufferSize * sizeof(float));
     for (int i = 0; i < mChannelCount; ++i) {
         mOscillators[i].renderAudio(mBuffer.get(), numFrames);
         for (int j = 0; j < numFrames; ++j) {

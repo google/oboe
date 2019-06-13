@@ -16,9 +16,9 @@
 
 
 #include <memory>
-#include "AudioEngine.h"
+#include "PlayAudioEngine.h"
 
-AudioEngine::AudioEngine(std::vector<int> cpuIds) : TapAudioEngine() {
+PlayAudioEngine::PlayAudioEngine(std::vector<int> cpuIds) : AudioEngine() {
     mCpuIds = cpuIds;
     if (!mIsThreadAffinitySet) {
         setThreadAffinity();
@@ -30,7 +30,7 @@ AudioEngine::AudioEngine(std::vector<int> cpuIds) : TapAudioEngine() {
  * Set the thread affinity for the current thread to mCpuIds. This can be useful to call on the
  * audio thread to avoid underruns caused by CPU core migrations to slower CPU cores.
  */
-void AudioEngine::setThreadAffinity() {
+void PlayAudioEngine::setThreadAffinity() {
 
     pid_t current_thread_id = gettid();
     cpu_set_t cpu_set;
