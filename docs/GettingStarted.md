@@ -18,7 +18,8 @@ Start by cloning the [latest stable release](https://github.com/google/oboe/rele
 If you use git as a VCS, consider adding Oboe as a submodule (underneath your
 app directory)
 
-```git submodule add https://github.com/google/oboe
+```
+git submodule add https://github.com/google/oboe
 ```
 In your working directory.
 
@@ -116,7 +117,7 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
         }
     };
 
-You can find examples of how to play sound using digital synthesis and pre-recorded audio in the [code samples](../samples). 
+You can find examples of how to play sound using digital synthesis and pre-recorded audio in the [code samples](../samples).
 
 Supply this callback class to the builder:
 
@@ -141,7 +142,7 @@ Check the properties of the created stream. The **format** is one property which
     oboe::AudioFormat format = stream->getFormat();
     LOGI("AudioStream format is %s", oboe::convertToText(format));
 
-Now start the stream. 
+Now start the stream.
 
     stream->requestStart();
 
@@ -158,25 +159,30 @@ It is usually advisable to close your stream when [`Activity.onPause()`](https:/
 
 ## Using a ManagedStream
 Create and configure a builder.
-```oboe::AudioStreamBuilder builder; #Make sure to  always set the Performance
+```
+oboe::AudioStreamBuilder builder; #Make sure to  always set the Performance
 and Sharing
 
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
 ->setSharingMode(oboe::SharingMode::Exclusive)->setFormat(oboe::AudioFormat::Float);
 ```
 Declare a ManagedStream.
-```oboe::ManagedStream managedStream;
+```
+oboe::ManagedStream managedStream;
 ```
 Open the ManagedStream.
-```builder.openManagedStream(managedStream);
+```
+builder.openManagedStream(managedStream);
 ```
 Start the ManagedStream in order to cause it to begin calling back.
-```managedStream->requestStart();
+```
+managedStream->requestStart();
 ```
 In order to change the configuration of the stream, simply call this method
 again. The existing stream is closed, destroyed and a new stream is built and
 populates the managedStream.
-```builder.setCallback(mCallback)->openManagedStream(managedStream);
+```
+builder.setCallback(mCallback)->openManagedStream(managedStream);
 ```
 The `ManagedStream` takes care of its own closure and destruction. If used in an
 automatic allocation context (such as a member of a class), the stream does not
@@ -184,7 +190,9 @@ need to be closed or deleted. Make sure that the object which is responsible for
 the MangedStream (its enclosing class), goes out of scope when
 `Activity.onPause()` is called.
 The following class is a complete implementation of a ManagedStream, which
-renders a sine wave.
+renders a sine wave. Creating the class (e.g. through the JNI bridge) creates
+and opens an Oboe stream which renders audio, and its destruction stops and
+closes the stream.
 ```
 #include <oboe/Oboe.h>
 #include <math.h>
@@ -235,7 +243,7 @@ than managing the stream and defining its callback in the same class.
 
 For more examples on how to use `ManagedStream` look in the `samples` folder.
 `samples/shared` contains an `AudioEngine` which can be easily inherited to begin
-working with Oboe.
+creating interactive Oboe streams.
 
 ## Obtaining optimal latency
 One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened.
