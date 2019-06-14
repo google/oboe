@@ -1,14 +1,28 @@
 # Getting Started
 The easiest way to start using Oboe is to build it from source by adding a few steps to an existing Android Studio project.
 
+## Creating an Android app with native support
++ Create a new project by navigating `File > New > New Project`
++ When selecting the project type, select Native C++
++ Finish configuring project
+
 ## Adding Oboe to your project
 
 ### 1. Clone the github repository 
 Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example: 
 
-    git clone -b 1.1-stable https://github.com/google/oboe
+    git clone -b 1.2-stable https://github.com/google/oboe
 
 **Make a note of the path which you cloned oboe into - you will need it shortly**
+
+If you use git as a VCS, consider adding Oboe as a submodule (underneath your
+app directory)
+
+```git submodule add https://github.com/google/oboe
+```
+In your working directory.
+
+This makes it easier to integrate updates to Oboe into your app.
 
 ### 2. Update CMakeLists.txt
 Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. If you don't have a `CMakeLists.txt` you will need to [add C++ support to your project](https://developer.android.com/studio/projects/add-native-code).
@@ -18,16 +32,21 @@ Open your app's `CMakeLists.txt`. This can be found under `External Build Files`
 Now add the following commands to the end of `CMakeLists.txt`. **Remember to update `**PATH TO OBOE**` with your local Oboe path from the previous step**:
 
     # Set the path to the Oboe directory.
-    set (OBOE_DIR ***PATH TO OBOE***) 
-    
+    set (OBOE_DIR ***PATH TO OBOE***)
+
     # Add the Oboe library as a subdirectory in your project.
-    add_subdirectory (${OBOE_DIR} ./oboe) 
-    
+    # add_subdirectory tells CMake to look in this directory to
+    # compile oboe source files using oboe's CMake file.
+    # ./oboe specifies where the compiled binaries will be stored
+    add_subdirectory (${OBOE_DIR} ./oboe)
+
     # Specify the path to the Oboe header files.
-    include_directories (${OBOE_DIR}/include)  
+    # This allows targets compiled with this CMake (application code)
+    # to see public Oboe headers, in order to access its API.
+    include_directories (${OBOE_DIR}/include)
 
 
-In the same file find the [`target_link_libraries`](https://cmake.org/cmake/help/latest/command/target_link_libraries.html) command. 
+In the same file find the [`target_link_libraries`](https://cmake.org/cmake/help/latest/command/target_link_libraries.html) command.
 Add `oboe` to the list of libraries which your app's library depends on. For example:
 
     target_link_libraries(native-lib oboe)
@@ -39,22 +58,25 @@ Here's a complete example `CMakeLists.txt` file:
     # Build our own native library
     add_library (native-lib SHARED src/main/cpp/native-lib.cpp )
 
-    # Specify the libraries which our native library is dependent on, including Oboe
-    target_link_libraries (native-lib log oboe)
-    
     # Build the Oboe library
-    set (OBOE_DIR ../../../oboe)  
-    add_subdirectory (${OBOE_DIR} ./oboe) 
-    
+    set (OBOE_DIR ./oboe)
+    add_subdirectory (${OBOE_DIR} ./oboe)
+
     # Make the Oboe public headers available to our app
     include_directories (${OBOE_DIR}/include)
 
-Now go to `Build->Refresh Linked C++ Projects` to have Android Studio index the Oboe library. 
+    # Specify the libraries which our native library is dependent on, including Oboe
+    target_link_libraries (native-lib log oboe)
+
+
+Make sure that the `CMakeLists.txt` file lives next to your module specific build.gradle.
+
+Now go to `Build->Refresh Linked C++ Projects` to have Android Studio index the Oboe library.
 
 Verify that your project builds correctly. If you have any issues building please [report them here](issues/new).
 
 # Using Oboe
-Once you've added Oboe to your project you can start using Oboe's features. The simplest, and probably most common thing you'll do in Oboe is to create an audio stream. 
+Once you've added Oboe to your project you can start using Oboe's features. The simplest, and probably most common thing you'll do in Oboe is to create an audio stream.
 
 ## Creating an audio stream
 Include the Oboe header:
@@ -126,7 +148,7 @@ Now start the stream.
 At this point you should start receiving callbacks.
 
 ### Closing the stream
-It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. To do this use: 
+It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. To do this use:
 
     stream->close();
 
@@ -134,8 +156,89 @@ It is important to close your stream when you're not using it to avoid hogging a
 
 It is usually advisable to close your stream when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
+## Using a ManagedStream
+Create and configure a builder.
+```oboe::AudioStreamBuilder builder; #Make sure to  always set the Performance
+and Sharing
+
+builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
+->setSharingMode(oboe::SharingMode::Exclusive)->setFormat(oboe::AudioFormat::Float);
+```
+Declare a ManagedStream.
+```oboe::ManagedStream managedStream;
+```
+Open the ManagedStream.
+```builder.openManagedStream(managedStream);
+```
+Start the ManagedStream in order to cause it to begin calling back.
+```managedStream->requestStart();
+```
+In order to change the configuration of the stream, simply call this method
+again. The existing stream is closed, destroyed and a new stream is built and
+populates the managedStream.
+```builder.setCallback(mCallback)->openManagedStream(managedStream);
+```
+The `ManagedStream` takes care of its own closure and destruction. If used in an
+automatic allocation context (such as a member of a class), the stream does not
+need to be closed or deleted. Make sure that the object which is responsible for
+the MangedStream (its enclosing class), goes out of scope when
+`Activity.onPause()` is called.
+The following class is a complete implementation of a ManagedStream, which
+renders a sine wave.
+```
+#include <oboe/Oboe.h>
+#include <math.h>
+
+class MyAudioEngine : public oboe::AudioStreamCallback {
+public:
+
+
+    MyAudioEngine() {
+        oboe::AudioStreamBuilder builder;
+        builder.setSharingMode(oboe::SharingMode::Exclusive)->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+                ->setChannelCount(kChannelCount)->setSampleRate(kSampleRate)->setFormat(oboe::AudioFormat::Float)
+                ->setCallback(this)->openManagedStream(outStream);
+        outStream->requestStart();
+    }
+
+    oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
+        float *floatData = (float *) audioData;
+        for (int i = 0; i < numFrames; ++i) {
+            for (int j = 0; j < kChannelCount; j++) {
+                floatData[i * kChannelCount + j] = kAmplitude * sinf(mPhase);
+            }
+            mPhase += mPhaseIncrement;
+            if (mPhase >= kTWOPI) mPhase -= kTWOPI;
+        }
+        return oboe::DataCallbackResult::Continue;
+    }
+
+private:
+    oboe::ManagedStream outStream;
+    // Stream params
+    static int constexpr kChannelCount = 2;
+    static int constexpr kSampleRate = 48000;
+    // Wave params
+    static float constexpr kAmplitude = 0.5f;
+    static int constexpr kFrequency = 440;
+    static float constexpr kPI = M_PI;
+    static float constexpr kTWOPI = kPI * 2;
+    static double constexpr mPhaseIncrement = kFrequency * kTWOPI / (double) kSampleRate;
+    // Keeps track of where the wave is
+    float mPhase = 0.0;
+};
+```
+Note that this implementation computes  sine values at run-time for simplicity,
+rather than pre-computing them.
+Additionally, best practice is to implement a seperate callback class, rather
+than managing the stream and defining its callback in the same class.
+
+For more examples on how to use `ManagedStream` look in the `samples` folder.
+`samples/shared` contains an `AudioEngine` which can be easily inherited to begin
+working with Oboe.
+
 ## Obtaining optimal latency
-One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened. 
+One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened.
 
 Oboe provides a convenient way of setting global default values so that the sample rate and buffer size do not have to be set each time an audio stream is created.
 
