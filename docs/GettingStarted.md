@@ -21,7 +21,6 @@ app directory)
 ```
 git submodule add https://github.com/google/oboe
 ```
-In your working directory.
 
 This makes it easier to integrate updates to Oboe into your app.
 
@@ -162,7 +161,7 @@ Create and configure a builder.
 ```
 oboe::AudioStreamBuilder builder;
 
-#Make sure to  always set the Performance and Sharing mode
+// Make sure to  always set the Performance and Sharing mode
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
   ->setSharingMode(oboe::SharingMode::Exclusive)->setFormat(oboe::AudioFormat::Float);
 ```
@@ -176,16 +175,16 @@ builder.openManagedStream(managedStream);
 ```
 Start the ManagedStream in order to cause it to begin calling back.
 ```
-managedStream->requestStart(); # We forgot to define a callback!
+managedStream->requestStart(); // We forgot to define a callback!
 ```
 In order to change the configuration of the stream, simply call this method
 again. The existing stream is closed, destroyed and a new stream is built and
 populates the managedStream.
 ```
-# Create a builder with the existing stream properties
+// Create a builder with the existing stream properties
 builder = oboe::AudioStreamBuilder(*managedStream);
-# Re-open the stream with some additional config
-# The old ManagedStream is automatically closed and deleted
+// Re-open the stream with some additional config
+// The old ManagedStream is automatically closed and deleted
 builder.setCallback(mCallback)->openManagedStream(managedStream);
 ```
 The `ManagedStream` takes care of its own closure and destruction. If used in an
