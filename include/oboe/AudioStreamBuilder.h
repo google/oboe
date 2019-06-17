@@ -236,7 +236,12 @@ public:
      * This could, for example, affect which microphones are used and how the
      * recorded data is processed.
      *
-     * The default, if you do not call this function, is InputPreset::VoiceRecognition.
+     * The default on API 29 and later is InputPreset::VoicePerformance, a preset
+     * which configures the input for performance oriented input applications
+     * such as karaoke.
+     *
+     * The default, on API 28 if you do not call this function, is
+     * InputPreset::VoiceRecognition.
      * That is because VoiceRecognition is the preset with the lowest latency
      * on many platforms.
      *

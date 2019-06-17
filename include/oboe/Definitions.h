@@ -347,6 +347,11 @@ namespace oboe {
      */
     enum InputPreset : int32_t { // aaudio_input_preset_t
         /**
+         * This is for Oboe, it should not be passed to AAudio.
+         */
+        Unspecified = -1, // No corresponding AAudio preset
+
+        /**
          * Use this preset when other presets do not apply.
          */
         Generic = 1, // AAUDIO_INPUT_PRESET_GENERIC

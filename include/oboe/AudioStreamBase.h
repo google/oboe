@@ -163,7 +163,7 @@ protected:
     /** Stream input preset. Only active on Android 28+
      * The default should be InputPreset::VoicePerformance on Android 29+
     */
-    InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
+    InputPreset                     mInputPreset = InputPreset::Unspecified;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
 };
