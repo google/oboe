@@ -111,21 +111,25 @@ To be safe, check the state of the audio stream after you create it, as explaine
   3. You should verify the stream's configuration after opening it.
   The following properties are guaranteed. However, if these properties are unspecified,
   a default value will still be set.
-  + mStreamCallback
-  + mFramesPerCallback
-  + mSampleRate
-  + mChannelCount
-  + mFormat
-  + mDirection
-  + mPerformanceMode
+    + mStreamCallback (does not have getter)
+    + mFramesPerCallback
+    + mSampleRate
+    + mChannelCount
+    + mFormat
+    + mDirection
+    + mPerformanceMode
+
   The following properties may be changed by the underlying stream and should be
   queried.
-  + mBufferCapacityInFrames
-  + mSharingMode
+
+    + mBufferCapacityInFrames
+    + mSharingMode
+
   The following properties are only set by the underlying stream. They cannot be
   set.
-  + mFramesPerBurst
-  + mBufferSizeInFrames
+
+    + mFramesPerBurst
+    + mBufferSizeInFrames
 
   mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
   be set regardless.
@@ -138,8 +142,10 @@ To be safe, check the state of the audio stream after you create it, as explaine
 
   Since sharing mode and buffer capacity might change (whether or not you set
   them) depending on the capabilities of the stream's audio device and the
-  Android device on which it's running. As a matter of good defensive
-  programming, you should check the stream's configuration before using it.
+  Android device on which it's running. Additionally, the underlying parameters
+  a stream is granted is useful when they are left unspecified.
+  As a matter of good defensive programming, you should check the stream's
+  configuration before using it.
   There are functions to retrieve the stream setting that corresponds to each
   builder setting:
 
@@ -254,6 +260,9 @@ and
 
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
 
+Writing directly to a low latency stream is not supported on legacy. For best
+performance, it is recommended to use a callback for audio output whenever
+possible.
 
 When you read input, you should verify the correct number of
 frames was read. If not, the buffer might contain unknown data that could cause an
@@ -299,8 +308,8 @@ Note that registering this callback will enable callbacks for both data and erro
 
 Your callback can implement the following methods: 
 
-* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns). You can also inform any other threads that may be calling the stream to stop doing so.
-* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. 
+* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns). You can also inform any other threads that may be calling the stream to stop doing so. Do not delete the stream or modify its stream state in this callback.
+* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. The only valid queries are frames written and read. The stream itself can safely destroy itself at the end of this method (although this is risky). Triggering another stream to restart is also a valid use of this callback.
 
 The `onError*()` methods will be called in a new thread created by Oboe just for this callback. So you can safely open a new stream in the `onErrorAfterClose()` method. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst).
 
