@@ -108,9 +108,35 @@ To be safe, check the state of the audio stream after you create it, as explaine
     }
 
 
-  3. You should verify the stream's configuration after opening it. If you specified
-  sample format, sample rate, or samples per frame they will not change.
-  However, sharing mode and buffer capacity might change (whether or not you set
+  3. You should verify the stream's configuration after opening it.
+  The following properties are guaranteed. However, if these properties are unspecified,
+  a default value will still be set.
+  + mStreamCallback
+  + mFramesPerCallback
+  + mSampleRate
+  + mChannelCount
+  + mFormat
+  + mDirection
+  + mPerformanceMode
+  The following properties may be changed by the underlying stream and should be
+  queried.
+  + mBufferCapacityInFrames
+  + mSharingMode
+  The following properties are only set by the underlying stream. They cannot be
+  set.
+  + mFramesPerBurst
+  + mBufferSizeInFrames
+
+  mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
+  be set regardless.
+
+  mAudioApi is only a property of the builder, however
+  AudioStream::getAudioApi() can be used to query the underlying API which the
+  stream uses. The property set in the builder is not guaranteed, and in
+  general, the API should be chosen by Oboe to allow for best performance and
+  stability considerations.
+
+  Since sharing mode and buffer capacity might change (whether or not you set
   them) depending on the capabilities of the stream's audio device and the
   Android device on which it's running. As a matter of good defensive
   programming, you should check the stream's configuration before using it.
@@ -123,10 +149,25 @@ To be safe, check the state of the audio stream after you create it, as explaine
 | `setDeviceId()` | `getDeviceId()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
+| `setPerformanceMode()` | `getPerformanceMode()` |
 | `setSampleRate()` | `getSampleRate()` |
 | `setChannelCount()` | `getChannelCount()` |
 | `setFormat()` | `getFormat()` |
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
+| `setFramesPerCallback()` | `getFramesPerCallback()` |
+
+The following AudioStreamBuilder functions were added in API 28 (AAudio only) to
+specify additional information about the AudioStream to the device. Currently,
+they have little effect on the stream, but setting them helps applications
+interact better with other services.
++ `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
++ `setContentType(oboe::ContentType contentType)` - The type of content carried
+  by the stream.
++ `setInputPreset(oboe::InputPreset inputPreset)` - The recording configuration
+  for an audio input.
++ `setSessionId(SessionId sessionId)` - Allocate SessionID to connect to the
+  Java AudioEffects API.
+
 
 ## Using an audio stream
 
