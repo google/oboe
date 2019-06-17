@@ -160,7 +160,9 @@ protected:
     Usage                           mUsage = Usage::Media;
     /** Stream content type. Only active on Android 28+ */
     ContentType                     mContentType = ContentType::Music;
-    /** Stream input preset. Only active on Android 28+ */
+    /** Stream input preset. Only active on Android 28+
+     * The default should be InputPreset::VoicePerformance on Android 29+
+    */
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
