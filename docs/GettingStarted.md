@@ -8,8 +8,8 @@ The easiest way to start using Oboe is to build it from source by adding a few s
 
 ## Adding Oboe to your project
 
-### 1. Clone the github repository 
-Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example: 
+### 1. Clone the github repository
+Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example:
 
     git clone -b 1.2-stable https://github.com/google/oboe
 
@@ -22,7 +22,8 @@ app directory)
 git submodule add https://github.com/google/oboe
 ```
 
-This makes it easier to integrate updates to Oboe into your app.
+This makes it easier to integrate updates to Oboe into your app, as well as
+contribute to Open Source.
 
 ### 2. Update CMakeLists.txt
 Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. If you don't have a `CMakeLists.txt` you will need to [add C++ support to your project](https://developer.android.com/studio/projects/add-native-code).
@@ -163,9 +164,12 @@ oboe::AudioStreamBuilder builder;
 
 // Make sure to  always set the Performance and Sharing mode
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
-  ->setSharingMode(oboe::SharingMode::Exclusive)->setFormat(oboe::AudioFormat::Float);
+  ->setSharingMode(oboe::SharingMode::Exclusive); // The builder setter methods
+  can be chained for convenience
+builder.setCallback(myCallback)->setFormat(oboe::AudioFormat::Float);
 ```
-Declare a ManagedStream.
+Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.
+the member of a managing class). Avoid declaring as a global.
 ```
 oboe::ManagedStream managedStream;
 ```
@@ -173,19 +177,21 @@ Open the ManagedStream.
 ```
 builder.openManagedStream(managedStream);
 ```
-Start the ManagedStream in order to cause it to begin calling back.
+Start the ManagedStream in order to cause it to begin calling back. If
+necessary, check stream properties before requesting start (especially if some
+stream parameters were left unspecified).
 ```
-managedStream->requestStart(); // We forgot to define a callback!
+managedStream->requestStart();
 ```
 In order to change the configuration of the stream, simply call this method
 again. The existing stream is closed, destroyed and a new stream is built and
 populates the managedStream.
 ```
-// Create a builder with the existing stream properties
-builder = oboe::AudioStreamBuilder(*managedStream);
+// Modify the builder with some additional properties at runtime.
+builder.setDeviceId(MY_DEVICE_ID);
 // Re-open the stream with some additional config
 // The old ManagedStream is automatically closed and deleted
-builder.setCallback(mCallback)->openManagedStream(managedStream);
+builder.openManagedStream(managedStream);
 ```
 The `ManagedStream` takes care of its own closure and destruction. If used in an
 automatic allocation context (such as a member of a class), the stream does not
@@ -201,23 +207,26 @@ closes the stream.
 #include <oboe/Oboe.h>
 #include <math.h>
 
-class MyAudioEngine : public oboe::AudioStreamCallback {
+class OboeSinePlayer: public oboe::AudioStreamCallback {
 public:
 
 
-    MyAudioEngine() {
+    OboeSinePlayer() {
         oboe::AudioStreamBuilder builder;
-        builder.setSharingMode(oboe::SharingMode::Exclusive)->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-                ->setChannelCount(kChannelCount)->setSampleRate(kSampleRate)->setFormat(oboe::AudioFormat::Float)
-                ->setCallback(this)->openManagedStream(outStream);
+        // The builder set methods can be chained for convenience.
+        builder.setSharingMode(oboe::SharingMode::Exclusive)->setPerformanceMode(oboe::PerformanceMode::LowLatency);
+        builder.setChannelCount(kChannelCount)->setSampleRate(kSampleRate)->setFormat(oboe::AudioFormat::Float);
+        builder.setCallback(this)->openManagedStream(outStream);
+        // Typically, start the stream after querying some stream information, as well as some input from the user
         outStream->requestStart();
     }
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         float *floatData = (float *) audioData;
         for (int i = 0; i < numFrames; ++i) {
+            float sampleValue = kAmplitude * sinf(mPhase);
             for (int j = 0; j < kChannelCount; j++) {
-                floatData[i * kChannelCount + j] = kAmplitude * sinf(mPhase);
+                floatData[i * kChannelCount + j] = sampleValue;
             }
             mPhase += mPhaseIncrement;
             if (mPhase >= kTWOPI) mPhase -= kTWOPI;
@@ -230,9 +239,9 @@ private:
     // Stream params
     static int constexpr kChannelCount = 2;
     static int constexpr kSampleRate = 48000;
-    // Wave params
+    // Wave params, these could be instance variables in order to modify at runtime
     static float constexpr kAmplitude = 0.5f;
-    static int constexpr kFrequency = 440;
+    static float constexpr kFrequency = 440;
     static float constexpr kPI = M_PI;
     static float constexpr kTWOPI = kPI * 2;
     static double constexpr mPhaseIncrement = kFrequency * kTWOPI / (double) kSampleRate;
@@ -244,10 +253,12 @@ Note that this implementation computes  sine values at run-time for simplicity,
 rather than pre-computing them.
 Additionally, best practice is to implement a seperate callback class, rather
 than managing the stream and defining its callback in the same class.
-
+This class also automatically starts the stream upon construction. Typically,
+the stream is queried for information prior to being started (e.g. burst size),
+and started upon user input.
 For more examples on how to use `ManagedStream` look in the `samples` folder.
-`samples/shared` contains an `AudioEngine` which can be easily inherited to begin
-creating interactive Oboe streams.
+`samples/shared` contains an `AudioEngine` which can be easily inherited from to begin
+creating interactive Oboe ManagedStreams.
 
 ## Obtaining optimal latency
 One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened.
