@@ -117,14 +117,14 @@ appropriate accessor.
 * channelCount
 * format
 * direction
-* performanceMode
 
-The following properties may be changed by the underlying stream *even if
-explicitly set* and therefore should always be queried by the appropriate
-accessor.
+The following properties may be changed by the underlying stream construction
+*even if explicitly set* and therefore should always be queried by the appropriate
+accessor. The property settings will depend on device capabilities.
 
 * bufferCapacityInFrames
 * sharingMode (exclusive provides lowest latency)
+* performanceMode 
 
 The following properties are only set by the underlying stream. They cannot be
 set, but should be queried by the appropriate accessor.
@@ -149,7 +149,7 @@ be useful in the context of several known issues with OpenSLES (see below).
 builder), since it depends on run-time behavior. It can be set only up to the
 BufferCapacity.
 
-Since sharing mode and buffer capacity might vary (whether or not you set
+Since sharing mode, performance mode and buffer capacity might vary (whether or not you set
 them) depending on the capabilities of the stream's audio device and the
 Android device on which it's running, they must be queried. Additionally,
 the underlying parameters a stream is granted are useful to know even when
@@ -174,11 +174,16 @@ builder setting:
 | `setFramesPerCallback()` | `getFramesPerCallback()` |
 |  --  | `getFramesPerBurst()` |
 | `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
+| `setAudioApi()` (mainly for debugging) | `getAudioApi()` |
 
-The following AudioStreamBuilder fields were added in API 28 (AAudio only) to
-specify additional information about the AudioStream to the device. If used with 
-OpenSLES, they return `Error::Unimplemented`. Currently, they have little effect 
-on the stream, but setting them helps applications interact better with other services.
+The following AudioStreamBuilder fields were added in API 28 to
+specify additional information about the AudioStream to the device. Currently, 
+they have little effect on the stream, but setting them helps applications 
+interact better with other services.
+
+For more information see: [Usage/ContentTypes](https://source.android.com/devices/audio/attributes).
+The InputPreset may be used by the device to process the input stream (such as gain control). By default 
+it is set to VoiceRecognition, which is optimized for low latency.
 
 * `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
 * `setContentType(oboe::ContentType contentType)` - The type of content carried
@@ -274,9 +279,8 @@ and
 
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
 
-Writing directly to a low latency stream is not supported on legacy. For best
-performance, it is recommended to use a callback for audio output whenever
-possible.
+Writing directly to a low latency stream may result in a non low-latency stream.
+For low latency performance, set an audio callback, which runs in a high priority thread.
 
 When you read input, you should verify the correct number of
 frames was read. If not, the buffer might contain unknown data that could cause an
@@ -320,12 +324,19 @@ which extends `AudioStreamCallback` and then register your class using `builder.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
 Note that registering this callback will enable callbacks for both data and errors. So `onAudioReady()` will be called. See the "high priority callback" section below.
 
-Your callback can implement the following methods: 
+Your callback can implement the following methods (called in a seperate thread): 
 
-* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns). You can also inform any other threads that may be calling the stream to stop doing so. Do not delete the stream or modify its stream state in this callback.
-* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. The only valid queries are frames written and read. The stream itself can safely destroy itself at the end of this method (although this is risky). Triggering another stream to restart is also a valid use of this callback.
+* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed,
+  so you can still reference the underlying stream (e.g.`getXRunCount()`).
+You can also inform any other threads that may be calling the stream to stop doing so.
+Do not delete the stream or modify its stream state in this callback.
+* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. 
+During this callback, stream properties (those requested by the builder) can be queried, as well as frames written and read.
+The stream can be deleted at the end of this method (as long as it not referenced in other threads).
+Methods that reference the underlying stream are unsafe (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
+Opening a seperate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
+However, it is important to note that the new audio device may have vastly different properties than the stream that was disconnected.
 
-The `onError*()` methods will be called in a new thread created by Oboe just for this callback. So you can safely open a new stream in the `onErrorAfterClose()` method. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst).
 
 ## Optimizing performance
 
