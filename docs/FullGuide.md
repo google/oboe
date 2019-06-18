@@ -139,19 +139,22 @@ The following properties are only set by the underlying stream. They cannot be
 set, but should be queried by the appropriate accessor.
 
 * mFramesPerBurst
-* mBufferSizeInFrames
 
-mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
+The following properties have unusual behavior
+
+* mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
 be set regardless, but *will not* throw an error if an OpenSLES stream is used.
 
-mAudioApi is only a property of the builder, however
+* mAudioApi is only a property of the builder, however
 AudioStream::getAudioApi() can be used to query the underlying API which the
 stream uses. The property set in the builder is not guaranteed, and in
 general, the API should be chosen by Oboe to allow for best performance and
 stability considerations. Since Oboe is designed to be as uniform across both
 APIs as possible, this property should not generally be needed, however, it may
 be useful in the context of several known issues with OpenSLES (see bottom).
-
+* mBufferSizeInFrames can only be set on an already open stream (as opposed to a
+  builder), since it depends on run-time behavior. It can be set only up to the
+  BufferCapacity, and lacks an accessor.
 Since sharing mode and buffer capacity might change (whether or not you set
 them) depending on the capabilities of the stream's audio device and the
 Android device on which it's running. Additionally, the underlying parameters
@@ -164,7 +167,8 @@ builder setting:
 
 | AudioStreamBuilder set methods | AudioStream get methods |
 | :------------------------ | :----------------- |
-| `setDeviceId()` | `getDeviceId()` |
+| `setCallback()` |  -- |
+| `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
 | `setPerformanceMode()` | `getPerformanceMode()` |
@@ -173,6 +177,7 @@ builder setting:
 | `setFormat()` | `getFormat()` |
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
 | `setFramesPerCallback()` | `getFramesPerCallback()` |
+| -- | `getFramesPerBurst()` |
 
 The following AudioStreamBuilder functions were added in API 28 (AAudio only) to
 specify additional information about the AudioStream to the device. Currently,
