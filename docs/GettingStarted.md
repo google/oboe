@@ -2,7 +2,7 @@
 The easiest way to start using Oboe is to build it from source by adding a few steps to an existing Android Studio project.
 
 ## Creating an Android app with native support
-+ Create a new project by navigating `File > New > New Project`
++ Create a new project: `File > New > New Project`
 + When selecting the project type, select Native C++
 + Finish configuring project
 
@@ -22,8 +22,7 @@ app directory)
 git submodule add https://github.com/google/oboe
 ```
 
-This makes it easier to integrate updates to Oboe into your app, as well as
-contribute to Open Source.
+This makes it easier to integrate updates to Oboe into your app, as well as contribute to the Oboe project.
 
 ### 2. Update CMakeLists.txt
 Open your app's `CMakeLists.txt`. This can be found under `External Build Files` in the Android project view. If you don't have a `CMakeLists.txt` you will need to [add C++ support to your project](https://developer.android.com/studio/projects/add-native-code).
@@ -256,7 +255,7 @@ than managing the stream and defining its callback in the same class.
 This class also automatically starts the stream upon construction. Typically,
 the stream is queried for information prior to being started (e.g. burst size),
 and started upon user input.
-For more examples on how to use `ManagedStream` look in the `samples` folder.
+For more examples on how to use `ManagedStream` look in the [samples](https://github.com/google/oboe/tree/master/samples) folder.
 `samples/shared` contains an `AudioEngine` which can be easily inherited from to begin
 creating interactive Oboe ManagedStreams.
 
