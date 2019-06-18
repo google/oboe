@@ -66,7 +66,7 @@ Oboe might perform sample conversion on its own. For example, if an app is writi
 
 The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `AudioStreamBuilder`.
 
-  1. Set the audio stream configuration using an AudioStreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
+1. Set the audio stream configuration using an AudioStreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
 
     AudioStreamBuilder streamBuilder;
 
@@ -97,7 +97,7 @@ it to `kUnspecified`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
-  2. After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
+2. After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
 
     Result result = streamBuilder.openStream(&stream_);
     if (result != OK){
@@ -108,28 +108,29 @@ To be safe, check the state of the audio stream after you create it, as explaine
     }
 
 
-  3. You should verify the stream's configuration after opening it.
+3. You should verify the stream's configuration after opening it.
   The following properties are guaranteed. However, if these properties are unspecified,
   a default value will still be set.
-    + mStreamCallback (does not have getter)
-    + mFramesPerCallback
-    + mSampleRate
-    + mChannelCount
-    + mFormat
-    + mDirection
-    + mPerformanceMode
+
+    * mStreamCallback (does not have getter)
+    * mFramesPerCallback
+    * mSampleRate
+    * mChannelCount
+    * mFormat
+    * mDirection
+    * mPerformanceMode
 
   The following properties may be changed by the underlying stream and should be
   queried.
 
-    + mBufferCapacityInFrames
-    + mSharingMode
+    * mBufferCapacityInFrames
+    * mSharingMode
 
   The following properties are only set by the underlying stream. They cannot be
   set.
 
-    + mFramesPerBurst
-    + mBufferSizeInFrames
+    * mFramesPerBurst
+    * mBufferSizeInFrames
 
   mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
   be set regardless.
@@ -166,12 +167,12 @@ The following AudioStreamBuilder functions were added in API 28 (AAudio only) to
 specify additional information about the AudioStream to the device. Currently,
 they have little effect on the stream, but setting them helps applications
 interact better with other services.
-+ `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
-+ `setContentType(oboe::ContentType contentType)` - The type of content carried
+* `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
+* `setContentType(oboe::ContentType contentType)` - The type of content carried
   by the stream.
-+ `setInputPreset(oboe::InputPreset inputPreset)` - The recording configuration
+* `setInputPreset(oboe::InputPreset inputPreset)` - The recording configuration
   for an audio input.
-+ `setSessionId(SessionId sessionId)` - Allocate SessionID to connect to the
+* `setSessionId(SessionId sessionId)` - Allocate SessionID to connect to the
   Java AudioEffects API.
 
 
