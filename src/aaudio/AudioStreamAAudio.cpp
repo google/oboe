@@ -169,13 +169,6 @@ Result AudioStreamAAudio::open() {
     }
 
     if (mLibLoader->builder_setInputPreset != nullptr) {
-        if (mInputPreset == InputPreset::Unspecified) {
-            if (getSdkVersion() > __ANDROID_API_P__ ) {
-                mInputPreset = InputPreset::VoicePerformance;
-            } else {
-                mInputPreset = InputPreset ::VoiceRecognition;
-            }
-        }
         mLibLoader->builder_setInputPreset(aaudioBuilder,
                                            static_cast<aaudio_input_preset_t>(mInputPreset));
     }
