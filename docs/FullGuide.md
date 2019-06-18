@@ -66,7 +66,9 @@ Oboe might perform sample conversion on its own. For example, if an app is writi
 
 The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `AudioStreamBuilder`.
 
-1. Set the audio stream configuration using an AudioStreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
+##Set the audio stream configuration using an AudioStreamBuilder.
+
+Use the builder functions that correspond to the stream parameters. These optional set functions are available:
 
     AudioStreamBuilder streamBuilder;
 
@@ -97,7 +99,9 @@ it to `kUnspecified`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
-2. After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
+##Open the Stream
+
+After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
 
     Result result = streamBuilder.openStream(&stream_);
     if (result != OK){
@@ -108,47 +112,54 @@ To be safe, check the state of the audio stream after you create it, as explaine
     }
 
 
-3. You should verify the stream's configuration after opening it.
-  The following properties are guaranteed. However, if these properties are unspecified,
-  a default value will still be set.
+## Verifying Stream Configuration and additional properties
 
-    * mStreamCallback (does not have getter)
-    * mFramesPerCallback
-    * mSampleRate
-    * mChannelCount
-    * mFormat
-    * mDirection
-    * mPerformanceMode
+You should verify the stream's configuration after opening it.
 
-  The following properties may be changed by the underlying stream and should be
-  queried.
+The following properties are guaranteed. However, if these properties are unspecified,
+a default value will still be set, and should be queried by the appropriate
+accessor.
 
-    * mBufferCapacityInFrames
-    * mSharingMode
+* mStreamCallback (does not have an accessor)
+* mFramesPerCallback
+* mSampleRate
+* mChannelCount
+* mFormat
+* mDirection
+* mPerformanceMode
 
-  The following properties are only set by the underlying stream. They cannot be
-  set.
+The following properties may be changed by the underlying stream *even if
+explicitly set* and therefore should always be queried by the appropriate
+accessor.
 
-    * mFramesPerBurst
-    * mBufferSizeInFrames
+* mBufferCapacityInFrames
+* mSharingMode (ideally exclusive)
 
-  mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
-  be set regardless.
+The following properties are only set by the underlying stream. They cannot be
+set, but should be queried by the appropriate accessor.
 
-  mAudioApi is only a property of the builder, however
-  AudioStream::getAudioApi() can be used to query the underlying API which the
-  stream uses. The property set in the builder is not guaranteed, and in
-  general, the API should be chosen by Oboe to allow for best performance and
-  stability considerations.
+* mFramesPerBurst
+* mBufferSizeInFrames
 
-  Since sharing mode and buffer capacity might change (whether or not you set
-  them) depending on the capabilities of the stream's audio device and the
-  Android device on which it's running. Additionally, the underlying parameters
-  a stream is granted is useful when they are left unspecified.
-  As a matter of good defensive programming, you should check the stream's
-  configuration before using it.
-  There are functions to retrieve the stream setting that corresponds to each
-  builder setting:
+mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
+be set regardless, but *will not* throw an error if an OpenSLES stream is used.
+
+mAudioApi is only a property of the builder, however
+AudioStream::getAudioApi() can be used to query the underlying API which the
+stream uses. The property set in the builder is not guaranteed, and in
+general, the API should be chosen by Oboe to allow for best performance and
+stability considerations. Since Oboe is designed to be as uniform across both
+APIs as possible, this property should not generally be needed, however, it may
+be useful in the context of several known issues with OpenSLES (see bottom).
+
+Since sharing mode and buffer capacity might change (whether or not you set
+them) depending on the capabilities of the stream's audio device and the
+Android device on which it's running. Additionally, the underlying parameters
+a stream is granted are useful to know even when they are left unspecified.
+As a matter of good defensive programming, you should check the stream's
+configuration before using it.
+There are functions to retrieve the stream setting that corresponds to each
+builder setting:
 
 
 | AudioStreamBuilder set methods | AudioStream get methods |
