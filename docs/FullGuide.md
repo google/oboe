@@ -92,7 +92,7 @@ To be safe, check the state of the audio stream after you create it, as explaine
 
 ### Open the Stream
 
-After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
+After you've configured the `AudioStreamBuilder`, call `openStream()` to open the stream:
 
     Result result = streamBuilder.openStream(&stream_);
     if (result != OK){
@@ -103,38 +103,39 @@ After you've configured the AudioStreamBuilder, call `openStream()` to open the 
     }
 
 
-### Verifying Stream Configuration and additional properties
+### Verifying stream configuration and additional properties
 
 You should verify the stream's configuration after opening it.
 
-The following properties are guaranteed. However, if these properties are unspecified,
-a default value will still be set, and should be queried by the appropriate
-accessor.
+The following properties are guaranteed to be set. However, if these properties 
+are unspecified,a default value will still be set, and should be queried by the 
+appropriate accessor.
 
-* mStreamCallback (does not have an accessor)
-* mFramesPerCallback
-* mSampleRate
-* mChannelCount
-* mFormat
-* mDirection
-* mPerformanceMode
+* callback 
+* framesPerCallback
+* sampleRate
+* channelCount
+* format
+* direction
+* performanceMode
 
 The following properties may be changed by the underlying stream *even if
 explicitly set* and therefore should always be queried by the appropriate
 accessor.
 
-* mBufferCapacityInFrames
-* mSharingMode (ideally exclusive)
+* bufferCapacityInFrames
+* sharingMode (exclusive provides lowest latency)
 
 The following properties are only set by the underlying stream. They cannot be
 set, but should be queried by the appropriate accessor.
 
-* mFramesPerBurst
+* framesPerBurst
 
 The following properties have unusual behavior
 
-* mDeviceId is respected by AAudio (API level >= 28), but not OpenSLES. It can
-be set regardless, but *will not* throw an error if an OpenSLES stream is used.
+* deviceId is respected when the underlying API is AAudio (API level >=28), but not when it 
+is OpenSLES. It can be set regardless, but *will not* throw an error if an OpenSLES stream 
+is used. The default device will be used, rather than whatever is specified.
 
 * mAudioApi is only a property of the builder, however
 AudioStream::getAudioApi() can be used to query the underlying API which the
@@ -142,12 +143,13 @@ stream uses. The property set in the builder is not guaranteed, and in
 general, the API should be chosen by Oboe to allow for best performance and
 stability considerations. Since Oboe is designed to be as uniform across both
 APIs as possible, this property should not generally be needed, however, it may
-be useful in the context of several known issues with OpenSLES (see bottom).
-* mBufferSizeInFrames can only be set on an already open stream (as opposed to a
-  builder), since it depends on run-time behavior. It can be set only up to the
-  BufferCapacity, and lacks an accessor.
+be useful in the context of several known issues with OpenSLES (see below).
 
-Since sharing mode and buffer capacity might change (whether or not you set
+* mBufferSizeInFrames can only be set on an already open stream (as opposed to a
+builder), since it depends on run-time behavior. It can be set only up to the
+BufferCapacity.
+
+Since sharing mode and buffer capacity might vary (whether or not you set
 them) depending on the capabilities of the stream's audio device and the
 Android device on which it's running, they must be queried. Additionally,
 the underlying parameters a stream is granted are useful to know even when
@@ -161,7 +163,7 @@ builder setting:
 
 | AudioStreamBuilder set methods | AudioStream get methods |
 | :------------------------ | :----------------- |
-| `setCallback()` |  -- |
+| `setCallback()` |  `getCallback()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
 | `setPerformanceMode()` | `getPerformanceMode()` |
@@ -170,13 +172,14 @@ builder setting:
 | `setFormat()` | `getFormat()` |
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
 | `setFramesPerCallback()` | `getFramesPerCallback()` |
-| -- | `getFramesPerBurst()` |
+|  --  | `getFramesPerBurst()` |
 | `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
 
 The following AudioStreamBuilder fields were added in API 28 (AAudio only) to
-specify additional information about the AudioStream to the device. Currently,
-they have little effect on the stream, but setting them helps applications
-interact better with other services.
+specify additional information about the AudioStream to the device. If used with 
+OpenSLES, they return `Error::Unimplemented`. Currently, they have little effect 
+on the stream, but setting them helps applications interact better with other services.
+
 * `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
 * `setContentType(oboe::ContentType contentType)` - The type of content carried
   by the stream.
