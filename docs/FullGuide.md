@@ -66,7 +66,7 @@ Oboe might perform sample conversion on its own. For example, if an app is writi
 
 The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `AudioStreamBuilder`.
 
-##Set the audio stream configuration using an AudioStreamBuilder.
+### Set the audio stream configuration using an AudioStreamBuilder.
 
 Use the builder functions that correspond to the stream parameters. These optional set functions are available:
 
@@ -79,27 +79,18 @@ Use the builder functions that correspond to the stream parameters. These option
     streamBuilder.setChannelCount(channelCount);
     streamBuilder.setFormat(format);
     streamBuilder.setPerformanceMode(perfMode);
-    streamBuilder.setAPIIndex(index);
 
 Note that these methods do not report errors, such as an undefined constant or value out of range.
 
-In most cases, you will not call the method `setAPIIndex()`. This determines
-whether Oboe will use AAudio or OpenSL ES as the audio engine for you app. Oboe
-will automatically select the best implementation available on your device. If
-you want to specifically select AAudio or OpenSL, set the APIIndex yourself.
-After a stream has been opened, you can verify that the API you specified was
-chosen by calling `AudioStreamBuilder::getAPIIndex()`. The allowable indexes are
-`AAudio` and `OpenSLES`.
-
 If you do not specify the deviceId, the default is the primary output device.
 If you do not specify the stream direction, the default is an output stream.
-For all other parameters, you can explicitly set a value, or let the system
+For all parameters, you can explicitly set a value, or let the system
 assign the optimal value by not specifying the parameter at all or setting
 it to `kUnspecified`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
-##Open the Stream
+### Open the Stream
 
 After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
 
@@ -112,7 +103,7 @@ After you've configured the AudioStreamBuilder, call `openStream()` to open the 
     }
 
 
-## Verifying Stream Configuration and additional properties
+### Verifying Stream Configuration and additional properties
 
 You should verify the stream's configuration after opening it.
 
@@ -155,12 +146,15 @@ be useful in the context of several known issues with OpenSLES (see bottom).
 * mBufferSizeInFrames can only be set on an already open stream (as opposed to a
   builder), since it depends on run-time behavior. It can be set only up to the
   BufferCapacity, and lacks an accessor.
+
 Since sharing mode and buffer capacity might change (whether or not you set
 them) depending on the capabilities of the stream's audio device and the
-Android device on which it's running. Additionally, the underlying parameters
-a stream is granted are useful to know even when they are left unspecified.
-As a matter of good defensive programming, you should check the stream's
-configuration before using it.
+Android device on which it's running, they must be queried. Additionally,
+the underlying parameters a stream is granted are useful to know even when
+they are left unspecified. As a matter of good defensive programming, you
+should check the stream's configuration before using it.
+
+
 There are functions to retrieve the stream setting that corresponds to each
 builder setting:
 
@@ -168,7 +162,6 @@ builder setting:
 | AudioStreamBuilder set methods | AudioStream get methods |
 | :------------------------ | :----------------- |
 | `setCallback()` |  -- |
-| `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
 | `setPerformanceMode()` | `getPerformanceMode()` |
@@ -178,8 +171,9 @@ builder setting:
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
 | `setFramesPerCallback()` | `getFramesPerCallback()` |
 | -- | `getFramesPerBurst()` |
+| `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
 
-The following AudioStreamBuilder functions were added in API 28 (AAudio only) to
+The following AudioStreamBuilder fields were added in API 28 (AAudio only) to
 specify additional information about the AudioStream to the device. Currently,
 they have little effect on the stream, but setting them helps applications
 interact better with other services.
