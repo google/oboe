@@ -160,7 +160,9 @@ protected:
     Usage                           mUsage = Usage::Media;
     /** Stream content type. Only active on Android 28+ */
     ContentType                     mContentType = ContentType::Music;
-    /** Stream input preset. Only active on Android 28+ */
+    /** Stream input preset. Only active on Android 28+
+     * TODO InputPreset::Unspecified should be considered as a possible default alternative.
+    */
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
