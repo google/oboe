@@ -324,7 +324,7 @@ which extends `AudioStreamCallback` and then register your class using `builder.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
 Note that registering this callback will enable callbacks for both data and errors. So `onAudioReady()` will be called. See the "high priority callback" section below.
 
-Your callback can implement the following methods (called in a seperate thread): 
+Your callback can implement the following methods (called in a separate thread): 
 
 * `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed,
   so you can still reference the underlying stream (e.g.`getXRunCount()`).
