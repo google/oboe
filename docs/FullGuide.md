@@ -149,11 +149,12 @@ be useful in the context of several known issues with OpenSLES (see below).
 builder), since it depends on run-time behavior. It can be set only up to the
 BufferCapacity.
 
-Since sharing mode, performance mode and buffer capacity might vary (whether or not you set
-them) depending on the capabilities of the stream's audio device and the
-Android device on which it's running, they must be queried. Additionally,
-the underlying parameters a stream is granted are useful to know even when
-they are left unspecified. As a matter of good defensive programming, you
+Many of the stream's properties may vary (whether or not you set
+them) depending on the capabilities of the audio device and the Android device on 
+which it's running. If you need to know these values then you must query these using 
+the accessor after the stream has been opened. Additionally,
+the underlying parameters a stream is granted are useful to know if
+they have been left unspecified. As a matter of good defensive programming, you
 should check the stream's configuration before using it.
 
 
