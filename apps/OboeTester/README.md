@@ -1,14 +1,14 @@
 # Oboe Tester
 
-Test Oboe using an Interactive App.
+OboeTester is an app that can be used to test many of the features of Oboe, AAudio and OpenSL ES.
 
 ## Building Oboe Tester
-Download the top level oboe repository from GitHub
+Download the top level oboe repository from GitHub.
 Then use Android Studio (3.3 or above) to build the app in this folder.
 
 ## Test Modules
 
-There are several different tests available fdrom the main module.
+There are several different tests available from the main module.
 
 ### Test Output
 
