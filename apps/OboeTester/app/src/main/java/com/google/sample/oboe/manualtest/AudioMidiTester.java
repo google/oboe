@@ -32,6 +32,12 @@ import java.util.ArrayList;
  */
 public class AudioMidiTester extends MidiDeviceService {
 
+    // Sometimes the service can be run without the MainActivity being run!
+    static {
+        // Must match name in CMakeLists.txt
+        System.loadLibrary("oboetester");
+    }
+
     private static final float MAX_TOUCH_LATENCY = 0.200f;
     private static final float MAX_OUTPUT_LATENCY = 0.600f;
     private static final float ANALYSIS_TIME_MARGIN = 0.250f;
