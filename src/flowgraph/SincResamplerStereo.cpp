@@ -32,9 +32,10 @@ void SincResamplerStereo::writeFrame(const float *frame) {
     }
 }
 
-void SincResamplerStereo::readFrame(float *frame, float phase) {
+void SincResamplerStereo::readFrame(float *frame) {
     float left = 0.0;
     float right = 0.0;
+    float phase =  getPhase();
     // Multiply input times windowed sinc function.
     int xIndex = (mCursor + kNumTaps) * STEREO;
     for (int i = 0; i < kNumTaps; i++) {

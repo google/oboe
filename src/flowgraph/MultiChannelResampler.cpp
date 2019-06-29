@@ -14,25 +14,60 @@
  * limitations under the License.
  */
 
+#include <math.h>
+
 #include "MultiChannelResampler.h"
 #include "LinearResampler.h"
 #include "SincResampler.h"
+#include "PolyphaseSincResampler.h"
 #include "SincResamplerStereo.h"
 
 using namespace flowgraph;
 
-MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount, Quality quality) {
+MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
+                                                   int32_t inputRate,
+                                                   int32_t outputRate,
+                                                   Quality quality) {
     switch (quality) {
         case Quality::Low:
         case Quality::Medium: // TODO polynomial
-            return new LinearResampler(channelCount);
+            return new LinearResampler(channelCount, inputRate, outputRate);
         default:
         case Quality::High:
+            return new PolyphaseSincResampler(channelCount, inputRate, outputRate); // TODO
         case Quality::Best:
             if (channelCount == 2) {
-                return new SincResamplerStereo(); // TODO pass spread
+                return new SincResamplerStereo( inputRate, outputRate); // TODO pass spread
             } else {
-                return new SincResampler(channelCount); // TODO pass spread
+                return new SincResampler(channelCount,  inputRate, outputRate); // TODO pass spread
             }
     }
+}
+
+
+void MultiChannelResampler::writeFrame(const float *frame) {
+    // Advance cursor before write so that cursor points to last written frame in read.
+    if (++mCursor >= getNumTaps()) {
+        mCursor = 0;
+    }
+    int xIndex = mCursor * getChannelCount();
+    int offset = getNumTaps() * getChannelCount();
+    float *dest = &mX[xIndex];
+    for (int channel = 0; channel < getChannelCount(); channel++) {
+        // Write twice so we avoid having to wrap when running the FIR.
+        dest[channel] = dest[channel + offset] = frame[channel];
+    }
+}
+
+
+float MultiChannelResampler::calculateWindowedSinc(float phase, int spread) {
+    const float realPhase = phase - spread;
+    if (abs(realPhase) < 0.00000001) return 1.0f; // avoid divide by zero
+    // Hamming window TODO try Kaiser window
+    const float alpha = 0.54f;
+    const float windowPhase = realPhase * M_PI / spread;
+    const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
+    const float sincPhase = realPhase * M_PI;
+    const float sinc = sinf(sincPhase) / sincPhase;
+    return window * sinc;
 }

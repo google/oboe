@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SINC_RESAMPLER_H
-#define OBOE_SINC_RESAMPLER_H
+#ifndef FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H
+#define FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H
+
 
 #include <memory>
+#include <vector>
 #include <sys/types.h>
 #include <unistd.h>
-#include "ContinuousResampler.h"
+#include "MultiChannelResampler.h"
 
 namespace flowgraph {
 
-class SincResampler : public ContinuousResampler {
+class PolyphaseSincResampler : public MultiChannelResampler {
 public:
-    SincResampler(int32_t channelCount,
-                           int32_t inputRate,
-                           int32_t outputRate);
+    PolyphaseSincResampler(int32_t channelCount, int32_t inputRate, int32_t outputRate);
 
-    virtual ~SincResampler() = default;
+    virtual ~PolyphaseSincResampler() = default;
 
     void readFrame(float *frame) override;
 
@@ -38,34 +38,40 @@ public:
         return kSpread;
     }
 
-    /**
-     * @param phase between 0.0 and  2*kSpread
-     * @return windowedSinc
-     */
-    float interpolateWindowedSinc(float phase);
+    bool isWriteReady() const override {
+        return mIntegerPhase >= mDenominator;
+    }
+
+    virtual void advanceWrite() override {
+        mIntegerPhase -= mDenominator;
+    }
+
+    bool isReadReady() const override {
+        return mIntegerPhase < mDenominator;
+    }
+
+    virtual void advanceRead() override {
+        mIntegerPhase += mNumerator;
+    }
 
 protected:
 
+    void generateCoefficients(int32_t inputRate, int32_t outputRate);
+    
     // Number of zero crossings on one side of central lobe.
     // Higher numbers provide higher quality but use more CPU.
     // 2 is the minimum one should use.
     static constexpr int   kSpread = 10;
     static constexpr int   kNumTaps = kSpread * 2; // TODO should be odd, not even
 
-    std::vector<float> mWindowedSinc;
-
-private:
-
-    void generateLookupTable();
-
-    // Size of the lookup table.
-    // Higher numbers provide higher accuracy and quality but use more memory.
-    static constexpr int   kNumPoints = 4096;
-    static constexpr int   kNumGuardPoints = 1;
-
-    static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
+    std::vector<float>     mCoefficients;
+    int32_t                mCoefficientCursor = 0;
+    int32_t                mIntegerPhase = 0;
+    int32_t                mNumerator = 0;
+    int32_t                mDenominator = 0;
 
 };
 
 }
-#endif //OBOE_SINC_RESAMPLER_H
+
+#endif //FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H

@@ -18,34 +18,60 @@
 #define FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
 
 #include <memory>
+#include <vector>
 #include <sys/types.h>
 #include <unistd.h>
 
 namespace flowgraph {
 
 class MultiChannelResampler {
+
 public:
-    explicit MultiChannelResampler(int32_t channelCount)
-        : mChannelCount(channelCount) {}
+
+    MultiChannelResampler(int32_t channelCount,
+            int32_t numTaps,
+            int32_t inputRate,
+            int32_t outputRate)
+        : mChannelCount(channelCount)
+        , mNumTaps(numTaps)
+        , mX(channelCount * getNumTaps() * 2)
+        , mSingleFrame(channelCount)
+            {}
 
     virtual ~MultiChannelResampler() = default;
 
+    virtual bool isReadReady() const = 0;
+    virtual bool isWriteReady() const = 0;
+
+    virtual void advanceWrite() = 0;
+    virtual void advanceRead() = 0;
+
     /**
      * Write a frame containing N samples.
-     * @param frame
+     * @param frame pointer to the first sample in a frame
      */
-    virtual void writeFrame(const float *frame) = 0;
+    virtual void writeFrame(const float *frame);
 
     /**
      * Read a frame containing N samples using interpolation.
-     * @param frame
+     * @param frame pointer to the first sample in a frame
      * @param phase phase between 0.0 and 1.0 for interpolation
      */
-    virtual void readFrame(float *frame, float phase) = 0;
+    virtual void readFrame(float *frame) = 0;
+
+    int getNumTaps() const {
+        return mNumTaps;
+    }
 
     int getChannelCount() const {
         return mChannelCount;
     }
+
+    /**
+     * @param phase between 0.0 and  2*spread
+     * @return windowedSinc
+     */
+    static float calculateWindowedSinc(float phase, int spread);
 
     enum class Quality : int32_t {
         Low,
@@ -54,10 +80,23 @@ public:
         Best,
     };
 
-    static MultiChannelResampler *make(int32_t channelCount, Quality quality);
+    static MultiChannelResampler *make(int32_t channelCount,
+            int32_t inputRate,
+            int32_t outputRate,
+            Quality quality);
 
 private:
-    const int mChannelCount;
+
+    const int          mChannelCount;
+    const int          mNumTaps;
+
+protected:
+
+    int                mCursor = 0;
+    std::vector<float> mX;
+    std::vector<float> mSingleFrame;
+
+
 };
 
 }

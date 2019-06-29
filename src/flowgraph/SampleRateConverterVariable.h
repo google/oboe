@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SAMPLE_RATE_CONVERTER_H
-#define OBOE_SAMPLE_RATE_CONVERTER_H
+#ifndef OBOE_SAMPLE_RATE_CONVERTER_VARIABLE_H
+#define OBOE_SAMPLE_RATE_CONVERTER_VARIABLE_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -27,31 +27,25 @@
 
 namespace flowgraph {
 
-class SampleRateConverter : public AudioFilter {
+class SampleRateConverterVariable : public SampleRateConverterVariable {
 public:
-    explicit SampleRateConverter(int32_t channelCount, MultiChannelResampler &mResampler);
+    explicit SampleRateConverterVariable(int32_t channelCount, MultiChannelResampler &mResampler);
 
-    virtual ~SampleRateConverter() = default;
+    double getPhaseIncrement() {
+        return mPhaseIncrement;
+    }
+
+    void setPhaseIncrement(double phaseIncrement) {
+        mPhaseIncrement = phaseIncrement;
+    }
 
     int32_t onProcess(int32_t numFrames) override;
 
-    const char *getName() override {
-        return "SampleRateConverter";
-    }
-
 private:
-
-    // Return true if there is a sample available.
-    bool isInputAvailable();
-
-    const float *getNextInputFrame();
-
-    MultiChannelResampler &mResampler;
-
-    int32_t mInputCursor = 0;
-    int32_t mInputValid = 0;
-    int64_t mInputFramePosition = 0; // monotonic counter of input frames used for pullData
-
+    double  mPhase = 1.0;
+    double  mPhaseIncrement = 1.0;
 };
+
 } /* namespace flowgraph */
-#endif //OBOE_SAMPLE_RATE_CONVERTER_H
+
+#endif //OBOE_SAMPLE_RATE_CONVERTER_VARIABLE_H

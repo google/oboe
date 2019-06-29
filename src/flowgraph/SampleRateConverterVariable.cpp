@@ -14,51 +14,34 @@
  * limitations under the License.
  */
 
-#include "SampleRateConverter.h"
+#include "SampleRateConverterVariable.h"
 
 using namespace flowgraph;
 
-SampleRateConverter::SampleRateConverter(int32_t channelCount, MultiChannelResampler &resampler)
-        : AudioFilter(channelCount)
-        , mResampler(resampler) {
-    setDataPulledAutomatically(false);
+SampleRateConverterVariable::SampleRateConverterVariable(int32_t channelCount, MultiChannelResampler &resampler)
+        : SampleRateConverterVariable(channelCount, resampler) {
 }
 
-// Return true if there is a sample available.
-bool SampleRateConverter::isInputAvailable() {
-    if (mInputCursor >= mInputValid) {
-        mInputValid = input.pullData(mInputFramePosition, input.getFramesPerBuffer());
-        mInputFramePosition += mInputValid;
-        mInputCursor = 0;
-    }
-    return (mInputCursor < mInputValid);
-}
-
-const float *SampleRateConverter::getNextInputFrame() {
-    const float *inputBuffer = input.getBuffer();
-    return &inputBuffer[mInputCursor++ * input.getSamplesPerFrame()];
-}
-
-int32_t SampleRateConverter::onProcess(int32_t numFrames) {
+int32_t SampleRateConverterVariable::onProcess(int32_t numFrames) {
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
     int framesLeft = numFrames;
     while (framesLeft > 0) {
         // Gather input samples as needed.
         if(mResampler.isWriteReady()) {
-            if (isInputAvailable()) {
-                const float *frame = getNextInputFrame();
-                mResampler.writeFrame(frame);
-                mResampler.advanceWrite();
-            } else {
-                break;
-            }
-        } else {
+            if (!isInputAvailable()) break;
+            const float *frame = getNextInputFrame();
+            mResampler.writeFrame(frame);
+        }
+
+        // If phase >= 1.0 then we are waiting for input data.
+        if (mResampler.isReadReady()) {
             // Output frame is interpolated from input samples based on phase.
             mResampler.readFrame(outputBuffer);
-            mResampler.advanceRead();
             outputBuffer += channelCount;
             framesLeft--;
+        } else {
+            break;
         }
     }
     return numFrames - framesLeft;

@@ -20,17 +20,19 @@
 #include <memory>
 #include <sys/types.h>
 #include <unistd.h>
-#include "MultiChannelResampler.h"
+#include "ContinuousResampler.h"
 
 namespace flowgraph {
 
-class LinearResampler : public MultiChannelResampler{
+class LinearResampler : public ContinuousResampler {
 public:
-    explicit LinearResampler(int32_t channelCount);
+    LinearResampler(int32_t channelCount,
+                             int32_t inputRate,
+                             int32_t outputRate);
 
     void writeFrame(const float *frame) override;
 
-    void readFrame(float *frame, float mPhase) override;
+    void readFrame(float *frame) override;
 
 private:
     std::unique_ptr<float[]> mPreviousFrame;

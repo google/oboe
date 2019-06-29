@@ -18,8 +18,10 @@
 
 using namespace flowgraph;
 
-LinearResampler::LinearResampler(int32_t channelCount)
-        : MultiChannelResampler(channelCount) {
+LinearResampler::LinearResampler(int32_t channelCount,
+                                 int32_t inputRate,
+                                 int32_t outputRate)
+        : ContinuousResampler(channelCount, 2 /* numTaps */, inputRate,outputRate) {
         mPreviousFrame = std::make_unique<float[]>(channelCount);
         mCurrentFrame = std::make_unique<float[]>(channelCount);
 }
@@ -29,12 +31,13 @@ void LinearResampler::writeFrame(const float *frame) {
     memcpy(mCurrentFrame.get(), frame, sizeof(float) * getChannelCount());
 }
 
-void LinearResampler::readFrame(float *frame, float mPhase) {
+void LinearResampler::readFrame(float *frame) {
     float *previous = mPreviousFrame.get();
     float *current = mCurrentFrame.get();
+    float phase = (float) getPhase();
     for (int channel = 0; channel < getChannelCount(); channel++) {
         float f0 = *previous++;
         float f1 = *current++;
-        *frame++ = f0 + (mPhase * (f1 - f0));
+        *frame++ = f0 + (phase * (f1 - f0));
     }
 }

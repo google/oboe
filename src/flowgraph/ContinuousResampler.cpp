@@ -14,28 +14,4 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SINC_RESAMPLER_STEREO_H
-#define OBOE_SINC_RESAMPLER_STEREO_H
-
-#include <sys/types.h>
-#include <unistd.h>
-#include "SincResampler.h"
-
-namespace flowgraph {
-
-class SincResamplerStereo : public SincResampler {
-public:
-    SincResamplerStereo(
-            int32_t inputRate,
-            int32_t outputRate)
-            : SincResampler(2, inputRate, outputRate) {}
-
-    virtual ~SincResamplerStereo() = default;
-
-    void writeFrame(const float *frame) override;
-
-    void readFrame(float *frame) override;
-};
-
-}
-#endif //OBOE_SINC_RESAMPLER_STEREO_H
+#include "ContinuousResampler.h"

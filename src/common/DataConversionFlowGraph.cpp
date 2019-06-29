@@ -30,6 +30,7 @@
 #include <flowgraph/SourceFloat.h>
 #include <flowgraph/SourceI16.h>
 #include <flowgraph/SourceI24.h>
+#include <flowgraph/SampleRateConverter.h>
 
 using namespace oboe;
 using namespace flowgraph;
@@ -112,11 +113,12 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
     if (sourceSampleRate != sinkSampleRate) {
 
         mResampler.reset(MultiChannelResampler::make(sourceChannelCount,
+                                                     sourceSampleRate,
+                                                     sinkSampleRate,
                                                      convertOboeSRQualityToMCR(
                                                              stream->getSampleRateConversionType())));
         mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount,
                                                                *mResampler.get());
-        mRateConverter->setPhaseIncrement((double) sourceSampleRate / sinkSampleRate);
         lastOutput->connect(&mRateConverter->input);
         lastOutput = &mRateConverter->output;
     }

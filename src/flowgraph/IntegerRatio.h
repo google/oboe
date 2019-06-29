@@ -14,28 +14,37 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SINC_RESAMPLER_STEREO_H
-#define OBOE_SINC_RESAMPLER_STEREO_H
+#ifndef FLOWGRAPH_INTEGER_RATIO_H
+#define FLOWGRAPH_INTEGER_RATIO_H
 
 #include <sys/types.h>
-#include <unistd.h>
-#include "SincResampler.h"
+#include <vector>
 
 namespace flowgraph {
 
-class SincResamplerStereo : public SincResampler {
+class IntegerRatio {
 public:
-    SincResamplerStereo(
-            int32_t inputRate,
-            int32_t outputRate)
-            : SincResampler(2, inputRate, outputRate) {}
+    IntegerRatio(int32_t numerator, int32_t denominator)
+            : mNumerator(numerator), mDenominator(denominator) {}
 
-    virtual ~SincResamplerStereo() = default;
+    /** Reduce by removing common prime factors.
+     */
+    void reduce();
 
-    void writeFrame(const float *frame) override;
+    int32_t getNumerator() {
+        return mNumerator;
+    }
 
-    void readFrame(float *frame) override;
+    int32_t getDenominator() {
+        return mDenominator;
+    }
+
+private:
+    int32_t mNumerator;
+    int32_t mDenominator;
+    static std::vector<int> kPrimes;
 };
 
 }
-#endif //OBOE_SINC_RESAMPLER_STEREO_H
+
+#endif //FLOWGRAPH_INTEGER_RATIO_H

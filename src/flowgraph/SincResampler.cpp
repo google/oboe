@@ -19,33 +19,21 @@
 
 using namespace flowgraph;
 
-SincResampler::SincResampler(int32_t channelCount)
-        : MultiChannelResampler(channelCount)
-        , mX(channelCount * kNumTaps * 2)
-        , mSingleFrame(channelCount)
+SincResampler::SincResampler(int32_t channelCount,
+                             int32_t inputRate,
+                             int32_t outputRate)
+        : ContinuousResampler(channelCount, kNumTaps, inputRate, outputRate)
         , mWindowedSinc(kNumPoints + kNumGuardPoints){
     generateLookupTable();
 }
 
-void SincResampler::writeFrame(const float *frame) {
-    // Advance cursor before write so that cursor points to last written frame in read.
-    if (++mCursor >= kNumTaps) {
-        mCursor = 0;
-    }
-    int xIndex = mCursor * getChannelCount();
-    int offset = kNumTaps * getChannelCount();
-    float *dest = &mX[xIndex];
-    for (int channel = 0; channel < getChannelCount(); channel++) {
-        // Write twice so we avoid having to wrap when running the FIR.
-        dest[channel] = dest[channel + offset] = frame[channel];
-    }
-}
 
-void SincResampler::readFrame(float *frame, float phase) {
+void SincResampler::readFrame(float *frame) {
     // Clear accumulator for mix.
     for (int channel = 0; channel < getChannelCount(); channel++) {
         mSingleFrame[channel] = 0.0;
     }
+    float phase =  getPhase();
     // Multiply input times windowed sinc function.
     int xIndex = (mCursor + kNumTaps) * getChannelCount();
     for (int i = 0; i < kNumTaps; i++) {
@@ -89,23 +77,11 @@ float SincResampler::interpolateWindowedSinc(float phase) {
     return low + (fraction * (high - low));
 }
 
-float SincResampler::calculateWindowedSinc(float phase) {
-    const float realPhase = phase - kSpread;
-    if (abs(realPhase) < 0.00000001) return 1.0f; // avoid divide by zero
-    // Hamming window TODO try Kaiser window
-    const float alpha = 0.54f;
-    const float windowPhase = realPhase * M_PI * kSpreadInverse;
-    const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
-    const float sincPhase = realPhase * M_PI;
-    const float sinc = sinf(sincPhase) / sincPhase;
-    return window * sinc;
-}
-
 void SincResampler::generateLookupTable() {
     // TODO store only half of function and use symmetry
     // By iterating over the table size we also set the guard point.
     for (int i = 0; i < mWindowedSinc.size(); i++) {
         float phase = (i * 2.0 * kSpread) / kNumPoints;
-        mWindowedSinc[i] = calculateWindowedSinc(phase);
+        mWindowedSinc[i] = calculateWindowedSinc(phase, kSpread);
     }
 }
