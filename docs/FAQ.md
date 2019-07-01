@@ -28,7 +28,7 @@ If that doesn't fix it try the following:
 
 We have had several reports of this happening and are keen to understand the root cause. If this happens to you please file an issue with your Android Studio version and we'll investigate further. 
 
-## I requested a stream with `PerformanceMode::LowLatency`, but didn't get it. Why not?
+## I requested a stream with `PerformanceMode::LowLatency`, but didn't get it. Why not?
 Usually if you call `builder.setPerformanceMode(PerformanceMode::LowLatency)` and don't specify other stream properties you will get a `LowLatency` stream. The most common reasons for not receiving one are: 
 
 - Playback streams only: you are not using a callback.
