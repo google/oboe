@@ -52,7 +52,7 @@ protected:
     static constexpr int   kSpread = 10;
     static constexpr int   kNumTaps = kSpread * 2; // TODO should be odd, not even
 
-    std::vector<float> mWindowedSinc;
+    std::vector<float>     mWindowedSinc;
 
 private:
 

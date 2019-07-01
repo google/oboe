@@ -28,7 +28,8 @@ set (oboe_sources
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoToMultiConverter.cpp
     src/flowgraph/MultiChannelResampler.cpp
-    src/flowgraph/PolyphaseSincResampler.cpp
+    src/flowgraph/PolyphaseResampler.cpp
+    src/flowgraph/PolyphaseResamplerStereo.cpp
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp
     src/flowgraph/SincResampler.cpp

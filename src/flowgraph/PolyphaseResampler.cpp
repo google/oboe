@@ -15,11 +15,11 @@
  */
 
 #include "IntegerRatio.h"
-#include "PolyphaseSincResampler.h"
+#include "PolyphaseResampler.h"
 
 using namespace flowgraph;
 
-PolyphaseSincResampler::PolyphaseSincResampler(int32_t channelCount,
+PolyphaseResampler::PolyphaseResampler(int32_t channelCount,
                              int32_t inputRate,
                              int32_t outputRate)
         : MultiChannelResampler(channelCount, kNumTaps, inputRate, outputRate)
@@ -27,7 +27,7 @@ PolyphaseSincResampler::PolyphaseSincResampler(int32_t channelCount,
     generateCoefficients(inputRate, outputRate);
 }
 
-void PolyphaseSincResampler::generateCoefficients(int32_t inputRate, int32_t outputRate) {
+void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputRate) {
     IntegerRatio ratio(inputRate, outputRate);
     ratio.reduce();
     mNumerator = ratio.getNumerator();
@@ -49,7 +49,7 @@ void PolyphaseSincResampler::generateCoefficients(int32_t inputRate, int32_t out
         }
     }
 }
-void PolyphaseSincResampler::readFrame(float *frame) {
+void PolyphaseResampler::readFrame(float *frame) {
     // Clear accumulator for mix.
     for (int channel = 0; channel < getChannelCount(); channel++) {
         mSingleFrame[channel] = 0.0;
@@ -67,10 +67,7 @@ void PolyphaseSincResampler::readFrame(float *frame) {
         xIndex -= getChannelCount();
     }
 
-    mCoefficientCursor += kNumTaps;
-    if (mCoefficientCursor >= mCoefficients.size()) {
-        mCoefficientCursor = 0;
-    }
+    mCoefficientCursor = (mCoefficientCursor + kNumTaps) % mCoefficients.size();
 
     // Copy accumulator to output.
     for (int channel = 0; channel < getChannelCount(); channel++) {

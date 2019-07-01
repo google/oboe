@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H
-#define FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H
+#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_H
+#define FLOWGRAPH_POLYPHASE_RESAMPLER_H
 
 
 #include <memory>
@@ -26,11 +26,11 @@
 
 namespace flowgraph {
 
-class PolyphaseSincResampler : public MultiChannelResampler {
+class PolyphaseResampler : public MultiChannelResampler {
 public:
-    PolyphaseSincResampler(int32_t channelCount, int32_t inputRate, int32_t outputRate);
+    PolyphaseResampler(int32_t channelCount, int32_t inputRate, int32_t outputRate);
 
-    virtual ~PolyphaseSincResampler() = default;
+    virtual ~PolyphaseResampler() = default;
 
     void readFrame(float *frame) override;
 
@@ -74,4 +74,4 @@ protected:
 
 }
 
-#endif //FLOWGRAPH_POLYPHASE_SINC_RESAMPLER_H
+#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_H

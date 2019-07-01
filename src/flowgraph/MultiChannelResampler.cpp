@@ -16,10 +16,12 @@
 
 #include <math.h>
 
-#include "MultiChannelResampler.h"
+#include "IntegerRatio.h"
 #include "LinearResampler.h"
+#include "MultiChannelResampler.h"
+#include "PolyphaseResampler.h"
+#include "PolyphaseResamplerStereo.h"
 #include "SincResampler.h"
-#include "PolyphaseSincResampler.h"
 #include "SincResamplerStereo.h"
 
 using namespace flowgraph;
@@ -34,7 +36,11 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
             return new LinearResampler(channelCount, inputRate, outputRate);
         default:
         case Quality::High:
-            return new PolyphaseSincResampler(channelCount, inputRate, outputRate); // TODO
+            if (channelCount == 2) {
+                return new PolyphaseResamplerStereo(inputRate, outputRate);
+            } else {
+                return new PolyphaseResampler(channelCount, inputRate, outputRate);
+            }
         case Quality::Best:
             if (channelCount == 2) {
                 return new SincResamplerStereo( inputRate, outputRate); // TODO pass spread
