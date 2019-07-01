@@ -37,7 +37,7 @@ Usually if you call `builder.setPerformanceMode(PerformanceMode::LowLatency)` an
 - You requested a channel count which is not supported natively by the audio device. On most devices and Android API levels it is possible to obtain a `LowLatency` stream for both mono and stereo, however, there are a few exceptions, some of which are listed [here](https://github.com/google/oboe/blob/master/docs/AndroidAudioHistory.md). 
 - The maximum number of `LowLatency` streams has been reached. This could be by your app, or by other apps. This is often caused by opening multiple playback streams for different "tracks". To avoid this open a single audio stream and perform 
 your own mixing in the app. 
-- You are on Android 7.0 or below and are receiving `PerformanceMode::None`. The ability to query the performance mode of a stream was added in Android 7.1 (Nougat MR1). Low latency streams (aka FAST tracks) _are available_ on Android 7.0 and below but there is no programmatic way of knowing whether yours is one. 
+- You are on Android 7.0 or below and are receiving `PerformanceMode::None`. The ability to query the performance mode of a stream was added in Android 7.1 (Nougat MR1). Low latency streams (aka FAST tracks) _are available_ on Android 7.0 and below but there is no programmatic way of knowing whether yours is one. [Question on StackOverflow](https://stackoverflow.com/questions/56828501/does-opensl-es-support-performancemodelowlatency/5683499)
 
 ## My question isn't listed, where can I ask it?
 Please ask questions on [Stack Overflow](https://stackoverflow.com/questions/ask) with the [Oboe tag](https://stackoverflow.com/tags/oboe). 
