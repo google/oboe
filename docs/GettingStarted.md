@@ -15,7 +15,7 @@ Start by cloning the [latest stable release](https://github.com/google/oboe/rele
 
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
-If you use git as a VCS, consider adding Oboe as a submodule (underneath your
+If you use git as your version control system, consider adding Oboe as a [submodule](https://gist.github.com/gitaarik/8735255)  (underneath your
 app directory)
 
 ```
@@ -148,7 +148,9 @@ Now start the stream.
 At this point you should start receiving callbacks.
 
 ### Closing the stream
-It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. To do this use:
+It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from using the MMAP data path.
+
+To do this use:
 
     stream->close();
 
@@ -213,8 +215,11 @@ public:
     OboeSinePlayer() {
         oboe::AudioStreamBuilder builder;
         // The builder set methods can be chained for convenience.
-        builder.setSharingMode(oboe::SharingMode::Exclusive)->setPerformanceMode(oboe::PerformanceMode::LowLatency);
-        builder.setChannelCount(kChannelCount)->setSampleRate(kSampleRate)->setFormat(oboe::AudioFormat::Float);
+        builder.setSharingMode(oboe::SharingMode::Exclusive)
+		->setPerformanceMode(oboe::PerformanceMode::LowLatency);
+        builder.setChannelCount(kChannelCount)
+		->setSampleRate(kSampleRate)
+		->setFormat(oboe::AudioFormat::Float);
         builder.setCallback(this)->openManagedStream(outStream);
         // Typically, start the stream after querying some stream information, as well as some input from the user
         outStream->requestStart();
@@ -228,7 +233,7 @@ public:
                 floatData[i * kChannelCount + j] = sampleValue;
             }
             mPhase += mPhaseIncrement;
-            if (mPhase >= kTWOPI) mPhase -= kTWOPI;
+            if (mPhase >= kTwoPi) mPhase -= kTwoPi;
         }
         return oboe::DataCallbackResult::Continue;
     }
@@ -242,8 +247,8 @@ private:
     static float constexpr kAmplitude = 0.5f;
     static float constexpr kFrequency = 440;
     static float constexpr kPI = M_PI;
-    static float constexpr kTWOPI = kPI * 2;
-    static double constexpr mPhaseIncrement = kFrequency * kTWOPI / (double) kSampleRate;
+    static float constexpr kTwoPi = kPI * 2;
+    static double constexpr mPhaseIncrement = kFrequency * kTwoPi / (double) kSampleRate;
     // Keeps track of where the wave is
     float mPhase = 0.0;
 };
