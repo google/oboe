@@ -280,8 +280,10 @@ and
 
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
 
-Writing directly to a low latency stream may result in a non low-latency stream.
-For low latency performance, set an audio callback, which runs in a high priority thread.
+Attempting to open a low latency output stream without an audio callback (with the intent to use writes)
+may result in a non low latency stream.
+
+For low latency performance, *set an audio callback*, which runs in a high priority thread.
 
 When you read input, you should verify the correct number of
 frames was read. If not, the buffer might contain unknown data that could cause an
@@ -334,7 +336,7 @@ Do not delete the stream or modify its stream state in this callback.
 * `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. 
 During this callback, stream properties (those requested by the builder) can be queried, as well as frames written and read.
 The stream can be deleted at the end of this method (as long as it not referenced in other threads).
-Methods that reference the underlying stream are unsafe (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
+Methods that reference the underlying stream should not be called (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
 Opening a seperate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
 However, it is important to note that the new audio device may have vastly different properties than the stream that was disconnected.
 
