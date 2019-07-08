@@ -68,14 +68,7 @@ void PlayAudioEngine::setChannelCount(int channelCount) {
     LOGD("Channel count is now %d", mStream->getChannelCount());
 }
 
-/**
- * Set the audio device which should be used for playback. Can be set to oboe::kUnspecified if
- * you want to use the default playback device (which is usually the built-in speaker if
- * no other audio devices, such as headphones, are attached).
- *
- * @param deviceId the audio device id, can be obtained through an {@link AudioDeviceInfo} object
- * using Java/JNI.
- */
+
 void PlayAudioEngine::setDeviceId(int32_t deviceId) {
     configureRestartStream(std::move(*oboe::AudioStreamBuilder(*mStream).
         setDeviceId(deviceId)));

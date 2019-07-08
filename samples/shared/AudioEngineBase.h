@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_AUDIOENGINEBASE_H
-#define SAMPLES_AUDIOENGINEBASE_H
+#ifndef SAMPLES_AUDIO_ENGINE_BASE_H
+#define SAMPLES_AUDIO_ENGINE_BASE_H
 
 class AudioEngineBase {
 public:
     virtual void restartStream() = 0;
 };
 
-#endif //SAMPLES_AUDIOENGINEBASE_H
+#endif //SAMPLES_AUDIO_ENGINE_BASE_H

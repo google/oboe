@@ -15,7 +15,6 @@
  */
 
 #include "SoundGenerator.h"
-#include "../../../../../src/common/OboeDebug.h"
 
 SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t channelCount) :
         RenderableTap(sampleRate, channelCount)
@@ -39,7 +38,7 @@ void SoundGenerator::renderAudio(float *audioData, int32_t numFrames) {
     for (int i = 0; i < mChannelCount; ++i) {
         mOscillators[i].renderAudio(mBuffer.get(), numFrames);
         for (int j = 0; j < numFrames; ++j) {
-            audioData[(j*mChannelCount)+i] = mBuffer[j];
+            audioData[(j * mChannelCount) + i] = mBuffer[j];
         }
     }
 }

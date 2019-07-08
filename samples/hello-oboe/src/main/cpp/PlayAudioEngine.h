@@ -25,18 +25,32 @@
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
+// This sample inherits the AudioEngine in the shared folder, with a custom audio source and callback
 class PlayAudioEngine : public AudioEngine<SoundGenerator, LatencyTuningCallback> {
 
 public:
     PlayAudioEngine();
 
-    void setAudioApi(oboe::AudioApi audioApi);
 
+    // These methods reset the underlying stream with new properties
+
+    /**
+     * Set the audio device which should be used for playback. Can be set to oboe::kUnspecified if
+     * you want to use the default playback device (which is usually the built-in speaker if
+     * no other audio devices, such as headphones, are attached).
+     *
+     * @param deviceId the audio device id, can be obtained through an {@link AudioDeviceInfo} object
+     * using Java/JNI.
+    */
     void setDeviceId(int32_t deviceId);
 
     void setChannelCount(int channelCount);
 
+    void setAudioApi(oboe::AudioApi audioApi);
+
     void setBufferSizeInBursts(int32_t numBursts);
+
+    // Used to display latency in the app
 
     double getCurrentOutputLatencyMillis();
 

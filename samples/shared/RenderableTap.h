@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_RENDERABLETAP_H
-#define SAMPLES_RENDERABLETAP_H
+#ifndef SAMPLES_RENDERABLE_TAP_H
+#define SAMPLES_RENDERABLE_TAP_H
 
 #include <stdint.h>
 
@@ -32,4 +32,4 @@ public:
     const int32_t mChannelCount;
 };
 
-#endif //SAMPLES_RENDERABLETAP_H
+#endif //SAMPLES_RENDERABLE_TAP_H

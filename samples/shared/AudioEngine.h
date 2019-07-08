@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_TAPAUDIOENGINE_H
-#define SAMPLES_TAPAUDIOENGINE_H
+#ifndef SAMPLES_AUDIO_ENGINE_H
+#define SAMPLES_AUDIO_ENGINE_H
 
 
 #include <oboe/Oboe.h>
@@ -32,11 +32,10 @@
 class DefaultAudioStreamCallback;
 
 template <class T, class U = DefaultAudioStreamCallback>
-class AudioEngine : AudioEngineBase {
+class AudioEngine : public AudioEngineBase {
 public:
 
     AudioEngine() {
-        LOGD("Creating playback stream");
         AudioEngine<T, U>::createPlaybackStream(this->configureBuilder());
     }
     virtual ~AudioEngine() = default;
@@ -46,7 +45,7 @@ public:
     }
     // This is for overriding the default config
     void configureRestartStream(oboe::AudioStreamBuilder&& builder) {
-        createPlaybackStream(std::move(builder));
+        createPlaybackStream(std::forward<decltype(builder)>(builder));
     }
 
     void toggleTone() {
@@ -67,7 +66,7 @@ protected:
 
     oboe::ManagedStream mStream;
     std::unique_ptr<RenderableTap> mSource;
-    std::unique_ptr<DefaultAudioStreamCallback> mCallback = std::make_unique<U>();
+    std::unique_ptr<DefaultAudioStreamCallback> mCallback;
     bool isToneOn = false;
 
 private:
@@ -81,17 +80,17 @@ private:
             mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
             mSource = std::make_unique<T>(mStream->getSampleRate(),
                                       mStream->getChannelCount());
-            mCallback->setCallbackSource(mSource.get());
-            mCallback->setEnginePtr(this);
+            mCallback = std::make_unique<U>(*mSource, *this);
+
             mCallback->onSetupComplete();
             auto startResult = mStream->requestStart();
             if (startResult != oboe::Result::OK) {
                 LOGE("Error starting stream. %s", oboe::convertToText(result));
             }
         } else {
-            LOGE("Error starting stream. Error: %s", oboe::convertToText(result));
+            LOGE("Error opening stream. Error: %s", oboe::convertToText(result));
         }
     }
 };
 
-#endif //SAMPLES_TAPAUDIOENGINE_H
+#endif //SAMPLES_AUDIO_ENGINE_H

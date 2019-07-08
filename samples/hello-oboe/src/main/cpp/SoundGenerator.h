@@ -24,6 +24,7 @@
 
 /**
  * Generates a fixed frequency tone for each channel.
+ * Implements RenderableTap (sound source with toggle) which is required for AudioEngines.
  */
 class SoundGenerator : public RenderableTap {
     const size_t kSharedBufferSize = 1024;

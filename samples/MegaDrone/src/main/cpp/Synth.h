@@ -37,7 +37,7 @@ public:
     RenderableTap(sampleRate, channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
             mOscs[i].setSampleRate(mSampleRate);
-            mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));
+            mOscs[i].setFrequency(kOscBaseFrequency + (static_cast<float>(i) / kOscDivisor));
             mOscs[i].setAmplitude(kOscAmplitude);
             mMixer.addTrack(&mOscs[i]);
         }

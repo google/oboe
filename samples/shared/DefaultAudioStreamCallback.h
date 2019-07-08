@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_DEFAULTAUDIOSTREAMCALLBACK_H
-#define SAMPLES_DEFAULTAUDIOSTREAMCALLBACK_H
+#ifndef SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
+#define SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
 
 
 #include <oboe/AudioStreamCallback.h>
@@ -25,34 +25,29 @@
 
 class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
 public:
+    DefaultAudioStreamCallback(RenderableTap &renderableTap, AudioEngineBase &audioEngineBase):
+        mRenderable(renderableTap),
+        mParent(audioEngineBase) { }
+
     virtual oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         float *outputBuffer = static_cast<float *>(audioData);
-        if (!mRenderable) {
-            LOGE("mRenderable is NULL!");
-            return oboe::DataCallbackResult::Stop;
-        } else {
-            mRenderable->renderAudio(outputBuffer, numFrames);
-            return oboe::DataCallbackResult::Continue;
-        }
+        mRenderable.renderAudio(outputBuffer, numFrames);
+        return oboe::DataCallbackResult::Continue;
     }
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
         // Restart the stream when it errors out with disconnect
         if (error == oboe::Result::ErrorDisconnected) {
             LOGE("Restarting AudioStream after disconnect");
-            mEnginePtr->restartStream();
+            mParent.restartStream();
         }
     }
 
     virtual void onSetupComplete() {}
 
 private:
-    RenderableTap *mRenderable;
-    void setCallbackSource(RenderableTap *source) { mRenderable = source; }
-    void setEnginePtr(AudioEngineBase *enginePtr) { mEnginePtr = enginePtr; }
-    AudioEngineBase *mEnginePtr;
-    template<class T1, class T2>
-    friend class AudioEngine;
+    RenderableTap &mRenderable;
+    AudioEngineBase &mParent;
 };
 
-#endif //SAMPLES_DEFAULTAUDIOSTREAMCALLBACK_H
+#endif //SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H

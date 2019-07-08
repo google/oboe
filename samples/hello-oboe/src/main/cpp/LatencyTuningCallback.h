@@ -15,8 +15,8 @@
  */
 
 
-#ifndef SAMPLES_CUSTOMAUDIOSTREAMCALLBACK_H
-#define SAMPLES_CUSTOMAUDIOSTREAMCALLBACK_H
+#ifndef SAMPLES_LATENCY_TUNING_CALLBACK_H
+#define SAMPLES_LATENCY_TUNING_CALLBACK_H
 
 #include <oboe/LatencyTuner.h>
 #include <shared/RenderableTap.h>
@@ -25,9 +25,10 @@
 #include <oboe/Oboe.h>
 
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
-
-const int64_t kNanosPerMillisecond = 1000000;
+    const int64_t kNanosPerMillisecond = 1000000;
 public:
+    using DefaultAudioStreamCallback::DefaultAudioStreamCallback;
+
     /**
      * Every time the playback stream requires data this method will be called.
      *
@@ -71,4 +72,4 @@ private:
     oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream);
 };
 
-#endif //SAMPLES_CUSTOMAUDIOSTREAMCALLBACK_H
+#endif //SAMPLES_LATENCY_TUNING_CALLBACK_H
