@@ -66,7 +66,9 @@ Oboe might perform sample conversion on its own. For example, if an app is writi
 
 The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern) and provides the class `AudioStreamBuilder`.
 
-  1. Set the audio stream configuration using an AudioStreamBuilder. Use the builder functions that correspond to the stream parameters. These optional set functions are available:
+### Set the audio stream configuration using an AudioStreamBuilder.
+
+Use the builder functions that correspond to the stream parameters. These optional set functions are available:
 
     AudioStreamBuilder streamBuilder;
 
@@ -77,27 +79,20 @@ The Oboe library follows a [builder design pattern](https://en.wikipedia.org/wik
     streamBuilder.setChannelCount(channelCount);
     streamBuilder.setFormat(format);
     streamBuilder.setPerformanceMode(perfMode);
-    streamBuilder.setAPIIndex(index);
 
 Note that these methods do not report errors, such as an undefined constant or value out of range.
 
-In most cases, you will not call the method `setAPIIndex()`. This determines
-whether Oboe will use AAudio or OpenSL ES as the audio engine for you app. Oboe
-will automatically select the best implementation available on your device. If
-you want to specifically select AAudio or OpenSL, set the APIIndex yourself.
-After a stream has been opened, you can verify that the API you specified was
-chosen by calling `AudioStreamBuilder::getAPIIndex()`. The allowable indexes are
-`AAudio` and `OpenSLES`.
-
 If you do not specify the deviceId, the default is the primary output device.
 If you do not specify the stream direction, the default is an output stream.
-For all other parameters, you can explicitly set a value, or let the system
+For all parameters, you can explicitly set a value, or let the system
 assign the optimal value by not specifying the parameter at all or setting
 it to `kUnspecified`.
 
 To be safe, check the state of the audio stream after you create it, as explained in step 3, below.
 
-  2. After you've configured the AudioStreamBuilder, call `openStream()` to open the stream:
+### Open the Stream
+
+After you've configured the `AudioStreamBuilder`, call `openStream()` to open the stream:
 
     Result result = streamBuilder.openStream(&stream_);
     if (result != OK){
@@ -108,25 +103,97 @@ To be safe, check the state of the audio stream after you create it, as explaine
     }
 
 
-  3. You should verify the stream's configuration after opening it. If you specified
-  sample format, sample rate, or samples per frame they will not change.
-  However, sharing mode and buffer capacity might change (whether or not you set
-  them) depending on the capabilities of the stream's audio device and the
-  Android device on which it's running. As a matter of good defensive
-  programming, you should check the stream's configuration before using it.
-  There are functions to retrieve the stream setting that corresponds to each
-  builder setting:
+### Verifying stream configuration and additional properties
+
+You should verify the stream's configuration after opening it.
+
+The following properties are guaranteed to be set. However, if these properties 
+are unspecified,a default value will still be set, and should be queried by the 
+appropriate accessor.
+
+* callback 
+* framesPerCallback
+* sampleRate
+* channelCount
+* format
+* direction
+
+The following properties may be changed by the underlying stream construction
+*even if explicitly set* and therefore should always be queried by the appropriate
+accessor. The property settings will depend on device capabilities.
+
+* bufferCapacityInFrames
+* sharingMode (exclusive provides lowest latency)
+* performanceMode 
+
+The following properties are only set by the underlying stream. They cannot be
+set, but should be queried by the appropriate accessor.
+
+* framesPerBurst
+
+The following properties have unusual behavior
+
+* deviceId is respected when the underlying API is AAudio (API level >=28), but not when it 
+is OpenSLES. It can be set regardless, but *will not* throw an error if an OpenSLES stream 
+is used. The default device will be used, rather than whatever is specified.
+
+* mAudioApi is only a property of the builder, however
+AudioStream::getAudioApi() can be used to query the underlying API which the
+stream uses. The property set in the builder is not guaranteed, and in
+general, the API should be chosen by Oboe to allow for best performance and
+stability considerations. Since Oboe is designed to be as uniform across both
+APIs as possible, this property should not generally be needed, however, it may
+be useful in the context of several known issues with OpenSLES (see below).
+
+* mBufferSizeInFrames can only be set on an already open stream (as opposed to a
+builder), since it depends on run-time behavior. It can be set only up to the
+BufferCapacity.
+
+Many of the stream's properties may vary (whether or not you set
+them) depending on the capabilities of the audio device and the Android device on 
+which it's running. If you need to know these values then you must query these using 
+the accessor after the stream has been opened. Additionally,
+the underlying parameters a stream is granted are useful to know if
+they have been left unspecified. As a matter of good defensive programming, you
+should check the stream's configuration before using it.
+
+
+There are functions to retrieve the stream setting that corresponds to each
+builder setting:
 
 
 | AudioStreamBuilder set methods | AudioStream get methods |
 | :------------------------ | :----------------- |
-| `setDeviceId()` | `getDeviceId()` |
+| `setCallback()` |  `getCallback()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
+| `setPerformanceMode()` | `getPerformanceMode()` |
 | `setSampleRate()` | `getSampleRate()` |
 | `setChannelCount()` | `getChannelCount()` |
 | `setFormat()` | `getFormat()` |
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
+| `setFramesPerCallback()` | `getFramesPerCallback()` |
+|  --  | `getFramesPerBurst()` |
+| `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
+| `setAudioApi()` (mainly for debugging) | `getAudioApi()` |
+
+The following AudioStreamBuilder fields were added in API 28 to
+specify additional information about the AudioStream to the device. Currently, 
+they have little effect on the stream, but setting them helps applications 
+interact better with other services.
+
+For more information see: [Usage/ContentTypes](https://source.android.com/devices/audio/attributes).
+The InputPreset may be used by the device to process the input stream (such as gain control). By default 
+it is set to VoiceRecognition, which is optimized for low latency.
+
+* `setUsage(oboe::Usage usage)`  - The purpose for creating the stream.
+* `setContentType(oboe::ContentType contentType)` - The type of content carried
+  by the stream.
+* `setInputPreset(oboe::InputPreset inputPreset)` - The recording configuration
+  for an audio input.
+* `setSessionId(SessionId sessionId)` - Allocate SessionID to connect to the
+  Java AudioEffects API.
+
 
 ## Using an audio stream
 
@@ -213,6 +280,10 @@ and
 
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
 
+Attempting to open a low latency output stream without an audio callback (with the intent to use writes)
+may result in a non low latency stream.
+
+For low latency performance, *set an audio callback*, which runs in a high priority thread.
 
 When you read input, you should verify the correct number of
 frames was read. If not, the buffer might contain unknown data that could cause an
@@ -256,12 +327,19 @@ which extends `AudioStreamCallback` and then register your class using `builder.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
 Note that registering this callback will enable callbacks for both data and errors. So `onAudioReady()` will be called. See the "high priority callback" section below.
 
-Your callback can implement the following methods: 
+Your callback can implement the following methods (called in a separate thread): 
 
-* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed, so you can still query the stream for its properties (e.g. for number of underruns). You can also inform any other threads that may be calling the stream to stop doing so.
+* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed,
+  so you can still reference the underlying stream (e.g.`getXRunCount()`).
+You can also inform any other threads that may be calling the stream to stop doing so.
+Do not delete the stream or modify its stream state in this callback.
 * `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. 
+During this callback, stream properties (those requested by the builder) can be queried, as well as frames written and read.
+The stream can be deleted at the end of this method (as long as it not referenced in other threads).
+Methods that reference the underlying stream should not be called (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
+Opening a seperate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
+However, it is important to note that the new audio device may have vastly different properties than the stream that was disconnected.
 
-The `onError*()` methods will be called in a new thread created by Oboe just for this callback. So you can safely open a new stream in the `onErrorAfterClose()` method. Note that if you open a new stream it might have different characteristics than the original stream (for example framesPerBurst).
 
 ## Optimizing performance
 
