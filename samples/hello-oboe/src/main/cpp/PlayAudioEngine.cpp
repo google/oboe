@@ -59,6 +59,11 @@ bool PlayAudioEngine::isLatencyDetectionSupported() {
 void PlayAudioEngine::setAudioApi(oboe::AudioApi audioApi) {
     configureRestartStream(std::move(*oboe::AudioStreamBuilder(*mStream)
         .setAudioApi((audioApi))));
+    mIsLatencyDetectionSupported = (mStream->getTimestamp((CLOCK_MONOTONIC)) !=
+        oboe::Result::ErrorUnimplemented);
+    mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*mStream);
+    getCallbackPtr()->setLatencyDetectionEnabled(mIsLatencyDetectionSupported);
+    getCallbackPtr()->setLatencyTuner(mLatencyTuner.get());
     LOGD("AudioAPI is now %d", mStream->getAudioApi());
 }
 
