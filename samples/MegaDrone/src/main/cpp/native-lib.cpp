@@ -36,23 +36,28 @@ std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
     }
     return v;
 }
-
-extern "C"
+extern "C" {
+/**
+ * Start the audio engine
+ *
+ * @param env
+ * @param instance
+ * @param jCpuIds - CPU core IDs which the audio process should affine to
+ * @return a pointer to the audio engine. This should be passed to other methods
+ */
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject instance,
+Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
     engine = new PlayAudioEngine(cpuIds);
 }
 
-extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance) {
     delete engine;
 }
 
 
-extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, jboolean b) {
     LOGD("Beginning Tap tone");
@@ -61,3 +66,14 @@ Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance, 
     }
     engine->toggleTone();
 }
+
+JNIEXPORT void JNICALL
+Java_com_example_oboe_megadrone_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+                                                                            jclass type,
+                                                                            jint sampleRate,
+                                                                            jint framesPerBurst) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
+}
+
+} // extern "C"
