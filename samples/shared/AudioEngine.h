@@ -36,6 +36,7 @@ class AudioEngine : public AudioEngineBase {
 public:
 
     AudioEngine() {
+        mCallback = std::make_unique<U>(*this);
         AudioEngine<T, U>::createPlaybackStream(this->configureBuilder());
     }
     virtual ~AudioEngine() = default;
@@ -80,7 +81,7 @@ private:
             mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
             mSource = std::make_unique<T>(mStream->getSampleRate(),
                                       mStream->getChannelCount());
-            mCallback = std::make_unique<U>(*mSource, *this);
+            mCallback->setSource(mSource.get());
 
             mCallback->onSetupComplete();
             auto startResult = mStream->requestStart();

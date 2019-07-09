@@ -25,14 +25,16 @@
 
 class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
 public:
-    DefaultAudioStreamCallback(RenderableTap &renderableTap, AudioEngineBase &audioEngineBase):
-        mRenderable(renderableTap),
+    DefaultAudioStreamCallback(AudioEngineBase &audioEngineBase):
         mParent(audioEngineBase) { }
 
     virtual oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         float *outputBuffer = static_cast<float *>(audioData);
-        mRenderable.renderAudio(outputBuffer, numFrames);
+        if (!mRenderable){
+            return oboe::DataCallbackResult ::Stop;
+        }
+        mRenderable->renderAudio(outputBuffer, numFrames);
         return oboe::DataCallbackResult::Continue;
     }
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
@@ -43,10 +45,11 @@ public:
         }
     }
 
+    void setSource(RenderableTap *renderableTap) { mRenderable = renderableTap;}
     virtual void onSetupComplete() {}
 
 private:
-    RenderableTap &mRenderable;
+    RenderableTap *mRenderable;
     AudioEngineBase &mParent;
 };
 
