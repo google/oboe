@@ -49,6 +49,7 @@ void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputR
         }
     }
 }
+
 void PolyphaseResampler::readFrame(float *frame) {
     // Clear accumulator for mix.
     for (int channel = 0; channel < getChannelCount(); channel++) {

@@ -63,6 +63,7 @@ public class StreamConfiguration {
     private int mSampleRate;
     private int mSharingMode;
     private int mPerformanceMode;
+    private boolean mFormatConversionAllowed = true;
     private boolean mChannelConversionAllowed = true;
     private int mRateConversionQuality = RATE_CONVERSION_QUALITY_HIGH;
 
@@ -89,6 +90,7 @@ public class StreamConfiguration {
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
         mChannelConversionAllowed = true;
+        mFormatConversionAllowed = true;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_HIGH;
     }
 
@@ -241,6 +243,12 @@ public class StreamConfiguration {
 
     public boolean getChannelConversionAllowed() {
         return mChannelConversionAllowed;
+    }
+
+    public void setFormatConversionAllowed(boolean b) { mFormatConversionAllowed = b; }
+
+    public boolean getFormatConversionAllowed() {
+        return mFormatConversionAllowed;
     }
 
     public void setRateConversionQuality(int quality) { mRateConversionQuality = quality; }

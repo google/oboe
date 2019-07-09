@@ -49,6 +49,7 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mPerformanceSpinner;
     private CheckBox mRequestedExclusiveView;
     private CheckBox mChannelConversionBox;
+    private CheckBox mFormatConversionBox;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
@@ -150,6 +151,14 @@ public class StreamConfigurationView extends LinearLayout {
             @Override
             public void onClick(View v) {
                 mRequestedConfiguration.setChannelConversionAllowed(mChannelConversionBox.isChecked());
+            }
+        });
+
+        mFormatConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
+        mFormatConversionBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestedConfiguration.setFormatConversionAllowed(mFormatConversionBox.isChecked());
             }
         });
 
@@ -362,6 +371,10 @@ public class StreamConfigurationView extends LinearLayout {
     }
     public void setRequestedConfiguration(StreamConfiguration configuration) {
         mRequestedConfiguration = configuration;
+        if (configuration != null) {
+            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
+            mChannelConversionBox.setSelected(configuration.getChannelConversionAllowed());
+        }
     }
 
     protected StreamConfiguration getActualConfiguration() {

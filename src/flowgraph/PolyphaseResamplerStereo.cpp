@@ -27,9 +27,13 @@ PolyphaseResamplerStereo::PolyphaseResamplerStereo(
 
 
 void PolyphaseResamplerStereo::writeFrame(const float *frame) {
+    // Move cursor before write so that cursor points to last written frame in read.
+    if (--mCursor < 0) {
+        mCursor = getNumTaps() - 1;
+    }
     float *dest = &mX[mCursor * STEREO];
-    // Write each channel twice so we avoid having to wrap when running the FIR.
     const int offset = kNumTaps * STEREO;
+    // Write each channel twice so we avoid having to wrap when running the FIR.
     const float left =  frame[0];
     const float right = frame[1];
     // Put ordered writes together.
@@ -37,9 +41,6 @@ void PolyphaseResamplerStereo::writeFrame(const float *frame) {
     dest[1] = right;
     dest[offset] = left;
     dest[1 +  offset] = right;
-    if (++mCursor >= kNumTaps) {
-        mCursor = 0;
-    }
 }
 
 void PolyphaseResamplerStereo::readFrame(float *frame) {
@@ -49,13 +50,12 @@ void PolyphaseResamplerStereo::readFrame(float *frame) {
 
     // Multiply input times precomputed windowed sinc function.
     const float *coefficients = &mCoefficients[mCoefficientCursor];
-    int xIndex = (mCursor + kNumTaps) * STEREO;
+    int xIndex = mCursor * STEREO;
+    float *xFrame = &mX[xIndex];
     for (int i = 0; i < kNumTaps; i++) {
         float coefficient = *coefficients++;
-        float *xFrame = &mX[xIndex];
-        left += coefficient * xFrame[0];
-        right += coefficient * xFrame[1];
-        xIndex -= STEREO;
+        left += *xFrame++ * coefficient;
+        right += *xFrame++ * coefficient;
     }
 
     mCoefficientCursor = (mCoefficientCursor + kNumTaps) % mCoefficients.size();

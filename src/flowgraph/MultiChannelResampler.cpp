@@ -36,6 +36,7 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
             return new LinearResampler(channelCount, inputRate, outputRate);
         default:
         case Quality::High:
+            // TODO mono resampler
             if (channelCount == 2) {
                 return new PolyphaseResamplerStereo(inputRate, outputRate);
             } else {
@@ -56,9 +57,8 @@ void MultiChannelResampler::writeFrame(const float *frame) {
     if (++mCursor >= getNumTaps()) {
         mCursor = 0;
     }
-    int xIndex = mCursor * getChannelCount();
+    float *dest = &mX[mCursor * getChannelCount()];
     int offset = getNumTaps() * getChannelCount();
-    float *dest = &mX[xIndex];
     for (int channel = 0; channel < getChannelCount(); channel++) {
         // Write twice so we avoid having to wrap when running the FIR.
         dest[channel] = dest[channel + offset] = frame[channel];
@@ -73,6 +73,7 @@ float MultiChannelResampler::calculateWindowedSinc(float phase, int spread) {
     const float alpha = 0.54f;
     const float windowPhase = realPhase * M_PI / spread;
     const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
+    // Sinc function
     const float sincPhase = realPhase * M_PI;
     const float sinc = sinf(sincPhase) / sincPhase;
     return window * sinc;
