@@ -28,8 +28,5 @@ FifoController::FifoController(uint32_t numFrames, uint32_t threshold)
     setWriteCounter(0);
 }
 
-FifoController::~FifoController() {
-}
-
 } // namespace oboe
 
