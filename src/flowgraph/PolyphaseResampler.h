@@ -28,26 +28,18 @@ namespace flowgraph {
 
 class PolyphaseResampler : public MultiChannelResampler {
 public:
-    PolyphaseResampler(int32_t channelCount, int32_t inputRate, int32_t outputRate);
+    PolyphaseResampler(int32_t channelCount, int32_t numTaps, int32_t inputRate, int32_t outputRate);
 
     virtual ~PolyphaseResampler() = default;
 
     void readFrame(float *frame) override;
 
-    int getSpread() const {
-        return kSpread;
-    }
-
-    bool isWriteReady() const override {
+    bool isWriteNeeded() const override {
         return mIntegerPhase >= mDenominator;
     }
 
     virtual void advanceWrite() override {
         mIntegerPhase -= mDenominator;
-    }
-
-    bool isReadReady() const override {
-        return mIntegerPhase < mDenominator;
     }
 
     virtual void advanceRead() override {
@@ -57,12 +49,6 @@ public:
 protected:
 
     void generateCoefficients(int32_t inputRate, int32_t outputRate);
-    
-    // Number of zero crossings on one side of central lobe.
-    // Higher numbers provide higher quality but use more CPU.
-    // 2 is the minimum one should use.
-    static constexpr int   kSpread = 10;
-    static constexpr int   kNumTaps = kSpread * 2; // TODO should be odd, not even
 
     std::vector<float>     mCoefficients;
     int32_t                mCoefficientCursor = 0;

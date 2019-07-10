@@ -20,13 +20,18 @@
 using namespace flowgraph;
 
 PolyphaseResampler::PolyphaseResampler(int32_t channelCount,
-                             int32_t inputRate,
-                             int32_t outputRate)
-        : MultiChannelResampler(channelCount, kNumTaps, inputRate, outputRate)
+                                       int32_t numTaps,
+                                       int32_t inputRate,
+                                       int32_t outputRate)
+        : MultiChannelResampler(channelCount, numTaps, inputRate, outputRate)
         {
+
+    assert((numTaps % 4) == 0); // Required for loop unrolling.
     generateCoefficients(inputRate, outputRate);
 }
 
+// Generate coefficients in the order they will be used by readFrame().
+// This is more complicated but readFrame() is simpler and can be optimized.
 void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputRate) {
     IntegerRatio ratio(inputRate, outputRate);
     ratio.reduce();
@@ -37,10 +42,11 @@ void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputR
     int cursor = 0;
     double phase = 0.0;
     double phaseIncrement = (double) inputRate / (double) outputRate;
+    const int spread = getNumTaps() / 2; // numTaps must be even.
     for (int i = 0; i < ratio.getDenominator(); i++) {
         float tapPhase = phase;
         for (int tap = 0; tap < getNumTaps(); tap++) {
-            mCoefficients.at(cursor++) = calculateWindowedSinc(tapPhase, kSpread);
+            mCoefficients.at(cursor++) = calculateWindowedSinc(tapPhase, spread);
             tapPhase += 1.0;
         }
         phase += phaseIncrement;
@@ -58,8 +64,8 @@ void PolyphaseResampler::readFrame(float *frame) {
 
     float *coefficients = &mCoefficients[mCoefficientCursor];
     // Multiply input times windowed sinc function.
-    int xIndex = (mCursor + kNumTaps) * getChannelCount();
-    for (int i = 0; i < kNumTaps; i++) {
+    int xIndex = (mCursor + mNumTaps) * getChannelCount();
+    for (int i = 0; i < mNumTaps; i++) {
         float coefficient = *coefficients++;
         float *xFrame = &mX[xIndex];
         for (int channel = 0; channel < getChannelCount(); channel++) {
@@ -68,7 +74,7 @@ void PolyphaseResampler::readFrame(float *frame) {
         xIndex -= getChannelCount();
     }
 
-    mCoefficientCursor = (mCoefficientCursor + kNumTaps) % mCoefficients.size();
+    mCoefficientCursor = (mCoefficientCursor + mNumTaps) % mCoefficients.size();
 
     // Copy accumulator to output.
     for (int channel = 0; channel < getChannelCount(); channel++) {

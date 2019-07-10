@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
-#define FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
+#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H
+#define FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -23,11 +23,11 @@
 
 namespace flowgraph {
 
-    class PolyphaseResamplerStereo : public PolyphaseResampler {
+    class PolyphaseResamplerMono : public PolyphaseResampler {
     public:
-        PolyphaseResamplerStereo(int32_t numTaps, int32_t inputRate, int32_t outputRate);
+        PolyphaseResamplerMono(int32_t numTaps, int32_t inputRate, int32_t outputRate);
 
-        virtual ~PolyphaseResamplerStereo() = default;
+        virtual ~PolyphaseResamplerMono() = default;
 
         void writeFrame(const float *frame) override;
 
@@ -36,4 +36,4 @@ namespace flowgraph {
 
 }
 
-#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
+#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H

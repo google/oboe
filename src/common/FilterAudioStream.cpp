@@ -45,15 +45,18 @@ Result FilterAudioStream::configureFlowGraph() {
     );
 }
 
-
+// Put the data to be written at the source end of the flowgraph.
+// Then read (pull) the data from the flowgraph and write it to the
+// child stream.
 ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
                                int32_t numFrames,
                                int64_t timeoutNanoseconds) {
+    int32_t framesWritten = 0;
     mFlowGraph->setSource(buffer, numFrames);
     while (true) {
         int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(), getFramesPerBurst());
         if (numRead < 0) {
-            return ResultWithValue<int32_t>::createBasedOnSign(numFrames);
+            return ResultWithValue<int32_t>::createBasedOnSign(numRead);
         }
         if (numRead == 0) {
             break;
@@ -64,7 +67,33 @@ ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
         if (!writeResult) {
             return writeResult;
         }
+        framesWritten += writeResult.value();
     }
-// This doesn't account for frames left in the flowgraph if there is a timeout.
-    return ResultWithValue<int32_t>::createBasedOnSign(numFrames);
+    return ResultWithValue<int32_t>::createBasedOnSign(framesWritten);
+}
+
+// Read (pull) the data we want from the sink end of the flowgraph.
+// The necessary data will be read from the child stream using a flowgraph callback.
+ResultWithValue<int32_t> FilterAudioStream::read(void *buffer,
+                                                  int32_t numFrames,
+                                                  int64_t timeoutNanoseconds) {
+    int32_t framesWritten = 0;
+//    mFlowGraph->setSource(buffer, numFrames);
+//    while (true) {
+//        int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(), getFramesPerBurst());
+//        if (numRead < 0) {
+//            return ResultWithValue<int32_t>::createBasedOnSign(numRead);
+//        }
+//        if (numRead == 0) {
+//            break;
+//        }
+//        auto writeResult = mChildStream->write(mBlockingBuffer.get(),
+//                                               numRead,
+//                                               timeoutNanoseconds);
+//        if (!writeResult) {
+//            return writeResult;
+//        }
+//        framesWritten += writeResult.value();
+//    }
+    return ResultWithValue<int32_t>::createBasedOnSign(framesWritten);
 }

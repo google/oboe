@@ -54,7 +54,20 @@ static MultiChannelResampler::Quality convertOboeSRQualityToMCR(SampleRateConver
 }
 
 // Chain together multiple processors.
-Result DataConversionFlowGraph::configure(AudioStream *stream,
+// Callback Output
+//     Use SourceCaller that calls original app callback from the flowgraph.
+//     The child callback from FilteredAudioStream read()s from the flowgraph.
+// Callback Input
+//     Child callback from FilteredAudioStream writes()s to the flowgraph.
+//     The output of the flowgraph goes through a BlockWriter to the app callback.
+// Blocking Write
+//     Write buffer is set on an AudioSource.
+//     Data is pulled through the graph and written to the child stream.
+// Blocking Read
+//     Reads in a loop from the flowgraph Sink to fill the read buffer.
+//     A SourceCaller then does a blocking read from the child Stream.
+//
+Result DataConversionFlowGraph::configure(AudioStream *stream, // parent
                                 AudioFormat sourceFormat,
                                 int32_t sourceChannelCount,
                                 int32_t sourceSampleRate,
@@ -130,7 +143,7 @@ Result DataConversionFlowGraph::configure(AudioStream *stream,
         lastOutput = &mChannelConverter->output;
     } else if (sourceChannelCount != sinkChannelCount) {
         LOGE("%s() Channel reduction not supported.", __func__);
-        return Result::ErrorUnimplemented;
+        return Result::ErrorUnimplemented; // TODO
     }
 
     // Sink

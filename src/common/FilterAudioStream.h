@@ -101,6 +101,10 @@ public:
         return mChildStream->requestStop();
     }
 
+    ResultWithValue<int32_t> read(void *buffer,
+                                   int32_t numFrames,
+                                   int64_t timeoutNanoseconds) override;
+
     ResultWithValue<int32_t> write(const void *buffer,
             int32_t numFrames,
             int64_t timeoutNanoseconds) override;

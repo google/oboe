@@ -20,34 +20,60 @@
 #include "LinearResampler.h"
 #include "MultiChannelResampler.h"
 #include "PolyphaseResampler.h"
+#include "PolyphaseResamplerMono.h"
 #include "PolyphaseResamplerStereo.h"
 #include "SincResampler.h"
 #include "SincResamplerStereo.h"
 
 using namespace flowgraph;
 
+MultiChannelResampler::MultiChannelResampler(int32_t channelCount,
+        int32_t numTaps,
+        int32_t inputRate,
+        int32_t outputRate)
+        : mChannelCount(channelCount)
+        , mNumTaps(numTaps)
+        , mX(channelCount * getNumTaps() * 2)
+        , mSingleFrame(channelCount)
+        {}
+
+
 MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
                                                    int32_t inputRate,
                                                    int32_t outputRate,
                                                    Quality quality) {
+    bool usePolyphase = true;
+    int numTaps = 4;
     switch (quality) {
-        case Quality::Low:
-        case Quality::Medium: // TODO polynomial
+        case Quality::Low: // TODO polynomial
             return new LinearResampler(channelCount, inputRate, outputRate);
+        case Quality::Medium:
         default:
+            numTaps = 12;
+            break;
         case Quality::High:
-            // TODO mono resampler
-            if (channelCount == 2) {
-                return new PolyphaseResamplerStereo(inputRate, outputRate);
-            } else {
-                return new PolyphaseResampler(channelCount, inputRate, outputRate);
-            }
+            numTaps = 20;
+            break;
         case Quality::Best:
-            if (channelCount == 2) {
-                return new SincResamplerStereo( inputRate, outputRate); // TODO pass spread
-            } else {
-                return new SincResampler(channelCount,  inputRate, outputRate); // TODO pass spread
-            }
+            usePolyphase = false; // TODO base on IntegerRatio reduction
+            break;
+    }
+
+    if (usePolyphase) {
+        if (channelCount == 1) {
+            return new PolyphaseResamplerMono(numTaps, inputRate, outputRate);
+        } else if (channelCount == 2) {
+            return new PolyphaseResamplerStereo(numTaps, inputRate, outputRate);
+        } else {
+            return new PolyphaseResampler(numTaps, channelCount, inputRate, outputRate);
+        }
+    } else {
+        // TODO mono resampler
+        if (channelCount == 2) {
+            return new SincResamplerStereo( inputRate, outputRate); // TODO pass spread
+        } else {
+            return new SincResampler(channelCount,  inputRate, outputRate); // TODO pass spread
+        }
     }
 }
 
@@ -65,7 +91,7 @@ void MultiChannelResampler::writeFrame(const float *frame) {
     }
 }
 
-
+// Unoptimized calculation used to construct lookup tables.
 float MultiChannelResampler::calculateWindowedSinc(float phase, int spread) {
     const float realPhase = phase - spread;
     if (abs(realPhase) < 0.00000001) return 1.0f; // avoid divide by zero

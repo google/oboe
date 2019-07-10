@@ -29,19 +29,13 @@ class MultiChannelResampler {
 public:
 
     MultiChannelResampler(int32_t channelCount,
-            int32_t numTaps,
-            int32_t inputRate,
-            int32_t outputRate)
-        : mChannelCount(channelCount)
-        , mNumTaps(numTaps)
-        , mX(channelCount * getNumTaps() * 2)
-        , mSingleFrame(channelCount)
-            {}
+                          int32_t numTaps,
+                          int32_t inputRate,
+                          int32_t outputRate);
 
     virtual ~MultiChannelResampler() = default;
 
-    virtual bool isReadReady() const = 0;
-    virtual bool isWriteReady() const = 0;
+    virtual bool isWriteNeeded() const = 0;
 
     virtual void advanceWrite() = 0;
     virtual void advanceRead() = 0;
@@ -88,10 +82,10 @@ public:
 private:
 
     const int          mChannelCount;
-    const int          mNumTaps;
 
 protected:
 
+    const int          mNumTaps;
     int                mCursor = 0;
     std::vector<float> mX;
     std::vector<float> mSingleFrame;

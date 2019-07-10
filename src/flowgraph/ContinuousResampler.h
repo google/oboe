@@ -38,16 +38,12 @@ public:
 
     virtual ~ContinuousResampler() = default;
 
-    bool isWriteReady() const override {
+    bool isWriteNeeded() const override {
         return mPhase >= 1.0;
     }
 
     virtual void advanceWrite() override {
         mPhase -= 1.0;
-    }
-
-    bool isReadReady() const override {
-        return mPhase < 1.0;
     }
 
     virtual void advanceRead() override {

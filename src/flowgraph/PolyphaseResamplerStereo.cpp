@@ -21,9 +21,11 @@ using namespace flowgraph;
 #define STEREO  2
 
 PolyphaseResamplerStereo::PolyphaseResamplerStereo(
-                                       int32_t inputRate,
-                                       int32_t outputRate)
-        : PolyphaseResampler(STEREO, inputRate, outputRate) {}
+            int32_t numTaps,
+            int32_t inputRate,
+            int32_t outputRate)
+        : PolyphaseResampler(STEREO, numTaps, inputRate, outputRate) {
+}
 
 
 void PolyphaseResamplerStereo::writeFrame(const float *frame) {
@@ -32,7 +34,7 @@ void PolyphaseResamplerStereo::writeFrame(const float *frame) {
         mCursor = getNumTaps() - 1;
     }
     float *dest = &mX[mCursor * STEREO];
-    const int offset = kNumTaps * STEREO;
+    const int offset = mNumTaps * STEREO;
     // Write each channel twice so we avoid having to wrap when running the FIR.
     const float left =  frame[0];
     const float right = frame[1];
@@ -40,7 +42,7 @@ void PolyphaseResamplerStereo::writeFrame(const float *frame) {
     dest[0] = left;
     dest[1] = right;
     dest[offset] = left;
-    dest[1 +  offset] = right;
+    dest[1 + offset] = right;
 }
 
 void PolyphaseResamplerStereo::readFrame(float *frame) {
@@ -50,15 +52,28 @@ void PolyphaseResamplerStereo::readFrame(float *frame) {
 
     // Multiply input times precomputed windowed sinc function.
     const float *coefficients = &mCoefficients[mCoefficientCursor];
-    int xIndex = mCursor * STEREO;
-    float *xFrame = &mX[xIndex];
-    for (int i = 0; i < kNumTaps; i++) {
+    float *xFrame = &mX[mCursor * STEREO];
+    const int numLoops = mNumTaps >> 2;
+    for (int i = 0; i < numLoops; i++) {
+        // Explicit loop unrolling, might get converted to SIMD.
         float coefficient = *coefficients++;
+        left += *xFrame++ * coefficient;
+        right += *xFrame++ * coefficient;
+
+        coefficient = *coefficients++; // next tap
+        left += *xFrame++ * coefficient;
+        right += *xFrame++ * coefficient;
+
+        coefficient = *coefficients++;  // next tap
+        left += *xFrame++ * coefficient;
+        right += *xFrame++ * coefficient;
+
+        coefficient = *coefficients++;  // next tap
         left += *xFrame++ * coefficient;
         right += *xFrame++ * coefficient;
     }
 
-    mCoefficientCursor = (mCoefficientCursor + kNumTaps) % mCoefficients.size();
+    mCoefficientCursor = (mCoefficientCursor + mNumTaps) % mCoefficients.size();
 
     // Copy accumulators to output.
     frame[0] = left;

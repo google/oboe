@@ -45,7 +45,7 @@ int32_t SampleRateConverter::onProcess(int32_t numFrames) {
     int framesLeft = numFrames;
     while (framesLeft > 0) {
         // Gather input samples as needed.
-        if(mResampler.isWriteReady()) {
+        if(mResampler.isWriteNeeded()) {
             if (isInputAvailable()) {
                 const float *frame = getNextInputFrame();
                 mResampler.writeFrame(frame);
