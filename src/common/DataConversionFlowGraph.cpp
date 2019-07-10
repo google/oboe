@@ -67,16 +67,20 @@ static MultiChannelResampler::Quality convertOboeSRQualityToMCR(SampleRateConver
 //     Reads in a loop from the flowgraph Sink to fill the read buffer.
 //     A SourceCaller then does a blocking read from the child Stream.
 //
-Result DataConversionFlowGraph::configure(AudioStream *stream, // parent
-                                AudioFormat sourceFormat,
-                                int32_t sourceChannelCount,
-                                int32_t sourceSampleRate,
-                                AudioFormat sinkFormat,
-                                int32_t sinkChannelCount,
-                                int32_t sinkSampleRate
-                                ) {
+Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream *sinkStream) {
+
     AudioFloatOutputPort *lastOutput = nullptr;
-    mFilterStream = stream;
+
+    bool isOutput = sourceStream->getDirection() == Direction::Output;
+    mFilterStream = isOutput ? sourceStream : sinkStream;
+
+    AudioFormat sourceFormat = sourceStream->getFormat();
+    int32_t sourceChannelCount = sourceStream->getChannelCount();
+    int32_t sourceSampleRate = sourceStream->getSampleRate();
+
+    AudioFormat sinkFormat = sinkStream->getFormat();
+    int32_t sinkChannelCount = sinkStream->getChannelCount();
+    int32_t sinkSampleRate = sinkStream->getSampleRate();
 
     LOGD("%s() flowgraph converts format: %d to %d, channels: %d to %d, rate: %d to %d",
             __func__, sourceFormat, sinkFormat,
@@ -84,22 +88,27 @@ Result DataConversionFlowGraph::configure(AudioStream *stream, // parent
             sourceSampleRate, sinkSampleRate);
 
     // Source
-    if (stream->getCallback() != nullptr && stream->getDirection() == Direction::Output) {
+    if ((sourceStream->getCallback() != nullptr && isOutput)
+        || (sourceStream->getCallback() == nullptr && !isOutput)) {
         switch (sourceFormat) {
             case AudioFormat::Float:
                 mSourceCaller = std::make_unique<SourceFloatCaller>(sourceChannelCount,
-                        stream->getFramesPerBurst()); // TODO use requested frames per callback
+                        sourceStream->getFramesPerBurst()); // TODO use requested frames per callback
                 break;
             case AudioFormat::I16:
                 mSourceCaller = std::make_unique<SourceI16Caller>(sourceChannelCount,
-                        stream->getFramesPerBurst());
+                        sourceStream->getFramesPerBurst());
                 break;
             default:
                 LOGE("%s() Unsupported source caller format = %d", __func__, sourceFormat);
                 return Result::ErrorIllegalArgument;
         }
-        mSourceCaller->setStream(stream);
-        mSourceCaller->setCallback(stream->getCallback());
+        mSourceCaller->setStream(sourceStream);
+        if (isOutput) {
+            mSourceCaller->setCallback(sourceStream->getCallback());
+        } else {
+            // TODO INPUT
+        }
         lastOutput = &mSourceCaller->output;
     } else {
         switch (sourceFormat) {
@@ -113,23 +122,22 @@ Result DataConversionFlowGraph::configure(AudioStream *stream, // parent
                 LOGE("%s() Unsupported source format = %d", __func__, sourceFormat);
                 return Result::ErrorIllegalArgument;
         }
+        if (!isOutput) {
+            // TODO use requested frames per callback
+            mBlockWriter.open(sourceStream->getFramesPerBurst() * sourceStream->getBytesPerFrame());
+            mAppBuffer = std::make_unique<uint8_t[]>(
+                    kDefaultBufferSize * sourceStream->getBytesPerFrame());
+        }
         lastOutput = &mSource->output;
-    }
-
-    if (stream->getCallback() != nullptr && stream->getDirection() == Direction::Input) {
-        // TODO use requested frames per callback
-        mBlockWriter.open(stream->getFramesPerBurst() * stream->getBytesPerFrame());
-        mAppBuffer = std::make_unique<uint8_t[]>(kDefaultBufferSize * stream->getBytesPerFrame());
     }
 
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
-
         mResampler.reset(MultiChannelResampler::make(sourceChannelCount,
                                                      sourceSampleRate,
                                                      sinkSampleRate,
                                                      convertOboeSRQualityToMCR(
-                                                             stream->getSampleRateConversionType())));
+                                                             sourceStream->getSampleRateConversionType())));
         mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount,
                                                                *mResampler.get());
         lastOutput->connect(&mRateConverter->input);

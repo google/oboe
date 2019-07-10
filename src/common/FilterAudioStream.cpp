@@ -25,24 +25,12 @@ Result FilterAudioStream::configureFlowGraph() {
     mFlowGraph = std::make_unique<DataConversionFlowGraph>();
     bool isOutput = getDirection() == Direction::Output;
 
-    const oboe::AudioFormat sourceFormat = isOutput ? getFormat() : mChildStream->getFormat();
-    const int32_t sourceChannelCount = isOutput ? getChannelCount() : mChildStream->getChannelCount();
-    const int32_t sourceSampleRate = isOutput ? getSampleRate() : mChildStream->getSampleRate();
+    AudioStream *sourceStream =  isOutput ? this : mChildStream.get();
+    AudioStream *sinkStream =  isOutput ? mChildStream.get() : this;
 
-    const oboe::AudioFormat sinkFormat = isOutput ? mChildStream->getFormat() : getFormat();
-    const int32_t sinkChannelCount = isOutput ? mChildStream->getChannelCount() : getChannelCount();
-    const int32_t sinkSampleRate = isOutput ? mChildStream->getSampleRate() : getSampleRate();
+    mRateScaler = ((double) sourceStream->getSampleRate()) / sinkStream->getSampleRate();
 
-    mRateScaler = ((double) sourceSampleRate) / sinkSampleRate;
-
-    return mFlowGraph->configure(this,
-                          sourceFormat,
-                          sourceChannelCount,
-                          sourceSampleRate,
-                          sinkFormat,
-                          sinkChannelCount,
-                          sinkSampleRate
-    );
+    return mFlowGraph->configure(sourceStream, sinkStream);
 }
 
 // Put the data to be written at the source end of the flowgraph.

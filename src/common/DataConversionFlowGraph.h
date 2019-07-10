@@ -56,19 +56,23 @@ public:
      * @param sinkChannelCount
      * @return
      */
-    oboe::Result configure(oboe::AudioStream *stream,
-                           oboe::AudioFormat sourceFormat,
-                           int32_t sourceChannelCount,
-                           int32_t sourceSampleRate,
-                           oboe::AudioFormat sinkFormat,
-                           int32_t sinkChannelCount,
-                           int32_t sinkSampleRate);
+    oboe::Result configure(oboe::AudioStream *sourceStream, oboe::AudioStream *sinkStream);
 
     int32_t read(void *buffer, int32_t numFrames);
 
     int32_t write(void *buffer, int32_t numFrames);
 
     int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
+
+//    DataCallbackResult onAudioReady(
+//            AudioStream *oboeStream,
+//            void *audioData,
+//            int32_t numFrames) override {
+//        if (oboeStream->getDirection() == Direction::Input) {
+//            oboeStream->read(audioData, numFrames);
+//        }
+//        return DataCallbackResult::Continue; // FIXME get from flowgraph
+//    }
 
 private:
     std::unique_ptr<flowgraph::AudioSource>            mSource;
