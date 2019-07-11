@@ -29,7 +29,4 @@ FifoControllerIndirect::FifoControllerIndirect(uint32_t numFrames,
 {
 }
 
-FifoControllerIndirect::~FifoControllerIndirect() {
-}
-
 }
