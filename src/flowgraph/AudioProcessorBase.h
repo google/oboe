@@ -330,6 +330,21 @@ public:
     virtual ~AudioSource() = default;
 
     AudioFloatOutputPort output;
+};
+
+/***************************************************************************/
+
+/**
+ * Base class for an edge node in a graph that has no upstream nodes.
+ * It outputs data but does not consume data.
+ * By default, it will read its data from an external buffer.
+ */
+class AudioSourceBuffered : public AudioSource {
+public:
+    explicit AudioSourceBuffered(int32_t channelCount)
+            : AudioSource(channelCount) {}
+
+    virtual ~AudioSourceBuffered() = default;
 
     /**
      * Specify buffer that the node will read from.

@@ -29,13 +29,14 @@ FixedBlockReader::FixedBlockReader(FixedBlockProcessor &fixedBlockProcessor)
 
 int32_t FixedBlockReader::open(int32_t bytesPerFixedBlock) {
     int32_t result = FixedBlockAdapter::open(bytesPerFixedBlock);
-    mPosition = mSize; // Indicate no data in storage.
+    mPosition = 0;
+    mValid = 0;
     return result;
 }
 
 int32_t FixedBlockReader::readFromStorage(uint8_t *buffer, int32_t numBytes) {
     int32_t bytesToRead = numBytes;
-    int32_t dataAvailable = mSize - mPosition;
+    int32_t dataAvailable = mValid - mPosition;
     if (bytesToRead > dataAvailable) {
         bytesToRead = dataAvailable;
     }
@@ -45,24 +46,27 @@ int32_t FixedBlockReader::readFromStorage(uint8_t *buffer, int32_t numBytes) {
 }
 
 int32_t FixedBlockReader::processVariableBlock(uint8_t *buffer, int32_t numBytes) {
-    int32_t result = 0;
+    int32_t bytesRead;
     int32_t bytesLeft = numBytes;
-    while(bytesLeft > 0 && result == 0) {
-        if (mPosition < mSize) {
+    while(bytesLeft > 0) {
+        if (mPosition < mValid) {
             // Use up bytes currently in storage.
-            int32_t bytesRead = readFromStorage(buffer, bytesLeft);
+            bytesRead = readFromStorage(buffer, bytesLeft);
             buffer += bytesRead;
             bytesLeft -= bytesRead;
         } else if (bytesLeft >= mSize) {
-            // Read through if enough for a complete block.
-            result = mFixedBlockProcessor.onProcessFixedBlock(buffer, mSize);
-            buffer += mSize;
-            bytesLeft -= mSize;
+            // Nothing in storage. Read through if enough for a complete block.
+            bytesRead = mFixedBlockProcessor.onProcessFixedBlock(buffer, mSize);
+            if (bytesRead < 0) return bytesRead;
+            buffer += bytesRead;
+            bytesLeft -= bytesRead;
         } else {
-            // Just need a partial block so we have to use storage.
-            result = mFixedBlockProcessor.onProcessFixedBlock(mStorage, mSize);
+            // Just need a partial block so we have to reload storage.
+            bytesRead = mFixedBlockProcessor.onProcessFixedBlock(mStorage, mSize);
+            if (bytesRead < 0) return bytesRead;
             mPosition = 0;
+            mValid = bytesRead;
         }
     }
-    return result;
+    return numBytes - bytesLeft;
 }

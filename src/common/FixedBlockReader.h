@@ -42,6 +42,9 @@ public:
      * Read into a variable sized block.
      */
     int32_t processVariableBlock(uint8_t *buffer, int32_t numBytes) override;
+
+private:
+    int32_t               mValid = 0;            // Number of valid bytes in mStorage.
 };
 
 

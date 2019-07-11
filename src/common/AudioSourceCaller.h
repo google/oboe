@@ -28,16 +28,13 @@ namespace oboe {
 class AudioStreamCallback;
 class AudioStream;
 
-// TODO Refactor so all AudioSources have a shared superclass.
-class AudioSourceCaller : public flowgraph::AudioProcessorBase, public FixedBlockProcessor {
+class AudioSourceCaller : public flowgraph::AudioSource, public FixedBlockProcessor {
 public:
     AudioSourceCaller(int32_t channelCount, int32_t framesPerCallback, int32_t bytesPerSample)
-            : output(*this, channelCount)
+            : AudioSource(channelCount)
             , mBlockReader(*this) {
         mBlockReader.open(channelCount * framesPerCallback * bytesPerSample);
     }
-
-    flowgraph::AudioFloatOutputPort output;
 
     void setCallback(oboe::AudioStreamCallback *streamCallback) {
         mStreamCallback = streamCallback;

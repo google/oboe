@@ -36,7 +36,6 @@ int32_t FixedBlockWriter::writeToStorage(uint8_t *buffer, int32_t numBytes) {
 }
 
 int32_t FixedBlockWriter::processVariableBlock(uint8_t *buffer, int32_t numBytes) {
-    int32_t result = 0;
     int32_t bytesLeft = numBytes;
 
     // If we already have data in storage then add to it.
@@ -46,22 +45,29 @@ int32_t FixedBlockWriter::processVariableBlock(uint8_t *buffer, int32_t numBytes
         bytesLeft -= bytesWritten;
         // If storage full then flush it out
         if (mPosition == mSize) {
-            result = mFixedBlockProcessor.onProcessFixedBlock(mStorage, mSize);
+            bytesWritten = mFixedBlockProcessor.onProcessFixedBlock(mStorage, mSize);
+            if (bytesWritten < 0) return bytesWritten;
             mPosition = 0;
+            if (bytesWritten < mSize) {
+                // Write did not complete!
+                return -1; // TODO
+            }
         }
     }
 
     // Write through if enough for a complete block.
-    while(bytesLeft > mSize && result == 0) {
-        result = mFixedBlockProcessor.onProcessFixedBlock(buffer, mSize);
-        buffer += mSize;
-        bytesLeft -= mSize;
+    while(bytesLeft > mSize) {
+        int32_t bytesWritten = mFixedBlockProcessor.onProcessFixedBlock(buffer, mSize);
+        if (bytesWritten < 0) return bytesWritten;
+        buffer += bytesWritten;
+        bytesLeft -= bytesWritten;
     }
 
-    // Save any remaining partial block for next time.
+    // Save any remaining partial blocks for next time.
     if (bytesLeft > 0) {
-        writeToStorage(buffer, bytesLeft);
+        int32_t bytesWritten = writeToStorage(buffer, bytesLeft);
+        bytesLeft -= bytesWritten;
     }
 
-    return result;
+    return numBytes - bytesLeft;
 }

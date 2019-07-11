@@ -27,7 +27,7 @@ namespace flowgraph {
 /**
  * AudioSource that reads a block of pre-defined float data.
  */
-class SourceFloat : public AudioSource {
+class SourceFloat : public AudioSourceBuffered {
 public:
     explicit SourceFloat(int32_t channelCount);
 

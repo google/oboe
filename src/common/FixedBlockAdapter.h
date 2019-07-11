@@ -25,6 +25,12 @@
 class FixedBlockProcessor {
 public:
     virtual ~FixedBlockProcessor() = default;
+    /**
+     *
+     * @param buffer Pointer to first byte of data.
+     * @param numBytes This will be a fixed size specified in FixedBlockAdapter::open().
+     * @return Number of bytes processed or a negative error code.
+     */
     virtual int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) = 0;
 };
 
@@ -52,7 +58,7 @@ public:
      *
      * @param buffer
      * @param numBytes
-     * @return zero if OK or a non-zero code
+     * @return Number of bytes processed or a negative error code.
      */
     virtual int32_t processVariableBlock(uint8_t *buffer, int32_t numBytes) = 0;
 
