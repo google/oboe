@@ -38,7 +38,7 @@ public:
 
     ~FifoBuffer();
 
-    int32_t convertFramesToBytes(int32_t frames);
+    uint32_t convertFramesToBytes(uint32_t frames);
 
     /**
      * Read framesToRead or, if not enough, then read as many as are available.

@@ -134,7 +134,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
             result = mFifoBuffer->write(data, framesLeft);
         }
         if (result > 0) {
-            data += mFifoBuffer->convertFramesToBytes(result);
+            data += mFifoBuffer->convertFramesToBytes(static_cast<uint32_t>(result));
             framesLeft -= result;
         }
 
