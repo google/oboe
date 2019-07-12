@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <cassert>
+#include <assert.h>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -64,9 +64,6 @@ static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
 
 AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder)
         : AudioStreamOpenSLES(builder) {
-}
-
-AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
 }
 
 // These will wind up in <SLES/OpenSLES_Android.h>

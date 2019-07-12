@@ -61,8 +61,8 @@ StabilizedCallback::onAudioReady(AudioStream *oboeStream, void *audioData, int32
     }
 
     int64_t numFramesAsNanos = (numFrames * kNanosPerSecond) / oboeStream->getSampleRate();
-    int64_t targetDurationNanos = (int64_t)
-            (numFramesAsNanos * kPercentageOfCallbackToUse) - lateStartNanos;
+    int64_t targetDurationNanos = static_cast<int64_t>(
+            (numFramesAsNanos * kPercentageOfCallbackToUse) - lateStartNanos);
 
     Trace::beginSection("Actual load");
     DataCallbackResult result = mCallback->onAudioReady(oboeStream, audioData, numFrames);
