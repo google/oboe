@@ -44,10 +44,9 @@ public:
     virtual ~FifoControllerBase() = default;
 
     /**
-     * This may be negative if an unthrottled reader has read beyond the available data.
      * @return number of valid frames available to read. Never read more than this.
      */
-    int32_t getFullFramesAvailable() const;
+    uint32_t getFullFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to read.
@@ -57,12 +56,12 @@ public:
     /**
      * @param numFrames number of frames to advance the read index
      */
-    void advanceReadIndex(int numFrames);
+    void advanceReadIndex(uint32_t numFrames);
 
     /**
      * @return number of frames that can be written. Never write more than this.
      */
-    int32_t getEmptyFramesAvailable() const;
+    uint32_t getEmptyFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to write.
@@ -82,8 +81,10 @@ public:
 
     virtual uint64_t getReadCounter() const = 0;
     virtual void setReadCounter(uint64_t n) = 0;
+    virtual void incrementReadCounter(uint64_t n) = 0;
     virtual uint64_t getWriteCounter() const = 0;
     virtual void setWriteCounter(uint64_t n) = 0;
+    virtual void incrementWriteCounter(uint64_t n) = 0;
 
 private:
     uint32_t mTotalFrames;

@@ -16,7 +16,7 @@
 
 #include "FifoControllerBase.h"
 
-#include <cassert>
+#include <assert.h>
 #include <sys/types.h>
 #include "FifoControllerBase.h"
 
@@ -30,22 +30,22 @@ FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
 {
 }
 
-int32_t FifoControllerBase::getFullFramesAvailable() const {
-    return static_cast<int32_t>(getWriteCounter() - getReadCounter());
+uint32_t FifoControllerBase::getFullFramesAvailable() const {
+    int64_t framesAvailable = getWriteCounter() - getReadCounter();
+    return (framesAvailable < 0) ? 0 : static_cast<uint32_t>(framesAvailable);
 }
 
 uint32_t FifoControllerBase::getReadIndex() const {
     return static_cast<uint32_t>(getReadCounter() % mTotalFrames);
 }
 
-void FifoControllerBase::advanceReadIndex(int numFrames) {
-    setReadCounter(getReadCounter() + numFrames);
+void FifoControllerBase::advanceReadIndex(uint32_t numFrames) {
+    incrementReadCounter(numFrames);
 }
 
-int32_t FifoControllerBase::getEmptyFramesAvailable() const {
-    int32_t fullFramesAvailable = getFullFramesAvailable();
-    int32_t available = static_cast<int32_t>(mThreshold - fullFramesAvailable);
-    return available;
+uint32_t FifoControllerBase::getEmptyFramesAvailable() const {
+    uint32_t fullFramesAvailable = getFullFramesAvailable();
+    return (fullFramesAvailable > mThreshold) ? 0 : (mThreshold - fullFramesAvailable);
 }
 
 uint32_t FifoControllerBase::getWriteIndex() const {
@@ -53,10 +53,11 @@ uint32_t FifoControllerBase::getWriteIndex() const {
 }
 
 void FifoControllerBase::advanceWriteIndex(uint32_t numFrames) {
-    setWriteCounter(getWriteCounter() + numFrames);
+    incrementWriteCounter(numFrames);
 }
 
 void FifoControllerBase::setThreshold(uint32_t threshold) {
+    assert(threshold < mTotalFrames);
     mThreshold = threshold;
 }
 
