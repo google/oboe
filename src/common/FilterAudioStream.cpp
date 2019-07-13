@@ -42,12 +42,14 @@ ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
     int32_t framesWritten = 0;
     mFlowGraph->setSource(buffer, numFrames);
     while (true) {
-        int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(), getFramesPerBurst());
+        int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(),
+                getFramesPerBurst(),
+                timeoutNanoseconds);
         if (numRead < 0) {
             return ResultWithValue<int32_t>::createBasedOnSign(numRead);
         }
         if (numRead == 0) {
-            break;
+            break; // finished processing the source buffer
         }
         auto writeResult = mChildStream->write(mBlockingBuffer.get(),
                                                numRead,
@@ -65,23 +67,19 @@ ResultWithValue<int32_t> FilterAudioStream::write(const void *buffer,
 ResultWithValue<int32_t> FilterAudioStream::read(void *buffer,
                                                   int32_t numFrames,
                                                   int64_t timeoutNanoseconds) {
-    int32_t framesWritten = 0;
-//    mFlowGraph->setSource(buffer, numFrames);
-//    while (true) {
-//        int32_t numRead = mFlowGraph->read(mBlockingBuffer.get(), getFramesPerBurst());
-//        if (numRead < 0) {
-//            return ResultWithValue<int32_t>::createBasedOnSign(numRead);
-//        }
-//        if (numRead == 0) {
-//            break;
-//        }
-//        auto writeResult = mChildStream->write(mBlockingBuffer.get(),
-//                                               numRead,
-//                                               timeoutNanoseconds);
-//        if (!writeResult) {
-//            return writeResult;
-//        }
-//        framesWritten += writeResult.value();
-//    }
-    return ResultWithValue<int32_t>::createBasedOnSign(framesWritten);
+    int32_t framesLeft = numFrames;
+    uint8_t *byteBuffer = static_cast<uint8_t *>(buffer);
+    // TODO I think we can just read the whole buffer from the flowgraph. No loop needed.
+    while (framesLeft > 0) {
+        int32_t framesRead = mFlowGraph->read(byteBuffer, framesLeft, timeoutNanoseconds);
+        if (framesRead < 0) {
+            return ResultWithValue<int32_t>::createBasedOnSign(framesRead);
+        }
+        if (framesRead == 0) {
+            break;
+        }
+        byteBuffer += framesRead * getBytesPerFrame();
+        framesLeft -= framesRead;
+    }
+    return ResultWithValue<int32_t>(numFrames - framesLeft);
 }

@@ -28,6 +28,10 @@ namespace oboe {
 class AudioStreamCallback;
 class AudioStream;
 
+/**
+ * For output streams that use a callback, call the application for more data.
+ * For input streams that do not use a callback, read from the stream.
+ */
 class AudioSourceCaller : public flowgraph::AudioSource, public FixedBlockProcessor {
 public:
     AudioSourceCaller(int32_t channelCount, int32_t framesPerCallback, int32_t bytesPerSample)
@@ -36,22 +40,43 @@ public:
         mBlockReader.open(channelCount * framesPerCallback * bytesPerSample);
     }
 
-    void setCallback(oboe::AudioStreamCallback *streamCallback) {
-        mStreamCallback = streamCallback;
-    }
-
+    /**
+     * Set the stream to use as a source of data.
+     * @param stream
+     */
     void setStream(oboe::AudioStream *stream) {
         mStream = stream;
     }
 
+    oboe::AudioStream *getStream() {
+        return mStream;
+    }
+
+    /**
+     * Timeout value to use when calling audioStream->read().
+     * @param timeoutNanos Zero for no timeout or time in nanoseconds.
+     */
+    void setTimeoutNanos(int64_t timeoutNanos) {
+        mTimeoutNanos = timeoutNanos;
+    }
+
+    int64_t getTimeoutNanos() const {
+        return mTimeoutNanos;
+    }
+
+    /**
+     * Called internally for block size adaptation.
+     * @param buffer
+     * @param numBytes
+     * @return
+     */
     int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
 
 protected:
-    oboe::AudioStreamCallback *mStreamCallback = nullptr;
     oboe::AudioStream         *mStream = nullptr;
+    int64_t                    mTimeoutNanos = 0;
 
     FixedBlockReader           mBlockReader;
-    DataCallbackResult         mCallbackResult = DataCallbackResult::Continue;
 };
 
 }

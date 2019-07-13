@@ -53,9 +53,9 @@ void PolyphaseResamplerStereo::readFrame(float *frame) {
     // Multiply input times precomputed windowed sinc function.
     const float *coefficients = &mCoefficients[mCoefficientCursor];
     float *xFrame = &mX[mCursor * STEREO];
-    const int numLoops = mNumTaps >> 2;
+    const int numLoops = mNumTaps >> 2; // n/4
     for (int i = 0; i < numLoops; i++) {
-        // Explicit loop unrolling, might get converted to SIMD.
+        // Manual loop unrolling, might get converted to SIMD.
         float coefficient = *coefficients++;
         left += *xFrame++ * coefficient;
         right += *xFrame++ * coefficient;

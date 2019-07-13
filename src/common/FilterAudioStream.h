@@ -174,12 +174,15 @@ public:
             AudioStream *oboeStream,
             void *audioData,
             int32_t numFrames) override {
+        int32_t framesProcessed;
         if (oboeStream->getDirection() == Direction::Output) {
-            mFlowGraph->read(audioData, numFrames);
+            framesProcessed = mFlowGraph->read(audioData, numFrames, 0 /* timeout */);
         } else {
-            mFlowGraph->write(audioData, numFrames);
+            framesProcessed = mFlowGraph->write(audioData, numFrames);
         }
-        return DataCallbackResult::Continue; // FIXME get from flowgraph
+        return (framesProcessed < numFrames)
+                ? DataCallbackResult::Stop
+                : DataCallbackResult::Continue;
     }
 
     void onErrorBeforeClose(AudioStream *oboeStream, Result error) override {}

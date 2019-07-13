@@ -66,6 +66,7 @@ int32_t FixedBlockReader::processVariableBlock(uint8_t *buffer, int32_t numBytes
             if (bytesRead < 0) return bytesRead;
             mPosition = 0;
             mValid = bytesRead;
+            if (bytesRead == 0) break;
         }
     }
     return numBytes - bytesLeft;

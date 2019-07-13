@@ -22,8 +22,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace flowgraph {
+namespace flowgraph { // TODO resampler
 
+// Move this to a subfolder that is not dependent on flowgraph.
 class MultiChannelResampler {
 
 public:
@@ -62,7 +63,7 @@ public:
     }
 
     /**
-     * @param phase between 0.0 and  2*spread
+     * @param phase between 0.0 and  2*spread // TODO use centered phase, maybe
      * @return windowedSinc
      */
     static float calculateWindowedSinc(float phase, int spread);

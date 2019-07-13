@@ -25,7 +25,6 @@ PolyphaseResampler::PolyphaseResampler(int32_t channelCount,
                                        int32_t outputRate)
         : MultiChannelResampler(channelCount, numTaps, inputRate, outputRate)
         {
-
     assert((numTaps % 4) == 0); // Required for loop unrolling.
     generateCoefficients(inputRate, outputRate);
 }

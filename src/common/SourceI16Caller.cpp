@@ -27,12 +27,13 @@ using namespace oboe;
 using namespace flowgraph;
 
 int32_t SourceI16Caller::onProcess(int32_t numFrames) {
-    mBlockReader.processVariableBlock((uint8_t *)mConversionBuffer.get(),
-                                      mStream->getBytesPerFrame() * numFrames);
+    int32_t numBytes = mStream->getBytesPerFrame() * numFrames;
+    int32_t bytesRead = mBlockReader.processVariableBlock((uint8_t *)mConversionBuffer.get(), numBytes);
+    int32_t framesRead = bytesRead / mStream->getBytesPerFrame();
 
     float *floatData = output.getBuffer();
     const int16_t *shortData = mConversionBuffer.get();
-    int32_t numSamples = numFrames * output.getSamplesPerFrame();
+    int32_t numSamples = framesRead * output.getSamplesPerFrame();
 
 #if FLOWGRAPH_ANDROID_INTERNAL
     memcpy_to_float_from_i16(floatData, shortData, numSamples);
@@ -42,5 +43,5 @@ int32_t SourceI16Caller::onProcess(int32_t numFrames) {
     }
 #endif
 
-    return numFrames;
+    return framesRead;
 }

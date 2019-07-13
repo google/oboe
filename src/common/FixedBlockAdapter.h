@@ -69,6 +69,7 @@ public:
 
 protected:
     FixedBlockProcessor  &mFixedBlockProcessor;
+    // TODO use std::unique_ptr
     uint8_t              *mStorage = nullptr;    // Store data here while assembling buffers.
     int32_t               mSize = 0;             // Size in bytes of the fixed size buffer.
     int32_t               mPosition = 0;         // Offset of the last byte read or written.

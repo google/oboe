@@ -16,13 +16,23 @@
 
 #include "AudioSourceCaller.h"
 
-using namespace::oboe;
+using namespace oboe;
 using namespace flowgraph;
 
 int32_t AudioSourceCaller::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
+    oboe::AudioStreamCallback *callback = mStream->getCallback();
+    int32_t result = 0;
     int32_t numFrames = numBytes / mStream->getBytesPerFrame();
-    mCallbackResult = mStreamCallback->onAudioReady(mStream, buffer, numFrames);
-    // TODO handle STOP from callback, process data remaining in the block adapter
-    // onAudioReady() does not return the number of bytes processed so we have to assume all.
-    return numBytes;
+    if (callback != nullptr) {
+        DataCallbackResult callbackResult = callback->onAudioReady(mStream, buffer, numFrames);
+        // onAudioReady() does not return the number of bytes processed so we have to assume all.
+        result = (callbackResult == DataCallbackResult::Continue)
+                ? numBytes
+                : -1;
+    } else {
+        auto readResult = mStream->read(buffer, numFrames, mTimeoutNanos);
+        if (!readResult) return (int32_t) readResult.error();
+        result = readResult.value() * mStream->getBytesPerFrame();
+    }
+    return result;
 }

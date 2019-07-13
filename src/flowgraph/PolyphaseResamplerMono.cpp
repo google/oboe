@@ -47,11 +47,10 @@ void PolyphaseResamplerMono::readFrame(float *frame) {
 
     // Multiply input times precomputed windowed sinc function.
     const float *coefficients = &mCoefficients[mCoefficientCursor];
-    int xIndex = mCursor * MONO;
-    float *xFrame = &mX[xIndex];
-    const int numLoops = mNumTaps >> 2;
+    float *xFrame = &mX[mCursor * MONO];
+    const int numLoops = mNumTaps >> 2; // n/4
     for (int i = 0; i < numLoops; i++) {
-        // explicit loop unrolling, might get converted to SIMD
+        // Manual loop unrolling, might get converted to SIMD.
         sum += *xFrame++ * *coefficients++;
         sum += *xFrame++ * *coefficients++;
         sum += *xFrame++ * *coefficients++;

@@ -32,9 +32,7 @@ namespace oboe {
 class AudioStream;
 class AudioSourceCaller;
 
-// TODO support INPUT
 // TODO support mono<=>stereo
-// TODO support block size adaptation to reduce # callbacks to app
 
 /**
  * Convert PCM channels, format and sample rate for optimal latency.
@@ -58,21 +56,11 @@ public:
      */
     oboe::Result configure(oboe::AudioStream *sourceStream, oboe::AudioStream *sinkStream);
 
-    int32_t read(void *buffer, int32_t numFrames);
+    int32_t read(void *buffer, int32_t numFrames, int64_t timeoutNanos);
 
     int32_t write(void *buffer, int32_t numFrames);
 
     int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
-
-//    DataCallbackResult onAudioReady(
-//            AudioStream *oboeStream,
-//            void *audioData,
-//            int32_t numFrames) override {
-//        if (oboeStream->getDirection() == Direction::Input) {
-//            oboeStream->read(audioData, numFrames);
-//        }
-//        return DataCallbackResult::Continue; // FIXME get from flowgraph
-//    }
 
 private:
     std::unique_ptr<flowgraph::AudioSourceBuffered>    mSource;
@@ -82,10 +70,10 @@ private:
     std::unique_ptr<flowgraph::SampleRateConverter>    mRateConverter;
     std::unique_ptr<flowgraph::AudioSink>              mSink;
 
-    FixedBlockWriter                                 mBlockWriter;
-    DataCallbackResult                               mCallbackResult = DataCallbackResult::Continue;
-    AudioStream                                     *mFilterStream = nullptr;
-    std::unique_ptr<uint8_t[]>                       mAppBuffer;
+    FixedBlockWriter                                   mBlockWriter;
+    DataCallbackResult                                 mCallbackResult = DataCallbackResult::Continue;
+    AudioStream                                       *mFilterStream = nullptr;
+    std::unique_ptr<uint8_t[]>                         mAppBuffer;
 
     int64_t mFramePosition = 0;
 };

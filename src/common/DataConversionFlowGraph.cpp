@@ -104,11 +104,6 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                 return Result::ErrorIllegalArgument;
         }
         mSourceCaller->setStream(sourceStream);
-        if (isOutput) {
-            mSourceCaller->setCallback(sourceStream->getCallback());
-        } else {
-            // TODO INPUT
-        }
         lastOutput = &mSourceCaller->output;
     } else {
         switch (sourceFormat) {
@@ -173,17 +168,19 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     return Result::OK;
 }
 
-// This is only used for OUTPUT streams.
-int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames) {
+int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames, int64_t timeoutNanos) {
+    if (mSourceCaller) {
+        mSourceCaller->setTimeoutNanos(timeoutNanos);
+    }
     int32_t numRead = mSink->read(mFramePosition, buffer, numFrames);
     mFramePosition += numRead;
     return numRead;
 }
 
-// This is only used for INPUT streams. It is like pushing data through the flowgraph.
-int32_t DataConversionFlowGraph::write(void *childBuffer, int32_t numFrames) {
+// This is similar to pushing data through the flowgraph.
+int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
     // Put the data from the INPUT callback at the head of the flowgraph.
-    mSource->setData(childBuffer, numFrames);
+    mSource->setData(inputBuffer, numFrames);
     while (true) {
         // Pull and read some data in app format into a small buffer.
         int32_t framesRead = mSink->read(mFramePosition, mAppBuffer.get(), flowgraph::kDefaultBufferSize);
