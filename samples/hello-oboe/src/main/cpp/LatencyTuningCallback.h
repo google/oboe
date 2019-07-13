@@ -25,7 +25,6 @@
 #include <oboe/Oboe.h>
 
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
-    const int64_t kNanosPerMillisecond = 1000000;
 public:
     using DefaultAudioStreamCallback::DefaultAudioStreamCallback;
 
@@ -40,36 +39,14 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
-    void setLatencyDetectionEnabled(bool enabled) {latencyDetectionEnabled = enabled;}
     void setBufferTuneEnabled(bool enabled) {bufferTuneEnabled = enabled;}
-    void setLatencyTuner(oboe::LatencyTuner *latencyTuner) {mLatencyTuner = latencyTuner;}
-    void setOutputLatencyMillis(double *outputLatency) {outputLatencyMillis = outputLatency;}
 private:
-    bool latencyDetectionEnabled;
     bool bufferTuneEnabled = true;
-    double *outputLatencyMillis;
-    // Latency Tuner lives in callback, it should be exposed by Oboe.
-    oboe::LatencyTuner *mLatencyTuner;
-    /**
-     * Calculate the current latency between writing a frame to the output stream and
-     * the same frame being presented to the audio hardware.
-     *
-     * Here's how the calculation works:
-     *
-     * 1) Get the time a particular frame was presented to the audio hardware
-     * @see AudioStream::getTimestamp
-     * 2) From this extrapolate the time which the *next* audio frame written to the stream
-     * will be presented
-     * 3) Assume that the next audio frame is written at the current time
-     * 4) currentLatency = nextFramePresentationTime - nextFrameWriteTime
-     *
-     * @param stream The stream being written to
-     * @param latencyMillis pointer to a variable to receive the latency in milliseconds between
-     * writing a frame to the stream and that frame being presented to the audio hardware.
-     * @return oboe::Result::OK or a oboe::Result::Error* value. It is normal to receive an error soon
-     * after a stream has started because the timestamps are not yet available.
-     */
-    oboe::Result calculateCurrentOutputLatencyMillis(oboe::AudioStream *stream);
+    // Latency Tuner should probably be built and exposed by Oboe
+    // We can't create the latency tuner until the first callback,
+    // but construction is cheap.
+    // Every new stream has a new callback, so we can rely on a null check to update
+    std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
 };
 
 #endif //SAMPLES_LATENCY_TUNING_CALLBACK_H
