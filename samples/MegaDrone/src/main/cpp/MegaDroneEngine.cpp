@@ -16,9 +16,9 @@
 
 
 #include <memory>
-#include "PlayAudioEngine.h"
+#include "MegaDroneEngine.h"
 
-PlayAudioEngine::PlayAudioEngine(std::vector<int> cpuIds) : AudioEngine() {
+MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) : AudioEngine() {
     mCpuIds = cpuIds;
     if (!mIsThreadAffinitySet) {
         setThreadAffinity();
@@ -30,7 +30,7 @@ PlayAudioEngine::PlayAudioEngine(std::vector<int> cpuIds) : AudioEngine() {
  * Set the thread affinity for the current thread to mCpuIds. This can be useful to call on the
  * audio thread to avoid underruns caused by CPU core migrations to slower CPU cores.
  */
-void PlayAudioEngine::setThreadAffinity() {
+void MegaDroneEngine::setThreadAffinity() {
 
     pid_t current_thread_id = gettid();
     cpu_set_t cpu_set;

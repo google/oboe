@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 #include <oboe/AudioStreamCallback.h>
 #include <shared/AudioEngineBase.h>
-#include <shared/RenderableTap.h>
+#include <shared/IRenderableAudio.h>
 #include "../debug-utils/logging_macros.h"
 
 class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
@@ -45,11 +45,11 @@ public:
         }
     }
 
-    void setSource(RenderableTap *renderableTap) { mRenderable = renderableTap;}
+    void setSource(IRenderableAudio *renderable) { mRenderable = renderable;}
     virtual void onSetupComplete() {}
 
 private:
-    RenderableTap *mRenderable;
+    IRenderableAudio *mRenderable;
     AudioEngineBase &mParent;
 };
 

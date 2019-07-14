@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
-#define OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
+#ifndef OBOE_HELLO_OBOE_ENGINE_H
+#define OBOE_HELLO_OBOE_ENGINE_H
 
 #include <oboe/Oboe.h>
 #include <shared/AudioEngine.h>
@@ -26,10 +26,10 @@
 constexpr int32_t kBufferSizeAutomatic = 0;
 
 // This sample inherits the AudioEngine in the shared folder, with a custom audio source and callback
-class PlayAudioEngine : public AudioEngine<SoundGenerator, LatencyTuningCallback> {
+class HelloOboeEngine : public AudioEngine<SoundGenerator, LatencyTuningCallback> {
 
 public:
-    PlayAudioEngine();
+    HelloOboeEngine();
 
 
     // These methods reset the underlying stream with new properties
@@ -73,8 +73,6 @@ private:
     void updateLatencyDetection();
 
     bool mIsLatencyDetectionSupported = false;
-    // This will be used to automatically tune the buffer size of the stream, obtaining optimal latency
-    std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
 };
 
-#endif //OBOE_HELLOOBOE_PLAYAUDIOENGINE_H
+#endif //OBOE_HELLO_OBOE_ENGINE_H

@@ -19,7 +19,7 @@
 #define SAMPLES_LATENCY_TUNING_CALLBACK_H
 
 #include <oboe/LatencyTuner.h>
-#include <shared/RenderableTap.h>
+#include <shared/TappableAudioSource.h>
 #include <shared/DefaultAudioStreamCallback.h>
 #include <debug-utils/trace.h>
 #include <oboe/Oboe.h>
@@ -39,9 +39,10 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
-    void setBufferTuneEnabled(bool enabled) {bufferTuneEnabled = enabled;}
+    void setBufferTuneEnabled(bool enabled) {mBufferTuneEnabled = enabled;}
 private:
-    bool bufferTuneEnabled = true;
+    bool mBufferTuneEnabled = true;
+    // This will be used to automatically tune the buffer size of the stream, obtaining optimal latency
     // Latency Tuner should probably be built and exposed by Oboe
     // We can't create the latency tuner until the first callback,
     // but construction is cheap.

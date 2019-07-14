@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_IRENDERABLEAUDIO_H
-#define SAMPLES_IRENDERABLEAUDIO_H
+#ifndef SAMPLES_RENDERABLE_TAP_H
+#define SAMPLES_RENDERABLE_TAP_H
 
-#include <cstdint>
-#include <string>
+#include <stdint.h>
 
-class IRenderableAudio {
+#include "IRenderableAudio.h"
+#include "ITappable.h"
 
+/**
+ * This class renders Float audio, but can be tapped to control.
+ */
+class TappableAudioSource : public IRenderableAudio, public ITappable {
 public:
-    virtual ~IRenderableAudio() = default;
-    virtual void renderAudio(float *audioData, int32_t numFrames) = 0;
+    TappableAudioSource(int32_t sampleRate, int32_t channelCount) :
+    mSampleRate(sampleRate), mChannelCount(channelCount) { }
+
+    const int32_t mSampleRate;
+    const int32_t mChannelCount;
 };
 
-
-#endif //SAMPLES_IRENDERABLEAUDIO_H
+#endif //SAMPLES_RENDERABLE_TAP_H

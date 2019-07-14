@@ -17,7 +17,7 @@
 #include "SoundGenerator.h"
 
 SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t channelCount) :
-        RenderableTap(sampleRate, channelCount)
+        TappableAudioSource(sampleRate, channelCount)
         , mOscillators(std::make_unique<Oscillator[]>(channelCount)){
     double frequency = 440.0;
     constexpr double interval = 110.0;
@@ -43,7 +43,7 @@ void SoundGenerator::renderAudio(float *audioData, int32_t numFrames) {
     }
 }
 
-void SoundGenerator::setToneOn(bool isOn) {
+void SoundGenerator::tap(bool isOn) {
     for (int i = 0; i < mChannelCount; ++i) {
         mOscillators[i].setWaveOn(isOn);
     }

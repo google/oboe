@@ -19,13 +19,13 @@
 
 
 #include <oboe/Oboe.h>
-#include "shared/RenderableTap.h"
+#include "shared/TappableAudioSource.h"
 #include "../debug-utils/logging_macros.h"
 #include "AudioEngineBase.h"
 #include "DefaultAudioStreamCallback.h"
-#include "RenderableTap.h"
+#include "TappableAudioSource.h"
 
-// T is a RenderableTap Source, U is a Callback
+// T is a TappableAudioSource Source, U is a Callback
 // The stream is float only
 // The engine should be responsible for mutating and restarting the stream, as well as owning the callback
 
@@ -49,9 +49,8 @@ public:
         createPlaybackStream(std::forward<decltype(builder)>(builder));
     }
 
-    void toggleTone() {
-        isToneOn = !isToneOn;
-        mSource->setToneOn(isToneOn);
+    void tapTone(bool isToneOn) {
+        mSource->tap(isToneOn);
     }
 protected:
     // Default config properties of the stream, can be changed
@@ -66,9 +65,8 @@ protected:
     }
 
     oboe::ManagedStream mStream;
-    std::unique_ptr<RenderableTap> mSource;
+    std::unique_ptr<TappableAudioSource> mSource;
     std::unique_ptr<DefaultAudioStreamCallback> mCallback;
-    bool isToneOn = false;
 
 private:
     void createPlaybackStream(oboe::AudioStreamBuilder &&builder) {

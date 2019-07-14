@@ -18,7 +18,7 @@
 #define MEGADRONE_SYNTH_H
 
 #include <array>
-#include <shared/RenderableTap.h>
+#include <shared/TappableAudioSource.h>
 
 #include "shared/Oscillator.h"
 #include "shared/Mixer.h"
@@ -30,11 +30,11 @@ constexpr float kOscDivisor = 33;
 constexpr float kOscAmplitude = 0.009;
 
 
-class Synth : public RenderableTap {
+class Synth : public TappableAudioSource {
 public:
 
     Synth(int32_t sampleRate, int32_t channelCount) :
-    RenderableTap(sampleRate, channelCount) {
+    TappableAudioSource(sampleRate, channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
             mOscs[i].setSampleRate(mSampleRate);
             mOscs[i].setFrequency(kOscBaseFrequency + (static_cast<float>(i) / kOscDivisor));
@@ -48,7 +48,7 @@ public:
         }
     }
 
-    void setToneOn(bool isOn) override {
+    void tap(bool isOn) override {
         for (auto &osc : mOscs) osc.setWaveOn(isOn);
     };
 

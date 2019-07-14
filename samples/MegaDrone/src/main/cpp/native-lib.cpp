@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "PlayAudioEngine.h"
+#include "MegaDroneEngine.h"
 
 
 std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
@@ -48,7 +48,7 @@ JNIEXPORT jlong JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    PlayAudioEngine  *engine = new PlayAudioEngine(cpuIds);
+    MegaDroneEngine  *engine = new MegaDroneEngine(cpuIds);
     LOGD("Engine Started");
     return reinterpret_cast<jlong>(engine);
 }
@@ -56,7 +56,7 @@ Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*
 JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance,
         jlong jEngineHandle) {
-    auto engine = reinterpret_cast<PlayAudioEngine *>(jEngineHandle);
+    auto engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
     if (engine) {
         delete engine;
     } else {
@@ -69,9 +69,9 @@ JNIEXPORT void JNICALL
 Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance,
         jlong jEngineHandle, jboolean isDown) {
 
-    auto *engine = reinterpret_cast<PlayAudioEngine *>(jEngineHandle);
+    auto *engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
     if (engine) {
-        engine->toggleTone();
+        engine->tapTone(isDown);
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }

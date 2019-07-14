@@ -20,19 +20,19 @@
 
 #include "shared/Oscillator.h"
 
-#include "PlayAudioEngine.h"
+#include "HelloOboeEngine.h"
 #include "SoundGenerator.h"
 
 
 
-PlayAudioEngine::PlayAudioEngine() : AudioEngine() {
+HelloOboeEngine::HelloOboeEngine() : AudioEngine() {
     // Initialize the trace functions, this enables you to output trace statements without
     // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
     Trace::initialize();
     updateLatencyDetection();
 }
 
-double PlayAudioEngine::getCurrentOutputLatencyMillis() {
+double HelloOboeEngine::getCurrentOutputLatencyMillis() {
     if (!mIsLatencyDetectionSupported) return -1;
     // Get the time that a known audio frame was presented for playing
     auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
@@ -60,10 +60,10 @@ double PlayAudioEngine::getCurrentOutputLatencyMillis() {
     return outputLatencyMillis;
 }
 
-void PlayAudioEngine::setBufferSizeInBursts(int32_t numBursts) {
+void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
     mIsLatencyDetectionSupported = false;
     // Since this class is templated, we know the correct type.
-    auto ptr = dynamic_cast<LatencyTuningCallback*>(mCallback.get());
+    auto ptr = getCallbackPtr();
     ptr->setBufferTuneEnabled(numBursts == kBufferSizeAutomatic);
     auto result = mStream->setBufferSizeInFrames(
             numBursts * mStream->getFramesPerBurst());
@@ -75,7 +75,7 @@ void PlayAudioEngine::setBufferSizeInBursts(int32_t numBursts) {
     }
 }
 
-void PlayAudioEngine::setAudioApi(oboe::AudioApi audioApi) {
+void HelloOboeEngine::setAudioApi(oboe::AudioApi audioApi) {
     mIsLatencyDetectionSupported = false;
     configureRestartStream(std::move(*oboe::AudioStreamBuilder(*mStream)
         .setAudioApi((audioApi))));
@@ -83,7 +83,7 @@ void PlayAudioEngine::setAudioApi(oboe::AudioApi audioApi) {
     LOGD("AudioAPI is now %d", mStream->getAudioApi());
 }
 
-void PlayAudioEngine::setChannelCount(int channelCount) {
+void HelloOboeEngine::setChannelCount(int channelCount) {
     mIsLatencyDetectionSupported = false;
     configureRestartStream(std::move(*oboe::AudioStreamBuilder(*mStream)
         .setChannelCount(channelCount)));
@@ -91,7 +91,7 @@ void PlayAudioEngine::setChannelCount(int channelCount) {
     LOGD("Channel count is now %d", mStream->getChannelCount());
 }
 
-void PlayAudioEngine::setDeviceId(int32_t deviceId) {
+void HelloOboeEngine::setDeviceId(int32_t deviceId) {
     mIsLatencyDetectionSupported = false;
     configureRestartStream(std::move(*oboe::AudioStreamBuilder(*mStream).
         setDeviceId(deviceId)));
@@ -99,11 +99,11 @@ void PlayAudioEngine::setDeviceId(int32_t deviceId) {
     LOGD("Device ID is now %d", mStream->getDeviceId());
 }
 
-bool PlayAudioEngine::isLatencyDetectionSupported() {
+bool HelloOboeEngine::isLatencyDetectionSupported() {
     return mIsLatencyDetectionSupported;
 }
 
-void PlayAudioEngine::updateLatencyDetection() {
+void HelloOboeEngine::updateLatencyDetection() {
     mIsLatencyDetectionSupported = (mStream->getTimestamp((CLOCK_MONOTONIC)) !=
                                     oboe::Result::ErrorUnimplemented);
 }

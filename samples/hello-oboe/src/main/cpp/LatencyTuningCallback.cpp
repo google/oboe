@@ -19,7 +19,7 @@
 oboe::DataCallbackResult LatencyTuningCallback::onAudioReady(
      oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     if (!mLatencyTuner) mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*oboeStream);
-    if (bufferTuneEnabled && oboeStream->getAudioApi() == oboe::AudioApi::AAudio) {
+    if (mBufferTuneEnabled && oboeStream->getAudioApi() == oboe::AudioApi::AAudio) {
         mLatencyTuner->tune();
     }
     auto underrunCountResult = oboeStream->getXRunCount();

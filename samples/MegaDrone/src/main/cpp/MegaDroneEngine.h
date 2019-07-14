@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef MEGADRONE_AUDIOENGINE_H
-#define MEGADRONE_AUDIOENGINE_H
+#ifndef MEGADRONE_ENGINE_H
+#define MEGADRONE_ENGINE_H
 
 
 #include <oboe/Oboe.h>
@@ -26,10 +26,10 @@
 
 using namespace oboe;
 
-class PlayAudioEngine : public AudioEngine<Synth> {
+class MegaDroneEngine : public AudioEngine<Synth> {
 
 public:
-    PlayAudioEngine(std::vector<int> cpuIds);
+    MegaDroneEngine(std::vector<int> cpuIds);
 
 private:
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
@@ -38,4 +38,4 @@ private:
 };
 
 
-#endif //MEGADRONE_AUDIOENGINE_H
+#endif //MEGADRONE_ENGINE_H

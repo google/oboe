@@ -18,15 +18,14 @@
 #define SAMPLES_SOUNDGENERATOR_H
 
 
-#include <shared/IRenderableAudio.h>
 #include <shared/Oscillator.h>
-#include <shared/RenderableTap.h>
+#include <shared/TappableAudioSource.h>
 
 /**
  * Generates a fixed frequency tone for each channel.
  * Implements RenderableTap (sound source with toggle) which is required for AudioEngines.
  */
-class SoundGenerator : public RenderableTap {
+class SoundGenerator : public TappableAudioSource {
     const size_t kSharedBufferSize = 1024;
 public:
     /**
@@ -43,7 +42,7 @@ public:
     ~SoundGenerator() = default;
 
     // Switch the tones on
-    void setToneOn(bool isOn) override;
+    void tap(bool isOn) override;
 
     void renderAudio(float *audioData, int32_t numFrames) override;
 
