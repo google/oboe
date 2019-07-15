@@ -62,9 +62,9 @@ double HelloOboeEngine::getCurrentOutputLatencyMillis() {
 
 void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
     mIsLatencyDetectionSupported = false;
-    // Since this class is templated, we know the correct type.
-    auto ptr = getCallbackPtr();
-    ptr->setBufferTuneEnabled(numBursts == kBufferSizeAutomatic);
+    // Since our parent AudioEngine class is templated, we know the correct type.
+    auto callback = getCallback();
+    callback->setBufferTuneEnabled(numBursts == kBufferSizeAutomatic);
     auto result = mStream->setBufferSizeInFrames(
             numBursts * mStream->getFramesPerBurst());
     updateLatencyDetection();

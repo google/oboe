@@ -60,7 +60,7 @@ protected:
         builder.setSampleRate(48000)->setChannelCount(2);
         return builder;
     }
-    U* getCallbackPtr() {
+    U* getCallback() {
         return dynamic_cast<U*>(mCallback.get());
     }
 
