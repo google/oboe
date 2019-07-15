@@ -217,7 +217,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 
-    if (mFifoBuffer) {
+    if (!mFifoBuffer) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
