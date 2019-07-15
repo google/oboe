@@ -44,9 +44,10 @@ public:
     virtual ~FifoControllerBase() = default;
 
     /**
+     * This may be negative if an unthrottled reader has read beyond the available data.
      * @return number of valid frames available to read. Never read more than this.
      */
-    uint32_t getFullFramesAvailable() const;
+    int32_t getFullFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to read.
@@ -61,7 +62,7 @@ public:
     /**
      * @return number of frames that can be written. Never write more than this.
      */
-    uint32_t getEmptyFramesAvailable() const;
+    int32_t getEmptyFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to write.

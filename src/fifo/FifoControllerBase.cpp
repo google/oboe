@@ -30,9 +30,8 @@ FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
 {
 }
 
-uint32_t FifoControllerBase::getFullFramesAvailable() const {
-    int64_t framesAvailable = getWriteCounter() - getReadCounter();
-    return (framesAvailable < 0) ? 0 : static_cast<uint32_t>(framesAvailable);
+int32_t FifoControllerBase::getFullFramesAvailable() const {
+    return static_cast<int32_t>(getWriteCounter() - getReadCounter());
 }
 
 uint32_t FifoControllerBase::getReadIndex() const {
@@ -43,9 +42,10 @@ void FifoControllerBase::advanceReadIndex(uint32_t numFrames) {
     incrementReadCounter(numFrames);
 }
 
-uint32_t FifoControllerBase::getEmptyFramesAvailable() const {
-    uint32_t fullFramesAvailable = getFullFramesAvailable();
-    return (fullFramesAvailable > mThreshold) ? 0 : (mThreshold - fullFramesAvailable);
+int32_t FifoControllerBase::getEmptyFramesAvailable() const {
+    int32_t fullFramesAvailable = getFullFramesAvailable();
+    int32_t available = static_cast<int32_t>(mThreshold - fullFramesAvailable);
+    return available;
 }
 
 uint32_t FifoControllerBase::getWriteIndex() const {
@@ -57,7 +57,6 @@ void FifoControllerBase::advanceWriteIndex(uint32_t numFrames) {
 }
 
 void FifoControllerBase::setThreshold(uint32_t threshold) {
-    assert(threshold < mTotalFrames);
     mThreshold = threshold;
 }
 

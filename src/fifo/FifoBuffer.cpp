@@ -85,7 +85,7 @@ int32_t FifoBuffer::convertFramesToBytes(int32_t frames) {
 }
 
 int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
-    uint32_t framesAvailable = mFifo->getFullFramesAvailable();
+    int32_t framesAvailable = mFifo->getFullFramesAvailable();
     int32_t framesToRead = numFrames;
     // Is there enough data in the FIFO
     if (framesToRead > framesAvailable) {
@@ -129,7 +129,7 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
 }
 
 int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
-    uint32_t framesAvailable = mFifo->getEmptyFramesAvailable();
+    int32_t framesAvailable = mFifo->getEmptyFramesAvailable();
     if (framesToWrite > framesAvailable) {
         framesToWrite = framesAvailable;
     }

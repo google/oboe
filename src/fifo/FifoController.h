@@ -32,6 +32,7 @@ public:
     FifoController(uint32_t bufferSize, uint32_t threshold);
     virtual ~FifoController() = default;
 
+    // TODO review use atomics or memory barriers
     virtual uint64_t getReadCounter() const override {
         return mReadCounter.load(std::memory_order_acquire);
     }
