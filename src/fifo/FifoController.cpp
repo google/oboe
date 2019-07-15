@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <cassert>
+#include <assert.h>
 #include <sys/types.h>
 #include "FifoControllerBase.h"
 #include "FifoController.h"

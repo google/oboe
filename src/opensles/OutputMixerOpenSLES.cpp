@@ -59,9 +59,9 @@ void OutputMixerOpenSL::close() {
 
     if (--mOpenCount == 0) {
         // destroy output mix object, and invalidate all associated interfaces
-        if (mOutputMixObject != NULL) {
+        if (mOutputMixObject != nullptr) {
             (*mOutputMixObject)->Destroy(mOutputMixObject);
-            mOutputMixObject = NULL;
+            mOutputMixObject = nullptr;
         }
     }
 }

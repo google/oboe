@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <sys/types.h>
-#include <cassert>
+#include <assert.h>
 #include <android/log.h>
 
 
@@ -26,10 +26,6 @@
 #include "oboe/AudioStreamBuilder.h"
 #include "AudioStreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
-
-#ifndef NULL
-#define NULL 0
-#endif
 
 using namespace oboe;
 

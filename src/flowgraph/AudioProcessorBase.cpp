@@ -42,8 +42,7 @@ AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
                                int32_t samplesPerFrame,
                                int32_t framesPerBuffer)
         : AudioPort(parent, samplesPerFrame)
-        , mFramesPerBuffer(framesPerBuffer)
-        , mBuffer(NULL) {
+        , mFramesPerBuffer(framesPerBuffer) {
     int32_t numFloats = framesPerBuffer * getSamplesPerFrame();
     mBuffer = std::make_unique<float[]>(numFloats);
 }
@@ -65,13 +64,13 @@ void AudioFloatOutputPort::disconnect(AudioFloatInputPort *port) {
 
 /***************************************************************************/
 int32_t AudioFloatInputPort::pullData(int64_t framePosition, int32_t numFrames) {
-    return (mConnected == NULL)
+    return (mConnected == nullptr)
             ? std::min(getFramesPerBuffer(), numFrames)
             : mConnected->pullData(framePosition, numFrames);
 }
 
 float *AudioFloatInputPort::getBuffer() {
-    if (mConnected == NULL) {
+    if (mConnected == nullptr) {
         return AudioFloatBufferPort::getBuffer(); // loaded using setValue()
     } else {
         return mConnected->getBuffer();

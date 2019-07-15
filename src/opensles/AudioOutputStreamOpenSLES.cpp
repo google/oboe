@@ -247,7 +247,7 @@ Result AudioOutputStreamOpenSLES::close() {
         requestPause();
         mLock.lock();
         // invalidate any interfaces
-        mPlayInterface = NULL;
+        mPlayInterface = nullptr;
         result = AudioStreamOpenSLES::close();
     }
     mLock.unlock(); // avoid recursive lock
@@ -352,7 +352,7 @@ Result AudioOutputStreamOpenSLES::requestFlush_l() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
     if (getState() == StreamState::Closed) return Result::ErrorClosed;
     Result result = Result::OK;
-    if (mPlayInterface == NULL || mSimpleBufferQueueInterface == NULL) {
+    if (mPlayInterface == nullptr || mSimpleBufferQueueInterface == nullptr) {
         result = Result::ErrorInvalidState;
     } else {
         SLresult slResult = (*mSimpleBufferQueueInterface)->Clear(mSimpleBufferQueueInterface);
@@ -423,7 +423,7 @@ Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
     // and this is being called from a callback.
     if (mLock.try_lock()) {
 
-        if (mPlayInterface == NULL) {
+        if (mPlayInterface == nullptr) {
             mLock.unlock();
             return Result::ErrorNull;
         }

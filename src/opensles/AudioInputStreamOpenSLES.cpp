@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <cassert>
+#include <assert.h>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -216,7 +216,7 @@ Result AudioInputStreamOpenSLES::close() {
         requestStop();
         mLock.lock();
         // invalidate any interfaces
-        mRecordInterface = NULL;
+        mRecordInterface = nullptr;
         result = AudioStreamOpenSLES::close();
     }
     mLock.unlock(); // avoid recursive lock
@@ -324,7 +324,7 @@ Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
     // and this is being called from a callback.
     if (mLock.try_lock()) {
 
-        if (mRecordInterface == NULL) {
+        if (mRecordInterface == nullptr) {
             mLock.unlock();
             return Result::ErrorNull;
         }

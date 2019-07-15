@@ -23,7 +23,7 @@
 #ifndef FLOWGRAPH_AUDIO_PROCESSOR_BASE_H
 #define FLOWGRAPH_AUDIO_PROCESSOR_BASE_H
 
-#include <cassert>
+#include <assert.h>
 #include <cstring>
 #include <math.h>
 #include <memory>
