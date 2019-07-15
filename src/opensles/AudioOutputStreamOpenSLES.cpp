@@ -193,7 +193,7 @@ Result AudioOutputStreamOpenSLES::open() {
         result = (*configItf)->SetConfiguration(configItf,
                                                 SL_ANDROID_KEY_STREAM_TYPE,
                                                 &presetValue,
-                                                sizeof(SLuint32));
+                                                sizeof(presetValue));
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }
