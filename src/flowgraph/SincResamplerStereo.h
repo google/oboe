@@ -28,7 +28,7 @@ public:
     SincResamplerStereo(
             int32_t inputRate,
             int32_t outputRate)
-            : SincResampler(2, inputRate, outputRate) {}
+            : SincResampler(inputRate, outputRate, 2) {}
 
     virtual ~SincResamplerStereo() = default;
 

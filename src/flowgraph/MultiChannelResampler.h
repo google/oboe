@@ -29,30 +29,30 @@ class MultiChannelResampler {
 
 public:
 
-    MultiChannelResampler(int32_t channelCount,
-                          int32_t numTaps,
-                          int32_t inputRate,
-                          int32_t outputRate);
+    MultiChannelResampler(int32_t numTaps, int32_t channelCount);
 
     virtual ~MultiChannelResampler() = default;
 
     virtual bool isWriteNeeded() const = 0;
 
-    virtual void advanceWrite() = 0;
-    virtual void advanceRead() = 0;
-
     /**
      * Write a frame containing N samples.
      * @param frame pointer to the first sample in a frame
      */
-    virtual void writeFrame(const float *frame);
+    void writeNextFrame(const float *frame) {
+        writeFrame(frame);
+        advanceWrite();
+    }
 
     /**
      * Read a frame containing N samples using interpolation.
      * @param frame pointer to the first sample in a frame
      * @param phase phase between 0.0 and 1.0 for interpolation
      */
-    virtual void readFrame(float *frame) = 0;
+    void readNextFrame(float *frame) {
+        readFrame(frame);
+        advanceRead();
+    }
 
     int getNumTaps() const {
         return mNumTaps;
@@ -68,6 +68,8 @@ public:
      */
     static float calculateWindowedSinc(float phase, int spread);
 
+    static float hammingWindow(float phase, int spread);
+
     enum class Quality : int32_t {
         Low,
         Medium,
@@ -80,17 +82,35 @@ public:
             int32_t outputRate,
             Quality quality);
 
-private:
-
-    const int          mChannelCount;
-
 protected:
 
-    const int          mNumTaps;
-    int                mCursor = 0;
-    std::vector<float> mX;
-    std::vector<float> mSingleFrame;
+    /**
+     * Write a frame containing N samples.
+     * Call advanceWrite() after calling this.
+     * @param frame pointer to the first sample in a frame
+     */
+    virtual void writeFrame(const float *frame);
 
+    /**
+     * Read a frame containing N samples using interpolation.
+     * Call advanceRead() after calling this.
+     * @param frame pointer to the first sample in a frame
+     * @param phase phase between 0.0 and 1.0 for interpolation
+     */
+    virtual void readFrame(float *frame) = 0;
+
+    virtual void advanceWrite() = 0;
+    virtual void advanceRead() = 0;
+
+    const int            mNumTaps;
+    int                  mCursor = 0;
+    std::vector<float>   mX;
+    std::vector<float>   mSingleFrame;
+
+private:
+
+    static constexpr int kMaxCoefficients = 8 * 1024; // max coefficients for polyphase filter
+    const int            mChannelCount;
 
 };
 

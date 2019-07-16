@@ -14,38 +14,42 @@
  * limitations under the License.
  */
 
+#include <math.h>
 #include "IntegerRatio.h"
 #include "PolyphaseResampler.h"
 
 using namespace flowgraph;
 
-PolyphaseResampler::PolyphaseResampler(int32_t channelCount,
-                                       int32_t numTaps,
-                                       int32_t inputRate,
-                                       int32_t outputRate)
-        : MultiChannelResampler(channelCount, numTaps, inputRate, outputRate)
+PolyphaseResampler::PolyphaseResampler(int32_t numTaps,
+        int32_t inputRate,
+        int32_t outputRate,
+        int32_t channelCount)
+        : MultiChannelResampler(numTaps, channelCount)
         {
     assert((numTaps % 4) == 0); // Required for loop unrolling.
     generateCoefficients(inputRate, outputRate);
 }
 
 // Generate coefficients in the order they will be used by readFrame().
-// This is more complicated but readFrame() is simpler and can be optimized.
+// This is more complicated but readFrame() is called repeatedly and should be optimized.
 void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputRate) {
-    IntegerRatio ratio(inputRate, outputRate);
-    ratio.reduce();
-    mNumerator = ratio.getNumerator();
-    mDenominator = ratio.getDenominator();
-    mIntegerPhase = mDenominator;
-    mCoefficients.resize(getNumTaps() * ratio.getDenominator());
+    {
+        IntegerRatio ratio(inputRate, outputRate);
+        ratio.reduce();
+        mNumerator = ratio.getNumerator();
+        mDenominator = ratio.getDenominator();
+        mIntegerPhase = mDenominator;
+        mCoefficients.resize(getNumTaps() * ratio.getDenominator());
+    }
     int cursor = 0;
     double phase = 0.0;
     double phaseIncrement = (double) inputRate / (double) outputRate;
     const int spread = getNumTaps() / 2; // numTaps must be even.
-    for (int i = 0; i < ratio.getDenominator(); i++) {
-        float tapPhase = phase;
+    for (int i = 0; i < mDenominator; i++) {
+        float tapPhase = phase - spread;
         for (int tap = 0; tap < getNumTaps(); tap++) {
-            mCoefficients.at(cursor++) = calculateWindowedSinc(tapPhase, spread);
+            float radians = tapPhase * M_PI;
+            mCoefficients.at(cursor++) = calculateWindowedSinc(radians, spread);
             tapPhase += 1.0;
         }
         phase += phaseIncrement;

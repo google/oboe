@@ -19,10 +19,8 @@
 
 using namespace flowgraph;
 
-SincResampler::SincResampler(int32_t channelCount,
-                             int32_t inputRate,
-                             int32_t outputRate)
-        : ContinuousResampler(channelCount, kNumTaps, inputRate, outputRate)
+SincResampler::SincResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount)
+        : ContinuousResampler(kNumTaps, inputRate, outputRate, channelCount)
         , mWindowedSinc(kNumPoints + kNumGuardPoints){
     generateLookupTable();
 }
@@ -82,6 +80,7 @@ void SincResampler::generateLookupTable() {
     // By iterating over the table size we also set the guard point.
     for (int i = 0; i < mWindowedSinc.size(); i++) {
         float phase = (i * 2.0 * kSpread) / kNumPoints;
-        mWindowedSinc[i] = calculateWindowedSinc(phase, kSpread);
+        float radians = (phase - kSpread) * M_PI;
+        mWindowedSinc[i] = calculateWindowedSinc(radians, kSpread);
     }
 }

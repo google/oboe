@@ -28,7 +28,15 @@ namespace flowgraph {
 
 class PolyphaseResampler : public MultiChannelResampler {
 public:
-    PolyphaseResampler(int32_t channelCount, int32_t numTaps, int32_t inputRate, int32_t outputRate);
+    /**
+     *
+     * @param channelCount
+     * @param numTaps
+     * @param inputRate inputRate/outputRate should be a reduced fraction
+     * @param outputRate
+     */
+    PolyphaseResampler(int32_t numTaps, int32_t inputRate, int32_t outputRate,
+                       int32_t channelCount);
 
     virtual ~PolyphaseResampler() = default;
 

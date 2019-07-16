@@ -18,10 +18,8 @@
 
 using namespace flowgraph;
 
-LinearResampler::LinearResampler(int32_t channelCount,
-                                 int32_t inputRate,
-                                 int32_t outputRate)
-        : ContinuousResampler(channelCount, 2 /* numTaps */, inputRate,outputRate) {
+LinearResampler::LinearResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount)
+        : ContinuousResampler(2 /* numTaps */, inputRate, outputRate, channelCount) {
         mPreviousFrame = std::make_unique<float[]>(channelCount);
         mCurrentFrame = std::make_unique<float[]>(channelCount);
 }

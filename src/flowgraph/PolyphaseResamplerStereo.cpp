@@ -24,7 +24,7 @@ PolyphaseResamplerStereo::PolyphaseResamplerStereo(
             int32_t numTaps,
             int32_t inputRate,
             int32_t outputRate)
-        : PolyphaseResampler(STEREO, numTaps, inputRate, outputRate) {
+        : PolyphaseResampler(numTaps, inputRate, outputRate, STEREO) {
 }
 
 

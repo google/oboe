@@ -26,9 +26,7 @@ namespace flowgraph {
 
 class SincResampler : public ContinuousResampler {
 public:
-    SincResampler(int32_t channelCount,
-                           int32_t inputRate,
-                           int32_t outputRate);
+    SincResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount);
 
     virtual ~SincResampler() = default;
 

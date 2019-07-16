@@ -27,14 +27,11 @@
 
 using namespace flowgraph;
 
-MultiChannelResampler::MultiChannelResampler(int32_t channelCount,
-        int32_t numTaps,
-        int32_t inputRate,
-        int32_t outputRate)
-        : mChannelCount(channelCount)
-        , mNumTaps(numTaps)
-        , mX(channelCount * getNumTaps() * 2)
+MultiChannelResampler::MultiChannelResampler(int32_t numTaps, int32_t channelCount)
+        : mNumTaps(numTaps)
+        , mX(channelCount * numTaps * 2)
         , mSingleFrame(channelCount)
+        , mChannelCount(channelCount)
         {}
 
 
@@ -42,22 +39,25 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
                                                    int32_t inputRate,
                                                    int32_t outputRate,
                                                    Quality quality) {
-    bool usePolyphase = true;
     int numTaps = 4;
     switch (quality) {
-        case Quality::Low: // TODO polynomial
-            return new LinearResampler(channelCount, inputRate, outputRate);
+        case Quality::Low: // TODO polynomial?
+            return new LinearResampler(inputRate, outputRate, channelCount);
         case Quality::Medium:
-        default:
-            numTaps = 12;
+            numTaps = 12; // TODO benchmark and review these numTaps
             break;
         case Quality::High:
+        default:
             numTaps = 20;
             break;
         case Quality::Best:
-            usePolyphase = false; // TODO base on IntegerRatio reduction
+            numTaps = 28;
             break;
     }
+
+    IntegerRatio ratio(inputRate, outputRate);
+    ratio.reduce();
+    bool usePolyphase = (numTaps * ratio.getDenominator()) <= kMaxCoefficients;
 
     if (usePolyphase) {
         if (channelCount == 1) {
@@ -65,14 +65,15 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
         } else if (channelCount == 2) {
             return new PolyphaseResamplerStereo(numTaps, inputRate, outputRate);
         } else {
-            return new PolyphaseResampler(numTaps, channelCount, inputRate, outputRate);
+            return new PolyphaseResampler(numTaps, inputRate, outputRate, channelCount);
         }
     } else {
+        // Use less optimized resampler that uses a float phaseIncrement.
         // TODO mono resampler
         if (channelCount == 2) {
-            return new SincResamplerStereo( inputRate, outputRate); // TODO pass spread
+            return new SincResamplerStereo(inputRate, outputRate); // TODO pass spread
         } else {
-            return new SincResampler(channelCount,  inputRate, outputRate); // TODO pass spread
+            return new SincResampler(inputRate, outputRate, channelCount); // TODO pass spread
         }
     }
 }
@@ -86,21 +87,20 @@ void MultiChannelResampler::writeFrame(const float *frame) {
     float *dest = &mX[mCursor * getChannelCount()];
     int offset = getNumTaps() * getChannelCount();
     for (int channel = 0; channel < getChannelCount(); channel++) {
-        // Write twice so we avoid having to wrap when running the FIR.
+        // Write twice so we avoid having to wrap when reading.
         dest[channel] = dest[channel + offset] = frame[channel];
     }
 }
 
-// Unoptimized calculation used to construct lookup tables.
-float MultiChannelResampler::calculateWindowedSinc(float phase, int spread) {
-    const float realPhase = phase - spread;
-    if (abs(realPhase) < 0.00000001) return 1.0f; // avoid divide by zero
-    // Hamming window TODO try Kaiser window
+float MultiChannelResampler::hammingWindow(float radians, int spread) {
     const float alpha = 0.54f;
-    const float windowPhase = realPhase * M_PI / spread;
-    const float window = (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
-    // Sinc function
-    const float sincPhase = realPhase * M_PI;
-    const float sinc = sinf(sincPhase) / sincPhase;
-    return window * sinc;
+    const float windowPhase = radians / spread;
+    return (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
+}
+
+// Unoptimized calculation used to construct lookup tables.
+float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
+    if (abs(radians) < 0.00000001) return 1.0f;   // avoid divide by zero
+    const float sinc = sinf(radians) / radians;   // Sinc function
+    return sinc * hammingWindow(radians, spread); // TODO try Kaiser window
 }

@@ -26,9 +26,7 @@ namespace flowgraph {
 
 class LinearResampler : public ContinuousResampler {
 public:
-    LinearResampler(int32_t channelCount,
-                             int32_t inputRate,
-                             int32_t outputRate);
+    LinearResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount);
 
     void writeFrame(const float *frame) override;
 

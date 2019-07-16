@@ -27,7 +27,8 @@ public:
     IntegerRatio(int32_t numerator, int32_t denominator)
             : mNumerator(numerator), mDenominator(denominator) {}
 
-    /** Reduce by removing common prime factors.
+    /**
+     * Reduce by removing common prime factors.
      */
     void reduce();
 
@@ -42,7 +43,7 @@ public:
 private:
     int32_t mNumerator;
     int32_t mDenominator;
-    static std::vector<int> kPrimes;
+    static const std::vector<int> kPrimes;
 };
 
 }

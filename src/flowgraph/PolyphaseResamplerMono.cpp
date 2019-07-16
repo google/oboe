@@ -24,7 +24,7 @@ PolyphaseResamplerMono::PolyphaseResamplerMono(
         int32_t numTaps,
         int32_t inputRate,
         int32_t outputRate)
-        : PolyphaseResampler(MONO, numTaps, inputRate, outputRate) {}
+        : PolyphaseResampler(numTaps, inputRate, outputRate, MONO) {}
 
 
 void PolyphaseResamplerMono::writeFrame(const float *frame) {

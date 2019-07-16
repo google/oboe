@@ -28,11 +28,9 @@ namespace flowgraph {
  */
 class ContinuousResampler : public MultiChannelResampler {
 public:
-    explicit ContinuousResampler(int32_t channelCount,
-                                 int32_t numTaps,
-                                 int32_t inputRate,
-                                 int32_t outputRate)
-            : MultiChannelResampler(channelCount, numTaps, inputRate, outputRate) {
+    explicit ContinuousResampler(int32_t numTaps, int32_t inputRate, int32_t outputRate,
+                                     int32_t channelCount)
+            : MultiChannelResampler(numTaps, channelCount) {
         mPhaseIncrement = (double) inputRate / (double) outputRate;
     }
 

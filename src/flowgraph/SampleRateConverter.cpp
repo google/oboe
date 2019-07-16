@@ -48,15 +48,13 @@ int32_t SampleRateConverter::onProcess(int32_t numFrames) {
         if(mResampler.isWriteNeeded()) {
             if (isInputAvailable()) {
                 const float *frame = getNextInputFrame();
-                mResampler.writeFrame(frame);
-                mResampler.advanceWrite();
+                mResampler.writeNextFrame(frame);
             } else {
                 break;
             }
         } else {
-            // Output frame is interpolated from input samples based on phase.
-            mResampler.readFrame(outputBuffer);
-            mResampler.advanceRead();
+            // Output frame is interpolated from input samples.
+            mResampler.readNextFrame(outputBuffer);
             outputBuffer += channelCount;
             framesLeft--;
         }
