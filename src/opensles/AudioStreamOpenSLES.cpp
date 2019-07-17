@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <sys/types.h>
-#include <assert.h>
+#include <cassert>
 #include <android/log.h>
 
 

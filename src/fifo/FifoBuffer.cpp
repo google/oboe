@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <memory.h>
-#include <assert.h>
+#include <cassert>
 
 #include "common/OboeDebug.h"
 #include "fifo/FifoControllerBase.h"

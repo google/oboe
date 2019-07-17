@@ -18,7 +18,7 @@
 #define OBOE_STREAM_BUFFERED_H
 
 #include <cstring>
-#include <assert.h>
+#include <cassert>
 #include "common/OboeDebug.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamCallback.h"
