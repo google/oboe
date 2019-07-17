@@ -22,25 +22,25 @@ set (oboe_sources
     src/fifo/FifoControllerIndirect.cpp
     src/flowgraph/AudioProcessorBase.cpp
     src/flowgraph/ClipToRange.cpp
-    src/flowgraph/ContinuousResampler.cpp
-    src/flowgraph/IntegerRatio.cpp
-    src/flowgraph/LinearResampler.cpp
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoToMultiConverter.cpp
-    src/flowgraph/MultiChannelResampler.cpp
-    src/flowgraph/PolyphaseResampler.cpp
-    src/flowgraph/PolyphaseResamplerMono.cpp
-    src/flowgraph/PolyphaseResamplerStereo.cpp
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp
-    src/flowgraph/SincResampler.cpp
-    src/flowgraph/SincResamplerStereo.cpp
     src/flowgraph/SinkFloat.cpp
     src/flowgraph/SinkI16.cpp
     src/flowgraph/SinkI24.cpp
     src/flowgraph/SourceFloat.cpp
     src/flowgraph/SourceI16.cpp
     src/flowgraph/SourceI24.cpp
+    src/flowgraph/resampler/ContinuousResampler.cpp
+    src/flowgraph/resampler/IntegerRatio.cpp
+    src/flowgraph/resampler/LinearResampler.cpp
+    src/flowgraph/resampler/MultiChannelResampler.cpp
+    src/flowgraph/resampler/PolyphaseResampler.cpp
+    src/flowgraph/resampler/PolyphaseResamplerMono.cpp
+    src/flowgraph/resampler/PolyphaseResamplerStereo.cpp
+    src/flowgraph/resampler/SincResampler.cpp
+    src/flowgraph/resampler/SincResamplerStereo.cpp
     src/opensles/AudioInputStreamOpenSLES.cpp
     src/opensles/AudioOutputStreamOpenSLES.cpp
     src/opensles/AudioStreamBuffered.cpp

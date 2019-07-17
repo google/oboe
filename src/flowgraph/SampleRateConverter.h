@@ -21,9 +21,7 @@
 #include <sys/types.h>
 
 #include "AudioProcessorBase.h"
-#include "MultiChannelResampler.h"
-#include "LinearResampler.h"
-#include "SincResampler.h"
+#include "resampler/MultiChannelResampler.h"
 
 namespace flowgraph {
 
