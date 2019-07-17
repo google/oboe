@@ -217,17 +217,17 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
 
-    if (mFifoBuffer) {
-        if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
-            requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
-        } else if (requestedFrames < getFramesPerBurst()) {
-            requestedFrames = getFramesPerBurst();
-        }
-        mFifoBuffer->setThresholdFrames(requestedFrames);
-        return ResultWithValue<int32_t>(requestedFrames);
-    } else {
+    if (!mFifoBuffer) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
+
+    if (requestedFrames > mFifoBuffer->getBufferCapacityInFrames()) {
+        requestedFrames = mFifoBuffer->getBufferCapacityInFrames();
+    } else if (requestedFrames < getFramesPerBurst()) {
+        requestedFrames = getFramesPerBurst();
+    }
+    mFifoBuffer->setThresholdFrames(requestedFrames);
+    return ResultWithValue<int32_t>(requestedFrames);
 }
 
 int32_t AudioStreamBuffered::getBufferSizeInFrames() {

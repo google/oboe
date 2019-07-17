@@ -34,7 +34,7 @@ public:
     AudioOutputStreamOpenSLES();
     explicit AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder);
 
-    virtual ~AudioOutputStreamOpenSLES();
+    virtual ~AudioOutputStreamOpenSLES() = default;
 
     Result open() override;
     Result close() override;

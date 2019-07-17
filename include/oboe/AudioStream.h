@@ -63,7 +63,7 @@ public:
      *
      * @return
      */
-    virtual Result open();
+    virtual Result open() = 0;
 
     /**
      * Close the stream and deallocate any resources from the open() call.

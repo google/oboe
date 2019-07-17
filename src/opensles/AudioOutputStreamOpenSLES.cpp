@@ -66,9 +66,6 @@ AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &b
         : AudioStreamOpenSLES(builder) {
 }
 
-AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
-}
-
 // These will wind up in <SLES/OpenSLES_Android.h>
 constexpr int SL_ANDROID_SPEAKER_STEREO = (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT);
 
@@ -196,7 +193,7 @@ Result AudioOutputStreamOpenSLES::open() {
         result = (*configItf)->SetConfiguration(configItf,
                                                 SL_ANDROID_KEY_STREAM_TYPE,
                                                 &presetValue,
-                                                sizeof(SLuint32));
+                                                sizeof(presetValue));
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }

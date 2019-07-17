@@ -30,11 +30,6 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
         : AudioStreamBase(builder) {
 }
 
-Result AudioStream::open() {
-    // Parameters are validated by the underlying API.
-    return Result::OK;
-}
-
 Result AudioStream::close() {
     // Update local counters so they can be read after the close.
     updateFramesWritten();
@@ -162,7 +157,6 @@ static void oboe_stop_thread_proc(AudioStream *oboeStream) {
 
 void AudioStream::launchStopThread() {
     // Stop this stream on a separate thread
-    // std::thread t(requestStop);
     std::thread t(oboe_stop_thread_proc, this);
     t.detach();
 }

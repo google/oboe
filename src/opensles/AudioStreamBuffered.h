@@ -64,7 +64,7 @@ protected:
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
     bool usingFIFO() const { return getCallback() == nullptr; }
 
-    virtual Result updateServiceFrameCounter() { return Result::OK; }
+    virtual Result updateServiceFrameCounter() = 0;
 
     void updateFramesRead() override;
     void updateFramesWritten() override;
@@ -79,7 +79,7 @@ private:
     ResultWithValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
 
     void incrementXRunCount() {
-        mXRunCount++;
+        ++mXRunCount;
     }
 
     std::unique_ptr<FifoBuffer>   mFifoBuffer{};
