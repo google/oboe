@@ -39,11 +39,17 @@ public:
     virtual void setReadCounter(uint64_t n) override {
         mReadCounter.store(n, std::memory_order_release);
     }
+    virtual void incrementReadCounter(uint64_t n) override {
+        mReadCounter.fetch_add(n, std::memory_order_acq_rel);
+    }
     virtual uint64_t getWriteCounter() const override {
         return mWriteCounter.load(std::memory_order_acquire);
     }
     virtual void setWriteCounter(uint64_t n) override {
         mWriteCounter.store(n, std::memory_order_release);
+    }
+    virtual void incrementWriteCounter(uint64_t n) override {
+        mWriteCounter.fetch_add(n, std::memory_order_acq_rel);
     }
 
 private:

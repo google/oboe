@@ -38,8 +38,8 @@ uint32_t FifoControllerBase::getReadIndex() const {
     return static_cast<uint32_t>(getReadCounter() % mTotalFrames);
 }
 
-void FifoControllerBase::advanceReadIndex(int numFrames) {
-    setReadCounter(getReadCounter() + numFrames);
+void FifoControllerBase::advanceReadIndex(uint32_t numFrames) {
+    incrementReadCounter(numFrames);
 }
 
 int32_t FifoControllerBase::getEmptyFramesAvailable() const {
@@ -53,7 +53,7 @@ uint32_t FifoControllerBase::getWriteIndex() const {
 }
 
 void FifoControllerBase::advanceWriteIndex(uint32_t numFrames) {
-    setWriteCounter(getWriteCounter() + numFrames);
+    incrementWriteCounter(numFrames);
 }
 
 void FifoControllerBase::setThreshold(uint32_t threshold) {

@@ -57,7 +57,7 @@ public:
     /**
      * @param numFrames number of frames to advance the read index
      */
-    void advanceReadIndex(int numFrames);
+    void advanceReadIndex(uint32_t numFrames);
 
     /**
      * @return number of frames that can be written. Never write more than this.
@@ -82,8 +82,10 @@ public:
 
     virtual uint64_t getReadCounter() const = 0;
     virtual void setReadCounter(uint64_t n) = 0;
+    virtual void incrementReadCounter(uint64_t n) = 0;
     virtual uint64_t getWriteCounter() const = 0;
     virtual void setWriteCounter(uint64_t n) = 0;
+    virtual void incrementWriteCounter(uint64_t n) = 0;
 
 private:
     uint32_t mTotalFrames;
