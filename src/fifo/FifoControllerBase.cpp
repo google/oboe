@@ -16,7 +16,7 @@
 
 #include "FifoControllerBase.h"
 
-#include <assert.h>
+#include <cassert>
 #include <sys/types.h>
 #include "FifoControllerBase.h"
 
