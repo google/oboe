@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
