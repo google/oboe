@@ -27,10 +27,6 @@
 #include "AudioStreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 using namespace oboe;
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)

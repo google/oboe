@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <memory.h>
-#include <assert.h>
+#include <cassert>
 
 #include "common/OboeDebug.h"
 #include "fifo/FifoControllerBase.h"
@@ -31,7 +31,7 @@ namespace oboe {
 FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
         : mFrameCapacity(capacityInFrames)
         , mBytesPerFrame(bytesPerFrame)
-        , mStorage(NULL)
+        , mStorage(nullptr)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
         , mUnderrunCount(0)
