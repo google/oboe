@@ -75,11 +75,11 @@ DataCallbackResult AudioStreamBuffered::onDefaultCallback(void *audioData, int n
         // TODO If we do not allow FIFO to wrap then our timestamps will drift when there is an XRun!
         incrementXRunCount();
     }
-    markCallbackTime(numFrames); // so foreground knows how long to wait.
+    markCallbackTime(static_cast<int32_t>(numFrames)); // so foreground knows how long to wait.
     return DataCallbackResult::Continue;
 }
 
-void AudioStreamBuffered::markCallbackTime(int numFrames) {
+void AudioStreamBuffered::markCallbackTime(int32_t numFrames) {
     mLastBackgroundSize = numFrames;
     mBackgroundRanAtNanoseconds = AudioClock::getNanoseconds();
 }

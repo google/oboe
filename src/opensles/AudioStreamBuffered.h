@@ -73,7 +73,7 @@ private:
 
     int64_t predictNextCallbackTime();
 
-    void markCallbackTime(int numFrames);
+    void markCallbackTime(int32_t numFrames);
 
     // Read or write to the FIFO.
     ResultWithValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);

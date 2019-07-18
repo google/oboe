@@ -78,7 +78,7 @@ constexpr int SL_ANDROID_SPEAKER_5DOT1 = (SL_ANDROID_SPEAKER_QUAD
 constexpr int SL_ANDROID_SPEAKER_7DOT1 = (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT
         | SL_SPEAKER_SIDE_RIGHT);
 
-SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) const {
     SLuint32 channelMask = 0;
 
     switch (channelCount) {
@@ -135,7 +135,7 @@ Result AudioOutputStreamOpenSLES::open() {
         return Result::ErrorInternal;
     }
 
-    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
+    SLuint32 bitsPerSample = static_cast<SLuint32>(getBytesPerSample() * kBitsPerByte);
 
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -347,7 +347,10 @@ Result AudioOutputStreamOpenSLES::requestFlush() {
 
 Result AudioOutputStreamOpenSLES::requestFlush_l() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
-    if (getState() == StreamState::Closed) return Result::ErrorClosed;
+    if (getState() == StreamState::Closed) {
+        return Result::ErrorClosed;
+    }
+
     Result result = Result::OK;
     if (mPlayInterface == nullptr || mSimpleBufferQueueInterface == nullptr) {
         result = Result::ErrorInvalidState;

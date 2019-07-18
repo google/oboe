@@ -44,7 +44,7 @@ AudioStreamOpenSLES::~AudioStreamOpenSLES() {
 constexpr SLuint32  kAudioChannelCountMax = 30;
 constexpr SLuint32  SL_ANDROID_UNKNOWN_CHANNELMASK  = 0; // Matches name used internally.
 
-SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) {
+SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) const {
     if (channelCount > kAudioChannelCountMax) {
         return SL_ANDROID_UNKNOWN_CHANNELMASK;
     } else {

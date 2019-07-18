@@ -78,7 +78,7 @@ public:
 
 protected:
 
-    SLuint32 channelCountToChannelMaskDefault(int channelCount);
+    SLuint32 channelCountToChannelMaskDefault(int channelCount) const;
 
     virtual Result onBeforeDestroy() { return Result::OK; }
     virtual Result onAfterDestroy() { return Result::OK; }
