@@ -17,6 +17,8 @@
 #ifndef OBOE_AUDIO_STREAM_OPENSL_ES_H_
 #define OBOE_AUDIO_STREAM_OPENSL_ES_H_
 
+#include <vector>
+
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
@@ -45,7 +47,7 @@ public:
     AudioStreamOpenSLES();
     explicit AudioStreamOpenSLES(const AudioStreamBuilder &builder);
 
-    virtual ~AudioStreamOpenSLES();
+    virtual ~AudioStreamOpenSLES() = default;
 
     virtual Result open() override;
     virtual Result close() override;
@@ -110,7 +112,7 @@ protected:
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
 
-    uint8_t                      *mCallbackBuffer = nullptr;
+    std::vector<uint8_t>          mCallbackBuffer;
     int32_t                       mBytesPerCallback = oboe::kUnspecified;
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
