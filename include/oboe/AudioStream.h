@@ -63,7 +63,9 @@ public:
      *
      * @return
      */
-    virtual Result open() = 0;
+    virtual Result open() {
+        return Result::OK; // Called by subclasses. Might do more in the future.
+    }
 
     /**
      * Close the stream and deallocate any resources from the open() call.
