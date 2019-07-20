@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,20 @@
  */
 
 #include <math.h>
-#include <unistd.h>
 
-#include "SawtoothOscillator.h"
+#include "ExponentialShape.h"
 
-SawtoothOscillator::SawtoothOscillator()
-        : OscillatorBase() {
+ExponentialShape::ExponentialShape()
+        : AudioFilter(1) {
 }
 
-int32_t SawtoothOscillator::onProcess(int32_t numFrames) {
-    const float *frequencies = frequency.getBuffer();
-    const float *amplitudes = amplitude.getBuffer();
-    float *buffer = output.getBuffer();
+int32_t ExponentialShape::onProcess(int32_t numFrames) {
+    float *inputs = input.getBuffer();
+    float *outputs = output.getBuffer();
 
-    // Use the phase directly as a non-band-limited "sawtooth".
-    // WARNING: This will generate unpleasant aliasing artifacts at higher frequencies.
     for (int i = 0; i < numFrames; i++) {
-        float phase = incrementPhase(frequencies[i]); // phase ranges from -1 to +1
-        *buffer++ = phase * amplitudes[i];
+        float normalizedPhase = (inputs[i] * 0.5) + 0.5;
+        outputs[i] = mMinimum * powf(mRatio, normalizedPhase);
     }
 
     return numFrames;

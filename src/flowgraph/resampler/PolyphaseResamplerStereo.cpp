@@ -16,15 +16,13 @@
 
 #include "PolyphaseResamplerStereo.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
 #define STEREO  2
 
-PolyphaseResamplerStereo::PolyphaseResamplerStereo(
-            int32_t numTaps,
-            int32_t inputRate,
-            int32_t outputRate)
-        : PolyphaseResampler(numTaps, inputRate, outputRate, STEREO) {
+PolyphaseResamplerStereo::PolyphaseResamplerStereo(const MultiChannelResampler::Builder &builder)
+        : PolyphaseResampler(builder) {
+    assert(builder.getChannelCount() == STEREO);
 }
 
 

@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_CONTINUOUS_RESAMPLER_H
-#define FLOWGRAPH_CONTINUOUS_RESAMPLER_H
+#ifndef OBOE_CONTINUOUS_RESAMPLER_H
+#define OBOE_CONTINUOUS_RESAMPLER_H
 
 #include <sys/types.h>
 #include <unistd.h>
 #include "MultiChannelResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
 /*
  * Resampler that uses a double precision phase internally.
  */
 class ContinuousResampler : public MultiChannelResampler {
 public:
-    explicit ContinuousResampler(int32_t numTaps, int32_t inputRate, int32_t outputRate,
-                                     int32_t channelCount)
-            : MultiChannelResampler(numTaps, channelCount) {
-        mPhaseIncrement = (double) inputRate / (double) outputRate;
-    }
+    explicit ContinuousResampler(const MultiChannelResampler::Builder &builder);
 
     virtual ~ContinuousResampler() = default;
 
@@ -58,4 +54,4 @@ private:
 };
 
 }
-#endif //FLOWGRAPH_CONTINUOUS_RESAMPLER_H
+#endif //OBOE_CONTINUOUS_RESAMPLER_H

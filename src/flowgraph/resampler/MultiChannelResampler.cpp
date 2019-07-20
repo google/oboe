@@ -25,59 +25,70 @@
 #include "SincResampler.h"
 #include "SincResamplerStereo.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
-MultiChannelResampler::MultiChannelResampler(int32_t numTaps, int32_t channelCount)
-        : mNumTaps(numTaps)
-        , mX(channelCount * numTaps * 2)
-        , mSingleFrame(channelCount)
-        , mChannelCount(channelCount)
+MultiChannelResampler::MultiChannelResampler(const MultiChannelResampler::Builder &builder)
+        : mNumTaps(builder.getNumTaps())
+        , mX(builder.getChannelCount() * builder.getNumTaps() * 2)
+        , mSingleFrame(builder.getChannelCount())
+        , mChannelCount(builder.getChannelCount())
         {}
-
 
 MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
                                                    int32_t inputRate,
                                                    int32_t outputRate,
                                                    Quality quality) {
-    int numTaps = 4;
+    Builder builder;
+    builder.setInputRate(inputRate);
+    builder.setOutputRate(outputRate);
+    builder.setChannelCount(channelCount);
+
+    // TODO benchmark and review these numTaps
     switch (quality) {
-        case Quality::Low: // TODO polynomial?
-            return new LinearResampler(inputRate, outputRate, channelCount);
+        case Quality::Low:
+            builder.setNumTaps(8);
+            break;
         case Quality::Medium:
-            numTaps = 12; // TODO benchmark and review these numTaps
+        default:
+            builder.setNumTaps(16);
             break;
         case Quality::High:
-        default:
-            numTaps = 20;
+            builder.setNumTaps(24);
             break;
         case Quality::Best:
-            numTaps = 28;
+            builder.setNumTaps(32);
             break;
     }
 
-    IntegerRatio ratio(inputRate, outputRate);
-    ratio.reduce();
-    bool usePolyphase = (numTaps * ratio.getDenominator()) <= kMaxCoefficients;
+    // Set the cutoff frequency so that we do not get aliasing when down-sampling.
+    if (outputRate < inputRate) {
+        builder.setNormalizedCutoff((0.9f * outputRate) / inputRate);
+    }
+    return builder.build();
+}
 
+MultiChannelResampler *MultiChannelResampler::Builder::build() {
+    IntegerRatio ratio(getInputRate(), getOutputRate());
+    ratio.reduce();
+    bool usePolyphase = (getNumTaps() * ratio.getDenominator()) <= kMaxCoefficients;
     if (usePolyphase) {
-        if (channelCount == 1) {
-            return new PolyphaseResamplerMono(numTaps, inputRate, outputRate);
-        } else if (channelCount == 2) {
-            return new PolyphaseResamplerStereo(numTaps, inputRate, outputRate);
+        if (getChannelCount() == 1) {
+            return new PolyphaseResamplerMono(*this);
+        } else if (getChannelCount() == 2) {
+            return new PolyphaseResamplerStereo(*this);
         } else {
-            return new PolyphaseResampler(numTaps, inputRate, outputRate, channelCount);
+            return new PolyphaseResampler(*this);
         }
     } else {
         // Use less optimized resampler that uses a float phaseIncrement.
         // TODO mono resampler
-        if (channelCount == 2) {
-            return new SincResamplerStereo(inputRate, outputRate); // TODO pass spread
+        if (getChannelCount() == 2) {
+            return new SincResamplerStereo(*this);
         } else {
-            return new SincResampler(inputRate, outputRate, channelCount); // TODO pass spread
+            return new SincResampler(*this);
         }
     }
 }
-
 
 void MultiChannelResampler::writeFrame(const float *frame) {
     // Advance cursor before write so that cursor points to last written frame in read.
@@ -98,9 +109,12 @@ float MultiChannelResampler::hammingWindow(float radians, int spread) {
     return (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
 }
 
+float MultiChannelResampler::sinc(float radians) {
+    if (abs(radians) < 0.00000001) return 1.0f;   // avoid divide by zero
+    return sinf(radians) / radians;   // Sinc function
+}
+
 // Unoptimized calculation used to construct lookup tables.
 float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
-    if (abs(radians) < 0.00000001) return 1.0f;   // avoid divide by zero
-    const float sinc = sinf(radians) / radians;   // Sinc function
-    return sinc * hammingWindow(radians, spread); // TODO try Kaiser window
+    return sinc(radians) * hammingWindow(radians, spread); // TODO try Kaiser window
 }

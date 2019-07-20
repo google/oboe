@@ -16,16 +16,14 @@
 
 #include "PolyphaseResamplerMono.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
 #define MONO  1
 
-PolyphaseResamplerMono::PolyphaseResamplerMono(
-        int32_t numTaps,
-        int32_t inputRate,
-        int32_t outputRate)
-        : PolyphaseResampler(numTaps, inputRate, outputRate, MONO) {}
-
+PolyphaseResamplerMono::PolyphaseResamplerMono(const MultiChannelResampler::Builder &builder)
+        : PolyphaseResampler(builder) {
+    assert(builder.getChannelCount() == MONO);
+}
 
 void PolyphaseResamplerMono::writeFrame(const float *frame) {
     // Move cursor before write so that cursor points to last written frame in read.

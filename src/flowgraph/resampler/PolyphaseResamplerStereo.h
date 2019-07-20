@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
-#define FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
+#ifndef OBOE_POLYPHASE_RESAMPLER_STEREO_H
+#define OBOE_POLYPHASE_RESAMPLER_STEREO_H
 
 #include <sys/types.h>
 #include <unistd.h>
 #include "PolyphaseResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
     class PolyphaseResamplerStereo : public PolyphaseResampler {
     public:
-        PolyphaseResamplerStereo(int32_t numTaps, int32_t inputRate, int32_t outputRate);
+        explicit PolyphaseResamplerStereo(const MultiChannelResampler::Builder &builder);
 
         virtual ~PolyphaseResamplerStereo() = default;
 
@@ -36,4 +36,4 @@ namespace flowgraph {
 
 }
 
-#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_STEREO_H
+#endif //OBOE_POLYPHASE_RESAMPLER_STEREO_H

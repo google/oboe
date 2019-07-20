@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_SINE_OSCILLATOR_H
-#define FLOWGRAPH_SINE_OSCILLATOR_H
 
-#include <unistd.h>
+#include "LinearShape.h"
 
-#include "OscillatorBase.h"
+using namespace flowgraph;
 
-/**
- * Oscillator that generates a sine wave at the specified frequency and amplitude.
- */
-class SineOscillator : public OscillatorBase {
-public:
-    SineOscillator();
+LinearShape::LinearShape()
+        : AudioFilter(1) {
+}
 
-    int32_t onProcess(int32_t numFrames) override;
-};
+int32_t LinearShape::onProcess(int numFrames) {
+    float *inputs = input.getBuffer();
+    float *outputs = output.getBuffer();
 
-#endif //FLOWGRAPH_SINE_OSCILLATOR_H
+    for (int i = 0; i < numFrames; i++) {
+        float normalizedPhase = (inputs[i] * 0.5f) + 0.5f; // from 0.0 to 1.0
+        outputs[i] = mMinimum + (normalizedPhase * (mMaximum - mMinimum));
+    }
+
+    return numFrames;
+}

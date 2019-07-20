@@ -15,3 +15,10 @@
  */
 
 #include "ContinuousResampler.h"
+
+using namespace resampler;
+
+ContinuousResampler::ContinuousResampler(const MultiChannelResampler::Builder &builder)
+        : MultiChannelResampler(builder) {
+    mPhaseIncrement = (double) builder.getInputRate() / (double)  builder.getOutputRate();
+}

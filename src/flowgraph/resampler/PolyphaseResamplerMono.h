@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H
-#define FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H
+#ifndef OBOE_POLYPHASE_RESAMPLER_MONO_H
+#define OBOE_POLYPHASE_RESAMPLER_MONO_H
 
 #include <sys/types.h>
 #include <unistd.h>
 #include "PolyphaseResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
     class PolyphaseResamplerMono : public PolyphaseResampler {
     public:
-        PolyphaseResamplerMono(int32_t numTaps, int32_t inputRate, int32_t outputRate);
+        explicit PolyphaseResamplerMono(const MultiChannelResampler::Builder &builder);
 
         virtual ~PolyphaseResamplerMono() = default;
 
@@ -36,4 +36,4 @@ namespace flowgraph {
 
 }
 
-#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_MONO_H
+#endif //OBOE_POLYPHASE_RESAMPLER_MONO_H

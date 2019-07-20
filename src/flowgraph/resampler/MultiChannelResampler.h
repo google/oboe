@@ -14,22 +14,86 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
-#define FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
+#ifndef OBOE_MULTICHANNEL_RESAMPLER_H
+#define OBOE_MULTICHANNEL_RESAMPLER_H
 
 #include <memory>
 #include <vector>
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace flowgraph { // TODO resampler
+namespace resampler {
 
 // Move this to a subfolder that is not dependent on flowgraph.
 class MultiChannelResampler {
 
 public:
 
-    MultiChannelResampler(int32_t numTaps, int32_t channelCount);
+    enum class Quality : int32_t {
+        Low,
+        Medium,
+        High,
+        Best,
+    };
+
+    class Builder {
+    public:
+        MultiChannelResampler *build();
+
+        Builder *setNumTaps(int32_t numTaps) {
+            mNumTaps = numTaps;
+            return this;
+        }
+        
+        Builder *setChannelCount(int32_t channelCount) {
+            mChannelCount = channelCount;
+            return this;
+        }
+
+        Builder *setInputRate(int32_t inputRate) {
+            mInputRate = inputRate;
+            return this;
+        }
+        Builder *setOutputRate(int32_t outputRate) {
+            mOutputRate = outputRate;
+            return this;
+        }
+
+        Builder *setNormalizedCutoff(float normalizedCutoff) {
+            mNormalizedCutoff = normalizedCutoff;
+            return this;
+        }
+
+        int32_t getNumTaps() const {
+            return mNumTaps;
+        }
+
+        int32_t getChannelCount() const {
+            return mChannelCount;
+        }
+
+        int32_t getInputRate() const {
+            return mInputRate;
+        }
+
+        int32_t getOutputRate() const {
+            return mOutputRate;
+        }
+
+        float getNormalizedCutoff() const {
+            return mNormalizedCutoff;
+        }
+
+    protected:
+        int32_t mChannelCount = 1;
+        int32_t mNumTaps = 16;
+        int32_t mInputRate = 48000;
+        int32_t mOutputRate = 48000;
+        Quality mQuality = Quality::Medium;
+        float   mNormalizedCutoff = 1.0;
+    };
+
+    explicit MultiChannelResampler(const MultiChannelResampler::Builder &builder);
 
     virtual ~MultiChannelResampler() = default;
 
@@ -66,16 +130,11 @@ public:
      * @param phase between 0.0 and  2*spread // TODO use centered phase, maybe
      * @return windowedSinc
      */
-    static float calculateWindowedSinc(float phase, int spread);
+    static float calculateWindowedSinc(float phase, int spread); // TODO remove
 
-    static float hammingWindow(float phase, int spread);
+    static float hammingWindow(float radians, int spread);
 
-    enum class Quality : int32_t {
-        Low,
-        Medium,
-        High,
-        Best,
-    };
+    static float sinc(float radians);
 
     static MultiChannelResampler *make(int32_t channelCount,
             int32_t inputRate,
@@ -115,4 +174,4 @@ private:
 };
 
 }
-#endif //FLOWGRAPH_MULTICHANNEL_RESAMPLER_H
+#endif //OBOE_MULTICHANNEL_RESAMPLER_H

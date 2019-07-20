@@ -17,11 +17,11 @@
 #include <math.h>
 #include "SincResampler.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
-SincResampler::SincResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount)
-        : ContinuousResampler(kNumTaps, inputRate, outputRate, channelCount)
-        , mWindowedSinc(kNumPoints + kNumGuardPoints){
+SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
+        : ContinuousResampler(builder)
+        , mWindowedSinc(kNumPoints + kNumGuardPoints) {
     generateLookupTable();
 }
 
@@ -35,6 +35,7 @@ void SincResampler::readFrame(float *frame) {
     // Multiply input times windowed sinc function.
     int xIndex = (mCursor + kNumTaps) * getChannelCount();
     for (int i = 0; i < kNumTaps; i++) {
+        // TODO Use consecutive coefficient precomputed and then interpolate the result.
         float coefficient = interpolateWindowedSinc(phase);
         float *xFrame = &mX[xIndex];
         for (int channel = 0; channel < getChannelCount(); channel++) {
@@ -76,6 +77,8 @@ float SincResampler::interpolateWindowedSinc(float phase) {
 }
 
 void SincResampler::generateLookupTable() {
+    // Place related coefficients together for faster convolution, like for Polyphase
+    // but divide each zero crossing into 32 or 64 steps.
     // TODO store only half of function and use symmetry
     // By iterating over the table size we also set the guard point.
     for (int i = 0; i < mWindowedSinc.size(); i++) {

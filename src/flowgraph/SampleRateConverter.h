@@ -27,7 +27,7 @@ namespace flowgraph {
 
 class SampleRateConverter : public AudioFilter {
 public:
-    explicit SampleRateConverter(int32_t channelCount, MultiChannelResampler &mResampler);
+    explicit SampleRateConverter(int32_t channelCount, resampler::MultiChannelResampler &mResampler);
 
     virtual ~SampleRateConverter() = default;
 
@@ -44,7 +44,7 @@ private:
 
     const float *getNextInputFrame();
 
-    MultiChannelResampler &mResampler;
+    resampler::MultiChannelResampler &mResampler;
 
     int32_t mInputCursor = 0;
     int32_t mInputValid = 0;

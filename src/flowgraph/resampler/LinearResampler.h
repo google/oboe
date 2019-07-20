@@ -22,11 +22,11 @@
 #include <unistd.h>
 #include "ContinuousResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
 class LinearResampler : public ContinuousResampler {
 public:
-    LinearResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount);
+    LinearResampler(const MultiChannelResampler::Builder &builder);
 
     void writeFrame(const float *frame) override;
 

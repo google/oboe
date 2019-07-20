@@ -18,22 +18,23 @@
 #include "IntegerRatio.h"
 #include "PolyphaseResampler.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
-PolyphaseResampler::PolyphaseResampler(int32_t numTaps,
-        int32_t inputRate,
-        int32_t outputRate,
-        int32_t channelCount)
-        : MultiChannelResampler(numTaps, channelCount)
+PolyphaseResampler::PolyphaseResampler(const MultiChannelResampler::Builder &builder)
+        : MultiChannelResampler(builder)
         {
-    assert((numTaps % 4) == 0); // Required for loop unrolling.
-    generateCoefficients(inputRate, outputRate);
+    assert((getNumTaps() % 4) == 0); // Required for loop unrolling.
+    generateCoefficients(builder.getInputRate(), builder.getOutputRate(), builder.getNormalizedCutoff());
 }
 
 // Generate coefficients in the order they will be used by readFrame().
 // This is more complicated but readFrame() is called repeatedly and should be optimized.
-void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputRate) {
+void PolyphaseResampler::generateCoefficients(int32_t inputRate,
+                                              int32_t outputRate,
+                                              float normalizedCutoff) {
     {
+        // Reduce sample rates to the smallest ratio.
+        // For example 44100/48000 would become 147/160.
         IntegerRatio ratio(inputRate, outputRate);
         ratio.reduce();
         mNumerator = ratio.getNumerator();
@@ -47,36 +48,46 @@ void PolyphaseResampler::generateCoefficients(int32_t inputRate, int32_t outputR
     const int spread = getNumTaps() / 2; // numTaps must be even.
     for (int i = 0; i < mDenominator; i++) {
         float tapPhase = phase - spread;
+        float gain = 0.0;
+        int gainCursor = cursor;
         for (int tap = 0; tap < getNumTaps(); tap++) {
             float radians = tapPhase * M_PI;
-            mCoefficients.at(cursor++) = calculateWindowedSinc(radians, spread);
+            float coefficient = sinc(normalizedCutoff * radians) * hammingWindow(radians, spread);
+            mCoefficients.at(cursor++) = coefficient;
+            gain += coefficient;
             tapPhase += 1.0;
         }
         phase += phaseIncrement;
         while (phase >= 1.0) {
             phase -= 1.0;
         }
+
+        // Correct for gain variations. // TODO review
+        //printf("gain at %d was %f\n", i, gain);
+        float gainCorrection = 1.0 / gain; // normalize the gain
+        for (int tap = 0; tap < getNumTaps(); tap++) {
+            float scaledCoefficient = mCoefficients.at(gainCursor) * gainCorrection;
+            //printf("scaledCoefficient[%2d] = %10.6f\n", tap, scaledCoefficient);
+            mCoefficients.at(gainCursor++) = scaledCoefficient;
+        }
     }
 }
 
 void PolyphaseResampler::readFrame(float *frame) {
-    // Clear accumulator for mix.
-    for (int channel = 0; channel < getChannelCount(); channel++) {
-        mSingleFrame[channel] = 0.0;
-    }
+    // Clear accumulator for mixing.
+    std::fill(mSingleFrame.begin(), mSingleFrame.end(), 0.0);
 
-    float *coefficients = &mCoefficients[mCoefficientCursor];
     // Multiply input times windowed sinc function.
-    int xIndex = (mCursor + mNumTaps) * getChannelCount();
+    float *coefficients = &mCoefficients[mCoefficientCursor];
+    float *xFrame = &mX[mCursor * getChannelCount()];
     for (int i = 0; i < mNumTaps; i++) {
         float coefficient = *coefficients++;
-        float *xFrame = &mX[xIndex];
         for (int channel = 0; channel < getChannelCount(); channel++) {
-            mSingleFrame[channel] += coefficient * xFrame[channel];
+            mSingleFrame[channel] += *xFrame++ * coefficient;
         }
-        xIndex -= getChannelCount();
     }
 
+    // Advance and wrap through coefficients.
     mCoefficientCursor = (mCoefficientCursor + mNumTaps) % mCoefficients.size();
 
     // Copy accumulator to output.

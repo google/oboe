@@ -22,11 +22,11 @@
 #include <unistd.h>
 #include "ContinuousResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
 class SincResampler : public ContinuousResampler {
 public:
-    SincResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount);
+    explicit SincResampler(const MultiChannelResampler::Builder &builder);
 
     virtual ~SincResampler() = default;
 

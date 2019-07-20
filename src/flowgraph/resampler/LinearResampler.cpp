@@ -16,12 +16,12 @@
 
 #include "LinearResampler.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
-LinearResampler::LinearResampler(int32_t inputRate, int32_t outputRate, int32_t channelCount)
-        : ContinuousResampler(2 /* numTaps */, inputRate, outputRate, channelCount) {
-        mPreviousFrame = std::make_unique<float[]>(channelCount);
-        mCurrentFrame = std::make_unique<float[]>(channelCount);
+LinearResampler::LinearResampler(const MultiChannelResampler::Builder &builder)
+        : ContinuousResampler(builder) {
+        mPreviousFrame = std::make_unique<float[]>(getChannelCount());
+        mCurrentFrame = std::make_unique<float[]>(getChannelCount());
 }
 
 void LinearResampler::writeFrame(const float *frame) {

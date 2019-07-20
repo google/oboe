@@ -32,6 +32,8 @@
 #include "flowgraph/MonoToMultiConverter.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
+#include "flowunits/ExponentialShape.h"
+#include "flowunits/LinearShape.h"
 #include "flowunits/SineOscillator.h"
 #include "flowunits/SawtoothOscillator.h"
 
@@ -44,6 +46,7 @@
 #include "OboeStreamCallbackProxy.h"
 #include "PlayRecordingCallback.h"
 #include "SawPingGenerator.h"
+#include "flowunits/TriangleOscillator.h"
 
 // These must match order in strings.xml and in StreamConfiguration.java
 #define NATIVE_MODE_UNSPECIFIED  0
@@ -169,6 +172,8 @@ public:
 
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
+
+    virtual void setSignalType(int signalType) {}
 
     virtual int32_t saveWaveFile(const char *filename);
 
@@ -300,19 +305,30 @@ public:
     void setChannelEnabled(int channelIndex, bool enabled) override;
 
     // WARNING - must match order in strings.xml and OboeAudioOutputStream.java
-    enum ToneType {
-        SawPing = 0,
-        Sine = 1,
-        Impulse = 2,
-        Sawtooth = 3
+    enum SignalType {
+        Sine = 0,
+        Sawtooth = 1,
+        FreqSweep = 2,
+        PitchSweep = 3,
+        WhiteNoise = 4
     };
 
-protected:
-    ToneType                     mToneType = ToneType::Sine;
-    std::vector<SineOscillator>  sineOscillators;
-    std::vector<SawtoothOscillator>  sawtoothOscillators;
+    void setSignalType(int signalType) override {
+        mSignalType = (SignalType) signalType;
+    }
 
-    ImpulseOscillator            impulseGenerator;
+protected:
+    SignalType                       mSignalType = SignalType::Sine;
+
+    std::vector<SineOscillator>      sineOscillators;
+    std::vector<SawtoothOscillator>  sawtoothOscillators;
+    ImpulseOscillator                impulseGenerator;
+    static constexpr float           kSweepPeriod = 10.0; // for triangle up and down
+
+    // A triangle LFO is shaped into either a linear or an exponential range.
+    TriangleOscillator               mTriangleOscillator;
+    LinearShape                      mLinearShape;
+    ExponentialShape                 mExponentialShape;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_POLYPHASE_RESAMPLER_H
-#define FLOWGRAPH_POLYPHASE_RESAMPLER_H
-
+#ifndef OBOE_POLYPHASE_RESAMPLER_H
+#define OBOE_POLYPHASE_RESAMPLER_H
 
 #include <memory>
 #include <vector>
@@ -24,7 +23,7 @@
 #include <unistd.h>
 #include "MultiChannelResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
 class PolyphaseResampler : public MultiChannelResampler {
 public:
@@ -35,8 +34,7 @@ public:
      * @param inputRate inputRate/outputRate should be a reduced fraction
      * @param outputRate
      */
-    PolyphaseResampler(int32_t numTaps, int32_t inputRate, int32_t outputRate,
-                       int32_t channelCount);
+    explicit PolyphaseResampler(const MultiChannelResampler::Builder &builder);
 
     virtual ~PolyphaseResampler() = default;
 
@@ -56,16 +54,25 @@ public:
 
 protected:
 
-    void generateCoefficients(int32_t inputRate, int32_t outputRate);
-
     std::vector<float>     mCoefficients;
     int32_t                mCoefficientCursor = 0;
     int32_t                mIntegerPhase = 0;
     int32_t                mNumerator = 0;
     int32_t                mDenominator = 0;
 
+private:
+
+    /**
+     * Generate the filter coefficients in optimal order.
+     * @param inputRate
+     * @param outputRate
+     * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
+     */
+    void generateCoefficients(int32_t inputRate,
+                              int32_t outputRate,
+                              float normalizedCutoff);
 };
 
 }
 
-#endif //FLOWGRAPH_POLYPHASE_RESAMPLER_H
+#endif //OBOE_POLYPHASE_RESAMPLER_H

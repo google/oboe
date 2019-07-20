@@ -315,12 +315,21 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
         return;
     }
     if (enabled) {
-        switch (mToneType) {
-            case ToneType::Sine:
+        switch (mSignalType) {
+            case SignalType::Sine:
+                sineOscillators[channelIndex].frequency.disconnect();
                 sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
                 break;
-            case ToneType::Sawtooth:
+            case SignalType::Sawtooth:
                 sawtoothOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                break;
+            case SignalType::FreqSweep:
+                mLinearShape.output.connect(&sineOscillators[channelIndex].frequency);
+                sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                break;
+            case SignalType::PitchSweep:
+                mExponentialShape.output.connect(&sineOscillators[channelIndex].frequency);
+                sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
                 break;
             default:
                 break;
@@ -337,14 +346,28 @@ void ActivityTestOutput::configureForStart() {
     mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
 
     oboe::AudioStream *outputStream = getOutputStream();
+
+    mTriangleOscillator.setSampleRate(outputStream->getSampleRate());
+    mTriangleOscillator.frequency.setValue(1.0/kSweepPeriod);
+    mTriangleOscillator.amplitude.setValue(1.0);
+    mTriangleOscillator.setPhase(-1.0);
+
+    mLinearShape.setMinimum(0.0);
+    mLinearShape.setMaximum(outputStream->getSampleRate() * 0.5); // Nyquist
+
+    mExponentialShape.setMinimum(110.0);
+    mExponentialShape.setMaximum(outputStream->getSampleRate() * 0.5); // Nyquist
+
+    mTriangleOscillator.output.connect(&(mLinearShape.input));
+    mTriangleOscillator.output.connect(&(mExponentialShape.input));
     {
-        double frequency = 660.0;
+        double frequency = 330.0;
         for (int i = 0; i < mChannelCount; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
             frequency *= 4.0 / 3.0; // each sine is at a higher frequency
             sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
-            sineOscillators[i].output.connect(manyToMulti->inputs[i].get());
+            setChannelEnabled(i, true);
         }
     }
 

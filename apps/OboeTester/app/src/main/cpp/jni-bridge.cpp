@@ -415,6 +415,12 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
     engine.getCurrentActivity()->setChannelEnabled(channelIndex, enabled);
 }
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setSignalType(
+        JNIEnv *env, jobject, jint signalType) {
+    engine.getCurrentActivity()->setSignalType(signalType);
+}
+
 // ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv *env,

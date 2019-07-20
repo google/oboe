@@ -17,22 +17,23 @@
 #include <math.h>
 #include <unistd.h>
 
-#include "SawtoothOscillator.h"
+#include "TriangleOscillator.h"
 
-SawtoothOscillator::SawtoothOscillator()
+TriangleOscillator::TriangleOscillator()
         : OscillatorBase() {
 }
 
-int32_t SawtoothOscillator::onProcess(int32_t numFrames) {
+int32_t TriangleOscillator::onProcess(int32_t numFrames) {
     const float *frequencies = frequency.getBuffer();
     const float *amplitudes = amplitude.getBuffer();
     float *buffer = output.getBuffer();
 
-    // Use the phase directly as a non-band-limited "sawtooth".
+    // Use the phase directly as a non-band-limited "triangle".
     // WARNING: This will generate unpleasant aliasing artifacts at higher frequencies.
     for (int i = 0; i < numFrames; i++) {
         float phase = incrementPhase(frequencies[i]); // phase ranges from -1 to +1
-        *buffer++ = phase * amplitudes[i];
+        float triangle = 2.0f * ((phase < 0.0f) ? (0.5f + phase): (0.5f - phase));
+        *buffer++ = triangle * amplitudes[i];
     }
 
     return numFrames;

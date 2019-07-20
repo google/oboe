@@ -37,11 +37,25 @@ public:
 
     void setSampleRate(float sampleRate) {
         mSampleRate = sampleRate;
-        mFrequencyToPhaseIncrement = 1.0f / sampleRate; // scaler
+        mFrequencyToPhaseIncrement = 2.0f / sampleRate; // -1 to +1 is a range of 2
     }
 
     float getSampleRate() {
         return mSampleRate;
+    }
+
+    /**
+     * This can be used to set the initial phase of an oscillator before starting.
+     * This is mostly used with an LFO.
+     * Calling this while the oscillator is running will cause sharp pops.
+     * @param phase between -1.0 and +1.0
+     */
+    void setPhase(float phase) {
+        mPhase = phase;
+    }
+
+    float getPhase() {
+        return mPhase;
     }
 
     /**
@@ -77,7 +91,7 @@ protected:
         return mPhase;
     }
 
-    float   mPhase = 0.0;  // phase that ranges from -1.0 to +1.0
+    float   mPhase = 0.0f;  // phase that ranges from -1.0 to +1.0
     float   mSampleRate = 0.0f;
     float   mFrequencyToPhaseIncrement = 0.0f; // scaler for converting frequency to phase increment
 };

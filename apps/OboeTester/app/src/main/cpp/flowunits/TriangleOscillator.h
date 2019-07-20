@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_SINE_OSCILLATOR_H
-#define FLOWGRAPH_SINE_OSCILLATOR_H
+#ifndef FLOWGRAPH_TRIANGLE_OSCILLATOR_H
+#define FLOWGRAPH_TRIANGLE_OSCILLATOR_H
 
 #include <unistd.h>
 
 #include "OscillatorBase.h"
 
 /**
- * Oscillator that generates a sine wave at the specified frequency and amplitude.
+ * Oscillator that generates a triangle wave at the specified frequency and amplitude.
+ *
+ * The triangle output rises from -1 to +1 when the phase is between -1 and 0.
+ * The triangle output falls from +1 to 11 when the phase is between 0 and +1.
+ *
+ * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
  */
-class SineOscillator : public OscillatorBase {
+class TriangleOscillator : public OscillatorBase {
 public:
-    SineOscillator();
+    TriangleOscillator();
 
     int32_t onProcess(int32_t numFrames) override;
 };
 
-#endif //FLOWGRAPH_SINE_OSCILLATOR_H
+#endif //FLOWGRAPH_TRIANGLE_OSCILLATOR_H

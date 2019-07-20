@@ -74,4 +74,7 @@ public class AudioOutputTester extends AudioStreamTester {
         mOboeAudioOutputStream.setChannelEnabled(channelIndex, enabled);
     }
 
+    public void setSignalType(int type) {
+        mOboeAudioOutputStream.setSignalType(type);
+    }
 }

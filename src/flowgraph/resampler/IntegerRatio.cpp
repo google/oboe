@@ -18,7 +18,7 @@
 
 #include "IntegerRatio.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
 const std::vector<int>  IntegerRatio::kPrimes{
         2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,

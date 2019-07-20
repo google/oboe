@@ -16,9 +16,14 @@
 
 #include "SincResamplerStereo.h"
 
-using namespace flowgraph;
+using namespace resampler;
 
 #define STEREO  2
+
+SincResamplerStereo::SincResamplerStereo(const MultiChannelResampler::Builder &builder)
+        : SincResampler(builder) {
+    assert(builder.getChannelCount() == STEREO);
+}
 
 void SincResamplerStereo::writeFrame(const float *frame) {
     int xIndex = mCursor * STEREO;

@@ -21,14 +21,11 @@
 #include <unistd.h>
 #include "SincResampler.h"
 
-namespace flowgraph {
+namespace resampler {
 
 class SincResamplerStereo : public SincResampler {
 public:
-    SincResamplerStereo(
-            int32_t inputRate,
-            int32_t outputRate)
-            : SincResampler(inputRate, outputRate, 2) {}
+    explicit SincResamplerStereo(const MultiChannelResampler::Builder &builder);
 
     virtual ~SincResamplerStereo() = default;
 

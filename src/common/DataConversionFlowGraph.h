@@ -66,7 +66,7 @@ private:
     std::unique_ptr<flowgraph::AudioSourceBuffered>    mSource;
     std::unique_ptr<AudioSourceCaller>                 mSourceCaller;
     std::unique_ptr<flowgraph::MonoToMultiConverter>   mChannelConverter;
-    std::unique_ptr<flowgraph::MultiChannelResampler>  mResampler;
+    std::unique_ptr<resampler::MultiChannelResampler>  mResampler;
     std::unique_ptr<flowgraph::SampleRateConverter>    mRateConverter;
     std::unique_ptr<flowgraph::AudioSink>              mSink;
 

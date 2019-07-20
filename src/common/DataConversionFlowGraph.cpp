@@ -34,6 +34,7 @@
 
 using namespace oboe;
 using namespace flowgraph;
+using namespace resampler;
 
 void DataConversionFlowGraph::setSource(const void *buffer, int32_t numFrames) {
     mSource->setData(buffer, numFrames);

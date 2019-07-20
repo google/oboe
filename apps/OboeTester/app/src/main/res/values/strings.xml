@@ -84,10 +84,13 @@
         <item>LOW_LATENCY</item>
     </string-array>
 
-    <string name="tone_prompt">Choose a Tone Type</string>
-    <string-array name="tone_types">
-        <item>Saw Ping</item>
-        <item>Sine Steady</item>
+<!--Must match SignalType in NativeAudioContext.h-->
+    <string name="output_signal_prompt">choose a signal</string>
+    <string-array name="output_signals">
+        <item>Sine</item>
+        <item>Sawtooth</item>
+        <item>Freq Sweep</item>
+        <item>Pitch Sweep</item>
     </string-array>
 
     <string name="synth_sender_text">Select Sender for Synth</string>
