@@ -106,7 +106,7 @@ Result AudioStreamOpenSLES::open() {
         return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
     }
 
-    mCallbackBuffer.reserve(mBytesPerCallback);
+    mCallbackBuffer = std::make_unique<uint8_t[]>(mBytesPerCallback);
 
     mSharingMode = SharingMode::Shared;
 
@@ -230,13 +230,13 @@ Result AudioStreamOpenSLES::close() {
 }
 
 SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
-    return (*bq)->Enqueue(bq, mCallbackBuffer.data(), mBytesPerCallback);
+    return (*bq)->Enqueue(bq, mCallbackBuffer.get(), mBytesPerCallback);
 }
 
 void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     bool stopStream = false;
     // Ask the callback to fill the output buffer with data.
-    DataCallbackResult result = fireDataCallback(mCallbackBuffer.data(), mFramesPerCallback);
+    DataCallbackResult result = fireDataCallback(mCallbackBuffer.get(), mFramesPerCallback);
     if (result == DataCallbackResult::Continue) {
         // Update Oboe service position based on OpenSL ES position.
         updateServiceFrameCounter();

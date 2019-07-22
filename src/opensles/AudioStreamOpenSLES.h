@@ -17,7 +17,7 @@
 #ifndef OBOE_AUDIO_STREAM_OPENSL_ES_H_
 #define OBOE_AUDIO_STREAM_OPENSL_ES_H_
 
-#include <vector>
+#include <memory>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -116,7 +116,7 @@ protected:
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
-    std::vector<uint8_t>          mCallbackBuffer;
+    std::unique_ptr<uint8_t[]>          mCallbackBuffer;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};
 
 };
