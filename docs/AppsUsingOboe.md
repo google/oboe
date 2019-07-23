@@ -1,5 +1,9 @@
 # Projects using Oboe or AAudio
 
+
+Want your project added? [Add a comment to issue #214](https://github.com/google/oboe/issues/214) with 
+your project name and Play Store URL. 
+
 | Name | Description | Publisher | Notes |
 |:--|:--|:--|:--|
 | [Audio Evolution Mobile Studio](https://play.google.com/store/apps/details?id=com.extreamsd.aemobile) | Digital Audio Workstation app | eXtream Software Development | Oboe implemented in version 4.9.8.1 |
@@ -17,5 +21,3 @@
 | [SoundCloud](https://play.google.com/store/apps/details?id=com.soundcloud.android&hl=en) | Music streaming app | SoundCloud | They [wrote an article](https://developers.soundcloud.com/blog/soundcloud-is-playing-the-oboe) about the integration |
 | Volcano Mobile apps | MIDI synthesizer apps: [FluidSynth](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi), [OPL3 MIDI Synth FM](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth), [MIDI Sequencer](https://play.google.com/store/apps/details?id=net.volcanomobile.midisequencer) | Volcano Mobile |  MIDI Sequencer app is very handy for testing. |
 
-Want your project added? [Add a comment to issue #214](https://github.com/google/oboe/issues/214) with 
-your project name and Play Store URL. 
