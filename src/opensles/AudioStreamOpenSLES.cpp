@@ -37,28 +37,24 @@ AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     mSessionId = SessionId::None;
 }
 
-AudioStreamOpenSLES::~AudioStreamOpenSLES() {
-    delete[] mCallbackBuffer;
-}
-
 constexpr SLuint32  kAudioChannelCountMax = 30;
 constexpr SLuint32  SL_ANDROID_UNKNOWN_CHANNELMASK  = 0; // Matches name used internally.
 
 SLuint32 AudioStreamOpenSLES::channelCountToChannelMaskDefault(int channelCount) const {
     if (channelCount > kAudioChannelCountMax) {
         return SL_ANDROID_UNKNOWN_CHANNELMASK;
-    } else {
-        SLuint32 bitfield = (1 << channelCount) - 1;
-
-        // Check for OS at run-time.
-        if(getSdkVersion() >= __ANDROID_API_N__) {
-            return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
-        } else {
-            // Indexed channels masks were added in N.
-            // For before N, the best we can do is use a positional channel mask.
-            return bitfield;
-        }
     }
+
+    SLuint32 bitfield = (1 << channelCount) - 1;
+
+    // Check for OS at run-time.
+    if(getSdkVersion() >= __ANDROID_API_N__) {
+        return SL_ANDROID_MAKE_INDEXED_CHANNEL_MASK(bitfield);
+    }
+
+    // Indexed channels masks were added in N.
+    // For before N, the best we can do is use a positional channel mask.
+    return bitfield;
 }
 
 static bool s_isLittleEndian() {
@@ -109,8 +105,8 @@ Result AudioStreamOpenSLES::open() {
         LOGE("AudioStreamOpenSLES::open() bytesPerCallback < 0, bad format?");
         return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
     }
-    delete[] mCallbackBuffer; // to prevent memory leaks
-    mCallbackBuffer = new uint8_t[mBytesPerCallback];
+
+    mCallbackBuffer = std::make_unique<uint8_t[]>(mBytesPerCallback);
 
     mSharingMode = SharingMode::Shared;
 
@@ -211,38 +207,36 @@ SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf c
 }
 
 Result AudioStreamOpenSLES::close() {
-
-    if (mState == StreamState::Closed){
+    if (mState == StreamState::Closed) {
         return Result::ErrorClosed;
-    } else {
-        AudioStreamBuffered::close();
-
-        onBeforeDestroy();
-
-        if (mObjectInterface != nullptr) {
-            (*mObjectInterface)->Destroy(mObjectInterface);
-            mObjectInterface = nullptr;
-
-        }
-
-        onAfterDestroy();
-
-        mSimpleBufferQueueInterface = nullptr;
-        EngineOpenSLES::getInstance().close();
-
-        setState(StreamState::Closed);
-        return Result::OK;
     }
+
+    AudioStreamBuffered::close();
+
+    onBeforeDestroy();
+
+    if (mObjectInterface != nullptr) {
+        (*mObjectInterface)->Destroy(mObjectInterface);
+        mObjectInterface = nullptr;
+    }
+
+    onAfterDestroy();
+
+    mSimpleBufferQueueInterface = nullptr;
+    EngineOpenSLES::getInstance().close();
+
+    setState(StreamState::Closed);
+    return Result::OK;
 }
 
 SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
-    return (*bq)->Enqueue(bq, mCallbackBuffer, mBytesPerCallback);
+    return (*bq)->Enqueue(bq, mCallbackBuffer.get(), mBytesPerCallback);
 }
 
 void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     bool stopStream = false;
     // Ask the callback to fill the output buffer with data.
-    DataCallbackResult result = fireDataCallback(mCallbackBuffer, mFramesPerCallback);
+    DataCallbackResult result = fireDataCallback(mCallbackBuffer.get(), mFramesPerCallback);
     if (result == DataCallbackResult::Continue) {
         // Update Oboe service position based on OpenSL ES position.
         updateServiceFrameCounter();
