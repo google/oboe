@@ -18,7 +18,7 @@ done
 
 
 # Check the apks that all get built fine (RhythmGame uses split APKs so we have to specify each one)
-declare apks=(
+declare bundles=(
     samples/hello-oboe/build/outputs/bundle/debug/hello-oboe.aab
     samples/MegaDrone/build/outputs/bundle/debug/MegaDrone.aab
     samples/RhythmGame/build/outputs/bundle/ndkExtractorDebug/RhythmGame.aab
