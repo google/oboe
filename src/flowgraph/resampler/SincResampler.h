@@ -32,10 +32,6 @@ public:
 
     void readFrame(float *frame) override;
 
-    int getSpread() const {
-        return kSpread;
-    }
-
     /**
      * @param phase between 0.0 and  2*kSpread
      * @return windowedSinc
@@ -44,24 +40,26 @@ public:
 
 protected:
 
-    // Number of zero crossings on one side of central lobe.
-    // Higher numbers provide higher quality but use more CPU.
-    // 2 is the minimum one should use.
-    static constexpr int   kSpread = 10;
-    static constexpr int   kNumTaps = kSpread * 2; // TODO should be odd, not even
-
     std::vector<float>     mWindowedSinc;
 
 private:
 
-    void generateLookupTable();
+    /**
+     * Generate the filter coefficients in optimal order.
+     * @param inputRate
+     * @param outputRate
+     * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
+     */
+    void generateCoefficients(int32_t inputRate,
+                              int32_t outputRate,
+                              float normalizedCutoff);
 
-    // Size of the lookup table.
-    // Higher numbers provide higher accuracy and quality but use more memory.
-    static constexpr int   kNumPoints = 4096;
-    static constexpr int   kNumGuardPoints = 1;
+    std::vector<float>     mCoefficients;
+    int32_t                mNumSeries = 0;
+    std::vector<float>     mSingleFrame2; // for interpolation
 
-    static constexpr float kTablePhaseScaler = kNumPoints / (2.0 * kSpread);
+
+    float mTablePhaseScaler = 0.0f;
 
 };
 

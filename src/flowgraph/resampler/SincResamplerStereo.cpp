@@ -27,31 +27,31 @@ SincResamplerStereo::SincResamplerStereo(const MultiChannelResampler::Builder &b
 
 void SincResamplerStereo::writeFrame(const float *frame) {
     int xIndex = mCursor * STEREO;
-    int offset = kNumTaps * STEREO;
+    int offset = mNumTaps * STEREO;
     float *dest = &mX[xIndex];
         // Write each channel twice so we avoid having to wrap when running the FIR.
     dest[0] = dest[offset] = frame[0];
     dest[1] = dest[1 +  offset] = frame[1];
-    if (++mCursor >= kNumTaps) {
+    if (++mCursor >= mNumTaps) {
         mCursor = 0;
     }
 }
 
 void SincResamplerStereo::readFrame(float *frame) {
-    float left = 0.0;
-    float right = 0.0;
-    float phase =  getPhase();
-    // Multiply input times windowed sinc function.
-    int xIndex = (mCursor + kNumTaps) * STEREO;
-    for (int i = 0; i < kNumTaps; i++) {
-        float coefficient = interpolateWindowedSinc(phase);
-        float *xFrame = &mX[xIndex];
-        left += coefficient * xFrame[0];
-        right += coefficient * xFrame[1];
-        xIndex -= STEREO;
-        phase += 1.0;
-    }
-    // Copy accumulator to output.
-    frame[0] = left;
-    frame[1] = right;
+//    float left = 0.0;
+//    float right = 0.0;
+//    float phase =  getPhase();
+//    // Multiply input times windowed sinc function.
+//    int xIndex = (mCursor + mNumTaps) * STEREO;
+//    for (int i = 0; i < mNumTaps; i++) {
+//        float coefficient = interpolateWindowedSinc(phase);
+//        float *xFrame = &mX[xIndex];
+//        left += coefficient * xFrame[0];
+//        right += coefficient * xFrame[1];
+//        xIndex -= STEREO;
+//        phase += 1.0;
+//    }
+//    // Copy accumulator to output.
+//    frame[0] = left;
+//    frame[1] = right;
 }

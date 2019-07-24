@@ -215,9 +215,10 @@ protected:
     std::vector<float>   mX;
     std::vector<float>   mSingleFrame;
 
+    static constexpr int   kMaxCoefficients = 8 * 1024;
 private:
 
-    static constexpr int   kMaxCoefficients = 8 * 1024; // max coefficients for polyphase filter
+    // max coefficients for polyphase filter
     static constexpr float kDefaultNormalizedCutoff = 0.90f;
 
     const int              mChannelCount;
