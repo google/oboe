@@ -20,6 +20,7 @@
 
 using namespace resampler;
 
+// Enough primes to cover the common sample rates.
 const std::vector<int>  IntegerRatio::kPrimes{
         2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
         43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
@@ -27,41 +28,25 @@ const std::vector<int>  IntegerRatio::kPrimes{
         151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199};
 
 void IntegerRatio::reduce() {
-    int32_t factoredTop = mNumerator;
-    int32_t factoredBottom = mDenominator;
-    bool downToOne = false;
     for (int prime : kPrimes) {
-        if (mNumerator < prime
-            || mDenominator < prime
-            || downToOne)
+        if (mNumerator < prime || mDenominator < prime) {
             break;
-        int topCount = 0;
-        while (true) {
-            int top = factoredTop / prime;
-            if (factoredTop == top * prime) {
-                topCount++;
-                factoredTop = top;
-                downToOne |= top == 1;
-            } else {
-                break;
-            }
         }
-        int bottomCount = 0;
+
+        // Find biggest prime factor for numerator.
         while (true) {
-            int bottom = factoredBottom / prime;
-            if (factoredBottom == bottom * prime) {
-                bottomCount++;
-                factoredBottom = bottom;
-                downToOne |= bottom == 1;
+            int top = mNumerator / prime;
+            int bottom = mDenominator / prime;
+            if ((top >= 1)
+                && (bottom >= 1)
+                && (top * prime == mNumerator) // divided evenly?
+                && (bottom * prime == mDenominator)) {
+                mNumerator = top;
+                mDenominator = bottom;
             } else {
                 break;
             }
         }
 
-        int commonCount = std::min(topCount, bottomCount);
-        while (commonCount--) {
-            mNumerator /= prime;
-            mDenominator /= prime;
-        }
     }
 }

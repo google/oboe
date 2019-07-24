@@ -62,7 +62,7 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
 
     // Set the cutoff frequency so that we do not get aliasing when down-sampling.
     if (outputRate < inputRate) {
-        builder.setNormalizedCutoff((0.9f * outputRate) / inputRate);
+        builder.setNormalizedCutoff(kDefaultNormalizedCutoff);
     }
     return builder.build();
 }

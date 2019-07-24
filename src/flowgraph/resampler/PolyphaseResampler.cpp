@@ -45,6 +45,7 @@ void PolyphaseResampler::generateCoefficients(int32_t inputRate,
     int cursor = 0;
     double phase = 0.0;
     double phaseIncrement = (double) inputRate / (double) outputRate;
+    const float cutoffScaler = std::min(1.0f, normalizedCutoff * outputRate / inputRate);
     const int spread = getNumTaps() / 2; // numTaps must be even.
     for (int i = 0; i < mDenominator; i++) {
         float tapPhase = phase - spread;
@@ -52,7 +53,7 @@ void PolyphaseResampler::generateCoefficients(int32_t inputRate,
         int gainCursor = cursor;
         for (int tap = 0; tap < getNumTaps(); tap++) {
             float radians = tapPhase * M_PI;
-            float coefficient = sinc(normalizedCutoff * radians) * hammingWindow(radians, spread);
+            float coefficient = sinc(cutoffScaler * radians) * hammingWindow(radians, spread);
             mCoefficients.at(cursor++) = coefficient;
             gain += coefficient;
             tapPhase += 1.0;

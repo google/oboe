@@ -24,7 +24,6 @@
 
 namespace resampler {
 
-// Move this to a subfolder that is not dependent on flowgraph.
 class MultiChannelResampler {
 
 public:
@@ -38,27 +37,68 @@ public:
 
     class Builder {
     public:
+        /**
+         * Construct an optimal resampler based on the specified parameters.
+         * @return address of a resampler
+         */
         MultiChannelResampler *build();
 
+        /**
+         * The number of taps in the resampling filter.
+         * More taps gives better quality but uses more CPU time.
+         * This typically ranges from 4 to 64. Default is 16.
+         *
+         * For polyphase filters, numTaps must be a multiple of four for loop unrolling.
+         * @param numTaps number of taps for the filter
+         * @return address of this builder for chaining calls
+         */
         Builder *setNumTaps(int32_t numTaps) {
             mNumTaps = numTaps;
             return this;
         }
-        
+
+        /**
+         * Use 1 for mono, 2 for stereo, etc. Default is 1.
+         *
+         * @param channelCount number of channels
+         * @return address of this builder for chaining calls
+         */
         Builder *setChannelCount(int32_t channelCount) {
             mChannelCount = channelCount;
             return this;
         }
 
+        /**
+         * Default is 48000.
+         *
+         * @param inputRate sample rate of the input stream
+         * @return address of this builder for chaining calls
+         */
         Builder *setInputRate(int32_t inputRate) {
             mInputRate = inputRate;
             return this;
         }
+
+        /**
+         * Default is 48000.
+         *
+         * @param outputRate sample rate of the output stream
+         * @return address of this builder for chaining calls
+         */
         Builder *setOutputRate(int32_t outputRate) {
             mOutputRate = outputRate;
             return this;
         }
 
+        /**
+         * Set cutoff frequency relative to the Nyquist rate of the output sample rate.
+         * Set to 1.0 to match the Nyquist frequency.
+         * Set lower to reduce aliasing.
+         * Default is 0.90.
+         *
+         * @param normalizedCutoff anti-aliasing filter cutoff
+         * @return address of this builder for chaining calls
+         */
         Builder *setNormalizedCutoff(float normalizedCutoff) {
             mNormalizedCutoff = normalizedCutoff;
             return this;
@@ -89,18 +129,30 @@ public:
         int32_t mNumTaps = 16;
         int32_t mInputRate = 48000;
         int32_t mOutputRate = 48000;
-        Quality mQuality = Quality::Medium;
-        float   mNormalizedCutoff = 1.0;
+        float   mNormalizedCutoff = kDefaultNormalizedCutoff;
     };
 
-    explicit MultiChannelResampler(const MultiChannelResampler::Builder &builder);
-
     virtual ~MultiChannelResampler() = default;
+
+    /**
+     * Factory method for making a resampler that is optimal for the given inputs.
+     *
+     * @param channelCount
+     * @param inputRate
+     * @param outputRate
+     * @param quality
+     * @return an optimal resampler
+     */
+    static MultiChannelResampler *make(int32_t channelCount,
+                                       int32_t inputRate,
+                                       int32_t outputRate,
+                                       Quality quality);
 
     virtual bool isWriteNeeded() const = 0;
 
     /**
      * Write a frame containing N samples.
+     *
      * @param frame pointer to the first sample in a frame
      */
     void writeNextFrame(const float *frame) {
@@ -109,9 +161,9 @@ public:
     }
 
     /**
-     * Read a frame containing N samples using interpolation.
+     * Read a frame containing N samples.
+     *
      * @param frame pointer to the first sample in a frame
-     * @param phase phase between 0.0 and 1.0 for interpolation
      */
     void readNextFrame(float *frame) {
         readFrame(frame);
@@ -126,22 +178,19 @@ public:
         return mChannelCount;
     }
 
+    static float hammingWindow(float radians, int spread);
+
+    static float sinc(float radians);
+
+protected:
+
+    explicit MultiChannelResampler(const MultiChannelResampler::Builder &builder);
+
     /**
      * @param phase between 0.0 and  2*spread // TODO use centered phase, maybe
      * @return windowedSinc
      */
     static float calculateWindowedSinc(float phase, int spread); // TODO remove
-
-    static float hammingWindow(float radians, int spread);
-
-    static float sinc(float radians);
-
-    static MultiChannelResampler *make(int32_t channelCount,
-            int32_t inputRate,
-            int32_t outputRate,
-            Quality quality);
-
-protected:
 
     /**
      * Write a frame containing N samples.
@@ -168,8 +217,10 @@ protected:
 
 private:
 
-    static constexpr int kMaxCoefficients = 8 * 1024; // max coefficients for polyphase filter
-    const int            mChannelCount;
+    static constexpr int   kMaxCoefficients = 8 * 1024; // max coefficients for polyphase filter
+    static constexpr float kDefaultNormalizedCutoff = 0.90f;
+
+    const int              mChannelCount;
 
 };
 
