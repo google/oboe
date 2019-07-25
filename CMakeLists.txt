@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
+
+# Set the name of the project and store it in PROJECT_NAME. Also set the following variables:
+# PROJECT_SOURCE_DIR (usually the root directory where Oboe has been cloned e.g.)
+# PROJECT_BINARY_DIR (usually the containing project's binary directory,
+# e.g. ${OBOE_HOME}/samples/RhythmGame/.externalNativeBuild/cmake/ndkExtractorDebug/x86/oboe-bin)
 project(oboe)
 
 set (oboe_sources
@@ -39,21 +44,15 @@ add_library(oboe ${oboe_sources})
 
 # Specify directories which the compiler should look for headers
 target_include_directories(oboe
-  PRIVATE src
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-
-set_target_properties(oboe PROPERTIES
-  CXX_STANDARD 14
-  CXX_STANDARD_REQUIRED YES
-  CXX_EXTENSIONS NO)
+        PRIVATE src
+        PUBLIC include)
 
 # Compile Flags:
 #     Enable -Werror when building debug config
 #     Enable -Ofast
 target_compile_options(oboe
         PRIVATE
+        -std=c++14
         -Wall
         -Wextra-semi
         -Wshadow
@@ -62,12 +61,11 @@ target_compile_options(oboe
         "$<$<CONFIG:DEBUG>:-Werror>")
 
 # Enable logging for debug builds
-target_compile_definitions(oboe
-  PUBLIC $<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>)
+target_compile_definitions(oboe PUBLIC "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>")
 
-target_link_libraries(oboe
-  PRIVATE log OpenSLES)
+target_link_libraries(oboe PRIVATE log OpenSLES)
 
+# TODO: Explain why are these necessary for the `ExternalProject_Add` approach
 include(GNUInstallDirs)
 install(TARGETS oboe
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
