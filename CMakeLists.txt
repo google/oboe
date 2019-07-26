@@ -65,11 +65,10 @@ target_compile_definitions(oboe PUBLIC "$<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>
 
 target_link_libraries(oboe PRIVATE log OpenSLES)
 
-# TODO: Explain why are these necessary for the `ExternalProject_Add` approach
-include(GNUInstallDirs)
+# When installing oboe put the libraries in the lib/<ABI> folder e.g. lib/arm64-v8a
 install(TARGETS oboe
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        LIBRARY DESTINATION lib/${ANDROID_ABI}
+        ARCHIVE DESTINATION lib/${ANDROID_ABI})
 
-install(DIRECTORY include/oboe DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# Also install the headers
+install(DIRECTORY include/oboe DESTINATION include)
