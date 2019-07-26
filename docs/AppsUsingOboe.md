@@ -18,6 +18,7 @@ your project name and Play Store URL.
 | [Music Speed Changer](https://play.google.com/store/apps/details?id=com.smp.musicspeed) | Play song files while changing the pitch and tempo. | Single Minded Productions |  | 
 | [n-Track Studio](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo) | Mobile audio workstation | n-Track Software | Settings->Select AAudio for input and/or output->OK |
 | [Serial communication via audio](https://davidawehr.com/blog/audioserial/) | | David Wehr |  |
-| [SoundCloud](https://play.google.com/store/apps/details?id=com.soundcloud.android&hl=en) | Music streaming app | SoundCloud | They [wrote an article](https://developers.soundcloud.com/blog/soundcloud-is-playing-the-oboe) about the integration |
+| [Sound Amplifier](https://play.google.com/store/apps/details?id=com.google.android.accessibility.soundamplifier) | Hearing assistant | Google | Enable through Settings > Accessability |
+| [SoundCloud](https://play.google.com/store/apps/details?id=com.soundcloud.android) | Music streaming app | SoundCloud | They [wrote an article](https://developers.soundcloud.com/blog/soundcloud-is-playing-the-oboe) about the integration |
 | Volcano Mobile apps | MIDI synthesizer apps: [FluidSynth](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi), [OPL3 MIDI Synth FM](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth), [MIDI Sequencer](https://play.google.com/store/apps/details?id=net.volcanomobile.midisequencer) | Volcano Mobile |  MIDI Sequencer app is very handy for testing. |
 
