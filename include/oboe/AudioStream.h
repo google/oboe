@@ -129,7 +129,7 @@ public:
      *
      * @return state or a negative error.
      */
-    virtual StreamState getState() = 0;
+    virtual StreamState getState() const = 0;
 
     /**
      * Wait until the stream's current state no longer matches the input state.

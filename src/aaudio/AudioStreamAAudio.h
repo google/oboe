@@ -83,7 +83,7 @@ public:
 
     ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId) override;
 
-    StreamState getState() override;
+    StreamState getState() const override;
 
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
