@@ -29,7 +29,7 @@ import android.widget.TextView;
  */
 public class RoundTripLatencyActivity extends AnalyzerActivity {
 
-    private static final int STATE_GOT_DATA = 6; // Defined in LatencyAnalyzer.h
+    private static final int STATE_GOT_DATA = 3; // Defined in LatencyAnalyzer.h
 
     private TextView mAnalyzerView;
     private Button mMeasureButton;
@@ -82,13 +82,15 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         double latencyFrames = getMeasuredLatency();
         double confidence = getMeasuredConfidence();
         double latencyMillis = latencyFrames * 1000 / getSampleRate();
-        setAnalyzerText(String.format("progress = %d, state = %d\n"
-                + "result = %d = %s\n"
-                + "latency = %6.1f frames = %6.2f msec\nconfidence = %6.3f",
-                progress,
-                state,
-                result, resultCodeToString(result),
-                latencyFrames, latencyMillis, confidence));
+        String message = String.format("progress = %d, state = %d\n", progress, state);
+        message += String.format("result = %d = %s\n", result, resultCodeToString(result));
+        if (result == 0) {
+            // Don't report bogus latencies.
+            message += String.format("latency = %6.1f frames = %6.2f msec\n",
+                    latencyFrames, latencyMillis);
+        }
+        message += String.format("confidence = %6.3f", confidence);
+        setAnalyzerText(message);
 
         mMeasureButton.setEnabled(true);
 

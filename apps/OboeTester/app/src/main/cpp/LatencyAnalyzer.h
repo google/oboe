@@ -26,18 +26,22 @@
 #include <assert.h>
 #include <cctype>
 #include <math.h>
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <vector>
+
+#include "RandomPulseGenerator.h"
 
 #define LOOPBACK_RESULT_TAG  "RESULT: "
 
 constexpr int32_t kDefaultSampleRate = 48000;
 constexpr int32_t kMillisPerSecond   = 1000;
-constexpr int32_t kMinLatencyMillis  = 4;    // arbitrary and very low
-constexpr int32_t kMaxLatencyMillis  = 400;  // arbitrary and generous
-constexpr double  kMaxEchoGain       = 10.0; // based on experiments, otherwise too noisy
-constexpr double  kMinimumConfidence = 0.5;
+
+// TODO move to LatencyAnalyzer
+constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
+constexpr double  kMinimumConfidence = 0.2;
 
 /*
 
@@ -132,16 +136,6 @@ private:
     int32_t mCursor = 0;
 };
 
-// A narrow impulse seems to have better immunity against over estimating the
-// latency due to detecting subharmonics by the auto-correlator.
-static const float s_Impulse[] = {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.3f, // silence on each side of the impulse
-        0.99f, 0.0f, -0.99f, // bipolar with one zero crossing in middle
-        -0.3f, 0.0f, 0.0f, 0.0f, 0.0f
-};
-
-constexpr int32_t kImpulseSizeInFrames = (int32_t)(sizeof(s_Impulse) / sizeof(s_Impulse[0]));
-
 class PseudoRandom {
 public:
     PseudoRandom() {}
@@ -199,6 +193,7 @@ typedef struct LatencyReport_s {
     }
 } LatencyReport;
 
+// Calculate a normalized cross correlation.
 static double calculateCorrelation(const float *a,
                                    const float *b,
                                    int windowSize)
@@ -216,86 +211,10 @@ static double calculateCorrelation(const float *a,
         sumSquares += ((s1 * s1) + (s2 * s2));
     }
 
-    if (sumSquares >= 0.00000001) {
+    if (sumSquares >= 1.0e-9) {
         correlation = (float) (2.0 * sumProducts / sumSquares);
     }
     return correlation;
-}
-
-static int measureLatencyFromEchos(const float *data,
-                                   int32_t numFloats,
-                                   int32_t sampleRate,
-                                   LatencyReport *report) {
-    // Allocate results array
-    const int minReasonableLatencyFrames = sampleRate * kMinLatencyMillis / kMillisPerSecond;
-    const int maxReasonableLatencyFrames = sampleRate * kMaxLatencyMillis / kMillisPerSecond;
-    int32_t maxCorrelationSize = maxReasonableLatencyFrames * 3;
-    int numCorrelations = std::min(numFloats, maxCorrelationSize);
-    float *correlations = new float[numCorrelations]{};
-    float *harmonicSums = new float[numCorrelations]{};
-
-    // Perform sliding auto-correlation.
-    // Skip first frames to avoid huge peak at zero offset.
-    for (int i = minReasonableLatencyFrames; i < numCorrelations; i++) {
-        int32_t remaining = numFloats - i;
-        float correlation = (float) calculateCorrelation(&data[i], data, remaining);
-        correlations[i] = correlation;
-        // LOGD("correlation[%d] = %f\n", ic, correlation);
-    }
-
-    // Apply a technique similar to Harmonic Product Spectrum Analysis to find echo fundamental.
-    // Add higher harmonics mapped onto lower harmonics. This reinforces the "fundamental" echo.
-    const int numEchoes = 8;
-    for (int partial = 1; partial < numEchoes; partial++) {
-        for (int i = minReasonableLatencyFrames; i < numCorrelations; i++) {
-            harmonicSums[i / partial] += correlations[i] / partial;
-        }
-    }
-
-    // Find highest peak in correlation array.
-    float maxCorrelation = 0.0;
-    int peakIndex = 0;
-    for (int i = 0; i < numCorrelations; i++) {
-        if (harmonicSums[i] > maxCorrelation) {
-            maxCorrelation = harmonicSums[i];
-            peakIndex = i;
-            // LOGD("maxCorrelation = %f at %d\n", maxCorrelation, peakIndex);
-        }
-    }
-    report->latencyInFrames = peakIndex;
-/*
-    {
-        int32_t topPeak = peakIndex * 7 / 2;
-        for (int i = 0; i < topPeak; i++) {
-            float sample = harmonicSums[i];
-            LOGD("%4d: %7.5f ", i, sample);
-            printAudioScope(sample);
-        }
-    }
-*/
-
-    // Calculate confidence.
-    if (maxCorrelation < 0.001) {
-        report->confidence = 0.0;
-    } else {
-        // Compare peak to average value around peak.
-        int32_t numSamples = std::min(numCorrelations, peakIndex * 2);
-        if (numSamples <= 0) {
-            report->confidence = 0.0;
-        } else {
-            double sum = 0.0;
-            for (int i = 0; i < numSamples; i++) {
-                sum += harmonicSums[i];
-            }
-            const double average = sum / numSamples;
-            const double ratio = average / maxCorrelation; // will be < 1.0
-            report->confidence = 1.0 - sqrt(ratio);
-        }
-    }
-
-    delete[] correlations;
-    delete[] harmonicSums;
-    return 0;
 }
 
 /**
@@ -340,6 +259,15 @@ public:
         return numFrames;
     }
 
+    // Write FLOAT data from the first channel.
+    int32_t write(float sample) {
+        // stop at end of buffer
+        if (mFrameCounter < mMaxFrames) {
+            mData[mFrameCounter++] = sample;
+        }
+        return 1;
+    }
+
     void clear() {
         mFrameCounter = 0;
     }
@@ -362,6 +290,7 @@ public:
     int32_t getSampleRate() {
         return mSampleRate;
     }
+
 /*
     int save(const char *fileName, bool writeShorts = true) {
         SNDFILE *sndFile = nullptr;
@@ -451,6 +380,70 @@ private:
     LowPassFilter mLowPassFilter;
 };
 
+
+static int measureLatencyFromPulse(AudioRecording &recorded,
+                                   AudioRecording &pulse,
+                                   int32_t framesPerEncodedBit,
+                                   LatencyReport *report) {
+    int numCorrelations = recorded.size() - pulse.size();
+    if (numCorrelations < 10) {
+        return -1;
+    }
+    std::unique_ptr<float[]> correlations= std::make_unique<float[]>(numCorrelations);
+
+    // Correlate pulse against the recorded data.
+    for (int i = 0; i < numCorrelations; i++) {
+        float correlation = (float) calculateCorrelation(&recorded.getData()[i],
+                &pulse.getData()[0],
+                pulse.size());
+        correlations[i] = correlation;
+    }
+
+    // Find highest peak in correlation array.
+    float peakCorrelation = 0.0;
+    int peakIndex = -1;
+    for (int i = 0; i < numCorrelations; i++) {
+        float value = abs(correlations[i]);
+        if (value > peakCorrelation) {
+            peakCorrelation = value;
+            peakIndex = i;
+        }
+    }
+
+    report->latencyInFrames = peakIndex;
+
+    // Calculate confidence.
+    if (peakCorrelation < 0.0001) {
+        report->confidence = 0.0;
+    } else {
+        int32_t start = std::max(0, peakIndex - framesPerEncodedBit);
+        int32_t end = std::min(numCorrelations, peakIndex + framesPerEncodedBit);
+
+        float minValue = 1.0e-9;
+        float maxValue = 1.0e-9;
+        for (int i = start; i < end; i++) {
+            float value = correlations[i];
+            if (value > maxValue) {
+                maxValue = value;
+            }
+            if (value < minValue) {
+                minValue = value;
+            }
+        }
+        // Is recording inverted?
+        float absMinValue = abs(minValue);
+        bool isInverted =  maxValue < absMinValue;
+        float ratio = (isInverted) ? absMinValue / maxValue : maxValue / absMinValue;
+        // When the pulse train is properly correlated there are negative correlations
+        // on either side of the peak.
+        float fudgeFactor = 2.0f; // FIXME why do we need this?
+        float clippedRatio = std::max(0.0f, std::min(1.0f, fudgeFactor * (ratio - 1.0f)));
+        report->confidence = sqrtf(clippedRatio);
+    }
+
+    return 0;
+}
+
 // ====================================================================================
 class LoopbackProcessor {
 public:
@@ -523,6 +516,7 @@ private:
     int32_t mSampleRate = kDefaultSampleRate;
     int32_t mResult = 0;
 };
+
 /*
 class PeakAnalyzer {
 public:
@@ -560,18 +554,32 @@ public:
 // ====================================================================================
 /**
  * Measure latency given a loopback stream data.
- * Use Larsen effect.
- * Uses a state machine to cycle through various stages including:
+ * Use an encoded bit train as the sound source because it
+ * has an unambiguous correlation value.
+ * Uses a state machine to cycle through various stages.
  *
  */
-class EchoAnalyzer : public LatencyAnalyzer {
+class PulseLatencyAnalyzer : public LatencyAnalyzer {
 public:
 
-    EchoAnalyzer() : LatencyAnalyzer() {
-        int32_t framesToRecord = 1 * getSampleRate();
-        LOGD("EchoAnalyzer: allocate recording with %d frames", framesToRecord);
-        mAudioRecording.allocate(framesToRecord);
+    PulseLatencyAnalyzer() : LatencyAnalyzer() {
+        int32_t maxLatencyFrames = getSampleRate() * kMaxLatencyMillis / kMillisPerSecond;
+        int32_t numPulseBits = getSampleRate() * kPulseLengthMillis
+                / (kFramesPerEncodedBit * kMillisPerSecond);
+        int32_t  pulseLength = numPulseBits * kFramesPerEncodedBit;
+        mFramesToRecord = pulseLength + maxLatencyFrames;
+        LOGD("PulseLatencyAnalyzer: allocate recording with %d frames", mFramesToRecord);
+        mAudioRecording.allocate(mFramesToRecord);
         mAudioRecording.setSampleRate(getSampleRate());
+        generateRandomPulse(pulseLength);
+    }
+
+    void generateRandomPulse(int32_t pulseLength) {
+        mPulse.allocate(pulseLength);
+        RandomPulseGenerator pulser(kFramesPerEncodedBit);
+        for (int i = 0; i < pulseLength; i++) {
+            mPulse.write(pulser.next());
+        }
     }
 
     int getState() override {
@@ -587,14 +595,17 @@ public:
         LoopbackProcessor::reset();
         mDownCounter = getSampleRate() / 2;
         mLoopCounter = 0;
+
+        mPulseCursor = 0;
+        mBackgroundSumSquare = 0.0f;
+        mBackgroundSumCount = 0;
+        mBackgroundRMS = 0.0f;
         mMeasuredLoopGain = 0.0f;
-        mEchoGain = 1.0f;
 
         LOGD("state reset to STATE_INITIAL_SILENCE");
         mState = STATE_INITIAL_SILENCE;
         mAudioRecording.clear();
         mLatencyReport.reset();
-        mTimeoutCounter = 4 * getSampleRate();
     }
 
     bool hasEnoughData() {
@@ -623,32 +634,24 @@ public:
 //    }
 
     void analyze() override {
-        LOGD("EchoAnalyzer ---------------");
+        LOGD("PulseLatencyAnalyzer ---------------");
         LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d", mState);
         LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s", convertStateToText(mState));
-        LOGD(LOOPBACK_RESULT_TAG "measured.gain          = %8f", mMeasuredLoopGain);
-        LOGD(LOOPBACK_RESULT_TAG "echo.gain              = %8f", mEchoGain);
+        LOGD(LOOPBACK_RESULT_TAG "background.rms         = %8f", mBackgroundRMS);
+        LOGD(LOOPBACK_RESULT_TAG "loop.gain              = %8f", mMeasuredLoopGain);
 
         int32_t newResult = RESULT_OK;
-        if (mState == STATE_WAITING_FOR_SILENCE) {
-            LOGW("Stuck waiting for silence. Input may be too noisy!");
-            newResult = ERROR_NOISY;
-        } else if (mMeasuredLoopGain >= 0.9999) {
+        if (mMeasuredLoopGain >= 0.9999) {  // FIXME not measured
             LOGE("Clipping, turn down volume slightly");
             newResult = ERROR_VOLUME_TOO_HIGH;
         } else if (mState != STATE_GOT_DATA) {
             LOGD("WARNING - Bad state. Check volume on device.");
             // setResult(ERROR_INVALID_STATE);
         } else {
-            // Cleanup the signal to improve the auto-correlation.
-            mAudioRecording.dcBlocker();
-            mAudioRecording.square();
-            mAudioRecording.lowPassFilter();
-
-            LOGD("Please wait several seconds for auto-correlation to complete.");
-            measureLatencyFromEchos(mAudioRecording.getData(),
-                                    mAudioRecording.size(),
-                                    getSampleRate(),
+            LOGD("Please wait several seconds for cross-correlation to complete.");
+            measureLatencyFromPulse(mAudioRecording,
+                                    mPulse,
+                                    kFramesPerEncodedBit,
                                     &mLatencyReport);
 
 #if OBOE_ENABLE_LOGGING
@@ -681,18 +684,12 @@ public:
     }
 
     void printStatus() override {
-        LOGD("st = %d, echo gain = %f ", mState, mEchoGain);
-    }
-
-    int32_t getMaxLatencyFrames() {
-        return 1 * getSampleRate();
+        LOGD("st = %d", mState);
     }
 
     result_code processOneFrame(float *inputData, int inputChannelCount,
                                 float *outputData, int outputChannelCount) {
-        int channelsValid = std::min(inputChannelCount, outputChannelCount);
         echo_state nextState = mState;
-        float peak = mPeakFollower.process(*inputData);
 
         switch (mState) {
             case STATE_INITIAL_SILENCE:
@@ -700,59 +697,32 @@ public:
                 for (int i = 0; i < outputChannelCount; i++) {
                     outputData[i] = 0;
                 }
+                // Measure background RMS on channel 0
+                mBackgroundSumSquare += inputData[0] * inputData[0];
+                mBackgroundSumCount++;
+
                 mDownCounter--;
                 if (mDownCounter <= 0) {
-                    nextState = STATE_SENDING_MANY_PULSES;
-                }
-                break;
-
-            case STATE_SENDING_MANY_PULSES:
-                sendImpulseLoop(outputData, outputChannelCount);
-                peak = mPeakFollower.process(*inputData);
-                // If we get several in a row then go to next state.
-                if (peak > mPulseThreshold) {
-                    nextState = STATE_MEASURING_GAIN;
-                    mDownCounter = getBlockFrames() * 2;
-                }
-                break;
-            case STATE_MEASURING_GAIN:
-                sendImpulseLoop(outputData, outputChannelCount);
-                mDownCounter--;
-                if (mDownCounter <= 0) {
-                    mDownCounter = getBlockFrames();
-                    mMeasuredLoopGain = peak;  // assumes original pulse amplitude is one
-                    mSilenceThreshold = peak * 0.1; // scale silence to measured pulse
-                    // Calculate gain that will give us a nice decaying echo.
-                    mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
-                    if (mEchoGain > kMaxEchoGain) {
-                        LOGE("ERROR - loop gain too low. Increase the volume.");
-                        setResult(ERROR_VOLUME_TOO_LOW);
-                        nextState = STATE_FAILED;
-                    } else {
-                        nextState = STATE_WAITING_FOR_SILENCE;
-                        mDownCounter = getMaxLatencyFrames();
-                    }
-                }
-                break;
-
-            case STATE_WAITING_FOR_SILENCE:
-                // Output silence and wait for the echos to die down.
-                for (int i = 0; i < outputChannelCount; i++) {
-                    outputData[i] = 0;
-                }
-                // If we get several in a row then go to next state.
-                if (peak < mSilenceThreshold) {
-                    mDownCounter--;
-                    if (mDownCounter <= 0) {
-                        nextState = STATE_SENDING_PULSE;
-                        resetImpulse();
-                    }
+                    mBackgroundRMS = sqrtf(mBackgroundSumSquare / mBackgroundSumCount);
+                    nextState = STATE_SENDING_PULSE;
+                    mPulseCursor = 0;
+                    LOGD("LatencyAnalyzer state => STATE_SENDING_PULSE");
                 }
                 break;
 
             case STATE_SENDING_PULSE:
+                {
+                    float pulseSample = mPulse.getData()[mPulseCursor++];
+                    for (int i = 0; i < outputChannelCount; i++) {
+                        outputData[i] = pulseSample;
+                    }
+                }
                 mAudioRecording.write(inputData, inputChannelCount, 1);
-                if (sendOneImpulse(outputData, outputChannelCount)) {
+                if (hasEnoughData()) {
+                    LOGD("LatencyAnalyzer state => STATE_GOT_DATA");
+                    nextState = STATE_GOT_DATA;
+                } else if (mPulseCursor >= mPulse.size()) {
+                    LOGD("LatencyAnalyzer state => STATE_GATHERING_ECHOS");
                     nextState = STATE_GATHERING_ECHOS;
                 }
                 break;
@@ -761,26 +731,11 @@ public:
                 // Record input until the mAudioRecording is full.
                 mAudioRecording.write(inputData, inputChannelCount, 1);
                 if (hasEnoughData()) {
+                    LOGD("LatencyAnalyzer state => STATE_GOT_DATA");
                     nextState = STATE_GOT_DATA;
                 }
-
-                if (peak > mMeasuredLoopGain) {
-                    mMeasuredLoopGain = peak;  // AGC might be raising gain so adjust it on the fly.
-                    // Recalculate gain that will give us a nice decaying echo.
-                    mEchoGain = mDesiredEchoGain / mMeasuredLoopGain;
-                }
-
-                // Echo input to output.
-                {
-                    int ic;
-                    for (ic = 0; ic < channelsValid; ic++) {
-                        outputData[ic] = inputData[ic] * mEchoGain;
-                    }
-                    for (; ic < outputChannelCount; ic++) {
-                        outputData[ic] = 0;
-                    }
-                    inputData += inputChannelCount;
-                    outputData += outputChannelCount;
+                for (int i = 0; i < outputChannelCount; i++) {
+                    outputData[i] = 0.0f; // silence
                 }
                 break;
 
@@ -788,6 +743,9 @@ public:
             case STATE_DONE:
             case STATE_FAILED:
             default:
+                for (int i = 0; i < outputChannelCount; i++) {
+                    outputData[i] = 0.0f; // silence
+                }
                 break;
         }
 
@@ -800,23 +758,6 @@ public:
                         int numFrames) override {
         result_code result = RESULT_OK;
         mLoopCounter++;
-        mTimeoutCounter -= numFrames;
-        if (!isDone() && mTimeoutCounter < 0) {
-            LOGW("EchoAnalyzer timed out.");
-            switch (mState) {
-                case STATE_MEASURING_GAIN:
-                    setResult(ERROR_VOLUME_TOO_LOW);
-                    break;
-                case STATE_WAITING_FOR_SILENCE:
-                    setResult(ERROR_NOISY);
-                    break;
-                default:
-                    break;
-            }
-            mState = STATE_FAILED;
-            return RESULT_OK;
-        }
-
         // Process one frame at a time.
         for (int i = 0; i < numFrames; i++) {
             result = processOneFrame(inputData, inputChannelCount, outputData, outputChannelCount);
@@ -842,43 +783,8 @@ public:
 */
 private:
 
-    void sendImpulseLoop(float *outputData, int outputChannelCount) {
-        float sample = s_Impulse[mSampleIndex++];
-        if (mSampleIndex >= kImpulseSizeInFrames) {
-            mSampleIndex = 0;
-        }
-        while (outputChannelCount-- > 0) {
-            *outputData++ = sample;
-        }
-    }
-
-    void resetImpulse() {
-        mSampleIndex = 0;
-    }
-
-    bool sendOneImpulse(float *outputData, int outputChannelCount) {
-        bool done = true;
-        float sample = 0.0f;
-        if (mSampleIndex < kImpulseSizeInFrames) {
-            sample = s_Impulse[mSampleIndex++];
-            done = false;
-        }
-        while (outputChannelCount-- > 0) {
-            *outputData++ = sample;
-        }
-        return done;
-    }
-
-    // @return number of frames for a typical block of processing
-    int32_t getBlockFrames() {
-        return getSampleRate() / 8;
-    }
-
     enum echo_state {
         STATE_INITIAL_SILENCE,
-        STATE_SENDING_MANY_PULSES,
-        STATE_MEASURING_GAIN,
-        STATE_WAITING_FOR_SILENCE,
         STATE_SENDING_PULSE,
         STATE_GATHERING_ECHOS,
         STATE_GOT_DATA, // must match RoundTripLatencyActivity.java
@@ -891,15 +797,6 @@ private:
         switch(state) {
             case STATE_INITIAL_SILENCE:
                 result = "INIT";
-                break;
-            case STATE_SENDING_MANY_PULSES:
-                result = "TONE";
-                break;
-            case STATE_MEASURING_GAIN:
-                result = "GAIN";
-                break;
-            case STATE_WAITING_FOR_SILENCE:
-                result = "SILENCE";
                 break;
             case STATE_SENDING_PULSE:
                 result = "PULSE";
@@ -920,23 +817,25 @@ private:
         return result;
     }
 
-    PeakFollower    mPeakFollower;
     int32_t         mDownCounter = 500;
-    int32_t         mTimeoutCounter = 0; // timeout in frames so we don't stall
     int32_t         mLoopCounter = 0;
-    int32_t         mSampleIndex = 0;
-    float           mPulseThreshold = 0.10f;
-    static constexpr float kSilenceThreshold = 0.04f;
-    float           mSilenceThreshold = kSilenceThreshold;
-    float           mMeasuredLoopGain = 0.0f;
-    float           mDesiredEchoGain = 0.95f;
-    float           mEchoGain = 1.0f;
     echo_state      mState = STATE_INITIAL_SILENCE;
 
-    AudioRecording  mAudioRecording; // contains only the input after the gain detection burst
-    LatencyReport   mLatencyReport;
-};
+    static constexpr int32_t kFramesPerEncodedBit = 16; // multiple of 4
+    static constexpr int32_t kPulseLengthMillis = 500;
 
+    AudioRecording     mPulse;
+    int32_t            mPulseCursor = 0;
+
+    float              mBackgroundSumSquare = 0.0f;
+    int32_t            mBackgroundSumCount = 0;
+    float              mBackgroundRMS = 0.0f;
+    float              mMeasuredLoopGain = 0.0f;
+    int32_t            mFramesToRecord = 0;
+
+    AudioRecording     mAudioRecording; // contains only the input after starting the pulse
+    LatencyReport      mLatencyReport;
+};
 
 // ====================================================================================
 /**
