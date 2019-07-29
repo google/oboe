@@ -578,7 +578,7 @@ public:
         mPulse.allocate(pulseLength);
         RandomPulseGenerator pulser(kFramesPerEncodedBit);
         for (int i = 0; i < pulseLength; i++) {
-            mPulse.write(pulser.next());
+            mPulse.write(pulser.nextFloat());
         }
     }
 
