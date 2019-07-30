@@ -152,10 +152,17 @@ public:
         return nextRandomInteger() * (0.5 / (((int32_t)1) << 30));
     }
 
-    /** Calculate random 32 bit number using linear-congruential method. */
+    /** Calculate random 32 bit number using linear-congruential method.
+     */
     int32_t nextRandomInteger() {
+#if __has_builtin(__builtin_mul_overflow) && __has_builtin(__builtin_add_overflow)
+        int64_t prod;
         // Use values for 64-bit sequence from MMIX by Donald Knuth.
+        __builtin_mul_overflow(mSeed, (int64_t)6364136223846793005, &prod);
+        __builtin_add_overflow(prod, (int64_t)1442695040888963407, &mSeed);
+#else
         mSeed = (mSeed * (int64_t)6364136223846793005) + (int64_t)1442695040888963407;
+#endif
         return (int32_t) (mSeed >> 32); // The higher bits have a longer sequence.
     }
 
@@ -184,11 +191,11 @@ private:
 };
 
 typedef struct LatencyReport_s {
-    double latencyInFrames = 0.0;
+    int32_t latencyInFrames = 0.0;
     double confidence = 0.0;
 
     void reset() {
-        latencyInFrames = 0.0;
+        latencyInFrames = 0;
         confidence = 0.0;
     }
 } LatencyReport;
@@ -545,9 +552,14 @@ public:
 
     virtual int getState() = 0;
 
-    virtual double getMeasuredLatency() = 0;
+    // @return latency in frames
+    virtual int32_t getMeasuredLatency() = 0;
 
     virtual double getMeasuredConfidence() = 0;
+
+    virtual double getBackgroundRMS() = 0;
+
+    virtual double getSignalRMS() = 0;
 
 };
 
@@ -600,7 +612,7 @@ public:
         mBackgroundSumSquare = 0.0f;
         mBackgroundSumCount = 0;
         mBackgroundRMS = 0.0f;
-        mMeasuredLoopGain = 0.0f;
+        mSignalRMS = 0.0f;
 
         LOGD("state reset to STATE_INITIAL_SILENCE");
         mState = STATE_INITIAL_SILENCE;
@@ -620,31 +632,23 @@ public:
         return mAudioRecording.size();
     }
 
-//    void setGain(float gain) {
-//        mEchoGain = gain;
-//    }
-//
-//    float getGain() {
-//        return mEchoGain;
-//    }
-//
-//    bool testLowPassFilter() {
-//        LowPassFilter filter;
-//        return filter.test();
-//    }
+    double calculateRMS(float *data, int32_t numSamples) {
+        double sum = 0.0;
+        for (int32_t i = 0; i < numSamples; i++) {
+            float sample = data[i];
+            sum += sample * sample;
+        }
+        return sqrt(sum / numSamples);
+    }
 
     void analyze() override {
         LOGD("PulseLatencyAnalyzer ---------------");
         LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d", mState);
         LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s", convertStateToText(mState));
         LOGD(LOOPBACK_RESULT_TAG "background.rms         = %8f", mBackgroundRMS);
-        LOGD(LOOPBACK_RESULT_TAG "loop.gain              = %8f", mMeasuredLoopGain);
 
         int32_t newResult = RESULT_OK;
-        if (mMeasuredLoopGain >= 0.9999) {  // FIXME not measured
-            LOGE("Clipping, turn down volume slightly");
-            newResult = ERROR_VOLUME_TOO_HIGH;
-        } else if (mState != STATE_GOT_DATA) {
+        if (mState != STATE_GOT_DATA) {
             LOGD("WARNING - Bad state. Check volume on device.");
             // setResult(ERROR_INVALID_STATE);
         } else {
@@ -654,20 +658,22 @@ public:
                                     kFramesPerEncodedBit,
                                     &mLatencyReport);
 
+            if (mLatencyReport.confidence < kMinimumConfidence) {
+                LOGD("   ERROR - confidence too low!");
+                newResult = ERROR_CONFIDENCE;
+            } else {
+                mSignalRMS = calculateRMS(&mAudioRecording.getData()[mLatencyReport.latencyInFrames], mPulse.size());
+            }
 #if OBOE_ENABLE_LOGGING
             double latencyMillis = kMillisPerSecond * (double) mLatencyReport.latencyInFrames
                                    / getSampleRate();
 #endif
-            LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8.2f",
+            LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8d",
                    mLatencyReport.latencyInFrames);
             LOGD(LOOPBACK_RESULT_TAG "latency.msec           = %8.2f",
                    latencyMillis);
             LOGD(LOOPBACK_RESULT_TAG "latency.confidence     = %8.6f",
                    mLatencyReport.confidence);
-            if (mLatencyReport.confidence < kMinimumConfidence) {
-                LOGD("   ERROR - confidence too low!");
-                newResult = ERROR_CONFIDENCE;
-            }
         }
         mState = STATE_DONE;
         if (getResult() == RESULT_OK) {
@@ -675,12 +681,20 @@ public:
         }
     }
 
-    double getMeasuredLatency() override {
+    int32_t getMeasuredLatency() override {
         return mLatencyReport.latencyInFrames;
     }
 
     double getMeasuredConfidence() override {
         return mLatencyReport.confidence;
+    }
+
+    double getBackgroundRMS() override {
+        return mBackgroundRMS;
+    }
+
+    double getSignalRMS() override {
+        return mSignalRMS;
     }
 
     void printStatus() override {
@@ -830,7 +844,7 @@ private:
     float              mBackgroundSumSquare = 0.0f;
     int32_t            mBackgroundSumCount = 0;
     float              mBackgroundRMS = 0.0f;
-    float              mMeasuredLoopGain = 0.0f;
+    float              mSignalRMS = 0.0f;
     int32_t            mFramesToRecord = 0;
 
     AudioRecording     mAudioRecording; // contains only the input after starting the pulse

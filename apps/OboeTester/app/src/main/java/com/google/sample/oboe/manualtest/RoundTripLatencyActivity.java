@@ -46,11 +46,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                int progress = getAnalyzerProgress();
-                int state = getAnalyzerState();
-                String message = "progress = " + progress + ", state = " + state;
-                if (state == STATE_GOT_DATA) {
-                    message += "\nAnalyzing - please wait...";
+                String message = getProgressText();
+                if (getAnalyzerState() == STATE_GOT_DATA) {
+                    message += "Analyzing - please wait...\n";
                 }
                 setAnalyzerText(message);
 
@@ -75,21 +73,31 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
     }
 
-    private void onAnalyzerDone() {
+    private String getProgressText() {
         int progress = getAnalyzerProgress();
         int state = getAnalyzerState();
+        int resetCount = getResetCount();
+        return String.format("progress = %d, state = %d, #resets = %d\n",
+                progress, state, resetCount);
+    }
+
+    private void onAnalyzerDone() {
         int result = getMeasuredResult();
-        double latencyFrames = getMeasuredLatency();
+        int latencyFrames = getMeasuredLatency();
         double confidence = getMeasuredConfidence();
         double latencyMillis = latencyFrames * 1000 / getSampleRate();
-        String message = String.format("progress = %d, state = %d\n", progress, state);
+        String message = getProgressText();
+        message += String.format("RMS: signal = %7.5f, noise = %7.5f\n",
+                getSignalRMS(), getBackgroundRMS());
         message += String.format("result = %d = %s\n", result, resultCodeToString(result));
         if (result == 0) {
+
             // Don't report bogus latencies.
-            message += String.format("latency = %6.1f frames = %6.2f msec\n",
+            message += String.format("latency = %6d frames = %6.2f msec\n",
                     latencyFrames, latencyMillis);
         }
         message += String.format("confidence = %6.3f", confidence);
+
         setAnalyzerText(message);
 
         mMeasureButton.setEnabled(true);
@@ -100,8 +108,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private LatencySniffer mLatencySniffer = new LatencySniffer();
 
     native int getAnalyzerProgress();
-    native double getMeasuredLatency();
+    native int getMeasuredLatency();
     native double getMeasuredConfidence();
+    native double getBackgroundRMS();
+    native double getSignalRMS();
 
     private void setAnalyzerText(String s) {
         mAnalyzerView.setText(s);
