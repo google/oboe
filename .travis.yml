@@ -1,26 +1,20 @@
-language: android
+os: linux
+dist:trusty
 sudo: true
+language: android
 android:
   components:
-    - tools
-    - platform-tools
-    - extra-google-m2repository
-    - extra-android-m2repository
+    - build-tools-28.0.3
+
 addons:
   apt_packages:
     - pandoc
 before_install:
-  - sudo apt-get install ant
+  - source .ci_tools/before_install.sh
 install:
-  - touch ~/.android/repositories.cfg
-  - echo y | sdkmanager "ndk-bundle"
-  - echo y | sdkmanager "cmake;3.6.4111459"
-  - echo y | sdkmanager "lldb;3.1"
-  # the following line triggers Trivis-CI's 4MB log limit
-    #  - sdkmanager --update
+  - source .ci_tools/install_dep.sh
 before_script:
   - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
-
 script:
   # scripts excutes inside our repo directory on CI machine
   - export SAMPLE_CI_RESULT=0

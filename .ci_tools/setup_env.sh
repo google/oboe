@@ -37,7 +37,7 @@ retrieve_versions compileSdkVersion $TMP_SETUP_FILENAME
 sed -i '/COMPILE_SDK_VERSION/d' $TMP_SETUP_FILENAME
 # Install platforms
 while read -r version_; do
-	echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-$version_";
+	echo y | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-$version_" > /dev/null || true
 done < $TMP_SETUP_FILENAME
 #echo "Android platforms:"; cat $TMP_SETUP_FILENAME;rm -f $TMP_SETUP_FILENAME
 

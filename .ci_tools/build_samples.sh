@@ -12,7 +12,7 @@ declare projects=(
 
 for d in "${projects[@]}"; do
     pushd ${REPO_ROOT_DIR}/${d} >/dev/null
-    TERM=dumb ./gradlew  -q clean bundleDebug
+    TERM=dumb ./gradlew  -q clean bundleDebug || true
     popd >/dev/null
 done
 
