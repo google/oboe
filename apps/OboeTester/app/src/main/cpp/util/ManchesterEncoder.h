@@ -22,11 +22,12 @@
 /**
  * Encode bytes using Manchester Coding scheme.
  *
+ * Manchester Code is self clocking.
  * There is a transition in the middle of every bit.
  * Zero is high then low.
  * One is low then high.
  *
- * This avoid having long DC sections that would droop when
+ * This avoids having long DC sections that would droop when
  * passed though analog circuits with AC coupling.
  *
  * IEEE 802.3 compatible.
@@ -46,20 +47,23 @@ public:
      */
     virtual uint8_t onNextByte() = 0;
 
-
+    /**
+     * Generate the next floating point sample.
+     * @return
+     */
     virtual float nextFloat() {
         advanceSample();
         if (mCurrentBit) {
-            return (++mCursor < mSamplesPerPulseHalf) ? 1.0f : -1.0f;
+            return (++mCursor < mSamplesPerPulseHalf) ? -1.0f : 1.0f; // one
         } else {
-            return (++mCursor < mSamplesPerPulseHalf) ? -1.0f : 1.0f;
+            return (++mCursor < mSamplesPerPulseHalf) ? 1.0f : +1.0f; // zero
         }
     }
 
 protected:
     /**
      * This will be called when a new bit is ready to be encoded.
-     * It can be used to prepare the encoded.
+     * It can be used to prepare the encoded samples.
      * @param current 
      */
     virtual void onNextBit(bool current) {};
@@ -75,8 +79,11 @@ protected:
             --mBitsLeft;
             mCurrentBit = (mCurrentByte >> mBitsLeft) & 1;
             onNextBit(mCurrentBit);
-            printf("bit = %d ------\n", mCurrentBit ? 1 : 0);
         }
+    }
+
+    bool getCurrentBit() {
+        return mCurrentBit;
     }
 
     const int mSamplesPerPulse;

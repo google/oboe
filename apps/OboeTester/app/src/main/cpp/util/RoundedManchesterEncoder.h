@@ -23,7 +23,7 @@
 #include "ManchesterEncoder.h"
 
 /**
- * Encode bytes using Manchester Coding scheme.
+ * Encode bytes using Manchester Code.
  * Round the edges using a half cosine to reduce ringing caused by a hard edge.
  */
 
@@ -74,7 +74,7 @@ public:
     float nextFloat() override {
         advanceSample();
         float output = mCurrentSamples[mCursor];
-        if (mPreviousBit) output = -output;
+        if (getCurrentBit()) output = -output;
         return output;
     }
 
