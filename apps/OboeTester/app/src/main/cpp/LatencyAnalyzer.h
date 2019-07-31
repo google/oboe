@@ -39,8 +39,7 @@
 constexpr int32_t kDefaultSampleRate = 48000;
 constexpr int32_t kMillisPerSecond   = 1000;
 
-// TODO move to LatencyAnalyzer
-constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
+constexpr int32_t kMaxLatencyMillis  = 700;  // arbitrary and generous
 constexpr double  kMinimumConfidence = 0.2;
 
 class PseudoRandom {
@@ -141,7 +140,7 @@ static double calculateRootMeanSquare(float *data, int32_t numSamples) {
 }
 
 /**
- * Monophonic recording.
+ * Monophonic recording with processing.
  */
 class AudioRecording
 {
@@ -268,6 +267,22 @@ public:
         }
     }
 
+    /**
+     * @param target final max value
+     * @return gain applied to signal
+     */
+    float normalize(float target) {
+        float maxValue = 1.0e-9f;
+        for (int i = 0; i < mFrameCounter; i++) {
+            maxValue = std::max(maxValue, abs(mData[i]));
+        }
+        float gain = target / maxValue;
+        for (int i = 0; i < mFrameCounter; i++) {
+            mData[i] *= gain;
+        }
+        return gain;
+    }
+
 private:
     float        *mData = nullptr;
     int32_t       mFrameCounter = 0;
@@ -306,6 +321,7 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
 
     report->latencyInFrames = peakIndex;
 
+#if 0
     // Calculate confidence.
     if (peakCorrelation < 0.0001) {
         report->confidence = 0.0;
@@ -324,6 +340,9 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
             report->confidence = sqrt(confidence);
         }
     }
+#else
+    report->confidence = peakCorrelation;
+#endif
 
     return 0;
 }
@@ -521,6 +540,7 @@ public:
             // setResult(ERROR_INVALID_STATE);
         } else {
             LOGD("Please wait several seconds for cross-correlation to complete.");
+            float gain = mAudioRecording.normalize(1.0f);
             measureLatencyFromPulse(mAudioRecording,
                                     mPulse,
                                     kFramesPerEncodedBit,
@@ -531,7 +551,8 @@ public:
                 newResult = ERROR_CONFIDENCE;
             } else {
                 mSignalRMS = calculateRootMeanSquare(
-                        &mAudioRecording.getData()[mLatencyReport.latencyInFrames], mPulse.size());
+                        &mAudioRecording.getData()[mLatencyReport.latencyInFrames], mPulse.size())
+                                / gain;
             }
 #if OBOE_ENABLE_LOGGING
             double latencyMillis = kMillisPerSecond * (double) mLatencyReport.latencyInFrames
@@ -704,7 +725,7 @@ private:
     int32_t         mLoopCounter = 0;
     echo_state      mState = STATE_INITIAL_SILENCE;
 
-    static constexpr int32_t kFramesPerEncodedBit = 16; // multiple of 4
+    static constexpr int32_t kFramesPerEncodedBit = 8; // multiple of 2
     static constexpr int32_t kPulseLengthMillis = 500;
 
     AudioRecording     mPulse;

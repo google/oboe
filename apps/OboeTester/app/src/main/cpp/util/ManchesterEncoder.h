@@ -54,9 +54,9 @@ public:
     virtual float nextFloat() {
         advanceSample();
         if (mCurrentBit) {
-            return (++mCursor < mSamplesPerPulseHalf) ? -1.0f : 1.0f; // one
+            return (mCursor < mSamplesPerPulseHalf) ? -1.0f : 1.0f; // one
         } else {
-            return (++mCursor < mSamplesPerPulseHalf) ? 1.0f : +1.0f; // zero
+            return (mCursor < mSamplesPerPulseHalf) ? 1.0f : -1.0f; // zero
         }
     }
 

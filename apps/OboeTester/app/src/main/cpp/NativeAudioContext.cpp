@@ -230,7 +230,6 @@ int ActivityContext::open(
         createRecording();
 
         finishOpen(isInput, oboeStream);
-
     }
 
     if (!useCallback) {
@@ -270,7 +269,12 @@ oboe::Result ActivityContext::start() {
 
 int32_t  ActivityContext::saveWaveFile(const char *filename) {
     if (mRecording == nullptr) {
+        LOGW("ActivityContext::saveWaveFile(%s) but no recording!", filename);
         return -1;
+    }
+    if (mRecording->getSizeInFrames() == 0) {
+        LOGW("ActivityContext::saveWaveFile(%s) but no frames!", filename);
+        return -2;
     }
     MyOboeOutputStream outStream;
     WaveFileWriter writer(&outStream);
@@ -289,9 +293,11 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     }
     writer.close();
 
-    auto myfile = std::ofstream(filename, std::ios::out | std::ios::binary);
-    myfile.write((char *) outStream.getData(), outStream.length());
-    myfile.close();
+    if (outStream.length() > 0) {
+        auto myfile = std::ofstream(filename, std::ios::out | std::ios::binary);
+        myfile.write((char *) outStream.getData(), outStream.length());
+        myfile.close();
+    }
 
     return outStream.length();
 }
@@ -304,7 +310,6 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     mSinkFloat.reset();
     mSinkI16.reset();
 }
-
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
     if (manyToMulti == nullptr) {
@@ -556,6 +561,7 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
 void ActivityRoundTripLatency::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
     if (isInput) {
         mFullDuplexLatency->setInputStream(oboeStream);
+        mFullDuplexLatency->setRecording(mRecording.get());
     } else {
         mFullDuplexLatency->setOutputStream(oboeStream);
     }

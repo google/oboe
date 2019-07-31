@@ -34,6 +34,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private TextView mAnalyzerView;
     private Button mMeasureButton;
     private Button mCancelButton;
+    private Button mShareButton;
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
@@ -85,7 +86,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         int result = getMeasuredResult();
         int latencyFrames = getMeasuredLatency();
         double confidence = getMeasuredConfidence();
-        double latencyMillis = latencyFrames * 1000 / getSampleRate();
+        double latencyMillis = latencyFrames * 1000.0 / getSampleRate();
         String message = getProgressText();
         message += String.format("RMS: signal = %7.5f, noise = %7.5f\n",
                 getSignalRMS(), getBackgroundRMS());
@@ -127,6 +128,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         super.onCreate(savedInstanceState);
         mMeasureButton = (Button) findViewById(R.id.button_measure);
         mCancelButton = (Button) findViewById(R.id.button_cancel);
+        mShareButton = (Button) findViewById(R.id.button_share);
+        mShareButton.setEnabled(false);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
 
@@ -139,6 +142,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     protected void onStart() {
         super.onStart();
         setActivityType(ACTIVITY_RT_LATENCY);
+        mShareButton.setEnabled(false);
     }
 
     @Override
@@ -153,6 +157,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mLatencySniffer.startSniffer();
         mMeasureButton.setEnabled(false);
         mCancelButton.setEnabled(true);
+        mShareButton.setEnabled(false);
     }
 
     public void onCancel(View view) {
@@ -164,8 +169,14 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mLatencySniffer.stopSniffer();
         mMeasureButton.setEnabled(true);
         mCancelButton.setEnabled(false);
+        mShareButton.setEnabled(true);
         stopAudio();
         closeAudio();
+    }
+
+    @Override
+    String getWaveTag() {
+        return "rtlatency";
     }
 
     @Override

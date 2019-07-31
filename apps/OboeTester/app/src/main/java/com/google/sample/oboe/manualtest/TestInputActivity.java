@@ -165,7 +165,7 @@ public class TestInputActivity  extends TestAudioActivity
     private File createFileName() {
         // Get directory and filename
         File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        return new File(dir, "oboe_" +  getWaveTag() + ".wav");
+        return new File(dir, "oboe_" +  getWaveTag() + "_" + getTimestampString() + ".wav");
     }
 
     public void shareWaveFile() {
@@ -175,7 +175,7 @@ public class TestInputActivity  extends TestAudioActivity
         if (result > 0) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("audio/wav");
-            String subjectText = "OboeTester " +  getWaveTag() + " at " + getTimestampString();
+            String subjectText = file.getName();
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
             Uri uri = FileProvider.getUriForFile(this,
                     BuildConfig.APPLICATION_ID + ".provider",
