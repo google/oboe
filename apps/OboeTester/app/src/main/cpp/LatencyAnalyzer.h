@@ -268,6 +268,8 @@ public:
     }
 
     /**
+     * Amplify a signal so that the peak matches the specified target.
+     *
      * @param target final max value
      * @return gain applied to signal
      */
