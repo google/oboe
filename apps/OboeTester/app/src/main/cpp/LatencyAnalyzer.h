@@ -294,8 +294,13 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
                                    AudioRecording &pulse,
                                    int32_t framesPerEncodedBit,
                                    LatencyReport *report) {
+
+    report->latencyInFrames = 0;
+    report->confidence = 0.0;
+
     int numCorrelations = recorded.size() - pulse.size();
     if (numCorrelations < 10) {
+        LOGE("%s() recording too small = %d frames", __func__, recorded.size());
         return -1;
     }
     std::unique_ptr<float[]> correlations= std::make_unique<float[]>(numCorrelations);
@@ -318,31 +323,13 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
             peakIndex = i;
         }
     }
+    if (peakIndex < 0) {
+        LOGE("%s() no signal for correlation", __func__);
+        return -2;
+    }
 
     report->latencyInFrames = peakIndex;
-
-#if 0
-    // Calculate confidence.
-    if (peakCorrelation < 0.0001) {
-        report->confidence = 0.0;
-    } else {
-        // Calculate RMS for a region after the peakIndex.
-        const int32_t kNumPulsesRMS = 64; // arbitrary
-        int32_t start = peakIndex + framesPerEncodedBit;
-        int32_t end = start + (kNumPulsesRMS * framesPerEncodedBit);
-        if (end >= numCorrelations) {
-            report->confidence = 0.0;
-        } else {
-            float uncorrelatedRMS = calculateRootMeanSquare(&correlations[start], (end - start));
-            float confidence = (4.0f * peakCorrelation
-                                / (peakCorrelation + uncorrelatedRMS)) - 3.0f;
-            confidence = std::max(0.0f, std::min(1.0f, confidence));
-            report->confidence = sqrt(confidence);
-        }
-    }
-#else
     report->confidence = peakCorrelation;
-#endif
 
     return 0;
 }

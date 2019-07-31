@@ -91,9 +91,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         message += String.format("RMS: signal = %7.5f, noise = %7.5f\n",
                 getSignalRMS(), getBackgroundRMS());
         message += String.format("result = %d = %s\n", result, resultCodeToString(result));
+        // Only report valid latencies.
         if (result == 0) {
-
-            // Don't report bogus latencies.
             message += String.format("latency = %6d frames = %6.2f msec\n",
                     latencyFrames, latencyMillis);
         }
