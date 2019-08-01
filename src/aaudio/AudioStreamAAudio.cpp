@@ -473,7 +473,7 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
     }
 }
 
-StreamState AudioStreamAAudio::getState() {
+StreamState AudioStreamAAudio::getState() const {
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         aaudio_stream_state_t aaudioState = mLibLoader->stream_getState(stream);

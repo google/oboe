@@ -57,7 +57,7 @@ public:
      *
      * @return state or a negative error.
      */
-    StreamState getState() override { return mState.load(); }
+    StreamState getState() const override { return mState.load(); }
 
     int32_t getFramesPerBurst() override;
 
