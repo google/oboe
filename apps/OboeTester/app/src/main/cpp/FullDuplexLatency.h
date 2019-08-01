@@ -57,7 +57,7 @@ public:
 
 private:
 
-    EchoAnalyzer  mEchoAnalyzer;
+    PulseLatencyAnalyzer  mEchoAnalyzer;
 
 };
 

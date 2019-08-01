@@ -347,7 +347,7 @@ public:
 };
 
 /**
- * Echo input to output through a delay line.
+ * Activity that uses synchronized input/output streams.
  */
 class ActivityFullDuplex : public ActivityContext {
 public:

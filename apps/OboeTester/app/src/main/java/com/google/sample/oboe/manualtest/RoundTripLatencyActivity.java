@@ -29,11 +29,12 @@ import android.widget.TextView;
  */
 public class RoundTripLatencyActivity extends AnalyzerActivity {
 
-    private static final int STATE_GOT_DATA = 6; // Defined in LatencyAnalyzer.h
+    private static final int STATE_GOT_DATA = 3; // Defined in LatencyAnalyzer.h
 
     private TextView mAnalyzerView;
     private Button mMeasureButton;
     private Button mCancelButton;
+    private Button mShareButton;
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
@@ -46,11 +47,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                int progress = getAnalyzerProgress();
-                int state = getAnalyzerState();
-                String message = "progress = " + progress + ", state = " + state;
-                if (state == STATE_GOT_DATA) {
-                    message += "\nAnalyzing - please wait...";
+                String message = getProgressText();
+                if (getAnalyzerState() == STATE_GOT_DATA) {
+                    message += "Analyzing - please wait...\n";
                 }
                 setAnalyzerText(message);
 
@@ -75,20 +74,31 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
     }
 
-    private void onAnalyzerDone() {
+    private String getProgressText() {
         int progress = getAnalyzerProgress();
         int state = getAnalyzerState();
+        int resetCount = getResetCount();
+        return String.format("progress = %d, state = %d, #resets = %d\n",
+                progress, state, resetCount);
+    }
+
+    private void onAnalyzerDone() {
         int result = getMeasuredResult();
-        double latencyFrames = getMeasuredLatency();
+        int latencyFrames = getMeasuredLatency();
         double confidence = getMeasuredConfidence();
-        double latencyMillis = latencyFrames * 1000 / getSampleRate();
-        setAnalyzerText(String.format("progress = %d, state = %d\n"
-                + "result = %d = %s\n"
-                + "latency = %6.1f frames = %6.2f msec\nconfidence = %6.3f",
-                progress,
-                state,
-                result, resultCodeToString(result),
-                latencyFrames, latencyMillis, confidence));
+        double latencyMillis = latencyFrames * 1000.0 / getSampleRate();
+        String message = getProgressText();
+        message += String.format("RMS: signal = %7.5f, noise = %7.5f\n",
+                getSignalRMS(), getBackgroundRMS());
+        message += String.format("result = %d = %s\n", result, resultCodeToString(result));
+        // Only report valid latencies.
+        if (result == 0) {
+            message += String.format("latency = %6d frames = %6.2f msec\n",
+                    latencyFrames, latencyMillis);
+        }
+        message += String.format("confidence = %6.3f", confidence);
+
+        setAnalyzerText(message);
 
         mMeasureButton.setEnabled(true);
 
@@ -98,8 +108,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private LatencySniffer mLatencySniffer = new LatencySniffer();
 
     native int getAnalyzerProgress();
-    native double getMeasuredLatency();
+    native int getMeasuredLatency();
     native double getMeasuredConfidence();
+    native double getBackgroundRMS();
+    native double getSignalRMS();
 
     private void setAnalyzerText(String s) {
         mAnalyzerView.setText(s);
@@ -115,6 +127,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         super.onCreate(savedInstanceState);
         mMeasureButton = (Button) findViewById(R.id.button_measure);
         mCancelButton = (Button) findViewById(R.id.button_cancel);
+        mShareButton = (Button) findViewById(R.id.button_share);
+        mShareButton.setEnabled(false);
         mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
         updateEnabledWidgets();
 
@@ -127,6 +141,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     protected void onStart() {
         super.onStart();
         setActivityType(ACTIVITY_RT_LATENCY);
+        mShareButton.setEnabled(false);
     }
 
     @Override
@@ -141,6 +156,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mLatencySniffer.startSniffer();
         mMeasureButton.setEnabled(false);
         mCancelButton.setEnabled(true);
+        mShareButton.setEnabled(false);
     }
 
     public void onCancel(View view) {
@@ -152,8 +168,14 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mLatencySniffer.stopSniffer();
         mMeasureButton.setEnabled(true);
         mCancelButton.setEnabled(false);
+        mShareButton.setEnabled(true);
         stopAudio();
         closeAudio();
+    }
+
+    @Override
+    String getWaveTag() {
+        return "rtlatency";
     }
 
     @Override
