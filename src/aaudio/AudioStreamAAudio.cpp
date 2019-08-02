@@ -135,6 +135,8 @@ Result AudioStreamAAudio::open() {
     // when using the Legacy data path.
     // If the app requests > 4096 then we allow it but we are less likely to get LowLatency.
     // See internal bug b/80308183 for more details.
+    // Fixed in Q but let's still clip the capacity because high input capacity
+    // does not increase latency.
     int32_t capacity = mBufferCapacityInFrames;
     constexpr int kCapacityRequiredForFastLegacyTrack = 4096; // matches value in AudioFinger
     if (mDirection == oboe::Direction::Input
@@ -142,7 +144,7 @@ Result AudioStreamAAudio::open() {
             && capacity < kCapacityRequiredForFastLegacyTrack
             && mPerformanceMode == oboe::PerformanceMode::LowLatency) {
         capacity = kCapacityRequiredForFastLegacyTrack;
-        LOGD("AudioStreamAAudio.open() capacity changed from %d to %d",
+        LOGD("AudioStreamAAudio.open() capacity changed from %d to %d for lower latency",
              static_cast<int>(mBufferCapacityInFrames), capacity);
     }
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, capacity);
