@@ -25,7 +25,6 @@ PolyphaseResamplerStereo::PolyphaseResamplerStereo(const MultiChannelResampler::
     assert(builder.getChannelCount() == STEREO);
 }
 
-
 void PolyphaseResamplerStereo::writeFrame(const float *frame) {
     // Move cursor before write so that cursor points to last written frame in read.
     if (--mCursor < 0) {

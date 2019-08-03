@@ -44,7 +44,7 @@ public:
         mPhase += mPhaseIncrement;
     }
 
-    float getPhase() {
+    double getPhase() {
         return (float) mPhase;
     }
 

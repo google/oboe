@@ -54,23 +54,11 @@ public:
 
 protected:
 
-    std::vector<float>     mCoefficients;
     int32_t                mCoefficientCursor = 0;
     int32_t                mIntegerPhase = 0;
     int32_t                mNumerator = 0;
     int32_t                mDenominator = 0;
 
-private:
-
-    /**
-     * Generate the filter coefficients in optimal order.
-     * @param inputRate
-     * @param outputRate
-     * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
-     */
-    void generateCoefficients(int32_t inputRate,
-                              int32_t outputRate,
-                              float normalizedCutoff);
 };
 
 }

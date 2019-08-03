@@ -91,9 +91,9 @@ MultiChannelResampler *MultiChannelResampler::Builder::build() {
 }
 
 void MultiChannelResampler::writeFrame(const float *frame) {
-    // Advance cursor before write so that cursor points to last written frame in read.
-    if (++mCursor >= getNumTaps()) {
-        mCursor = 0;
+    // Move cursor before write so that cursor points to last written frame in read.
+    if (--mCursor < 0) {
+        mCursor = getNumTaps() - 1;
     }
     float *dest = &mX[mCursor * getChannelCount()];
     int offset = getNumTaps() * getChannelCount();
@@ -117,4 +117,44 @@ float MultiChannelResampler::sinc(float radians) {
 // Unoptimized calculation used to construct lookup tables.
 float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
     return sinc(radians) * hammingWindow(radians, spread); // TODO try Kaiser window
+}
+
+
+// Generate coefficients in the order they will be used by readFrame().
+// This is more complicated but readFrame() is called repeatedly and should be optimized.
+void MultiChannelResampler::generateCoefficients(int32_t inputRate,
+                                              int32_t outputRate,
+                                              int32_t numRows,
+                                              double phaseIncrement,
+                                              float normalizedCutoff) {
+    mCoefficients.resize(getNumTaps() * numRows);
+    int cursor = 0;
+    double phase = 0.0;
+    const float cutoffScaler = std::min(1.0f, normalizedCutoff * outputRate / inputRate);
+    const int numTapsHalf = getNumTaps() / 2; // numTaps must be even.
+    for (int i = 0; i < numRows; i++) {
+        float tapPhase = phase - numTapsHalf;
+        float gain = 0.0;
+        int gainCursor = cursor;
+        for (int tap = 0; tap < getNumTaps(); tap++) {
+            float radians = tapPhase * M_PI;
+            float coefficient = sinc(cutoffScaler * radians) * hammingWindow(radians, numTapsHalf);
+            mCoefficients.at(cursor++) = coefficient;
+            gain += coefficient;
+            tapPhase += 1.0;
+        }
+        phase += phaseIncrement;
+        while (phase >= 1.0) {
+            phase -= 1.0;
+        }
+
+        // Correct for gain variations. // TODO review
+        //printf("gain at %d was %f\n", i, gain);
+        float gainCorrection = 1.0 / gain; // normalize the gain
+        for (int tap = 0; tap < getNumTaps(); tap++) {
+            float scaledCoefficient = mCoefficients.at(gainCursor) * gainCorrection;
+            //printf("scaledCoefficient[%2d] = %10.6f\n", tap, scaledCoefficient);
+            mCoefficients.at(gainCursor++) = scaledCoefficient;
+        }
+    }
 }

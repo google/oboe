@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <math.h>
+
 #include "SincResamplerStereo.h"
 
 using namespace resampler;
@@ -26,32 +28,53 @@ SincResamplerStereo::SincResamplerStereo(const MultiChannelResampler::Builder &b
 }
 
 void SincResamplerStereo::writeFrame(const float *frame) {
-    int xIndex = mCursor * STEREO;
-    int offset = mNumTaps * STEREO;
-    float *dest = &mX[xIndex];
-        // Write each channel twice so we avoid having to wrap when running the FIR.
-    dest[0] = dest[offset] = frame[0];
-    dest[1] = dest[1 +  offset] = frame[1];
-    if (++mCursor >= mNumTaps) {
-        mCursor = 0;
+    // Move cursor before write so that cursor points to last written frame in read.
+    if (--mCursor < 0) {
+        mCursor = getNumTaps() - 1;
     }
+    float *dest = &mX[mCursor * STEREO];
+    const int offset = mNumTaps * STEREO;
+    // Write each channel twice so we avoid having to wrap when running the FIR.
+    const float left =  frame[0];
+    const float right = frame[1];
+    // Put ordered writes together.
+    dest[0] = left;
+    dest[1] = right;
+    dest[offset] = left;
+    dest[1 + offset] = right;
 }
 
+// Multiply input times windowed sinc function.
 void SincResamplerStereo::readFrame(float *frame) {
-//    float left = 0.0;
-//    float right = 0.0;
-//    float phase =  getPhase();
-//    // Multiply input times windowed sinc function.
-//    int xIndex = (mCursor + mNumTaps) * STEREO;
-//    for (int i = 0; i < mNumTaps; i++) {
-//        float coefficient = interpolateWindowedSinc(phase);
-//        float *xFrame = &mX[xIndex];
-//        left += coefficient * xFrame[0];
-//        right += coefficient * xFrame[1];
-//        xIndex -= STEREO;
-//        phase += 1.0;
-//    }
-//    // Copy accumulator to output.
-//    frame[0] = left;
-//    frame[1] = right;
+    // Clear accumulator for mixing.
+    std::fill(mSingleFrame.begin(), mSingleFrame.end(), 0.0);
+    std::fill(mSingleFrame2.begin(), mSingleFrame2.end(), 0.0);
+
+    // Determine indices into coefficients table.
+    double tablePhase = getPhase() * mNumRows;
+    int index1 = static_cast<int>(floor(tablePhase));
+    float *coefficients1 = &mCoefficients[index1 * getNumTaps()];
+    int index2 = (index1 + 1);
+    if (index2 >= mNumRows) { // no guard row needed because we wrap the indices
+        index2 = 0;
+    }
+    float *coefficients2 = &mCoefficients[index2 * getNumTaps()];
+    float *xFrame = &mX[mCursor * getChannelCount()];
+    for (int i = 0; i < mNumTaps; i++) {
+        float coefficient1 = *coefficients1++;
+        float coefficient2 = *coefficients2++;
+        for (int channel = 0; channel < getChannelCount(); channel++) {
+            float sample = *xFrame++;
+            mSingleFrame[channel] +=  sample * coefficient1;
+            mSingleFrame2[channel] += sample * coefficient2;
+        }
+    }
+
+    // Interpolate and copy to output.
+    float fraction = tablePhase - index1;
+    for (int channel = 0; channel < getChannelCount(); channel++) {
+        float low = mSingleFrame[channel];
+        float high = mSingleFrame2[channel];
+        frame[channel] = low + (fraction * (high - low));
+    }
 }

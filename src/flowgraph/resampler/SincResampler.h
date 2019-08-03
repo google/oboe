@@ -32,34 +32,10 @@ public:
 
     void readFrame(float *frame) override;
 
-    /**
-     * @param phase between 0.0 and  2*kSpread
-     * @return windowedSinc
-     */
-    float interpolateWindowedSinc(float phase);
-
 protected:
 
-    std::vector<float>     mWindowedSinc;
-
-private:
-
-    /**
-     * Generate the filter coefficients in optimal order.
-     * @param inputRate
-     * @param outputRate
-     * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
-     */
-    void generateCoefficients(int32_t inputRate,
-                              int32_t outputRate,
-                              float normalizedCutoff);
-
-    std::vector<float>     mCoefficients;
-    int32_t                mNumSeries = 0;
-    std::vector<float>     mSingleFrame2; // for interpolation
-
-
-    float mTablePhaseScaler = 0.0f;
+    std::vector<float> mSingleFrame2; // for interpolation
+    int32_t            mNumRows = 0;
 
 };
 

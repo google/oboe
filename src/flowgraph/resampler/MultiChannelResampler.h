@@ -215,7 +215,22 @@ protected:
     std::vector<float>   mX;
     std::vector<float>   mSingleFrame;
 
+    std::vector<float>     mCoefficients;
     static constexpr int   kMaxCoefficients = 8 * 1024;
+
+
+    /**
+     * Generate the filter coefficients in optimal order.
+     * @param inputRate
+     * @param outputRate
+     * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
+     */
+    void generateCoefficients(int32_t inputRate,
+                              int32_t outputRate,
+                              int32_t numRows,
+                              double phaseIncrement,
+                              float normalizedCutoff);
+
 private:
 
     // max coefficients for polyphase filter
