@@ -19,9 +19,9 @@
 using namespace resampler;
 
 LinearResampler::LinearResampler(const MultiChannelResampler::Builder &builder)
-        : ContinuousResampler(builder) {
-        mPreviousFrame = std::make_unique<float[]>(getChannelCount());
-        mCurrentFrame = std::make_unique<float[]>(getChannelCount());
+        : MultiChannelResampler(builder) {
+    mPreviousFrame = std::make_unique<float[]>(getChannelCount());
+    mCurrentFrame = std::make_unique<float[]>(getChannelCount());
 }
 
 void LinearResampler::writeFrame(const float *frame) {
@@ -32,7 +32,7 @@ void LinearResampler::writeFrame(const float *frame) {
 void LinearResampler::readFrame(float *frame) {
     float *previous = mPreviousFrame.get();
     float *current = mCurrentFrame.get();
-    float phase = (float) getPhase();
+    float phase = (float) getIntegerPhase() / mDenominator;
     for (int channel = 0; channel < getChannelCount(); channel++) {
         float f0 = *previous++;
         float f1 = *current++;

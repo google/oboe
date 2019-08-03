@@ -32,8 +32,17 @@ MultiChannelResampler::MultiChannelResampler(const MultiChannelResampler::Builde
         , mX(builder.getChannelCount() * builder.getNumTaps() * 2)
         , mSingleFrame(builder.getChannelCount())
         , mChannelCount(builder.getChannelCount())
-        {}
+        {
+    // Reduce sample rates to the smallest ratio.
+    // For example 44100/48000 would become 147/160.
+    IntegerRatio ratio(builder.getInputRate(), builder.getOutputRate());
+    ratio.reduce();
+    mNumerator = ratio.getNumerator();
+    mDenominator = ratio.getDenominator();
+    mIntegerPhase = mDenominator;
+}
 
+// static factory method
 MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
                                                    int32_t inputRate,
                                                    int32_t outputRate,
@@ -115,9 +124,9 @@ float MultiChannelResampler::sinc(float radians) {
 }
 
 // Unoptimized calculation used to construct lookup tables.
-float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
-    return sinc(radians) * hammingWindow(radians, spread); // TODO try Kaiser window
-}
+//float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
+//    return sinc(radians) * hammingWindow(radians, spread); // TODO try Kaiser window
+//}
 
 
 // Generate coefficients in the order they will be used by readFrame().

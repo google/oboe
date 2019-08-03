@@ -32,7 +32,6 @@ set (oboe_sources
     src/flowgraph/SourceFloat.cpp
     src/flowgraph/SourceI16.cpp
     src/flowgraph/SourceI24.cpp
-    src/flowgraph/resampler/ContinuousResampler.cpp
     src/flowgraph/resampler/IntegerRatio.cpp
     src/flowgraph/resampler/LinearResampler.cpp
     src/flowgraph/resampler/MultiChannelResampler.cpp

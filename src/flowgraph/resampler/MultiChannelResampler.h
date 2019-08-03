@@ -137,10 +137,10 @@ public:
     /**
      * Factory method for making a resampler that is optimal for the given inputs.
      *
-     * @param channelCount
-     * @param inputRate
-     * @param outputRate
-     * @param quality
+     * @param channelCount number of channels, 2 for stereo
+     * @param inputRate sample rate of the input stream
+     * @param outputRate  sample rate of the output stream
+     * @param quality higher quality sounds better but uses more CPU
      * @return an optimal resampler
      */
     static MultiChannelResampler *make(int32_t channelCount,
@@ -148,7 +148,9 @@ public:
                                        int32_t outputRate,
                                        Quality quality);
 
-    virtual bool isWriteNeeded() const = 0;
+    bool isWriteNeeded() const {
+        return mIntegerPhase >= mDenominator;
+    }
 
     /**
      * Write a frame containing N samples.
@@ -190,7 +192,7 @@ protected:
      * @param phase between 0.0 and  2*spread // TODO use centered phase, maybe
      * @return windowedSinc
      */
-    static float calculateWindowedSinc(float phase, int spread); // TODO remove
+    // static float calculateWindowedSinc(float phase, int spread); // TODO remove
 
     /**
      * Write a frame containing N samples.
@@ -203,26 +205,23 @@ protected:
      * Read a frame containing N samples using interpolation.
      * Call advanceRead() after calling this.
      * @param frame pointer to the first sample in a frame
-     * @param phase phase between 0.0 and 1.0 for interpolation
      */
     virtual void readFrame(float *frame) = 0;
 
-    virtual void advanceWrite() = 0;
-    virtual void advanceRead() = 0;
+    void advanceWrite() {
+        mIntegerPhase -= mDenominator;
+    }
 
-    const int            mNumTaps;
-    int                  mCursor = 0;
-    std::vector<float>   mX;
-    std::vector<float>   mSingleFrame;
-
-    std::vector<float>     mCoefficients;
-    static constexpr int   kMaxCoefficients = 8 * 1024;
-
+    void advanceRead() {
+        mIntegerPhase += mNumerator;
+    }
 
     /**
      * Generate the filter coefficients in optimal order.
-     * @param inputRate
-     * @param outputRate
+     * @param inputRate sample rate of the input stream
+     * @param outputRate  sample rate of the output stream
+     * @param numRows number of rows in the array that contain a set of tap coefficients
+     * @param phaseIncrement how much to increment the phase between rows
      * @param normalizedCutoff filter cutoff frequency normalized to Nyquist rate of output
      */
     void generateCoefficients(int32_t inputRate,
@@ -231,13 +230,29 @@ protected:
                               double phaseIncrement,
                               float normalizedCutoff);
 
+
+    int32_t getIntegerPhase() {
+        return mIntegerPhase;
+    }
+
+    static constexpr int kMaxCoefficients = 8 * 1024;
+    std::vector<float>   mCoefficients;
+
+    const int            mNumTaps;
+    int                  mCursor = 0;
+    std::vector<float>   mX;
+    std::vector<float>   mSingleFrame;
+    int32_t              mIntegerPhase = 0;
+    int32_t              mNumerator = 0;
+    int32_t              mDenominator = 0;
+
+
 private:
 
     // max coefficients for polyphase filter
     static constexpr float kDefaultNormalizedCutoff = 0.90f;
 
     const int              mChannelCount;
-
 };
 
 }

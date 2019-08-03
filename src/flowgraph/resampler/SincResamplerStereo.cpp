@@ -51,7 +51,7 @@ void SincResamplerStereo::readFrame(float *frame) {
     std::fill(mSingleFrame2.begin(), mSingleFrame2.end(), 0.0);
 
     // Determine indices into coefficients table.
-    double tablePhase = getPhase() * mNumRows;
+    double tablePhase = getIntegerPhase() * mPhaseScaler;
     int index1 = static_cast<int>(floor(tablePhase));
     float *coefficients1 = &mCoefficients[index1 * getNumTaps()];
     int index2 = (index1 + 1);

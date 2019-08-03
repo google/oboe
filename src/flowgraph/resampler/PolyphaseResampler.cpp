@@ -28,14 +28,6 @@ PolyphaseResampler::PolyphaseResampler(const MultiChannelResampler::Builder &bui
     int32_t inputRate = builder.getInputRate();
     int32_t outputRate = builder.getOutputRate();
 
-    // Reduce sample rates to the smallest ratio.
-    // For example 44100/48000 would become 147/160.
-    IntegerRatio ratio(inputRate, outputRate);
-    ratio.reduce();
-    mNumerator = ratio.getNumerator();
-    mDenominator = ratio.getDenominator();
-    mIntegerPhase = mDenominator;
-
     int32_t numRows = mDenominator;
     double phaseIncrement = (double) inputRate / (double) outputRate;
     generateCoefficients(inputRate, outputRate,

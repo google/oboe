@@ -32,6 +32,7 @@ public:
     void writeFrame(const float *frame) override;
 
     void readFrame(float *frame) override;
+
 };
 
 }

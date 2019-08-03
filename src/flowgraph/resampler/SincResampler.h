@@ -20,11 +20,11 @@
 #include <memory>
 #include <sys/types.h>
 #include <unistd.h>
-#include "ContinuousResampler.h"
+#include "MultiChannelResampler.h"
 
 namespace resampler {
 
-class SincResampler : public ContinuousResampler {
+class SincResampler : public MultiChannelResampler {
 public:
     explicit SincResampler(const MultiChannelResampler::Builder &builder);
 
@@ -36,7 +36,7 @@ protected:
 
     std::vector<float> mSingleFrame2; // for interpolation
     int32_t            mNumRows = 0;
-
+    double             mPhaseScaler = 1.0;
 };
 
 }

@@ -20,11 +20,11 @@
 #include <memory>
 #include <sys/types.h>
 #include <unistd.h>
-#include "ContinuousResampler.h"
+#include "MultiChannelResampler.h"
 
 namespace resampler {
 
-class LinearResampler : public ContinuousResampler {
+class LinearResampler : public MultiChannelResampler {
 public:
     LinearResampler(const MultiChannelResampler::Builder &builder);
 

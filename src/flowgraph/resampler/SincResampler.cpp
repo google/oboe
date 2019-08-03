@@ -20,11 +20,12 @@
 using namespace resampler;
 
 SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
-        : ContinuousResampler(builder)
+        : MultiChannelResampler(builder)
         , mSingleFrame2(builder.getChannelCount()) {
     assert((getNumTaps() % 4) == 0); // Required for loop unrolling.
     mNumRows = kMaxCoefficients / getNumTaps(); // no guard row needed
 //    printf("SincResampler: numRows = %d\n", mNumRows);
+    mPhaseScaler = (double) mNumRows / mDenominator;
     double phaseIncrement = 1.0 / mNumRows;
     generateCoefficients(builder.getInputRate(),
                          builder.getOutputRate(),
@@ -40,7 +41,7 @@ void SincResampler::readFrame(float *frame) {
     std::fill(mSingleFrame2.begin(), mSingleFrame2.end(), 0.0);
 
     // Determine indices into coefficients table.
-    double tablePhase = getPhase() * mNumRows;
+    double tablePhase = getIntegerPhase() * mPhaseScaler;
     int index1 = static_cast<int>(floor(tablePhase));
     if (index1 >= mNumRows) { // no guard row needed because we wrap the indices
         tablePhase -= mNumRows;

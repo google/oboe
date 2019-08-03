@@ -29,10 +29,7 @@ class PolyphaseResampler : public MultiChannelResampler {
 public:
     /**
      *
-     * @param channelCount
-     * @param numTaps
-     * @param inputRate inputRate/outputRate should be a reduced fraction
-     * @param outputRate
+     * @param builder containing lots of parameters
      */
     explicit PolyphaseResampler(const MultiChannelResampler::Builder &builder);
 
@@ -40,24 +37,9 @@ public:
 
     void readFrame(float *frame) override;
 
-    bool isWriteNeeded() const override {
-        return mIntegerPhase >= mDenominator;
-    }
-
-    virtual void advanceWrite() override {
-        mIntegerPhase -= mDenominator;
-    }
-
-    virtual void advanceRead() override {
-        mIntegerPhase += mNumerator;
-    }
-
 protected:
 
     int32_t                mCoefficientCursor = 0;
-    int32_t                mIntegerPhase = 0;
-    int32_t                mNumerator = 0;
-    int32_t                mDenominator = 0;
 
 };
 
