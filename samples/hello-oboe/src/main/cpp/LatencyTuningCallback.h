@@ -26,8 +26,6 @@
 
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
 public:
-    using DefaultAudioStreamCallback::DefaultAudioStreamCallback;
-
     /**
      * Every time the playback stream requires data this method will be called.
      *
@@ -40,6 +38,7 @@ public:
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
     void setBufferTuneEnabled(bool enabled) {mBufferTuneEnabled = enabled;}
+
 private:
     bool mBufferTuneEnabled = true;
     // This will be used to automatically tune the buffer size of the stream, obtaining optimal latency

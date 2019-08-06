@@ -26,10 +26,12 @@
 constexpr int32_t kBufferSizeAutomatic = 0;
 
 // This sample inherits the AudioEngine in the shared folder, with a custom audio source and callback
-class HelloOboeEngine : public AudioEngine<SoundGenerator, LatencyTuningCallback> {
+class HelloOboeEngine : public AudioEngine {
 
 public:
     HelloOboeEngine();
+
+    void tap(bool isDown);
 
 
     // These methods reset the underlying stream with new properties
@@ -70,7 +72,15 @@ public:
     bool isLatencyDetectionSupported();
 
 private:
+
+    std::shared_ptr<LatencyTuningCallback>
+            mLatencyCallback = std::dynamic_pointer_cast<LatencyTuningCallback>(mCallback);
+
+    std::shared_ptr<SoundGenerator> mAudioSource;
+
     void updateLatencyDetection();
+
+    void updateAudioSource();
 
     bool mIsLatencyDetectionSupported = false;
 };

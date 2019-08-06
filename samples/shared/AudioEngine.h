@@ -19,40 +19,35 @@
 
 
 #include <oboe/Oboe.h>
-#include "shared/TappableAudioSource.h"
-#include "../debug-utils/logging_macros.h"
-#include "AudioEngineBase.h"
-#include "DefaultAudioStreamCallback.h"
-#include "TappableAudioSource.h"
 
-// T is a TappableAudioSource Source, U is a Callback
-// The stream is float only
-// The engine should be responsible for mutating and restarting the stream, as well as owning the callback
 
 class DefaultAudioStreamCallback;
 
-template <class T, class U = DefaultAudioStreamCallback>
-class AudioEngine : public AudioEngineBase {
+class AudioEngine {
 public:
 
-    AudioEngine() {
-        mCallback = std::make_unique<U>(*this);
-        AudioEngine<T, U>::createPlaybackStream(this->configureBuilder());
+   template <class callback_ptr>
+    AudioEngine(std::shared_ptr<callback_ptr> callback) {
+        mCallback = std::dynamic_pointer_cast<oboe::AudioStreamCallback>(callback);
+        createPlaybackStream(this->configureBuilder());
     }
+
     virtual ~AudioEngine() = default;
 
-    void restartStream() override {
+    oboe::Result restartStream() {
         this->createPlaybackStream(this->configureBuilder());
-    }
-    // This is for overriding the default config
-    void configureRestartStream(oboe::AudioStreamBuilder&& builder) {
-        createPlaybackStream(std::forward<decltype(builder)>(builder));
+        return startPlaybackStream();
     }
 
-    void tapTone(bool isToneOn) {
-        mSource->tap(isToneOn);
+    virtual oboe::Result startPlaybackStream() {
+        auto startResult = mStream->requestStart();
+        return startResult;
     }
+
 protected:
+    oboe::ManagedStream mStream;
+    std::shared_ptr<oboe::AudioStreamCallback> mCallback;
+
     // Default config properties of the stream, can be changed
     // These properties will be used on start and restart on disconnect
     virtual oboe::AudioStreamBuilder configureBuilder() {
@@ -60,35 +55,19 @@ protected:
         builder.setSampleRate(48000)->setChannelCount(2);
         return builder;
     }
-    U* getCallbackPtr() {
-        return dynamic_cast<U*>(mCallback.get());
+
+    void createCustomStream(oboe::AudioStreamBuilder builder) {
+        createPlaybackStream(std::forward<decltype(builder)>(builder));
     }
 
-    oboe::ManagedStream mStream;
-    std::unique_ptr<TappableAudioSource> mSource;
-    std::unique_ptr<DefaultAudioStreamCallback> mCallback;
-
 private:
-    void createPlaybackStream(oboe::AudioStreamBuilder &&builder) {
+    oboe::Result createPlaybackStream(oboe::AudioStreamBuilder builder) {
         oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setCallback(mCallback.get())
             ->openManagedStream(mStream);
-        if (result == oboe::Result::OK) {
-            mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
-            mSource = std::make_unique<T>(mStream->getSampleRate(),
-                                      mStream->getChannelCount());
-            mCallback->setSource(mSource.get());
-
-            mCallback->onSetupComplete();
-            auto startResult = mStream->requestStart();
-            if (startResult != oboe::Result::OK) {
-                LOGE("Error starting stream. %s", oboe::convertToText(result));
-            }
-        } else {
-            LOGE("Error opening stream. Error: %s", oboe::convertToText(result));
-        }
+        return result;
     }
 };
 

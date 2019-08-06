@@ -56,7 +56,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setToneOn(
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
     }
-    engine->tapTone(isToneOn);
+    engine->tap(isToneOn);
 }
 
 JNIEXPORT void JNICALL

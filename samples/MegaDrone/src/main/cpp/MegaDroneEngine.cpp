@@ -18,12 +18,20 @@
 #include <memory>
 #include "MegaDroneEngine.h"
 
-MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) : AudioEngine() {
-    mCpuIds = cpuIds;
+MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) : AudioEngine(std::make_shared<DefaultAudioStreamCallback>()) {
+    mDefaultCallbackPtr->setParent(*this);
+    mAudioSource =  std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
+    mDefaultCallbackPtr->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+    startPlaybackStream();
+     mCpuIds = std::move(cpuIds);
     if (!mIsThreadAffinitySet) {
         setThreadAffinity();
         mIsThreadAffinitySet = true;
     }
+}
+
+void MegaDroneEngine::tap(bool isDown) {
+    mAudioSource->tap(isDown);
 }
 
 /**

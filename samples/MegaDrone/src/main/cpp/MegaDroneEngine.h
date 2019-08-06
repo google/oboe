@@ -23,15 +23,23 @@
 
 #include "Synth.h"
 #include "shared/AudioEngine.h"
+#include "shared/DefaultAudioStreamCallback.h"
 
 using namespace oboe;
 
-class MegaDroneEngine : public AudioEngine<Synth> {
+class MegaDroneEngine : public AudioEngine {
 
 public:
     MegaDroneEngine(std::vector<int> cpuIds);
 
+    void tap(bool isDown);
+
 private:
+    std::shared_ptr<TappableAudioSource> mAudioSource;
+
+    std::shared_ptr<DefaultAudioStreamCallback> mDefaultCallbackPtr
+        = std::dynamic_pointer_cast<DefaultAudioStreamCallback>(mCallback);
+
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
     bool mIsThreadAffinitySet = false;
     void setThreadAffinity();

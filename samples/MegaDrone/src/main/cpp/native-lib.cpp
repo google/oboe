@@ -48,7 +48,8 @@ JNIEXPORT jlong JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    MegaDroneEngine  *engine = new MegaDroneEngine(cpuIds);
+    LOGD("id: %d", cpuIds[0]);
+    MegaDroneEngine  *engine = new MegaDroneEngine(std::move(cpuIds));
     LOGD("Engine Started");
     return reinterpret_cast<jlong>(engine);
 }
@@ -71,7 +72,7 @@ Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance,
 
     auto *engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
     if (engine) {
-        engine->tapTone(isDown);
+        engine->tap(isDown);
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }

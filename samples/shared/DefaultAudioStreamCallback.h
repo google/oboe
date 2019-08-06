@@ -19,38 +19,50 @@
 
 
 #include <oboe/AudioStreamCallback.h>
-#include <shared/AudioEngineBase.h>
-#include <shared/IRenderableAudio.h>
-#include "../debug-utils/logging_macros.h"
+#include <debug-utils/logging_macros.h>
+
+#include "IRenderableAudio.h"
+#include "AudioEngine.h"
 
 class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
 public:
-    DefaultAudioStreamCallback(AudioEngineBase &audioEngineBase):
-        mParent(audioEngineBase) { }
+    virtual ~DefaultAudioStreamCallback() = default;
 
     virtual oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         float *outputBuffer = static_cast<float *>(audioData);
-        if (!mRenderable){
-            return oboe::DataCallbackResult ::Stop;
+        if (!mRenderable) {
+            LOGE("Renderable source not set!");
+            return oboe::DataCallbackResult::Stop;
         }
         mRenderable->renderAudio(outputBuffer, numFrames);
         return oboe::DataCallbackResult::Continue;
     }
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
         // Restart the stream when it errors out with disconnect
-        if (error == oboe::Result::ErrorDisconnected) {
+        if (error == oboe::Result::ErrorDisconnected && mParent) {
             LOGE("Restarting AudioStream after disconnect");
-            mParent.restartStream();
+            mParent->restartStream();
+        } else {
+            LOGE("Could not find parent or unknown error");
         }
     }
 
-    void setSource(IRenderableAudio *renderable) { mRenderable = renderable;}
-    virtual void onSetupComplete() {}
+    void setParent(AudioEngine &parent) {
+        mParent = &parent;
+    }
+
+    void setSource(std::shared_ptr<IRenderableAudio> renderable) {
+        mRenderable = renderable;
+    }
+
+    std::shared_ptr<IRenderableAudio> getSource() {
+        return mRenderable;
+    }
 
 private:
-    IRenderableAudio *mRenderable;
-    AudioEngineBase &mParent;
+    std::shared_ptr<IRenderableAudio> mRenderable;
+    AudioEngine *mParent;
 };
 
 #endif //SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
