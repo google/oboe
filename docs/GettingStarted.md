@@ -16,7 +16,7 @@ Start by cloning the [latest stable release](https://github.com/google/oboe/rele
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
 If you use git as your version control system, consider adding Oboe as a [submodule](https://gist.github.com/gitaarik/8735255)  (underneath your
-app directory)
+cpp directory)
 
 ```
 git submodule add https://github.com/google/oboe
@@ -51,12 +51,12 @@ Add `oboe` to the list of libraries which your app's library depends on. For exa
 
     target_link_libraries(native-lib oboe)
 
-Here's a complete example `CMakeLists.txt` file:
+Here's a complete example `CMakeLists.txt` file (without `OBOE_DIR` set):
 
     cmake_minimum_required(VERSION 3.4.1)
 
     # Build our own native library
-    add_library (native-lib SHARED src/main/cpp/native-lib.cpp )
+    add_library (native-lib SHARED native-lib.cpp )
 
     # Build the Oboe library
     set (OBOE_DIR ./oboe)
@@ -69,7 +69,6 @@ Here's a complete example `CMakeLists.txt` file:
     target_link_libraries (native-lib log oboe)
 
 
-Make sure that the `CMakeLists.txt` file lives next to your module specific build.gradle.
 
 Now go to `Build->Refresh Linked C++ Projects` to have Android Studio index the Oboe library.
 
