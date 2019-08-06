@@ -82,6 +82,7 @@ Once you've added Oboe to your project you can start using Oboe's features. The 
 Include the Oboe header:
 
     #include <oboe/Oboe.h>
+    
 
 Streams are built using an `AudioStreamBuilder`. Create one like this:
 
@@ -94,6 +95,18 @@ Use the builder's set methods to set properties on the stream (you can read more
     builder.setSharingMode(oboe::SharingMode::Exclusive);
     builder.setFormat(oboe::AudioFormat::Float);
     builder.setChannelCount(oboe::ChannelCount::Mono);
+
+The builder's set methods can be easily chained:
+
+```
+oboe::AudioStreamBuilder builder;
+
+// Make sure to  always set the Performance and Sharing mode
+builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
+  ->setSharingMode(oboe::SharingMode::Exclusive); // The builder setter methods
+  can be chained for convenience
+builder.setCallback(myCallback)->setFormat(oboe::AudioFormat::Float);
+```
 
 Define an `AudioStreamCallback` class to receive callbacks whenever the stream requires new data.
 
@@ -122,11 +135,14 @@ Supply this callback class to the builder:
 
     MyCallback myCallback;
     builder.setCallback(&myCallback);
-
+    
+Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring as a global.
+```
+oboe::ManagedStream managedStream;
+```
 Open the stream:
 
-    oboe::AudioStream *stream;
-    oboe::Result result = builder.openStream(&stream);
+    oboe::Result result = builder.openManagedStream(managedStream);
 
 Check the result to make sure the stream was opened successfully. Oboe has a convenience method for converting its types into human-readable strings called `oboe::convertToText`:
 
@@ -136,6 +152,7 @@ Check the result to make sure the stream was opened successfully. Oboe has a con
 
 Note that this sample code uses the [logging macros from here](https://github.com/googlesamples/android-audio-high-performance/blob/master/debug-utils/logging_macros.h).
 
+## Playing audio
 Check the properties of the created stream. The **format** is one property which you should check. This will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback.
 
     oboe::AudioFormat format = stream->getFormat();
@@ -143,47 +160,34 @@ Check the properties of the created stream. The **format** is one property which
 
 Now start the stream.
 
-    stream->requestStart();
+    managedStream->requestStart();
 
 At this point you should start receiving callbacks.
 
-### Closing the stream
+To stop receiving callbacks call
+    
+	    managedStream->requestStop();
+
+## Closing the stream
 It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from using the MMAP data path.
 
-To do this use:
+Streams can be explicitly closed:
 
     stream->close();
 
 `close()` is a blocking call which also stops the stream.
 
-It is usually advisable to close your stream when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
+Streams can also be automatically closed when going out of scope:
 
-## Using a ManagedStream
-Create and configure a builder.
-```
-oboe::AudioStreamBuilder builder;
+	{
+		ManagedStream mStream;
+		AudioStreamBuilder().build(mStream);
+		mStream->requestStart();
+	} // Out of this scope the mStream has been automatically closed 
+	
+It is preferable to let the `ManagedStream` object go out of scope (or be explicitly deleted) when the app goes out of focus, such as when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
-// Make sure to  always set the Performance and Sharing mode
-builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
-  ->setSharingMode(oboe::SharingMode::Exclusive); // The builder setter methods
-  can be chained for convenience
-builder.setCallback(myCallback)->setFormat(oboe::AudioFormat::Float);
-```
-Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.
-the member of a managing class). Avoid declaring as a global.
-```
-oboe::ManagedStream managedStream;
-```
-Open the ManagedStream.
-```
-builder.openManagedStream(managedStream);
-```
-Start the ManagedStream in order to cause it to begin calling back. If
-necessary, check stream properties before requesting start (especially if some
-stream parameters were left unspecified).
-```
-managedStream->requestStart();
-```
+## Reconfiguring streams
 In order to change the configuration of the stream, simply call this method
 again. The existing stream is closed, destroyed and a new stream is built and
 populates the managedStream.
@@ -199,6 +203,9 @@ automatic allocation context (such as a member of a class), the stream does not
 need to be closed or deleted. Make sure that the object which is responsible for
 the MangedStream (its enclosing class), goes out of scope when
 `Activity.onPause()` is called.
+
+
+## Example
 
 The following class is a complete implementation of a ManagedStream, which
 renders a sine wave. Creating the class (e.g. through the JNI bridge) creates
@@ -261,8 +268,7 @@ This class also automatically starts the stream upon construction. Typically,
 the stream is queried for information prior to being started (e.g. burst size),
 and started upon user input.
 For more examples on how to use `ManagedStream` look in the [samples](https://github.com/google/oboe/tree/master/samples) folder.
-`samples/shared` contains an `AudioEngine` which can be easily inherited from to begin
-creating interactive Oboe ManagedStreams.
+
 
 ## Obtaining optimal latency
 One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened.
