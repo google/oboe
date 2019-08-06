@@ -18,11 +18,12 @@
 #ifndef SAMPLES_LATENCY_TUNING_CALLBACK_H
 #define SAMPLES_LATENCY_TUNING_CALLBACK_H
 
-#include <oboe/LatencyTuner.h>
-#include <shared/TappableAudioSource.h>
-#include <shared/DefaultAudioStreamCallback.h>
-#include <debug-utils/trace.h>
 #include <oboe/Oboe.h>
+#include <oboe/LatencyTuner.h>
+
+#include <TappableAudioSource.h>
+#include <DefaultAudioStreamCallback.h>
+#include <trace.h>
 
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
 public:

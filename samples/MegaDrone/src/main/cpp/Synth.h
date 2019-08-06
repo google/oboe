@@ -18,11 +18,11 @@
 #define MEGADRONE_SYNTH_H
 
 #include <array>
-#include <shared/TappableAudioSource.h>
+#include <TappableAudioSource.h>
 
-#include "shared/Oscillator.h"
-#include "shared/Mixer.h"
-#include "shared/MonoToStereo.h"
+#include <Oscillator.h>
+#include <Mixer.h>
+#include <MonoToStereo.h>
 
 constexpr int kNumOscillators = 100;
 constexpr float kOscBaseFrequency = 116.0;

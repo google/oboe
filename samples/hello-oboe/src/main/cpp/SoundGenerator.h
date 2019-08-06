@@ -18,8 +18,8 @@
 #define SAMPLES_SOUNDGENERATOR_H
 
 
-#include <shared/Oscillator.h>
-#include <shared/TappableAudioSource.h>
+#include <Oscillator.h>
+#include <TappableAudioSource.h>
 
 /**
  * Generates a fixed frequency tone for each channel.

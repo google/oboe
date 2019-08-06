@@ -18,7 +18,7 @@
 #define OBOE_HELLO_OBOE_ENGINE_H
 
 #include <oboe/Oboe.h>
-#include <shared/AudioEngine.h>
+#include <AudioEngine.h>
 
 #include "SoundGenerator.h"
 #include "LatencyTuningCallback.h"

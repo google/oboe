@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "Synth.h"
-#include "shared/AudioEngine.h"
-#include "shared/DefaultAudioStreamCallback.h"
+#include <AudioEngine.h>
+#include <DefaultAudioStreamCallback.h>
 
 using namespace oboe;
 

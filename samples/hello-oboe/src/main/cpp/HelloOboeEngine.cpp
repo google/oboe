@@ -18,7 +18,7 @@
 #include <inttypes.h>
 #include <memory>
 
-#include "shared/Oscillator.h"
+#include <Oscillator.h>
 
 #include "HelloOboeEngine.h"
 #include "SoundGenerator.h"
