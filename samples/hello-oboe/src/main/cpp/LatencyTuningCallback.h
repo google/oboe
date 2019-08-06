@@ -27,6 +27,7 @@
 
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
 public:
+    LatencyTuningCallback(IRestartable &mParent) : DefaultAudioStreamCallback(mParent) {}
     /**
      * Every time the playback stream requires data this method will be called.
      *

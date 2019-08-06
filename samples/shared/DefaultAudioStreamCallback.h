@@ -22,10 +22,11 @@
 #include <logging_macros.h>
 
 #include "IRenderableAudio.h"
-#include "AudioEngine.h"
+#include "IRestartable.h"
 
 class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
 public:
+    DefaultAudioStreamCallback(IRestartable &parent): mParent(parent) {}
     virtual ~DefaultAudioStreamCallback() = default;
 
     virtual oboe::DataCallbackResult
@@ -40,16 +41,12 @@ public:
     }
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
         // Restart the stream when it errors out with disconnect
-        if (error == oboe::Result::ErrorDisconnected && mParent) {
+        if (error == oboe::Result::ErrorDisconnected) {
             LOGE("Restarting AudioStream after disconnect");
-            mParent->restartStream();
+            mParent.restartStream();
         } else {
-            LOGE("Could not find parent or unknown error");
+            LOGE("Unknown error");
         }
-    }
-
-    void setParent(AudioEngine &parent) {
-        mParent = &parent;
     }
 
     void setSource(std::shared_ptr<IRenderableAudio> renderable) {
@@ -62,7 +59,7 @@ public:
 
 private:
     std::shared_ptr<IRenderableAudio> mRenderable;
-    AudioEngine *mParent;
+    IRestartable &mParent;
 };
 
 #endif //SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H

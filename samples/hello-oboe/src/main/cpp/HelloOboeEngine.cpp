@@ -25,12 +25,11 @@
 
 
 
-HelloOboeEngine::HelloOboeEngine() : AudioEngine(std::make_shared<LatencyTuningCallback>()) {
-
-     mLatencyCallback->setParent(*this);
+HelloOboeEngine::HelloOboeEngine(): mLatencyCallback(std::make_unique<LatencyTuningCallback>(*this)) {
+     createPlaybackStream(oboe::AudioStreamBuilder());
      mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(), mStream->getChannelCount());
      mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-     startPlaybackStream();
+     mStream->start();
 
     // Initialize the trace functions, this enables you to output trace statements without
     // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
@@ -81,24 +80,24 @@ void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
 
 void HelloOboeEngine::setAudioApi(oboe::AudioApi audioApi) {
     mIsLatencyDetectionSupported = false;
-    createCustomStream(std::move(*oboe::AudioStreamBuilder(*mStream)
-            .setAudioApi((audioApi))));
+    createPlaybackStream(*oboe::AudioStreamBuilder(*mStream)
+            .setAudioApi(audioApi));
     updateAudioSource();
     LOGD("AudioAPI is now %d", mStream->getAudioApi());
 }
 
 void HelloOboeEngine::setChannelCount(int channelCount) {
     mIsLatencyDetectionSupported = false;
-    createCustomStream(std::move(*oboe::AudioStreamBuilder(*mStream)
-            .setChannelCount(channelCount)));
+    createPlaybackStream(*oboe::AudioStreamBuilder(*mStream)
+            .setChannelCount(channelCount));
     updateAudioSource();
     LOGD("Channel count is now %d", mStream->getChannelCount());
 }
 
 void HelloOboeEngine::setDeviceId(int32_t deviceId) {
     mIsLatencyDetectionSupported = false;
-    createCustomStream(std::move(*oboe::AudioStreamBuilder(*mStream).
-            setDeviceId(deviceId)));
+    createPlaybackStream(*oboe::AudioStreamBuilder(*mStream).
+            setDeviceId(deviceId));
     updateAudioSource();
     LOGD("Device ID is now %d", mStream->getDeviceId());
 }
@@ -118,7 +117,23 @@ void HelloOboeEngine::tap(bool isDown) {
 
 void HelloOboeEngine::updateAudioSource() {
     *mAudioSource = SoundGenerator(mStream->getSampleRate(), mStream->getChannelCount());
-    startPlaybackStream();
+    mStream->start();
     updateLatencyDetection();
+}
+
+oboe::Result HelloOboeEngine::createPlaybackStream(oboe::AudioStreamBuilder builder) {
+    oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
+        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+        ->setFormat(oboe::AudioFormat::Float)
+        ->setCallback(mLatencyCallback.get())
+        ->openManagedStream(mStream);
+    return result;
+}
+
+void HelloOboeEngine::restartStream() {
+    createPlaybackStream(oboe::AudioStreamBuilder());
+    mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(), mStream->getChannelCount());
+    mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+    mStream->start();
 }
 

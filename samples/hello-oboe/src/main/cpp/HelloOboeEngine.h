@@ -18,21 +18,24 @@
 #define OBOE_HELLO_OBOE_ENGINE_H
 
 #include <oboe/Oboe.h>
-#include <AudioEngine.h>
 
 #include "SoundGenerator.h"
 #include "LatencyTuningCallback.h"
+#include "IRestartable.h"
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
 // This sample inherits the AudioEngine in the shared folder, with a custom audio source and callback
-class HelloOboeEngine : public AudioEngine {
+class HelloOboeEngine : public IRestartable {
 
 public:
     HelloOboeEngine();
 
+    virtual ~HelloOboeEngine() = default;
+
     void tap(bool isDown);
 
+    void restartStream() override;
 
     // These methods reset the underlying stream with new properties
 
@@ -72,15 +75,17 @@ public:
     bool isLatencyDetectionSupported();
 
 private:
+    oboe::ManagedStream mStream;
 
-    std::shared_ptr<LatencyTuningCallback>
-            mLatencyCallback = std::dynamic_pointer_cast<LatencyTuningCallback>(mCallback);
+    std::unique_ptr<LatencyTuningCallback> mLatencyCallback;
 
     std::shared_ptr<SoundGenerator> mAudioSource;
 
     void updateLatencyDetection();
 
     void updateAudioSource();
+
+    oboe::Result createPlaybackStream(oboe::AudioStreamBuilder builder);
 
     bool mIsLatencyDetectionSupported = false;
 };

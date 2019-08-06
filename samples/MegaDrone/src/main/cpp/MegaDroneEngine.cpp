@@ -18,11 +18,12 @@
 #include <memory>
 #include "MegaDroneEngine.h"
 
-MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) : AudioEngine(std::make_shared<DefaultAudioStreamCallback>()) {
-    mDefaultCallbackPtr->setParent(*this);
+MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) {
+    mCallback = std::make_unique<DefaultAudioStreamCallback>(*this);
+    createPlaybackStream(oboe::AudioStreamBuilder());
     mAudioSource =  std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
-    mDefaultCallbackPtr->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-    startPlaybackStream();
+    mCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+    mStream->start();
      mCpuIds = std::move(cpuIds);
     if (!mIsThreadAffinitySet) {
         setThreadAffinity();
@@ -66,4 +67,20 @@ void MegaDroneEngine::setThreadAffinity() {
     }
 
     mIsThreadAffinitySet = true;
+}
+
+oboe::Result MegaDroneEngine::createPlaybackStream(oboe::AudioStreamBuilder builder) {
+    oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
+        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+        ->setFormat(oboe::AudioFormat::Float)
+        ->setCallback(mCallback.get())
+        ->openManagedStream(mStream);
+    return result;
+}
+
+void MegaDroneEngine::restartStream() {
+    createPlaybackStream(oboe::AudioStreamBuilder());
+    mAudioSource =  std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
+    mCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+    mStream->start();
 }
