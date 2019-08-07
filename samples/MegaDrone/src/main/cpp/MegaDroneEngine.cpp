@@ -60,7 +60,7 @@ void MegaDroneEngine::createCallback(std::vector<int> cpuIds){
     // when it's disconnected
     mCallback = std::make_unique<DefaultAudioStreamCallback>(*this);
 
-    // Bind the audio callback to specific CPU cores as this can be avoid underruns caused by
+    // Bind the audio callback to specific CPU cores as this can help avoid underruns caused by
     // core migrations
     mCallback->setCpuIds(cpuIds);
     mCallback->setThreadAffinityEnabled(true);

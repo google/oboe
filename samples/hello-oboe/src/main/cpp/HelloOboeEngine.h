@@ -25,7 +25,6 @@
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
-// This sample inherits the AudioEngine in the shared folder, with a custom audio source and callback
 class HelloOboeEngine : public IRestartable {
 
 public:

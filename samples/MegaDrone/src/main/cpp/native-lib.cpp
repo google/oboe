@@ -48,7 +48,7 @@ JNIEXPORT jlong JNICALL
 Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    LOGD("cpu ids size: %lu", cpuIds.size());
+    LOGD("cpu ids size: %u", cpuIds.size());
     MegaDroneEngine  *engine = new MegaDroneEngine(std::move(cpuIds));
     LOGD("Engine Started");
     return reinterpret_cast<jlong>(engine);

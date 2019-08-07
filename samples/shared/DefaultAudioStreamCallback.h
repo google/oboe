@@ -106,7 +106,6 @@ private:
      */
     void setThreadAffinity() {
 
-        LOGD("Setting thread affinity");
         pid_t current_thread_id = gettid();
         cpu_set_t cpu_set;
         CPU_ZERO(&cpu_set);
