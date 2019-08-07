@@ -100,7 +100,7 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorBeforeClose(AudioStream *oboeStream, Result error) {}
+    virtual void onErrorBeforeClose(AudioStream* /* oboeStream */, Result /* error */) {}
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected.
@@ -114,7 +114,7 @@ public:
      * @param oboeStream pointer to the associated stream
      * @param error
      */
-    virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) {}
+    virtual void onErrorAfterClose(AudioStream* /* oboeStream */, Result /* error */) {}
 
 };
 
