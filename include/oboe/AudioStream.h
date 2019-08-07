@@ -172,7 +172,7 @@ public:
     * @return the resulting buffer size in frames (obtained using value()) or an error (obtained
     * using error())
     */
-    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) {
+    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t /* requestedFrames  */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -281,9 +281,9 @@ public:
      * @param framePosition the frame number to query
      * @param timeNanoseconds an output parameter which will contain the presentation timestamp
      */
-    virtual Result getTimestamp(clockid_t clockId,
-                                int64_t *framePosition,
-                                int64_t *timeNanoseconds) {
+    virtual Result getTimestamp(clockid_t /* clockId  */,
+                                int64_t* /* framePosition */,
+                                int64_t* /* timeNanoseconds */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -302,7 +302,7 @@ public:
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
      */
-	virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId){
+	virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t /* clockId */){
         return Result::ErrorUnimplemented;
     }
 
@@ -319,9 +319,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually written, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> write(const void *buffer,
-                             int32_t numFrames,
-                             int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> write(const void* /* buffer */,
+                             int32_t /* numFrames */,
+                             int64_t /* timeoutNanoseconds */ ) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -337,9 +337,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually read, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> read(void *buffer,
-                            int32_t numFrames,
-                            int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> read(void* /* buffer */,
+                            int32_t /* numFrames */,
+                            int64_t /* timeoutNanoseconds */) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -408,7 +408,7 @@ protected:
      * @param numFrames
      * @return result
      */
-    virtual DataCallbackResult onDefaultCallback(void *audioData, int numFrames) {
+    virtual DataCallbackResult onDefaultCallback(void* /* audioData  */, int /* numFrames */) {
         return DataCallbackResult::Stop;
     }
 
