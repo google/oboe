@@ -18,69 +18,62 @@
 #include <memory>
 #include "MegaDroneEngine.h"
 
+/**
+ * Main audio engine for the MegaDrone sample. It is responsible for:
+ *
+ * - Creating the callback object which will be supplied when constructing the audio stream
+ * - Setting the CPU core IDs to which the callback thread should bind to
+ * - Creating the playback stream, including setting the callback object
+ * - Creating `Synth` which will render the audio inside the callback
+ * - Starting the playback stream
+ * - Restarting the playback stream when `restart()` is called by the callback object
+ *
+ * @param cpuIds
+ */
 MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) {
-    mCallback = std::make_unique<DefaultAudioStreamCallback>(*this);
-    createPlaybackStream(oboe::AudioStreamBuilder());
-    mAudioSource =  std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
-    mCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-    mStream->start();
-     mCpuIds = std::move(cpuIds);
-    if (!mIsThreadAffinitySet) {
-        setThreadAffinity();
-        mIsThreadAffinitySet = true;
-    }
+
+    createCallback(cpuIds);
+    start();
 }
 
 void MegaDroneEngine::tap(bool isDown) {
     mAudioSource->tap(isDown);
 }
 
-/**
- * Set the thread affinity for the current thread to mCpuIds. This can be useful to call on the
- * audio thread to avoid underruns caused by CPU core migrations to slower CPU cores.
- */
-void MegaDroneEngine::setThreadAffinity() {
-
-    pid_t current_thread_id = gettid();
-    cpu_set_t cpu_set;
-    CPU_ZERO(&cpu_set);
-
-    // If the callback cpu ids aren't specified then bind to the current cpu
-    if (mCpuIds.empty()) {
-        int current_cpu_id = sched_getcpu();
-        LOGV("Current CPU ID is %d", current_cpu_id);
-        CPU_SET(current_cpu_id, &cpu_set);
-    } else {
-
-        for (size_t i = 0; i < mCpuIds.size(); i++) {
-            int cpu_id = mCpuIds.at(i);
-            LOGV("CPU ID %d added to cores set", cpu_id);
-            CPU_SET(cpu_id, &cpu_set);
-        }
-    }
-
-    int result = sched_setaffinity(current_thread_id, sizeof(cpu_set_t), &cpu_set);
-    if (result == 0) {
-        LOGV("Thread affinity set");
-    } else {
-        LOGW("Error setting thread affinity. Error no: %d", result);
-    }
-
-    mIsThreadAffinitySet = true;
+void MegaDroneEngine::restart() {
+    start();
 }
 
-oboe::Result MegaDroneEngine::createPlaybackStream(oboe::AudioStreamBuilder builder) {
-    oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
-        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-        ->setFormat(oboe::AudioFormat::Float)
-        ->setCallback(mCallback.get())
-        ->openManagedStream(mStream);
-    return result;
+// Create the playback stream
+oboe::Result MegaDroneEngine::createPlaybackStream() {
+    oboe::AudioStreamBuilder builder;
+    return builder.setSharingMode(oboe::SharingMode::Exclusive)
+            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+            ->setFormat(oboe::AudioFormat::Float)
+            ->setCallback(mCallback.get())
+            ->openManagedStream(mStream);
 }
 
-void MegaDroneEngine::restartStream() {
-    createPlaybackStream(oboe::AudioStreamBuilder());
-    mAudioSource =  std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
-    mCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-    mStream->start();
+// Create the callback and set its thread affinity to the supplied CPU core IDs
+void MegaDroneEngine::createCallback(std::vector<int> cpuIds){
+    // Create the callback, we supply ourselves as the parent so that we can restart the stream
+    // when it's disconnected
+    mCallback = std::make_unique<DefaultAudioStreamCallback>(*this);
+
+    // Bind the audio callback to specific CPU cores as this can be avoid underruns caused by
+    // core migrations
+    mCallback->setCpuIds(cpuIds);
+    mCallback->setThreadAffinityEnabled(true);
+}
+
+void MegaDroneEngine::start(){
+    auto result = createPlaybackStream();
+    if (result == Result::OK){
+        // Create our synthesizer audio source using the properties of the stream
+        mAudioSource = std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
+        mCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+        mStream->start();
+    } else {
+        LOGE("Failed to create the playback stream. Error: %s", convertToText(result));
+    }
 }

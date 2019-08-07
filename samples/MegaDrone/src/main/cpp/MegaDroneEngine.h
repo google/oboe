@@ -35,22 +35,19 @@ public:
 
     virtual ~MegaDroneEngine() = default;
 
-    virtual void restartStream() override;
-
     void tap(bool isDown);
+
+    // from IRestartable
+    virtual void restart() override;
 
 private:
     oboe::ManagedStream mStream;
-
     std::shared_ptr<TappableAudioSource> mAudioSource;
-
     std::unique_ptr<DefaultAudioStreamCallback> mCallback;
 
-    std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
-    bool mIsThreadAffinitySet = false;
-
-    void setThreadAffinity();
-    oboe::Result createPlaybackStream(oboe::AudioStreamBuilder builder);
+    oboe::Result createPlaybackStream();
+    void createCallback(std::vector<int> cpuIds);
+    void start();
 };
 
 

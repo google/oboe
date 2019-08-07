@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <trace.h>
+
 #include <inttypes.h>
 #include <memory>
 
@@ -24,17 +24,19 @@
 #include "SoundGenerator.h"
 
 
-
+/**
+ * Main audio engine for the HelloOboe sample. It is responsible for:
+ *
+ * - Creating a callback object which is supplied when constructing the audio stream, and will be
+ * called when the stream starts
+ * - Restarting the stream when user-controllable properties (Audio API, channel count etc) are
+ * changed, and when the stream is disconnected (e.g. when headphones are attached)
+ * - Calculating the audio latency of the stream
+ *
+ */
 HelloOboeEngine::HelloOboeEngine(): mLatencyCallback(std::make_unique<LatencyTuningCallback>(*this)) {
-     createPlaybackStream(oboe::AudioStreamBuilder());
-     mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(), mStream->getChannelCount());
-     mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-     mStream->start();
-
-    // Initialize the trace functions, this enables you to output trace statements without
-    // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
-     Trace::initialize();
-     updateLatencyDetection();
+    start();
+    updateLatencyDetection();
 }
 
 double HelloOboeEngine::getCurrentOutputLatencyMillis() {
@@ -122,18 +124,25 @@ void HelloOboeEngine::updateAudioSource() {
 }
 
 oboe::Result HelloOboeEngine::createPlaybackStream(oboe::AudioStreamBuilder builder) {
-    oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
+    return builder.setSharingMode(oboe::SharingMode::Exclusive)
         ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
         ->setFormat(oboe::AudioFormat::Float)
         ->setCallback(mLatencyCallback.get())
         ->openManagedStream(mStream);
-    return result;
 }
 
-void HelloOboeEngine::restartStream() {
-    createPlaybackStream(oboe::AudioStreamBuilder());
-    mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(), mStream->getChannelCount());
-    mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
-    mStream->start();
+void HelloOboeEngine::restart() {
+    start();
+}
+
+void HelloOboeEngine::start() {
+    auto result = createPlaybackStream(oboe::AudioStreamBuilder());
+    if (result == oboe::Result::OK){
+        mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(), mStream->getChannelCount());
+        mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+        mStream->start();
+    } else {
+        LOGE("Error creating playback stream. Error: %s", oboe::convertToText(result));
+    }
 }
 

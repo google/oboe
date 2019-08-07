@@ -35,7 +35,8 @@ public:
 
     void tap(bool isDown);
 
-    void restartStream() override;
+    // From IRestartable
+    void restart() override;
 
     // These methods reset the underlying stream with new properties
 
@@ -76,18 +77,14 @@ public:
 
 private:
     oboe::ManagedStream mStream;
-
     std::unique_ptr<LatencyTuningCallback> mLatencyCallback;
-
     std::shared_ptr<SoundGenerator> mAudioSource;
-
-    void updateLatencyDetection();
-
-    void updateAudioSource();
+    bool mIsLatencyDetectionSupported = false;
 
     oboe::Result createPlaybackStream(oboe::AudioStreamBuilder builder);
-
-    bool mIsLatencyDetectionSupported = false;
+    void updateLatencyDetection();
+    void updateAudioSource();
+    void start();
 };
 
 #endif //OBOE_HELLO_OBOE_ENGINE_H

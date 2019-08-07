@@ -25,9 +25,22 @@
 #include <DefaultAudioStreamCallback.h>
 #include <trace.h>
 
+/**
+ * This callback object extends the functionality of `DefaultAudioStreamCallback` by automatically
+ * tuning the latency of the audio stream. @see onAudioReady for more details on this.
+ *
+ * It also demonstrates how to use tracing functions for logging inside the audio callback without
+ * blocking.
+ */
 class LatencyTuningCallback: public DefaultAudioStreamCallback {
 public:
-    LatencyTuningCallback(IRestartable &mParent) : DefaultAudioStreamCallback(mParent) {}
+    LatencyTuningCallback(IRestartable &mParent) : DefaultAudioStreamCallback(mParent) {
+
+        // Initialize the trace functions, this enables you to output trace statements without
+        // blocking. See https://developer.android.com/studio/profile/systrace-commandline.html
+        Trace::initialize();
+    }
+
     /**
      * Every time the playback stream requires data this method will be called.
      *
@@ -43,11 +56,8 @@ public:
 
 private:
     bool mBufferTuneEnabled = true;
+
     // This will be used to automatically tune the buffer size of the stream, obtaining optimal latency
-    // Latency Tuner should probably be built and exposed by Oboe
-    // We can't create the latency tuner until the first callback,
-    // but construction is cheap.
-    // Every new stream has a new callback, so we can rely on a null check to update
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
 };
 
