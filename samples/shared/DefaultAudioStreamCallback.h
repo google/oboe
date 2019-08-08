@@ -116,7 +116,7 @@ private:
             LOGD("Binding to current CPU ID %d", current_cpu_id);
             CPU_SET(current_cpu_id, &cpu_set);
         } else {
-            LOGD("Binding to %lu CPU IDs", mCpuIds.size());
+            LOGD("Binding to %d CPU IDs", static_cast<int>(mCpuIds.size()));
             for (size_t i = 0; i < mCpuIds.size(); i++) {
                 int cpu_id = mCpuIds.at(i);
                 LOGD("CPU ID %d added to cores set", cpu_id);
