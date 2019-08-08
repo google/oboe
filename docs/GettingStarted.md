@@ -51,7 +51,7 @@ Add `oboe` to the list of libraries which your app's library depends on. For exa
 
     target_link_libraries(native-lib oboe)
 
-Here's a complete example `CMakeLists.txt` file (without `OBOE_DIR` set):
+Here's a complete example `CMakeLists.txt` file:
 
     cmake_minimum_required(VERSION 3.4.1)
 
@@ -99,12 +99,10 @@ The builder's set methods can be easily chained:
 
 ```
 oboe::AudioStreamBuilder builder;
-
-// Make sure to  always set the Performance and Sharing mode
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
-	->setSharingMode(oboe::SharingMode::Exclusive); 
-builder.setCallback(myCallback);
-builder.setFormat(oboe::AudioFormat::Float);
+  ->setSharingMode(oboe::SharingMode::Exclusive)
+  ->setCallback(myCallback)
+  ->setFormat(oboe::AudioFormat::Float);
 ```
 
 Define an `AudioStreamCallback` class to receive callbacks whenever the stream requires new data.
@@ -168,7 +166,7 @@ To stop receiving callbacks call
 	    managedStream->requestStop();
 
 ## Closing the stream
-It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from using the MMAP data path.
+It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from obtaining a low latency audio stream.
 
 Streams can be explicitly closed:
 
@@ -184,12 +182,13 @@ Streams can also be automatically closed when going out of scope:
 		mStream->requestStart();
 	} // Out of this scope the mStream has been automatically closed 
 	
-It is preferable to let the `ManagedStream` object go out of scope (or be explicitly deleted) when the app goes out of focus, such as when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
+It is preferable to let the `ManagedStream` object go out of scope (or be explicitly deleted) when the app is no longer playing audio.
+For apps which only play or record audio when they are in the foreground this is usually done when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
 ## Reconfiguring streams
-In order to change the configuration of the stream, simply call this method
+In order to change the configuration of the stream, simply call `openManagedStream`
 again. The existing stream is closed, destroyed and a new stream is built and
-populates the managedStream.
+populates the `managedStream`.
 ```
 // Modify the builder with some additional properties at runtime.
 builder.setDeviceId(MY_DEVICE_ID);
@@ -199,14 +198,14 @@ builder.openManagedStream(managedStream);
 ```
 The `ManagedStream` takes care of its own closure and destruction. If used in an
 automatic allocation context (such as a member of a class), the stream does not
-need to be closed or deleted. Make sure that the object which is responsible for
-the MangedStream (its enclosing class), goes out of scope when
-`Activity.onPause()` is called.
+need to be closed or deleted manually. Make sure that the object which is responsible for
+the `ManagedStream` (its enclosing class) goes out of scope whenever the app is no longer
+playing or recording audio, such as when `Activity.onPause()` is called.
 
 
 ## Example
 
-The following class is a complete implementation of a ManagedStream, which
+The following class is a complete implementation of a `ManagedStream`, which
 renders a sine wave. Creating the class (e.g. through the JNI bridge) creates
 and opens an Oboe stream which renders audio, and its destruction stops and
 closes the stream.
@@ -221,14 +220,13 @@ public:
     OboeSinePlayer() {
         oboe::AudioStreamBuilder builder;
         // The builder set methods can be chained for convenience.
-        builder.setSharingMode(oboe::SharingMode::Exclusive);
-		->setPerformanceMode(oboe::PerformanceMode::LowLatency);
-        builder.setChannelCount(kChannelCount);
-	builder.setSampleRate(kSampleRate);
-	builder.setFormat(oboe::AudioFormat::Float);
-        builder.setCallback(this);
-	// Open the stream with the configured builder
-	builder.openManagedStream(outStream);
+        builder.setSharingMode(oboe::SharingMode::Exclusive)
+          ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+          ->builder.setChannelCount(kChannelCount)
+          ->setSampleRate(kSampleRate)
+          ->setFormat(oboe::AudioFormat::Float)
+          ->setCallback(this)
+          ->openManagedStream(outStream);
         // Typically, start the stream after querying some stream information, as well as some input from the user
         outStream->requestStart();
     }
@@ -263,7 +261,7 @@ private:
 ```
 Note that this implementation computes  sine values at run-time for simplicity,
 rather than pre-computing them.
-Additionally, best practice is to implement a seperate callback class, rather
+Additionally, best practice is to implement a separate callback class, rather
 than managing the stream and defining its callback in the same class.
 This class also automatically starts the stream upon construction. Typically,
 the stream is queried for information prior to being started (e.g. burst size),
