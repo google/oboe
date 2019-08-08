@@ -102,9 +102,9 @@ oboe::AudioStreamBuilder builder;
 
 // Make sure to  always set the Performance and Sharing mode
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
-  ->setSharingMode(oboe::SharingMode::Exclusive); // The builder setter methods
-  can be chained for convenience
-builder.setCallback(myCallback)->setFormat(oboe::AudioFormat::Float);
+	->setSharingMode(oboe::SharingMode::Exclusive); 
+builder.setCallback(myCallback);
+builder.setFormat(oboe::AudioFormat::Float);
 ```
 
 Define an `AudioStreamCallback` class to receive callbacks whenever the stream requires new data.
@@ -135,7 +135,7 @@ Supply this callback class to the builder:
     MyCallback myCallback;
     builder.setCallback(&myCallback);
     
-Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring as a global.
+Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
 ```
 oboe::ManagedStream managedStream;
 ```
@@ -221,12 +221,14 @@ public:
     OboeSinePlayer() {
         oboe::AudioStreamBuilder builder;
         // The builder set methods can be chained for convenience.
-        builder.setSharingMode(oboe::SharingMode::Exclusive)
+        builder.setSharingMode(oboe::SharingMode::Exclusive);
 		->setPerformanceMode(oboe::PerformanceMode::LowLatency);
-        builder.setChannelCount(kChannelCount)
-		->setSampleRate(kSampleRate)
-		->setFormat(oboe::AudioFormat::Float);
-        builder.setCallback(this)->openManagedStream(outStream);
+        builder.setChannelCount(kChannelCount);
+	builder.setSampleRate(kSampleRate);
+	builder.setFormat(oboe::AudioFormat::Float);
+        builder.setCallback(this);
+	// Open the stream with the configured builder
+	builder.openManagedStream(outStream);
         // Typically, start the stream after querying some stream information, as well as some input from the user
         outStream->requestStart();
     }
