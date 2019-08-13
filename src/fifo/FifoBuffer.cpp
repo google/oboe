@@ -18,6 +18,7 @@
 #include <time.h>
 #include <memory.h>
 #include <cassert>
+#include <algorithm>
 
 #include "common/OboeDebug.h"
 #include "fifo/FifoControllerBase.h"
@@ -29,16 +30,12 @@
 namespace oboe {
 
 FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
-        : mFrameCapacity(capacityInFrames)
-        , mBytesPerFrame(bytesPerFrame)
+        : mBytesPerFrame(bytesPerFrame)
         , mStorage(nullptr)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
-        , mUnderrunCount(0)
 {
-    assert(bytesPerFrame > 0);
-    assert(capacityInFrames > 0);
-    mFifo = new FifoController(capacityInFrames, capacityInFrames);
+    mFifo = new FifoController(capacityInFrames);
     // allocate buffer
     int32_t bytesPerBuffer = bytesPerFrame * capacityInFrames;
     mStorage = new uint8_t[bytesPerBuffer];
@@ -47,23 +44,18 @@ FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
          capacityInFrames, bytesPerFrame);
 }
 
-FifoBuffer::FifoBuffer( uint32_t   bytesPerFrame,
-                        uint32_t   capacityInFrames,
-                        int64_t *  readIndexAddress,
-                        int64_t *  writeIndexAddress,
-                        uint8_t *  dataStorageAddress
+FifoBuffer::FifoBuffer( uint32_t  bytesPerFrame,
+                        uint32_t  capacityInFrames,
+                        int64_t  *readIndexAddress,
+                        int64_t  *writeIndexAddress,
+                        uint8_t  *dataStorageAddress
                         )
-        : mFrameCapacity(capacityInFrames)
-        , mBytesPerFrame(bytesPerFrame)
+        : mBytesPerFrame(bytesPerFrame)
         , mStorage(dataStorageAddress)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
-        , mUnderrunCount(0)
 {
-    assert(bytesPerFrame > 0);
-    assert(capacityInFrames > 0);
     mFifo = new FifoControllerIndirect(capacityInFrames,
-                                       capacityInFrames,
                                        readIndexAddress,
                                        writeIndexAddress);
     mStorage = dataStorageAddress;
@@ -85,22 +77,19 @@ int32_t FifoBuffer::convertFramesToBytes(int32_t frames) {
 }
 
 int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
-    int32_t framesAvailable = mFifo->getFullFramesAvailable();
-    int32_t framesToRead = numFrames;
-    // Is there enough data in the FIFO
-    if (framesToRead > framesAvailable) {
-        framesToRead = framesAvailable;
-    }
-    if (framesToRead <= 0) {
+    if (numFrames <= 0) {
         return 0;
     }
+    uint32_t framesToRead = static_cast<uint32_t>(numFrames);
+    uint32_t framesAvailable = mFifo->getFullFramesAvailable();
+    framesToRead = std::min(framesToRead, framesAvailable);
 
     uint32_t readIndex = mFifo->getReadIndex();
     uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
     uint8_t *source = &mStorage[convertFramesToBytes(readIndex)];
-    if ((readIndex + framesToRead) > mFrameCapacity) {
+    if ((readIndex + framesToRead) > mFifo->getFrameCapacity()) {
         // read in two parts, first part here is at the end of the mStorage buffer
-        uint32_t frames1 = mFrameCapacity - readIndex;
+        uint32_t frames1 = mFifo->getFrameCapacity() - readIndex;
         int32_t numBytes = convertFramesToBytes(frames1);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
@@ -128,22 +117,21 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
     return framesToRead;
 }
 
-int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
-    int32_t framesAvailable = mFifo->getEmptyFramesAvailable();
-    if (framesToWrite > framesAvailable) {
-        framesToWrite = framesAvailable;
-    }
-    if (framesToWrite <= 0) {
+int32_t FifoBuffer::write(const void *buffer, int32_t numFrames) {
+    if (numFrames <= 0) {
         return 0;
     }
+    uint32_t framesToWrite = static_cast<uint32_t>(numFrames);
+    uint32_t framesAvailable = mFifo->getEmptyFramesAvailable();
+    framesToWrite = std::min(framesToWrite, framesAvailable);
 
     uint32_t writeIndex = mFifo->getWriteIndex();
     int byteIndex = convertFramesToBytes(writeIndex);
     const uint8_t *source = reinterpret_cast<const uint8_t *>(buffer);
     uint8_t *destination = &mStorage[byteIndex];
-    if ((writeIndex + framesToWrite) > mFrameCapacity) {
+    if ((writeIndex + framesToWrite) > mFifo->getFrameCapacity()) {
         // write in two parts, first part here
-        int frames1 = mFrameCapacity - writeIndex;
+        int frames1 = mFifo->getFrameCapacity() - writeIndex;
         int32_t numBytes = convertFramesToBytes(frames1);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
@@ -172,14 +160,12 @@ int32_t FifoBuffer::write(const void *buffer, int32_t framesToWrite) {
 }
 
 int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
-    int32_t framesLeft = numFrames;
     int32_t framesRead = read(buffer, numFrames);
-    framesLeft -= framesRead;
+    int32_t framesLeft = numFrames - framesRead;
     mFramesReadCount += framesRead;
     mFramesUnderrunCount += framesLeft;
     // Zero out any samples we could not set.
     if (framesLeft > 0) {
-        mUnderrunCount++;
         uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
         destination += convertFramesToBytes(framesRead); // point to first byte not set
         int32_t bytesToZero = convertFramesToBytes(framesLeft);
@@ -189,16 +175,9 @@ int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
     return framesRead;
 }
 
-uint32_t FifoBuffer::getThresholdFrames() const {
-    return mFifo->getThreshold();
-}
 
 uint32_t FifoBuffer::getBufferCapacityInFrames() const {
     return mFifo->getFrameCapacity();
-}
-
-void FifoBuffer::setThresholdFrames(uint32_t threshold) {
-    mFifo->setThreshold(threshold);
 }
 
 } // namespace oboe

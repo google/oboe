@@ -29,12 +29,10 @@ class FifoControllerIndirect : public FifoControllerBase {
 
 public:
     FifoControllerIndirect(uint32_t bufferSize,
-                           uint32_t threshold,
-                           int64_t * readCounterAddress,
-                           int64_t * writeCounterAddress);
+                           int64_t *readCounterAddress,
+                           int64_t *writeCounterAddress);
     virtual ~FifoControllerIndirect() = default;
 
-    // TODO review use of memory barriers, probably incorrect
     virtual uint64_t getReadCounter() const override {
         return mReadCounterAddress->load(std::memory_order_acquire);
     }

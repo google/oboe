@@ -36,18 +36,19 @@ class FifoControllerBase {
 
 public:
     /**
-     * Constructor for FifoControllerBase
-     * @param numFrames Size of the circular buffer in frames. Must be a power of 2.
+     * @param totalFrames capacity of the circular buffer in frames.
      */
-    FifoControllerBase(uint32_t totalFrames, uint32_t threshold);
+    FifoControllerBase(uint32_t totalFrames);
 
     virtual ~FifoControllerBase() = default;
 
     /**
-     * This may be negative if an unthrottled reader has read beyond the available data.
-     * @return number of valid frames available to read. Never read more than this.
+     * The frames available to read will be calculated from the read and write counters.
+     * The result will be clipped to the capacity of the buffer.
+     * If the buffer has underflowed then this will return zero.
+     * @return number of valid frames available to read.
      */
-    int32_t getFullFramesAvailable() const;
+    uint32_t getFullFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to read.
@@ -60,9 +61,9 @@ public:
     void advanceReadIndex(uint32_t numFrames);
 
     /**
-     * @return number of frames that can be written. Never write more than this.
+     * @return maximum number of frames that can be written without exceeding the threshold.
      */
-    int32_t getEmptyFramesAvailable() const;
+    uint32_t getEmptyFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to write.
@@ -73,10 +74,6 @@ public:
      * @param numFrames number of frames to advance the write index
      */
     void advanceWriteIndex(uint32_t numFrames);
-
-    void setThreshold(uint32_t threshold);
-
-    uint32_t getThreshold() const { return mThreshold; }
 
     uint32_t getFrameCapacity() const { return mTotalFrames; }
 
@@ -89,7 +86,6 @@ public:
 
 private:
     uint32_t mTotalFrames;
-    uint32_t mThreshold;
 };
 
 } // namespace oboe

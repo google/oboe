@@ -50,23 +50,17 @@ public:
 
     int32_t write(const void *source, int32_t framesToWrite);
 
-    uint32_t getThresholdFrames() const;
-
-    void setThresholdFrames(uint32_t threshold);
-
     uint32_t getBufferCapacityInFrames() const;
 
     /**
      * Calls read(). If all of the frames cannot be read then the remainder of the buffer
-     * is set to zero and the underruncount is incremented.
+     * is set to zero.
      *
      * @param destination
      * @param framesToRead number of frames requested
      * @return number of frames actually read
      */
     int32_t readNow(void *destination, int32_t numFrames);
-
-    uint32_t getUnderrunCount() const { return mUnderrunCount; }
 
     FifoControllerBase *getFifoControllerBase() { return mFifo; }
 
@@ -90,14 +84,13 @@ public:
     }
 
 private:
-    uint32_t mFrameCapacity;
+//    uint32_t mFrameCapacity;
     uint32_t mBytesPerFrame;
     uint8_t* mStorage;
     bool     mStorageOwned; // did this object allocate the storage?
     FifoControllerBase *mFifo;
     uint64_t mFramesReadCount;
     uint64_t mFramesUnderrunCount;
-    uint32_t mUnderrunCount; // count of underruns when reading the buffer
 };
 
 } // namespace oboe
