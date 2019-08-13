@@ -80,16 +80,17 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
     if (numFrames <= 0) {
         return 0;
     }
+    // safe because numFrames is guaranteed positive
     uint32_t framesToRead = static_cast<uint32_t>(numFrames);
     uint32_t framesAvailable = mFifo->getFullFramesAvailable();
     framesToRead = std::min(framesToRead, framesAvailable);
 
-    uint32_t readIndex = mFifo->getReadIndex();
+    uint32_t readIndex = mFifo->getReadIndex(); // ranges 0 to capacity
     uint8_t *destination = reinterpret_cast<uint8_t *>(buffer);
     uint8_t *source = &mStorage[convertFramesToBytes(readIndex)];
     if ((readIndex + framesToRead) > mFifo->getFrameCapacity()) {
         // read in two parts, first part here is at the end of the mStorage buffer
-        uint32_t frames1 = mFifo->getFrameCapacity() - readIndex;
+        int32_t frames1 = static_cast<int32_t>(mFifo->getFrameCapacity() - readIndex);
         int32_t numBytes = convertFramesToBytes(frames1);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
@@ -98,7 +99,7 @@ int32_t FifoBuffer::read(void *buffer, int32_t numFrames) {
         destination += numBytes;
         // read second part, which is at the beginning of mStorage
         source = &mStorage[0];
-        int frames2 = framesToRead - frames1;
+        int32_t frames2 = static_cast<uint32_t>(framesToRead - frames1);
         numBytes = convertFramesToBytes(frames2);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
@@ -121,6 +122,7 @@ int32_t FifoBuffer::write(const void *buffer, int32_t numFrames) {
     if (numFrames <= 0) {
         return 0;
     }
+    // Guaranteed positive.
     uint32_t framesToWrite = static_cast<uint32_t>(numFrames);
     uint32_t framesAvailable = mFifo->getEmptyFramesAvailable();
     framesToWrite = std::min(framesToWrite, framesAvailable);
@@ -131,7 +133,7 @@ int32_t FifoBuffer::write(const void *buffer, int32_t numFrames) {
     uint8_t *destination = &mStorage[byteIndex];
     if ((writeIndex + framesToWrite) > mFifo->getFrameCapacity()) {
         // write in two parts, first part here
-        int frames1 = mFifo->getFrameCapacity() - writeIndex;
+        int32_t frames1 = static_cast<uint32_t>(mFifo->getFrameCapacity() - writeIndex);
         int32_t numBytes = convertFramesToBytes(frames1);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
@@ -140,8 +142,8 @@ int32_t FifoBuffer::write(const void *buffer, int32_t numFrames) {
         // read second part
         source += convertFramesToBytes(frames1);
         destination = &mStorage[0];
-        int framesLeft = framesToWrite - frames1;
-        numBytes = convertFramesToBytes(framesLeft);
+        int frames2 = static_cast<uint32_t>(framesToWrite - frames1);
+        numBytes = convertFramesToBytes(frames2);
         if (numBytes < 0) {
             return static_cast<int32_t>(Result::ErrorOutOfRange);
         }
@@ -161,6 +163,9 @@ int32_t FifoBuffer::write(const void *buffer, int32_t numFrames) {
 
 int32_t FifoBuffer::readNow(void *buffer, int32_t numFrames) {
     int32_t framesRead = read(buffer, numFrames);
+    if (framesRead < 0) {
+        return framesRead;
+    }
     int32_t framesLeft = numFrames - framesRead;
     mFramesReadCount += framesRead;
     mFramesUnderrunCount += framesLeft;

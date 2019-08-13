@@ -131,7 +131,12 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
         if (getDirection() == Direction::Input) {
             result = mFifoBuffer->read(data, framesLeft);
         } else {
-            result = mFifoBuffer->write(data, framesLeft);
+            // between zero and capacity
+            uint32_t fullFrames = mFifoBuffer->getFifoControllerBase()->getFullFramesAvailable();
+            // Do not write above threshold size.
+            int32_t emptyFrames = getBufferSizeInFrames() - static_cast<int32_t>(fullFrames);
+            int32_t framesToWrite = std::max(0, std::min(framesLeft, emptyFrames));
+            result = mFifoBuffer->write(data, framesToWrite);
         }
         if (result > 0) {
             data += mFifoBuffer->convertFramesToBytes(result);
@@ -226,15 +231,8 @@ ResultWithValue<int32_t> AudioStreamBuffered::setBufferSizeInFrames(int32_t requ
     } else if (requestedFrames < getFramesPerBurst()) {
         requestedFrames = getFramesPerBurst();
     }
-    mFifoBuffer->setThresholdFrames(requestedFrames);
+    mBufferSizeInFrames = requestedFrames;
     return ResultWithValue<int32_t>(requestedFrames);
-}
-
-int32_t AudioStreamBuffered::getBufferSizeInFrames() {
-    if (mFifoBuffer) {
-        mBufferSizeInFrames = mFifoBuffer->getThresholdFrames();
-    }
-    return mBufferSizeInFrames;
 }
 
 int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
