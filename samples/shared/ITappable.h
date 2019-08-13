@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_IRENDERABLEAUDIO_H
-#define SAMPLES_IRENDERABLEAUDIO_H
+#ifndef SAMPLES_ITAPPABLE_H
+#define SAMPLES_ITAPPABLE_H
 
-#include <cstdint>
-#include <string>
-
-class IRenderableAudio {
-
+class ITappable {
 public:
-    virtual ~IRenderableAudio() = default;
-    virtual void renderAudio(float *audioData, int32_t numFrames) = 0;
+    virtual ~ITappable()  = default;
+    virtual void tap(bool isDown) = 0;
 };
-
-
-#endif //SAMPLES_IRENDERABLEAUDIO_H
+#endif //SAMPLES_ITAPPABLE_H

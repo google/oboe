@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef SAMPLES_IRESTARTABLE_H
+#define SAMPLES_IRESTARTABLE_H
 
-#ifndef SAMPLES_IRENDERABLEAUDIO_H
-#define SAMPLES_IRENDERABLEAUDIO_H
-
-#include <cstdint>
-#include <string>
-
-class IRenderableAudio {
-
+/**
+ * Represents an object which can be restarted. For example an audio engine which has one or more
+ * streams which can be restarted following a change in audio device configuration. For example,
+ * headphones being connected.
+ */
+class IRestartable {
 public:
-    virtual ~IRenderableAudio() = default;
-    virtual void renderAudio(float *audioData, int32_t numFrames) = 0;
+    virtual void restart() = 0;
 };
-
-
-#endif //SAMPLES_IRENDERABLEAUDIO_H
+#endif //SAMPLES_IRESTARTABLE_H

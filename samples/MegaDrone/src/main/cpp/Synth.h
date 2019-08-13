@@ -18,10 +18,11 @@
 #define MEGADRONE_SYNTH_H
 
 #include <array>
+#include <TappableAudioSource.h>
 
-#include "shared/Oscillator.h"
-#include "shared/Mixer.h"
-#include "shared/MonoToStereo.h"
+#include <Oscillator.h>
+#include <Mixer.h>
+#include <MonoToStereo.h>
 
 constexpr int kNumOscillators = 100;
 constexpr float kOscBaseFrequency = 116.0;
@@ -29,25 +30,26 @@ constexpr float kOscDivisor = 33;
 constexpr float kOscAmplitude = 0.009;
 
 
-class Synth : public IRenderableAudio {
+class Synth : public TappableAudioSource {
 public:
 
-    Synth(int32_t sampleRate, int32_t channelCount) {
+    Synth(int32_t sampleRate, int32_t channelCount) :
+    TappableAudioSource(sampleRate, channelCount) {
         for (int i = 0; i < kNumOscillators; ++i) {
-            mOscs[i].setSampleRate(sampleRate);
-            mOscs[i].setFrequency(kOscBaseFrequency+(static_cast<float>(i)/kOscDivisor));
+            mOscs[i].setSampleRate(mSampleRate);
+            mOscs[i].setFrequency(kOscBaseFrequency + (static_cast<float>(i) / kOscDivisor));
             mOscs[i].setAmplitude(kOscAmplitude);
             mMixer.addTrack(&mOscs[i]);
         }
-        if (channelCount == oboe::ChannelCount::Stereo) {
+        if (mChannelCount == oboe::ChannelCount::Stereo) {
             mOutputStage =  &mConverter;
         } else {
             mOutputStage = &mMixer;
         }
     }
 
-    void setWaveOn(bool isEnabled) {
-        for (auto &osc : mOscs) osc.setWaveOn(isEnabled);
+    void tap(bool isOn) override {
+        for (auto &osc : mOscs) osc.setWaveOn(isOn);
     };
 
     // From IRenderableAudio

@@ -16,7 +16,7 @@
 
 #include <jni.h>
 #include <oboe/Oboe.h>
-#include "PlayAudioEngine.h"
+#include "HelloOboeEngine.h"
 #include "logging_macros.h"
 
 extern "C" {
@@ -31,7 +31,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1createEngine(
         JNIEnv *env,
         jclass /*unused*/) {
     // We use std::nothrow so `new` returns a nullptr if the engine creation fails
-    PlayAudioEngine *engine = new(std::nothrow) PlayAudioEngine();
+    HelloOboeEngine *engine = new(std::nothrow) HelloOboeEngine();
     return reinterpret_cast<jlong>(engine);
 }
 
@@ -41,7 +41,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1deleteEngine(
         jclass,
         jlong engineHandle) {
 
-    delete reinterpret_cast<PlayAudioEngine *>(engineHandle);
+    delete reinterpret_cast<HelloOboeEngine *>(engineHandle);
 }
 
 JNIEXPORT void JNICALL
@@ -51,12 +51,12 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setToneOn(
         jlong engineHandle,
         jboolean isToneOn) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine *>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine *>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
     }
-    engine->setToneOn(isToneOn);
+    engine->tap(isToneOn);
 }
 
 JNIEXPORT void JNICALL
@@ -66,7 +66,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioApi(
         jlong engineHandle,
         jint audioApi) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -83,7 +83,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioDeviceId(
         jlong engineHandle,
         jint deviceId) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -98,7 +98,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setChannelCount(
         jlong engineHandle,
         jint channelCount) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -113,7 +113,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setBufferSizeInBurs
         jlong engineHandle,
         jint bufferSizeInBursts) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine handle is invalid, call createHandle() to create a new one");
         return;
@@ -128,7 +128,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1getCurrentOutputLat
         jclass,
         jlong engineHandle) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine is null, you must call createEngine before calling this method");
         return static_cast<jdouble>(-1.0);
@@ -142,7 +142,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionS
         jclass type,
         jlong engineHandle) {
 
-    PlayAudioEngine *engine = reinterpret_cast<PlayAudioEngine*>(engineHandle);
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
     if (engine == nullptr) {
         LOGE("Engine is null, you must call createEngine before calling this method");
         return JNI_FALSE;
