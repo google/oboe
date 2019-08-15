@@ -1,6 +1,6 @@
 # Automated Testing
 
-DRAFT - not yet implemented, just for design review
+(Note: the Latency test works. The Glitch test is not yet implemented.)
 
 You can use an Android Intent to run the OboeTester app from a shell script.
 This can be used when you do not have a rooted device and, therefore, cannot use the command line executable.
