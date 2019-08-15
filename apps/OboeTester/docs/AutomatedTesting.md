@@ -37,17 +37,17 @@ There are two required parameters:
     --es test {latency, glitch}
             The "latency" test will perform a Round Trip Latency test.
             It will request EXCLUSIVE mode for minimal latency.
-            The "glitch" test will perform a Single Glitch test.
+            The "glitch" test will perform a Single Glitch test. UNIMPLEMENTED
     --es file {full path for resulting file}
     
 There are several optional parameters.
 
-    --ei in_sample_rate     {hertz}
-    --ei in_channels        {samples}
-    --ei out_sample_rate    {hertz}
-    --ei out_channels       {samples}
-    --ei duration           {seconds}    // glitch test duration, default is 10 seconds
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
+    --ei in_sample_rate     {hertz}      // UNIMPLEMENTED
+    --ei in_channels        {samples}    // UNIMPLEMENTED
+    --ei out_sample_rate    {hertz}      // UNIMPLEMENTED
+    --ei out_channels       {samples}    // UNIMPLEMENTED
+    --ei duration           {seconds}    // UNIMPLEMENTED glitch test duration, default is 10 seconds
 
 For example, a complete command might be:
 
