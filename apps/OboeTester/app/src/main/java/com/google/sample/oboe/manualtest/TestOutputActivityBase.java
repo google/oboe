@@ -38,7 +38,8 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     private SeekBar.OnSeekBarChangeListener mAmplitudeListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            double amplitude = mTaperAmplitude.linearToExponential(progress);
+            double amplitude = mTaperAmplitude.linearToExponential(
+                    ((double)progress)/FADER_THRESHOLD_MAX);
             mAudioOutTester.setAmplitude(amplitude);
             mTextAmplitude.setText("Amplitude = " + amplitude);
         }
@@ -59,7 +60,7 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         mTextAmplitude = (TextView) findViewById(R.id.textAmplitude);
         mFaderAmplitude = (SeekBar) findViewById(R.id.faderAmplitude);
         mFaderAmplitude.setOnSeekBarChangeListener(mAmplitudeListener);
-        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 4.0, 100.0);
+        mTaperAmplitude = new ExponentialTaper(0.0, 4.0, 100.0);
     }
 
     @Override

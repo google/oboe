@@ -346,4 +346,10 @@ public class StreamConfigurationView extends LinearLayout {
         mActualConfiguration = configuration;
     }
 
+    public void setExclusiveMode(boolean b) {
+        mRequestedExclusiveView.setChecked(b);
+        mRequestedConfiguration.setSharingMode(b
+                ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
+                : StreamConfiguration.SHARING_MODE_SHARED);
+    }
 }

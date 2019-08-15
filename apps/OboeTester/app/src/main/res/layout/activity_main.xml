@@ -63,7 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onLaunchManualGlitchTest"
-        android:text="Manual Glitch Test" />
+        android:text="Glitch Test" />
 
     <Button
         android:id="@+id/button_auto_glitches"
