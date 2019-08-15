@@ -76,15 +76,18 @@ public class EchoActivity extends TestInputActivity {
         mTextDelayTime = (TextView) findViewById(R.id.text_delay_time);
         mFaderDelayTime = (SeekBar) findViewById(R.id.fader_delay_time);
         mFaderDelayTime.setOnSeekBarChangeListener(mDelayListener);
-        mTaperDelayTime = new ExponentialTaper(MAX_DELAY_TIME_PROGRESS,
-                MIN_DELAY_TIME_SECONDS, MAX_DELAY_TIME_SECONDS, 100.0);
+        mTaperDelayTime = new ExponentialTaper(
+                MIN_DELAY_TIME_SECONDS,
+                MAX_DELAY_TIME_SECONDS,
+                100.0);
         mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
 
         hideSettingsViews();
     }
 
     private void setDelayTimeByPosition(int progress) {
-        mDelayTime = mTaperDelayTime.linearToExponential(progress);
+        mDelayTime = mTaperDelayTime.linearToExponential(
+                ((double)progress)/MAX_DELAY_TIME_PROGRESS);
         setDelayTime(mDelayTime);
         mTextDelayTime.setText("DelayLine: " + (int)(mDelayTime * 1000) + " (msec)");
     }

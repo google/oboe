@@ -16,21 +16,38 @@
 
 package com.google.sample.oboe.manualtest;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 /**
  * Activity to measure latency on a full duplex stream.
  */
 public class AnalyzerActivity extends TestInputActivity {
 
+    private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
+
+    protected static final String KEY_FILE_NAME = "file";
+    protected static final String KEY_BUFFER_BURSTS = "buffer_bursts";
+
     AudioOutputTester mAudioOutTester;
     protected BufferSizeView mBufferSizeView;
+    protected String mResultFileName;
+    private String mTestResults;
 
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
     String resultCodeToString(int resultCode) {
@@ -72,7 +89,7 @@ public class AnalyzerActivity extends TestInputActivity {
     }
 
     public void startAudio() {
-        if (mBufferSizeView != null) {
+        if (mBufferSizeView != null && mBufferSizeView.isEnabled()) {
             mBufferSizeView.updateBufferSize();
             mBufferSizeView.setEnabled(false);
         }
@@ -96,4 +113,71 @@ public class AnalyzerActivity extends TestInputActivity {
 
     public void stopAudioTest() {
     }
+
+    void writeTestResultIfPermitted(String resultString) {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            mTestResults = resultString;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
+        } else {
+            // Permission has already been granted
+            writeTestResult(resultString);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    writeTestResult(mTestResults);
+                } else {
+                    showToast("Writing external storage needed for test results.");
+                }
+                return;
+            }
+        }
+    }
+
+    private void writeTestInBackground(final String resultString) {
+        new Thread() {
+            public void run() {
+                writeTestResult(resultString);
+            }
+        }.start();
+    }
+
+    // Run this in a background thread.
+    private void writeTestResult(String resultString) {
+        File resultFile = new File(mResultFileName);
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(resultFile));
+            writer.write(resultString);
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+            showErrorToast(" writing result file. " + e.getMessage());
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        mResultFileName = null;
+    }
+
+
 }

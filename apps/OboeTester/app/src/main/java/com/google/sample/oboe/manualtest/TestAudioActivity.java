@@ -262,6 +262,14 @@ abstract class TestAudioActivity extends Activity {
         return null;
     }
 
+    StreamContext getFirstOutputStreamContext() {
+        for (StreamContext streamContext : mStreamContexts) {
+            if (!streamContext.isInput())
+                return streamContext;
+        }
+        return null;
+    }
+
     protected void findAudioCommon() {
         mOpenButton = (Button) findViewById(R.id.button_open);
         if (mOpenButton != null) {

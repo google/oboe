@@ -124,6 +124,10 @@ public abstract class AudioStreamBase {
         return mActualStreamConfiguration.getChannelCount();
     }
 
+    public int getSampleRate() {
+        return mActualStreamConfiguration.getSampleRate();
+    }
+
     public int getFramesPerBurst() {
         return mActualStreamConfiguration.getFramesPerBurst();
     }
