@@ -6,8 +6,8 @@ It can also be used to test Android devices, measure latency and glitches, etc.
 OboeTester can be run as an interactive app.
 It can also be run as part of an [automated test using Intents](docs/AutomatedTesting.md)
 
-## [How to Build OboeTester](docs/Build.md)
+## [How to Build OboeTester](Build.md)
 
-## [How to Use OboeTester Interactively](docs/Usage.md)
+## [How to Use OboeTester Interactively](Usage.md)
 
-## [Automated Testing with OboeTester](docs/AutomatedTesting.md)
+## [Automated Testing with OboeTester](AutomatedTesting.md)
