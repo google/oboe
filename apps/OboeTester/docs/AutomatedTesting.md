@@ -7,6 +7,13 @@ This can be used when you do not have a rooted device and, therefore, cannot use
 
 Before running the app from an Intent, it should be launched manually and a Round Trip Latency  test run. Then you can give permission for using the microphone to record the looped back sound, and give permission to write to external storage for saving the test result.
 
+## Requirements
+
+* host computer
+* ADB USB cable
+* [loopback adapter](https://source.android.com/devices/audio/latency/loopback)
+* a USB switching device such as [TigerTail](https://go/tigertail)
+
 ## Start App from Intent
 
 The app can be started by sending a Start comment to the OboeTester class.
@@ -86,8 +93,8 @@ Explanation of report values:
     burst.frames         size of a DSP burst in frames
     buffer.size.frames   output buffer size in frames
     buffer.capacity.frames maximum capacity in frames
-    sample.rate          sample rater in Hertz
-    rms.signal           Root Mean Square of the signal, if it can be identified
+    sample.rate          sample rate in Hertz
+    rms.signal           Root Mean Square of the signal, if it can be detected
     rms.noise            Root Mean Square of the background noise before the signal is detected
     reset.count          # of times the full duplex stream input underflowed and had to resyncronize
     result               0 or a negative error
@@ -95,7 +102,7 @@ Explanation of report values:
     latency.empty.frames round trip latency if the top output buffer was empty
     latency.empty.msec   same but translated to milliseconds
     latency.frames       round trip latency as measured
-    latency.msec         same but translated to milliseconds
+    latency.msec         same but translated to milliseconds, "pro-audioo" devices should be <=20 msec
     confidence           quality of the latency result between 0.0 and 1.0, higher is better
         
         
