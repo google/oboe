@@ -41,12 +41,11 @@ bool QuirksManager::isConversionNeeded(
 
     // Data Format
     // OpenSL ES and AAudio <P do not support FAST for FLOAT capture.
-    if (builder.getFormat() != AudioFormat::Unspecified
+    if (isFloat
             && builder.isFormatConversionAllowed()
             && isInput
             && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
             && isLowLatency
-            && isFloat
             ) {
         childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
         conversionNeeded = true;
@@ -58,18 +57,13 @@ bool QuirksManager::isConversionNeeded(
                 && isInput
                 && isLowLatency
                 && (!builder.willUseAAudio() && (getSdkVersion() == __ANDROID_API_O__))) {
-            // temporary heap size regression, b/66967812
+            // workaround for temporary heap size regression, b/66967812
             childBuilder.setChannelCount(1);
             conversionNeeded = true;
-        } else if (builder.getChannelCount() == 1 // mono?
-                   && !isInput
-                   && isLowLatency
-                   // TODO isMMapEnabled
-                   && (builder.willUseAAudio() && (getSdkVersion() < __ANDROID_API_P__))) {
-            // MMAP does not support mono in 8.1
-            childBuilder.setChannelCount(2);
-            conversionNeeded = true;
         }
+        // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel
+        // phones and they have almost all been updated to 9.0.
     }
+
     return conversionNeeded;
 }

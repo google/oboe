@@ -187,11 +187,11 @@ protected:
     SessionId                       mSessionId = SessionId::None;
 
     // Control whether Oboe can convert channel counts to achieve optimal results.
-    bool                            mChannelConversionAllowed = true;
+    bool                            mChannelConversionAllowed = false;
     // Control whether Oboe can convert data formats to achieve optimal results.
     bool                            mFormatConversionAllowed = true;
     // Control whether and how Oboe can convert sample rates to achieve optimal results.
-    SampleRateConversionQuality        mSampleRateConversionQuality = SampleRateConversionQuality::Medium;
+    SampleRateConversionQuality    mSampleRateConversionQuality = SampleRateConversionQuality::None;
 };
 
 } // namespace oboe
