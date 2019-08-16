@@ -76,11 +76,11 @@ AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
 /***************************************************************************/
 int32_t AudioFloatOutputPort::pullData(int64_t framePosition, int32_t numFrames) {
     numFrames = std::min(getFramesPerBuffer(), numFrames);
-    return mParent.pullData(framePosition, numFrames);
+    return mContainingNode.pullData(framePosition, numFrames);
 }
 
 void AudioFloatOutputPort::pullReset() {
-    mParent.pullReset();
+    mContainingNode.pullReset();
 }
 
 // These need to be in the .cpp file because of forward cross references.

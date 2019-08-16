@@ -32,12 +32,23 @@ public:
 
     virtual ~FixedBlockWriter() = default;
 
-    int32_t writeToStorage(uint8_t *buffer, int32_t numBytes);
-
     /**
      * Write from a variable sized block.
+     *
+     * Note that if the fixed-sized blocks must be aligned, then the variable-sized blocks
+     * must have the same alignment.
+     * For example, if the fixed-size blocks must be a multiple of 8, then the variable-sized
+     * blocks must also be a multiple of 8.
+     *
+     * @param buffer
+     * @param numBytes
+     * @return Number of bytes written or a negative error code.
      */
-    int32_t processVariableBlock(uint8_t *buffer, int32_t numBytes) override;
+    int32_t write(uint8_t *buffer, int32_t numBytes);
+
+private:
+
+    int32_t writeToStorage(uint8_t *buffer, int32_t numBytes);
 };
 
 #endif /* AAUDIO_FIXED_BLOCK_WRITER_H */

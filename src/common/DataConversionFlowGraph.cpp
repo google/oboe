@@ -188,8 +188,8 @@ int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
         mFramePosition += framesRead;
         if (framesRead <= 0) break;
         // Write to a block adapter, which will call the app whenever it has enough data.
-        int32_t bytesRead = mBlockWriter.processVariableBlock(mAppBuffer.get(),
-                framesRead * mFilterStream->getBytesPerFrame());
+        int32_t bytesRead = mBlockWriter.write(mAppBuffer.get(),
+                                               framesRead * mFilterStream->getBytesPerFrame());
         if (bytesRead < 0) return bytesRead; // TODO review
     }
     return numFrames;

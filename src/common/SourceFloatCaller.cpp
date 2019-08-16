@@ -24,7 +24,7 @@ using namespace flowgraph;
 
 int32_t SourceFloatCaller::onProcess(int32_t numFrames) {
     int32_t numBytes = mStream->getBytesPerFrame() * numFrames;
-    int32_t bytesRead = mBlockReader.processVariableBlock((uint8_t *)output.getBuffer(), numBytes);
+    int32_t bytesRead = mBlockReader.read((uint8_t *) output.getBuffer(), numBytes);
     int32_t framesRead = bytesRead / mStream->getBytesPerFrame();
     return framesRead;
 }

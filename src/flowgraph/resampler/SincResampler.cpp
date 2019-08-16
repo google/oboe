@@ -34,7 +34,6 @@ SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
                          builder.getNormalizedCutoff());
 }
 
-// Multiply input times windowed sinc function.
 void SincResampler::readFrame(float *frame) {
     // Clear accumulator for mixing.
     std::fill(mSingleFrame.begin(), mSingleFrame.end(), 0.0);
@@ -47,12 +46,15 @@ void SincResampler::readFrame(float *frame) {
         tablePhase -= mNumRows;
         index1 -= mNumRows;
     }
-    float *coefficients1 = &mCoefficients[index1 * getNumTaps()];
+
     int index2 = index1 + 1;
     if (index2 >= mNumRows) { // no guard row needed because we wrap the indices
         index2 -= mNumRows;
     }
+
+    float *coefficients1 = &mCoefficients[index1 * getNumTaps()];
     float *coefficients2 = &mCoefficients[index2 * getNumTaps()];
+
     float *xFrame = &mX[mCursor * getChannelCount()];
     for (int i = 0; i < mNumTaps; i++) {
         float coefficient1 = *coefficients1++;

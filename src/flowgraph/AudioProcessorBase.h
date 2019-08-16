@@ -142,7 +142,7 @@ private:
 class AudioPort {
 public:
     AudioPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : mParent(parent)
+            : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
 
@@ -159,7 +159,7 @@ public:
     virtual void pullReset() {}
 
 protected:
-    AudioProcessorBase &mParent;
+    AudioProcessorBase &mContainingNode;
 
 private:
     const int32_t    mSamplesPerFrame = 1;
@@ -397,7 +397,7 @@ public:
 
 /***************************************************************************/
 /**
- * Base class for an node that has an input and an output with the same number of channels.
+ * Base class for a node that has an input and an output with the same number of channels.
  * This may include traditional filters, eg. FIR, but also include
  * any processing node that converts input to output.
  */

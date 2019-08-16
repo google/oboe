@@ -17,6 +17,7 @@
 #ifndef AAUDIO_FIXED_BLOCK_ADAPTER_H
 #define AAUDIO_FIXED_BLOCK_ADAPTER_H
 
+#include <memory>
 #include <stdint.h>
 
 /**
@@ -51,28 +52,15 @@ public:
     virtual int32_t open(int32_t bytesPerFixedBlock);
 
     /**
-     * Note that if the fixed-sized blocks must be aligned, then the variable-sized blocks
-     * must have the same alignment.
-     * For example, if the fixed-size blocks must be a multiple of 8, then the variable-sized
-     * blocks must also be a multiple of 8.
-     *
-     * @param buffer
-     * @param numBytes
-     * @return Number of bytes processed or a negative error code.
-     */
-    virtual int32_t processVariableBlock(uint8_t *buffer, int32_t numBytes) = 0;
-
-    /**
      * Free internal resources.
      */
     int32_t close();
 
 protected:
     FixedBlockProcessor  &mFixedBlockProcessor;
-    // TODO use std::unique_ptr
-    uint8_t              *mStorage = nullptr;    // Store data here while assembling buffers.
-    int32_t               mSize = 0;             // Size in bytes of the fixed size buffer.
-    int32_t               mPosition = 0;         // Offset of the last byte read or written.
+    std::unique_ptr<uint8_t[]> mStorage;       // Store data here while assembling buffers.
+    int32_t               mSize = 0;           // Size in bytes of the fixed size buffer.
+    int32_t               mPosition = 0;       // Offset of the last byte read or written.
 };
 
 #endif /* AAUDIO_FIXED_BLOCK_ADAPTER_H */

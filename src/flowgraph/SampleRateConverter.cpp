@@ -27,12 +27,12 @@ SampleRateConverter::SampleRateConverter(int32_t channelCount, MultiChannelResam
 
 // Return true if there is a sample available.
 bool SampleRateConverter::isInputAvailable() {
-    if (mInputCursor >= mInputValid) {
-        mInputValid = input.pullData(mInputFramePosition, input.getFramesPerBuffer());
-        mInputFramePosition += mInputValid;
+    if (mInputCursor >= mNumValidInputFrames) {
+        mNumValidInputFrames = input.pullData(mInputFramePosition, input.getFramesPerBuffer());
+        mInputFramePosition += mNumValidInputFrames;
         mInputCursor = 0;
     }
-    return (mInputCursor < mInputValid);
+    return (mInputCursor < mNumValidInputFrames);
 }
 
 const float *SampleRateConverter::getNextInputFrame() {

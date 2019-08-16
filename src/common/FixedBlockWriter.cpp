@@ -30,12 +30,12 @@ int32_t FixedBlockWriter::writeToStorage(uint8_t *buffer, int32_t numBytes) {
     if (bytesToStore > roomAvailable) {
         bytesToStore = roomAvailable;
     }
-    memcpy(mStorage + mPosition, buffer, bytesToStore);
+    memcpy(mStorage.get() + mPosition, buffer, bytesToStore);
     mPosition += bytesToStore;
     return bytesToStore;
 }
 
-int32_t FixedBlockWriter::processVariableBlock(uint8_t *buffer, int32_t numBytes) {
+int32_t FixedBlockWriter::write(uint8_t *buffer, int32_t numBytes) {
     int32_t bytesLeft = numBytes;
 
     // If we already have data in storage then add to it.
@@ -45,7 +45,7 @@ int32_t FixedBlockWriter::processVariableBlock(uint8_t *buffer, int32_t numBytes
         bytesLeft -= bytesWritten;
         // If storage full then flush it out
         if (mPosition == mSize) {
-            bytesWritten = mFixedBlockProcessor.onProcessFixedBlock(mStorage, mSize);
+            bytesWritten = mFixedBlockProcessor.onProcessFixedBlock(mStorage.get(), mSize);
             if (bytesWritten < 0) return bytesWritten;
             mPosition = 0;
             if (bytesWritten < mSize) {

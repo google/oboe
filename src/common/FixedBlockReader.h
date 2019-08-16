@@ -36,14 +36,23 @@ public:
 
     int32_t open(int32_t bytesPerFixedBlock) override;
 
-    int32_t readFromStorage(uint8_t *buffer, int32_t numBytes);
-
     /**
      * Read into a variable sized block.
+     *
+     * Note that if the fixed-sized blocks must be aligned, then the variable-sized blocks
+     * must have the same alignment.
+     * For example, if the fixed-size blocks must be a multiple of 8, then the variable-sized
+     * blocks must also be a multiple of 8.
+     *
+     * @param buffer
+     * @param numBytes
+     * @return Number of bytes read or a negative error code.
      */
-    int32_t processVariableBlock(uint8_t *buffer, int32_t numBytes) override;
+    int32_t read(uint8_t *buffer, int32_t numBytes);
 
 private:
+    int32_t readFromStorage(uint8_t *buffer, int32_t numBytes);
+
     int32_t               mValid = 0;            // Number of valid bytes in mStorage.
 };
 

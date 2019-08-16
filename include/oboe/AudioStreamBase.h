@@ -128,7 +128,7 @@ public:
     /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
-    bool isChannelConversionAllowed()const {
+    bool isChannelConversionAllowed() const {
         return mChannelConversionAllowed;
     }
 

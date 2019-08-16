@@ -33,6 +33,7 @@ void LinearResampler::readFrame(float *frame) {
     float *previous = mPreviousFrame.get();
     float *current = mCurrentFrame.get();
     float phase = (float) getIntegerPhase() / mDenominator;
+    // iterate across samples in the frame
     for (int channel = 0; channel < getChannelCount(); channel++) {
         float f0 = *previous++;
         float f1 = *current++;

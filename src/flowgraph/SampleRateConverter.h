@@ -42,12 +42,13 @@ private:
     // Return true if there is a sample available.
     bool isInputAvailable();
 
+    // This assumes data is available. Only call after calling isInputAvailable().
     const float *getNextInputFrame();
 
     resampler::MultiChannelResampler &mResampler;
 
     int32_t mInputCursor = 0;
-    int32_t mInputValid = 0;
+    int32_t mNumValidInputFrames = 0;
     int64_t mInputFramePosition = 0; // monotonic counter of input frames used for pullData
 
 };

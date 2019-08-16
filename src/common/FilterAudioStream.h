@@ -102,8 +102,8 @@ public:
     }
 
     ResultWithValue<int32_t> read(void *buffer,
-                                   int32_t numFrames,
-                                   int64_t timeoutNanoseconds) override;
+            int32_t numFrames,
+            int64_t timeoutNanoseconds) override;
 
     ResultWithValue<int32_t> write(const void *buffer,
             int32_t numFrames,
@@ -113,7 +113,8 @@ public:
         return mChildStream->getState();
     }
 
-    Result waitForStateChange(StreamState inputState,
+    Result waitForStateChange(
+            StreamState inputState,
             StreamState *nextState,
             int64_t timeoutNanoseconds) override {
         return mChildStream->waitForStateChange(inputState, nextState, timeoutNanoseconds);
@@ -157,7 +158,7 @@ public:
     }
 
     ResultWithValue<double> calculateLatencyMillis() override {
-        // TODO Should we add the latency of the flowgraph?
+        // TODO Add the latency of the flowgraph?
         return mChildStream->calculateLatencyMillis();
     }
 
@@ -170,8 +171,7 @@ public:
         return result;
     }
 
-    DataCallbackResult onAudioReady(
-            AudioStream *oboeStream,
+    DataCallbackResult onAudioReady(AudioStream *oboeStream,
             void *audioData,
             int32_t numFrames) override {
         int32_t framesProcessed;
@@ -193,7 +193,7 @@ private:
     std::unique_ptr<AudioStream>             mChildStream; // this stream wraps the child stream
     std::unique_ptr<DataConversionFlowGraph> mFlowGraph; // for converting data
     std::unique_ptr<uint8_t[]>               mBlockingBuffer; // temp buffer for write()
-    double                                   mRateScaler = 1.0; // ratio of parent/child sample rates
+    double                                   mRateScaler = 1.0; // ratio parent/child sample rates
 };
 
 } // oboe
