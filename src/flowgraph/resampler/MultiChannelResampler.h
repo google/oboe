@@ -180,7 +180,7 @@ public:
         return mChannelCount;
     }
 
-    static float hammingWindow(float radians, int spread);
+    static float hammingWindow(float radians, float spread);
 
     static float sinc(float radians);
 

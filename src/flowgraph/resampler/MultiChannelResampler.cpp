@@ -112,22 +112,16 @@ void MultiChannelResampler::writeFrame(const float *frame) {
     }
 }
 
-float MultiChannelResampler::hammingWindow(float radians, int spread) {
+float MultiChannelResampler::hammingWindow(float radians, float spread) {
     const float alpha = 0.54f;
     const float windowPhase = radians / spread;
     return (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
 }
 
 float MultiChannelResampler::sinc(float radians) {
-    if (abs(radians) < 0.00000001) return 1.0f;   // avoid divide by zero
+    if (abs(radians) < 1.0e-9) return 1.0f;   // avoid divide by zero
     return sinf(radians) / radians;   // Sinc function
 }
-
-// Unoptimized calculation used to construct lookup tables.
-//float MultiChannelResampler::calculateWindowedSinc(float radians, int spread) {
-//    return sinc(radians) * hammingWindow(radians, spread); // TODO try Kaiser window
-//}
-
 
 // Generate coefficients in the order they will be used by readFrame().
 // This is more complicated but readFrame() is called repeatedly and should be optimized.

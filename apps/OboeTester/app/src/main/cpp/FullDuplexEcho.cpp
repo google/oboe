@@ -46,7 +46,7 @@ oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
     } else if (outputStride == 2) {
         while (framesToEcho-- > 0) {
             *outputFloat++ = mDelayLine->process(delayFrames, *inputFloat); // mono delay
-            *outputFloat++ = 0.0f; // FIXME *inputFloat; // mono
+            *outputFloat++ = 0.0f;
             inputFloat += inputStride;
         }
     } // else TODO
