@@ -69,7 +69,7 @@ AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
         : AudioPort(parent, samplesPerFrame)
         , mFramesPerBuffer(framesPerBuffer)
         , mBuffer(nullptr) {
-    int32_t numFloats = framesPerBuffer * getSamplesPerFrame();
+    size_t numFloats = static_cast<size_t>(framesPerBuffer * getSamplesPerFrame());
     mBuffer = std::make_unique<float[]>(numFloats);
 }
 
