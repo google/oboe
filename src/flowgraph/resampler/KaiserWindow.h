@@ -19,17 +19,21 @@
 
 #include "Math.h"
 
+namespace resampler {
+
+
 /**
  * Calculate a Kaiser window centered at 0.
  */
 class KaiserWindow {
 public:
     KaiserWindow() {
-        setStopBandAttenuation(90);
+        setStopBandAttenuation(60);
     }
 
     /**
      * @param attenuation typical values range from 30 to 90 dB
+     * @return beta
      */
     double setStopBandAttenuation(double attenuation) {
         double beta = 0.0;
@@ -45,15 +49,30 @@ public:
 
     void setBeta(double beta) {
         mBeta = beta;
-        mInverseBesselBeta = 1.0 / Math::bessel(beta);
+        mInverseBesselBeta = 1.0 / bessel(beta);
     }
 
     /**
      * @param x ranges from -1.0 to +1.0
      */
     double operator()(double x) {
-        double w = mBeta * sqrt(1.0 - (x * x));
-        return Math::bessel(w) * mInverseBesselBeta;
+        double x2 = x * x;
+        if (x2 >= 1.0) return 0.0;
+        double w = mBeta * sqrt(1.0 - x2);
+        return bessel(w) * mInverseBesselBeta;
+    }
+
+    static double bessel(double x) {
+        double y = cosh(0.970941817426052 * x);
+        y += cosh(0.8854560256532099 * x);
+        y += cosh(0.7485107481711011 * x);
+        y += cosh(0.5680647467311558 * x);
+        y += cosh(0.3546048870425356 * x);
+        y += cosh(0.120536680255323 * x);
+        y *= 2;
+        y += cosh(x);
+        y /= 13;
+        return y;
     }
 
 private:
@@ -61,4 +80,5 @@ private:
     double mInverseBesselBeta = 1.0;
 };
 
+} // namespace resampler
 #endif //RESAMPLER_KAISER_WINDOW_H

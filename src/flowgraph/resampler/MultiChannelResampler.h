@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "HyperbolicCosineWindow.h"
+
 namespace resampler {
 
 class MultiChannelResampler {
@@ -249,8 +251,10 @@ protected:
 
 private:
 
+    HyperbolicCosineWindow mCoshWindow;
+
     // max coefficients for polyphase filter
-    static constexpr float kDefaultNormalizedCutoff = 0.90f;
+    static constexpr float kDefaultNormalizedCutoff = 0.70f;
 
     const int              mChannelCount;
 };

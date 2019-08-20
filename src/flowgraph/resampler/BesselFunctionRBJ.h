@@ -21,12 +21,10 @@
 
 /**
  * Approximate a zero order Bessel function of the first kind.
- * Use Horner's method to retain numeric precision.
  *
  * Based on a posting by Robert Bristow-Johnson at:
  * https://dsp.stackexchange.com/questions/37714/kaiser-window-approximation
  */
-template <class T>
 class BesselFunctionRBJ {
 public:
     /**
@@ -35,25 +33,45 @@ public:
      */
     BesselFunctionRBJ(int K = 8)
     : mK(K) {
-        mCoefficients = std::make_unique<T[]>(K + 1);
+        mCoefficients = std::make_unique<double[]>(K + 1);
         mCoefficients[0] = 1.0;
         for (int64_t k = 1; k <= K; k++) {
-            mCoefficients[k] = mCoefficients[k - 1] * -1 / ((k * k) * 4);
+            mCoefficients[k] = mCoefficients[k - 1] * -0.25 / (k * k);
         }
     }
 
-    T operator()(T x) {
-        T x2 = x * x;
-        T y = x2 * mCoefficients[mK];
+    // Use Horner's method to calculate the polynomial.
+    // It is faster than direct() but needs a higher K to converge
+    // because the coefficients lose precision.
+    double horner(double x) {
+        double x2 = x * x;
+        double y = x2 * mCoefficients[mK];
         for (int k = mK - 1; k >= 0; k--) {
             y = mCoefficients[k] + x2 * y;
         }
         return y;
     }
 
+    // Direct summation of the first K terms.
+    double direct(double x, int K) {
+        double z = x * x * -0.25;
+        double sum = 0.0;
+        for (int k = K; k >= 1; k--) {
+            int n = k;
+            double term = 1.0;
+            do {
+                term *= z;
+                term /= (n * n);
+                n--;
+            } while (n >= 1);
+            sum += term;
+        }
+        return sum + 1.0;
+    }
+
 private:
-    std::unique_ptr<T[]> mCoefficients;
-    int    mK;
+    std::unique_ptr<double[]> mCoefficients;
+    int mK;
 };
 
 #endif //RESAMPLER_BESSEL_FUNCTION_H

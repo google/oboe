@@ -37,5 +37,5 @@ private:
     std::unique_ptr<float[]> mCurrentFrame;
 };
 
-}
+} // namespace resampler
 #endif //OBOE_LINEAR_RESAMPLER_H

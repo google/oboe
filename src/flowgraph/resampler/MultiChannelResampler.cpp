@@ -55,7 +55,7 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
     // TODO benchmark and review these numTaps
     switch (quality) {
         case Quality::Low:
-            builder.setNumTaps(8);
+            builder.setNumTaps(4);
             break;
         case Quality::Medium:
         default:
@@ -70,7 +70,7 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
     }
 
     // Set the cutoff frequency so that we do not get aliasing when down-sampling.
-    if (outputRate < inputRate) {
+    if (inputRate > outputRate) {
         builder.setNormalizedCutoff(kDefaultNormalizedCutoff);
     }
     return builder.build();
@@ -131,18 +131,24 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
                                               double phaseIncrement,
                                               float normalizedCutoff) {
     mCoefficients.resize(getNumTaps() * numRows);
-    int cursor = 0;
-    double phase = 0.0;
-    const float cutoffScaler = std::min(1.0f, normalizedCutoff * outputRate / inputRate);
+    int coefficientIndex = 0;
+    double phase = 0.0; // ranges from 0.0 to 1.0, fraction between samples
+    // Stretch the sinc function for low pass filtering.
+    const float cutoffScaler = normalizedCutoff *
+            ((outputRate < inputRate)
+             ? ((float)outputRate / inputRate)
+             : ((float)inputRate / outputRate));
     const int numTapsHalf = getNumTaps() / 2; // numTaps must be even.
     for (int i = 0; i < numRows; i++) {
         float tapPhase = phase - numTapsHalf;
-        float gain = 0.0;
-        int gainCursor = cursor;
+        float gain = 0.0; // sum of raw coefficients
+        int gainCursor = coefficientIndex;
         for (int tap = 0; tap < getNumTaps(); tap++) {
             float radians = tapPhase * M_PI;
-            float coefficient = sinc(cutoffScaler * radians) * hammingWindow(radians, numTapsHalf);
-            mCoefficients.at(cursor++) = coefficient;
+            float window = mCoshWindow(tapPhase / numTapsHalf);
+            // float window = hammingWindow(radians, numTapsHalf);
+            float coefficient = sinc(radians * cutoffScaler) * window;
+            mCoefficients.at(coefficientIndex++) = coefficient;
             gain += coefficient;
             tapPhase += 1.0;
         }
@@ -151,13 +157,11 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
             phase -= 1.0;
         }
 
-        // Correct for gain variations. // TODO review
-        //printf("gain at %d was %f\n", i, gain);
+        // Correct for gain variations.
         float gainCorrection = 1.0 / gain; // normalize the gain
         for (int tap = 0; tap < getNumTaps(); tap++) {
-            float scaledCoefficient = mCoefficients.at(gainCursor) * gainCorrection;
-            //printf("scaledCoefficient[%2d] = %10.6f\n", tap, scaledCoefficient);
-            mCoefficients.at(gainCursor++) = scaledCoefficient;
+            mCoefficients.at(gainCursor + tap) *= gainCorrection;
+//            printf("%d, %8.5f\n", tap, mCoefficients.at(gainCursor + tap));
         }
     }
 }
