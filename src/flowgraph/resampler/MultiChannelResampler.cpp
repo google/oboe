@@ -112,12 +112,6 @@ void MultiChannelResampler::writeFrame(const float *frame) {
     }
 }
 
-float MultiChannelResampler::hammingWindow(float radians, float spread) {
-    const float alpha = 0.54f;
-    const float windowPhase = radians / spread;
-    return (float) (alpha + ((1.0 - alpha) * cosf(windowPhase)));
-}
-
 float MultiChannelResampler::sinc(float radians) {
     if (abs(radians) < 1.0e-9) return 1.0f;   // avoid divide by zero
     return sinf(radians) / radians;   // Sinc function
@@ -139,14 +133,19 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
              ? ((float)outputRate / inputRate)
              : ((float)inputRate / outputRate));
     const int numTapsHalf = getNumTaps() / 2; // numTaps must be even.
+    const float numTapsHalfInverse = 1.0f / numTapsHalf;
     for (int i = 0; i < numRows; i++) {
         float tapPhase = phase - numTapsHalf;
         float gain = 0.0; // sum of raw coefficients
         int gainCursor = coefficientIndex;
         for (int tap = 0; tap < getNumTaps(); tap++) {
             float radians = tapPhase * M_PI;
-            float window = mCoshWindow(tapPhase / numTapsHalf);
-            // float window = hammingWindow(radians, numTapsHalf);
+
+#if MCR_USE_KAISER
+            float window = mKaiserWindow(tapPhase * numTapsHalfInverse);
+#else
+            float window = mCoshWindow(tapPhase * numTapsHalfInverse);
+#endif
             float coefficient = sinc(radians * cutoffScaler) * window;
             mCoefficients.at(coefficientIndex++) = coefficient;
             gain += coefficient;
@@ -161,7 +160,6 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
         float gainCorrection = 1.0 / gain; // normalize the gain
         for (int tap = 0; tap < getNumTaps(); tap++) {
             mCoefficients.at(gainCursor + tap) *= gainCorrection;
-//            printf("%d, %8.5f\n", tap, mCoefficients.at(gainCursor + tap));
         }
     }
 }

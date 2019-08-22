@@ -31,12 +31,12 @@ public:
      * Higher K gives higher precision.
      * @param K number of terms in the polynomial expansion
      */
-    BesselFunctionRBJ(int K = 8)
+    BesselFunctionRBJ(int K = 20)
     : mK(K) {
         mCoefficients = std::make_unique<double[]>(K + 1);
         mCoefficients[0] = 1.0;
         for (int64_t k = 1; k <= K; k++) {
-            mCoefficients[k] = mCoefficients[k - 1] * -0.25 / (k * k);
+            mCoefficients[k] = mCoefficients[k - 1] * 0.25 / (k * k);
         }
     }
 
@@ -53,8 +53,8 @@ public:
     }
 
     // Direct summation of the first K terms.
-    double direct(double x, int K) {
-        double z = x * x * -0.25;
+    double direct(double x, int K = 20) {
+        double z = x * x * 0.25;
         double sum = 0.0;
         for (int k = K; k >= 1; k--) {
             int n = k;

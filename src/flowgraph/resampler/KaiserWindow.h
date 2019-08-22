@@ -17,10 +17,9 @@
 #ifndef RESAMPLER_KAISER_WINDOW_H
 #define RESAMPLER_KAISER_WINDOW_H
 
-#include "Math.h"
+#include <math.h>
 
 namespace resampler {
-
 
 /**
  * Calculate a Kaiser window centered at 0.
@@ -62,6 +61,10 @@ public:
         return bessel(w) * mInverseBesselBeta;
     }
 
+    // Approximation of a
+    // modified zero order Bessel function of the first kind.
+    // Based on:
+    // https://dsp.stackexchange.com/questions/37714/kaiser-window-approximation
     static double bessel(double x) {
         double y = cosh(0.970941817426052 * x);
         y += cosh(0.8854560256532099 * x);

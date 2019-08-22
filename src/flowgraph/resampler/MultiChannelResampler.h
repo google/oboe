@@ -22,7 +22,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifndef MCR_USE_KAISER
+#define MCR_USE_KAISER 0
+#endif
+
+#if MCR_USE_KAISER
+#include "KaiserWindow.h"
+#else
 #include "HyperbolicCosineWindow.h"
+#endif
 
 namespace resampler {
 
@@ -191,12 +199,6 @@ protected:
     explicit MultiChannelResampler(const MultiChannelResampler::Builder &builder);
 
     /**
-     * @param phase between 0.0 and  2*spread // TODO use centered phase, maybe
-     * @return windowedSinc
-     */
-    // static float calculateWindowedSinc(float phase, int spread); // TODO remove
-
-    /**
      * Write a frame containing N samples.
      * Call advanceWrite() after calling this.
      * @param frame pointer to the first sample in a frame
@@ -251,7 +253,11 @@ protected:
 
 private:
 
+#if MCR_USE_KAISER
+    KaiserWindow           mKaiserWindow;
+#else
     HyperbolicCosineWindow mCoshWindow;
+#endif
 
     // max coefficients for polyphase filter
     static constexpr float kDefaultNormalizedCutoff = 0.70f;
