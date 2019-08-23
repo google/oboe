@@ -62,6 +62,10 @@ public:
 
     int32_t onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) override;
 
+    DataCallbackResult getDataCallbackResult() {
+        return mCallbackResult;
+    }
+
 private:
     std::unique_ptr<flowgraph::AudioSourceBuffered>    mSource;
     std::unique_ptr<AudioSourceCaller>                 mSourceCaller;

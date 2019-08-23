@@ -182,7 +182,7 @@ public:
         }
         return (framesProcessed < numFrames)
                 ? DataCallbackResult::Stop
-                : DataCallbackResult::Continue;
+                : mFlowGraph->getDataCallbackResult();
     }
 
     void onErrorBeforeClose(AudioStream *oboeStream, Result error) override {}

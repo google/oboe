@@ -17,7 +17,7 @@
 #ifndef RESAMPLER_HYPERBOLIC_COSINE_WINDOW_H
 #define RESAMPLER_HYPERBOLIC_COSINE_WINDOW_H
 
-#include "Math.h"
+#include <math.h>
 
 namespace resampler {
 
