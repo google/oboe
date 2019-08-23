@@ -63,7 +63,7 @@ public:
 
     // Approximation of a
     // modified zero order Bessel function of the first kind.
-    // Based on:
+    // Based on a discussion at:
     // https://dsp.stackexchange.com/questions/37714/kaiser-window-approximation
     static double bessel(double x) {
         double y = cosh(0.970941817426052 * x);

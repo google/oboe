@@ -20,7 +20,7 @@
 #include <memory>
 
 /**
- * Approximate a zero order Bessel function of the first kind.
+ * Approximate a modified zero order Bessel function of the first kind.
  *
  * Based on a posting by Robert Bristow-Johnson at:
  * https://dsp.stackexchange.com/questions/37714/kaiser-window-approximation
