@@ -47,8 +47,6 @@ public:
 
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override;
 
-    int32_t getBufferSizeInFrames() override;
-
     int32_t getBufferCapacityInFrames() const override;
 
     ResultWithValue<int32_t> getXRunCount() const override {

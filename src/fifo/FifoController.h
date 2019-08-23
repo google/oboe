@@ -29,10 +29,9 @@ namespace oboe {
 class FifoController : public FifoControllerBase
 {
 public:
-    FifoController(uint32_t bufferSize, uint32_t threshold);
+    FifoController(uint32_t bufferSize);
     virtual ~FifoController() = default;
 
-    // TODO review use atomics or memory barriers
     virtual uint64_t getReadCounter() const override {
         return mReadCounter.load(std::memory_order_acquire);
     }
@@ -53,8 +52,8 @@ public:
     }
 
 private:
-    std::atomic<uint64_t> mReadCounter;
-    std::atomic<uint64_t> mWriteCounter;
+    std::atomic<uint64_t> mReadCounter{};
+    std::atomic<uint64_t> mWriteCounter{};
 };
 
 } // namespace oboe

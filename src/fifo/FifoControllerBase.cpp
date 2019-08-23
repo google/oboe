@@ -18,23 +18,36 @@
 
 #include <cassert>
 #include <sys/types.h>
+#include <algorithm>
 #include "FifoControllerBase.h"
 
 #include "common/OboeDebug.h"
 
 namespace oboe {
 
-FifoControllerBase::FifoControllerBase(uint32_t totalFrames, uint32_t threshold)
-        : mTotalFrames(totalFrames)
-        , mThreshold(threshold)
+FifoControllerBase::FifoControllerBase(uint32_t capacityInFrames)
+        : mTotalFrames(capacityInFrames)
 {
+    // Avoid ridiculously large buffers and the arithmetic wraparound issues that can follow.
+    assert(capacityInFrames <= (UINT32_MAX / 4));
 }
 
-int32_t FifoControllerBase::getFullFramesAvailable() const {
-    return static_cast<int32_t>(getWriteCounter() - getReadCounter());
+uint32_t FifoControllerBase::getFullFramesAvailable() const {
+    uint64_t writeCounter =  getWriteCounter();
+    uint64_t readCounter = getReadCounter();
+    if (readCounter > writeCounter) {
+        return 0;
+    }
+    uint64_t delta = writeCounter - readCounter;
+    if (delta >= mTotalFrames) {
+        return mTotalFrames;
+    }
+    // delta is now guaranteed to fit within the range of a uint32_t
+    return static_cast<uint32_t>(delta);
 }
 
 uint32_t FifoControllerBase::getReadIndex() const {
+    // % works with non-power of two sizes
     return static_cast<uint32_t>(getReadCounter() % mTotalFrames);
 }
 
@@ -42,22 +55,17 @@ void FifoControllerBase::advanceReadIndex(uint32_t numFrames) {
     incrementReadCounter(numFrames);
 }
 
-int32_t FifoControllerBase::getEmptyFramesAvailable() const {
-    int32_t fullFramesAvailable = getFullFramesAvailable();
-    int32_t available = static_cast<int32_t>(mThreshold - fullFramesAvailable);
-    return available;
+uint32_t FifoControllerBase::getEmptyFramesAvailable() const {
+    return static_cast<uint32_t>(mTotalFrames - getFullFramesAvailable());
 }
 
 uint32_t FifoControllerBase::getWriteIndex() const {
-    return static_cast<uint32_t>(getWriteCounter() % mTotalFrames); // % works with non-power of two sizes
+    // % works with non-power of two sizes
+    return static_cast<uint32_t>(getWriteCounter() % mTotalFrames);
 }
 
 void FifoControllerBase::advanceWriteIndex(uint32_t numFrames) {
     incrementWriteCounter(numFrames);
-}
-
-void FifoControllerBase::setThreshold(uint32_t threshold) {
-    mThreshold = threshold;
 }
 
 } // namespace oboe
