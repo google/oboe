@@ -20,11 +20,11 @@
 namespace oboe {
 
 FifoControllerIndirect::FifoControllerIndirect(uint32_t numFrames,
-                                               int64_t *readCounterAddress,
-                                               int64_t *writeCounterAddress)
+                                               std::atomic<uint64_t> *readCounterAddress,
+                                               std::atomic<uint64_t> *writeCounterAddress)
         : FifoControllerBase(numFrames)
-        , mReadCounterAddress(reinterpret_cast<std::atomic<uint64_t> *>(readCounterAddress))
-        , mWriteCounterAddress(reinterpret_cast<std::atomic<uint64_t> *>(writeCounterAddress))
+        , mReadCounterAddress(readCounterAddress)
+        , mWriteCounterAddress(writeCounterAddress)
 {
 }
 

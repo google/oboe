@@ -132,7 +132,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
             result = mFifoBuffer->read(data, framesLeft);
         } else {
             // between zero and capacity
-            uint32_t fullFrames = mFifoBuffer->getFifoControllerBase()->getFullFramesAvailable();
+            uint32_t fullFrames = mFifoBuffer->getFullFramesAvailable();
             // Do not write above threshold size.
             int32_t emptyFrames = getBufferSizeInFrames() - static_cast<int32_t>(fullFrames);
             int32_t framesToWrite = std::max(0, std::min(framesLeft, emptyFrames));

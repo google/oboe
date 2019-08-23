@@ -35,19 +35,19 @@ FifoBuffer::FifoBuffer(uint32_t bytesPerFrame, uint32_t capacityInFrames)
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
 {
-    mFifo = new FifoController(capacityInFrames);
+    mFifo = std::make_unique<FifoController>(capacityInFrames);
     // allocate buffer
     int32_t bytesPerBuffer = bytesPerFrame * capacityInFrames;
     mStorage = new uint8_t[bytesPerBuffer];
     mStorageOwned = true;
-    LOGD("FifoProcessor: capacityInFrames = %d, bytesPerFrame = %d",
-         capacityInFrames, bytesPerFrame);
+    LOGD("%s() capacityInFrames = %d, bytesPerFrame = %d",
+         __func__, capacityInFrames, bytesPerFrame);
 }
 
 FifoBuffer::FifoBuffer( uint32_t  bytesPerFrame,
                         uint32_t  capacityInFrames,
-                        int64_t  *readIndexAddress,
-                        int64_t  *writeIndexAddress,
+                        std::atomic<uint64_t>  *readCounterAddress,
+                        std::atomic<uint64_t>  *writeCounterAddress,
                         uint8_t  *dataStorageAddress
                         )
         : mBytesPerFrame(bytesPerFrame)
@@ -55,22 +55,20 @@ FifoBuffer::FifoBuffer( uint32_t  bytesPerFrame,
         , mFramesReadCount(0)
         , mFramesUnderrunCount(0)
 {
-    mFifo = new FifoControllerIndirect(capacityInFrames,
-                                       readIndexAddress,
-                                       writeIndexAddress);
+    mFifo = std::make_unique<FifoControllerIndirect>(capacityInFrames,
+                                       readCounterAddress,
+                                       writeCounterAddress);
     mStorage = dataStorageAddress;
     mStorageOwned = false;
-    LOGD("FifoProcessor: capacityInFrames = %d, bytesPerFrame = %d",
-         capacityInFrames, bytesPerFrame);
+    LOGD("%s(*) capacityInFrames = %d, bytesPerFrame = %d",
+         __func__, capacityInFrames, bytesPerFrame);
 }
 
 FifoBuffer::~FifoBuffer() {
     if (mStorageOwned) {
         delete[] mStorage;
     }
-    delete mFifo;
 }
-
 
 int32_t FifoBuffer::convertFramesToBytes(int32_t frames) {
     return frames * mBytesPerFrame;

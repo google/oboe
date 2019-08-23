@@ -32,8 +32,8 @@ public:
 
     FifoBuffer(uint32_t   bytesPerFrame,
                uint32_t   capacityInFrames,
-               int64_t   *readCounterAddress,
-               int64_t   *writeCounterAddress,
+               std::atomic<uint64_t>   *readCounterAddress,
+               std::atomic<uint64_t>   *writeCounterAddress,
                uint8_t   *dataStorageAddress);
 
     ~FifoBuffer();
@@ -62,7 +62,9 @@ public:
      */
     int32_t readNow(void *destination, int32_t numFrames);
 
-    FifoControllerBase *getFifoControllerBase() { return mFifo; }
+    uint32_t getFullFramesAvailable() {
+        return mFifo->getFullFramesAvailable();
+    }
 
     uint32_t getBytesPerFrame() const {
         return mBytesPerFrame;
@@ -84,11 +86,10 @@ public:
     }
 
 private:
-//    uint32_t mFrameCapacity;
     uint32_t mBytesPerFrame;
     uint8_t* mStorage;
     bool     mStorageOwned; // did this object allocate the storage?
-    FifoControllerBase *mFifo;
+    std::unique_ptr<FifoControllerBase> mFifo;
     uint64_t mFramesReadCount;
     uint64_t mFramesUnderrunCount;
 };

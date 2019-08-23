@@ -29,4 +29,3 @@ FifoController::FifoController(uint32_t numFrames)
 }
 
 } // namespace oboe
-
