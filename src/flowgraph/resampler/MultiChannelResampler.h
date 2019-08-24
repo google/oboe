@@ -39,6 +39,7 @@ class MultiChannelResampler {
 public:
 
     enum class Quality : int32_t {
+        Fastest,
         Low,
         Medium,
         High,

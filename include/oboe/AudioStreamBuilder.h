@@ -341,12 +341,13 @@ public:
     }
 
     /**
-     * If set to None then Oboe will not do sample rate conversion. But the underlying APIs
-     * might do sample rate conversion. Unfortunately sample rate conversion in Android typically
-     * prevents one from getting a low latency stream. So we can do the conversion in Android
-     * and still get a low latency stream.
+     * Specify the quality of the sample rate converter in Oboe.
      *
-     * Default is SampleRateConversionType::Sinc. TODO currently Linear
+     * If set to None then Oboe will not do sample rate conversion. But then the underlying APIs
+     * might do sample rate conversion, which can prevent one from getting a low latency stream.
+     * If we do the conversion in Oboe then we can still get a low latency stream.
+     *
+     * Default is SampleRateConversionQuality::None
      */
     AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
         mSampleRateConversionQuality = quality;

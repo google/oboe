@@ -120,6 +120,7 @@
     <string name="src_prompt">SRC:</string>
     <string-array name="conversion_qualities">
         <item>None</item>
+        <item>Fastest</item>
         <item>Low</item>
         <item>Medium</item>
         <item>High</item>

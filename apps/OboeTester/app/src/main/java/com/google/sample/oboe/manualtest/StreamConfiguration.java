@@ -48,10 +48,11 @@ public class StreamConfiguration {
     public static final int PERFORMANCE_MODE_LOW_LATENCY = 12; // must match AAUDIO
 
     public static final int RATE_CONVERSION_QUALITY_NONE = 0; // must match Oboe
-    public static final int RATE_CONVERSION_QUALITY_LOW = 1; // must match Oboe
-    public static final int RATE_CONVERSION_QUALITY_MEDIUM = 2; // must match Oboe
-    public static final int RATE_CONVERSION_QUALITY_HIGH = 3; // must match Oboe
-    public static final int RATE_CONVERSION_QUALITY_BEST = 4; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_FASTEST = 1; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_LOW = 2; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_MEDIUM = 3; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_HIGH = 4; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_BEST = 5; // must match Oboe
 
     private int mNativeApi;
     private int mBufferCapacityInFrames;
@@ -67,7 +68,7 @@ public class StreamConfiguration {
     private boolean mChannelConversionAllowed = true;
     private int mRateConversionQuality = RATE_CONVERSION_QUALITY_HIGH;
 
-    private int mFramesPerBurst = 29; // TODO review
+    private int mFramesPerBurst = 0;
     private boolean mMMap = false;
 
     public StreamConfiguration() {

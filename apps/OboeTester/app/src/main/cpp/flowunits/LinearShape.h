@@ -29,7 +29,7 @@ public:
 
     int32_t onProcess(int numFrames) override;
 
-    float getMinimum() const { // TODO create sweep base class
+    float getMinimum() const {
         return mMinimum;
     }
 

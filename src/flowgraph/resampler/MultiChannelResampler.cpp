@@ -54,6 +54,9 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
 
     // TODO benchmark and review these numTaps
     switch (quality) {
+        case Quality::Fastest:
+            builder.setNumTaps(2);
+            break;
         case Quality::Low:
             builder.setNumTaps(4);
             break;
@@ -77,6 +80,9 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
 }
 
 MultiChannelResampler *MultiChannelResampler::Builder::build() {
+    if (getNumTaps() == 2) {
+        return new LinearResampler(*this);
+    }
     IntegerRatio ratio(getInputRate(), getOutputRate());
     ratio.reduce();
     bool usePolyphase = (getNumTaps() * ratio.getDenominator()) <= kMaxCoefficients;

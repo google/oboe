@@ -228,18 +228,26 @@ namespace oboe {
     };
 
     /**
-     * The algorithm used to perform sample rate conversion.
+     * Specifies the quality of the sample rate conversion performed by Oboe.
      * Higher quality will require more CPU load.
+     * Higher quality conversion will probably be implemented using a sinc based resampler.
      */
     enum class SampleRateConversionQuality : int32_t {
         /**
          * No conversion by Oboe. Underlying APIs may still do conversion.
          */
         None,
-
+        /**
+         * Fastest conversion but may not sound great.
+         * This may be implemented using bilinear interpolation.
+         */
+        Fastest,
         Low,
         Medium,
         High,
+        /**
+         * Highest quality conversion, which may be expensive in terms of CPU.
+         */
         Best,
     };
 
