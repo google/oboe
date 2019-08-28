@@ -82,6 +82,8 @@ public:
 
     /**
      * Recursively reset all the nodes in the graph, starting from a Sink.
+     *
+     * This must not be called at the same time as pullData!
      */
     void pullReset();
 
@@ -102,7 +104,7 @@ public:
      * Set true if you want the data pulled through the graph automatically.
      * This is the default.
      *
-     * Set false if you want to pull the data from the input ports in the process method.
+     * Set false if you want to pull the data from the input ports in the onProcess() method.
      * You might do this, for example, in a sample rate converting node.
      *
      * @param automatic

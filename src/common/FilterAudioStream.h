@@ -133,10 +133,12 @@ public:
     }
 
     void updateFramesWritten() override {
+        // TODO for output, just count local writes?
         mFramesWritten = static_cast<int64_t>(mChildStream->getFramesWritten() * mRateScaler);
     }
 
     void updateFramesRead() override {
+        // TODO for input, just count local reads?
         mFramesRead = static_cast<int64_t>(mChildStream->getFramesRead() * mRateScaler);
     }
 
@@ -158,7 +160,7 @@ public:
     }
 
     ResultWithValue<double> calculateLatencyMillis() override {
-        // TODO Add the latency of the flowgraph?
+        // This will automatically include the latency of the flowgraph?
         return mChildStream->calculateLatencyMillis();
     }
 
@@ -190,6 +192,7 @@ public:
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override {}
 
 private:
+
     std::unique_ptr<AudioStream>             mChildStream; // this stream wraps the child stream
     std::unique_ptr<DataConversionFlowGraph> mFlowGraph; // for converting data
     std::unique_ptr<uint8_t[]>               mBlockingBuffer; // temp buffer for write()

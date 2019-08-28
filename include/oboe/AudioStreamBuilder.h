@@ -343,9 +343,11 @@ public:
     /**
      * Specify the quality of the sample rate converter in Oboe.
      *
-     * If set to None then Oboe will not do sample rate conversion. But then the underlying APIs
-     * might do sample rate conversion, which can prevent one from getting a low latency stream.
-     * If we do the conversion in Oboe then we can still get a low latency stream.
+     * If set to None then Oboe will not do sample rate conversion. But the underlying APIs might
+     * still do sample rate conversion if you specify a sample rate.
+     * That can prevent you from getting a low latency stream.
+     *
+     * If you do the conversion in Oboe then you might still get a low latency stream.
      *
      * Default is SampleRateConversionQuality::None
      */
@@ -357,7 +359,7 @@ public:
     /**
      * @return true if AAudio will be used based on the current settings.
      */
-    bool willUseAAudio() const { // TODO How can this be const if isSupported() is not const?
+    bool willUseAAudio() const {
         return (mAudioApi == AudioApi::AAudio && isAAudioSupported())
                 || (mAudioApi == AudioApi::Unspecified && isAAudioRecommended());
     }
@@ -372,9 +374,13 @@ public:
      */
     Result openStream(AudioStream **stream);
 
-protected:
-
 private:
+
+    /**
+     * @param other
+     * @return true if channels, format and sample rate match
+     */
+    bool isCompatible(AudioStreamBase &other);
 
     /**
      * Create an AudioStream object. The AudioStream must be opened before use.

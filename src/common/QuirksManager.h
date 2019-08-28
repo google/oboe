@@ -25,22 +25,27 @@ namespace oboe {
 /**
  * Based on manufacturer, model and Android version number
  * decide whether data conversion needs to occur.
+ *
+ * This also manages device and version specific workarounds.
  */
 
 class QuirksManager {
 public:
-    static QuirksManager *getInstance() {
-        // TODO Use lock
-        if (mInstance == nullptr) {
-            mInstance = new QuirksManager();
-        }
-        return mInstance;
+
+    static QuirksManager &getInstance() {
+        static QuirksManager instance;
+        return instance;
     }
 
+    /**
+     *
+     * @param builder builder provided by application
+     * @param childBuilder modified builder appropriate for the underlying device
+     * @return true if conversion is needed
+     */
     bool isConversionNeeded(const AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
 
 private:
-    static QuirksManager *mInstance;
 };
 
 }

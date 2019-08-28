@@ -74,6 +74,12 @@ AudioStream *AudioStreamBuilder::build() {
     return stream;
 }
 
+bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
+    return getSampleRate() == other.getSampleRate()
+           && getFormat() == other.getFormat()
+           && getChannelCount() == other.getChannelCount();
+}
+
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     Result result = Result::OK;
     LOGD("%s() %s -------- %s --------",
@@ -89,7 +95,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     // Maybe make a FilterInputStream.
     AudioStreamBuilder childBuilder(*this);
     // Check need for conversion and modify childBuilder for optimal stream.
-    bool conversionNeeded = QuirksManager::getInstance()->isConversionNeeded(*this, childBuilder);
+    bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
     // Do we need to make a child stream and convert.
     if (conversionNeeded) {
         AudioStream *tempStream;
@@ -99,11 +105,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             return result;
         }
 
-        // TODO define isCompatible()
-        if (getSampleRate() == tempStream->getSampleRate()
-                && getFormat() == tempStream->getFormat()
-                && getChannelCount() == tempStream->getChannelCount()
-            ) {
+        if (isCompatible(*tempStream)) {
             // Everything matches so we can just use the child stream directly.
             *streamPP = tempStream;
             return result;

@@ -20,8 +20,6 @@
 
 using namespace oboe;
 
-QuirksManager *QuirksManager::mInstance = nullptr;
-
 bool QuirksManager::isConversionNeeded(
         const AudioStreamBuilder &builder,
         AudioStreamBuilder &childBuilder) {
@@ -30,7 +28,9 @@ bool QuirksManager::isConversionNeeded(
     const bool isInput = builder.getDirection() == Direction::Input;
     const bool isFloat = builder.getFormat() == AudioFormat::Float;
 
-    // If a SAMPLE RATE is specified then let the native code choose an optimal rate.
+    // If a SAMPLE RATE is specified for low latency then let the native code choose an optimal rate.
+    // TODO There may be a problem if the devices supports low latency
+    //      at a higher rate than the default.
     if (builder.getSampleRate() != oboe::Unspecified
             && builder.getSampleRateConversionType() != SampleRateConversionQuality::None
             && isLowLatency
@@ -40,7 +40,7 @@ bool QuirksManager::isConversionNeeded(
     }
 
     // Data Format
-    // OpenSL ES and AAudio <P do not support FAST for FLOAT capture.
+    // OpenSL ES and AAudio before P do not support FAST for FLOAT capture.
     if (isFloat
             && builder.isFormatConversionAllowed()
             && isInput
@@ -52,7 +52,8 @@ bool QuirksManager::isConversionNeeded(
     }
 
     // Channel Count
-    if (builder.getChannelCount() != oboe::Unspecified && builder.isChannelConversionAllowed()) {
+    if (builder.getChannelCount() != oboe::Unspecified
+            && builder.isChannelConversionAllowed()) {
         if (builder.getChannelCount() == 2 // stereo?
                 && isInput
                 && isLowLatency
@@ -61,7 +62,7 @@ bool QuirksManager::isConversionNeeded(
             childBuilder.setChannelCount(1);
             conversionNeeded = true;
         }
-        // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel
+        // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel 1
         // phones and they have almost all been updated to 9.0.
     }
 

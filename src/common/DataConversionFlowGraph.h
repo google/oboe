@@ -32,8 +32,6 @@ namespace oboe {
 class AudioStream;
 class AudioSourceCaller;
 
-// TODO support mono<=>stereo
-
 /**
  * Convert PCM channels, format and sample rate for optimal latency.
  */

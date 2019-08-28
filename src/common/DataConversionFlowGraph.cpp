@@ -88,17 +88,20 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
             sourceChannelCount, sinkChannelCount,
             sourceSampleRate, sinkSampleRate);
 
+    int32_t framesPerCallback = (sourceStream->getFramesPerCallback() == kUnspecified)
+                                ? sourceStream->getFramesPerBurst()
+                                : sourceStream->getFramesPerCallback();
     // Source
     if ((sourceStream->getCallback() != nullptr && isOutput)
         || (sourceStream->getCallback() == nullptr && !isOutput)) {
         switch (sourceFormat) {
             case AudioFormat::Float:
                 mSourceCaller = std::make_unique<SourceFloatCaller>(sourceChannelCount,
-                        sourceStream->getFramesPerBurst()); // TODO use requested frames per callback
+                                                                    framesPerCallback);
                 break;
             case AudioFormat::I16:
                 mSourceCaller = std::make_unique<SourceI16Caller>(sourceChannelCount,
-                        sourceStream->getFramesPerBurst());
+                                                                  framesPerCallback);
                 break;
             default:
                 LOGE("%s() Unsupported source caller format = %d", __func__, sourceFormat);
@@ -119,8 +122,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                 return Result::ErrorIllegalArgument;
         }
         if (!isOutput) {
-            // TODO use requested frames per callback
-            mBlockWriter.open(sourceStream->getFramesPerBurst() * sourceStream->getBytesPerFrame());
+            mBlockWriter.open(framesPerCallback * sourceStream->getBytesPerFrame());
             mAppBuffer = std::make_unique<uint8_t[]>(
                     kDefaultBufferSize * sourceStream->getBytesPerFrame());
         }

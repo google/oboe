@@ -49,8 +49,8 @@ int32_t FixedBlockWriter::write(uint8_t *buffer, int32_t numBytes) {
             if (bytesWritten < 0) return bytesWritten;
             mPosition = 0;
             if (bytesWritten < mSize) {
-                // Write did not complete!
-                return -1; // TODO
+                // Only some of the data was written! This should not happen.
+                return -1;
             }
         }
     }
