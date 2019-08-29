@@ -40,12 +40,12 @@ bool QuirksManager::isConversionNeeded(
     }
 
     // Data Format
-    // OpenSL ES and AAudio before P do not support FAST for FLOAT capture.
+    // OpenSL ES and AAudio before P do not support FAST path for FLOAT capture.
     if (isFloat
-            && builder.isFormatConversionAllowed()
             && isInput
-            && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
+            && builder.isFormatConversionAllowed()
             && isLowLatency
+            && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
             ) {
         childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
         conversionNeeded = true;

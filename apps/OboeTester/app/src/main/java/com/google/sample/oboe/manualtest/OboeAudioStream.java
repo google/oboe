@@ -66,6 +66,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getSessionId(),
                 requestedConfiguration.getFramesPerBurst(),
                 requestedConfiguration.getChannelConversionAllowed(),
+                requestedConfiguration.getFormatConversionAllowed(),
                 requestedConfiguration.getRateConversionQuality(),
                 isInput()
         );
@@ -102,6 +103,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int sessionId,
             int framesPerRead,
             boolean channelConversionAllowed,
+            boolean formatConversionAllowed,
             int rateConversionQuality,
             boolean isInput);
 

@@ -87,13 +87,12 @@ int32_t ActivityContext::allocateStreamIndex() {
 
 void ActivityContext::close(int32_t streamIndex) {
     stopBlockingIOThread();
-
-    LOGD("%s() delete stream %d ", __func__, streamIndex);
     oboe::AudioStream *oboeStream = getStream(streamIndex);
     if (oboeStream != nullptr) {
         oboeStream->close();
-        delete oboeStream;
         freeStreamIndex(streamIndex);
+        LOGD("ActivityContext::%s() delete stream %d ", __func__, streamIndex);
+        delete oboeStream;
     }
 }
 
@@ -122,7 +121,7 @@ bool ActivityContext::isMMapUsed(int32_t streamIndex) {
 }
 
 oboe::Result ActivityContext::pause() {
-    LOGD("NativeAudioContext::%s() called", __func__);
+    LOGD("ActivityContext::%s() called", __func__);
     oboe::Result result = oboe::Result::OK;
     stopBlockingIOThread();
     for (auto entry : mOboeStreams) {
@@ -169,6 +168,7 @@ int ActivityContext::open(
         jint sessionId,
         jint framesPerBurst,
         jboolean channelConversionAllowed,
+        jboolean formatConversionAllowed,
         jint rateConversionQuality,
         jboolean isInput) {
 
@@ -195,7 +195,6 @@ int ActivityContext::open(
     }
 
     // Create an audio output stream.
-    LOGD("ActivityContext::open() try to create OboeStream #%d", streamIndex);
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(channelCount)
             ->setDirection(isInput ? oboe::Direction::Input : oboe::Direction::Output)
@@ -206,6 +205,7 @@ int ActivityContext::open(
             ->setSampleRate(sampleRate)
             ->setFormat((oboe::AudioFormat) format)
             ->setChannelConversionAllowed(channelConversionAllowed)
+            ->setFormatConversionAllowed(formatConversionAllowed)
             ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
             ;
 

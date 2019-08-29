@@ -101,6 +101,7 @@ public:
              jint sessionId,
              jint framesPerBurst,
              jboolean channelConversionAllowed,
+             jboolean formatConversionAllowed,
              jint rateConversionQuality,
              jboolean isInput);
 

@@ -154,7 +154,7 @@ public class StreamConfigurationView extends LinearLayout {
             }
         });
 
-        mFormatConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
+        mFormatConversionBox = (CheckBox) findViewById(R.id.checkFormatConversion);
         mFormatConversionBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -369,11 +369,14 @@ public class StreamConfigurationView extends LinearLayout {
     protected StreamConfiguration getRequestedConfiguration() {
         return mRequestedConfiguration;
     }
+
     public void setRequestedConfiguration(StreamConfiguration configuration) {
         mRequestedConfiguration = configuration;
         if (configuration != null) {
             mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
-            mChannelConversionBox.setSelected(configuration.getChannelConversionAllowed());
+            mChannelConversionBox.setChecked(configuration.getChannelConversionAllowed());
+            mFormatConversionBox.setChecked(configuration.getFormatConversionAllowed());
+            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
         }
     }
 

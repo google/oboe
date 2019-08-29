@@ -83,9 +83,10 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     int32_t sinkChannelCount = sinkStream->getChannelCount();
     int32_t sinkSampleRate = sinkStream->getSampleRate();
 
-    LOGD("%s() flowgraph converts format: %d to %d, channels: %d to %d, rate: %d to %d",
-            __func__, sourceFormat, sinkFormat,
+    LOGD("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d",
+            __func__,
             sourceChannelCount, sinkChannelCount,
+            sourceFormat, sinkFormat,
             sourceSampleRate, sinkSampleRate);
 
     int32_t framesPerCallback = (sourceStream->getFramesPerCallback() == kUnspecified)
@@ -122,9 +123,10 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                 return Result::ErrorIllegalArgument;
         }
         if (!isOutput) {
-            mBlockWriter.open(framesPerCallback * sourceStream->getBytesPerFrame());
+            // The BlockWriter is after the Sink so use the SinkStream size.
+            mBlockWriter.open(framesPerCallback * sinkStream->getBytesPerFrame());
             mAppBuffer = std::make_unique<uint8_t[]>(
-                    kDefaultBufferSize * sourceStream->getBytesPerFrame());
+                    kDefaultBufferSize * sinkStream->getBytesPerFrame());
         }
         lastOutput = &mSource->output;
     }
@@ -148,7 +150,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
         lastOutput->connect(&mChannelConverter->input);
         lastOutput = &mChannelConverter->output;
     } else if (sourceChannelCount != sinkChannelCount) {
-        LOGE("%s() Channel reduction not supported.", __func__);
+        LOGW("%s() Channel reduction not supported.", __func__);
         return Result::ErrorUnimplemented; // TODO
     }
 
@@ -182,7 +184,7 @@ int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames, int64_t t
 
 // This is similar to pushing data through the flowgraph.
 int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
-    // Put the data from the INPUT callback at the head of the flowgraph.
+    // Put the data from the Source at the head of the flowgraph.
     mSource->setData(inputBuffer, numFrames);
     while (true) {
         // Pull and read some data in app format into a small buffer.

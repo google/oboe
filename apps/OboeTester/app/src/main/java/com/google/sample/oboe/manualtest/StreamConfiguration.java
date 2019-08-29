@@ -64,9 +64,9 @@ public class StreamConfiguration {
     private int mSampleRate;
     private int mSharingMode;
     private int mPerformanceMode;
-    private boolean mFormatConversionAllowed = true;
-    private boolean mChannelConversionAllowed = true;
-    private int mRateConversionQuality = RATE_CONVERSION_QUALITY_HIGH;
+    private boolean mFormatConversionAllowed;
+    private boolean mChannelConversionAllowed;
+    private int mRateConversionQuality;
 
     private int mFramesPerBurst = 0;
     private boolean mMMap = false;
@@ -90,9 +90,9 @@ public class StreamConfiguration {
         mSampleRate = UNSPECIFIED;
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
-        mChannelConversionAllowed = true;
-        mFormatConversionAllowed = true;
-        mRateConversionQuality = RATE_CONVERSION_QUALITY_HIGH;
+        mChannelConversionAllowed = false;
+        mFormatConversionAllowed = false;
+        mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
     }
 
     public int getFramesPerBurst() {

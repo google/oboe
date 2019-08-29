@@ -46,6 +46,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jint sessionId,
                                                        jint framesPerBurst,
                                                        jboolean channelConversionAllowed,
+                                                       jboolean formatConversionAllowed,
                                                        jint rateConversionQuality,
                                                        jboolean isInput);
 JNIEXPORT void JNICALL
@@ -97,6 +98,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         jint sessionId,
         jint framesPerBurst,
         jboolean channelConversionAllowed,
+        jboolean formatConversionAllowed,
         jint rateConversionQuality,
         jboolean isInput) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d, framesPerBurst = %d", sampleRate, framesPerBurst);
@@ -111,6 +113,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
                               sessionId,
                               framesPerBurst,
                               channelConversionAllowed,
+                              formatConversionAllowed,
                               rateConversionQuality,
                               isInput);
 }
