@@ -22,8 +22,6 @@
 
 using namespace flowgraph;
 
-int64_t AudioStreamGateway::mFramePosition = 0;
-
 oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
         oboe::AudioStream *audioStream,
         void *audioData,

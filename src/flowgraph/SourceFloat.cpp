@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "common/OboeDebug.h"
 #include <algorithm>
 #include <unistd.h>
 #include "AudioProcessorBase.h"
@@ -22,11 +23,10 @@
 using namespace flowgraph;
 
 SourceFloat::SourceFloat(int32_t channelCount)
-        : AudioSource(channelCount) {
+        : AudioSourceBuffered(channelCount) {
 }
 
 int32_t SourceFloat::onProcess(int32_t numFrames) {
-
     float *outputBuffer = output.getBuffer();
     int32_t channelCount = output.getSamplesPerFrame();
 

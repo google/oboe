@@ -47,6 +47,13 @@ public class StreamConfiguration {
     public static final int PERFORMANCE_MODE_POWER_SAVING = 11; // must match AAUDIO
     public static final int PERFORMANCE_MODE_LOW_LATENCY = 12; // must match AAUDIO
 
+    public static final int RATE_CONVERSION_QUALITY_NONE = 0; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_FASTEST = 1; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_LOW = 2; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_MEDIUM = 3; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_HIGH = 4; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_BEST = 5; // must match Oboe
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;
@@ -57,8 +64,11 @@ public class StreamConfiguration {
     private int mSampleRate;
     private int mSharingMode;
     private int mPerformanceMode;
+    private boolean mFormatConversionAllowed;
+    private boolean mChannelConversionAllowed;
+    private int mRateConversionQuality;
 
-    private int mFramesPerBurst = 29; // TODO review
+    private int mFramesPerBurst = 0;
     private boolean mMMap = false;
 
     public StreamConfiguration() {
@@ -80,6 +90,9 @@ public class StreamConfiguration {
         mSampleRate = UNSPECIFIED;
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
+        mChannelConversionAllowed = false;
+        mFormatConversionAllowed = false;
+        mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
     }
 
     public int getFramesPerBurst() {
@@ -227,4 +240,21 @@ public class StreamConfiguration {
         mNativeApi = nativeApi;
     }
 
+    public void setChannelConversionAllowed(boolean b) { mChannelConversionAllowed = b; }
+
+    public boolean getChannelConversionAllowed() {
+        return mChannelConversionAllowed;
+    }
+
+    public void setFormatConversionAllowed(boolean b) { mFormatConversionAllowed = b; }
+
+    public boolean getFormatConversionAllowed() {
+        return mFormatConversionAllowed;
+    }
+
+    public void setRateConversionQuality(int quality) { mRateConversionQuality = quality; }
+
+    public int getRateConversionQuality() {
+        return mRateConversionQuality;
+    }
 }

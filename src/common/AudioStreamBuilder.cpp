@@ -17,12 +17,14 @@
 #include <sys/types.h>
 
 #include "aaudio/AudioStreamAAudio.h"
+#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "opensles/AudioInputStreamOpenSLES.h"
 #include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
+#include "QuirksManager.h"
 
 namespace oboe {
 
@@ -75,7 +77,14 @@ AudioStream *AudioStreamBuilder::build() {
     return stream;
 }
 
+bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
+    return getSampleRate() == other.getSampleRate()
+           && getFormat() == other.getFormat()
+           && getChannelCount() == other.getChannelCount();
+}
+
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
+    Result result = Result::OK;
     LOGD("%s() %s -------- %s --------",
          __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
 
@@ -83,11 +92,61 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         return Result::ErrorNull;
     }
     *streamPP = nullptr;
-    AudioStream *streamP = build();
-    if (streamP == nullptr) {
-        return Result::ErrorNull;
+
+    AudioStream *streamP = nullptr;
+
+    // Maybe make a FilterInputStream.
+    AudioStreamBuilder childBuilder(*this);
+    // Check need for conversion and modify childBuilder for optimal stream.
+    bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
+    // Do we need to make a child stream and convert.
+    if (conversionNeeded) {
+        AudioStream *tempStream;
+
+        result = childBuilder.openStream(&tempStream);
+        if (result != Result::OK) {
+            return result;
+        }
+
+        if (isCompatible(*tempStream)) {
+            // Everything matches so we can just use the child stream directly.
+            *streamPP = tempStream;
+            return result;
+        } else {
+            AudioStreamBuilder parentBuilder = *this;
+            // Build a stream that is as close as possible to the childStream.
+            if (getFormat() == oboe::AudioFormat::Unspecified) {
+                parentBuilder.setFormat(tempStream->getFormat());
+            }
+            if (getChannelCount() == oboe::Unspecified) {
+                parentBuilder.setChannelCount(tempStream->getChannelCount());
+            }
+            if (getSampleRate() == oboe::Unspecified) {
+                parentBuilder.setSampleRate(tempStream->getSampleRate());
+            }
+
+            // Use childStream in a FilterAudioStream.
+            LOGD("%s() create a FilterAudioStream for data conversion.", __func__);
+            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
+            result = filterStream->configureFlowGraph();
+            if (result !=  Result::OK) {
+                filterStream->close();
+                delete filterStream;
+                // Just open streamP the old way.
+            } else {
+                streamP = static_cast<AudioStream *>(filterStream);
+            }
+        }
     }
-    Result result = streamP->open(); // TODO review API
+
+    if (streamP == nullptr) {
+        streamP = build();
+        if (streamP == nullptr) {
+            return Result::ErrorNull;
+        }
+    }
+
+    result = streamP->open(); // TODO review API
     if (result == Result::OK) {
 
         // Use a reasonable default buffer size for low latency streams.

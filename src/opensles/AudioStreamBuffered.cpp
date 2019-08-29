@@ -101,7 +101,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
     // Validate arguments.
     if (buffer == nullptr) {
         LOGE("AudioStreamBuffered::%s(): buffer is NULL", __func__);
-        return ResultWithValue<int32_t>(Result ::ErrorNull);
+        return ResultWithValue<int32_t>(Result::ErrorNull);
     }
     if (numFrames < 0) {
         LOGE("AudioStreamBuffered::%s(): numFrames is negative", __func__);

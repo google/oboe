@@ -39,6 +39,10 @@ public:
     std::vector<std::unique_ptr<flowgraph::AudioFloatInputPort>> inputs;
     flowgraph::AudioFloatOutputPort output;
 
+    const char *getName() override {
+        return "ManyToMultiConverter";
+    }
+
 private:
 };
 

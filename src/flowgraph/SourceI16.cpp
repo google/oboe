@@ -27,7 +27,7 @@
 using namespace flowgraph;
 
 SourceI16::SourceI16(int32_t channelCount)
-        : AudioSource(channelCount) {
+        : AudioSourceBuffered(channelCount) {
 }
 
 int32_t SourceI16::onProcess(int32_t numFrames) {

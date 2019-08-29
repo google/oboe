@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "stdio.h"
 #include <algorithm>
 #include <sys/types.h>
 #include "AudioProcessorBase.h"
@@ -24,17 +25,41 @@ using namespace flowgraph;
 int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
     int32_t frameCount = numFrames;
     // Prevent recursion and multiple execution of nodes.
-    if (framePosition > mLastFramePosition) {
-        mLastFramePosition = framePosition;
-        // Pull from all the upstream nodes.
-        for (auto &port : mInputPorts) {
-            frameCount = port.get().pullData(framePosition, frameCount);
+    if (framePosition <= mLastFramePosition && !mBlockRecursion) {
+        mBlockRecursion = true;  // for cyclic graphs
+        if (mDataPulledAutomatically) {
+            // Pull from all the upstream nodes.
+            for (auto &port : mInputPorts) {
+                // TODO fix bug of leaving unused data in some ports if using multiple AudioSource
+                frameCount = port.get().pullData(framePosition, frameCount);
+            }
         }
         if (frameCount > 0) {
-            mFramesValid = onProcess(frameCount);
+            frameCount = onProcess(frameCount);
         }
+        mLastFramePosition += frameCount;
+        mBlockRecursion = false;
+        mLastFrameCount = frameCount;
+    } else {
+        frameCount = mLastFrameCount;
     }
-    return mFramesValid;
+    return frameCount;
+}
+
+void AudioProcessorBase::pullReset() {
+    if (!mBlockRecursion) {
+        mBlockRecursion = true; // for cyclic graphs
+        // Pull reset from all the upstream nodes.
+        for (auto &port : mInputPorts) {
+            port.get().pullReset();
+        }
+        mBlockRecursion = false;
+        reset();
+    }
+}
+
+void AudioProcessorBase::reset() {
+    mLastFrameCount = 0;
 }
 
 /***************************************************************************/
@@ -42,15 +67,20 @@ AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
                                int32_t samplesPerFrame,
                                int32_t framesPerBuffer)
         : AudioPort(parent, samplesPerFrame)
-        , mFramesPerBuffer(framesPerBuffer) {
-    int32_t numFloats = framesPerBuffer * getSamplesPerFrame();
+        , mFramesPerBuffer(framesPerBuffer)
+        , mBuffer(nullptr) {
+    size_t numFloats = static_cast<size_t>(framesPerBuffer * getSamplesPerFrame());
     mBuffer = std::make_unique<float[]>(numFloats);
 }
 
 /***************************************************************************/
 int32_t AudioFloatOutputPort::pullData(int64_t framePosition, int32_t numFrames) {
     numFrames = std::min(getFramesPerBuffer(), numFrames);
-    return mParent.pullData(framePosition, numFrames);
+    return mContainingNode.pullData(framePosition, numFrames);
+}
+
+void AudioFloatOutputPort::pullReset() {
+    mContainingNode.pullReset();
 }
 
 // These need to be in the .cpp file because of forward cross references.
@@ -67,6 +97,9 @@ int32_t AudioFloatInputPort::pullData(int64_t framePosition, int32_t numFrames) 
     return (mConnected == nullptr)
             ? std::min(getFramesPerBuffer(), numFrames)
             : mConnected->pullData(framePosition, numFrames);
+}
+void AudioFloatInputPort::pullReset() {
+    if (mConnected != nullptr) mConnected->pullReset();
 }
 
 float *AudioFloatInputPort::getBuffer() {

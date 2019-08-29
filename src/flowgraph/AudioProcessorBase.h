@@ -57,6 +57,7 @@ class AudioFloatInputPort;
  */
 class AudioProcessorBase {
 public:
+    AudioProcessorBase() {}
     virtual ~AudioProcessorBase() = default;
 
     /**
@@ -79,21 +80,57 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames);
 
-//    virtual void start() {}
-//
-//    virtual void stop() {}
+    /**
+     * Recursively reset all the nodes in the graph, starting from a Sink.
+     *
+     * This must not be called at the same time as pullData!
+     */
+    void pullReset();
+
+    /**
+     * Reset framePosition counters.
+     */
+    virtual void reset();
 
     void addInputPort(AudioPort &port) {
         mInputPorts.push_back(port);
     }
 
+    bool isDataPulledAutomatically() const {
+        return mDataPulledAutomatically;
+    }
+
+    /**
+     * Set true if you want the data pulled through the graph automatically.
+     * This is the default.
+     *
+     * Set false if you want to pull the data from the input ports in the onProcess() method.
+     * You might do this, for example, in a sample rate converting node.
+     *
+     * @param automatic
+     */
+    void setDataPulledAutomatically(bool automatic) {
+        mDataPulledAutomatically = automatic;
+    }
+
+    virtual const char *getName() {
+        return "AudioProcessorBase";
+    }
+
+    int64_t getLastFramePosition() {
+        return mLastFramePosition;
+    }
+
 protected:
-    int64_t  mLastFramePosition = -1; // Start at -1 so that the first pull works.
+    int64_t  mLastFramePosition = 0;
 
     std::vector<std::reference_wrapper<AudioPort>> mInputPorts;
 
 private:
-    int32_t  mFramesValid = 0; // num valid frames in the block
+    bool     mDataPulledAutomatically = true;
+    bool     mBlockRecursion = false;
+    int32_t  mLastFrameCount = 0;
+
 };
 
 /***************************************************************************/
@@ -107,7 +144,7 @@ private:
 class AudioPort {
 public:
     AudioPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : mParent(parent)
+            : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
 
@@ -121,8 +158,10 @@ public:
 
     virtual int32_t pullData(int64_t framePosition, int32_t numFrames) = 0;
 
+    virtual void pullReset() {}
+
 protected:
-    AudioProcessorBase &mParent;
+    AudioProcessorBase &mContainingNode;
 
 private:
     const int32_t    mSamplesPerFrame = 1;
@@ -202,6 +241,9 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames) override;
 
+
+    void pullReset() override;
+
 };
 
 /***************************************************************************/
@@ -268,6 +310,8 @@ public:
      */
     int32_t pullData(int64_t framePosition, int32_t numFrames) override;
 
+    void pullReset() override;
+
 private:
     AudioFloatOutputPort *mConnected = nullptr;
 };
@@ -288,6 +332,21 @@ public:
     virtual ~AudioSource() = default;
 
     AudioFloatOutputPort output;
+};
+
+/***************************************************************************/
+
+/**
+ * Base class for an edge node in a graph that has no upstream nodes.
+ * It outputs data but does not consume data.
+ * By default, it will read its data from an external buffer.
+ */
+class AudioSourceBuffered : public AudioSource {
+public:
+    explicit AudioSourceBuffered(int32_t channelCount)
+            : AudioSource(channelCount) {}
+
+    virtual ~AudioSourceBuffered() = default;
 
     /**
      * Specify buffer that the node will read from.
@@ -336,6 +395,25 @@ public:
 
     virtual int32_t read(int64_t framePosition, void *data, int32_t numFrames) = 0;
 
+};
+
+/***************************************************************************/
+/**
+ * Base class for a node that has an input and an output with the same number of channels.
+ * This may include traditional filters, eg. FIR, but also include
+ * any processing node that converts input to output.
+ */
+class AudioFilter : public AudioProcessorBase {
+public:
+    explicit AudioFilter(int32_t channelCount)
+            : input(*this, channelCount)
+            , output(*this, channelCount) {
+    }
+
+    virtual ~AudioFilter() = default;
+
+    AudioFloatInputPort input;
+    AudioFloatOutputPort output;
 };
 
 } /* namespace flowgraph */

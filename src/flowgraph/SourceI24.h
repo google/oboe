@@ -27,11 +27,15 @@ namespace flowgraph {
 /**
  * AudioSource that reads a block of pre-defined 24-bit packed integer data.
  */
-class SourceI24 : public AudioSource {
+class SourceI24 : public AudioSourceBuffered {
 public:
     explicit SourceI24(int32_t channelCount);
 
     int32_t onProcess(int32_t numFrames) override;
+
+    const char *getName() override {
+        return "SourceI24";
+    }
 };
 
 } /* namespace flowgraph */

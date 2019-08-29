@@ -30,7 +30,7 @@ namespace flowgraph {
 constexpr float kDefaultMaxHeadroom = 1.41253754f;
 constexpr float kDefaultMinHeadroom = -kDefaultMaxHeadroom;
 
-class ClipToRange : public AudioProcessorBase {
+class ClipToRange : public AudioFilter {
 public:
     explicit ClipToRange(int32_t channelCount);
 
@@ -54,8 +54,9 @@ public:
         return mMaximum;
     }
 
-    AudioFloatInputPort input;
-    AudioFloatOutputPort output;
+    const char *getName() override {
+        return "ClipToRange";
+    }
 
 private:
     float mMinimum = kDefaultMinHeadroom;

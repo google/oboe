@@ -328,6 +328,56 @@ public:
     }
 
     /**
+     * If true then Oboe might convert channel counts to achieve optimal results.
+     * On some versions of Android for example, stereo streams could not use a FAST track.
+     * So a mono stream might be used instead and duplicated to two channels.
+     * On some devices, mono streams might be broken, so a stereo stream might be opened
+     * and converted to mono.
+     *
+     * Default is true.
+     */
+    AudioStreamBuilder *setChannelConversionAllowed(bool allowed) {
+        mChannelConversionAllowed = allowed;
+        return this;
+    }
+
+    /**
+     * If true then  Oboe might convert data formats to achieve optimal results.
+     * On some versions of Android, for example, a float stream could not get a
+     * low latency data path. So an I16 stream might be opened and converted to float.
+     *
+     * Default is true.
+     */
+    AudioStreamBuilder *setFormatConversionAllowed(bool allowed) {
+        mFormatConversionAllowed = allowed;
+        return this;
+    }
+
+    /**
+     * Specify the quality of the sample rate converter in Oboe.
+     *
+     * If set to None then Oboe will not do sample rate conversion. But the underlying APIs might
+     * still do sample rate conversion if you specify a sample rate.
+     * That can prevent you from getting a low latency stream.
+     *
+     * If you do the conversion in Oboe then you might still get a low latency stream.
+     *
+     * Default is SampleRateConversionQuality::None
+     */
+    AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
+        mSampleRateConversionQuality = quality;
+        return this;
+    }
+
+    /**
+     * @return true if AAudio will be used based on the current settings.
+     */
+    bool willUseAAudio() const {
+        return (mAudioApi == AudioApi::AAudio && isAAudioSupported())
+                || (mAudioApi == AudioApi::Unspecified && isAAudioRecommended());
+    }
+
+    /**
      * Create and open a stream object based on the current settings.
      *
      * The caller owns the pointer to the AudioStream object.
@@ -336,6 +386,7 @@ public:
      * @return OBOE_OK if successful or a negative error code
      */
     Result openStream(AudioStream **stream);
+
 
     /**
      * Create and open a ManagedStream object based on the current builder state.
@@ -348,10 +399,13 @@ public:
      */
     Result openManagedStream(ManagedStream &stream);
 
-
-protected:
-
 private:
+
+    /**
+     * @param other
+     * @return true if channels, format and sample rate match
+     */
+    bool isCompatible(AudioStreamBase &other);
 
     /**
      * Create an AudioStream object. The AudioStream must be opened before use.

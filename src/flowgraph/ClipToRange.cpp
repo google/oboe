@@ -22,8 +22,7 @@
 using namespace flowgraph;
 
 ClipToRange::ClipToRange(int32_t channelCount)
-        : input(*this, channelCount)
-        , output(*this, channelCount) {
+        : AudioFilter(channelCount) {
 }
 
 int32_t ClipToRange::onProcess(int32_t numFrames) {

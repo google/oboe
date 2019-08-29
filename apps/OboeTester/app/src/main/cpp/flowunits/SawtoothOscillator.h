@@ -30,7 +30,7 @@ class SawtoothOscillator : public OscillatorBase {
 public:
     SawtoothOscillator();
 
-    int32_t onProcess(int numFrames) override;
+    int32_t onProcess(int32_t numFrames) override;
 };
 
 #endif //FLOWGRAPH_SAWTOOTH_OSCILLATOR_H

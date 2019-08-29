@@ -29,7 +29,7 @@ using namespace flowgraph;
 constexpr int kBytesPerI24Packed = 3;
 
 SourceI24::SourceI24(int32_t channelCount)
-        : AudioSource(channelCount) {
+        : AudioSourceBuffered(channelCount) {
 }
 
 int32_t SourceI24::onProcess(int32_t numFrames) {

@@ -27,7 +27,7 @@ SineOscillator::SineOscillator()
         : OscillatorBase() {
 }
 
-int32_t SineOscillator::onProcess(int numFrames) {
+int32_t SineOscillator::onProcess(int32_t numFrames) {
     const float *frequencies = frequency.getBuffer();
     const float *amplitudes = amplitude.getBuffer();
     float *buffer = output.getBuffer();

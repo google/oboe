@@ -34,6 +34,9 @@ public:
 
     int32_t read(int64_t framePosition, void *data, int32_t numFrames) override;
 
+    const char *getName() override {
+        return "SinkFloat";
+    }
 };
 
 } /* namespace flowgraph */

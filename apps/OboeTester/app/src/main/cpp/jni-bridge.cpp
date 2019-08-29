@@ -45,6 +45,9 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jint deviceId,
                                                        jint sessionId,
                                                        jint framesPerBurst,
+                                                       jboolean channelConversionAllowed,
+                                                       jboolean formatConversionAllowed,
+                                                       jint rateConversionQuality,
                                                        jboolean isInput);
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_close(JNIEnv *env, jobject, jint);
@@ -94,6 +97,9 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         jint deviceId,
         jint sessionId,
         jint framesPerBurst,
+        jboolean channelConversionAllowed,
+        jboolean formatConversionAllowed,
+        jint rateConversionQuality,
         jboolean isInput) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d, framesPerBurst = %d", sampleRate, framesPerBurst);
 
@@ -106,6 +112,9 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
                               deviceId,
                               sessionId,
                               framesPerBurst,
+                              channelConversionAllowed,
+                              formatConversionAllowed,
+                              rateConversionQuality,
                               isInput);
 }
 
@@ -362,7 +371,7 @@ Java_com_google_sample_oboe_manualtest_AudioInputTester_getPeakLevel(JNIEnv *env
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *env, jclass type,
                                                                       jboolean useCallback) {
-    ActivityContext::useCallback = useCallback;
+    ActivityContext::mUseCallback = useCallback;
 }
 
 JNIEXPORT void JNICALL
@@ -407,6 +416,12 @@ JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
         JNIEnv *env, jobject, jint channelIndex, jboolean enabled) {
     engine.getCurrentActivity()->setChannelEnabled(channelIndex, enabled);
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setSignalType(
+        JNIEnv *env, jobject, jint signalType) {
+    engine.getCurrentActivity()->setSignalType(signalType);
 }
 
 // ==========================================================================

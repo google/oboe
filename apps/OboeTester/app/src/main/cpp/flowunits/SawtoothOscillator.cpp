@@ -23,7 +23,7 @@ SawtoothOscillator::SawtoothOscillator()
         : OscillatorBase() {
 }
 
-int32_t SawtoothOscillator::onProcess(int numFrames) {
+int32_t SawtoothOscillator::onProcess(int32_t numFrames) {
     const float *frequencies = frequency.getBuffer();
     const float *amplitudes = amplitude.getBuffer();
     float *buffer = output.getBuffer();

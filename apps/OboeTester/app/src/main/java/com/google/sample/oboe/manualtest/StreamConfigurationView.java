@@ -19,7 +19,6 @@ package com.google.sample.oboe.manualtest;
 import android.content.Context;
 import android.media.AudioManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,7 +30,6 @@ import android.widget.LinearLayout;
 
 import com.google.sample.audio_device.AudioDeviceListEntry;
 import com.google.sample.audio_device.AudioDeviceSpinner;
-import com.google.sample.oboe.manualtest.R;
 
 /**
  * View for Editing a requested StreamConfiguration
@@ -50,13 +48,16 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualPerformanceView;
     private Spinner  mPerformanceSpinner;
     private CheckBox mRequestedExclusiveView;
+    private CheckBox mChannelConversionBox;
+    private CheckBox mFormatConversionBox;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
+    private Spinner  mRateConversionQualitySpinner;
     private TextView mActualSampleRateView;
-    private TableLayout mOptionTable;
+    private LinearLayout mHideableView;
 
     private AudioDeviceSpinner mDeviceSpinner;
     private TextView mActualSessionIdView;
@@ -71,7 +72,7 @@ public class StreamConfigurationView extends LinearLayout {
     // Create an anonymous implementation of OnClickListener
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
         public void onClick(View v) {
-            if (mOptionTable.isShown()) {
+            if (mHideableView.isShown()) {
                 hideSettingsView();
             } else {
                 showSettingsView();
@@ -80,7 +81,7 @@ public class StreamConfigurationView extends LinearLayout {
     };
 
     private void updateSettingsViewText() {
-        if (mOptionTable.isShown()) {
+        if (mHideableView.isShown()) {
             mOptionExpander.setText(mHideSettingsText);
         } else {
             mOptionExpander.setText(mShowSettingsText);
@@ -88,7 +89,7 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void showSettingsView() {
-        mOptionTable.setVisibility(View.VISIBLE);
+        mHideableView.setVisibility(View.VISIBLE);
         updateSettingsViewText();
     }
 
@@ -99,7 +100,7 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void hideSettingsView() {
-        mOptionTable.setVisibility(View.GONE);
+        mHideableView.setVisibility(View.GONE);
         updateSettingsViewText();
     }
 
@@ -134,7 +135,7 @@ public class StreamConfigurationView extends LinearLayout {
         mHideSettingsText = getResources().getString(R.string.hint_hide_settings);
         mShowSettingsText = getResources().getString(R.string.hint_show_settings);
 
-        mOptionTable = (TableLayout) findViewById(R.id.optionTable);
+        mHideableView = (LinearLayout) findViewById(R.id.hideableView);
 
         mOptionExpander = (TextView) findViewById(R.id.toggle_stream_config);
         mOptionExpander.setOnClickListener(mToggleListener);
@@ -144,6 +145,22 @@ public class StreamConfigurationView extends LinearLayout {
         mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
 
         mActualNativeApiView = (TextView) findViewById(R.id.actualNativeApi);
+
+        mChannelConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
+        mChannelConversionBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestedConfiguration.setChannelConversionAllowed(mChannelConversionBox.isChecked());
+            }
+        });
+
+        mFormatConversionBox = (CheckBox) findViewById(R.id.checkFormatConversion);
+        mFormatConversionBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestedConfiguration.setFormatConversionAllowed(mFormatConversionBox.isChecked());
+            }
+        });
 
         mActualExclusiveView = (TextView) findViewById(R.id.actualExclusiveMode);
         mRequestedExclusiveView = (CheckBox) findViewById(R.id.requestedExclusiveMode);
@@ -178,6 +195,9 @@ public class StreamConfigurationView extends LinearLayout {
         mActualFormatView = (TextView) findViewById(R.id.actualAudioFormat);
         mFormatSpinner = (Spinner) findViewById(R.id.spinnerFormat);
         mFormatSpinner.setOnItemSelectedListener(new FormatSpinnerListener());
+
+        mRateConversionQualitySpinner = (Spinner) findViewById(R.id.spinnerSRCQuality);
+        mRateConversionQualitySpinner.setOnItemSelectedListener(new RateConversionQualitySpinnerListener());
 
         mActualPerformanceView = (TextView) findViewById(R.id.actualPerformanceMode);
         mPerformanceSpinner = (Spinner) findViewById(R.id.spinnerPerformanceMode);
@@ -285,6 +305,20 @@ public class StreamConfigurationView extends LinearLayout {
         }
     }
 
+    private class RateConversionQualitySpinnerListener
+            implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            // Menu position matches actual enum value!
+            mRequestedConfiguration.setRateConversionQuality(pos);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mRequestedConfiguration.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_HIGH);
+        }
+    }
+
     public void setChildrenEnabled(boolean enabled) {
         mNativeApiSpinner.setEnabled(enabled);
         mPerformanceSpinner.setEnabled(enabled);
@@ -324,7 +358,7 @@ public class StreamConfigurationView extends LinearLayout {
                 + ", " + (mActualConfiguration.isMMap() ? "MMAP" : "Legacy")
         );
 
-        mOptionTable.requestLayout();
+        mHideableView.requestLayout();
     }
 
     // This must be called on the UI thread.
@@ -335,8 +369,15 @@ public class StreamConfigurationView extends LinearLayout {
     protected StreamConfiguration getRequestedConfiguration() {
         return mRequestedConfiguration;
     }
+
     public void setRequestedConfiguration(StreamConfiguration configuration) {
         mRequestedConfiguration = configuration;
+        if (configuration != null) {
+            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
+            mChannelConversionBox.setChecked(configuration.getChannelConversionAllowed());
+            mFormatConversionBox.setChecked(configuration.getFormatConversionAllowed());
+            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
+        }
     }
 
     protected StreamConfiguration getActualConfiguration() {

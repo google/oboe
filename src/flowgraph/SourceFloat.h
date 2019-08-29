@@ -27,11 +27,15 @@ namespace flowgraph {
 /**
  * AudioSource that reads a block of pre-defined float data.
  */
-class SourceFloat : public AudioSource {
+class SourceFloat : public AudioSourceBuffered {
 public:
     explicit SourceFloat(int32_t channelCount);
 
     int32_t onProcess(int32_t numFrames) override;
+
+    const char *getName() override {
+        return "SourceFloat";
+    }
 };
 
 } /* namespace flowgraph */

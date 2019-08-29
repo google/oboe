@@ -19,7 +19,9 @@ package com.google.sample.oboe.manualtest;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 
 /**
  * Base class for output test activities
@@ -28,6 +30,19 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public static final int MAX_CHANNEL_BOXES = 8;
     private CheckBox[] mChannelBoxes;
+    private Spinner mNativeApiSpinner;
+
+    private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            mAudioOutTester.setSignalType(pos);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mAudioOutTester.setSignalType(0);
+        }
+    }
 
     @Override
     protected void inflateActivity() {
@@ -53,6 +68,11 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox6);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox7);
         configureChannelBoxes(0);
+
+
+        mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
+        mNativeApiSpinner.setOnItemSelectedListener(new NativeApiSpinnerListener());
+        mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
     }
 
     @Override

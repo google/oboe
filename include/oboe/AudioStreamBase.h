@@ -125,6 +125,27 @@ public:
      */
     SessionId getSessionId() const { return mSessionId; }
 
+    /**
+     * @return true if Oboe can convert channel counts to achieve optimal results.
+     */
+    bool isChannelConversionAllowed() const {
+        return mChannelConversionAllowed;
+    }
+
+    /**
+     * @return true if  Oboe can convert data formats to achieve optimal results.
+     */
+    bool  isFormatConversionAllowed() const {
+        return mFormatConversionAllowed;
+    }
+
+    /**
+     * @return whether and how Oboe can convert sample rates to achieve optimal results.
+     */
+    SampleRateConversionQuality getSampleRateConversionQuality() const {
+        return mSampleRateConversionQuality;
+    }
+
 protected:
 
     /** The callback which will be fired when new data is ready to be read/written **/
@@ -166,6 +187,13 @@ protected:
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
+
+    // Control whether Oboe can convert channel counts to achieve optimal results.
+    bool                            mChannelConversionAllowed = false;
+    // Control whether Oboe can convert data formats to achieve optimal results.
+    bool                            mFormatConversionAllowed = false;
+    // Control whether and how Oboe can convert sample rates to achieve optimal results.
+    SampleRateConversionQuality     mSampleRateConversionQuality = SampleRateConversionQuality::None;
 };
 
 } // namespace oboe

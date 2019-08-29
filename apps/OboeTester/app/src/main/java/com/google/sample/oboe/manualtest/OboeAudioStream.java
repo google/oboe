@@ -65,7 +65,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getDeviceId(),
                 requestedConfiguration.getSessionId(),
                 requestedConfiguration.getFramesPerBurst(),
-                isInput());
+                requestedConfiguration.getChannelConversionAllowed(),
+                requestedConfiguration.getFormatConversionAllowed(),
+                requestedConfiguration.getRateConversionQuality(),
+                isInput()
+        );
         if (result < 0) {
             streamIndex = INVALID_STREAM_INDEX;
             throw new IOException("Open failed! result = " + result);
@@ -92,12 +96,16 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int nativeApi,
             int sampleRate,
             int channelCount,
+            int format,
             int sharingMode,
             int performanceMode,
             int deviceId,
             int sessionId,
             int framesPerRead,
-            int perRead, boolean isInput);
+            boolean channelConversionAllowed,
+            boolean formatConversionAllowed,
+            int rateConversionQuality,
+            boolean isInput);
 
     @Override
     public void close() {
