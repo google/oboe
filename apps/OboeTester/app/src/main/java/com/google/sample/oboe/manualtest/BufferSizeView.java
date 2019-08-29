@@ -92,24 +92,25 @@ public class BufferSizeView extends LinearLayout {
         mTextThreshold = (TextView) findViewById(R.id.textThreshold);
         mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
         mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
-        mTaperThreshold = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 1.0, 10.0);
+        mTaperThreshold = new ExponentialTaper(0.0, 1.0, 10.0);
         mFaderThreshold.setProgress(FADER_THRESHOLD_MAX);
     }
 
     private void setBufferSizeByPosition(int progress) {
         StringBuffer message = new StringBuffer();
-        double normalizedThreshold = mTaperThreshold.linearToExponential(progress);
+        double normalizedThreshold = mTaperThreshold.linearToExponential(
+                ((double)progress)/FADER_THRESHOLD_MAX);
         if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
         else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
         message.append("bufferSize = ");
-        if (mAudioOutTester != null) {
+        if (getAudioOutTester() != null) {
             int percent = (int) (normalizedThreshold * 100);
             message.append(percent + "%");
-            int requested = mAudioOutTester.setNormalizedThreshold(normalizedThreshold);
+            int requested = getAudioOutTester().setNormalizedThreshold(normalizedThreshold);
             if (requested > 0) {
                 message.append(" = " + requested);
-                int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
-                int bufferCapacity = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
+                int bufferSize = getAudioOutTester().getCurrentAudioStream().getBufferSizeInFrames();
+                int bufferCapacity = getAudioOutTester().getCurrentAudioStream().getBufferCapacityInFrames();
                 if (bufferSize >= 0) {
                     message.append(" / " + bufferSize + " / " + bufferCapacity);
                 }

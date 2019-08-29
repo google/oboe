@@ -81,7 +81,10 @@ public:
                                        int64_t *framePosition,
                                        int64_t *timeNanoseconds) override;
 
-    StreamState getState() override;
+
+    ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId) override;
+
+    StreamState getState() const override;
 
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
@@ -91,14 +94,16 @@ public:
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    void onErrorInThread(AAudioStream *stream, Result error);
-
+protected:
+    static void internalErrorCallback(
+            AAudioStream *stream,
+            void *userData,
+            aaudio_result_t error);
 
     void *getUnderlyingStream() const override {
         return mAAudioStream.load();
     }
 
-protected:
     void updateFramesRead() override;
     void updateFramesWritten() override;
 

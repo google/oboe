@@ -36,58 +36,56 @@ class FifoControllerBase {
 
 public:
     /**
-     * Constructor for FifoControllerBase
-     * @param numFrames Size of the circular buffer in frames. Must be a power of 2.
+     * @param totalFrames capacity of the circular buffer in frames.
      */
-    FifoControllerBase(uint32_t totalFrames, uint32_t threshold);
+    FifoControllerBase(uint32_t totalFrames);
 
-    virtual ~FifoControllerBase();
+    virtual ~FifoControllerBase() = default;
 
     /**
-     * This may be negative if an unthrottled reader has read beyond the available data.
-     * @return number of valid frames available to read. Never read more than this.
+     * The frames available to read will be calculated from the read and write counters.
+     * The result will be clipped to the capacity of the buffer.
+     * If the buffer has underflowed then this will return zero.
+     * @return number of valid frames available to read.
      */
-    int32_t getFullFramesAvailable();
+    uint32_t getFullFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to read.
      */
-    uint32_t getReadIndex();
+    uint32_t getReadIndex() const;
 
     /**
      * @param numFrames number of frames to advance the read index
      */
-    void advanceReadIndex(int numFrames);
+    void advanceReadIndex(uint32_t numFrames);
 
     /**
-     * @return number of frames that can be written. Never write more than this.
+     * @return maximum number of frames that can be written without exceeding the threshold.
      */
-    int32_t getEmptyFramesAvailable();
+    uint32_t getEmptyFramesAvailable() const;
 
     /**
      * The index in a circular buffer of the next frame to write.
      */
-    uint32_t getWriteIndex();
+    uint32_t getWriteIndex() const;
 
     /**
      * @param numFrames number of frames to advance the write index
      */
     void advanceWriteIndex(uint32_t numFrames);
 
-    void setThreshold(uint32_t threshold);
-
-    uint32_t getThreshold() const { return mThreshold; }
-
     uint32_t getFrameCapacity() const { return mTotalFrames; }
 
-    virtual uint64_t getReadCounter() = 0;
+    virtual uint64_t getReadCounter() const = 0;
     virtual void setReadCounter(uint64_t n) = 0;
-    virtual uint64_t getWriteCounter() = 0;
+    virtual void incrementReadCounter(uint64_t n) = 0;
+    virtual uint64_t getWriteCounter() const = 0;
     virtual void setWriteCounter(uint64_t n) = 0;
+    virtual void incrementWriteCounter(uint64_t n) = 0;
 
 private:
     uint32_t mTotalFrames;
-    uint32_t mThreshold;
 };
 
 } // namespace oboe

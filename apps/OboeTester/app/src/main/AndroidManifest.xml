@@ -28,6 +28,7 @@
 
         <activity
             android:name="com.google.sample.oboe.manualtest.MainActivity"
+            android:launchMode="singleTask"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>

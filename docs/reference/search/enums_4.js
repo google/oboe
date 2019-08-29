@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['performancemode',['PerformanceMode',['../namespaceoboe.html#acd0e87a1512eca01c60eb3b7a6676fde',1,'oboe']]]
+  ['performancemode',['PerformanceMode',['../namespaceoboe.html#a1068781f3920654b1bfd7ed136468184',1,'oboe']]]
 ];

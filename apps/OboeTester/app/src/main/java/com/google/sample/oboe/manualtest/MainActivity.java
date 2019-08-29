@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -40,10 +41,14 @@ public class MainActivity extends Activity {
         System.loadLibrary("oboetester");
     }
 
+    private static final String KEY_TEST_NAME = "test";
+
     private Spinner mModeSpinner;
     private TextView mCallbackSizeTextView;
     protected TextView mDeviceView;
     private TextView mVersionTextView;
+    private TextView mBuildTextView;
+    private Bundle mBundleFromIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,43 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
+
+        mBuildTextView = (TextView) findViewById(R.id.text_build_info);
+        mBuildTextView.setText(Build.DISPLAY);
+
+        saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        saveIntentBundleForLaterProcessing(intent);
+    }
+
+    // This will get processed during onResume.
+    private void saveIntentBundleForLaterProcessing(Intent intent) {
+        mBundleFromIntent = intent.getExtras();
+    }
+
+    private void processBundleFromIntent() {
+        if (mBundleFromIntent == null) {
+            return;
+        }
+
+        if (mBundleFromIntent.containsKey(KEY_TEST_NAME)) {
+            String testName = mBundleFromIntent.getString(KEY_TEST_NAME);
+            if ("latency".equals(testName)) {
+                Intent intent = new Intent(this, RoundTripLatencyActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
+            }
+        }
+        mBundleFromIntent = null;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        processBundleFromIntent();
     }
 
     private void updateNativeAudioUI() {

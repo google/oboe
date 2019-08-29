@@ -17,6 +17,9 @@ package com.example.oboe.megadrone;
  */
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +28,13 @@ import android.view.MotionEvent;
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = MainActivity.class.toString();
+    private static long mEngineHandle = 0;
+
+    private native long startEngine(int[] cpuIds);
+    private native void stopEngine(long engineHandle);
+    private native void tap(long engineHandle, boolean isDown);
+
+    private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -35,32 +45,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setDefaultStreamValues(this);
     }
 
-    protected void onStart(){
-        super.onStart();
-        startEngine(getExclusiveCores());
+    @Override
+    protected void onResume(){
+        mEngineHandle = startEngine(getExclusiveCores());
+        super.onResume();
     }
 
-    protected void onStop(){
-        super.onStop();
-        stopEngine();
+    @Override
+    protected void onPause(){
+        stopEngine(mEngineHandle);
+        super.onPause();
     }
-
-    private native void stopEngine();
-
-    private native void startEngine(int[] cpuIds);
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         if (event.getAction() == MotionEvent.ACTION_DOWN){
-            tap(true);
+            tap(mEngineHandle, true);
         } else if (event.getAction() == MotionEvent.ACTION_UP){
-            tap(false);
+            tap(mEngineHandle, false);
         }
-
-
         return super.onTouchEvent(event);
     }
 
@@ -68,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     // bound to these cores to avoids the risk of it being migrated to slower or more contended
     // core(s).
     private int[] getExclusiveCores(){
-        int exclusiveCores[] = {};
+        int[] exclusiveCores = {};
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.w(TAG, "getExclusiveCores() not supported. Only available on API " +
@@ -83,9 +90,17 @@ public class MainActivity extends AppCompatActivity {
         return exclusiveCores;
     }
 
-    private native void tap(boolean b);
+    static void setDefaultStreamValues(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            AudioManager myAudioMgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+            int defaultSampleRate = Integer.parseInt(sampleRateStr);
+            String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+            int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
 
-
+            native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
+        }
+    }
 }
 
 

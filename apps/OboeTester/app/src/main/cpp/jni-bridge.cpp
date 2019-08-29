@@ -459,7 +459,7 @@ Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgr
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getProgress();
 }
 
-JNIEXPORT jdouble JNICALL
+JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredLatency(JNIEnv *env,
                                                                                    jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredLatency();
@@ -469,6 +469,24 @@ JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfidence(JNIEnv *env,
                                                                                       jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredConfidence();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getBackgroundRMS(JNIEnv *env,
+                                                                                 jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getBackgroundRMS();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getSignalRMS(JNIEnv *env,
+                                                                                 jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getSignalRMS();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
+                                                                          jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
 }
 
 // ==========================================================================
@@ -482,12 +500,6 @@ JNIEXPORT jboolean JNICALL
 Java_com_google_sample_oboe_manualtest_AnalyzerActivity_isAnalyzerDone(JNIEnv *env,
                                                                        jobject instance) {
     return ((ActivityFullDuplex *)engine.getCurrentActivity())->isAnalyzerDone();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
-                                                                          jobject instance) {
-    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
 }
 
 JNIEXPORT jint JNICALL

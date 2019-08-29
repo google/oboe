@@ -19,28 +19,30 @@ cmake_minimum_required(VERSION 3.4.1)
 ### INCLUDE OBOE LIBRARY ###
 
 # Set the path to the Oboe library directory
-set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set (OBOE_DIR ../../../../../)
 
 # Add the Oboe library as a subproject. Since Oboe is an out-of-tree source library we must also
 # specify a binary directory
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
 # Include the Oboe headers and shared sample code
-include_directories(${OBOE_DIR}/include ${OBOE_DIR}/samples)
-
-### END OBOE INCLUDE SECTION ###
+include_directories(${OBOE_DIR}/include ${OBOE_DIR}/samples/shared)
 
 # Debug utilities
-set (DEBUG_UTILS_PATH "../debug-utils")
+set (DEBUG_UTILS_PATH "${OBOE_DIR}/samples/debug-utils")
 set (DEBUG_UTILS_SOURCES ${DEBUG_UTILS_PATH}/trace.cpp)
 include_directories(${DEBUG_UTILS_PATH})
 
+
+### END OBOE INCLUDE SECTION ###
+
+
 # App specific sources
-set (APP_DIR src/main/cpp)
-file (GLOB_RECURSE APP_SOURCES
-    ${APP_DIR}/jni_bridge.cpp
-    ${APP_DIR}/PlayAudioEngine.cpp
-    ${APP_DIR}/SoundGenerator.cpp
+set (APP_SOURCES
+    jni_bridge.cpp
+    HelloOboeEngine.cpp
+    SoundGenerator.cpp
+    LatencyTuningCallback.cpp
 )
 
 # Build the libhello-oboe library

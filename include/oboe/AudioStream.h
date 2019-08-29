@@ -63,7 +63,9 @@ public:
      *
      * @return
      */
-    virtual Result open();
+    virtual Result open() {
+        return Result::OK; // Called by subclasses. Might do more in the future.
+    }
 
     /**
      * Close the stream and deallocate any resources from the open() call.
@@ -127,7 +129,7 @@ public:
      *
      * @return state or a negative error.
      */
-    virtual StreamState getState() = 0;
+    virtual StreamState getState() const = 0;
 
     /**
      * Wait until the stream's current state no longer matches the input state.
@@ -172,7 +174,7 @@ public:
     * @return the resulting buffer size in frames (obtained using value()) or an error (obtained
     * using error())
     */
-    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) {
+    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t /* requestedFrames  */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -275,13 +277,15 @@ public:
      * The time is based on the implementation's best effort, using whatever knowledge is available
      * to the system, but cannot account for any delay unknown to the implementation.
      *
+     * @deprecated since 1.0, use AudioStream::getTimestamp(clockid_t clockId) instead, which
+     * returns ResultWithValue
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @param framePosition the frame number to query
      * @param timeNanoseconds an output parameter which will contain the presentation timestamp
      */
-    virtual Result getTimestamp(clockid_t clockId,
-                                int64_t *framePosition,
-                                int64_t *timeNanoseconds) {
+    virtual Result getTimestamp(clockid_t /* clockId  */,
+                                int64_t* /* framePosition */,
+                                int64_t* /* timeNanoseconds */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -300,7 +304,9 @@ public:
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
      */
-	ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId);
+	  virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t /* clockId */){
+        return Result::ErrorUnimplemented;
+    }
 
     // ============== I/O ===========================
     /**
@@ -315,9 +321,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually written, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> write(const void *buffer,
-                             int32_t numFrames,
-                             int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> write(const void* /* buffer */,
+                             int32_t /* numFrames */,
+                             int64_t /* timeoutNanoseconds */ ) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -333,9 +339,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually read, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> read(void *buffer,
-                            int32_t numFrames,
-                            int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> read(void* /* buffer */,
+                            int32_t /* numFrames */,
+                            int64_t /* timeoutNanoseconds */) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -400,6 +406,19 @@ public:
 protected:
 
     /**
+     * This is used to detect more than one error callback from a stream.
+     * These were bugs in some versions of Android that caused multiple error callbacks.
+     * Internal bug b/63087953
+     *
+     * Calling this sets an atomic<bool> true and returns the previous value.
+     *
+     * @return false on first call, true on subsequent calls
+     */
+    bool wasErrorCallbackCalled() {
+        return mErrorCallbackCalled.exchange(true);
+    }
+
+    /**
      * Wait for a transition from one state to another.
      * @return OK if the endingState was observed, or ErrorUnexpectedState
      *   if any state that was not the startingState or endingState was observed
@@ -416,7 +435,7 @@ protected:
      * @param numFrames
      * @return result
      */
-    virtual DataCallbackResult onDefaultCallback(void *audioData, int numFrames) {
+    virtual DataCallbackResult onDefaultCallback(void* /* audioData  */, int /* numFrames */) {
         return DataCallbackResult::Stop;
     }
 
@@ -466,11 +485,24 @@ protected:
 private:
     int                  mPreviousScheduler = -1;
 
-    std::atomic<bool>    mDataCallbackEnabled{};
+    std::atomic<bool>    mDataCallbackEnabled{false};
+    std::atomic<bool>    mErrorCallbackCalled{false};
 
 
 };
 
+/**
+ * This struct is a stateless functor which closes a audiostream prior to its deletion.
+ * This means it can be used to safely delete a smart pointer referring to an open stream.
+ */
+    struct StreamDeleterFunctor {
+        void operator()(AudioStream  *audioStream) {
+            if (audioStream) {
+                audioStream->close();
+            }
+            delete audioStream;
+        }
+    };
 } // namespace oboe
 
 #endif /* OBOE_STREAM_H_ */

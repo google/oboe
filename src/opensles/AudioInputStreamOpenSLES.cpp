@@ -58,7 +58,7 @@ AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 }
 
 // Calculate masks specific to INPUT streams.
-SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) const {
     // Derived from internal sles_channel_in_mask_from_count(chanCount);
     // in "frameworks/wilhelm/src/android/channels.cpp".
     // Yes, it seems strange to use SPEAKER constants to describe inputs.
@@ -92,7 +92,7 @@ Result AudioInputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult) return oboeResult;
 
-    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
+    SLuint32 bitsPerSample = static_cast<SLuint32>(getBytesPerSample() * kBitsPerByte);
 
     // configure audio sink
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -216,7 +216,7 @@ Result AudioInputStreamOpenSLES::close() {
         requestStop();
         mLock.lock();
         // invalidate any interfaces
-        mRecordInterface = NULL;
+        mRecordInterface = nullptr;
         result = AudioStreamOpenSLES::close();
     }
     mLock.unlock(); // avoid recursive lock
@@ -324,7 +324,7 @@ Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
     // and this is being called from a callback.
     if (mLock.try_lock()) {
 
-        if (mRecordInterface == NULL) {
+        if (mRecordInterface == nullptr) {
             mLock.unlock();
             return Result::ErrorNull;
         }

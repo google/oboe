@@ -62,8 +62,11 @@ bool AudioStreamBuilder::isAAudioRecommended() {
 
 AudioStream *AudioStreamBuilder::build() {
     AudioStream *stream = nullptr;
-    if (willUseAAudio()) {
+    if (isAAudioRecommended() && mAudioApi != AudioApi::OpenSLES) {
         stream = new AudioStreamAAudio(*this);
+    } else if (isAAudioSupported() && mAudioApi == AudioApi::AAudio) {
+        stream = new AudioStreamAAudio(*this);
+        LOGE("Creating AAudio stream on 8.0 because it was specified. This is error prone.");
     } else {
         if (getDirection() == oboe::Direction::Output) {
             stream = new AudioOutputStreamOpenSLES(*this);
@@ -161,6 +164,14 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     } else {
         delete streamP;
     }
+    return result;
+}
+
+Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
+    stream.reset();
+    AudioStream *streamptr;
+    auto result = openStream(&streamptr);
+    stream.reset(streamptr);
     return result;
 }
 

@@ -64,7 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onLaunchManualGlitchTest"
-        android:text="Manual Glitch Test" />
+        android:text="Glitch Test" />
 
     <Button
         android:id="@+id/button_auto_glitches"
@@ -139,5 +139,12 @@
         android:layout_height="wrap_content"
         android:lines="1"
         android:text="@string/init_device" />
+
+    <TextView
+        android:id="@+id/text_build_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="V?" />
 
 </LinearLayout>

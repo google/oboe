@@ -8,6 +8,7 @@ REPO_ROOT_DIR=.
 
 declare projects=(
     samples
+    apps/OboeTester
 )
 
 for d in "${projects[@]}"; do
@@ -18,11 +19,12 @@ done
 
 
 # Check the apks that all get built fine (RhythmGame uses split APKs so we have to specify each one)
-declare apks=(
+declare bundles=(
     samples/hello-oboe/build/outputs/bundle/debug/hello-oboe.aab
     samples/MegaDrone/build/outputs/bundle/debug/MegaDrone.aab
     samples/RhythmGame/build/outputs/bundle/ndkExtractorDebug/RhythmGame.aab
     samples/LiveEffect/build/outputs/bundle/debug/LiveEffect.aab
+    apps/OboeTester/app/build/outputs/bundle/debug/app.aab
 )
 
 rm -fr ${BUILD_RESULT_FILE}

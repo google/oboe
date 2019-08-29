@@ -66,9 +66,6 @@ AudioOutputStreamOpenSLES::AudioOutputStreamOpenSLES(const AudioStreamBuilder &b
         : AudioStreamOpenSLES(builder) {
 }
 
-AudioOutputStreamOpenSLES::~AudioOutputStreamOpenSLES() {
-}
-
 // These will wind up in <SLES/OpenSLES_Android.h>
 constexpr int SL_ANDROID_SPEAKER_STEREO = (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT);
 
@@ -81,7 +78,7 @@ constexpr int SL_ANDROID_SPEAKER_5DOT1 = (SL_ANDROID_SPEAKER_QUAD
 constexpr int SL_ANDROID_SPEAKER_7DOT1 = (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT
         | SL_SPEAKER_SIDE_RIGHT);
 
-SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) const {
     SLuint32 channelMask = 0;
 
     switch (channelCount) {
@@ -138,7 +135,7 @@ Result AudioOutputStreamOpenSLES::open() {
         return Result::ErrorInternal;
     }
 
-    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
+    SLuint32 bitsPerSample = static_cast<SLuint32>(getBytesPerSample() * kBitsPerByte);
 
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -196,7 +193,7 @@ Result AudioOutputStreamOpenSLES::open() {
         result = (*configItf)->SetConfiguration(configItf,
                                                 SL_ANDROID_KEY_STREAM_TYPE,
                                                 &presetValue,
-                                                sizeof(SLuint32));
+                                                sizeof(presetValue));
         if (SL_RESULT_SUCCESS != result) {
             goto error;
         }
@@ -247,7 +244,7 @@ Result AudioOutputStreamOpenSLES::close() {
         requestPause();
         mLock.lock();
         // invalidate any interfaces
-        mPlayInterface = NULL;
+        mPlayInterface = nullptr;
         result = AudioStreamOpenSLES::close();
     }
     mLock.unlock(); // avoid recursive lock
@@ -350,9 +347,12 @@ Result AudioOutputStreamOpenSLES::requestFlush() {
 
 Result AudioOutputStreamOpenSLES::requestFlush_l() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
-    if (getState() == StreamState::Closed) return Result::ErrorClosed;
+    if (getState() == StreamState::Closed) {
+        return Result::ErrorClosed;
+    }
+
     Result result = Result::OK;
-    if (mPlayInterface == NULL || mSimpleBufferQueueInterface == NULL) {
+    if (mPlayInterface == nullptr || mSimpleBufferQueueInterface == nullptr) {
         result = Result::ErrorInvalidState;
     } else {
         SLresult slResult = (*mSimpleBufferQueueInterface)->Clear(mSimpleBufferQueueInterface);
@@ -423,7 +423,7 @@ Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
     // and this is being called from a callback.
     if (mLock.try_lock()) {
 
-        if (mPlayInterface == NULL) {
+        if (mPlayInterface == nullptr) {
             mLock.unlock();
             return Result::ErrorNull;
         }

@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-#include <memory>
 #include "SoundGenerator.h"
 
-SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t maxFrames, int32_t channelCount)
-        : mSampleRate(sampleRate)
-        , mChannelCount(channelCount)
-        , mOscillators(std::make_unique<Oscillator[]>(channelCount))
-        , mBuffer(std::make_unique<float[]>(maxFrames)){
+SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t channelCount) :
+        TappableAudioSource(sampleRate, channelCount)
+        , mOscillators(std::make_unique<Oscillator[]>(channelCount)){
 
     double frequency = 440.0;
     constexpr double interval = 110.0;
@@ -37,18 +34,17 @@ SoundGenerator::SoundGenerator(int32_t sampleRate, int32_t maxFrames, int32_t ch
 }
 
 void SoundGenerator::renderAudio(float *audioData, int32_t numFrames) {
-
     // Render each oscillator into its own channel
+    std::fill_n(mBuffer.get(), kSharedBufferSize, 0);
     for (int i = 0; i < mChannelCount; ++i) {
-
         mOscillators[i].renderAudio(mBuffer.get(), numFrames);
         for (int j = 0; j < numFrames; ++j) {
-            audioData[(j*mChannelCount)+i] = mBuffer[j];
+            audioData[(j * mChannelCount) + i] = mBuffer[j];
         }
     }
 }
 
-void SoundGenerator::setTonesOn(bool isOn) {
+void SoundGenerator::tap(bool isOn) {
     for (int i = 0; i < mChannelCount; ++i) {
         mOscillators[i].setWaveOn(isOn);
     }

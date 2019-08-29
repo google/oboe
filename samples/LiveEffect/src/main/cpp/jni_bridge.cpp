@@ -121,4 +121,13 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_isAAudioSupported(
     return static_cast<jboolean>(engine->isAAudioSupported() ? JNI_TRUE
                                                              : JNI_FALSE);
 }
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_native_1setDefaultStreamValues(JNIEnv *env,
+                                                                            jclass type,
+                                                                            jint sampleRate,
+                                                                            jint framesPerBurst) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
+} // extern "C"

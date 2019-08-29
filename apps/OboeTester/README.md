@@ -1,22 +1,6 @@
 # Oboe Tester
 
-Test Oboe using an Interactive App.
+OboeTester is an app that can be used to test many of the features of Oboe, AAudio and OpenSL ES.
+It can al;so be used to measure device latency and glitches.
 
-Download the top level oboe repository from GitHub
-Then use Android Studio (3.3 or above) to build the app in this folder.
-
-## Test Output
-
-Test opening, starting, stopping and closing a stream.
-
-## Test Input
-
-Test input streams. Displays current volume
-
-## Tap to Tone Latency
-
-Measure touch screen latency plus audio output latency.
-
-## Record and Playback
-
-Record 10 seconds of audio and play it back.
+# [OboeTester Documentation](docs)

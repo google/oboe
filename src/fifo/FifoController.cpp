@@ -21,15 +21,11 @@
 
 namespace oboe {
 
-FifoController::FifoController(uint32_t numFrames, uint32_t threshold)
-        : FifoControllerBase(numFrames, threshold)
+FifoController::FifoController(uint32_t numFrames)
+        : FifoControllerBase(numFrames)
 {
     setReadCounter(0);
     setWriteCounter(0);
 }
 
-FifoController::~FifoController() {
-}
-
 } // namespace oboe
-

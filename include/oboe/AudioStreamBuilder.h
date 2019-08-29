@@ -22,6 +22,9 @@
 
 namespace oboe {
 
+    // This depends on AudioStream, so we use forward declaration, it will close and delete the stream
+    struct StreamDeleterFunctor;
+    using ManagedStream = std::unique_ptr<AudioStream, StreamDeleterFunctor>;
 /**
  * Factory class for an audio Stream.
  */
@@ -131,6 +134,10 @@ public:
     /**
      * If you leave this unspecified then Oboe will choose the best API
      * for the device and SDK version at runtime.
+     *
+     * This should almost always be left unspecified, except for debugging purposes.
+     * Specifying AAudio will force Oboe to use AAudio on 8.0, which is extremely risky.
+     * Specifying OpenSLES should mainly be used to test legacy performance/functionality.
      *
      * If the caller requests AAudio and it is supported then AAudio will be used.
      *
@@ -272,10 +279,16 @@ public:
     }
 
     /**
-     * Request an audio device identified device using an ID.
-     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * Request a stream to a specific audio input/output device given an audio device ID.
      *
-     * By default, the primary device will be used.
+     * In most cases, the primary device will be the appropriate device to use, and the
+     * deviceId can be left kUnspecified.
+     *
+     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * AudioManager.getDevices() returns an array of AudioDeviceInfo[], which contains
+     * a getId() method (as well as other type information), that should be passed
+     * to this method.
+     *
      *
      * Note that when using OpenSL ES, this will be ignored and the created
      * stream will have deviceId kUnspecified.
@@ -373,6 +386,18 @@ public:
      * @return OBOE_OK if successful or a negative error code
      */
     Result openStream(AudioStream **stream);
+
+
+    /**
+     * Create and open a ManagedStream object based on the current builder state.
+     *
+     * The caller must create a unique ptr, and pass by reference so it can be
+     * modified to point to an opened stream. The caller owns the unique ptr,
+     * and it will be automatically closed and deleted when going out of scope.
+     * @param stream Reference to the ManagedStream (uniqueptr) used to keep track of stream
+     * @return OBOE_OK if successful or a negative error code.
+     */
+    Result openManagedStream(ManagedStream &stream);
 
 private:
 

@@ -396,6 +396,14 @@ namespace oboe {
          * so the recorded volume may be very low.
          */
         Unprocessed = 9, // AAUDIO_INPUT_PRESET_UNPROCESSED
+
+        /**
+         * Use this preset for capturing audio meant to be processed in real time
+         * and played back for live performance (e.g karaoke).
+         * The capture path will minimize latency and coupling with playback path.
+         */
+         VoicePerformance = 10, // AAUDIO_INPUT_PRESET_VOICE_PERFORMANCE
+
     };
 
     /**

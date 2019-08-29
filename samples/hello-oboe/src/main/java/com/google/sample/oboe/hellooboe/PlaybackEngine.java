@@ -45,8 +45,7 @@ public class PlaybackEngine {
             String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
             int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
 
-            native_setDefaultSampleRate(defaultSampleRate);
-            native_setDefaultFramesPerBurst(defaultFramesPerBurst);
+            native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
         }
     }
 
@@ -96,6 +95,5 @@ public class PlaybackEngine {
     private static native void native_setBufferSizeInBursts(long engineHandle, int bufferSizeInBursts);
     private static native double native_getCurrentOutputLatencyMillis(long engineHandle);
     private static native boolean native_isLatencyDetectionSupported(long engineHandle);
-    private static native void native_setDefaultSampleRate(int sampleRate);
-    private static native void native_setDefaultFramesPerBurst(int framesPerBurst);
+    private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 }

@@ -27,6 +27,7 @@ constexpr uint8_t kMaxTracks = 100;
  * A Mixer object which sums the output from multiple tracks into a single output. The number of
  * input channels on each track must match the number of output channels (default 1=mono). This can
  * be changed by calling `setChannelCount`.
+ * The inputs to the mixer are not owned by the mixer, they should not be deleted while rendering.
  */
 class Mixer : public IRenderableAudio {
 
@@ -45,7 +46,7 @@ public:
         }
     }
 
-    void addTrack(std::shared_ptr<IRenderableAudio> renderer){
+    void addTrack(IRenderableAudio *renderer){
         mTracks[mNextFreeTrackIndex++] = renderer;
     }
 
@@ -53,7 +54,7 @@ public:
 
 private:
     float mixingBuffer[kBufferSize];
-    std::array<std::shared_ptr<IRenderableAudio>, kMaxTracks> mTracks;
+    std::array<IRenderableAudio*, kMaxTracks> mTracks;
     uint8_t mNextFreeTrackIndex = 0;
     int32_t mChannelCount = 1; // Default to mono
 };

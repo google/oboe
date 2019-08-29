@@ -17,11 +17,11 @@
 package com.google.sample.oboe.hellooboe;
 
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.core.view.MotionEventCompat;
+
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -49,6 +49,8 @@ public class MainActivity extends Activity {
     private static final int CHANNEL_COUNT_DEFAULT_OPTION_INDEX = 1;
     private static final int[] BUFFER_SIZE_OPTIONS = {0, 1, 2, 4, 8};
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
+    // Default all other spinners to the first option on the list
+    private static final int SPINNER_DEFAULT_OPTION_INDEX = 0;
 
     private Spinner mAudioApiSpinner;
     private AudioDeviceSpinner mPlaybackDeviceSpinner;
@@ -81,18 +83,34 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mLatencyText = findViewById(R.id.latencyText);
         setupAudioApiSpinner();
         setupPlaybackDeviceSpinner();
         setupChannelCountSpinner();
         setupBufferSizeSpinner();
 
-        // initialize native audio system
+    }
+    /*
+    * Creating engine in onResume() and destroying in onPause() so the stream retains exclusive
+    * mode only while in focus. This allows other apps to reclaim exclusive stream mode.
+    */
+    @Override
+    protected void onResume() {
+        super.onResume();
         PlaybackEngine.create(this);
-
-        // Periodically update the UI with the output stream latency
-        mLatencyText = findViewById(R.id.latencyText);
         setupLatencyUpdater();
+        // Return the spinner states to their default value
+        mChannelCountSpinner.setSelection(CHANNEL_COUNT_DEFAULT_OPTION_INDEX);
+        mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        mBufferSizeSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+    }
+
+    @Override
+    protected void onPause() {
+       if (mLatencyUpdater != null) mLatencyUpdater.cancel();
+       PlaybackEngine.delete();
+       super.onPause();
     }
 
     private void setupChannelCountSpinner() {
@@ -198,16 +216,12 @@ public class MainActivity extends Activity {
     }
 
     private void setupLatencyUpdater() {
-
         //Update the latency every 1s
         TimerTask latencyUpdateTask = new TimerTask() {
             @Override
             public void run() {
-
                 final String latencyStr;
-
                 if (PlaybackEngine.isLatencyDetectionSupported()) {
-
                     double latency = PlaybackEngine.getCurrentOutputLatencyMillis();
                     if (latency >= 0) {
                         latencyStr = String.format(Locale.getDefault(), "%.2fms", latency);
@@ -226,17 +240,8 @@ public class MainActivity extends Activity {
                 });
             }
         };
-
         mLatencyUpdater = new Timer();
         mLatencyUpdater.schedule(latencyUpdateTask, 0, UPDATE_LATENCY_EVERY_MILLIS);
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mLatencyUpdater != null) mLatencyUpdater.cancel();
-        PlaybackEngine.delete();
-        super.onDestroy();
     }
 
     /**

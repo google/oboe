@@ -53,13 +53,21 @@
             android:onClick="onCancel"
             android:text="@string/cancel" />
 
+        <Button
+            android:id="@+id/button_share"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onShareFile"
+            android:text="@string/share"
+            />
     </LinearLayout>
 
     <TextView
         android:id="@+id/text_analyzer_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="8"
+        android:lines="12"
         android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />
