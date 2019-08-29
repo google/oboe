@@ -32,7 +32,7 @@ bool QuirksManager::isConversionNeeded(
     // TODO There may be a problem if the devices supports low latency
     //      at a higher rate than the default.
     if (builder.getSampleRate() != oboe::Unspecified
-            && builder.getSampleRateConversionType() != SampleRateConversionQuality::None
+            && builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None
             && isLowLatency
             ) {
         childBuilder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate

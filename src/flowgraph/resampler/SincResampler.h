@@ -24,6 +24,10 @@
 
 namespace resampler {
 
+/**
+ * Resampler that can interpolate between coefficients.
+ * This can be used to support arbitrary ratios.
+ */
 class SincResampler : public MultiChannelResampler {
 public:
     explicit SincResampler(const MultiChannelResampler::Builder &builder);

@@ -23,16 +23,16 @@
 
 namespace resampler {
 
-    class PolyphaseResamplerStereo : public PolyphaseResampler {
-    public:
-        explicit PolyphaseResamplerStereo(const MultiChannelResampler::Builder &builder);
+class PolyphaseResamplerStereo : public PolyphaseResampler {
+public:
+    explicit PolyphaseResamplerStereo(const MultiChannelResampler::Builder &builder);
 
-        virtual ~PolyphaseResamplerStereo() = default;
+    virtual ~PolyphaseResamplerStereo() = default;
 
-        void writeFrame(const float *frame) override;
+    void writeFrame(const float *frame) override;
 
-        void readFrame(float *frame) override;
-    };
+    void readFrame(float *frame) override;
+};
 
 }
 

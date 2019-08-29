@@ -23,6 +23,8 @@
 #include <unistd.h>
 
 #ifndef MCR_USE_KAISER
+// It appears from the spectrogram that the HyperbolicCosine window leads to fewer artifacts.
+// And it is faster to calculate.
 #define MCR_USE_KAISER 0
 #endif
 
@@ -105,7 +107,7 @@ public:
          * Set cutoff frequency relative to the Nyquist rate of the output sample rate.
          * Set to 1.0 to match the Nyquist frequency.
          * Set lower to reduce aliasing.
-         * Default is 0.90.
+         * Default is 0.70.
          *
          * @param normalizedCutoff anti-aliasing filter cutoff
          * @return address of this builder for chaining calls
@@ -245,8 +247,8 @@ protected:
 
     const int            mNumTaps;
     int                  mCursor = 0;
-    std::vector<float>   mX;
-    std::vector<float>   mSingleFrame;
+    std::vector<float>   mX;           // delayed input values for the FIR
+    std::vector<float>   mSingleFrame; // one frame for temporary use
     int32_t              mIntegerPhase = 0;
     int32_t              mNumerator = 0;
     int32_t              mDenominator = 0;
@@ -260,7 +262,6 @@ private:
     HyperbolicCosineWindow mCoshWindow;
 #endif
 
-    // max coefficients for polyphase filter
     static constexpr float kDefaultNormalizedCutoff = 0.70f;
 
     const int              mChannelCount;

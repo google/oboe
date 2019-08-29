@@ -42,11 +42,13 @@ void DataConversionFlowGraph::setSource(const void *buffer, int32_t numFrames) {
 
 static MultiChannelResampler::Quality convertOboeSRQualityToMCR(SampleRateConversionQuality quality) {
     switch (quality) {
+        case SampleRateConversionQuality::Fastest:
+            return MultiChannelResampler::Quality::Fastest;
         case SampleRateConversionQuality::Low:
             return MultiChannelResampler::Quality::Low;
+        default:
         case SampleRateConversionQuality::Medium:
             return MultiChannelResampler::Quality::Medium;
-        default:
         case SampleRateConversionQuality::High:
             return MultiChannelResampler::Quality::High;
         case SampleRateConversionQuality::Best:
@@ -83,11 +85,12 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     int32_t sinkChannelCount = sinkStream->getChannelCount();
     int32_t sinkSampleRate = sinkStream->getSampleRate();
 
-    LOGD("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d",
+    LOGD("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d, qual = %d",
             __func__,
             sourceChannelCount, sinkChannelCount,
             sourceFormat, sinkFormat,
-            sourceSampleRate, sinkSampleRate);
+            sourceSampleRate, sinkSampleRate,
+            sourceStream->getSampleRateConversionQuality());
 
     int32_t framesPerCallback = (sourceStream->getFramesPerCallback() == kUnspecified)
                                 ? sourceStream->getFramesPerBurst()
@@ -137,7 +140,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                                                      sourceSampleRate,
                                                      sinkSampleRate,
                                                      convertOboeSRQualityToMCR(
-                                                             sourceStream->getSampleRateConversionType())));
+                                                             sourceStream->getSampleRateConversionQuality())));
         mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount,
                                                                *mResampler.get());
         lastOutput->connect(&mRateConverter->input);

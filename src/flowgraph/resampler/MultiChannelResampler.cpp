@@ -52,7 +52,6 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
     builder.setOutputRate(outputRate);
     builder.setChannelCount(channelCount);
 
-    // TODO benchmark and review these numTaps
     switch (quality) {
         case Quality::Fastest:
             builder.setNumTaps(2);
@@ -62,10 +61,10 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
             break;
         case Quality::Medium:
         default:
-            builder.setNumTaps(16);
+            builder.setNumTaps(8);
             break;
         case Quality::High:
-            builder.setNumTaps(24);
+            builder.setNumTaps(16);
             break;
         case Quality::Best:
             builder.setNumTaps(32);
@@ -81,6 +80,7 @@ MultiChannelResampler *MultiChannelResampler::make(int32_t channelCount,
 
 MultiChannelResampler *MultiChannelResampler::Builder::build() {
     if (getNumTaps() == 2) {
+        // Note that this does not do low pass filteringh.
         return new LinearResampler(*this);
     }
     IntegerRatio ratio(getInputRate(), getOutputRate());

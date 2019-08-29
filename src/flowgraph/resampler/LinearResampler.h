@@ -24,6 +24,9 @@
 
 namespace resampler {
 
+/**
+ * Simple resample that uses bi-linear interpolation.
+ */
 class LinearResampler : public MultiChannelResampler {
 public:
     LinearResampler(const MultiChannelResampler::Builder &builder);

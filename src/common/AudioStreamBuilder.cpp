@@ -123,6 +123,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             }
 
             // Use childStream in a FilterAudioStream.
+            LOGD("%s() create a FilterAudioStream for data conversion.", __func__);
             FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
             result = filterStream->configureFlowGraph();
             if (result !=  Result::OK) {

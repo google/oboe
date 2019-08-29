@@ -22,6 +22,9 @@
 
 namespace resampler {
 
+/**
+ * Represent the ratio of two integers.
+ */
 class IntegerRatio {
 public:
     IntegerRatio(int32_t numerator, int32_t denominator)

@@ -24,7 +24,10 @@
 #include "MultiChannelResampler.h"
 
 namespace resampler {
-
+/**
+ * Resample that is optimized for a reduced ratio of sample rates.
+ * All of the coefficients for eacxh possible phase value are precalculated.
+ */
 class PolyphaseResampler : public MultiChannelResampler {
 public:
     /**
