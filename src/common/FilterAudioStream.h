@@ -109,7 +109,7 @@ public:
             int32_t numFrames,
             int64_t timeoutNanoseconds) override;
 
-    StreamState getState() override {
+    StreamState getState() const override {
         return mChildStream->getState();
     }
 

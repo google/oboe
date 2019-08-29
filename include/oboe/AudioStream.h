@@ -304,9 +304,7 @@ public:
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
      */
-	  virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t /* clockId */){
-        return Result::ErrorUnimplemented;
-    }
+    virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t /* clockId */);
 
     // ============== I/O ===========================
     /**

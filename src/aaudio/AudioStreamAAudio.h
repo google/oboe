@@ -81,9 +81,6 @@ public:
                                        int64_t *framePosition,
                                        int64_t *timeNanoseconds) override;
 
-
-    ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId) override;
-
     StreamState getState() const override;
 
     AudioApi getAudioApi() const override {

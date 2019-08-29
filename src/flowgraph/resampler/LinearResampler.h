@@ -25,7 +25,7 @@
 namespace resampler {
 
 /**
- * Simple resample that uses bi-linear interpolation.
+ * Simple resampler that uses bi-linear interpolation.
  */
 class LinearResampler : public MultiChannelResampler {
 public:
