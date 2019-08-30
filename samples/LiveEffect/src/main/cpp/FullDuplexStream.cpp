@@ -104,8 +104,14 @@ oboe::Result FullDuplexStream::start() {
 }
 
 oboe::Result FullDuplexStream::stop() {
-    oboe::Result outputResult = getOutputStream()->requestStop();
-    oboe::Result inputResult = getInputStream()->requestStop();
+    oboe::Result outputResult = oboe::Result::OK;
+    oboe::Result inputResult = oboe::Result::OK;
+    if (getOutputStream()) {
+        outputResult = getOutputStream()->requestStop();
+    }
+    if (getInputStream()) {
+        inputResult = getInputStream()->requestStop();
+    }
     if (outputResult != oboe::Result::OK) {
         return outputResult;
     } else {
