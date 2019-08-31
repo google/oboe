@@ -129,6 +129,11 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
+    void maybeWriteTestResult(String resultString) {
+        if (mResultFileName == null) return;
+        writeTestResultIfPermitted(resultString);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions,

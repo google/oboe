@@ -112,6 +112,10 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(this, RoundTripLatencyActivity.class);
                 intent.putExtras(mBundleFromIntent);
                 startActivity(intent);
+            } else if ("glitch".equals(testName)) {
+                Intent intent = new Intent(this, ManualGlitchActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
             }
         }
         mBundleFromIntent = null;

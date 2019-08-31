@@ -193,6 +193,21 @@ public class StreamConfiguration {
         }
     }
 
+    public String dump() {
+        String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
+        StringBuffer message = new StringBuffer();
+        message.append(String.format("%s.channels = %d\n", prefix, mChannelCount));
+        message.append(String.format("%s.perf = %s\n", prefix,
+                convertPerformanceModeToText(mPerformanceMode).toLowerCase()));
+        message.append(String.format("%s.sharing = %s\n", prefix,
+                convertSharingModeToText(mSharingMode).toLowerCase()));
+        message.append(String.format("%s.api = %s\n", prefix,
+                convertNativeApiToText(getNativeApi()).toLowerCase()));
+        message.append(String.format("%s.rate = %d\n", prefix, mSampleRate));
+        message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
+        return message.toString();
+    }
+
     public int getChannelCount() {
         return mChannelCount;
     }
