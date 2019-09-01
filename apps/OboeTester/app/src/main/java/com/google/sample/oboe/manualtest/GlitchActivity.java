@@ -72,6 +72,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
         private long mTimeAtStart;
         private long mTimeAtLock;
+        private long mTimeOfLastGlitch;
         private double mMaxSecondsWithoutGlitches;
         private int mLastGlitchCount;
         private int mStartResetCount;
@@ -87,7 +88,7 @@ public class GlitchActivity extends AnalyzerActivity {
             @Override
             public void run() {
                 int state = getAnalyzerState();
-                mLastGlitchCount = getGlitchCount();
+                int glitchCount = getGlitchCount();
                 int resetCount = getResetCount();
                 mSignalToNoiseDB = getSignalToNoiseDB();
                 mPeakAmplitude = getPeakAmplitude();
@@ -98,6 +99,10 @@ public class GlitchActivity extends AnalyzerActivity {
                 }
                 mPreviousState = state;
                 mGotLock = mGotLock || locked;
+                if (glitchCount > mLastGlitchCount) {
+                    mTimeOfLastGlitch = System.currentTimeMillis();
+                    mLastGlitchCount = glitchCount;
+                }
                 if (resetCount > mLastResetCount) {
                     mTimeAtLock = System.currentTimeMillis();
                     mLastResetCount = resetCount;
@@ -115,11 +120,14 @@ public class GlitchActivity extends AnalyzerActivity {
         String getCurrentStatusReport(boolean locked) {
             long now = System.currentTimeMillis();
             double totalSeconds = (now - mTimeAtStart) / 1000.0;
-            double goodSeconds = (locked && (mTimeAtLock > 0))
+            double lockedSeconds = (locked && (mTimeAtLock > 0))
                     ? ((now - mTimeAtLock) / 1000.0)
                     : 0.0;
-            if (goodSeconds > mMaxSecondsWithoutGlitches) {
-                mMaxSecondsWithoutGlitches = goodSeconds;
+            double cleanSeconds = (locked && (mTimeOfLastGlitch > 0))
+                    ? ((now - mTimeOfLastGlitch) / 1000.0)
+                    : 0.0;
+            if (cleanSeconds > mMaxSecondsWithoutGlitches) {
+                mMaxSecondsWithoutGlitches = cleanSeconds;
             }
 
             StringBuffer message = new StringBuffer();
@@ -127,8 +135,7 @@ public class GlitchActivity extends AnalyzerActivity {
             message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
             message.append(String.format("time.total = %8.2f seconds\n", totalSeconds));
-            message.append(String.format("time.no.glitches = %8.2f\n",
-                    goodSeconds));
+            message.append(String.format("time.no.glitches = %8.2f\n", cleanSeconds));
             message.append(String.format("max.time.no.glitches = %8.2f\n",
                     mMaxSecondsWithoutGlitches));
             message.append(String.format("reset.count = %d\n", mLastResetCount - mStartResetCount));
