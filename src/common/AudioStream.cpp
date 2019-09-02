@@ -20,6 +20,7 @@
 
 #include <oboe/AudioStream.h>
 #include "OboeDebug.h"
+#include "AudioClock.h"
 #include <oboe/Utilities.h>
 
 namespace oboe {
@@ -147,6 +148,40 @@ int64_t AudioStream::getFramesRead() {
 int64_t AudioStream::getFramesWritten() {
     updateFramesWritten();
     return mFramesWritten;
+}
+
+ResultWithValue<int32_t> AudioStream::getAvailableFrames() {
+    int64_t readCounter = getFramesRead();
+    if (readCounter < 0) return ResultWithValue<int32_t>::createBasedOnSign(readCounter);
+    int64_t writeCounter = getFramesWritten();
+    if (writeCounter < 0) return ResultWithValue<int32_t>::createBasedOnSign(writeCounter);
+    int32_t framesAvailable = writeCounter - readCounter;
+    return ResultWithValue<int32_t>(framesAvailable);
+}
+
+ResultWithValue<int32_t> AudioStream::waitForAvailableFrames(int32_t numFrames,
+        int64_t timeoutNanoseconds) {
+    if (numFrames == 0) return Result::OK;
+    if (numFrames < 0) return Result::ErrorOutOfRange;
+
+    int64_t framesAvailable = 0;
+    int64_t burstInNanos = getFramesPerBurst() * kNanosPerSecond / getSampleRate();
+    bool ready = false;
+    int64_t deadline = AudioClock::getNanoseconds() + timeoutNanoseconds;
+    do {
+        ResultWithValue<int32_t> result = getAvailableFrames();
+        if (!result) return result;
+        framesAvailable = result.value();
+        ready = (framesAvailable >= numFrames);
+        if (!ready) {
+            int64_t now = AudioClock::getNanoseconds();
+            if (now > deadline) break;
+            AudioClock::sleepForNanos(burstInNanos);
+        }
+    } while (!ready);
+    return (!ready)
+            ? ResultWithValue<int32_t>(Result::ErrorTimeout)
+            : ResultWithValue<int32_t>(framesAvailable);
 }
 
 ResultWithValue<FrameTimestamp> AudioStream::getTimestamp(clockid_t clockId) {

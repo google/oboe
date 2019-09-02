@@ -401,6 +401,23 @@ public:
         return previousCallback;
     }
 
+    /**
+     * @return number of frames of data currently in the buffer
+     */
+    ResultWithValue<int32_t> getAvailableFrames();
+
+    /**
+     * Wait until the stream has a minimum amount of data available in its buffer.
+     * This can be used with an EXCLUSIVE MMAP input stream to avoid reading data too close to
+     * the DSP write position, which may cause glitches.
+     *
+     * @param numFrames minimum frames available
+     * @param timeoutNanoseconds
+     * @return number of frames available, ErrorTimeout
+     */
+    ResultWithValue<int32_t> waitForAvailableFrames(int32_t numFrames,
+                                                    int64_t timeoutNanoseconds);
+
 protected:
 
     /**
