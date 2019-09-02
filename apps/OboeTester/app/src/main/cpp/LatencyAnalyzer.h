@@ -353,6 +353,10 @@ public:
         ERROR_NO_LOCK
     };
 
+    virtual void onStartTest() {
+        reset();
+    }
+
     virtual void reset() {
         mResult = 0;
         mResetCount++;
@@ -752,6 +756,10 @@ public:
         return mGlitchCount;
     }
 
+    int32_t getStateFrameCount(int state) {
+        return mStateFrameCounters[state];
+    }
+
     double getSignalToNoiseDB() {
         static const double threshold = 1.0e-14;
         if (mMeanSquareSignal < threshold || mMeanSquareNoise < threshold) {
@@ -825,7 +833,20 @@ public:
         float peak = mPeakFollower.process(*inputData);
 
         float sample = inputData[0];
+        // Force a periodic glitch!
+        if (mForceGlitchDuration > 0) {
+            if (mForceGlitchCounter == 0) {
+                LOGE("%s: force a glitch!!", __func__);
+                mForceGlitchCounter = getSampleRate();
+            } else if (mForceGlitchCounter <= mForceGlitchDuration) {
+                sample += (sample > 0.0) ? -0.5f : 0.5f;
+            }
+            --mForceGlitchCounter;
+        }
+
         float sinOut = sinf(mPhase);
+
+        mStateFrameCounters[mState]++; // count how many frames we are in each state
 
         switch (mState) {
             case STATE_IDLE:
@@ -917,23 +938,28 @@ public:
 
             case STATE_GLITCHING: {
                 // Predict next sine value
+                mGlitchLength++;
                 float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
                 float diff = predicted - sample;
+//                LOGD(" STATE_GLITCHING: predicted = %f, actual = %f, length = %d", predicted, sample, mGlitchLength);
                 float absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
-                if (absDiff < mScaledTolerance) {
-                    // If we get several non-glitch samples in a row then consider the glitch over.
+                if (absDiff < mScaledTolerance) { // close enough?
+                    // If we get a full sine period of non-glitch samples in a row then consider the glitch over.
                     // We don't want to just consider a zero crossing the end of a glitch.
-                    if (mNonGlitchCount++ > 3) { // TODO
+                    if (mNonGlitchCount++ > mSinePeriod) {
                         onGlitchEnd();
                     }
                 } else {
                     mNonGlitchCount = 0;
-                    if (mGlitchLength++ > MAX_GLITCH_LENGTH) {
-                       reset();
+                    if (mGlitchLength > (4 * mSinePeriod)) {
+                       relock();
                     }
                 }
             } break;
+
+            case NUM_STATES: // not a real state
+                break;
         }
 
         float output = 0.0f;
@@ -947,12 +973,6 @@ public:
             if (mPhase > M_PI) {
                 mPhase -= (2.0 * M_PI);
             }
-        }
-
-        // Force a periodic short glitch! FIXME
-        if (--mForceGlitchCounter <= 0) {
-            output += (output > 0.0) ? -0.5f : 0.5f;
-            mForceGlitchCounter = getSampleRate();
         }
 
         outputData[0] = output;
@@ -980,16 +1000,14 @@ public:
 
     void onGlitchStart() {
         mGlitchCount++;
-//        LOGD("%5d: Started a glitch # %d, predicted = %f, actual = %f",
-//        mFrameCounter, mGlitchCount, predicted, sample);
+//        LOGD("%5d: STARTED a glitch # %d", mFrameCounter, mGlitchCount);
         mState = STATE_GLITCHING;
         mGlitchLength = 1;
         mNonGlitchCount = 0;
     }
 
     void onGlitchEnd() {
-//        LOGD("%5d: Finished a glitch # %d, predicted = %f, actual = %f",
-//        mFrameCounter, mGlitchCount, predicted, sample);
+//        LOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
         mState = STATE_LOCKED;
         resetAccumulator();
     }
@@ -1003,17 +1021,29 @@ public:
         mSumSquareNoise = 0.0;
     }
 
+    void relock() {
+        mState = STATE_WAITING_FOR_LOCK;
+        resetAccumulator();
+    }
+
     void reset() override {
         LoopbackProcessor::reset();
-        mGlitchCount = 0;
         mState = STATE_IDLE;
         mDownCounter = IDLE_FRAME_COUNT;
+        resetAccumulator();
+    }
+
+    void onStartTest() override {
+        LoopbackProcessor::onStartTest();
         mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
+        mPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
         mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
-        mPhase = 0.0f;
+        mGlitchCount = 0;
         mMaxGlitchDelta = 0.0;
-        resetAccumulator();
+        for (int i = 0; i < NUM_STATES; i++) {
+            mStateFrameCounters[i] = 0;
+        }
     }
 
 private:
@@ -1025,7 +1055,8 @@ private:
         STATE_WAITING_FOR_SIGNAL, // looking for a loud signal
         STATE_WAITING_FOR_LOCK,   // trying to lock onto the phase of the sine
         STATE_LOCKED,             // locked on the sine wave, looking for glitches
-        STATE_GLITCHING           // locked on the sine wave but glitching
+        STATE_GLITCHING,           // locked on the sine wave but glitching
+        NUM_STATES
     };
 
     enum constants {
@@ -1034,8 +1065,7 @@ private:
         NOISE_FRAME_COUNT = 48 * 600,
         PERIODS_NEEDED_FOR_LOCK = 8,
         PERIODS_IMMUNE = 2,
-        MIN_SNRATIO_DB = 65,
-        MAX_GLITCH_LENGTH = 256 // maximum before we consider this a lost lock
+        MIN_SNRATIO_DB = 65
     };
 
     static constexpr float kTolerance = 0.10; // scale from 0.0 to 1.0
@@ -1044,6 +1074,8 @@ private:
     double  mThreshold = 0.005;
     int     mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
+
+    int32_t mStateFrameCounters[NUM_STATES];
 
     double  mPhaseIncrement = 0.0;
     double  mPhase = 0.0;
@@ -1055,13 +1087,15 @@ private:
     double  mCosAccumulator = 0.0;
     float   mMaxGlitchDelta = 0.0f;
     int32_t mGlitchCount = 0;
-    int32_t mGlitchLength = 0; // number of frames in the current glitch
     int32_t mNonGlitchCount = 0;
+    int32_t mGlitchLength = 0;
     float   mScaledTolerance = 0.0;
     int     mDownCounter = IDLE_FRAME_COUNT;
     int32_t mFrameCounter = 0;
     float   mOutputAmplitude = 0.75;
-    int32_t mForceGlitchCounter = 0; // Force a glitch for debugging
+
+    int32_t mForceGlitchDuration = 0; // if > 0 then force a glitch for debugging
+    int32_t mForceGlitchCounter = 4 * 48000; // count down and trigger at zero
 
     // measure background noise continuously as a deviation from the expected signal
     double  mSumSquareSignal = 0.0;

@@ -22,6 +22,8 @@
 
 #include "NativeAudioContext.h"
 
+using namespace oboe;
+
 static oboe::AudioApi convertNativeApiToAudioApi(int nativeApi) {
     switch (nativeApi) {
         default:
@@ -465,6 +467,11 @@ void ActivityTestInput::runBlockingIO() {
 
     while (threadEnabled.load()
            && callbackResult == oboe::DataCallbackResult::Continue) {
+
+        // Avoid glitches by waiting until there is extra data in the FIFO.
+        auto err = oboeStream->waitForAvailableFrames(mMinimumFramesBeforeRead, kNanosPerSecond);
+        if (!err) break;
+
         // read from input
         auto result = oboeStream->read(dataBuffer.get(),
                                        framesPerBlock,

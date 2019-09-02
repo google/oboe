@@ -35,8 +35,11 @@ public class RecorderActivity extends TestInputActivity {
     private static final int STATE_RECORDING = 5;
     private static final int STATE_PLAYING = 6;
     private int mRecorderState = STATE_STOPPED;
-    private Button mShareButton;
+    private Button mRecordButton;
+    private Button mStopButton;
     private Button mPlayButton;
+    private Button mShareButton;
+    private boolean mGotRecording = false;
 
     @Override
     protected void inflateActivity() {
@@ -47,10 +50,13 @@ public class RecorderActivity extends TestInputActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mRecordButton = (Button) findViewById(R.id.button_start_recording);
+        mStopButton = (Button) findViewById(R.id.button_stop_record_play);
         mPlayButton = (Button) findViewById(R.id.button_start_playback);
         mShareButton = (Button) findViewById(R.id.button_share);
-        mPlayButton.setEnabled(false);
-        mShareButton.setEnabled(false);
+        mRecorderState = STATE_STOPPED;
+        mGotRecording = false;
+        updateButtons();
     }
 
     @Override
@@ -63,20 +69,28 @@ public class RecorderActivity extends TestInputActivity {
         openAudio();
         startAudio();
         mRecorderState = STATE_RECORDING;
-
+        mGotRecording = true;
+        updateButtons();
     }
 
     public void onStopRecordPlay(View view) {
         stopAudio();
         closeAudio();
         mRecorderState = STATE_STOPPED;
-        mPlayButton.setEnabled(true);
-        mShareButton.setEnabled(true);
+        updateButtons();
     }
 
     public void onStartPlayback(View view) {
         startPlayback();
         mRecorderState = STATE_PLAYING;
+        updateButtons();
+    }
+
+    private void updateButtons() {
+        mRecordButton.setEnabled(mRecorderState == STATE_STOPPED);
+        mStopButton.setEnabled(mRecorderState != STATE_STOPPED);
+        mPlayButton.setEnabled(mRecorderState == STATE_STOPPED && mGotRecording);
+        mShareButton.setEnabled(mRecorderState == STATE_STOPPED && mGotRecording);
     }
 
     public void startPlayback() {
@@ -88,7 +102,6 @@ public class RecorderActivity extends TestInputActivity {
             e.printStackTrace();
             showErrorToast(e.getMessage());
         }
-
     }
 
     @Override

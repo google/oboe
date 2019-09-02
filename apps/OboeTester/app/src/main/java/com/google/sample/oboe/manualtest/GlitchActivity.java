@@ -41,6 +41,7 @@ public class GlitchActivity extends AnalyzerActivity {
     final static int STATE_GLITCHING = 5;
     String mLastGlitchReport;
 
+    native int getStateFrameCount(int state);
     native int getGlitchCount();
     native double getSignalToNoiseDB();
     native double getPeakAmplitude();
@@ -71,93 +72,34 @@ public class GlitchActivity extends AnalyzerActivity {
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
 
         private long mTimeAtStart;
-        private long mTimeAtLock;
         private long mTimeOfLastGlitch;
+        private double mSecondsWithoutGlitches;
         private double mMaxSecondsWithoutGlitches;
         private int mLastGlitchCount;
+        private int mLastUnlockedFrames;
+        private int mLastLockedFrames;
+        private int mLastGlitchFrames;
+
         private int mStartResetCount;
         private int mLastResetCount;
-        private int mPreviousState = STATE_IDLE;
-        private boolean mGotLock = false;
+        private int mPreviousState;
+
         private double mSignalToNoiseDB;
         private double mPeakAmplitude;
         private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
         private volatile boolean mEnabled = true;
 
-        private Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
-                int state = getAnalyzerState();
-                int glitchCount = getGlitchCount();
-                int resetCount = getResetCount();
-                mSignalToNoiseDB = getSignalToNoiseDB();
-                mPeakAmplitude = getPeakAmplitude();
-
-                boolean locked = (state == STATE_LOCKED);
-                if (locked && (mPreviousState != STATE_LOCKED)) {
-                    mTimeAtLock = System.currentTimeMillis();
-                }
-                mPreviousState = state;
-                mGotLock = mGotLock || locked;
-                if (glitchCount > mLastGlitchCount) {
-                    mTimeOfLastGlitch = System.currentTimeMillis();
-                    mLastGlitchCount = glitchCount;
-                }
-                if (resetCount > mLastResetCount) {
-                    mTimeAtLock = System.currentTimeMillis();
-                    mLastResetCount = resetCount;
-                }
-
-                updateStatusText(locked);
-
-                // Reschedule so this task repeats
-                if (mEnabled) {
-                    mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
-                }
-            }
-        };
-
-        String getCurrentStatusReport(boolean locked) {
-            long now = System.currentTimeMillis();
-            double totalSeconds = (now - mTimeAtStart) / 1000.0;
-            double lockedSeconds = (locked && (mTimeAtLock > 0))
-                    ? ((now - mTimeAtLock) / 1000.0)
-                    : 0.0;
-            double cleanSeconds = (locked && (mTimeOfLastGlitch > 0))
-                    ? ((now - mTimeOfLastGlitch) / 1000.0)
-                    : 0.0;
-            if (cleanSeconds > mMaxSecondsWithoutGlitches) {
-                mMaxSecondsWithoutGlitches = cleanSeconds;
-            }
-
-            StringBuffer message = new StringBuffer();
-            message.append("state = " + stateToString(mPreviousState) + "\n");
-            message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
-            message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
-            message.append(String.format("time.total = %8.2f seconds\n", totalSeconds));
-            message.append(String.format("time.no.glitches = %8.2f\n", cleanSeconds));
-            message.append(String.format("max.time.no.glitches = %8.2f\n",
-                    mMaxSecondsWithoutGlitches));
-            message.append(String.format("reset.count = %d\n", mLastResetCount - mStartResetCount));
-
-            if (mGotLock) {
-                message.append(String.format("glitch.count = %d\n", mLastGlitchCount));
-            }
-            return message.toString();
-        }
-
-        private void updateStatusText(boolean locked) {
-            mLastGlitchReport = getCurrentStatusReport(locked);
-            setAnalyzerText(mLastGlitchReport);
-        }
-
         private void startSniffer() {
-            mTimeAtStart = System.currentTimeMillis();
-            mTimeAtLock = 0;
-            mStartResetCount = mLastResetCount;
-            mLastGlitchCount = 0;
+            long now = System.currentTimeMillis();
+            mTimeAtStart = now;
+            mTimeOfLastGlitch = now;
+            mLastUnlockedFrames = 0;
+            mLastLockedFrames = 0;
+            mLastGlitchFrames = 0;
+            mSecondsWithoutGlitches = 0.0;
             mMaxSecondsWithoutGlitches = 0.0;
-            mGotLock = false;
+            mLastGlitchCount = 0;
+            mStartResetCount = mLastResetCount;
             // Start the initial runnable task by posting through the handler
             mEnabled = true;
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
@@ -169,14 +111,85 @@ public class GlitchActivity extends AnalyzerActivity {
                 mHandler.removeCallbacks(runnableCode);
             }
 
-            final boolean locked = (mPreviousState == STATE_LOCKED);
-            mPreviousState = STATE_IDLE;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    updateStatusText(locked);
+                    updateStatusText();
                 }
             });
+        }
+
+        private Runnable runnableCode = new Runnable() {
+            @Override
+            public void run() {
+                int state = getAnalyzerState();
+                mSignalToNoiseDB = getSignalToNoiseDB();
+                mPeakAmplitude = getPeakAmplitude();
+                mPreviousState = state;
+
+                long now = System.currentTimeMillis();
+                int glitchCount = getGlitchCount();
+                int resetCount = getResetCount();
+                mLastUnlockedFrames = getStateFrameCount(STATE_WAITING_FOR_LOCK);
+                int lockedFrames = getStateFrameCount(STATE_LOCKED);
+                int glitchFrames = getStateFrameCount(STATE_GLITCHING);
+
+                if (glitchFrames > mLastGlitchFrames) {
+                    mTimeOfLastGlitch = now;
+                    mSecondsWithoutGlitches = 0.0;
+                } else if (lockedFrames > mLastLockedFrames) {
+                    mSecondsWithoutGlitches = (now - mTimeOfLastGlitch) / 1000.0;
+                }
+
+                if (resetCount > mLastResetCount) {
+                    mLastResetCount = resetCount;
+                }
+
+                if (mSecondsWithoutGlitches > mMaxSecondsWithoutGlitches) {
+                    mMaxSecondsWithoutGlitches = mSecondsWithoutGlitches;
+                }
+
+                mLastGlitchCount = glitchCount;
+                mLastGlitchFrames = glitchFrames;
+                mLastLockedFrames = lockedFrames;
+                mLastResetCount = resetCount;
+
+                updateStatusText();
+
+                // Reschedule so this task repeats
+                if (mEnabled) {
+                    mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
+                }
+            }
+        };
+
+        String getCurrentStatusReport() {
+            long now = System.currentTimeMillis();
+            double totalSeconds = (now - mTimeAtStart) / 1000.0;
+
+            StringBuffer message = new StringBuffer();
+            message.append("state = " + stateToString(mPreviousState) + "\n");
+            message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
+            message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
+
+            message.append(String.format("unlocked.frames = %d\n", mLastUnlockedFrames));
+            message.append(String.format("locked.frames = %d\n", mLastLockedFrames));
+            message.append(String.format("glitch.frames = %d\n", mLastGlitchFrames));
+            message.append(String.format("reset.count = %d\n", mLastResetCount - mStartResetCount));
+
+            message.append(String.format("time.total = %8.2f seconds\n", totalSeconds));
+            if (mLastLockedFrames > 0) {
+                message.append(String.format("time.no.glitches = %8.2f\n", mSecondsWithoutGlitches));
+                message.append(String.format("max.time.no.glitches = %8.2f\n",
+                        mMaxSecondsWithoutGlitches));
+                message.append(String.format("glitch.count = %d\n", mLastGlitchCount));
+            }
+            return message.toString();
+        }
+
+        private void updateStatusText() {
+            mLastGlitchReport = getCurrentStatusReport();
+            setAnalyzerText(mLastGlitchReport);
         }
 
         public double getMaxSecondsWithNoGlitch() {

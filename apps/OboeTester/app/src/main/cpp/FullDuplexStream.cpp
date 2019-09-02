@@ -52,31 +52,48 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         mCountInputBurstsCushion--;
 
     } else if (mCountCallbacksToDiscard > 0) {
-        // Ignore. Allow the input to reach to equilibrium with the output.
-        oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                                                       numFrames,
-                                                                       0 /* timeout */);
-        if (!result) {
-            LOGE("%s() read() returned %s\n", __func__, convertToText(result.error()));
-            callbackResult = oboe::DataCallbackResult::Stop;
-        }
         mCountCallbacksToDiscard--;
-
-    } else {
-        // Read data into input buffer.
-        oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                                                       numFrames,
-                                                                       0 /* timeout */);
-        if (!result) {
-            LOGE("%s() read() returned %s\n", __func__, convertToText(result.error()));
+        // Ignore. Allow the input to reach to equilibrium with the output.
+        oboe::ResultWithValue<int32_t> resultAvailable = getInputStream()->getAvailableFrames();
+        if (!resultAvailable) {
+            LOGE("%s() getAvailableFrames() returned %s\n",
+                    __func__, convertToText(resultAvailable.error()));
             callbackResult = oboe::DataCallbackResult::Stop;
         } else {
-            int32_t framesRead = result.value();
+            int32_t framesAvailable = resultAvailable.value();
+            if (framesAvailable >= mMinimumFramesBeforeRead) {
+                oboe::ResultWithValue<int32_t> resultRead = getInputStream()->read(mInputBuffer.get(), numFrames, 0 /* timeout */);
+                if (!resultRead) {
+                    LOGE("%s() read() returned %s\n", __func__, convertToText(resultRead.error()));
+                    callbackResult = oboe::DataCallbackResult::Stop;
+                }
+            }
+        }
+    } else {
+        int32_t framesRead = 0;
+        oboe::ResultWithValue<int32_t> resultAvailable = getInputStream()->getAvailableFrames();
+        if (!resultAvailable) {
+            LOGE("%s() getAvailableFrames() returned %s\n", __func__, convertToText(resultAvailable.error()));
+            callbackResult = oboe::DataCallbackResult::Stop;
+        } else {
+            int32_t framesAvailable = resultAvailable.value();
+            if (framesAvailable >= mMinimumFramesBeforeRead) {
+                // Read data into input buffer.
+                oboe::ResultWithValue<int32_t> resultRead  = getInputStream()->read(mInputBuffer.get(), numFrames, 0 /* timeout */);
+                if (!resultRead) {
+                    LOGE("%s() read() returned %s\n", __func__, convertToText(resultRead.error()));
+                    callbackResult = oboe::DataCallbackResult::Stop;
+                } else {
+                    framesRead = resultRead.value();
+                }
+            }
+        }
 
+        if (callbackResult == oboe::DataCallbackResult::Continue) {
             callbackResult = onBothStreamsReady(
                     mInputBuffer.get(), framesRead,
-                    audioData, numFrames
-            );
+                    audioData, numFrames);
+
         }
     }
 

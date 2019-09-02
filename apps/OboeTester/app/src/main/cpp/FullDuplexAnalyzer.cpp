@@ -19,7 +19,7 @@
 
 oboe::Result  FullDuplexAnalyzer::start() {
     getLoopbackProcessor()->setSampleRate(getOutputStream()->getSampleRate());
-    getLoopbackProcessor()->reset();
+    getLoopbackProcessor()->onStartTest();
     return FullDuplexStream::start();
 }
 

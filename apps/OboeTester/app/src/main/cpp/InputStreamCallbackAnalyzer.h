@@ -53,9 +53,20 @@ public:
         return mPeakDetectors[index].getLevel();
     }
 
+    void setMinimumFramesBeforeRead(int32_t numFrames) {
+        mMinimumFramesBeforeRead = numFrames;
+    }
+
+    int32_t getMinimumFramesBeforeRead() {
+        return mMinimumFramesBeforeRead;
+    }
+
 public:
     PeakDetector            mPeakDetectors[kMaxInputChannels];
     MultiChannelRecording  *mRecording = nullptr;
+
+private:
+    int32_t                 mMinimumFramesBeforeRead = 0;
 };
 
 #endif //NATIVEOBOE_INPUTSTREAMCALLBACKANALYZER_H

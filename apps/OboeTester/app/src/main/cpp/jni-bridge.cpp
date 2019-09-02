@@ -446,6 +446,14 @@ Java_com_google_sample_oboe_manualtest_TestInputActivity_saveWaveFile(JNIEnv *en
 
 // ==========================================================================
 JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_TestInputActivity_setMinimumFramesBeforeRead(JNIEnv *env,
+                                                                      jobject instance,
+                                                                      jint numFrames) {
+    engine.getCurrentActivity()->setMinimumFramesBeforeRead(numFrames);
+}
+
+// ==========================================================================
+JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,
                                                                          jdouble delayTimeSeconds) {
@@ -513,6 +521,13 @@ JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_GlitchActivity_getGlitchCount(JNIEnv *env,
                                                                      jobject instance) {
     return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getStateFrameCount(JNIEnv *env,
+                                                                     jobject instance,
+                                                                     jint state) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getStateFrameCount(state);
 }
 
 JNIEXPORT jdouble JNICALL

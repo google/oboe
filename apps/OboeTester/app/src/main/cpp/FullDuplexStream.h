@@ -76,6 +76,14 @@ public:
      */
     void setMNumInputBurstsCushion(int32_t mNumInputBurstsCushion);
 
+    void setMinimumFramesBeforeRead(int32_t numFrames) {
+        mMinimumFramesBeforeRead = numFrames;
+    }
+
+    int32_t getMinimumFramesBeforeRead() const {
+        return mMinimumFramesBeforeRead;
+    }
+
 private:
 
     // TODO add getters and setters
@@ -83,7 +91,8 @@ private:
     static constexpr int32_t kNumCallbacksToDiscard = 30;
 
     // let input fill back up, usually 0 or 1
-    int32_t mNumInputBurstsCushion =  1;
+    int32_t mNumInputBurstsCushion =  0;
+    int32_t mMinimumFramesBeforeRead = 0;
 
     // We want to reach a state where the input buffer is empty and
     // the output buffer is full.
