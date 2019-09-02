@@ -132,9 +132,7 @@ public class ManualGlitchActivity extends GlitchActivity {
         configureStreamsFromBundle(mBundleFromIntent);
 
         int durationSeconds = mBundleFromIntent.getInt("duration", 10);
-
         int numBursts = mBundleFromIntent.getInt("buffer_bursts", 2);
-
         mBundleFromIntent = null;
 
         onStartAudioTest(null);

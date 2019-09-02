@@ -134,7 +134,7 @@ public class GlitchActivity extends AnalyzerActivity {
                 int lockedFrames = getStateFrameCount(STATE_LOCKED);
                 int glitchFrames = getStateFrameCount(STATE_GLITCHING);
 
-                if (glitchFrames > mLastGlitchFrames) {
+                if (glitchFrames > mLastGlitchFrames || glitchCount > mLastGlitchCount) {
                     mTimeOfLastGlitch = now;
                     mSecondsWithoutGlitches = 0.0;
                 } else if (lockedFrames > mLastLockedFrames) {

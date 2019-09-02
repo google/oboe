@@ -37,7 +37,7 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
     if (numInputFrames < numOutputFrames) {
         LOGD("numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
              numInputFrames, numOutputFrames);
-        getLoopbackProcessor()->reset();
+        getLoopbackProcessor()->onInsufficientRead();
     } else {
         float *inputFloat = (float *) inputData;
         float *outputFloat = (float *) outputData;

@@ -405,6 +405,12 @@ public:
         return mResetCount;
     }
 
+    /** Called when not enough input frames could be read after synchronization.
+     */
+    virtual void onInsufficientRead() {
+        reset();
+    }
+
 protected:
     int32_t   mResetCount = 0;
 
@@ -1010,6 +1016,13 @@ public:
 //        LOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
         mState = STATE_LOCKED;
         resetAccumulator();
+    }
+
+    void onInsufficientRead() override {
+        if (mState == STATE_LOCKED) {
+            mGlitchCount++;
+        }
+        LoopbackProcessor::onInsufficientRead();
     }
 
     // reset the sine wave detector
