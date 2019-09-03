@@ -1,11 +1,9 @@
 # Automated Testing
 
-(Note: the Latency test works. The Glitch test is not yet implemented.)
+OboeTester can be used to measure the round trip latency and glitches. 
+It can be launched from a shell script by using an Android Intent.
 
-You can use an Android Intent to run the OboeTester app from a shell script.
-This can be used when you do not have a rooted device and, therefore, cannot use the command line executable.
-
-Before running the app from an Intent, it should be launched manually and a Round Trip Latency  test run. Then you can give permission for using the microphone to record the looped back sound, and give permission to write to external storage for saving the test result.
+Before running the app from an Intent, it should be launched manually and a Round Trip Latency test run. Then you can give permission for using the microphone to record the looped back sound, and give permission to write to external storage for saving the test result.
 
 ## Requirements
 
@@ -44,25 +42,46 @@ There are two required parameters:
     --es test {latency, glitch}
             The "latency" test will perform a Round Trip Latency test.
             It will request EXCLUSIVE mode for minimal latency.
-            The "glitch" test will perform a Single Glitch test. UNIMPLEMENTED
+            The "glitch" test will perform a single Glitch test.
     --es file {full path for resulting file}
     
-There are several optional parameters.
+There is one optional parameters for the "latency" test.
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
-    --ei in_sample_rate     {hertz}      // UNIMPLEMENTED
-    --ei in_channels        {samples}    // UNIMPLEMENTED
-    --ei out_sample_rate    {hertz}      // UNIMPLEMENTED
-    --ei out_channels       {samples}    // UNIMPLEMENTED
-    --ei duration           {seconds}    // UNIMPLEMENTED glitch test duration, default is 10 seconds
+    
+There are several optional parameters for the "glitch" test:
+
+    --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
+    --ei sample_rate        {hertz}
+    --ei duration           {seconds}    // glitch test duration, default is 10 seconds
+    --ei in_channels        {samples}    // number of input channels, default is 2
+    --ei out_channels       {samples}    // number of output channels, default is 2
+    --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
+    --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
+    --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
+    --es out_sharing         {"shared", "exclusive"} // output sharing mode, default is "exclusive"
 
 For example, a complete command might be:
 
     adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity \
         --es test latency \
-        --es file /sdcard/test20190611.txt \
+        --es file /sdcard/latency20190903.txt \
         --ei buffer_bursts 2
         
+or for a "glitch" test:
+
+    adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity \
+        --es test glitch \
+        --es file /sdcard/glitch20190903.txt \
+        --es in_perf lowlat \
+        --es out_perf none \
+        --es in_sharing shared \
+        --es out_sharing shared \
+        --ei buffer_bursts 2 \
+        --ei sample_rate 44100 \
+        --ei in_channels 2 \
+        --ei out_channels 2 
+
 ## Interpreting Test Results
 
 Test results are simple files with "name = value" pairs.
@@ -70,39 +89,80 @@ The test results can be obtained using adb pull.
 
     adb pull /sdcard/test20190611.txt .
     
+The beginning of the report is common to all tests:
+
+    build.fingerprint = google/bonito/bonito:10/QP1A.190711.017/5771233:userdebug/dev-keys
+    test.version = 1.5.10
+    test.version.code = 19
+    time.millis = 1567521906542
+    in.channels = 2
+    in.perf = lowlat
+    in.sharing = exclusive
+    in.api = aaudio
+    in.rate = 48000
+    in.device = 30
+    in.mmap = yes
+    in.burst.frames = 96
+    in.xruns = 0
+    out.channels = 2
+    out.perf = lowlat
+    out.sharing = exclusive
+    out.api = aaudio
+    out.rate = 48000
+    out.device = 27
+    out.mmap = yes
+    out.burst.frames = 96
+    out.buffer.size.frames = 192
+    out.buffer.capacity.frames = 3072
+    out.xruns = 0
+
 ### Latency Report
 
-Here is an example report:
+Each test also adds specific value. For "latency". If the test fails then some values will be unavailable.
 
-    burst.frames =  96
-    buffer.size.frames = 96
-    buffer.capacity.frames = 3072
-    rms.signal = 0.73868
-    rms.noise = 0.00103
+Here is a report from a good test. The '#' comments were added for this document and are not in the report.
+
+    rms.signal = 0.81829  # Root Mean Square of the signal, if it can be detected
+    rms.noise = 0.12645   # Root Mean Square of the background noise before the signal is detected
+    reset.count = 2       # number of times the full duplex stream input underflowed and had to resyncronize
+    result = 0            # 0 or a negative error
+    result.text = OK      # text equivalent of the result
+    latency.empty.frames = 476   # round trip latency if the top output buffer was empty
+    latency.empty.msec =   9.92  # same but translated to milliseconds
+    latency.frames = 668   # round trip latency as measured
+    latency.msec =  13.92  # same but translated to milliseconds, "pro-audioo" devices should be <=20 msec
+    confidence =  0.959    # quality of the latency result between 0.0 and 1.0, higher is better
+
+Here is a report from a test that failed because the output was muted. Note the latency.msec is missing because it could not be measured.
+
+    rms.signal = 0.00000
+    rms.noise = 0.00048
     reset.count = 3
-    result = 0
-    result.text = OK
-    latency.empty.frames =    533
-    latency.empty.msec =  11.10
-    latency.frames =    629
-    latency.msec =  13.10
-    confidence =  0.887
-
-Explanation of report values:
-
-    burst.frames         size of a DSP burst in frames
-    buffer.size.frames   output buffer size in frames
-    buffer.capacity.frames maximum capacity in frames
-    sample.rate          sample rate in Hertz
-    rms.signal           Root Mean Square of the signal, if it can be detected
-    rms.noise            Root Mean Square of the background noise before the signal is detected
-    reset.count          # of times the full duplex stream input underflowed and had to resyncronize
-    result               0 or a negative error
-    result.text          text equivalent of the result
-    latency.empty.frames round trip latency if the top output buffer was empty
-    latency.empty.msec   same but translated to milliseconds
-    latency.frames       round trip latency as measured
-    latency.msec         same but translated to milliseconds, "pro-audioo" devices should be <=20 msec
-    confidence           quality of the latency result between 0.0 and 1.0, higher is better
+    result = -96
+    result.text = ERROR_CONFIDENCE
+    confidence =  0.009
         
-        
+### Glitch Report
+
+Here is a report from a good test. The '#' comments were added for this document and are not in the report.
+
+    state = LOCKED
+    unlocked.frames = 2528   # frames spent trying to lock onto the signal
+    locked.frames = 384084   # frames spent locked onto a good signal with no glitches
+    glitch.frames = 0        # frames spent glitching or recovering from a glitch
+    reset.count = 208        # number of times the full duplex stream input underflowed and had to resyncronize
+    peak.amplitude = 0.057714  # peak amplitude of the input signal, between 0.0 and 1.0
+    signal.noise.ratio.db =  96.3
+    time.total =     9.96 seconds  # close to your specified duration
+    time.no.glitches =     9.96    # time we have been running with no glitches 
+    max.time.no.glitches =     9.96 # max time with no glitches
+    glitch.count = 0               # number of glitch events, actual number may be higher is close together
+    
+Here is a report from a test that failed because the output was muted. Note the glitch.count is missing because it could not be measured.
+
+    state = WAITING_FOR_SIGNAL
+    unlocked.frames = 0
+    locked.frames = 0
+    glitch.frames = 0
+    reset.count = 1
+    time.total =     9.95 seconds
