@@ -100,31 +100,12 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         String message = getResultString();
         mMeasureButton.setEnabled(true);
         if (mTestRunningByIntent) {
-            // Add some extra information for the remote tester.
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            int framesPerBurst =stream.getFramesPerBurst();
-            String report = "build.fingerprint = " + Build.FINGERPRINT + "\n";
-            try {
-                PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                report += String.format("test.version = %s\n", pinfo.versionName);
-                report += String.format("test.version.code = %d\n", pinfo.versionCode);
-            } catch (PackageManager.NameNotFoundException e) {
-            }
-            report += String.format("burst.frames = %d\n", framesPerBurst);
-            int bufferSize = stream.getBufferSizeInFrames();
-            report += String.format("buffer.size.frames = %d\n", bufferSize);
-            int bufferCapacity = stream.getBufferCapacityInFrames();
-            report += String.format("buffer.capacity.frames = %d\n", bufferCapacity);
-            int sampleRate = stream.getSampleRate();
-            report += String.format("sample.rate = %d\n", sampleRate);
+            String report = getCommonTestReport();
             report += message;
-
             maybeWriteTestResult(report);
         }
         mTestRunningByIntent = false;
-
         stopAudioTest();
-
         return message;
     }
 

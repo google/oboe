@@ -174,25 +174,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         }, durationSeconds * 1000);
     }
 
-    private String generateReport() {
-        StringBuffer report = new StringBuffer();
-
-        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
-        StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        report.append(actualInConfig.dump());
-        report.append(actualOutConfig.dump());
-
-        int inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
-        report.append(String.format("in.xruns = %d\n", inXRuns));
-        int outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
-        report.append(String.format("out.xruns = %d\n", outXRuns));
-        report.append(mLastGlitchReport);
-
-        return report.toString();
-    }
-
     void stopAutomaticTest() {
-        String report = generateReport();
+        String report = getCommonTestReport() + mLastGlitchReport;
         onStopAudioTest(null);
         maybeWriteTestResult(report);
         mTestRunningByIntent = false;
