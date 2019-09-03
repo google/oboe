@@ -204,6 +204,7 @@ public class StreamConfiguration {
         message.append(String.format("%s.api = %s\n", prefix,
                 convertNativeApiToText(getNativeApi()).toLowerCase()));
         message.append(String.format("%s.rate = %d\n", prefix, mSampleRate));
+        message.append(String.format("%s.device = %d\n", prefix, mDeviceId));
         message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
         return message.toString();
     }

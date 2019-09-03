@@ -17,10 +17,13 @@
 package com.google.sample.oboe.manualtest;
 
 import android.Manifest;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -77,6 +80,38 @@ public class AnalyzerActivity extends TestInputActivity {
     public native boolean isAnalyzerDone();
     public native int getMeasuredResult();
     public native int getResetCount();
+
+    @NonNull
+    protected String getCommonTestReport() {
+        StringBuffer report = new StringBuffer();
+        // Add some extra information for the remote tester.
+        report.append("build.fingerprint = " + Build.FINGERPRINT + "\n");
+        try {
+            PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            report.append(String.format("test.version = %s\n", pinfo.versionName));
+            report.append(String.format("test.version.code = %d\n", pinfo.versionCode));
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        report.append("time.millis = " + System.currentTimeMillis() + "\n");
+
+        // INPUT
+        report.append(mAudioInputTester.actualConfiguration.dump());
+        AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
+        report.append(String.format("in.burst.frames = %d\n", inStream.getFramesPerBurst()));
+        report.append(String.format("in.xruns = %d\n", inStream.getXRunCount()));
+
+        // OUTPUT
+        report.append(mAudioOutTester.actualConfiguration.dump());
+        AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
+        report.append(String.format("out.burst.frames = %d\n", outStream.getFramesPerBurst()));
+        int bufferSize = outStream.getBufferSizeInFrames();
+        report.append(String.format("out.buffer.size.frames = %d\n", bufferSize));
+        int bufferCapacity = outStream.getBufferCapacityInFrames();
+        report.append(String.format("out.buffer.capacity.frames = %d\n", bufferCapacity));
+        report.append(String.format("out.xruns = %d\n", outStream.getXRunCount()));
+
+        return report.toString();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

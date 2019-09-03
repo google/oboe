@@ -169,14 +169,14 @@ public class GlitchActivity extends AnalyzerActivity {
 
             StringBuffer message = new StringBuffer();
             message.append("state = " + stateToString(mPreviousState) + "\n");
-            message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
-            message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
-
             message.append(String.format("unlocked.frames = %d\n", mLastUnlockedFrames));
             message.append(String.format("locked.frames = %d\n", mLastLockedFrames));
             message.append(String.format("glitch.frames = %d\n", mLastGlitchFrames));
             message.append(String.format("reset.count = %d\n", mLastResetCount - mStartResetCount));
-
+            message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
+            if (mLastLockedFrames > 0) {
+                message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
+            }
             message.append(String.format("time.total = %8.2f seconds\n", totalSeconds));
             if (mLastLockedFrames > 0) {
                 message.append(String.format("time.no.glitches = %8.2f\n", mSecondsWithoutGlitches));
