@@ -39,7 +39,7 @@ public class RecorderActivity extends TestInputActivity {
     private Button mStopButton;
     private Button mPlayButton;
     private Button mShareButton;
-    private boolean mGotRecording = false;
+    private boolean mGotRecording;
 
     @Override
     protected void inflateActivity() {

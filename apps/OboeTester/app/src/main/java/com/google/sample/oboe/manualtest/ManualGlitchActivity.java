@@ -26,6 +26,30 @@ import java.util.Date;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
+    public static final String KEY_IN_PERF = "in_perf";
+    public static final String KEY_OUT_PERF = "out_perf";
+    public static final String VALUE_PERF_LOW_LATENCY = "lowlat";
+    public static final String VALUE_PERF_POWERSAVE = "powersave";
+    public static final String VALUE_PERF_NONE = "none";
+
+    public static final String KEY_IN_SHARING = "in_sharing";
+    public static final String KEY_OUT_SHARING = "out_sharing";
+    public static final String VALUE_SHARING_EXCLUSIVE = "exclusive";
+    public static final String VALUE_SHARING_SHARED = "shared";
+
+    public static final String KEY_SAMPLE_RATE = "sample_rate";
+    public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
+
+    public static final String KEY_IN_CHANNELS = "in_channels";
+    public static final String KEY_OUT_CHANNELS = "out_channels";
+    public static final int VALUE_DEFAULT_CHANNELS = 2;
+
+    public static final String KEY_DURATION = "duration";
+    public static final int VALUE_DEFAULT_DURATION = 10;
+
+    public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
+    public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
+
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
 
@@ -77,16 +101,16 @@ public class ManualGlitchActivity extends GlitchActivity {
     }
 
     private int getPerfFromText(String text) {
-        if ("none".equals(text)) {
+        if (VALUE_PERF_NONE.equals(text)) {
             return StreamConfiguration.PERFORMANCE_MODE_NONE;
-        } else if ("powersave".equals(text)) {
+        } else if (VALUE_PERF_POWERSAVE.equals(text)) {
             return StreamConfiguration.PERFORMANCE_MODE_POWER_SAVING;
         } else {
             return StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY;
         }
     }
     private int getSharingFromText(String text) {
-        if ("shared".equals(text)) {
+        if (VALUE_SHARING_SHARED.equals(text)) {
             return StreamConfiguration.SHARING_MODE_SHARED;
         } else {
             return StreamConfiguration.SHARING_MODE_EXCLUSIVE;
@@ -103,36 +127,36 @@ public class ManualGlitchActivity extends GlitchActivity {
         requestedOutConfig.reset();
 
         // Extract parameters from the bundle.
-        String text = bundle.getString("in_perf", "lowlat");
+        String text = bundle.getString(KEY_IN_PERF, VALUE_PERF_LOW_LATENCY);
         int perfMode = getPerfFromText(text);
         requestedInConfig.setPerformanceMode(perfMode);
 
-        text = bundle.getString("out_perf", "lowlat");
+        text = bundle.getString(KEY_OUT_PERF, VALUE_PERF_LOW_LATENCY);
         perfMode = getPerfFromText(text);
         requestedOutConfig.setPerformanceMode(perfMode);
 
-        text = bundle.getString("in_sharing", "exclusive");
+        text = bundle.getString(KEY_IN_SHARING, VALUE_SHARING_EXCLUSIVE);
         int sharingMode = getSharingFromText(text);
         requestedInConfig.setSharingMode(sharingMode);
-        text = bundle.getString("out_sharing", "exclusive");
+        text = bundle.getString(KEY_OUT_SHARING, VALUE_SHARING_EXCLUSIVE);
         sharingMode = getSharingFromText(text);
         requestedOutConfig.setSharingMode(sharingMode);
 
-        int sampleRate = bundle.getInt("sample_rate", 48000);
+        int sampleRate = bundle.getInt(KEY_SAMPLE_RATE, VALUE_DEFAULT_SAMPLE_RATE);
         requestedInConfig.setSampleRate(sampleRate);
         requestedOutConfig.setSampleRate(sampleRate);
 
-        int inChannels = bundle.getInt("in_channels", 2);
+        int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedInConfig.setChannelCount(inChannels);
-        int outChannels = bundle.getInt("out_channels", 2);
+        int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
     }
 
     void startAutomaticTest() {
         configureStreamsFromBundle(mBundleFromIntent);
 
-        int durationSeconds = mBundleFromIntent.getInt("duration", 10);
-        int numBursts = mBundleFromIntent.getInt("buffer_bursts", 2);
+        int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
+        int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
         mBundleFromIntent = null;
 
         onStartAudioTest(null);
