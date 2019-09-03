@@ -28,6 +28,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +48,11 @@ public class TestInputActivity  extends TestAudioActivity
     protected AudioInputTester mAudioInputTester;
     private static final int NUM_VOLUME_BARS = 4;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
+    private InputMarginView mInputMarginView;
+    private int mInputMarginBursts = 0;
+
+    public native void setMinimumFramesBeforeRead(int frames);
+    public native int saveWaveFile(String absolutePath);
 
     @Override boolean isOutput() { return false; }
 
@@ -62,6 +69,8 @@ public class TestInputActivity  extends TestAudioActivity
         mVolumeBars[1] = (VolumeBarView) findViewById(R.id.volumeBar1);
         mVolumeBars[2] = (VolumeBarView) findViewById(R.id.volumeBar2);
         mVolumeBars[3] = (VolumeBarView) findViewById(R.id.volumeBar3);
+
+        mInputMarginView = (InputMarginView) findViewById(R.id.input_margin_view);
 
         updateEnabledWidgets();
 
@@ -87,6 +96,13 @@ public class TestInputActivity  extends TestAudioActivity
         }
     }
 
+    void setMinimumBurstsBeforeRead(int numBursts) {
+        int framesPerBurst = mAudioInputTester.getCurrentAudioStream().getFramesPerBurst();
+        if (framesPerBurst > 0) {
+            setMinimumFramesBeforeRead(numBursts * framesPerBurst);
+        }
+    }
+
     @Override
     public void openAudio() {
         if (!isRecordPermissionGranted()){
@@ -94,6 +110,7 @@ public class TestInputActivity  extends TestAudioActivity
             return;
         }
         super.openAudio();
+        setMinimumBurstsBeforeRead(mInputMarginBursts);
     }
 
     private boolean isRecordPermissionGranted() {
@@ -143,9 +160,6 @@ public class TestInputActivity  extends TestAudioActivity
         setupAEC(sessionId);
     }
 
-
-    public native int saveWaveFile(String absolutePath);
-
     protected int saveWaveFile(File file) {
         // Pass filename to native to write WAV file
         int result = saveWaveFile(file.getAbsolutePath());
@@ -188,5 +202,12 @@ public class TestInputActivity  extends TestAudioActivity
 
     public void onShareFile(View view) {
         shareWaveFile();
+    }
+
+    public void onMarginBoxClicked(View view) {
+        RadioButton radioButton = (RadioButton) view;
+        String text = (String) radioButton.getText();
+        mInputMarginBursts = Integer.parseInt(text);
+        setMinimumBurstsBeforeRead(mInputMarginBursts);
     }
 }

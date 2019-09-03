@@ -36,12 +36,15 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+    private static final String KEY_TEST_NAME = "test";
+    public static final String VALUE_TEST_NAME_LATENCY = "latency";
+    public static final String VALUE_TEST_NAME_GLITCH = "glitch";
+
     static {
         // Must match name in CMakeLists.txt
         System.loadLibrary("oboetester");
     }
 
-    private static final String KEY_TEST_NAME = "test";
 
     private Spinner mModeSpinner;
     private TextView mCallbackSizeTextView;
@@ -108,8 +111,12 @@ public class MainActivity extends Activity {
 
         if (mBundleFromIntent.containsKey(KEY_TEST_NAME)) {
             String testName = mBundleFromIntent.getString(KEY_TEST_NAME);
-            if ("latency".equals(testName)) {
+            if (VALUE_TEST_NAME_LATENCY.equals(testName)) {
                 Intent intent = new Intent(this, RoundTripLatencyActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
+            } else if (VALUE_TEST_NAME_GLITCH.equals(testName)) {
+                Intent intent = new Intent(this, ManualGlitchActivity.class);
                 intent.putExtras(mBundleFromIntent);
                 startActivity(intent);
             }

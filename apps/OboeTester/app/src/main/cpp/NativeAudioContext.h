@@ -171,16 +171,16 @@ public:
         return oboeCallbackProxy.getCallbackCount();
     }
 
-
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
     virtual void setSignalType(int signalType) {}
 
     virtual int32_t saveWaveFile(const char *filename);
 
+    virtual void setMinimumFramesBeforeRead(int32_t numFrames) {}
+
     static bool   mUseCallback;
     static int    callbackSize;
-
 
 protected:
     oboe::AudioStream *getInputStream();
@@ -238,11 +238,22 @@ public:
 
     InputStreamCallbackAnalyzer  mInputAnalyzer;
 
+    void setMinimumFramesBeforeRead(int32_t numFrames) override {
+        mInputAnalyzer.setMinimumFramesBeforeRead(numFrames);
+        mMinimumFramesBeforeRead = numFrames;
+    }
+
+    int32_t getMinimumFramesBeforeRead() const {
+        return mMinimumFramesBeforeRead;
+    }
+
 protected:
+
     oboe::Result startStreams() override {
         return getInputStream()->requestStart();
     }
 
+    int32_t mMinimumFramesBeforeRead = 0;
 };
 
 /**
@@ -372,6 +383,10 @@ public:
     virtual int32_t getState() { return -1; }
     virtual int32_t getResult() { return -1; }
     virtual bool isAnalyzerDone() { return false; }
+
+    void setMinimumFramesBeforeRead(int32_t numFrames) override {
+        getFullDuplexAnalyzer()->setMinimumFramesBeforeRead(numFrames);
+    }
 
     virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() = 0;
 

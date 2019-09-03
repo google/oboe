@@ -202,11 +202,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mShareButton.setEnabled(false);
     }
 
-    private void maybeWriteTestResult(String resultString) {
-        if (mResultFileName == null) return;
-        writeTestResultIfPermitted(resultString);
-    }
-
     private void processBundleFromIntent() {
         if (mBundleFromIntent == null) {
             return;

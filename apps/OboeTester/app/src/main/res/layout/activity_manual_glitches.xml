@@ -17,6 +17,12 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
+    <com.google.sample.oboe.manualtest.InputMarginView
+        android:id="@+id/input_margin_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
     <com.google.sample.oboe.manualtest.StreamConfigurationView
         android:id="@+id/outputStreamConfiguration"
         android:layout_width="match_parent"
@@ -67,7 +73,7 @@
         android:id="@+id/text_analyzer_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="8"
+        android:lines="12"
         android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />

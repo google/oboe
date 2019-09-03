@@ -51,5 +51,7 @@ oboe::DataCallbackResult InputStreamCallbackAnalyzer::onAudioReady(
         }
     }
 
+    audioStream->waitForAvailableFrames(mMinimumFramesBeforeRead, oboe::kNanosPerSecond);
+
     return oboe::DataCallbackResult::Continue;
 }
