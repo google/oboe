@@ -357,6 +357,8 @@ abstract class TestAudioActivity extends Activity {
     }
     
     public void openAudio() {
+        closeAudio();
+
         int sampleRate = 0;
         try {
             // Open output streams then open input streams.
