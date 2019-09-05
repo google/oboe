@@ -233,6 +233,12 @@ SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueIt
     return (*bq)->Enqueue(bq, mCallbackBuffer.get(), mBytesPerCallback);
 }
 
+int32_t AudioStreamOpenSLES::getBufferDepth(SLAndroidSimpleBufferQueueItf bq) {
+    SLAndroidSimpleBufferQueueState queueState;
+    SLresult result = (*bq)->GetState(bq, &queueState);
+    return (result == SL_RESULT_SUCCESS) ? queueState.count : -1;
+}
+
 void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     bool stopStream = false;
     // Ask the callback to fill the output buffer with data.
@@ -249,7 +255,7 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
         // Pass the data to OpenSLES.
         SLresult enqueueResult = enqueueCallbackBuffer(bq);
         if (enqueueResult != SL_RESULT_SUCCESS) {
-            LOGE("enqueueCallbackBuffer() returned %d", enqueueResult);
+            LOGE("%s() returned %d", __func__, enqueueResult);
             stopStream = true;
         }
     } else if (result == DataCallbackResult::Stop) {

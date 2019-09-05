@@ -89,6 +89,8 @@ protected:
 
     SLresult registerBufferQueueCallback();
 
+    int32_t getBufferDepth(SLAndroidSimpleBufferQueueItf bq);
+
     SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
 
     SLresult configurePerformanceMode(SLAndroidConfigurationItf configItf);
@@ -116,7 +118,7 @@ protected:
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
-    std::unique_ptr<uint8_t[]>          mCallbackBuffer;
+    std::unique_ptr<uint8_t[]>    mCallbackBuffer;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};
 
 };
