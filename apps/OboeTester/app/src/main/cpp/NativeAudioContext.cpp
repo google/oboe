@@ -258,8 +258,6 @@ oboe::Result ActivityContext::start() {
         return oboe::Result::ErrorInvalidState; // not open
     }
 
-    stop();
-
     configureForStart();
 
     result = startStreams();
