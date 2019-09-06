@@ -100,26 +100,9 @@ void ActivityContext::close(int32_t streamIndex) {
 
 bool ActivityContext::isMMapUsed(int32_t streamIndex) {
     oboe::AudioStream *oboeStream = getStream(streamIndex);
-    if (oboeStream != nullptr && oboeStream->usesAAudio()) {
-        if (mAAudioStream_isMMap == nullptr) {
-            mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
-            if (mLibHandle == nullptr) {
-                LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
-                return false;
-            }
-
-            mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
-                    dlsym(mLibHandle, FUNCTION_IS_MMAP);
-
-            if(mAAudioStream_isMMap == nullptr) {
-                LOGI("%s() could not find " FUNCTION_IS_MMAP, __func__);
-                return false;
-            }
-        }
-        AAudioStream *aaudioStream = (AAudioStream *) oboeStream->getUnderlyingStream();
-        return mAAudioStream_isMMap(aaudioStream);
-    }
-    return false;
+    if (oboeStream == nullptr) return false;
+    if (oboeStream->getAudioApi() != AudioApi::AAudio) return false;
+    return AAudioExtensions::getInstance().isMMapUsed(oboeStream);
 }
 
 oboe::Result ActivityContext::pause() {
@@ -159,20 +142,20 @@ void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &b
     }
 }
 
-int ActivityContext::open(
-        jint nativeApi,
-        jint sampleRate,
-        jint channelCount,
-        jint format,
-        jint sharingMode,
-        jint performanceMode,
-        jint deviceId,
-        jint sessionId,
-        jint framesPerBurst,
-        jboolean channelConversionAllowed,
-        jboolean formatConversionAllowed,
-        jint rateConversionQuality,
-        jboolean isInput) {
+int ActivityContext::open(jint nativeApi,
+                          jint sampleRate,
+                          jint channelCount,
+                          jint format,
+                          jint sharingMode,
+                          jint performanceMode,
+                          jint deviceId,
+                          jint sessionId,
+                          jint framesPerBurst,
+                          jboolean channelConversionAllowed,
+                          jboolean formatConversionAllowed,
+                          jint rateConversionQuality,
+                          jboolean isMMap,
+                          jboolean isInput) {
 
     oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
     switch (nativeApi) {
@@ -218,10 +201,15 @@ int ActivityContext::open(
     }
     builder.setAudioApi(audioApi);
 
+    // Temporarily set the AAudio MMAP policy to disable MMAP or not.
+    bool oldMMapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
+    AAudioExtensions::getInstance().setMMapEnabled(isMMap);
+
     // Open a stream based on the builder settings.
     oboe::AudioStream *oboeStream = nullptr;
     oboe::Result result = builder.openStream(&oboeStream);
     LOGD("ActivityContext::open() builder.openStream() returned %d", result);
+    AAudioExtensions::getInstance().setMMapEnabled(oldMMapEnabled);
     if (result != oboe::Result::OK) {
         delete oboeStream;
         oboeStream = nullptr;
@@ -238,6 +226,7 @@ int ActivityContext::open(
 
         finishOpen(isInput, oboeStream);
     }
+
 
     if (!mUseCallback) {
         int numSamples = getFramesPerBlock() * mChannelCount;

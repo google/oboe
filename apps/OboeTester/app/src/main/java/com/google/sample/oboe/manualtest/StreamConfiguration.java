@@ -69,6 +69,7 @@ public class StreamConfiguration {
     private int mRateConversionQuality;
 
     private int mFramesPerBurst = 0;
+
     private boolean mMMap = false;
 
     public StreamConfiguration() {
@@ -93,6 +94,7 @@ public class StreamConfiguration {
         mChannelConversionAllowed = false;
         mFormatConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
+        mMMap = NativeEngine.isMMapSupported();
     }
 
     public int getFramesPerBurst() {
@@ -273,4 +275,5 @@ public class StreamConfiguration {
     public int getRateConversionQuality() {
         return mRateConversionQuality;
     }
+
 }

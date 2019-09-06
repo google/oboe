@@ -68,7 +68,7 @@
         android:id="@+id/text_analyzer_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="8"
+        android:lines="12"
         android:text="@string/auto_glitch_instructions"
         android:textSize="18sp"
         android:textStyle="bold"
