@@ -48,6 +48,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jboolean channelConversionAllowed,
                                                        jboolean formatConversionAllowed,
                                                        jint rateConversionQuality,
+                                                       jboolean isMMap,
                                                        jboolean isInput);
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_close(JNIEnv *env, jobject, jint);
@@ -85,6 +86,11 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setAmplitude(JNIEnv
 /**********************  JNI Implementations *************************************/
 /*********************************************************************************/
 
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapSupported(JNIEnv *env, jclass type) {
+    return AAudioExtensions::getInstance().isMMapSupported();
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
@@ -100,22 +106,24 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         jboolean channelConversionAllowed,
         jboolean formatConversionAllowed,
         jint rateConversionQuality,
+        jboolean isMMap,
         jboolean isInput) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d, framesPerBurst = %d", sampleRate, framesPerBurst);
 
     return (jint) engine.getCurrentActivity()->open(nativeApi,
-                              sampleRate,
-                              channelCount,
-                              format,
-                              sharingMode,
-                              performanceMode,
-                              deviceId,
-                              sessionId,
-                              framesPerBurst,
-                              channelConversionAllowed,
-                              formatConversionAllowed,
-                              rateConversionQuality,
-                              isInput);
+                                                    sampleRate,
+                                                    channelCount,
+                                                    format,
+                                                    sharingMode,
+                                                    performanceMode,
+                                                    deviceId,
+                                                    sessionId,
+                                                    framesPerBurst,
+                                                    channelConversionAllowed,
+                                                    formatConversionAllowed,
+                                                    rateConversionQuality,
+                                                    isMMap,
+                                                    isInput);
 }
 
 JNIEXPORT jint JNICALL

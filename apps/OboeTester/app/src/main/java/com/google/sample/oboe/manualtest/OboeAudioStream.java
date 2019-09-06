@@ -68,6 +68,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getChannelConversionAllowed(),
                 requestedConfiguration.getFormatConversionAllowed(),
                 requestedConfiguration.getRateConversionQuality(),
+                requestedConfiguration.isMMap(),
                 isInput()
         );
         if (result < 0) {
@@ -105,6 +106,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
             boolean channelConversionAllowed,
             boolean formatConversionAllowed,
             int rateConversionQuality,
+            boolean isMMap,
             boolean isInput);
 
     @Override

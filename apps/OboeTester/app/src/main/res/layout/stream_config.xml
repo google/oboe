@@ -44,6 +44,22 @@
                     android:text="\?" />
             </TableRow>
 
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device: " />
+
+                <com.google.sample.audio_device.AudioDeviceSpinner
+                    android:id="@+id/devices_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </TableRow>
+
             <TableRow>
 
                 <TextView
@@ -131,22 +147,62 @@
                     android:text="\?" />
 
             </TableRow>
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        </TableLayout>
 
-                <TextView
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/requestedMMapEnable"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device: " />
+                    android:layout_marginRight="8sp"
+                    android:text="MMAP" />
 
-                <com.google.sample.audio_device.AudioDeviceSpinner
-                    android:id="@+id/devices_spinner"
+                <TextView
+                    android:id="@+id/actualMMap"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="12sp"
+                    android:text="\?" />
 
-            </TableRow>
-        </TableLayout>
+                <CheckBox
+                    android:id="@+id/requestedExclusiveMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8sp"
+                    android:text="Exclusive" />
+
+                <TextView
+                    android:id="@+id/actualExclusiveMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="15sp"
+                    android:text="\?" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/requestAudioEffect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10sp"
+                android:text="Effect" />
+
+            <TextView
+                android:id="@+id/sessionId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\?" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -181,44 +237,6 @@
 
         </LinearLayout>
 
-        <TableLayout
-            android:id="@+id/flagTable"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:shrinkColumns="*"
-            >
-            <TableRow>
-
-                <CheckBox
-                    android:id="@+id/requestedExclusiveMode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="30sp"
-                    android:text="Exclusive" />
-
-                <TextView
-                    android:id="@+id/actualExclusiveMode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="\?" />
-
-
-                <CheckBox
-                    android:id="@+id/requestAudioEffect"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="30sp"
-                    android:text="Effect" />
-
-                <TextView
-                    android:id="@+id/sessionId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="\?" />
-
-            </TableRow>
-
-        </TableLayout>
     </LinearLayout>
 
 

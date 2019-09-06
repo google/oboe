@@ -44,6 +44,8 @@ public class StreamConfigurationView extends LinearLayout {
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
 
+    private TextView mActualMMapView;
+    private CheckBox mRequestedMMapView;
     private TextView mActualExclusiveView;
     private TextView mActualPerformanceView;
     private Spinner  mPerformanceSpinner;
@@ -79,6 +81,10 @@ public class StreamConfigurationView extends LinearLayout {
             }
         }
     };
+
+    public static String yesOrNo(boolean b) {
+        return b ?  "YES" : "NO";
+    }
 
     private void updateSettingsViewText() {
         if (mHideableView.isShown()) {
@@ -161,6 +167,18 @@ public class StreamConfigurationView extends LinearLayout {
                 mRequestedConfiguration.setFormatConversionAllowed(mFormatConversionBox.isChecked());
             }
         });
+
+        mActualMMapView = (TextView) findViewById(R.id.actualMMap);
+        mRequestedMMapView = (CheckBox) findViewById(R.id.requestedMMapEnable);
+        mRequestedMMapView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mRequestedConfiguration.setMMap(mRequestedMMapView.isChecked());
+            }
+        });
+        boolean mmapSupported = NativeEngine.isMMapSupported();
+        mRequestedMMapView.setEnabled(mmapSupported);
+        mRequestedMMapView.setChecked(mmapSupported);
 
         mActualExclusiveView = (TextView) findViewById(R.id.actualExclusiveMode);
         mRequestedExclusiveView = (CheckBox) findViewById(R.id.requestedExclusiveMode);
@@ -337,8 +355,10 @@ public class StreamConfigurationView extends LinearLayout {
         value = mActualConfiguration.getNativeApi();
         mActualNativeApiView.setText(StreamConfiguration.convertNativeApiToText(value));
 
-        value = mActualConfiguration.getSharingMode();
-        mActualExclusiveView.setText(StreamConfiguration.convertSharingModeToText(value));
+        mActualMMapView.setText(yesOrNo(mActualConfiguration.isMMap()));
+        int sharingMode = mActualConfiguration.getSharingMode();
+        boolean isExclusive = (sharingMode == StreamConfiguration.SHARING_MODE_EXCLUSIVE);
+        mActualExclusiveView.setText(yesOrNo(isExclusive));
 
         value = mActualConfiguration.getPerformanceMode();
         mActualPerformanceView.setText(StreamConfiguration.convertPerformanceModeToText(value));
@@ -352,10 +372,12 @@ public class StreamConfigurationView extends LinearLayout {
         mActualSampleRateView.setText(mActualConfiguration.getSampleRate() + "");
         mActualSessionIdView.setText("S#: " + mActualConfiguration.getSessionId());
 
+        boolean isMMap = mActualConfiguration.isMMap();
         mStreamInfoView.setText("burst = " + mActualConfiguration.getFramesPerBurst()
                 + ", capacity = " + mActualConfiguration.getBufferCapacityInFrames()
                 + ", devID = " + mActualConfiguration.getDeviceId()
                 + ", " + (mActualConfiguration.isMMap() ? "MMAP" : "Legacy")
+                + (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "")
         );
 
         mHideableView.requestLayout();

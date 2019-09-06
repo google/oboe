@@ -66,10 +66,103 @@
 
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
+#define FUNCTION_SET_MMAP_POLICY "AAudio_setMMapPolicy"
+#define FUNCTION_GET_MMAP_POLICY "AAudio_getMMapPolicy"
 
 #define SECONDS_TO_RECORD        10
 
 typedef struct AAudioStreamStruct         AAudioStream;
+
+/**
+ * Call some AAudio test routines that are not part of the normal API.
+ */
+class AAudioExtensions {
+public:
+    static AAudioExtensions &getInstance() {
+        static AAudioExtensions instance;
+        return instance;
+    }
+
+    bool isMMapUsed(oboe::AudioStream *oboeStream) {
+        if (!loadLibrary()) return false;
+        AAudioStream *aaudioStream = (AAudioStream *) oboeStream->getUnderlyingStream();
+        return mAAudioStream_isMMap(aaudioStream);
+    }
+
+    bool setMMapEnabled(bool enabled) {
+        if (!loadLibrary()) return false;
+        return mAAudio_setMMapPolicy(enabled ? AAUDIO_POLICY_AUTO : AAUDIO_POLICY_NEVER);
+    }
+
+    bool isMMapEnabled() {
+        if (!loadLibrary()) return false;
+        return mAAudio_getMMapPolicy() != AAUDIO_POLICY_NEVER;
+    }
+
+    bool isMMapSupported() {
+        if (!loadLibrary()) return false;
+        return mMMapSupported;
+    }
+
+private:
+
+    enum {
+        AAUDIO_POLICY_NEVER = 1,
+        AAUDIO_POLICY_AUTO,
+        AAUDIO_POLICY_ALWAYS
+    };
+    typedef int32_t aaudio_policy_t;
+
+    // return true if it succeeds
+    bool loadLibrary() {
+        if (mFirstTime) {
+            mFirstTime = false;
+            mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
+            if (mLibHandle == nullptr) {
+                LOGI("%s() could not find "
+                             LIB_AAUDIO_NAME, __func__);
+                return false;
+            }
+
+            mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
+                    dlsym(mLibHandle, FUNCTION_IS_MMAP);
+
+            if (mAAudioStream_isMMap == nullptr) {
+                LOGI("%s() could not find "
+                             FUNCTION_IS_MMAP, __func__);
+                return false;
+            }
+
+            mAAudio_setMMapPolicy = (int32_t (*)(aaudio_policy_t policy))
+                    dlsym(mLibHandle, FUNCTION_SET_MMAP_POLICY);
+
+            if (mAAudio_setMMapPolicy == nullptr) {
+                LOGI("%s() could not find "
+                             FUNCTION_SET_MMAP_POLICY, __func__);
+                return false;
+            }
+
+            mAAudio_getMMapPolicy = (aaudio_policy_t (*)())
+                    dlsym(mLibHandle, FUNCTION_GET_MMAP_POLICY);
+
+            if (mAAudio_getMMapPolicy == nullptr) {
+                LOGI("%s() could not find "
+                             FUNCTION_GET_MMAP_POLICY, __func__);
+                return false;
+            }
+
+            mMMapSupported = isMMapEnabled(); // still supported even if disabled later
+        }
+        return true;
+    }
+
+    bool     mFirstTime = true;
+    void     *mLibHandle = nullptr;
+    bool    (*mAAudioStream_isMMap)(AAudioStream *stream) = nullptr;
+    int32_t (*mAAudio_setMMapPolicy)(aaudio_policy_t policy) = nullptr;
+    aaudio_policy_t (*mAAudio_getMMapPolicy)() = nullptr;
+    bool      mMMapSupported = false;
+};
 
 /**
  * Abstract base class that corresponds to a test at the Java level.
@@ -103,6 +196,7 @@ public:
              jboolean channelConversionAllowed,
              jboolean formatConversionAllowed,
              jint rateConversionQuality,
+             jboolean isMMap,
              jboolean isInput);
 
 
@@ -212,9 +306,6 @@ protected:
 
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr;
-
-    bool                       (*mAAudioStream_isMMap)(AAudioStream *stream) = nullptr;
-    void                        *mLibHandle = nullptr;
 
 private:
 };
