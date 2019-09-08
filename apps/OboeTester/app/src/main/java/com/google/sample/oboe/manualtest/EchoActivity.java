@@ -100,6 +100,12 @@ public class EchoActivity extends TestInputActivity {
         setActivityType(ACTIVITY_ECHO);
     }
 
+    @Override
+    protected void resetConfiguration() {
+        super.resetConfiguration();
+        mAudioOutTester.reset();
+    }
+
     public void onStartEcho(View view) {
         openAudio();
         startAudio();

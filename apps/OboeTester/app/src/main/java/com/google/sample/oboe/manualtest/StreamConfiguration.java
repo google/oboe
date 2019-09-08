@@ -59,7 +59,7 @@ public class StreamConfiguration {
     private int mChannelCount;
     private int mDeviceId;
     private int mSessionId;
-    private int mDirection;
+    private int mDirection; // does not get reset
     private int mFormat;
     private int mSampleRate;
     private int mSharingMode;
@@ -76,11 +76,6 @@ public class StreamConfiguration {
         reset();
     }
 
-    public void setReasonableDefaults() {
-        mChannelCount = 2;
-        mSampleRate = 48000;
-    }
-
     public void reset() {
         mNativeApi = NATIVE_API_UNSPECIFIED;
         mBufferCapacityInFrames = UNSPECIFIED;
@@ -91,8 +86,8 @@ public class StreamConfiguration {
         mSampleRate = UNSPECIFIED;
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
-        mChannelConversionAllowed = false;
         mFormatConversionAllowed = false;
+        mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
         mMMap = NativeEngine.isMMapSupported();
     }
@@ -208,6 +203,7 @@ public class StreamConfiguration {
         message.append(String.format("%s.rate = %d\n", prefix, mSampleRate));
         message.append(String.format("%s.device = %d\n", prefix, mDeviceId));
         message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
+        message.append(String.format("%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
         return message.toString();
     }
 

@@ -84,6 +84,12 @@ public class TestInputActivity  extends TestAudioActivity
     }
 
     @Override
+    protected void resetConfiguration() {
+        super.resetConfiguration();
+        mAudioInputTester.reset();
+    }
+
+    @Override
     void updateStreamDisplay() {
         int numChannels = mAudioInputTester.getCurrentAudioStream().getChannelCount();
         if (numChannels > NUM_VOLUME_BARS) {

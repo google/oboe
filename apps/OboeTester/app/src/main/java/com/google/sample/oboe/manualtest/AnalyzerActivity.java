@@ -123,6 +123,12 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
+    @Override
+    protected void resetConfiguration() {
+        super.resetConfiguration();
+        mAudioOutTester.reset();
+    }
+
     public void startAudio() {
         if (mBufferSizeView != null && mBufferSizeView.isEnabled()) {
             mBufferSizeView.updateBufferSize();
