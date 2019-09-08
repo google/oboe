@@ -32,6 +32,11 @@ class AudioStreamTester {
                 -1);
     }
 
+    public void reset() {
+        requestedConfiguration.reset(); // TODO consider making new ones
+        actualConfiguration.reset();
+    }
+
     public void close() {
         mCurrentAudioStream.close();
     }

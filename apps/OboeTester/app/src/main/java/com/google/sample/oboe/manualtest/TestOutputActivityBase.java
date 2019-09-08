@@ -53,6 +53,12 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         }
     };
 
+    @Override
+    protected void resetConfiguration() {
+        super.resetConfiguration();
+        mAudioOutTester.reset();
+    }
+
     protected void findAudioCommon() {
         super.findAudioCommon();
 

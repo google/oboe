@@ -160,6 +160,15 @@ abstract class TestAudioActivity extends Activity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        resetConfiguration();
+    }
+
+    protected void resetConfiguration() {
+    }
+
+    @Override
     protected void onStop() {
         Log.i(TAG, "onStop() called so stopping audio =========================");
         stopAudio();
