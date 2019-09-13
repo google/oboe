@@ -222,7 +222,7 @@ public:
         // The builder set methods can be chained for convenience.
         builder.setSharingMode(oboe::SharingMode::Exclusive)
           ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-          ->builder.setChannelCount(kChannelCount)
+          ->setChannelCount(kChannelCount)
           ->setSampleRate(kSampleRate)
           ->setFormat(oboe::AudioFormat::Float)
           ->setCallback(this)
