@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class ManualGlitchActivity extends GlitchActivity {
@@ -159,19 +160,25 @@ public class ManualGlitchActivity extends GlitchActivity {
         int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
         mBundleFromIntent = null;
 
-        onStartAudioTest(null);
+        try {
+            onStartAudioTest(null);
+            int sizeFrames = mAudioOutTester.getCurrentAudioStream().getFramesPerBurst() * numBursts;
+            mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
 
-        int sizeFrames = mAudioOutTester.getCurrentAudioStream().getFramesPerBurst() * numBursts;
-        mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
+            // Schedule the end of the test.
+            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stopAutomaticTest();
+                }
+            }, durationSeconds * 1000);
+        } catch (IOException e) {
+            String report = "Open failed: " + e.getMessage();
+            maybeWriteTestResult(report);
+            mTestRunningByIntent = false;
+        }
 
-        // Schedule the end of the test.
-        Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                stopAutomaticTest();
-            }
-        }, durationSeconds * 1000);
     }
 
     void stopAutomaticTest() {

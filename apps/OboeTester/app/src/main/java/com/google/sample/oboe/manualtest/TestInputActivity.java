@@ -36,6 +36,7 @@ import android.widget.Toast;
 import com.google.sample.oboe.manualtest.R;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Test Oboe Capture
@@ -110,7 +111,7 @@ public class TestInputActivity  extends TestAudioActivity
     }
 
     @Override
-    public void openAudio() {
+    public void openAudio() throws IOException {
         if (!isRecordPermissionGranted()){
             requestRecordPermission();
             return;
@@ -149,7 +150,11 @@ public class TestInputActivity  extends TestAudioActivity
                     .show();
         } else {
             // Permission was granted
-            super.openAudio();
+            try {
+                super.openAudio();
+            } catch (IOException e) {
+                showErrorToast(e.getMessage());
+            }
         }
     }
 

@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 /**
  * Activity to capture audio and then send a delayed copy to output.
  * There is a fader for setting delay time
@@ -107,12 +109,16 @@ public class EchoActivity extends TestInputActivity {
     }
 
     public void onStartEcho(View view) {
-        openAudio();
-        startAudio();
-        setDelayTime(mDelayTime);
-        mStartButton.setEnabled(false);
-        mStopButton.setEnabled(true);
-        keepScreenOn(true);
+        try {
+            openAudio();
+            startAudio();
+            setDelayTime(mDelayTime);
+            mStartButton.setEnabled(false);
+            mStopButton.setEnabled(true);
+            keepScreenOn(true);
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
     }
 
     public void onStopEcho(View view) {

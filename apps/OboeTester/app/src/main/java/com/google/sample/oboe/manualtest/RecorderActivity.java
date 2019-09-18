@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.Button;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Activity to record and play back audio.
@@ -66,11 +67,15 @@ public class RecorderActivity extends TestInputActivity {
     }
 
     public void onStartRecording(View view) {
-        openAudio();
-        startAudio();
-        mRecorderState = STATE_RECORDING;
-        mGotRecording = true;
-        updateButtons();
+        try {
+            openAudio();
+            startAudio();
+            mRecorderState = STATE_RECORDING;
+            mGotRecording = true;
+            updateButtons();
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
     }
 
     public void onStopRecordPlay(View view) {

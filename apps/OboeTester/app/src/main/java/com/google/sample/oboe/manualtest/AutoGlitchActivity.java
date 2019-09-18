@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class AutoGlitchActivity extends GlitchActivity implements Runnable {
@@ -187,54 +188,77 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
 
         // Give previous stream time to close and release resources. Avoid race conditions.
         Thread.sleep(1000);
-        super.startAudioTest(); // this will fill in actualConfig
-        log("Actual:");
-        log(getConfigText(actualInConfig));
-        log(getConfigText(actualOutConfig));
+        boolean openFailed = false;
+        try {
+            super.startAudioTest(); // this will fill in actualConfig
+            log("Actual:");
+            log(getConfigText(actualInConfig));
+            log(getConfigText(actualOutConfig));
+            // Set output size to a level that will avoid glitches.
+            int sizeFrames = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
+            mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
+        } catch (IOException e) {
+            openFailed = true;
+            log(e.getMessage());
+        }
 
-        // Set output size to a level that will avoid glitches.
-        int sizeFrames = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
-        mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
 
         // The test would only be worth running if we got the configuration we requested on input or output.
         boolean valid = true;
         // No point running the test if we don't get the sharing mode we requested.
-        if (actualInConfig.getSharingMode() != sharingMode
-            && actualOutConfig.getSharingMode() != sharingMode) {
+        if (!openFailed && actualInConfig.getSharingMode() != sharingMode
+                && actualOutConfig.getSharingMode() != sharingMode) {
             log("did not get requested sharing mode");
             valid = false;
         }
         // We don't skip based on performance mode because if you request LOW_LATENCY you might
         // get a smaller burst than if you request NONE.
 
-        if (valid) {
+        if (!openFailed && valid) {
             Thread.sleep(mDurationSeconds * 1000);
         }
+        int inXRuns = 0;
+        int outXRuns = 0;
 
-        int inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
-        int outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
+        if (!openFailed) {
+            // get xRuns before closing the streams.
+            inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
+            outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
 
-        super.stopAudioTest();
+            super.stopAudioTest();
+        }
+
         if (valid) {
-            boolean passed = (getMaxSecondsWithNoGlitch()
-                    > (mDurationSeconds - SETUP_TIME_SECONDS));
-            String resultText = "#gl = " + getLastGlitchCount()
-                    + ", time no glitch = " + getMaxSecondsWithNoGlitch() + " secs"
-                    + ", xruns = " + inXRuns + "/" + outXRuns;
-            log(resultText + ", " + (passed ? TEXT_PASS : TEXT_FAIL)
-            );
-            if (!passed) {
+            if (openFailed) {
                 mFailedSummary.append("------ #" + mTestCount);
                 mFailedSummary.append("\n");
-                mFailedSummary.append("  ");
                 mFailedSummary.append(getConfigText(requestedInConfig));
                 mFailedSummary.append("\n");
-                mFailedSummary.append("    ");
-                mFailedSummary.append(resultText);
+                mFailedSummary.append(getConfigText(requestedOutConfig));
                 mFailedSummary.append("\n");
+                mFailedSummary.append("Open failed!\n");
                 mFailCount++;
             } else {
-                mPassCount++;
+                log("Result:");
+                boolean passed = (getMaxSecondsWithNoGlitch()
+                        > (mDurationSeconds - SETUP_TIME_SECONDS));
+                String resultText = getShortReport();
+                resultText += ", xruns = " + inXRuns + "/" + outXRuns;
+                resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+                log(resultText);
+                if (!passed) {
+                    mFailedSummary.append("------ #" + mTestCount);
+                    mFailedSummary.append("\n");
+                    mFailedSummary.append("  ");
+                    mFailedSummary.append(getConfigText(actualInConfig));
+                    mFailedSummary.append("\n");
+                    mFailedSummary.append("    ");
+                    mFailedSummary.append(resultText);
+                    mFailedSummary.append("\n");
+                    mFailCount++;
+                } else {
+                    mPassCount++;
+                }
             }
         } else {
             log(TEXT_SKIP);
@@ -287,7 +311,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             super.stopAudioTest();
             log("\n==== SUMMARY ========");
             if (mFailCount > 0) {
-                log("# Passed = " + mPassCount + ", # Failed = " + mFailCount);
+                log(mPassCount + " passed. " + mFailCount + " failed.");
                 log("These tests FAILED:");
                 log(mFailedSummary.toString());
             } else {
