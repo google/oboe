@@ -187,6 +187,15 @@ public class GlitchActivity extends AnalyzerActivity {
             return message.toString();
         }
 
+        public String getShortReport() {
+            String resultText = "#glitches = " + getLastGlitchCount()
+                    + ", #resets = " + getLastResetCount()
+                    + ", max no glitch = " + getMaxSecondsWithNoGlitch() + " secs\n";
+            resultText += String.format("SNR = %5.1f db", mSignalToNoiseDB);
+            resultText += ", locked frames = " + mLastLockedFrames;
+            return resultText;
+        }
+
         private void updateStatusText() {
             mLastGlitchReport = getCurrentStatusReport();
             setAnalyzerText(mLastGlitchReport);
@@ -196,8 +205,11 @@ public class GlitchActivity extends AnalyzerActivity {
             return mMaxSecondsWithoutGlitches;
         }
 
-        public int geMLastGlitchCount() {
+        public int getLastGlitchCount() {
             return mLastGlitchCount;
+        }
+        public int getLastResetCount() {
+            return mLastResetCount;
         }
     }
 
@@ -295,8 +307,8 @@ public class GlitchActivity extends AnalyzerActivity {
         return mGlitchSniffer.getMaxSecondsWithNoGlitch();
     }
 
-    public int getLastGlitchCount() {
-        return mGlitchSniffer.geMLastGlitchCount();
+    public String getShortReport() {
+        return mGlitchSniffer.getShortReport();
     }
 
     @Override

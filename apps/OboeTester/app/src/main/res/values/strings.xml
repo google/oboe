@@ -73,8 +73,10 @@
 
     <string-array name="glitch_times">
         <item>10</item>
+        <item>25</item>
         <item>70</item>
-        <item>310</item>
+        <item>200</item>
+        <item>600</item>
     </string-array>
 
     <string name="performance_prompt">Perf:</string>

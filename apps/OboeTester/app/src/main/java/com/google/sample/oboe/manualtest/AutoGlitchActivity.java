@@ -211,23 +211,25 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             Thread.sleep(mDurationSeconds * 1000);
         }
 
+        // get xRuns before closing the streams.
         int inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
         int outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
 
         super.stopAudioTest();
+
         if (valid) {
+            log("Result:");
             boolean passed = (getMaxSecondsWithNoGlitch()
                     > (mDurationSeconds - SETUP_TIME_SECONDS));
-            String resultText = "#gl = " + getLastGlitchCount()
-                    + ", time no glitch = " + getMaxSecondsWithNoGlitch() + " secs"
-                    + ", xruns = " + inXRuns + "/" + outXRuns;
-            log(resultText + ", " + (passed ? TEXT_PASS : TEXT_FAIL)
-            );
+            String resultText = getShortReport();
+            resultText += ", xruns = " + inXRuns + "/" + outXRuns;
+            resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+            log(resultText);
             if (!passed) {
                 mFailedSummary.append("------ #" + mTestCount);
                 mFailedSummary.append("\n");
                 mFailedSummary.append("  ");
-                mFailedSummary.append(getConfigText(requestedInConfig));
+                mFailedSummary.append(getConfigText(actualInConfig));
                 mFailedSummary.append("\n");
                 mFailedSummary.append("    ");
                 mFailedSummary.append(resultText);
@@ -287,7 +289,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             super.stopAudioTest();
             log("\n==== SUMMARY ========");
             if (mFailCount > 0) {
-                log("# Passed = " + mPassCount + ", # Failed = " + mFailCount);
+                log(mPassCount + " passed. " + mFailCount + " failed.");
                 log("These tests FAILED:");
                 log(mFailedSummary.toString());
             } else {
