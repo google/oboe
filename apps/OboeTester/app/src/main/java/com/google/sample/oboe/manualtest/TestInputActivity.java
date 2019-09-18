@@ -103,6 +103,13 @@ public class TestInputActivity  extends TestAudioActivity
         }
     }
 
+    void resetVolumeBars() {
+        for (int i = 0; i < mVolumeBars.length; i++) {
+            if (mVolumeBars[i] == null) break;
+            mVolumeBars[i].setVolume((float) 0.0);
+        }
+    }
+
     void setMinimumBurstsBeforeRead(int numBursts) {
         int framesPerBurst = mAudioInputTester.getCurrentAudioStream().getFramesPerBurst();
         if (framesPerBurst > 0) {
@@ -118,6 +125,13 @@ public class TestInputActivity  extends TestAudioActivity
         }
         super.openAudio();
         setMinimumBurstsBeforeRead(mInputMarginBursts);
+        resetVolumeBars();
+    }
+
+    @Override
+    public void stopAudio() {
+        super.stopAudio();
+        resetVolumeBars();
     }
 
     private boolean isRecordPermissionGranted() {

@@ -341,6 +341,7 @@ public:
 protected:
 
     oboe::Result startStreams() override {
+        mInputAnalyzer.reset();
         return getInputStream()->requestStart();
     }
 
