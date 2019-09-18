@@ -23,6 +23,8 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 
+import java.io.IOException;
+
 /**
  * Base class for output test activities
  */
@@ -81,7 +83,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         setActivityType(ACTIVITY_TEST_OUTPUT);
     }
 
-    public void openAudio() {
+    public void openAudio() throws IOException {
         super.openAudio();
         int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
         configureChannelBoxes(channelCount);

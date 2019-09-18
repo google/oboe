@@ -23,6 +23,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 /**
  * Activity to measure the number of glitches.
  */
@@ -192,7 +194,7 @@ public class GlitchActivity extends AnalyzerActivity {
                     + ", #resets = " + getLastResetCount()
                     + ", max no glitch = " + getMaxSecondsWithNoGlitch() + " secs\n";
             resultText += String.format("SNR = %5.1f db", mSignalToNoiseDB);
-            resultText += ", locked frames = " + mLastLockedFrames;
+            resultText += ", #locked = " + mLastLockedFrames;
             return resultText;
         }
 
@@ -255,7 +257,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     // Called on UI thread
-    public void onStartAudioTest(View view) {
+    public void onStartAudioTest(View view) throws IOException {
         startAudioTest();
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
@@ -263,7 +265,7 @@ public class GlitchActivity extends AnalyzerActivity {
         keepScreenOn(true);
     }
 
-    public void startAudioTest() {
+    public void startAudioTest() throws IOException {
         openAudio();
         startAudio();
         mGlitchSniffer.startSniffer();

@@ -29,6 +29,8 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 /**
  * Activity to measure latency on a full duplex stream.
  */
@@ -225,20 +227,24 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     }
 
     public void onMeasure(View view) {
-        openAudio();
-        if (mBufferBursts >= 0) {
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            int framesPerBurst = stream.getFramesPerBurst();
-            stream.setBufferSizeInFrames(framesPerBurst * mBufferBursts);
-            // override buffer size fader
-            mBufferSizeView.setEnabled(false);
-            mBufferBursts = -1;
+        try {
+            openAudio();
+            if (mBufferBursts >= 0) {
+                AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
+                int framesPerBurst = stream.getFramesPerBurst();
+                stream.setBufferSizeInFrames(framesPerBurst * mBufferBursts);
+                // override buffer size fader
+                mBufferSizeView.setEnabled(false);
+                mBufferBursts = -1;
+            }
+            startAudio();
+            mLatencySniffer.startSniffer();
+            mMeasureButton.setEnabled(false);
+            mCancelButton.setEnabled(true);
+            mShareButton.setEnabled(false);
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
         }
-        startAudio();
-        mLatencySniffer.startSniffer();
-        mMeasureButton.setEnabled(false);
-        mCancelButton.setEnabled(true);
-        mShareButton.setEnabled(false);
     }
 
     public void onCancel(View view) {
