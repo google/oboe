@@ -179,7 +179,7 @@ int ActivityContext::open(jint nativeApi,
         return (jint) oboe::Result::ErrorOutOfRange;
     }
 
-    // Create an audio output stream.
+    // Create an audio stream.
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(channelCount)
             ->setDirection(isInput ? oboe::Direction::Input : oboe::Direction::Output)
@@ -188,6 +188,7 @@ int ActivityContext::open(jint nativeApi,
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)
+            ->setInputPreset(oboe::InputPreset::VoiceCommunication)
             ->setFormat((oboe::AudioFormat) format)
             ->setChannelConversionAllowed(channelConversionAllowed)
             ->setFormatConversionAllowed(formatConversionAllowed)
