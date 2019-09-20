@@ -148,6 +148,7 @@ int ActivityContext::open(jint nativeApi,
                           jint format,
                           jint sharingMode,
                           jint performanceMode,
+                          jint inputPreset,
                           jint deviceId,
                           jint sessionId,
                           jint framesPerBurst,
@@ -185,10 +186,10 @@ int ActivityContext::open(jint nativeApi,
             ->setDirection(isInput ? oboe::Direction::Input : oboe::Direction::Output)
             ->setSharingMode((oboe::SharingMode) sharingMode)
             ->setPerformanceMode((oboe::PerformanceMode) performanceMode)
+            ->setInputPreset((oboe::InputPreset)inputPreset)
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)
-            ->setInputPreset(oboe::InputPreset::VoiceCommunication)
             ->setFormat((oboe::AudioFormat) format)
             ->setChannelConversionAllowed(channelConversionAllowed)
             ->setFormatConversionAllowed(formatConversionAllowed)

@@ -147,6 +147,28 @@
                     android:text="\?" />
 
             </TableRow>
+
+            <TableRow
+                android:id="@+id/rowInputPreset">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/input_preset_prompt"/>
+
+                <Spinner
+                    android:id="@+id/spinnerInputPreset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/audio_input_presets" />
+
+                <TextView
+                    android:id="@+id/actualInputPreset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
         </TableLayout>
 
         <LinearLayout

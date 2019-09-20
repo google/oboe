@@ -25,11 +25,14 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 
 import com.google.sample.audio_device.AudioDeviceListEntry;
 import com.google.sample.audio_device.AudioDeviceSpinner;
+
+import java.text.BreakIterator;
 
 /**
  * View for Editing a requested StreamConfiguration
@@ -55,6 +58,10 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
+
+    private TextView mActualInputPresetView;
+    private Spinner  mInputPresetSpinner;
+    private TableRow mInputPresetTableRow;
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private Spinner  mRateConversionQualitySpinner;
@@ -223,6 +230,11 @@ public class StreamConfigurationView extends LinearLayout {
         mPerformanceSpinner.setSelection(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY
                 - StreamConfiguration.PERFORMANCE_MODE_NONE);
 
+        mInputPresetTableRow = (TableRow) findViewById(R.id.rowInputPreset);
+        mActualInputPresetView = (TextView) findViewById(R.id.actualInputPreset);
+        mInputPresetSpinner = (Spinner) findViewById(R.id.spinnerInputPreset);
+        mInputPresetSpinner.setOnItemSelectedListener(new InputPresetSpinnerListener());
+
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
         mStreamStatusView = (TextView) findViewById(R.id.statusView);
@@ -256,6 +268,9 @@ public class StreamConfigurationView extends LinearLayout {
         mHideSettingsText = getResources().getString(R.string.hint_hide_settings) + " - " + ioText;
         mShowSettingsText = getResources().getString(R.string.hint_show_settings) + " - " + ioText;
         updateSettingsViewText();
+
+        // Don't show InputPresets for output streams.
+        mInputPresetTableRow.setVisibility(output ? View.GONE : View.VISIBLE);
     }
 
 
@@ -306,7 +321,7 @@ public class StreamConfigurationView extends LinearLayout {
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setPerformanceMode(StreamConfiguration.UNSPECIFIED);
+            mRequestedConfiguration.setSampleRate(StreamConfiguration.UNSPECIFIED);
         }
     }
 
@@ -319,7 +334,21 @@ public class StreamConfigurationView extends LinearLayout {
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setPerformanceMode(StreamConfiguration.UNSPECIFIED);
+            mRequestedConfiguration.setFormat(StreamConfiguration.UNSPECIFIED);
+        }
+    }
+
+    private class InputPresetSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            String text = parent.getItemAtPosition(pos).toString();
+            int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
+            mRequestedConfiguration.setInputPreset(inputPreset);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mRequestedConfiguration.setInputPreset(StreamConfiguration.INPUT_PRESET_GENERIC);
         }
     }
 
@@ -367,6 +396,10 @@ public class StreamConfigurationView extends LinearLayout {
         value = mActualConfiguration.getFormat();
         mActualFormatView.setText(StreamConfiguration.convertFormatToText(value));
         mActualFormatView.requestLayout();
+
+        value = mActualConfiguration.getInputPreset();
+        mActualInputPresetView.setText(StreamConfiguration.convertInputPresetToText(value));
+        mActualInputPresetView.requestLayout();
 
         mActualChannelCountView.setText(mActualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(mActualConfiguration.getSampleRate() + "");
