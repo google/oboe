@@ -224,7 +224,7 @@ Result AudioInputStreamOpenSLES::close() {
 }
 
 Result AudioInputStreamOpenSLES::setRecordState_l(SLuint32 newState) {
-    LOGD("AudioInputStreamOpenSLES::%s(%d)", __func__, newState);
+    LOGD("AudioInputStreamOpenSLES::%s(%u)", __func__, newState);
     Result result = Result::OK;
 
     if (mRecordInterface == nullptr) {
@@ -232,8 +232,10 @@ Result AudioInputStreamOpenSLES::setRecordState_l(SLuint32 newState) {
         return Result::ErrorInvalidState;
     }
     SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
+    //LOGD("AudioInputStreamOpenSLES::%s(%u) returned %u", __func__, newState, slResult);
     if (SL_RESULT_SUCCESS != slResult) {
-        LOGE("AudioInputStreamOpenSLES::%s() returned %s", __func__, getSLErrStr(slResult));
+        LOGE("AudioInputStreamOpenSLES::%s(%u) returned error %s",
+                __func__, newState, getSLErrStr(slResult));
         result = Result::ErrorInternal; // TODO review
     }
     return result;

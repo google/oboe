@@ -95,6 +95,7 @@ public class StreamConfiguration {
         mSampleRate = UNSPECIFIED;
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
+        mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
         mFormatConversionAllowed = false;
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;

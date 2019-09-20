@@ -234,6 +234,7 @@ public class StreamConfigurationView extends LinearLayout {
         mActualInputPresetView = (TextView) findViewById(R.id.actualInputPreset);
         mInputPresetSpinner = (Spinner) findViewById(R.id.spinnerInputPreset);
         mInputPresetSpinner.setOnItemSelectedListener(new InputPresetSpinnerListener());
+        mInputPresetSpinner.setSelection(2); // TODO need better way to select voice recording default
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
