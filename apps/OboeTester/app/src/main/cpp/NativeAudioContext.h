@@ -572,6 +572,7 @@ public:
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     GlitchAnalyzer *getGlitchAnalyzer() {
+        if (!mFullDuplexGlitches) return nullptr;
         return mFullDuplexGlitches->getGlitchAnalyzer();
     }
 
