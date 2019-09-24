@@ -54,6 +54,14 @@ public class StreamConfiguration {
     public static final int RATE_CONVERSION_QUALITY_HIGH = 4; // must match Oboe
     public static final int RATE_CONVERSION_QUALITY_BEST = 5; // must match Oboe
 
+
+    public static final int INPUT_PRESET_GENERIC = 1; // must match Oboe
+    public static final int INPUT_PRESET_CAMCORDER = 5; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_RECOGNITION = 6; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_COMMUNICATION = 7; // must match Oboe
+    public static final int INPUT_PRESET_UNPROCESSED = 9; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_PERFORMANCE = 10; // must match Oboe
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;
@@ -67,6 +75,7 @@ public class StreamConfiguration {
     private boolean mFormatConversionAllowed;
     private boolean mChannelConversionAllowed;
     private int mRateConversionQuality;
+    private int mInputPreset;
 
     private int mFramesPerBurst = 0;
 
@@ -86,6 +95,7 @@ public class StreamConfiguration {
         mSampleRate = UNSPECIFIED;
         mSharingMode = SHARING_MODE_SHARED;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
+        mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
         mFormatConversionAllowed = false;
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
@@ -130,6 +140,13 @@ public class StreamConfiguration {
 
     public void setPerformanceMode(int performanceMode) {
         this.mPerformanceMode = performanceMode;
+    }
+
+    public int getInputPreset() {
+        return mInputPreset;
+    }
+    public void setInputPreset(int inputPreset) {
+        this.mInputPreset = inputPreset;
     }
 
     static String convertPerformanceModeToText(int performanceMode) {
@@ -190,6 +207,7 @@ public class StreamConfiguration {
         }
     }
 
+
     public String dump() {
         String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
         StringBuffer message = new StringBuffer();
@@ -205,6 +223,42 @@ public class StreamConfiguration {
         message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
         message.append(String.format("%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
         return message.toString();
+    }
+
+    public static String convertInputPresetToText(int inputPreset) {
+        switch(inputPreset) {
+            case INPUT_PRESET_GENERIC:
+                return "Generic"; // text must match menu values
+            case INPUT_PRESET_CAMCORDER:
+                return "Camcorder";
+            case INPUT_PRESET_VOICE_RECOGNITION:
+                return "VoiceRec";
+            case INPUT_PRESET_VOICE_COMMUNICATION:
+                return "VoiceComm";
+            case INPUT_PRESET_UNPROCESSED:
+                return "Unprocessed";
+            case INPUT_PRESET_VOICE_PERFORMANCE:
+                return "Performance";
+            default:
+                return "Invalid";
+        }
+    }
+
+    public static int convertTextToInputPreset(String text) {
+        if (convertInputPresetToText(INPUT_PRESET_GENERIC).equals(text)) {
+            return INPUT_PRESET_GENERIC;
+        } else if (convertInputPresetToText(INPUT_PRESET_CAMCORDER).equals(text)) {
+                return INPUT_PRESET_CAMCORDER;
+        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_RECOGNITION).equals(text)) {
+            return INPUT_PRESET_VOICE_RECOGNITION;
+        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_COMMUNICATION).equals(text)) {
+            return INPUT_PRESET_VOICE_COMMUNICATION;
+        } else if (convertInputPresetToText(INPUT_PRESET_UNPROCESSED).equals(text)) {
+            return INPUT_PRESET_UNPROCESSED;
+        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_PERFORMANCE).equals(text)) {
+            return INPUT_PRESET_VOICE_PERFORMANCE;
+        }
+        return -1;
     }
 
     public int getChannelCount() {

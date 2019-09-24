@@ -42,6 +42,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jint format,
                                                        jint sharingMode,
                                                        jint performanceMode,
+                                                       jint inputPreset,
                                                        jint deviceId,
                                                        jint sessionId,
                                                        jint framesPerBurst,
@@ -100,6 +101,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         jint format,
         jint sharingMode,
         jint performanceMode,
+        jint inputPreset,
         jint deviceId,
         jint sessionId,
         jint framesPerBurst,
@@ -116,6 +118,7 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
                                                     format,
                                                     sharingMode,
                                                     performanceMode,
+                                                    inputPreset,
                                                     deviceId,
                                                     sessionId,
                                                     framesPerBurst,
@@ -241,6 +244,17 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getPerformanceMode(
     oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = (jint) oboeStream->getPerformanceMode();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getInputPreset(
+        JNIEnv *env, jobject, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getInputPreset();
     }
     return result;
 }

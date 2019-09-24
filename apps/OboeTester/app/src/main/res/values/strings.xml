@@ -57,6 +57,16 @@
         <item>PCM_FLOAT</item>
     </string-array>
 
+    <string name="input_preset_prompt">InPreset:</string>
+    <string-array name="audio_input_presets">
+        <item>Generic</item>
+        <item>Camcorder</item>
+        <item>VoiceRec</item>
+        <item>VoiceComm</item>
+        <item>Unprocessed</item>
+        <item>Performance</item>
+    </string-array>
+
     <string name="channel_count_prompt">Channels:</string>
     <string-array name="channel_counts">
         <item>0</item>

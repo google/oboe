@@ -148,6 +148,7 @@ int ActivityContext::open(jint nativeApi,
                           jint format,
                           jint sharingMode,
                           jint performanceMode,
+                          jint inputPreset,
                           jint deviceId,
                           jint sessionId,
                           jint framesPerBurst,
@@ -179,12 +180,13 @@ int ActivityContext::open(jint nativeApi,
         return (jint) oboe::Result::ErrorOutOfRange;
     }
 
-    // Create an audio output stream.
+    // Create an audio stream.
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(channelCount)
             ->setDirection(isInput ? oboe::Direction::Input : oboe::Direction::Output)
             ->setSharingMode((oboe::SharingMode) sharingMode)
             ->setPerformanceMode((oboe::PerformanceMode) performanceMode)
+            ->setInputPreset((oboe::InputPreset)inputPreset)
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)

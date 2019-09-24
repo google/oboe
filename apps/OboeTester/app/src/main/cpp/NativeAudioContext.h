@@ -190,6 +190,7 @@ public:
              jint format,
              jint sharingMode,
              jint performanceMode,
+             jint inputPreset,
              jint deviceId,
              jint sessionId,
              jint framesPerBurst,
