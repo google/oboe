@@ -221,6 +221,13 @@ public class GlitchActivity extends AnalyzerActivity {
         mAnalyzerTextView.setText(s);
     }
 
+    /**
+     * Set tolerance to deviations from expected value.
+     * The normalized value will be converted in the native code.
+     * @param tolerance normalized between 0.0 and 1.0
+     */
+    public native void setTolerance(float tolerance);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

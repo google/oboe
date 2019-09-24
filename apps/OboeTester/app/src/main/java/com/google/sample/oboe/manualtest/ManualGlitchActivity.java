@@ -17,13 +17,13 @@
 package com.google.sample.oboe.manualtest;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.Date;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
@@ -51,13 +51,48 @@ public class ManualGlitchActivity extends GlitchActivity {
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
+    private static final double DEFAULT_TOLERANCE = 0.1;
+
+    private TextView mTextTolerance;
+    private SeekBar mFaderTolerance;
+    protected ExponentialTaper mTaperTolerance;
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
+
+    private SeekBar.OnSeekBarChangeListener mToleranceListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            setToleranceProgress(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    };
+
+    protected void setToleranceProgress(int progress) {
+        double tolerance = mTaperTolerance.linearToExponential(
+                ((double)progress) / FADER_PROGRESS_MAX);
+        setTolerance((float)tolerance);
+        mTextTolerance.setText("Tolerance = " + String.format("%5.3f", tolerance));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBundleFromIntent = getIntent().getExtras();
+
+        mTextTolerance = (TextView) findViewById(R.id.textTolerance);
+        mFaderTolerance = (SeekBar) findViewById(R.id.faderTolerance);
+        mTaperTolerance = new ExponentialTaper(0.0, 0.5, 100.0);
+        int defaultProgress = (int) Math.round((mTaperTolerance.exponentialToLinear(
+                DEFAULT_TOLERANCE) * FADER_PROGRESS_MAX));
+        mFaderTolerance.setOnSeekBarChangeListener(mToleranceListener);
+        mFaderTolerance.setProgress(defaultProgress);
     }
 
     @Override
@@ -110,6 +145,7 @@ public class ManualGlitchActivity extends GlitchActivity {
             return StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY;
         }
     }
+
     private int getSharingFromText(String text) {
         if (VALUE_SHARING_SHARED.equals(text)) {
             return StreamConfiguration.SHARING_MODE_SHARED;
@@ -151,6 +187,11 @@ public class ManualGlitchActivity extends GlitchActivity {
         requestedInConfig.setChannelCount(inChannels);
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
+    }
+
+    public void startAudioTest() throws IOException {
+        super.startAudioTest();
+        setToleranceProgress(mFaderTolerance.getProgress());
     }
 
     void startAutomaticTest() {

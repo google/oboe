@@ -758,6 +758,20 @@ public:
         return mPeakFollower.get();
     }
 
+    float getTolerance() {
+        return mTolerance;
+    }
+
+    void setTolerance(float tolerance) {
+        mTolerance = tolerance;
+        mScaledTolerance = mMagnitude * mTolerance;
+    }
+
+    void setMagnitude(double magnitude) {
+        mMagnitude = magnitude;
+        mScaledTolerance = mMagnitude * mTolerance;
+    }
+
     int32_t getGlitchCount() {
         return mGlitchCount;
     }
@@ -827,10 +841,10 @@ public:
         return magnitude;
     }
 
-    /**
-     * @param inputData contains microphone data with sine signal feedback
-     * @param outputData contains the reference sine wave
-     */
+/**
+         * @param inputData contains microphone data with sine signal feedback
+         * @param outputData contains the reference sine wave
+         */
     result_code processOneFrame(float *inputData, int inputChannelCount,
                                 float *outputData, int outputChannelCount) {
         result_code result = RESULT_OK;
@@ -887,13 +901,12 @@ public:
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
                     mPhaseOffset = 0.0;
-                    mMagnitude = calculateMagnitude(&mPhaseOffset);
+                    setMagnitude(calculateMagnitude(&mPhaseOffset));
 //                    LOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
                         if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
                             mState = STATE_LOCKED;
-                            mScaledTolerance = mMagnitude * kTolerance;
 //                            LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
                         mPreviousPhaseOffset = mPhaseOffset;
@@ -927,8 +940,7 @@ public:
                         double phaseOffset = 0.0;
                         double magnitude = calculateMagnitude(&phaseOffset);
                         // One pole averaging filter.
-                        mMagnitude = (mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient);
-                        mScaledTolerance = mMagnitude * kTolerance;
+                        setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
 
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
@@ -1081,9 +1093,10 @@ private:
         MIN_SNRATIO_DB = 65
     };
 
-    static constexpr float kTolerance = 0.10; // scale from 0.0 to 1.0
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
     static constexpr int kTargetGlitchFrequency = 607;
+
+    float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mThreshold = 0.005;
     int     mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
