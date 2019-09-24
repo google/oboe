@@ -22,8 +22,6 @@ import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.google.sample.oboe.manualtest.R;
-
 
 abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
@@ -39,7 +37,7 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             double amplitude = mTaperAmplitude.linearToExponential(
-                    ((double)progress)/FADER_THRESHOLD_MAX);
+                    ((double)progress) / FADER_PROGRESS_MAX);
             mAudioOutTester.setAmplitude(amplitude);
             mTextAmplitude.setText("Amplitude = " + amplitude);
         }

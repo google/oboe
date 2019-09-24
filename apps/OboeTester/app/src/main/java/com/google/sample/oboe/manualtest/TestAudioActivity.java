@@ -42,7 +42,7 @@ import java.util.Date;
 abstract class TestAudioActivity extends Activity {
     public static final String TAG = "TestOboe";
 
-    protected static final int FADER_THRESHOLD_MAX = 1000;
+    protected static final int FADER_PROGRESS_MAX = 1000;
     public static final int STATE_OPEN = 0;
     public static final int STATE_STARTED = 1;
     public static final int STATE_PAUSED = 2;
