@@ -70,7 +70,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
     // Periodically query for glitches from the native detector.
     protected class GlitchSniffer {
-        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 50;
+        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 100;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
 
         private long mTimeAtStart;

@@ -93,7 +93,7 @@ public class StreamConfiguration {
         mSessionId = -1;
         mFormat = AUDIO_FORMAT_PCM_FLOAT;
         mSampleRate = UNSPECIFIED;
-        mSharingMode = SHARING_MODE_SHARED;
+        mSharingMode = SHARING_MODE_EXCLUSIVE;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
         mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
         mFormatConversionAllowed = false;
