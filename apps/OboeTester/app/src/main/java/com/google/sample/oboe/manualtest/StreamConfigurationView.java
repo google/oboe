@@ -197,6 +197,7 @@ public class StreamConfigurationView extends LinearLayout {
                         : StreamConfiguration.SHARING_MODE_SHARED);
             }
         });
+        mRequestedExclusiveView.setChecked(true);
 
         mActualSessionIdView = (TextView) findViewById(R.id.sessionId);
         mRequestAudioEffect = (CheckBox) findViewById(R.id.requestAudioEffect);
