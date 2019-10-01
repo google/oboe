@@ -29,10 +29,11 @@ public class BufferSizeView extends LinearLayout {
 
     AudioOutputTester mAudioOutTester;
 
-    protected static final int FADER_THRESHOLD_MAX = 1000;
+    protected static final int FADER_THRESHOLD_MAX = 1000; // must match layout
     protected TextView mTextThreshold;
     protected SeekBar mFaderThreshold;
     protected ExponentialTaper mTaperThreshold;
+    private int mCachedCapacity;
 
     private SeekBar.OnSeekBarChangeListener mThresholdListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
@@ -93,7 +94,7 @@ public class BufferSizeView extends LinearLayout {
         mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
         mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
         mTaperThreshold = new ExponentialTaper(0.0, 1.0, 10.0);
-        mFaderThreshold.setProgress(FADER_THRESHOLD_MAX);
+        mFaderThreshold.setProgress(0);
     }
 
     private void setBufferSizeByPosition(int progress) {
@@ -102,21 +103,29 @@ public class BufferSizeView extends LinearLayout {
                 ((double)progress)/FADER_THRESHOLD_MAX);
         if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
         else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
-        message.append("bufferSize = ");
-        if (getAudioOutTester() != null) {
-            int percent = (int) (normalizedThreshold * 100);
-            message.append(percent + "%");
-            int requested = getAudioOutTester().setNormalizedThreshold(normalizedThreshold);
-            if (requested > 0) {
-                message.append(" = " + requested);
-                int bufferSize = getAudioOutTester().getCurrentAudioStream().getBufferSizeInFrames();
-                int bufferCapacity = getAudioOutTester().getCurrentAudioStream().getBufferCapacityInFrames();
-                if (bufferSize >= 0) {
-                    message.append(" / " + bufferSize + " / " + bufferCapacity);
-                }
+        int  percent = (int) (normalizedThreshold * 100);
+        message.append("bufferSize = " + percent + "%");
+
+        OboeAudioStream stream = null;
+        int sizeFrames = 0;
+        if (getAudioOutTester()  != null) {
+            stream = (OboeAudioStream) getAudioOutTester().getCurrentAudioStream();
+            if (stream != null) {
+                int capacity = stream.getBufferCapacityInFrames();
+                if (capacity > 0) mCachedCapacity = capacity;
             }
-        } else {
-            mTextThreshold.setText(" null!!! " + progress);
+        }
+        if (mCachedCapacity > 0) {
+            sizeFrames = (int) (normalizedThreshold * mCachedCapacity);
+            message.append(" = " + sizeFrames);
+            if (stream != null) {
+                stream.setBufferSizeInFrames(sizeFrames);
+            }
+            int bufferSize = getAudioOutTester().getCurrentAudioStream().getBufferSizeInFrames();
+            if (bufferSize >= 0) {
+                message.append(" / " + bufferSize);
+            }
+            message.append(" / " + mCachedCapacity);
         }
         mTextThreshold.setText(message.toString());
     }
