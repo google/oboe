@@ -389,17 +389,6 @@ void ActivityTestOutput::configureStreamGateway() {
     if (mUseCallback) {
         oboeCallbackProxy.setCallback(&audioStreamGateway);
     }
-
-    // Set starting size of buffer.
-    constexpr int kDefaultNumBursts = 2; // "double buffer"
-    int32_t numBursts = kDefaultNumBursts;
-    // callbackSize is used for both callbacks and blocking write
-    numBursts = (callbackSize <= mFramesPerBurst)
-                ? kDefaultNumBursts
-                : ((callbackSize * kDefaultNumBursts) + mFramesPerBurst - 1)
-                  / mFramesPerBurst;
-    outputStream->setBufferSizeInFrames(numBursts * mFramesPerBurst);
-
 }
 
 void ActivityTestOutput::runBlockingIO() {

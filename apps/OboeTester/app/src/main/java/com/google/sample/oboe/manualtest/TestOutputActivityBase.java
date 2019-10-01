@@ -22,6 +22,8 @@ import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 
 abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
@@ -74,12 +76,13 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         return audioOutTester;
     }
 
-    public void pauseAudio() {
-        super.pauseAudio();
-    }
 
-    public void stopAudio() {
-        super.stopAudio();
+    @Override
+    public void openAudio() throws IOException {
+        super.openAudio();
+        if (mBufferSizeView != null) {
+            mBufferSizeView.updateBufferSize();
+        }
     }
 
     // TODO Add editor

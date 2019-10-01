@@ -195,13 +195,13 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             log(getConfigText(actualInConfig));
             log(getConfigText(actualOutConfig));
             // Set output size to a level that will avoid glitches.
-            int sizeFrames = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames();
-            mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
+            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
+            int sizeFrames = stream.getBufferCapacityInFrames() / 2;
+            stream.setBufferSizeInFrames(sizeFrames);
         } catch (IOException e) {
             openFailed = true;
             log(e.getMessage());
         }
-
 
         // The test would only be worth running if we got the configuration we requested on input or output.
         boolean valid = true;

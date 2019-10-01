@@ -132,16 +132,8 @@ public class AnalyzerActivity extends TestInputActivity {
     public void startAudio() {
         if (mBufferSizeView != null && mBufferSizeView.isEnabled()) {
             mBufferSizeView.updateBufferSize();
-            mBufferSizeView.setEnabled(false);
         }
         super.startAudio();
-    }
-
-    public void stopAudio() {
-        if (mBufferSizeView != null) {
-            mBufferSizeView.setEnabled(true);
-        }
-        super.stopAudio();
     }
 
     public void onStreamClosed() {
