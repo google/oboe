@@ -1,5 +1,5 @@
 # Projects using Oboe or AAudio
-
+Based on Google Play data there are over 200 apps using Oboe. Here is a list of those who have given permission to be listed publicly. 
 
 Want your project added? [Add a comment to issue #214](https://github.com/google/oboe/issues/214) with 
 your project name and Play Store URL. 
