@@ -149,17 +149,26 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     result = streamP->open(); // TODO review API
     if (result == Result::OK) {
 
-        // Use a reasonable default buffer size for low latency streams.
-        if (streamP->getPerformanceMode() == PerformanceMode::LowLatency){
-            int32_t optimalBufferSize = streamP->getFramesPerBurst() *
-                                        kBufferSizeInBurstsForLowLatencyStreams;
+        int32_t  optimalBufferSize = -1;
+        // Use a reasonable default buffer size.
+        if (streamP->getDirection() == Direction::Input) {
+            // For input, small size does not improve latency because the stream is usually
+            // run close to empty. And a low size can result in XRuns so always use the maximum.
+            optimalBufferSize = streamP->getBufferCapacityInFrames();
+        } else if (streamP->getPerformanceMode() == PerformanceMode::LowLatency
+                && streamP->getDirection() == Direction::Output)  { // // output check is redundant
+            optimalBufferSize = streamP->getFramesPerBurst() *
+                                    kBufferSizeInBurstsForLowLatencyStreams;
+        }
+        if (optimalBufferSize >= 0) {
             auto setBufferResult = streamP->setBufferSizeInFrames(optimalBufferSize);
-            if (!setBufferResult){
+            if (!setBufferResult) {
                 LOGW("Failed to set buffer size to %d. Error was %s",
                      optimalBufferSize,
                      convertToText(setBufferResult.error()));
             }
         }
+
         *streamPP = streamP;
     } else {
         delete streamP;
