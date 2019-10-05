@@ -60,6 +60,9 @@ public class TestInputActivity  extends TestAudioActivity
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_test_input);
+
+        BufferSizeView bufferSizeView = findViewById(R.id.buffer_size_view);
+        bufferSizeView.setVisibility(View.GONE);
     }
 
     @Override
@@ -76,6 +79,7 @@ public class TestInputActivity  extends TestAudioActivity
         updateEnabledWidgets();
 
         mAudioInputTester = addAudioInputTester();
+
     }
 
     @Override
