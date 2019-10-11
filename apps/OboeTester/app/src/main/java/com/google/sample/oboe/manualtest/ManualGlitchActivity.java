@@ -60,6 +60,8 @@ public class ManualGlitchActivity extends GlitchActivity {
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
 
+    private float   mTolerance = DEFAULT_TOLERANCE;
+
     private SeekBar.OnSeekBarChangeListener mToleranceListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -76,9 +78,9 @@ public class ManualGlitchActivity extends GlitchActivity {
     };
 
     protected void setToleranceProgress(int progress) {
-        double tolerance = mTaperTolerance.linearToExponential(
+        float tolerance = (float) mTaperTolerance.linearToExponential(
                 ((double)progress) / FADER_PROGRESS_MAX);
-        setTolerance((float)tolerance);
+        setTolerance(tolerance);
         mTextTolerance.setText("Tolerance = " + String.format("%5.3f", tolerance));
     }
 
@@ -191,6 +193,7 @@ public class ManualGlitchActivity extends GlitchActivity {
         float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);
         setToleranceFader(tolerance);
         setTolerance(tolerance);
+        mTolerance = tolerance;
 
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedInConfig.setChannelCount(inChannels);
@@ -232,7 +235,9 @@ public class ManualGlitchActivity extends GlitchActivity {
     }
 
     void stopAutomaticTest() {
-        String report = getCommonTestReport() + mLastGlitchReport;
+        String report = getCommonTestReport()
+                + String.format("tolerance = %5.3f\n", mTolerance)
+                + mLastGlitchReport;
         onStopAudioTest(null);
         maybeWriteTestResult(report);
         mTestRunningByIntent = false;
