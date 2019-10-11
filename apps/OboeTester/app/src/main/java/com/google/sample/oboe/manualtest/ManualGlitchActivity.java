@@ -51,13 +51,16 @@ public class ManualGlitchActivity extends GlitchActivity {
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
-    private static final double DEFAULT_TOLERANCE = 0.1;
+    public static final String KEY_TOLERANCE = "tolerance";
+    private static final float DEFAULT_TOLERANCE = 0.1f;
 
     private TextView mTextTolerance;
     private SeekBar mFaderTolerance;
     protected ExponentialTaper mTaperTolerance;
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
+
+    private float   mTolerance = DEFAULT_TOLERANCE;
 
     private SeekBar.OnSeekBarChangeListener mToleranceListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
@@ -75,9 +78,9 @@ public class ManualGlitchActivity extends GlitchActivity {
     };
 
     protected void setToleranceProgress(int progress) {
-        double tolerance = mTaperTolerance.linearToExponential(
+        float tolerance = (float) mTaperTolerance.linearToExponential(
                 ((double)progress) / FADER_PROGRESS_MAX);
-        setTolerance((float)tolerance);
+        setTolerance(tolerance);
         mTextTolerance.setText("Tolerance = " + String.format("%5.3f", tolerance));
     }
 
@@ -89,10 +92,14 @@ public class ManualGlitchActivity extends GlitchActivity {
         mTextTolerance = (TextView) findViewById(R.id.textTolerance);
         mFaderTolerance = (SeekBar) findViewById(R.id.faderTolerance);
         mTaperTolerance = new ExponentialTaper(0.0, 0.5, 100.0);
-        int defaultProgress = (int) Math.round((mTaperTolerance.exponentialToLinear(
-                DEFAULT_TOLERANCE) * FADER_PROGRESS_MAX));
         mFaderTolerance.setOnSeekBarChangeListener(mToleranceListener);
-        mFaderTolerance.setProgress(defaultProgress);
+        setToleranceFader(DEFAULT_TOLERANCE);
+    }
+
+    private void setToleranceFader(float tolerance) {
+        int progress = (int) Math.round((mTaperTolerance.exponentialToLinear(
+                tolerance) * FADER_PROGRESS_MAX));
+        mFaderTolerance.setProgress(progress);
     }
 
     @Override
@@ -183,6 +190,11 @@ public class ManualGlitchActivity extends GlitchActivity {
         requestedInConfig.setSampleRate(sampleRate);
         requestedOutConfig.setSampleRate(sampleRate);
 
+        float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);
+        setToleranceFader(tolerance);
+        setTolerance(tolerance);
+        mTolerance = tolerance;
+
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedInConfig.setChannelCount(inChannels);
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
@@ -223,7 +235,9 @@ public class ManualGlitchActivity extends GlitchActivity {
     }
 
     void stopAutomaticTest() {
-        String report = getCommonTestReport() + mLastGlitchReport;
+        String report = getCommonTestReport()
+                + String.format("tolerance = %5.3f\n", mTolerance)
+                + mLastGlitchReport;
         onStopAudioTest(null);
         maybeWriteTestResult(report);
         mTestRunningByIntent = false;
