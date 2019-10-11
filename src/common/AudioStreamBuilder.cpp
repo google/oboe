@@ -156,7 +156,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             // run close to empty. And a low size can result in XRuns so always use the maximum.
             optimalBufferSize = streamP->getBufferCapacityInFrames();
         } else if (streamP->getPerformanceMode() == PerformanceMode::LowLatency
-                && streamP->getDirection() == Direction::Output)  { // // output check is redundant
+                && streamP->getDirection() == Direction::Output)  { // Output check is redundant.
             optimalBufferSize = streamP->getFramesPerBurst() *
                                     kBufferSizeInBurstsForLowLatencyStreams;
         }
