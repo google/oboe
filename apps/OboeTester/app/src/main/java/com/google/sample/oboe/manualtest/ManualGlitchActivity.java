@@ -51,7 +51,8 @@ public class ManualGlitchActivity extends GlitchActivity {
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
-    private static final double DEFAULT_TOLERANCE = 0.1;
+    public static final String KEY_TOLERANCE = "tolerance";
+    private static final float DEFAULT_TOLERANCE = 0.1f;
 
     private TextView mTextTolerance;
     private SeekBar mFaderTolerance;
@@ -89,10 +90,14 @@ public class ManualGlitchActivity extends GlitchActivity {
         mTextTolerance = (TextView) findViewById(R.id.textTolerance);
         mFaderTolerance = (SeekBar) findViewById(R.id.faderTolerance);
         mTaperTolerance = new ExponentialTaper(0.0, 0.5, 100.0);
-        int defaultProgress = (int) Math.round((mTaperTolerance.exponentialToLinear(
-                DEFAULT_TOLERANCE) * FADER_PROGRESS_MAX));
         mFaderTolerance.setOnSeekBarChangeListener(mToleranceListener);
-        mFaderTolerance.setProgress(defaultProgress);
+        setToleranceFader(DEFAULT_TOLERANCE);
+    }
+
+    private void setToleranceFader(float tolerance) {
+        int progress = (int) Math.round((mTaperTolerance.exponentialToLinear(
+                tolerance) * FADER_PROGRESS_MAX));
+        mFaderTolerance.setProgress(progress);
     }
 
     @Override
@@ -182,6 +187,10 @@ public class ManualGlitchActivity extends GlitchActivity {
         int sampleRate = bundle.getInt(KEY_SAMPLE_RATE, VALUE_DEFAULT_SAMPLE_RATE);
         requestedInConfig.setSampleRate(sampleRate);
         requestedOutConfig.setSampleRate(sampleRate);
+
+        float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);
+        setToleranceFader(tolerance);
+        setTolerance(tolerance);
 
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedInConfig.setChannelCount(inChannels);
