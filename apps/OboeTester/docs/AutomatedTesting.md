@@ -55,6 +55,8 @@ There are several optional parameters for the "glitch" test:
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --ei sample_rate        {hertz}
+    --ef tolerance          {tolerance}  // amount of deviation from expected that is considered a glitch
+                                         // Range of tolerance is 0.0 to 1.0. Default is 0.1. Note use of "-ef".
     --ei duration           {seconds}    // glitch test duration, default is 10 seconds
     --ei in_channels        {samples}    // number of input channels, default is 2
     --ei out_channels       {samples}    // number of output channels, default is 2
@@ -76,11 +78,12 @@ or for a "glitch" test:
         --es test glitch \
         --es file /sdcard/glitch20190903.txt \
         --es in_perf lowlat \
-        --es out_perf none \
-        --es in_sharing shared \
-        --es out_sharing shared \
+        --es out_perf lowlat \
+        --es in_sharing exclusive \
+        --es out_sharing exclusive \
         --ei buffer_bursts 2 \
-        --ei sample_rate 44100 \
+        --ei sample_rate 48000 \
+        --ef tolerance 0.123 \
         --ei in_channels 2 \
         --ei out_channels 2 
 
@@ -148,6 +151,7 @@ Here is a report from a test that failed because the output was muted. Note the 
 
 Here is a report from a good test. The '#' comments were added for this document and are not in the report.
 
+    tolerance = 0.123
     state = LOCKED
     unlocked.frames = 2528   # frames spent trying to lock onto the signal
     locked.frames = 384084   # frames spent locked onto a good signal with no glitches
