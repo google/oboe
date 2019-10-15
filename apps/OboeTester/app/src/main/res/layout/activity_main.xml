@@ -154,6 +154,17 @@
         app:layout_constraintStart_toStartOf="@+id/useCallback"
         app:layout_constraintTop_toBottomOf="@+id/useCallback" />
 
+    <CheckBox
+        android:id="@+id/boxEnableWorkarounds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:checked="true"
+        android:onClick="onEnableWorkarounds"
+        android:text="enable Oboe workarounds"
+        app:layout_constraintStart_toStartOf="@+id/setSpeakerphoneOn"
+        app:layout_constraintTop_toBottomOf="@+id/setSpeakerphoneOn" />
+
 
     <TextView
         android:id="@+id/textView2"
@@ -161,7 +172,7 @@
         android:layout_height="wrap_content"
         android:text="Mode:"
         app:layout_constraintBaseline_toBaselineOf="@+id/spinnerAudioMode"
-        app:layout_constraintStart_toStartOf="@+id/setSpeakerphoneOn" />
+        app:layout_constraintStart_toStartOf="@+id/boxEnableWorkarounds" />
 
     <Spinner
         android:id="@+id/spinnerAudioMode"
@@ -170,7 +181,7 @@
         android:entries="@array/audio_modes"
         android:prompt="@string/audio_mode_prompt"
         app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/setSpeakerphoneOn" />
+        app:layout_constraintTop_toBottomOf="@+id/boxEnableWorkarounds" />
 
 
     <TextView

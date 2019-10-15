@@ -19,10 +19,13 @@
 
 #include <memory>
 #include <oboe/AudioStreamBuilder.h>
+#include <aaudio/AudioStreamAAudio.h>
 
 namespace oboe {
 
 /**
+ * INTERNAL USE ONLY.
+ *
  * Based on manufacturer, model and Android version number
  * decide whether data conversion needs to occur.
  *
@@ -33,11 +36,17 @@ class QuirksManager {
 public:
 
     static QuirksManager &getInstance() {
-        static QuirksManager instance;
+        static QuirksManager instance; // singleton
         return instance;
     }
 
+    QuirksManager();
+    virtual ~QuirksManager() = default;
+
     /**
+     * Do we need to do channel, format or rate conversion to provide a low latency
+     * stream for this builder? If so then provide a builder for the native child stream
+     * that will be used to get low latency.
      *
      * @param builder builder provided by application
      * @param childBuilder modified builder appropriate for the underlying device
@@ -45,7 +54,42 @@ public:
      */
     bool isConversionNeeded(const AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
 
+    static bool isMMapUsed(AudioStream &stream) {
+        bool answer = false;
+        if (stream.getAudioApi() == AudioApi::AAudio) {
+            AudioStreamAAudio *streamAAudio =
+                    reinterpret_cast<AudioStreamAAudio *>(&stream);
+            answer = streamAAudio->isMMapUsed();
+        }
+        return answer;
+    }
+
+    virtual int32_t clipBufferSize(AudioStream &stream, int32_t bufferSize) {
+        return mDeviceQuirks->clipBufferSize(stream, bufferSize);
+    }
+
+    class DeviceQuirks {
+    public:
+        virtual ~DeviceQuirks() = default;
+
+        /**
+         * Restrict buffer size. This is mainly to avoid glitches caused by MMAP
+         * timestamp inaccuracies.
+         * @param stream
+         * @param requestedSize
+         * @return
+         */
+        int32_t clipBufferSize(AudioStream &stream, int32_t requestedSize);
+
+        virtual int32_t getBottomMarginInBursts() const { return 0; }
+
+        virtual int32_t getTopMarginInBursts() const { return 0; }
+    };
+
 private:
+
+    std::unique_ptr<DeviceQuirks> mDeviceQuirks{};
+
 };
 
 }

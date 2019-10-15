@@ -228,4 +228,9 @@ public class MainActivity extends Activity {
         myAudioMgr.setSpeakerphoneOn(enabled);
     }
 
+    public void onEnableWorkarounds(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        boolean enabled = checkBox.isChecked();
+        NativeEngine.setWorkaroundsEnabled(enabled);
+    }
 }

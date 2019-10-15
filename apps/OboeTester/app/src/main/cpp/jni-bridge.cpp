@@ -97,6 +97,12 @@ Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapExclusiveSupported(JNI
     return AAudioExtensions::getInstance().isMMapExclusiveSupported();
 }
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_setWorkaroundsEnabled(JNIEnv *env, jclass type,
+                                                                          jboolean enabled) {
+    oboe::OboeGlobals::setWorkaroundsEnabled(enabled);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,

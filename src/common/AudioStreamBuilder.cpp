@@ -26,6 +26,8 @@
 #include "opensles/AudioStreamOpenSLES.h"
 #include "QuirksManager.h"
 
+bool oboe::OboeGlobals::mWorkaroundsEnabled = true;
+
 namespace oboe {
 
 /**

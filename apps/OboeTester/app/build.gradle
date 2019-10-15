@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId = "com.google.sample.oboe.manualtest"
-        minSdkVersion 25
+        minSdkVersion 23
         targetSdkVersion 28
         // Also update the version in the AndroidManifest.xml file.
         versionCode 29
