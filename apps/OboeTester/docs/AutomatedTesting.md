@@ -129,7 +129,7 @@ Here is a report from a good test. The '#' comments were added for this document
 
     rms.signal = 0.81829  # Root Mean Square of the signal, if it can be detected
     rms.noise = 0.12645   # Root Mean Square of the background noise before the signal is detected
-    reset.count = 2       # number of times the full duplex stream input underflowed and had to resyncronize
+    reset.count = 2       # number of times the full duplex stream input underflowed and had to resynchronize
     result = 0            # 0 or a negative error
     result.text = OK      # text equivalent of the result
     latency.empty.frames = 476   # round trip latency if the top output buffer was empty
@@ -156,13 +156,13 @@ Here is a report from a good test. The '#' comments were added for this document
     unlocked.frames = 2528   # frames spent trying to lock onto the signal
     locked.frames = 384084   # frames spent locked onto a good signal with no glitches
     glitch.frames = 0        # frames spent glitching or recovering from a glitch
-    reset.count = 208        # number of times the full duplex stream input underflowed and had to resyncronize
+    reset.count = 208        # number of times the full duplex stream input underflowed and had to resynchronize
     peak.amplitude = 0.057714  # peak amplitude of the input signal, between 0.0 and 1.0
     signal.noise.ratio.db =  96.3
     time.total =     9.96 seconds  # close to your specified duration
     time.no.glitches =     9.96    # time we have been running with no glitches 
     max.time.no.glitches =     9.96 # max time with no glitches
-    glitch.count = 0               # number of glitch events, actual number may be higher is close together
+    glitch.count = 0               # number of glitch events, actual number may be higher if close together
     
 Here is a report from a test that failed because the output was muted. Note the glitch.count is missing because it could not be measured.
 
