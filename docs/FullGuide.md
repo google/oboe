@@ -3,7 +3,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 ## Audio streams
 
-Oboe moves audio data between your app and the audio inputs and outputs on your Android device. Your app passes data in and out by reading from and writing to *audio streams*, represented by the class `AudioStream`. The read/write calls can be blocking or non-blocking.
+Oboe moves audio data between your app and the audio inputs and outputs on your Android device. Your app passes data in and out using a callback function or by reading from and writing to *audio streams*, represented by the class `AudioStream`. The read/write calls can be blocking or non-blocking.
 
 A stream is defined by the following:
 
@@ -32,7 +32,7 @@ A stream has a sharing mode:
 
 ![Oboe exclusive sharing mode diagram](images/oboe-sharing-mode-exclusive.jpg)
 
-*   `SharingMode::Shared` allows Oboe to mix audio. Oboe mixes all the shared streams assigned to the same endpoint on the audio device.
+*   `SharingMode::Shared` allows Oboe streams to share an endpoint. The operating system will mix all the shared streams assigned to the same endpoint on the audio device.
 
 ![Oboe exclusive sharing mode diagram](images/oboe-sharing-mode-shared.jpg)
 
@@ -54,7 +54,7 @@ Oboe permits these sample formats:
 | I16 | int16_t | common 16-bit samples, [Q0.15 format](https://source.android.com/devices/audio/data_formats#androidFormats) |
 | Float | float | -1.0 to +1.0 |
 
-Oboe might perform sample conversion on its own. For example, if an app is writing FLOAT data but the HAL uses PCM_I16, Oboe might convert the samples automatically. Conversion can happen in either direction. If your app processes audio input, it is wise to verify the input format and be prepared to convert data if necessary, as in this example:
+Oboe might perform sample conversion on its own. For example, if an app is writing AudioFormat::Float data but the HAL uses AudioFormat::I16, Oboe might convert the samples automatically. Conversion can happen in either direction. If your app processes audio input, it is wise to verify the input format and be prepared to convert data if necessary, as in this example:
 
     AudioFormat dataFormat = stream->getDataFormat();
     //... later
@@ -80,7 +80,7 @@ Use the builder functions that correspond to the stream parameters. These option
     streamBuilder.setFormat(format);
     streamBuilder.setPerformanceMode(perfMode);
 
-Note that these methods do not report errors, such as an undefined constant or value out of range.
+Note that these methods do not report errors, such as an undefined constant or value out of range. They will be checked when the stream is opened.
 
 If you do not specify the deviceId, the default is the primary output device.
 If you do not specify the stream direction, the default is an output stream.
@@ -108,7 +108,7 @@ After you've configured the `AudioStreamBuilder`, call `openStream()` to open th
 You should verify the stream's configuration after opening it.
 
 The following properties are guaranteed to be set. However, if these properties 
-are unspecified,a default value will still be set, and should be queried by the 
+are unspecified, a default value will still be set, and should be queried by the 
 appropriate accessor.
 
 * callback 
@@ -127,7 +127,7 @@ accessor. The property settings will depend on device capabilities.
 * performanceMode 
 
 The following properties are only set by the underlying stream. They cannot be
-set, but should be queried by the appropriate accessor.
+set by the application, but should be queried by the appropriate accessor.
 
 * framesPerBurst
 
@@ -142,16 +142,18 @@ AudioStream::getAudioApi() can be used to query the underlying API which the
 stream uses. The property set in the builder is not guaranteed, and in
 general, the API should be chosen by Oboe to allow for best performance and
 stability considerations. Since Oboe is designed to be as uniform across both
-APIs as possible, this property should not generally be needed, however, it may
-be useful in the context of several known issues with OpenSLES (see below).
+APIs as possible, this property should not generally be needed.
 
 * mBufferSizeInFrames can only be set on an already open stream (as opposed to a
-builder), since it depends on run-time behavior. It can be set only up to the
-BufferCapacity.
+builder), since it depends on run-time behavior.
+The actual size used may not be what was requested.
+Oboe or the underlyng API will limit the size between zero and the buffer capacity.
+It may also be limited further to reduce glitching on particular devices.
+This features is not supported when using OpenSL ES callbacks.
 
 Many of the stream's properties may vary (whether or not you set
 them) depending on the capabilities of the audio device and the Android device on 
-which it's running. If you need to know these values then you must query these using 
+which it's running. If you need to know these values then you must query them using 
 the accessor after the stream has been opened. Additionally,
 the underlying parameters a stream is granted are useful to know if
 they have been left unspecified. As a matter of good defensive programming, you
@@ -220,10 +222,8 @@ transition:
 Note that you can only request pause or flush on an output stream:
 
 These functions are asynchronous, and the state change doesn't happen
-immediately. When you request a state change, the stream moves one of the
+immediately. When you request a state change, the stream moves toone of the
 corresponding transient states:
-
-
 
 *   Starting
 *   Pausing
@@ -239,6 +239,8 @@ Though it's not shown, you can call `close()` from any state
 Oboe doesn't provide callbacks to alert you to state changes. One special
 function,
 `AudioStream::waitForStateChange()` can be used to wait for a state change.
+Note that most apps will not need to call `waitForStateChange()` and can just
+request state changes whenever they are needed.
 
 The function does not detect a state change on its own, and does not wait for a
 specific state. It waits until the current state
@@ -266,7 +268,7 @@ stream.
 
 You can use this same technique after calling request start, stop, or flush,
 using the corresponding transient state as the inputState. Do not call
-`waitForStateChange()` after calling `AudioStream::close()` since the stream
+`waitForStateChange()` after calling `AudioStream::close()` since the underlying stream resources
 will be deleted as soon as it closes. And do not call `close()`
 while `waitForStateChange()` is running in another thread.
 
@@ -310,7 +312,7 @@ When you are finished using a stream, close it:
 
     stream->close();
 
-Do not close a stream while it is being written to or read from another thread as this will cause your app to crash. After you close a stream you cannot call any of its methods.
+Do not close a stream while it is being written to or read from another thread as this will cause your app to crash. After you close a stream you should not call any of its methods except for quering it properties.
 
 ### Disconnected audio stream
 
@@ -329,11 +331,11 @@ Note that registering this callback will enable callbacks for both data and erro
 
 Your callback can implement the following methods (called in a separate thread): 
 
-* `onErrorBeforeClose(stream, error)` - called when the stream has been stopped but not yet closed,
+* `onErrorBeforeClose(stream, error)` - called when the stream has been disconnected but not yet closed,
   so you can still reference the underlying stream (e.g.`getXRunCount()`).
 You can also inform any other threads that may be calling the stream to stop doing so.
 Do not delete the stream or modify its stream state in this callback.
-* `onErrorAfterClose(stream, error)` - called when the stream has been closed by Oboe so the stream cannot be used and calling getState() will return closed. 
+* `onErrorAfterClose(stream, error)` - called when the stream has been stopped and closed by Oboe so the stream cannot be used and calling getState() will return closed. 
 During this callback, stream properties (those requested by the builder) can be queried, as well as frames written and read.
 The stream can be deleted at the end of this method (as long as it not referenced in other threads).
 Methods that reference the underlying stream should not be called (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
