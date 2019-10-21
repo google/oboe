@@ -58,8 +58,6 @@ void Game::stop(){
 
     if (mAudioStream != nullptr){
         mAudioStream->close();
-        delete mAudioStream;
-        mAudioStream = nullptr;
     }
 }
 
@@ -115,11 +113,7 @@ void Game::onSurfaceDestroyed() {
 
 DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
 
-    // If our audio stream is expecting 16-bit samples we need to render our floats into a separate
-    // buffer then convert them into 16-bit ints
-    bool is16Bit = (oboeStream->getFormat() == AudioFormat::I16);
-    float *outputBuffer = (is16Bit) ? mConversionBuffer.get() : static_cast<float *>(audioData);
-
+    float *outputBuffer = static_cast<float *>(audioData);
     int64_t nextClapEventMs;
 
     for (int i = 0; i < numFrames; ++i) {
@@ -134,12 +128,6 @@ DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, 
         }
         mMixer.renderAudio(outputBuffer+(oboeStream->getChannelCount()*i), 1);
         mCurrentFrame++;
-    }
-
-    if (is16Bit){
-        oboe::convertFloatToPcm16(outputBuffer,
-                                  static_cast<int16_t*>(audioData),
-                                  numFrames * oboeStream->getChannelCount());
     }
 
     mLastUpdateTime = nowUptimeMillis();
@@ -175,31 +163,23 @@ bool Game::openStream() {
 
     // Create an audio stream
     AudioStreamBuilder builder;
-    builder.setCallback(this);
+    builder.setFormat(AudioFormat::Float);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
-
-    Result result = builder.openStream(&mAudioStream);
+    builder.setCallback(this);
+    Result result = builder.openManagedStream(mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
         return false;
     }
 
-    if (mAudioStream->getFormat() == AudioFormat::I16){
-        mConversionBuffer = std::make_unique<float[]>(
-                (size_t)mAudioStream->getBufferCapacityInFrames() *
-                mAudioStream->getChannelCount());
-    }
-
-    // Reduce stream latency by setting the buffer size to a multiple of the burst size
-    auto setBufferSizeResult = mAudioStream->setBufferSizeInFrames(
-            mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    if (setBufferSizeResult != Result::OK){
-        LOGW("Failed to set buffer size. Error: %s", convertToText(setBufferSizeResult.error()));
+    if (mAudioStream->getFormat() != AudioFormat::Float){
+        LOGE("The codelab version of this sample only supports floating point output."
+             "Please check the master branch which contains sample format conversion");
+        return false;
     }
 
     mMixer.setChannelCount(mAudioStream->getChannelCount());
-
     return true;
 }
 

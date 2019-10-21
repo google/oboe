@@ -58,7 +58,7 @@ public:
 
 private:
     AAssetManager& mAssetManager;
-    AudioStream *mAudioStream { nullptr };
+    ManagedStream mAudioStream { nullptr };
     std::unique_ptr<Player> mClap;
     std::unique_ptr<Player> mBackingTrack;
     Mixer mMixer;
