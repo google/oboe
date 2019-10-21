@@ -10,6 +10,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# file(GLOB_RECURSE app_native_sources src/main/cpp/*)
+file(GLOB_RECURSE app_native_sources ./*)
+
+### Name must match loadLibrary() call in MainActivity.java
+add_library(oboetester SHARED ${app_native_sources})
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -20,8 +26,7 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
-        native-lib.cpp
-        DuplexEngine.cpp
+        ${app_native_sources}
         )
 
 # Compile with warnings for safety
@@ -45,11 +50,24 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
-# Oboe
-set (OBOE_DIR oboe) # Oboe is a submodule of the overall repo
-add_subdirectory(
-    ${OBOE_DIR} oboe # ./oboe is the path where binaries are compiled
+
+### INCLUDE OBOE LIBRARY ###
+
+# Set the path to the Oboe library directory
+set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+
+# Add the Oboe library as a subproject. Since Oboe is an out-of-tree source library we must also
+# specify a binary directory
+add_subdirectory(${OBOE_DIR} ./oboe-bin)
+
+# Specify the path to the Oboe header files and the source.
+include_directories(
+    ${OBOE_DIR}/include
+    ${OBOE_DIR}/src
 )
+
+### END OBOE INCLUDE SECTION ###
+
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
