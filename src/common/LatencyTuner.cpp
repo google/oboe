@@ -94,7 +94,7 @@ void LatencyTuner::reset() {
     mState = State::Idle;
     mIdleCountDown = kIdleCount;
     // Set to minimal latency
-    mStream.setBufferSizeInFrames(mStream.getFramesPerBurst());
+    mStream.setBufferSizeInFrames(2 * mStream.getFramesPerBurst());
 }
 
 bool LatencyTuner::isAtMaximumBufferSize() {
