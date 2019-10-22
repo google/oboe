@@ -10,11 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# file(GLOB_RECURSE app_native_sources src/main/cpp/*)
-file(GLOB_RECURSE app_native_sources ./*)
-
-### Name must match loadLibrary() call in MainActivity.java
-add_library(oboetester SHARED ${app_native_sources})
+link_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -26,7 +22,8 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
-        ${app_native_sources}
+        src/main/cpp/native-lib.cpp
+        src/main/cpp/DuplexEngine.cpp
         )
 
 # Compile with warnings for safety
