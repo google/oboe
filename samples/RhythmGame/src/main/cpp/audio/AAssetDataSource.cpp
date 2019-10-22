@@ -64,6 +64,9 @@ AAssetDataSource* AAssetDataSource::newFromCompressedAsset(
     auto numSamples = bytesDecoded / sizeof(int16_t);
 #endif
 
+    // If no bytes were decoded we know that there was an error
+    if (bytesDecoded <= 0) return nullptr;
+
     // Now we know the exact number of samples we can create a float array to hold the audio data
     auto outputBuffer = std::make_unique<float[]>(numSamples);
 
