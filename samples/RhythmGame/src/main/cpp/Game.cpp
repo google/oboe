@@ -139,26 +139,6 @@ void Game::onErrorAfterClose(AudioStream *oboeStream, Result error){
     LOGE("The audio stream was closed, please restart the game. Error: %s", convertToText(error));
 };
 
-/**
- * Get the result of a tap
- *
- * @param tapTimeInMillis - The time the tap occurred in milliseconds
- * @param tapWindowInMillis - The time at the middle of the "tap window" in milliseconds
- * @return TapResult can be Early, Late or Success
- */
-TapResult Game::getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
-    LOGD("Tap time %" PRId64 ", tap window time: %" PRId64, tapTimeInMillis, tapWindowInMillis);
-    if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffsetMs) {
-        if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffsetMs) {
-            return TapResult::Success;
-        } else {
-            return TapResult::Early;
-        }
-    } else {
-        return TapResult::Late;
-    }
-}
-
 bool Game::openStream() {
 
     // Create an audio stream
@@ -227,4 +207,24 @@ void Game::scheduleSongEvents() {
 
     for (auto t : kClapEvents) mClapEvents.push(t);
     for (auto t : kClapWindows) mClapWindows.push(t);
+}
+
+/**
+ * Get the result of a tap
+ *
+ * @param tapTimeInMillis - The time the tap occurred in milliseconds
+ * @param tapWindowInMillis - The time at the middle of the "tap window" in milliseconds
+ * @return TapResult can be Early, Late or Success
+ */
+TapResult Game::getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis){
+    LOGD("Tap time %" PRId64 ", tap window time: %" PRId64, tapTimeInMillis, tapWindowInMillis);
+    if (tapTimeInMillis <= tapWindowInMillis + kWindowCenterOffsetMs) {
+        if (tapTimeInMillis >= tapWindowInMillis - kWindowCenterOffsetMs) {
+            return TapResult::Success;
+        } else {
+            return TapResult::Early;
+        }
+    } else {
+        return TapResult::Late;
+    }
 }
