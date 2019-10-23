@@ -168,15 +168,9 @@ bool Game::openStream() {
 
 bool Game::setupAudioSources() {
 
-    // Set the properties of our audio source(s) to match that of our audio stream
-    AudioProperties targetProperties {
-            .channelCount = mAudioStream->getChannelCount(),
-            .sampleRate = mAudioStream->getSampleRate()
-    };
-
     // Create a data source and player for the clap sound
     std::shared_ptr<AAssetDataSource> mClapSource {
-            AAssetDataSource::newFromCompressedAsset(mAssetManager, kClapFilename, targetProperties)
+            AAssetDataSource::newFromCompressedAsset(mAssetManager, "CLAP.mp3")
     };
     if (mClapSource == nullptr){
         LOGE("Could not load source data for clap sound");
@@ -186,7 +180,7 @@ bool Game::setupAudioSources() {
 
     // Create a data source and player for our backing track
     std::shared_ptr<AAssetDataSource> backingTrackSource {
-            AAssetDataSource::newFromCompressedAsset(mAssetManager, kBackingTrackFilename, targetProperties)
+            AAssetDataSource::newFromCompressedAsset(mAssetManager, "FUNKY_HOUSE.mp3")
     };
     if (backingTrackSource == nullptr){
         LOGE("Could not load source data for backing track");
@@ -205,8 +199,16 @@ bool Game::setupAudioSources() {
 
 void Game::scheduleSongEvents() {
 
-    for (auto t : kClapEvents) mClapEvents.push(t);
-    for (auto t : kClapWindows) mClapWindows.push(t);
+    // schedule the claps
+    mClapEvents.push(0);
+    mClapEvents.push(500);
+    mClapEvents.push(1000);
+
+    // schedule the clap windows
+    mClapWindows.push(2000);
+    mClapWindows.push(2500);
+    mClapWindows.push(3000);
+
 }
 
 /**

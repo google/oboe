@@ -36,7 +36,7 @@ constexpr int kMaxCompressionRatio { 12 };
 AAssetDataSource* AAssetDataSource::newFromCompressedAsset(
         AAssetManager &assetManager,
         const char *filename,
-        const AudioProperties targetProperties) {
+        AudioProperties *outputProperties) {
 
     AAsset *asset = AAssetManager_open(&assetManager, filename, AASSET_MODE_UNKNOWN);
     if (!asset) {
@@ -54,13 +54,15 @@ AAssetDataSource* AAssetDataSource::newFromCompressedAsset(
     const long maximumDataSizeInBytes = kMaxCompressionRatio * assetSize * sizeof(float);
     auto decodedData = new uint8_t[maximumDataSizeInBytes];
 
-    int64_t bytesDecoded = FFMpegExtractor::decode(asset, decodedData, targetProperties);
+    int64_t bytesDecoded = FFMpegExtractor::decode(asset, decodedData, *outputProperties);
     auto numSamples = bytesDecoded / sizeof(float);
 #else
     const long maximumDataSizeInBytes = kMaxCompressionRatio * assetSize * sizeof(int16_t);
     auto decodedData = new uint8_t[maximumDataSizeInBytes];
 
-    int64_t bytesDecoded = NDKExtractor::decode(asset, decodedData, targetProperties);
+    if (!outputProperties) outputProperties = new AudioProperties();
+    
+    int64_t bytesDecoded = NDKExtractor::decode(asset, decodedData, *outputProperties);
     auto numSamples = bytesDecoded / sizeof(int16_t);
 #endif
 
@@ -85,5 +87,5 @@ AAssetDataSource* AAssetDataSource::newFromCompressedAsset(
 
     return new AAssetDataSource(std::move(outputBuffer),
             numSamples,
-            targetProperties);
+            *outputProperties);
 }

@@ -26,7 +26,7 @@
 class NDKExtractor {
 
 public:
-    static int32_t decode(AAsset *asset, uint8_t *targetData, AudioProperties targetProperties);
+    static int32_t decode(AAsset *asset, uint8_t *targetData, AudioProperties &outputProperties);
 };
 
 

@@ -24,7 +24,9 @@
 
 #include "NDKExtractor.h"
 
-int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties targetProperties) {
+int32_t NDKExtractor::decode(AAsset *asset,
+        uint8_t *targetData,
+        AudioProperties &outputProperties) {
 
     LOGD("Using NDK decoder");
 
@@ -47,14 +49,8 @@ int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties
 
     int32_t sampleRate;
     if (AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_SAMPLE_RATE, &sampleRate)){
+        outputProperties.sampleRate = sampleRate;
         LOGD("Source sample rate %d", sampleRate);
-        if (sampleRate != targetProperties.sampleRate){
-            LOGE("Input (%d) and output (%d) sample rates do not match. "
-                 "NDK decoder does not support resampling.",
-                 sampleRate,
-                 targetProperties.sampleRate);
-            return 0;
-        }
     } else {
         LOGE("Failed to get sample rate");
         return 0;
@@ -62,13 +58,8 @@ int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties
 
     int32_t channelCount;
     if (AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_CHANNEL_COUNT, &channelCount)){
+        outputProperties.channelCount = channelCount;
         LOGD("Got channel count %d", channelCount);
-        if (channelCount != targetProperties.channelCount){
-            LOGE("NDK decoder does not support different "
-                 "input (%d) and output (%d) channel counts",
-                 channelCount,
-                 targetProperties.channelCount);
-        }
     } else {
         LOGE("Failed to get channel count");
         return 0;

@@ -28,10 +28,24 @@ public:
     AudioProperties getProperties() const override { return mProperties; }
     const float* getData() const override { return mBuffer.get(); }
 
+    /**
+     * Creates a data source from an AAsset
+     * @param assetManager - the asset manager
+     * @param filename - filename of the compressed audio file
+     * @param outputProperties - the desired output properties of the file. Resampling and format
+     * conversion may be used internally to acheive this.
+     * @return AAssetDataSource
+     */
     static AAssetDataSource* newFromCompressedAsset(
             AAssetManager &assetManager,
             const char *filename,
-            AudioProperties targetProperties);
+            AudioProperties *outputProperties);
+
+    static AAssetDataSource* newFromCompressedAsset(
+            AAssetManager &assetManager,
+            const char *filename){
+        return newFromCompressedAsset(assetManager, filename, nullptr);
+    };
 
 private:
 

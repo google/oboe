@@ -30,7 +30,7 @@ extern "C" {
 
 class FFMpegExtractor {
 public:
-    static int64_t decode(AAsset *asset, uint8_t *targetData, AudioProperties targetProperties);
+    static int64_t decode(AAsset *asset, uint8_t *targetData, AudioProperties *targetProperties);
 
 private:
     static bool createAVIOContext(AAsset *asset, uint8_t *buffer, uint32_t bufferSize,

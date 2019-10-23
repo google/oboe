@@ -119,7 +119,7 @@ AVStream *FFMpegExtractor::getBestAudioStream(AVFormatContext *avFormatContext) 
 int64_t FFMpegExtractor::decode(
         AAsset *asset,
         uint8_t *targetData,
-        AudioProperties targetProperties) {
+        AudioProperties *targetProperties) {
 
     int returnValue = -1; // -1 indicates error
 
@@ -201,16 +201,16 @@ int64_t FFMpegExtractor::decode(
     }
 
     // prepare resampler
-    int32_t outChannelLayout = (1 << targetProperties.channelCount) - 1;
+    int32_t outChannelLayout = (1 << targetProperties->channelCount) - 1;
     LOGD("Channel layout %d", outChannelLayout);
 
     SwrContext *swr = swr_alloc();
     av_opt_set_int(swr, "in_channel_count", stream->codecpar->channels, 0);
-    av_opt_set_int(swr, "out_channel_count", targetProperties.channelCount, 0);
+    av_opt_set_int(swr, "out_channel_count", targetProperties->channelCount, 0);
     av_opt_set_int(swr, "in_channel_layout", stream->codecpar->channel_layout, 0);
     av_opt_set_int(swr, "out_channel_layout", outChannelLayout, 0);
     av_opt_set_int(swr, "in_sample_rate", stream->codecpar->sample_rate, 0);
-    av_opt_set_int(swr, "out_sample_rate", targetProperties.sampleRate, 0);
+    av_opt_set_int(swr, "out_sample_rate", targetProperties->sampleRate, 0);
     av_opt_set_int(swr, "in_sample_fmt", stream->codecpar->format, 0);
     av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_FLT, 0);
     av_opt_set_int(swr, "force_resampling", 1, 0);
@@ -260,7 +260,7 @@ int64_t FFMpegExtractor::decode(
                 // DO RESAMPLING
                 auto dst_nb_samples = (int32_t) av_rescale_rnd(
                         swr_get_delay(swr, decodedFrame->sample_rate) + decodedFrame->nb_samples,
-                        targetProperties.sampleRate,
+                        targetProperties->sampleRate,
                         decodedFrame->sample_rate,
                         AV_ROUND_UP);
 
@@ -268,7 +268,7 @@ int64_t FFMpegExtractor::decode(
                 av_samples_alloc(
                         (uint8_t **) &buffer1,
                         nullptr,
-                        targetProperties.channelCount,
+                        targetProperties->channelCount,
                         dst_nb_samples,
                         AV_SAMPLE_FMT_FLT,
                         0);
@@ -279,7 +279,7 @@ int64_t FFMpegExtractor::decode(
                         (const uint8_t **) decodedFrame->data,
                         decodedFrame->nb_samples);
 
-                int64_t bytesToWrite = frame_count * sizeof(float) * targetProperties.channelCount;
+                int64_t bytesToWrite = frame_count * sizeof(float) * targetProperties->channelCount;
                 memcpy(targetData + bytesWritten, buffer1, (size_t)bytesToWrite);
                 bytesWritten += bytesToWrite;
                 av_freep(&buffer1);
