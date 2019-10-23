@@ -167,6 +167,9 @@ bool Game::openStream() {
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setCallback(this);
+    builder.setSampleRate(48000);
+    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+
     Result result = builder.openManagedStream(mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
