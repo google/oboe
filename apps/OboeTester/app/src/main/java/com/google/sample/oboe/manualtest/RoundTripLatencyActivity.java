@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public class RoundTripLatencyActivity extends AnalyzerActivity {
 
-    private static final int STATE_GOT_DATA = 3; // Defined in LatencyAnalyzer.h
+    private static final int STATE_GOT_DATA = 2; // Defined in LatencyAnalyzer.h
 
     private TextView mAnalyzerView;
     private Button mMeasureButton;

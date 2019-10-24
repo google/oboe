@@ -512,7 +512,7 @@ public:
         }
     }
 
-    virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
         return (FullDuplexAnalyzer *) mFullDuplexEcho.get();
     }
 
