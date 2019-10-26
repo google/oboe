@@ -100,6 +100,9 @@ protected:
     PerformanceMode convertPerformanceMode(SLuint32 openslMode) const;
     SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
 
+
+    Result configureBufferSizes();
+
     /**
      * Internal use only.
      * Use this instead of directly setting the internal state variable.
