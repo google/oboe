@@ -196,12 +196,17 @@ Result AudioInputStreamOpenSLES::open() {
         goto error;
     }
 
+    oboeResult = configureBufferSizes();
+    if (Result::OK != oboeResult) {
+        goto error;
+    }
+
     allocateFifo();
 
     setState(StreamState::Open);
     return Result::OK;
 
-    error:
+error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }
 

@@ -163,7 +163,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         if (optimalBufferSize >= 0) {
             auto setBufferResult = streamP->setBufferSizeInFrames(optimalBufferSize);
             if (!setBufferResult) {
-                LOGW("Failed to set buffer size to %d. Error was %s",
+                LOGW("Failed to setBufferSizeInFrames(%d). Error was %s",
                      optimalBufferSize,
                      convertToText(setBufferResult.error()));
             }
