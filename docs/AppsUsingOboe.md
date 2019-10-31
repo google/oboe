@@ -14,7 +14,7 @@ your project name and Play Store URL.
 | [JUCE](https://juce.com/) | Middleware framework | [ROLI](https://www.roli.com) | Oboe support enabled as experimental feature in Projucer |
 | [ktnes](https://github.com/felipecsl/ktnes) | A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native. | Felipe Lima | | 
 | [Les Talens Lyriques apps](https://play.google.com/store/apps/developer?id=Les+Talens+Lyriques) | Music education apps | Les Talens Lyriques |  Stream opened with 44100 Hz so it will not get an MMAP stream on Pixel |
-| [libGDX](https://gitlab.com/barsoosayque/libgdx-oboe) | Middleware | barsoosayque |  Libgdx audio replacement for Android  built on top of Oboe. |
+| [libGDX Oboe](https://gitlab.com/barsoosayque/libgdx-oboe) | Middleware | barsoosayque |  Libgdx audio replacement for Android built on top of Oboe. |
 | [Mini Tunes](https://play.google.com/store/apps/details?id=com.minitunes) | Microtonal Synthesizer for Android | Fade Apps | Oboe implemented in version 2.0 | 
 | [Music Speed Changer](https://play.google.com/store/apps/details?id=com.smp.musicspeed) | Play song files while changing the pitch and tempo. | Single Minded Productions |  | 
 | [n-Track Studio](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo) | Mobile audio workstation | n-Track Software | Settings->Select AAudio for input and/or output->OK |
