@@ -362,10 +362,30 @@ public:
         mResetCount++;
     }
 
-    virtual result_code process(float *inputData, int inputChannelCount,
-                 float *outputData, int outputChannelCount,
-                 int numFrames) = 0;
+    virtual result_code processInputFrame(float *frameData, int channelCount) = 0;
+    virtual result_code processOutputFrame(float *frameData, int channelCount) = 0;
 
+    void process(float *inputData, int inputChannelCount, int numInputFrames,
+                        float *outputData, int outputChannelCount, int numOutputFrames) {
+        int numBoth = std::min(numInputFrames, numOutputFrames);
+        // Process one frame at a time.
+        for (int i = 0; i < numBoth; i++) {
+            processInputFrame(inputData, inputChannelCount);
+            inputData += inputChannelCount;
+            processOutputFrame(outputData, outputChannelCount);
+            outputData += outputChannelCount;
+        }
+        // If there is more input than output.
+        for (int i = numBoth; i < numInputFrames; i++) {
+            processInputFrame(inputData, inputChannelCount);
+            inputData += inputChannelCount;
+        }
+        // If there is more output than input.
+        for (int i = numBoth; i < numOutputFrames; i++) {
+            processOutputFrame(outputData, outputChannelCount);
+            outputData += outputChannelCount;
+        }
+    }
 
     virtual void analyze() = 0;
 
@@ -509,8 +529,8 @@ public:
         mBackgroundRMS = 0.0f;
         mSignalRMS = 0.0f;
 
-        LOGD("state reset to STATE_INITIAL_SILENCE");
-        mState = STATE_INITIAL_SILENCE;
+        LOGD("state reset to STATE_MEASURE_BACKGROUND");
+        mState = STATE_MEASURE_BACKGROUND;
         mAudioRecording.clear();
         mLatencyReport.reset();
     }
@@ -520,7 +540,7 @@ public:
     }
 
     bool isDone() override {
-        return mState == STATE_DONE || mState == STATE_FAILED;
+        return mState == STATE_DONE;
     }
 
     int32_t getProgress() override {
@@ -590,65 +610,36 @@ public:
         LOGD("st = %d", mState);
     }
 
-    result_code processOneFrame(float *inputData, int inputChannelCount,
-                                float *outputData, int outputChannelCount) {
+    result_code processInputFrame(float *frameData, int channelCount) override {
         echo_state nextState = mState;
+        mLoopCounter++;
 
         switch (mState) {
-            case STATE_INITIAL_SILENCE:
-                // Output silence at the beginning.
-                for (int i = 0; i < outputChannelCount; i++) {
-                    outputData[i] = 0;
-                }
+            case STATE_MEASURE_BACKGROUND:
                 // Measure background RMS on channel 0
-                mBackgroundSumSquare += inputData[0] * inputData[0];
+                mBackgroundSumSquare += frameData[0] * frameData[0];
                 mBackgroundSumCount++;
-
                 mDownCounter--;
                 if (mDownCounter <= 0) {
                     mBackgroundRMS = sqrtf(mBackgroundSumSquare / mBackgroundSumCount);
-                    nextState = STATE_SENDING_PULSE;
+                    nextState = STATE_IN_PULSE;
                     mPulseCursor = 0;
                     LOGD("LatencyAnalyzer state => STATE_SENDING_PULSE");
                 }
                 break;
 
-            case STATE_SENDING_PULSE:
-                {
-                    float pulseSample = mPulse.getData()[mPulseCursor++];
-                    for (int i = 0; i < outputChannelCount; i++) {
-                        outputData[i] = pulseSample;
-                    }
-                }
-                mAudioRecording.write(inputData, inputChannelCount, 1);
-                if (hasEnoughData()) {
-                    LOGD("LatencyAnalyzer state => STATE_GOT_DATA");
-                    nextState = STATE_GOT_DATA;
-                } else if (mPulseCursor >= mPulse.size()) {
-                    LOGD("LatencyAnalyzer state => STATE_GATHERING_ECHOS");
-                    nextState = STATE_GATHERING_ECHOS;
-                }
-                break;
-
-            case STATE_GATHERING_ECHOS:
+            case STATE_IN_PULSE:
                 // Record input until the mAudioRecording is full.
-                mAudioRecording.write(inputData, inputChannelCount, 1);
+                mAudioRecording.write(frameData, channelCount, 1);
                 if (hasEnoughData()) {
                     LOGD("LatencyAnalyzer state => STATE_GOT_DATA");
                     nextState = STATE_GOT_DATA;
-                }
-                for (int i = 0; i < outputChannelCount; i++) {
-                    outputData[i] = 0.0f; // silence
                 }
                 break;
 
             case STATE_GOT_DATA:
             case STATE_DONE:
-            case STATE_FAILED:
             default:
-                for (int i = 0; i < outputChannelCount; i++) {
-                    outputData[i] = 0.0f; // silence
-                }
                 break;
         }
 
@@ -656,56 +647,51 @@ public:
         return RESULT_OK;
     }
 
-    result_code process(float *inputData, int inputChannelCount,
-                        float *outputData, int outputChannelCount,
-                        int numFrames) override {
-        result_code result = RESULT_OK;
-        mLoopCounter++;
-        // Process one frame at a time.
-        for (int i = 0; i < numFrames; i++) {
-            result = processOneFrame(inputData, inputChannelCount, outputData, outputChannelCount);
-            inputData += inputChannelCount;
-            outputData += outputChannelCount;
-            if (result != RESULT_OK) {
+    result_code processOutputFrame(float *frameData, int channelCount) override {
+        switch (mState) {
+            case STATE_IN_PULSE:
+                if (mPulseCursor < mPulse.size()) {
+                    float pulseSample = mPulse.getData()[mPulseCursor++];
+                    for (int i = 0; i < channelCount; i++) {
+                        frameData[i] = pulseSample;
+                    }
+                } else {
+                    for (int i = 0; i < channelCount; i++) {
+                        frameData[i] = 0;
+                    }
+                }
                 break;
-            }
+
+            case STATE_MEASURE_BACKGROUND:
+            case STATE_GOT_DATA:
+            case STATE_DONE:
+            default:
+                for (int i = 0; i < channelCount; i++) {
+                    frameData[i] = 0.0f; // silence
+                }
+                break;
         }
-        return result;
-    }
-/*
-    int save(const char *fileName) override {
-        return mAudioRecording.save(fileName);
+
+        return RESULT_OK;
     }
 
-    int load(const char *fileName) override {
-        int result = mAudioRecording.load(fileName);
-        setSampleRate(mAudioRecording.getSampleRate());
-        mState = STATE_DONE;
-        return result;
-    }
-*/
 private:
 
     enum echo_state {
-        STATE_INITIAL_SILENCE,
-        STATE_SENDING_PULSE,
-        STATE_GATHERING_ECHOS,
+        STATE_MEASURE_BACKGROUND,
+        STATE_IN_PULSE,
         STATE_GOT_DATA, // must match RoundTripLatencyActivity.java
         STATE_DONE,
-        STATE_FAILED
     };
 
     const char *convertStateToText(echo_state state) {
         const char *result = "Unknown";
         switch(state) {
-            case STATE_INITIAL_SILENCE:
+            case STATE_MEASURE_BACKGROUND:
                 result = "INIT";
                 break;
-            case STATE_SENDING_PULSE:
+            case STATE_IN_PULSE:
                 result = "PULSE";
-                break;
-            case STATE_GATHERING_ECHOS:
-                result = "ECHOS";
                 break;
             case STATE_GOT_DATA:
                 result = "GOT_DATA";
@@ -713,16 +699,13 @@ private:
             case STATE_DONE:
                 result = "DONE";
                 break;
-            case STATE_FAILED:
-                result = "FAILED";
-                break;
         }
         return result;
     }
 
     int32_t         mDownCounter = 500;
     int32_t         mLoopCounter = 0;
-    echo_state      mState = STATE_INITIAL_SILENCE;
+    echo_state      mState = STATE_MEASURE_BACKGROUND;
 
     static constexpr int32_t kFramesPerEncodedBit = 8; // multiple of 2
     static constexpr int32_t kPulseLengthMillis = 500;
@@ -841,18 +824,16 @@ public:
         return magnitude;
     }
 
-/**
-         * @param inputData contains microphone data with sine signal feedback
-         * @param outputData contains the reference sine wave
-         */
-    result_code processOneFrame(float *inputData, int inputChannelCount,
-                                float *outputData, int outputChannelCount) {
+    /**
+     * @param frameData contains microphone data with sine signal feedback
+     * @param channelCount
+     */
+    result_code processInputFrame(float *frameData, int channelCount) override {
         result_code result = RESULT_OK;
-        bool sineEnabled = true;
 
-        float peak = mPeakFollower.process(*inputData);
+        float sample = frameData[0];
+        float peak = mPeakFollower.process(sample);
 
-        float sample = inputData[0];
         // Force a periodic glitch!
         if (mForceGlitchDuration > 0) {
             if (mForceGlitchCounter == 0) {
@@ -864,18 +845,16 @@ public:
             --mForceGlitchCounter;
         }
 
-        float sinOut = sinf(mPhase);
-
         mStateFrameCounters[mState]++; // count how many frames we are in each state
 
         switch (mState) {
             case STATE_IDLE:
-                sineEnabled = false;
                 mDownCounter--;
                 if (mDownCounter <= 0) {
-                    mState = STATE_WAITING_FOR_SIGNAL;
-                    mDownCounter = NOISE_FRAME_COUNT;
-                    mPhase = 0.0; // prevent spike at start
+                    mState = STATE_IMMUNE;
+                    mDownCounter = IMMUNE_FRAME_COUNT;
+                    mInputPhase = 0.0; // prevent spike at start
+                    mOutputPhase = 0.0;
                 }
                 break;
 
@@ -895,44 +874,45 @@ public:
                 break;
 
             case STATE_WAITING_FOR_LOCK:
-                mSinAccumulator += sample * sinOut;
-                mCosAccumulator += sample * cosf(mPhase);
+                mSinAccumulator += sample * sinf(mInputPhase);
+                mCosAccumulator += sample * cosf(mInputPhase);
                 mFramesAccumulated++;
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
-                    mPhaseOffset = 0.0;
-                    setMagnitude(calculateMagnitude(&mPhaseOffset));
+                    double phaseOffset = 0.0;
+                    setMagnitude(calculateMagnitude(&phaseOffset));
 //                    LOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
-                        if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
+                        if (abs(phaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;
 //                            LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
-                        mPreviousPhaseOffset = mPhaseOffset;
+                        // Adjust mInputPhase to match measured phase
+                        mInputPhase += phaseOffset;
                     }
                     resetAccumulator();
                 }
+                incrementInputPhase();
                 break;
 
             case STATE_LOCKED: {
                 // Predict next sine value
-                float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
-                // LOGD("    predicted = %f, actual = %f", predicted, sample);
-
+                float predicted = sinf(mInputPhase) * mMagnitude;
                 float diff = predicted - sample;
                 float absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff > mScaledTolerance) {
                     result = ERROR_GLITCHES;
                     onGlitchStart();
+//                    LOGI("diff glitch detected, absDiff = %g", absDiff);
                 } else {
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
-                    mSinAccumulator += sample * sinOut;
-                    mCosAccumulator += sample * cosf(mPhase);
+                    mSinAccumulator += sample * sinf(mInputPhase);
+                    mCosAccumulator += sample * cosf(mInputPhase);
                     mFramesAccumulated++;
                     // Must be a multiple of the period or the calculation will not be accurate.
                     if (mFramesAccumulated == mSinePeriod) {
@@ -946,20 +926,25 @@ public:
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();
 
-                        if (mMagnitude < mThreshold) {
+                        if (abs(phaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
+                            LOGD("phase glitch detected, phaseOffset = %g", phaseOffset);
+                        } else if (mMagnitude < mThreshold) {
+                            result = ERROR_GLITCHES;
+                            onGlitchStart();
+                            LOGD("magnitude glitch detected, mMagnitude = %g", mMagnitude);
                         }
                     }
                 }
+                incrementInputPhase();
             } break;
 
             case STATE_GLITCHING: {
                 // Predict next sine value
                 mGlitchLength++;
-                float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
+                float predicted = sinf(mInputPhase) * mMagnitude;
                 float diff = predicted - sample;
-//                LOGD(" STATE_GLITCHING: predicted = %f, actual = %f, length = %d", predicted, sample, mGlitchLength);
                 float absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff < mScaledTolerance) { // close enough?
@@ -974,46 +959,53 @@ public:
                        relock();
                     }
                 }
+                incrementInputPhase();
             } break;
 
             case NUM_STATES: // not a real state
                 break;
         }
 
-        float output = 0.0f;
-        // Output sine wave so we can measure it.
-        if (sineEnabled) {
-            output = (sinOut * mOutputAmplitude)
-                     + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
-            // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
-            // advance and wrap phase
-            mPhase += mPhaseIncrement;
-            if (mPhase > M_PI) {
-                mPhase -= (2.0 * M_PI);
-            }
-        }
-
-        outputData[0] = output;
         mFrameCounter++;
 
         return result;
     }
 
-    result_code process(float *inputData, int inputChannelCount,
-                        float *outputData, int outputChannelCount,
-                        int numFrames) override {
-        result_code result = RESULT_OK;
-        // Process one frame at a time.
-        for (int i = 0; i < numFrames; i++) {
-            result_code tempResult = processOneFrame(inputData, inputChannelCount, outputData,
-                                                     outputChannelCount);
-            if (tempResult != RESULT_OK) {
-                result = tempResult;
-            }
-            inputData += inputChannelCount;
-            outputData += outputChannelCount;
+    // advance and wrap phase
+    void incrementInputPhase() {
+        mInputPhase += mPhaseIncrement;
+        if (mInputPhase > M_PI) {
+            mInputPhase -= (2.0 * M_PI);
         }
-        return result;
+    }
+
+    // advance and wrap phase
+    void incrementOutputPhase() {
+        mOutputPhase += mPhaseIncrement;
+        if (mOutputPhase > M_PI) {
+            mOutputPhase -= (2.0 * M_PI);
+        }
+    }
+
+    /**
+     * @param frameData upon return, contains the reference sine wave
+     * @param channelCount
+     */
+    result_code processOutputFrame(float *frameData, int channelCount) override {
+        float output = 0.0f;
+        // Output sine wave so we can measure it.
+        if (mState != STATE_IDLE) {
+            float sinOut = sinf(mOutputPhase);
+            incrementOutputPhase();
+            output = (sinOut * mOutputAmplitude)
+                     + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
+            // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
+        }
+        frameData[0] = output;
+        for (int i = 1; i < channelCount; i++) {
+            frameData[i] = 0.0f;
+        }
+        return RESULT_OK;
     }
 
     void onGlitchStart() {
@@ -1030,13 +1022,6 @@ public:
         resetAccumulator();
     }
 
-    void onInsufficientRead() override {
-        if (mState == STATE_LOCKED) {
-            mGlitchCount++;
-        }
-        LoopbackProcessor::onInsufficientRead();
-    }
-
     // reset the sine wave detector
     void resetAccumulator() {
         mFramesAccumulated = 0;
@@ -1047,6 +1032,7 @@ public:
     }
 
     void relock() {
+//        LOGD("relock: %d because of a very long %d glitch", mFrameCounter, mGlitchLength);
         mState = STATE_WAITING_FOR_LOCK;
         resetAccumulator();
     }
@@ -1061,7 +1047,7 @@ public:
     void onStartTest() override {
         LoopbackProcessor::onStartTest();
         mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
-        mPhase = 0.0f;
+        mOutputPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
         mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
         mGlitchCount = 0;
@@ -1087,14 +1073,14 @@ private:
     enum constants {
         // Arbitrary durations, assuming 48000 Hz
         IDLE_FRAME_COUNT = 48 * 100,
-        NOISE_FRAME_COUNT = 48 * 600,
+        IMMUNE_FRAME_COUNT = 48 * 100,
         PERIODS_NEEDED_FOR_LOCK = 8,
-        PERIODS_IMMUNE = 2,
         MIN_SNRATIO_DB = 65
     };
 
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
     static constexpr int kTargetGlitchFrequency = 607;
+    static constexpr double kMaxPhaseError = M_PI * 0.05;
 
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mThreshold = 0.005;
@@ -1104,9 +1090,8 @@ private:
     int32_t mStateFrameCounters[NUM_STATES];
 
     double  mPhaseIncrement = 0.0;
-    double  mPhase = 0.0;
-    double  mPhaseOffset = 0.0;
-    double  mPreviousPhaseOffset = 0.0;
+    double  mInputPhase = 0.0;
+    double  mOutputPhase = 0.0;
     double  mMagnitude = 0.0;
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;

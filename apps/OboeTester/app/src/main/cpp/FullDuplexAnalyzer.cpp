@@ -31,44 +31,34 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
 
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
+    float *inputFloat = (float *) inputData;
+    float *outputFloat = (float *) outputData;
 
-    // TODO Pull up into superclass
-    // reset analyzer if we miss some input data
-    if (numInputFrames < numOutputFrames) {
-        LOGD("numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
-             numInputFrames, numOutputFrames);
-        getLoopbackProcessor()->onInsufficientRead();
-    } else {
-        float *inputFloat = (float *) inputData;
-        float *outputFloat = (float *) outputData;
+    (void) getLoopbackProcessor()->process(inputFloat, inputStride, numInputFrames,
+                                   outputFloat, outputStride, numOutputFrames);
 
-        (void) getLoopbackProcessor()->process(inputFloat, inputStride,
-                                       outputFloat, outputStride,
-                                       numOutputFrames);
-
-        // zero out remainder of output array
-        int32_t framesLeft = numOutputFrames - numInputFrames;
-        outputFloat += numOutputFrames * outputStride;
-
-        if (framesLeft > 0) {
-            memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
-        }
-    }
-
-    // write the first channel of output and input to the recorder
+    // write the first channel of output and input to the stereo recorder
     if (mRecording != nullptr) {
         float buffer[2];
-        float *inputFloat = (float *) inputData;
-        float *outputFloat = (float *) outputData;
-        for (int i = 0; i < numOutputFrames; i++) {
+        int numBoth = std::min(numInputFrames, numOutputFrames);
+        for (int i = 0; i < numBoth; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;
-            if (i < numInputFrames) {
-                buffer[1] = *inputFloat;
-                inputFloat += inputStride;
-            } else {
-                buffer[1] = 0.0f;
-            }
+            buffer[1] = *inputFloat;
+            inputFloat += inputStride;
+            mRecording->write(buffer, 1);
+        }
+        // Handle mismatch in in numFrames.
+        buffer[0] = 0.0f; // gap in output
+        for (int i = numBoth; i < numInputFrames; i++) {
+            buffer[1] = *inputFloat;
+            inputFloat += inputStride;
+            mRecording->write(buffer, 1);
+        }
+        buffer[1] = 0.0f; // gap in input
+        for (int i = numBoth; i < numOutputFrames; i++) {
+            buffer[0] = *outputFloat;
+            outputFloat += outputStride;
             mRecording->write(buffer, 1);
         }
     }
