@@ -378,11 +378,13 @@ public:
             outputData += outputChannelCount;
             if (result != RESULT_OK) return result;
         }
+        // If there is more input than output.
         for (int i = numBoth; i < numInputFrames; i++) {
             result = processInputFrame(inputData, inputChannelCount);
             inputData += inputChannelCount;
             if (result != RESULT_OK) return result;
         }
+        // If there is more output than input.
         for (int i = numBoth; i < numOutputFrames; i++) {
             result = processOutputFrame(outputData, outputChannelCount);
             outputData += outputChannelCount;
@@ -831,9 +833,7 @@ public:
     /**
      * @param frameData contains microphone data with sine signal feedback
      * @param channelCount
-     * @param outputData contains the reference sine wave
      */
-
     result_code processInputFrame(float *frameData, int channelCount) override {
         result_code result = RESULT_OK;
 
@@ -859,7 +859,8 @@ public:
                 if (mDownCounter <= 0) {
                     mState = STATE_WAITING_FOR_SIGNAL;
                     mDownCounter = NOISE_FRAME_COUNT;
-                    mPhase = 0.0; // prevent spike at start
+                    mInputPhase = 0.0; // prevent spike at start
+                    mOutputPhase = 0.0;
                 }
                 break;
 
@@ -879,29 +880,31 @@ public:
                 break;
 
             case STATE_WAITING_FOR_LOCK:
-                mSinAccumulator += sample * sinf(mPhase);
-                mCosAccumulator += sample * cosf(mPhase);
+                mSinAccumulator += sample * sinf(mInputPhase);
+                mCosAccumulator += sample * cosf(mInputPhase);
                 mFramesAccumulated++;
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
-                    mPhaseOffset = 0.0;
-                    setMagnitude(calculateMagnitude(&mPhaseOffset));
+                    double phaseOffset = 0.0;
+                    setMagnitude(calculateMagnitude(&phaseOffset));
 //                    LOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
-                        if (fabs(mPreviousPhaseOffset - mPhaseOffset) < 0.001) {
+                        if (abs(phaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;
 //                            LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
-                        mPreviousPhaseOffset = mPhaseOffset;
+                        // Adjust mInputPhase to match measured phase
+                        mInputPhase += phaseOffset;
                     }
                     resetAccumulator();
                 }
+                incrementInputPhase();
                 break;
 
             case STATE_LOCKED: {
                 // Predict next sine value
-                float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
+                float predicted = sinf(mInputPhase) * mMagnitude;
                 // LOGD("    predicted = %f, actual = %f", predicted, sample);
 
                 float diff = predicted - sample;
@@ -910,13 +913,14 @@ public:
                 if (absDiff > mScaledTolerance) {
                     result = ERROR_GLITCHES;
                     onGlitchStart();
+                    LOGI("diff glitch detected, absDiff = %g", absDiff);
                 } else {
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
-                    mSinAccumulator += sample * sinf(mPhase);
-                    mCosAccumulator += sample * cosf(mPhase);
+                    mSinAccumulator += sample * sinf(mInputPhase);
+                    mCosAccumulator += sample * cosf(mInputPhase);
                     mFramesAccumulated++;
                     // Must be a multiple of the period or the calculation will not be accurate.
                     if (mFramesAccumulated == mSinePeriod) {
@@ -930,18 +934,25 @@ public:
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();
 
-                        if (mMagnitude < mThreshold) {
+                        if (abs(phaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
+                            LOGI("phase glitch detected, phaseOffset = %g", phaseOffset);
+                        } else if (mMagnitude < mThreshold) {
+                            result = ERROR_GLITCHES;
+                            onGlitchStart();
+                            LOGI("magnitude glitch detected, mMagnitude = %g", mMagnitude);
                         }
+                        // FIXME mInputPhase += phaseOffset;
                     }
                 }
+                incrementInputPhase();
             } break;
 
             case STATE_GLITCHING: {
                 // Predict next sine value
                 mGlitchLength++;
-                float predicted = sinf(mPhase + mPhaseOffset) * mMagnitude;
+                float predicted = sinf(mInputPhase) * mMagnitude;
                 float diff = predicted - sample;
 //                LOGD(" STATE_GLITCHING: predicted = %f, actual = %f, length = %d", predicted, sample, mGlitchLength);
                 float absDiff = fabs(diff);
@@ -958,6 +969,7 @@ public:
                        relock();
                     }
                 }
+                incrementInputPhase();
             } break;
 
             case NUM_STATES: // not a real state
@@ -969,24 +981,35 @@ public:
         return result;
     }
 
+    // advance and wrap phase
+    void incrementInputPhase() {
+        mInputPhase += mPhaseIncrement;
+        if (mInputPhase > M_PI) {
+            mInputPhase -= (2.0 * M_PI);
+        }
+    }
+
+    // advance and wrap phase
+    void incrementOutputPhase() {
+        mOutputPhase += mPhaseIncrement;
+        if (mOutputPhase > M_PI) {
+            mOutputPhase -= (2.0 * M_PI);
+        }
+    }
+
     /**
      * @param frameData upon return, contains the reference sine wave
      * @param channelCount
      */
-
     result_code processOutputFrame(float *frameData, int channelCount) override {
         float output = 0.0f;
         // Output sine wave so we can measure it.
         if (mState != STATE_IDLE) {
-            float sinOut = sinf(mPhase);
+            float sinOut = sinf(mOutputPhase);
+            incrementOutputPhase();
             output = (sinOut * mOutputAmplitude)
                      + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
             // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
-            // advance and wrap phase
-            mPhase += mPhaseIncrement;
-            if (mPhase > M_PI) {
-                mPhase -= (2.0 * M_PI);
-            }
         }
 
         frameData[0] = output;
@@ -1027,6 +1050,7 @@ public:
     }
 
     void relock() {
+        LOGW("relock because of a very long glitch");
         mState = STATE_WAITING_FOR_LOCK;
         resetAccumulator();
     }
@@ -1041,7 +1065,7 @@ public:
     void onStartTest() override {
         LoopbackProcessor::onStartTest();
         mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
-        mPhase = 0.0f;
+        mOutputPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
         mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
         mGlitchCount = 0;
@@ -1075,6 +1099,7 @@ private:
 
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
     static constexpr int kTargetGlitchFrequency = 607;
+    static constexpr double kMaxPhaseError = M_PI * 0.05;
 
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mThreshold = 0.005;
@@ -1084,9 +1109,8 @@ private:
     int32_t mStateFrameCounters[NUM_STATES];
 
     double  mPhaseIncrement = 0.0;
-    double  mPhase = 0.0;
-    double  mPhaseOffset = 0.0;
-    double  mPreviousPhaseOffset = 0.0;
+    double  mInputPhase = 0.0;
+    double  mOutputPhase = 0.0;
     double  mMagnitude = 0.0;
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;

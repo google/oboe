@@ -48,16 +48,17 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
             inputFloat += inputStride;
             mRecording->write(buffer, 1);
         }
+        // Handle mismatch in in numFrames.
+        buffer[0] = 0.0f; // gap in output
         for (int i = numBoth; i < numInputFrames; i++) {
-            buffer[0] = 0.0f; // gap
             buffer[1] = *inputFloat;
             inputFloat += inputStride;
             mRecording->write(buffer, 1);
         }
+        buffer[1] = 0.0f; // gap in input
         for (int i = numBoth; i < numOutputFrames; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;
-            buffer[1] = 0.0f; // gap
             mRecording->write(buffer, 1);
         }
     }
