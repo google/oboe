@@ -365,32 +365,26 @@ public:
     virtual result_code processInputFrame(float *frameData, int channelCount) = 0;
     virtual result_code processOutputFrame(float *frameData, int channelCount) = 0;
 
-    result_code process(float *inputData, int inputChannelCount, int numInputFrames,
+    void process(float *inputData, int inputChannelCount, int numInputFrames,
                         float *outputData, int outputChannelCount, int numOutputFrames) {
-        result_code result = RESULT_OK;
         int numBoth = std::min(numInputFrames, numOutputFrames);
         // Process one frame at a time.
         for (int i = 0; i < numBoth; i++) {
-            result = processInputFrame(inputData, inputChannelCount);
+            processInputFrame(inputData, inputChannelCount);
             inputData += inputChannelCount;
-            if (result != RESULT_OK) return result;
-            result = processOutputFrame(outputData, outputChannelCount);
+            processOutputFrame(outputData, outputChannelCount);
             outputData += outputChannelCount;
-            if (result != RESULT_OK) return result;
         }
         // If there is more input than output.
         for (int i = numBoth; i < numInputFrames; i++) {
-            result = processInputFrame(inputData, inputChannelCount);
+            processInputFrame(inputData, inputChannelCount);
             inputData += inputChannelCount;
-            if (result != RESULT_OK) return result;
         }
         // If there is more output than input.
         for (int i = numBoth; i < numOutputFrames; i++) {
-            result = processOutputFrame(outputData, outputChannelCount);
+            processOutputFrame(outputData, outputChannelCount);
             outputData += outputChannelCount;
-            if (result != RESULT_OK) return result;
         }
-        return result;
     }
 
     virtual void analyze() = 0;
@@ -857,8 +851,8 @@ public:
             case STATE_IDLE:
                 mDownCounter--;
                 if (mDownCounter <= 0) {
-                    mState = STATE_WAITING_FOR_SIGNAL;
-                    mDownCounter = NOISE_FRAME_COUNT;
+                    mState = STATE_IMMUNE;
+                    mDownCounter = IMMUNE_FRAME_COUNT;
                     mInputPhase = 0.0; // prevent spike at start
                     mOutputPhase = 0.0;
                 }
@@ -905,15 +899,13 @@ public:
             case STATE_LOCKED: {
                 // Predict next sine value
                 float predicted = sinf(mInputPhase) * mMagnitude;
-                // LOGD("    predicted = %f, actual = %f", predicted, sample);
-
                 float diff = predicted - sample;
                 float absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff > mScaledTolerance) {
                     result = ERROR_GLITCHES;
                     onGlitchStart();
-                    LOGI("diff glitch detected, absDiff = %g", absDiff);
+//                    LOGI("diff glitch detected, absDiff = %g", absDiff);
                 } else {
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
@@ -937,13 +929,12 @@ public:
                         if (abs(phaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
-                            LOGI("phase glitch detected, phaseOffset = %g", phaseOffset);
+                            LOGD("phase glitch detected, phaseOffset = %g", phaseOffset);
                         } else if (mMagnitude < mThreshold) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
-                            LOGI("magnitude glitch detected, mMagnitude = %g", mMagnitude);
+                            LOGD("magnitude glitch detected, mMagnitude = %g", mMagnitude);
                         }
-                        // FIXME mInputPhase += phaseOffset;
                     }
                 }
                 incrementInputPhase();
@@ -954,7 +945,6 @@ public:
                 mGlitchLength++;
                 float predicted = sinf(mInputPhase) * mMagnitude;
                 float diff = predicted - sample;
-//                LOGD(" STATE_GLITCHING: predicted = %f, actual = %f, length = %d", predicted, sample, mGlitchLength);
                 float absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff < mScaledTolerance) { // close enough?
@@ -1011,7 +1001,6 @@ public:
                      + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
             // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
         }
-
         frameData[0] = output;
         for (int i = 1; i < channelCount; i++) {
             frameData[i] = 0.0f;
@@ -1033,13 +1022,6 @@ public:
         resetAccumulator();
     }
 
-    void onInsufficientRead() override {
-        if (mState == STATE_LOCKED) {
-            mGlitchCount++;
-        }
-        LoopbackProcessor::onInsufficientRead();
-    }
-
     // reset the sine wave detector
     void resetAccumulator() {
         mFramesAccumulated = 0;
@@ -1050,7 +1032,7 @@ public:
     }
 
     void relock() {
-        LOGW("relock because of a very long glitch");
+//        LOGD("relock: %d because of a very long %d glitch", mFrameCounter, mGlitchLength);
         mState = STATE_WAITING_FOR_LOCK;
         resetAccumulator();
     }
@@ -1091,9 +1073,8 @@ private:
     enum constants {
         // Arbitrary durations, assuming 48000 Hz
         IDLE_FRAME_COUNT = 48 * 100,
-        NOISE_FRAME_COUNT = 48 * 600,
+        IMMUNE_FRAME_COUNT = 48 * 100,
         PERIODS_NEEDED_FOR_LOCK = 8,
-        PERIODS_IMMUNE = 2,
         MIN_SNRATIO_DB = 65
     };
 

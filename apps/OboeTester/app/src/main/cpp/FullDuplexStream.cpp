@@ -85,9 +85,6 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
                     callbackResult = oboe::DataCallbackResult::Stop;
                 } else {
                     framesRead = resultRead.value();
-                    if (framesRead != numFrames) {
-                        LOGE("glitch, framesRead = %d, numFrames = %d", framesRead, numFrames);
-                    }
                 }
             }
         }
