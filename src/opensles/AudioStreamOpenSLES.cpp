@@ -163,6 +163,45 @@ PerformanceMode AudioStreamOpenSLES::convertPerformanceMode(SLuint32 openslMode)
     return oboeMode;
 }
 
+void AudioStreamOpenSLES::logUnsupportedAttributes() {
+    // Log unsupported attributes
+    // only report if changed from the default
+
+    // Device ID
+    if (mDeviceId != kUnspecified) {
+        LOGW("Device ID [AudioStreamBuilder::setDeviceId()] "
+             "is not supported on OpenSLES sstreams.");
+    }
+    // Sharing Mode
+    if (mSharingMode != SharingMode::Shared) {
+        LOGW("SharingMode [AudioStreamBuilder::setSharingMode()] "
+             "is not supported on OpenSLES sstreams.");
+    }
+    // Performance Mode
+    if (mPerformanceMode != PerformanceMode::None) {
+        LOGW("PerformanceMode [AudioStreamBuilder::setPerformanceMode()] "
+             "is not supported on OpenSLES sstreams.");
+    }
+    // Usage
+    if (mUsage != Usage::Media) {
+        LOGW("Usage [AudioStreamBuilder::setUsage()] "
+             "is not supported on OpenSLES sstreams.");
+    }
+    // Content Type
+    if (mContentType != ContentType::Music) {
+        LOGW("ContentType [AudioStreamBuilder::setContentType()] "
+             "is not supported on OpenSLES streams.");
+    }
+    if (mSessionId != SessionId::None) {
+        LOGW("SessionId [AudioStreamBuilder::setSessionId()] "
+             "is not supported on OpenSLES streams.");
+    }
+
+    // mBufferCapacityInFrames is set in AudioStreamOpenSLES::open()
+    // mBufferSizeInFrames has no setter
+    // mFramesPerBurst has no setter
+}
+
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
 
     if (configItf == nullptr) {
