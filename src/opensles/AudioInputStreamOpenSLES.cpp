@@ -74,6 +74,8 @@ SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) c
 }
 
 Result AudioInputStreamOpenSLES::open() {
+    logUnsupportedAttributes();
+
     SLAndroidConfigurationItf configItf = nullptr;
 
     if (getSdkVersion() < __ANDROID_API_M__ && mFormat == AudioFormat::Float){

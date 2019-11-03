@@ -110,34 +110,8 @@ SLuint32 AudioOutputStreamOpenSLES::channelCountToChannelMask(int channelCount) 
 }
 
 Result AudioOutputStreamOpenSLES::open() {
-    // Log unsupported attributes
-    // only report if changed from the default
-    // Usage::Media
-    // NOT TRUE! See OpenSLES_convertOutputUsage
-    // if (mUseage != Usage::Media) {
-    //    LOGW("Usage not supported on OpenSL ES streams.");
-    //}
+    logUnsupportedAttributes();
 
-    // Content Type
-    if (mContentType != ContentType::Music) {
-        LOGW("ContentType [AudioStreamBuilder::setContentType()] "
-             "is not supported on OpenSLES output streams.");
-    }
-    // Sharing Mode
-    if (mSharingMode != SharingMode::Shared) {
-        LOGW("SharingMode [AudioStreamBuilder::setSharingMode()] "
-             "is not supported on OpenSLES output streams.");
-    }
-    // Performance Mode
-    if (mPerformanceMode != PerformanceMode::None) {
-        LOGW("PerformanceMode [AudioStreamBuilder::setPerformanceMode()] "
-             "is not supported on OpenSLES output streams.");
-    }
-    // Device ID
-    if (mDeviceId != kUnspecified) {
-        LOGW("Device ID [AudioStreamBuilder::setDeviceId()] "
-             "is not supported on OpenSLES output streams.");
-    }
     SLAndroidConfigurationItf configItf = nullptr;
 
 
