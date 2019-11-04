@@ -24,7 +24,7 @@ To build Oboe you'll need a compiler which supports C++14 and the Android header
 
 ## Videos
 - [Getting started with Oboe](https://www.youtube.com/playlist?list=PLWz5rJ2EKKc_duWv9IPNvx9YBudNMmLSa)
-[Low Latency Audio - Because Your Ears Are Worth It](https://www.youtube.com/watch?v=8vOf_fDtur4) (Android Dev Summit '18)
+- [Low Latency Audio - Because Your Ears Are Worth It](https://www.youtube.com/watch?v=8vOf_fDtur4) (Android Dev Summit '18)
 - [Real-time audio with the 100 oscillator synthesizer](https://www.youtube.com/watch?v=J04iPJBkAKs) (DroidCon Berlin '18)
 - [Winning on Android](https://www.youtube.com/watch?v=tWBojmBpS74) (ADC '18) 
 
