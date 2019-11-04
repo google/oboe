@@ -5,7 +5,6 @@ This sample demonstrates how to build a simple musical game. The objective of th
 
 For a step-by-step guide on how this game works and how to build it check out this codelab: [Build a Musical Game using Oboe](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html). 
 
-**Update March 2019**: This code sample has been significantly updated since the codelab was written, however, many of the fundamental principles remain.  
 
 Screenshots
 -----------
