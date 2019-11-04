@@ -170,36 +170,40 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
     // Device ID
     if (mDeviceId != kUnspecified) {
         LOGW("Device ID [AudioStreamBuilder::setDeviceId()] "
-             "is not supported on OpenSLES sstreams.");
+             "is not supported on OpenSLES streams.");
     }
     // Sharing Mode
     if (mSharingMode != SharingMode::Shared) {
         LOGW("SharingMode [AudioStreamBuilder::setSharingMode()] "
-             "is not supported on OpenSLES sstreams.");
+             "is not supported on OpenSLES streams.");
     }
     // Performance Mode
     if (mPerformanceMode != PerformanceMode::None) {
         LOGW("PerformanceMode [AudioStreamBuilder::setPerformanceMode()] "
-             "is not supported on OpenSLES sstreams.");
+             "is not supported on OpenSLES streams.");
     }
     // Usage
     if (mUsage != Usage::Media) {
         LOGW("Usage [AudioStreamBuilder::setUsage()] "
-             "is not supported on OpenSLES sstreams.");
+             "is not supported on OpenSLES streams.");
     }
     // Content Type
     if (mContentType != ContentType::Music) {
         LOGW("ContentType [AudioStreamBuilder::setContentType()] "
              "is not supported on OpenSLES streams.");
     }
+
+    // Session Id
     if (mSessionId != SessionId::None) {
         LOGW("SessionId [AudioStreamBuilder::setSessionId()] "
              "is not supported on OpenSLES streams.");
     }
 
-    // mBufferCapacityInFrames is set in AudioStreamOpenSLES::open()
-    // mBufferSizeInFrames has no setter
-    // mFramesPerBurst has no setter
+    // Input Preset
+    if (mInputPreset != InputPreset::VoiceRecognition) {
+        LOGW("InputPreset [AudioStreamBuilder::setInputPreset()] "
+             "is not supported on OpenSLES streams.");
+    }
 }
 
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {

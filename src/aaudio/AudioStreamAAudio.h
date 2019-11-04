@@ -104,6 +104,8 @@ protected:
     void updateFramesRead() override;
     void updateFramesWritten() override;
 
+    void logUnsupportedAttributes();
+
 private:
 
     bool                 isMMapUsed();
