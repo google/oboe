@@ -18,14 +18,14 @@
 #ifndef OBOETESTER_EXPONENTIAL_SHAPE_H
 #define OBOETESTER_EXPONENTIAL_SHAPE_H
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 
 /**
  * Generate a exponential sweep between min and max.
  *
  * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
  */
-class ExponentialShape : public flowgraph::AudioFilter {
+class ExponentialShape : public flowgraph::FlowGraphFilter {
 public:
     ExponentialShape();
 

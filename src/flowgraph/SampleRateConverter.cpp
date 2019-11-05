@@ -20,7 +20,7 @@ using namespace flowgraph;
 using namespace resampler;
 
 SampleRateConverter::SampleRateConverter(int32_t channelCount, MultiChannelResampler &resampler)
-        : AudioFilter(channelCount)
+        : FlowGraphFilter(channelCount)
         , mResampler(resampler) {
     setDataPulledAutomatically(false);
 }

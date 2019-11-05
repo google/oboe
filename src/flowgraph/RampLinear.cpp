@@ -16,13 +16,13 @@
 
 #include <algorithm>
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "RampLinear.h"
 
 using namespace flowgraph;
 
 RampLinear::RampLinear(int32_t channelCount)
-        : AudioFilter(channelCount) {
+        : FlowGraphFilter(channelCount) {
     mTarget.store(1.0f);
 }
 

@@ -18,12 +18,12 @@
 #ifndef OBOETESTER_LINEAR_SHAPE_H
 #define OBOETESTER_LINEAR_SHAPE_H
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 
 /**
  * Convert an input between -1.0 and +1.0 to a linear region between min and max.
  */
-class LinearShape : public flowgraph::AudioFilter {
+class LinearShape : public flowgraph::FlowGraphFilter {
 public:
     LinearShape();
 

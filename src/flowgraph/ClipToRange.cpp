@@ -16,13 +16,13 @@
 
 #include <algorithm>
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "ClipToRange.h"
 
 using namespace flowgraph;
 
 ClipToRange::ClipToRange(int32_t channelCount)
-        : AudioFilter(channelCount) {
+        : FlowGraphFilter(channelCount) {
 }
 
 int32_t ClipToRange::onProcess(int32_t numFrames) {

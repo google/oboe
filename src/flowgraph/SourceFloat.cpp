@@ -17,13 +17,13 @@
 #include "common/OboeDebug.h"
 #include <algorithm>
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "SourceFloat.h"
 
 using namespace flowgraph;
 
 SourceFloat::SourceFloat(int32_t channelCount)
-        : AudioSourceBuffered(channelCount) {
+        : FlowGraphSourceBuffered(channelCount) {
 }
 
 int32_t SourceFloat::onProcess(int32_t numFrames) {

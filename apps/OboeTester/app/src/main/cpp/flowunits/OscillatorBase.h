@@ -17,7 +17,7 @@
 #ifndef NATIVEOBOE_OSCILLATORBASE_H
 #define NATIVEOBOE_OSCILLATORBASE_H
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 
 /**
  * Base class for various oscillators.
@@ -29,7 +29,7 @@
  * This module has "frequency" and "amplitude" ports for control.
  */
 
-class OscillatorBase : public flowgraph::AudioProcessorBase {
+class OscillatorBase : public flowgraph::FlowGraphNode {
 public:
     OscillatorBase();
 
@@ -61,16 +61,16 @@ public:
     /**
      * Control the frequency of the oscillator in Hz.
      */
-    flowgraph::AudioFloatInputPort  frequency;
+    flowgraph::FlowGraphPortFloatInput  frequency;
 
     /**
      * Control the linear amplitude of the oscillator.
      * Silence is 0.0.
      * A typical full amplitude would be 1.0.
      */
-    flowgraph::AudioFloatInputPort  amplitude;
+    flowgraph::FlowGraphPortFloatInput  amplitude;
 
-    flowgraph::AudioFloatOutputPort output;
+    flowgraph::FlowGraphPortFloatOutput output;
 
 protected:
     /**

@@ -20,7 +20,7 @@
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 #include "FixedBlockReader.h"
 
 namespace oboe {
@@ -32,10 +32,10 @@ class AudioStream;
  * For output streams that use a callback, call the application for more data.
  * For input streams that do not use a callback, read from the stream.
  */
-class AudioSourceCaller : public flowgraph::AudioSource, public FixedBlockProcessor {
+class AudioSourceCaller : public flowgraph::FlowGraphSource, public FixedBlockProcessor {
 public:
     AudioSourceCaller(int32_t channelCount, int32_t framesPerCallback, int32_t bytesPerSample)
-            : AudioSource(channelCount)
+            : FlowGraphSource(channelCount)
             , mBlockReader(*this) {
         mBlockReader.open(channelCount * framesPerCallback * bytesPerSample);
     }

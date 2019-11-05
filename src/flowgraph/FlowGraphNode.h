@@ -15,13 +15,15 @@
  */
 
 /*
- * AudioProcessorBase.h
+ * FlowGraph.h
  *
- * Audio processing node and ports that can be used in a simple data flow graph.
+ * Processing node and ports that can be used in a simple data flow graph.
+ * This was designed to work with audio but could be used for other
+ * types of data.
  */
 
-#ifndef FLOWGRAPH_AUDIO_PROCESSOR_BASE_H
-#define FLOWGRAPH_AUDIO_PROCESSOR_BASE_H
+#ifndef FLOWGRAPH_FLOW_GRAPH_NODE_H
+#define FLOWGRAPH_FLOW_GRAPH_NODE_H
 
 #include <cassert>
 #include <cstring>
@@ -33,7 +35,6 @@
 #include <vector>
 
 // TODO Move these classes into separate files.
-// TODO Maybe remove "Audio" prefix from these class names: AudioProcessorBase to ProcessorNode
 // TODO Review use of raw pointers for connect(). Maybe use smart pointers but need to avoid
 //      run-time deallocation in audio thread.
 
@@ -43,22 +44,22 @@
 
 namespace flowgraph {
 
-// Default block size that can be overridden when the AudioFloatBufferPort is created.
+// Default block size that can be overridden when the FlowGraphPortFloat is created.
 // If it is too small then we will have too much overhead from switching between nodes.
 // If it is too high then we will thrash the caches.
 constexpr int kDefaultBufferSize = 8; // arbitrary
 
-class AudioPort;
-class AudioFloatInputPort;
+class FlowGraphPort;
+class FlowGraphPortFloatInput;
 
 /***************************************************************************/
 /**
  * Base class for all nodes in the flowgraph.
  */
-class AudioProcessorBase {
+class FlowGraphNode {
 public:
-    AudioProcessorBase() {}
-    virtual ~AudioProcessorBase() = default;
+    FlowGraphNode() {}
+    virtual ~FlowGraphNode() = default;
 
     /**
      * Read from the input ports,
@@ -92,7 +93,7 @@ public:
      */
     virtual void reset();
 
-    void addInputPort(AudioPort &port) {
+    void addInputPort(FlowGraphPort &port) {
         mInputPorts.push_back(port);
     }
 
@@ -114,7 +115,7 @@ public:
     }
 
     virtual const char *getName() {
-        return "AudioProcessorBase";
+        return "FlowGraph";
     }
 
     int64_t getLastFramePosition() {
@@ -124,7 +125,7 @@ public:
 protected:
     int64_t  mLastFramePosition = 0;
 
-    std::vector<std::reference_wrapper<AudioPort>> mInputPorts;
+    std::vector<std::reference_wrapper<FlowGraphPort>> mInputPorts;
 
 private:
     bool     mDataPulledAutomatically = true;
@@ -141,16 +142,16 @@ private:
   * So they are generally declared as public.
   *
   */
-class AudioPort {
+class FlowGraphPort {
 public:
-    AudioPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
+    FlowGraphPort(FlowGraphNode &parent, int32_t samplesPerFrame)
             : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
 
     // Ports are often declared public. So let's make them non-copyable.
-    AudioPort(const AudioPort&) = delete;
-    AudioPort& operator=(const AudioPort&) = delete;
+    FlowGraphPort(const FlowGraphPort&) = delete;
+    FlowGraphPort& operator=(const FlowGraphPort&) = delete;
 
     int32_t getSamplesPerFrame() const {
         return mSamplesPerFrame;
@@ -161,7 +162,7 @@ public:
     virtual void pullReset() {}
 
 protected:
-    AudioProcessorBase &mContainingNode;
+    FlowGraphNode &mContainingNode;
 
 private:
     const int32_t    mSamplesPerFrame = 1;
@@ -174,14 +175,14 @@ private:
  *
  * The size is framesPerBuffer * samplesPerFrame).
  */
-class AudioFloatBufferPort  : public AudioPort {
+class FlowGraphPortFloat  : public FlowGraphPort {
 public:
-    AudioFloatBufferPort(AudioProcessorBase &parent,
+    FlowGraphPortFloat(FlowGraphNode &parent,
                    int32_t samplesPerFrame,
                    int32_t framesPerBuffer = kDefaultBufferSize
                 );
 
-    virtual ~AudioFloatBufferPort() = default;
+    virtual ~FlowGraphPortFloat() = default;
 
     int32_t getFramesPerBuffer() const {
         return mFramesPerBuffer;
@@ -205,15 +206,15 @@ private:
 /**
   * The results of a node's processing are stored in the buffers of the output ports.
   */
-class AudioFloatOutputPort : public AudioFloatBufferPort {
+class FlowGraphPortFloatOutput : public FlowGraphPortFloat {
 public:
-    AudioFloatOutputPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : AudioFloatBufferPort(parent, samplesPerFrame) {
+    FlowGraphPortFloatOutput(FlowGraphNode &parent, int32_t samplesPerFrame)
+            : FlowGraphPortFloat(parent, samplesPerFrame) {
     }
 
-    virtual ~AudioFloatOutputPort() = default;
+    virtual ~FlowGraphPortFloatOutput() = default;
 
-    using AudioFloatBufferPort::getBuffer;
+    using FlowGraphPortFloat::getBuffer;
 
     /**
      * Connect to the input of another module.
@@ -225,13 +226,13 @@ public:
      * This not thread safe. Do not modify the graph topology from another thread while running.
      * Also do not delete a module while it is connected to another port if the graph is running.
      */
-    void connect(AudioFloatInputPort *port);
+    void connect(FlowGraphPortFloatInput *port);
 
     /**
      * Disconnect from the input of another module.
      * This not thread safe.
      */
-    void disconnect(AudioFloatInputPort *port);
+    void disconnect(FlowGraphPortFloatInput *port);
 
     /**
      * Call the parent module's onProcess() method.
@@ -253,15 +254,15 @@ public:
  * You can set a value that will be used for processing.
  * If you connect an output port to this port then its value will be used instead.
  */
-class AudioFloatInputPort : public AudioFloatBufferPort {
+class FlowGraphPortFloatInput : public FlowGraphPortFloat {
 public:
-    AudioFloatInputPort(AudioProcessorBase &parent, int32_t samplesPerFrame)
-            : AudioFloatBufferPort(parent, samplesPerFrame) {
+    FlowGraphPortFloatInput(FlowGraphNode &parent, int32_t samplesPerFrame)
+            : FlowGraphPortFloat(parent, samplesPerFrame) {
         // Add to parent so it can pull data from each input.
         parent.addInputPort(*this);
     }
 
-    virtual ~AudioFloatInputPort() = default;
+    virtual ~FlowGraphPortFloatInput() = default;
 
     /**
      * If connected to an output port then this will return
@@ -290,12 +291,12 @@ public:
      * An output port can have multiple connections.
      * This not thread safe.
      */
-    void connect(AudioFloatOutputPort *port) {
+    void connect(FlowGraphPortFloatOutput *port) {
         assert(getSamplesPerFrame() == port->getSamplesPerFrame());
         mConnected = port;
     }
 
-    void disconnect(AudioFloatOutputPort *port) {
+    void disconnect(FlowGraphPortFloatOutput *port) {
         assert(mConnected == port);
         (void) port;
         mConnected = nullptr;
@@ -313,7 +314,7 @@ public:
     void pullReset() override;
 
 private:
-    AudioFloatOutputPort *mConnected = nullptr;
+    FlowGraphPortFloatOutput *mConnected = nullptr;
 };
 
 /***************************************************************************/
@@ -323,15 +324,15 @@ private:
  * It outputs data but does not consume data.
  * By default, it will read its data from an external buffer.
  */
-class AudioSource : public AudioProcessorBase {
+class FlowGraphSource : public FlowGraphNode {
 public:
-    explicit AudioSource(int32_t channelCount)
+    explicit FlowGraphSource(int32_t channelCount)
             : output(*this, channelCount) {
     }
 
-    virtual ~AudioSource() = default;
+    virtual ~FlowGraphSource() = default;
 
-    AudioFloatOutputPort output;
+    FlowGraphPortFloatOutput output;
 };
 
 /***************************************************************************/
@@ -341,12 +342,12 @@ public:
  * It outputs data but does not consume data.
  * By default, it will read its data from an external buffer.
  */
-class AudioSourceBuffered : public AudioSource {
+class FlowGraphSourceBuffered : public FlowGraphSource {
 public:
-    explicit AudioSourceBuffered(int32_t channelCount)
-            : AudioSource(channelCount) {}
+    explicit FlowGraphSourceBuffered(int32_t channelCount)
+            : FlowGraphSource(channelCount) {}
 
-    virtual ~AudioSourceBuffered() = default;
+    virtual ~FlowGraphSourceBuffered() = default;
 
     /**
      * Specify buffer that the node will read from.
@@ -373,15 +374,15 @@ protected:
  * This graph will be executed when data is read() from this node
  * by pulling data from upstream nodes.
  */
-class AudioSink : public AudioProcessorBase {
+class FlowGraphSink : public FlowGraphNode {
 public:
-    explicit AudioSink(int32_t channelCount)
+    explicit FlowGraphSink(int32_t channelCount)
             : input(*this, channelCount) {
     }
 
-    virtual ~AudioSink() = default;
+    virtual ~FlowGraphSink() = default;
 
-    AudioFloatInputPort input;
+    FlowGraphPortFloatInput input;
 
     /**
      * Dummy processor. The work happens in the read() method.
@@ -403,19 +404,19 @@ public:
  * This may include traditional filters, eg. FIR, but also include
  * any processing node that converts input to output.
  */
-class AudioFilter : public AudioProcessorBase {
+class FlowGraphFilter : public FlowGraphNode {
 public:
-    explicit AudioFilter(int32_t channelCount)
+    explicit FlowGraphFilter(int32_t channelCount)
             : input(*this, channelCount)
             , output(*this, channelCount) {
     }
 
-    virtual ~AudioFilter() = default;
+    virtual ~FlowGraphFilter() = default;
 
-    AudioFloatInputPort input;
-    AudioFloatOutputPort output;
+    FlowGraphPortFloatInput input;
+    FlowGraphPortFloatOutput output;
 };
 
 } /* namespace flowgraph */
 
-#endif /* FLOWGRAPH_AUDIO_PROCESSOR_BASE_H */
+#endif /* FLOWGRAPH_FLOW_GRAPH_NODE_H */

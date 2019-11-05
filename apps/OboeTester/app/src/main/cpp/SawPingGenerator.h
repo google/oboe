@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 #include "flowunits/OscillatorBase.h"
 
 class SawPingGenerator : public OscillatorBase {

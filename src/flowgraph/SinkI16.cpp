@@ -26,7 +26,7 @@
 using namespace flowgraph;
 
 SinkI16::SinkI16(int32_t channelCount)
-        : AudioSink(channelCount) {}
+        : FlowGraphSink(channelCount) {}
 
 int32_t SinkI16::read(int64_t framePosition, void *data, int32_t numFrames) {
     int16_t *shortData = (int16_t *) data;

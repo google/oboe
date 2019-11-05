@@ -20,12 +20,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "resampler/MultiChannelResampler.h"
 
 namespace flowgraph {
 
-class SampleRateConverter : public AudioFilter {
+class SampleRateConverter : public FlowGraphFilter {
 public:
     explicit SampleRateConverter(int32_t channelCount, resampler::MultiChannelResampler &mResampler);
 

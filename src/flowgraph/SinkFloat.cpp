@@ -16,13 +16,13 @@
 
 #include <algorithm>
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "SinkFloat.h"
 
 using namespace flowgraph;
 
 SinkFloat::SinkFloat(int32_t channelCount)
-        : AudioSink(channelCount) {
+        : FlowGraphSink(channelCount) {
 }
 
 int32_t SinkFloat::read(int64_t framePosition, void *data, int32_t numFrames) {

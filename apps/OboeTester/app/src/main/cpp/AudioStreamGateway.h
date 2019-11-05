@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 #include "oboe/Oboe.h"
 
 using namespace flowgraph;
@@ -34,7 +34,7 @@ public:
 //    AudioStreamGateway(int samplesPerFrame);
     virtual ~AudioStreamGateway() = default;
 
-    void setAudioSink(std::shared_ptr<flowgraph::AudioSink>  sink) {
+    void setAudioSink(std::shared_ptr<flowgraph::FlowGraphSink>  sink) {
         mAudioSink = sink;
         mFramePosition = sink->getLastFramePosition();
     }
@@ -53,7 +53,7 @@ private:
     int64_t  mFramePosition = 0;
     bool     mSchedulerChecked = false;
     int      mScheduler;
-    std::shared_ptr<flowgraph::AudioSink>  mAudioSink;
+    std::shared_ptr<flowgraph::FlowGraphSink>  mAudioSink;
 };
 
 
