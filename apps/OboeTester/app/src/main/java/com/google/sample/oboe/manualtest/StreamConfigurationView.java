@@ -433,7 +433,6 @@ public class StreamConfigurationView extends LinearLayout {
             mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
             mChannelConversionBox.setChecked(configuration.getChannelConversionAllowed());
             mFormatConversionBox.setChecked(configuration.getFormatConversionAllowed());
-            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
         }
     }
 
@@ -449,5 +448,15 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestedConfiguration.setSharingMode(b
                 ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
                 : StreamConfiguration.SHARING_MODE_SHARED);
+    }
+
+    public void setFormat(int format) {
+        mFormatSpinner.setSelection(format); // position matches format
+        mRequestedConfiguration.setFormat(format);
+    }
+
+    public void setFormatConversionAllowed(boolean allowed) {
+        mFormatConversionBox.setChecked(allowed);
+        mRequestedConfiguration.setFormatConversionAllowed(allowed);
     }
 }

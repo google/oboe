@@ -127,6 +127,21 @@ public class AnalyzerActivity extends TestInputActivity {
     protected void resetConfiguration() {
         super.resetConfiguration();
         mAudioOutTester.reset();
+
+        StreamContext streamContext = getFirstInputStreamContext();
+        if (streamContext != null) {
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.setFormat(StreamConfiguration.AUDIO_FORMAT_PCM_FLOAT);
+                streamContext.configurationView.setFormatConversionAllowed(true);
+            }
+        }
+        streamContext = getFirstOutputStreamContext();
+        if (streamContext != null) {
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.setFormat(StreamConfiguration.AUDIO_FORMAT_PCM_FLOAT);
+                streamContext.configurationView.setFormatConversionAllowed(true);
+            }
+        }
     }
 
     public void startAudio() {

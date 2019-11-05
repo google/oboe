@@ -314,7 +314,9 @@ public class StreamConfiguration {
         return mChannelConversionAllowed;
     }
 
-    public void setFormatConversionAllowed(boolean b) { mFormatConversionAllowed = b; }
+    public void setFormatConversionAllowed(boolean b) {
+        mFormatConversionAllowed = b;
+    }
 
     public boolean getFormatConversionAllowed() {
         return mFormatConversionAllowed;
