@@ -178,14 +178,10 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
              "is not supported on OpenSLES streams.");
     }
     // Performance Mode
-    if (mPerformanceMode != PerformanceMode::None) {
+    int sdkVersion = getSdkVersion();
+    if (mPerformanceMode != PerformanceMode::None && sdkVersion < __ANDROID_API_N_MR1__) {
         LOGW("PerformanceMode [AudioStreamBuilder::setPerformanceMode()] "
-             "is not supported on OpenSLES streams.");
-    }
-    // Usage
-    if (mUsage != Usage::Media) {
-        LOGW("Usage [AudioStreamBuilder::setUsage()] "
-             "is not supported on OpenSLES streams.");
+             "is not supported on OpenSLES streams running on pre-Android N-MR1 versions.");
     }
     // Content Type
     if (mContentType != ContentType::Music) {
