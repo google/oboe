@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 #include "AudioSourceCaller.h"
 #include "FixedBlockReader.h"
 

@@ -15,7 +15,7 @@
  */
 
 #include <unistd.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "MonoToMultiConverter.h"
 
 using namespace flowgraph;

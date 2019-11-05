@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 
 namespace flowgraph {
 
@@ -28,7 +28,7 @@ namespace flowgraph {
  * AudioSink that lets you read data as packed 24-bit signed integers.
  * The sample size is 3 bytes.
  */
-class SinkI24 : public AudioSink {
+class SinkI24 : public FlowGraphSink {
 public:
     explicit SinkI24(int32_t channelCount);
 

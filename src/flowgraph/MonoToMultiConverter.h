@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 
 namespace flowgraph {
 
@@ -28,7 +28,7 @@ namespace flowgraph {
  * Convert a monophonic stream to a multi-channel stream
  * with the same signal on each channel.
  */
-class MonoToMultiConverter : public AudioProcessorBase {
+class MonoToMultiConverter : public FlowGraphNode {
 public:
     explicit MonoToMultiConverter(int32_t channelCount);
 
@@ -40,8 +40,8 @@ public:
         return "MonoToMultiConverter";
     }
 
-    AudioFloatInputPort input;
-    AudioFloatOutputPort output;
+    FlowGraphPortFloatInput input;
+    FlowGraphPortFloatOutput output;
 };
 
 } /* namespace flowgraph */

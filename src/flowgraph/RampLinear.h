@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 
 namespace flowgraph {
 
@@ -33,7 +33,7 @@ namespace flowgraph {
  * The target may be updated while a ramp is in progress, which will trigger
  * a new ramp from the current value.
  */
-class RampLinear : public AudioFilter {
+class RampLinear : public FlowGraphFilter {
 public:
     explicit RampLinear(int32_t channelCount);
 

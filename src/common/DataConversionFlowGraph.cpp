@@ -72,7 +72,7 @@ static MultiChannelResampler::Quality convertOboeSRQualityToMCR(SampleRateConver
 //
 Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream *sinkStream) {
 
-    AudioFloatOutputPort *lastOutput = nullptr;
+    FlowGraphPortFloatOutput *lastOutput = nullptr;
 
     bool isOutput = sourceStream->getDirection() == Direction::Output;
     mFilterStream = isOutput ? sourceStream : sinkStream;

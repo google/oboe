@@ -21,7 +21,7 @@
 #include <audio_utils/primitives.h>
 #endif
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "SourceI24.h"
 
 using namespace flowgraph;
@@ -29,7 +29,7 @@ using namespace flowgraph;
 constexpr int kBytesPerI24Packed = 3;
 
 SourceI24::SourceI24(int32_t channelCount)
-        : AudioSourceBuffered(channelCount) {
+        : FlowGraphSourceBuffered(channelCount) {
 }
 
 int32_t SourceI24::onProcess(int32_t numFrames) {

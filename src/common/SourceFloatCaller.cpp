@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <unistd.h>
-#include "flowgraph/AudioProcessorBase.h"
+#include "flowgraph/FlowGraphNode.h"
 #include "SourceFloatCaller.h"
 
 using namespace oboe;

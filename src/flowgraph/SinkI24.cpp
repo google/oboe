@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 #include "SinkI24.h"
 
 #if FLOWGRAPH_ANDROID_INTERNAL
@@ -28,7 +28,7 @@
 using namespace flowgraph;
 
 SinkI24::SinkI24(int32_t channelCount)
-        : AudioSink(channelCount) {}
+        : FlowGraphSink(channelCount) {}
 
 int32_t SinkI24::read(int64_t framePosition, void *data, int32_t numFrames) {
     uint8_t *byteData = (uint8_t *) data;

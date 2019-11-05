@@ -19,7 +19,7 @@
 #include "ExponentialShape.h"
 
 ExponentialShape::ExponentialShape()
-        : AudioFilter(1) {
+        : FlowGraphFilter(1) {
 }
 
 int32_t ExponentialShape::onProcess(int32_t numFrames) {

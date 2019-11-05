@@ -20,7 +20,7 @@
 using namespace flowgraph;
 
 LinearShape::LinearShape()
-        : AudioFilter(1) {
+        : FlowGraphFilter(1) {
 }
 
 int32_t LinearShape::onProcess(int numFrames) {

@@ -26,7 +26,7 @@ set (oboe_sources
     src/fifo/FifoController.cpp
     src/fifo/FifoControllerBase.cpp
     src/fifo/FifoControllerIndirect.cpp
-    src/flowgraph/AudioProcessorBase.cpp
+        src/flowgraph/FlowGraphNode.cpp
     src/flowgraph/ClipToRange.cpp
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoToMultiConverter.cpp

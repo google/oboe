@@ -17,12 +17,12 @@
 #include "stdio.h"
 #include <algorithm>
 #include <sys/types.h>
-#include "AudioProcessorBase.h"
+#include "FlowGraphNode.h"
 
 using namespace flowgraph;
 
 /***************************************************************************/
-int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
+int32_t FlowGraphNode::pullData(int64_t framePosition, int32_t numFrames) {
     int32_t frameCount = numFrames;
     // Prevent recursion and multiple execution of nodes.
     if (framePosition <= mLastFramePosition && !mBlockRecursion) {
@@ -46,7 +46,7 @@ int32_t AudioProcessorBase::pullData(int64_t framePosition, int32_t numFrames) {
     return frameCount;
 }
 
-void AudioProcessorBase::pullReset() {
+void FlowGraphNode::pullReset() {
     if (!mBlockRecursion) {
         mBlockRecursion = true; // for cyclic graphs
         // Pull reset from all the upstream nodes.
@@ -58,15 +58,15 @@ void AudioProcessorBase::pullReset() {
     }
 }
 
-void AudioProcessorBase::reset() {
+void FlowGraphNode::reset() {
     mLastFrameCount = 0;
 }
 
 /***************************************************************************/
-AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
+FlowGraphPortFloat::FlowGraphPortFloat(FlowGraphNode &parent,
                                int32_t samplesPerFrame,
                                int32_t framesPerBuffer)
-        : AudioPort(parent, samplesPerFrame)
+        : FlowGraphPort(parent, samplesPerFrame)
         , mFramesPerBuffer(framesPerBuffer)
         , mBuffer(nullptr) {
     size_t numFloats = static_cast<size_t>(framesPerBuffer * getSamplesPerFrame());
@@ -74,37 +74,37 @@ AudioFloatBufferPort::AudioFloatBufferPort(AudioProcessorBase &parent,
 }
 
 /***************************************************************************/
-int32_t AudioFloatOutputPort::pullData(int64_t framePosition, int32_t numFrames) {
+int32_t FlowGraphPortFloatOutput::pullData(int64_t framePosition, int32_t numFrames) {
     numFrames = std::min(getFramesPerBuffer(), numFrames);
     return mContainingNode.pullData(framePosition, numFrames);
 }
 
-void AudioFloatOutputPort::pullReset() {
+void FlowGraphPortFloatOutput::pullReset() {
     mContainingNode.pullReset();
 }
 
 // These need to be in the .cpp file because of forward cross references.
-void AudioFloatOutputPort::connect(AudioFloatInputPort *port) {
+void FlowGraphPortFloatOutput::connect(FlowGraphPortFloatInput *port) {
     port->connect(this);
 }
 
-void AudioFloatOutputPort::disconnect(AudioFloatInputPort *port) {
+void FlowGraphPortFloatOutput::disconnect(FlowGraphPortFloatInput *port) {
     port->disconnect(this);
 }
 
 /***************************************************************************/
-int32_t AudioFloatInputPort::pullData(int64_t framePosition, int32_t numFrames) {
+int32_t FlowGraphPortFloatInput::pullData(int64_t framePosition, int32_t numFrames) {
     return (mConnected == nullptr)
             ? std::min(getFramesPerBuffer(), numFrames)
             : mConnected->pullData(framePosition, numFrames);
 }
-void AudioFloatInputPort::pullReset() {
+void FlowGraphPortFloatInput::pullReset() {
     if (mConnected != nullptr) mConnected->pullReset();
 }
 
-float *AudioFloatInputPort::getBuffer() {
+float *FlowGraphPortFloatInput::getBuffer() {
     if (mConnected == nullptr) {
-        return AudioFloatBufferPort::getBuffer(); // loaded using setValue()
+        return FlowGraphPortFloat::getBuffer(); // loaded using setValue()
     } else {
         return mConnected->getBuffer();
     }
