@@ -22,7 +22,7 @@
 
 #include "oboe/Oboe.h"
 #include "FullDuplexStream.h"
-#include "LatencyAnalyzer.h"
+#include "analyzer/LatencyAnalyzer.h"
 #include "MultiChannelRecording.h"
 
 class FullDuplexAnalyzer : public FullDuplexStream {
