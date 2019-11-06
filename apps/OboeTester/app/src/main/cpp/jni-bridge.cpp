@@ -446,6 +446,12 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setSignalType(
     engine.getCurrentActivity()->setSignalType(signalType);
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getOboeVersionNumber(JNIEnv *env,
+                                                                          jclass type) {
+    return OBOE_VERSION_NUMBER;
+}
+
 // ==========================================================================
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_TestAudioActivity_setActivityType(JNIEnv *env,

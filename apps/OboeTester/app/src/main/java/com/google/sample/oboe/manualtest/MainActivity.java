@@ -81,9 +81,12 @@ public class MainActivity extends Activity {
 
         try {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            int versionCode = pinfo.versionCode;
-            String versionName = pinfo.versionName;
-            mVersionTextView.setText("V# = " + versionCode + ", name = " + versionName);
+            int oboeVersion = OboeAudioStream.getOboeVersionNumber();
+            int oboeMajor = (oboeVersion >> 24) & 0xFF;
+            int oboeMinor = (oboeVersion >> 16) & 0xFF;
+            int oboePatch = oboeVersion & 0xFF;
+            mVersionTextView.setText("Test v (" + pinfo.versionCode + ") " + pinfo.versionName
+                    + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch);
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
