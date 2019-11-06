@@ -101,9 +101,13 @@ Result AudioStreamOpenSLES::configureBufferSizes() {
         mFramesPerBurst = DefaultStreamValues::FramesPerBurst;
     }
     // For high latency streams, use a larger buffer size.
-    if (mPerformanceMode != PerformanceMode::LowLatency
+    // Performance Mode support was added in N_MR1 (7.1)
+    if (getSdkVersion() >= __ANDROID_API_N_MR1__
+        && mPerformanceMode != PerformanceMode::LowLatency
         && mFramesPerBurst < kFramesPerHighLatencyBurst) {
-        mFramesPerBurst = kFramesPerHighLatencyBurst;
+        // Find a multiple of framesPerBurst >= kFramesPerHighLatencyBurst.
+        int32_t numBursts = (kFramesPerHighLatencyBurst + mFramesPerBurst - 1) / mFramesPerBurst;
+        mFramesPerBurst *= numBursts;
         LOGD("AudioStreamOpenSLES:%s() NOT low latency, set mFramesPerBurst = %d",
              __func__, mFramesPerBurst);
     }
