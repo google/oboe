@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef UTIL_ROUNDED_MANCHESTER_ENCODER_H
-#define UTIL_ROUNDED_MANCHESTER_ENCODER_H
+#ifndef ANALYZER_ROUNDED_MANCHESTER_ENCODER_H
+#define ANALYZER_ROUNDED_MANCHESTER_ENCODER_H
 
 #include <math.h>
 #include <memory.h>
@@ -86,4 +86,4 @@ private:
     std::unique_ptr<float[]> mZeroAfterOne;
 };
 
-#endif //UTIL_ROUNDED_MANCHESTER_ENCODER_H
+#endif //ANALYZER_ROUNDED_MANCHESTER_ENCODER_H
