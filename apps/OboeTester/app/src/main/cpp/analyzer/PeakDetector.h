@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_TESTER_PEAK_DETECTOR_H
-#define OBOE_TESTER_PEAK_DETECTOR_H
+#ifndef ANALYZER_PEAK_DETECTOR_H
+#define ANALYZER_PEAK_DETECTOR_H
 
 #include <math.h>
-
-constexpr double kDefaultDecay = 0.9999; //
 
 class PeakDetector {
 public:
@@ -42,7 +40,9 @@ public:
     }
 
 private:
+    static constexpr float kDefaultDecay = 0.99f;
+
     double mLevel = 0.0;
     double mDecay = kDefaultDecay;
 };
-#endif //OBOE_TESTER_PEAK_DETECTOR_H
+#endif //ANALYZER_PEAK_DETECTOR_H

@@ -24,7 +24,7 @@
 // TODO #include "flowgraph/FlowGraph.h"
 #include "oboe/Oboe.h"
 #include "MultiChannelRecording.h"
-#include "PeakDetector.h"
+#include "analyzer/PeakDetector.h"
 
 constexpr int kMaxInputChannels = 8;
 

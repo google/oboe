@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_RANDOM_PULSE_GENERATOR_H
-#define OBOETESTER_RANDOM_PULSE_GENERATOR_H
+#ifndef ANALYZER_RANDOM_PULSE_GENERATOR_H
+#define ANALYZER_RANDOM_PULSE_GENERATOR_H
 
 #include <stdlib.h>
-#include "util/RoundedManchesterEncoder.h"
+#include "RoundedManchesterEncoder.h"
 
 /**
  * Encode random ones and zeros using Manchester Code per IEEE 802.3.
@@ -38,4 +38,4 @@ public:
     }
 };
 
-#endif //OBOETESTER_RANDOM_PULSE_GENERATOR_H
+#endif //ANALYZER_RANDOM_PULSE_GENERATOR_H

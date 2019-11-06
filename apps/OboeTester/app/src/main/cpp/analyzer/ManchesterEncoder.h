@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef UTIL_MANCHESTER_ENCODER_H
-#define UTIL_MANCHESTER_ENCODER_H
+#ifndef ANALYZER_MANCHESTER_ENCODER_H
+#define ANALYZER_MANCHESTER_ENCODER_H
 
 #include <cstdint>
 
@@ -93,4 +93,4 @@ protected:
     uint8_t   mCurrentByte = 0;
     bool      mCurrentBit = false;
 };
-#endif //UTIL_MANCHESTER_ENCODER_H
+#endif //ANALYZER_MANCHESTER_ENCODER_H
