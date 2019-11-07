@@ -17,33 +17,42 @@
 package com.mobileer.androidfxlab
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.media.midi.MidiDeviceInfo
+import android.media.midi.MidiManager
+import android.media.midi.MidiReceiver
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
 import android.view.SubMenu
 import android.view.WindowManager
 import android.widget.PopupMenu
+import android.widget.SeekBar
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.mobileer.androidfxlab.R
+import androidx.databinding.DataBindingUtil
+import com.mobileer.androidfxlab.databinding.ActivityMainBinding
 import com.mobileer.androidfxlab.datatype.Effect
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
+    private var TAG: String = this.toString()
 
-    private lateinit var addButton: FloatingActionButton
-
+    lateinit var binding: ActivityMainBinding
 
     val MY_PERMISSIONS_RECORD_AUDIO = 17
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -56,14 +65,9 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        recyclerView =
-            findViewById<RecyclerView>(R.id.my_recycler_view).apply { adapter =
-                EffectsAdapter
-            }
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.effectListView.adapter = EffectsAdapter
 
-        addButton = findViewById(R.id.floating_add_button)
-        addButton.setOnClickListener { view ->
+        binding.floatingAddButton.setOnClickListener { view ->
             val popup = PopupMenu(this, view)
             popup.menuInflater.inflate(R.menu.add_menu, popup.menu)
             val menuMap = HashMap<String, SubMenu>()
@@ -89,8 +93,10 @@ class MainActivity : AppCompatActivity() {
             }
             popup.show()
         }
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            handleMidiDevices()
+        }
     }
-
     override fun onResume() {
         super.onResume()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -131,4 +137,49 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun handleMidiDevices() {
+
+        val midiManager = getSystemService(Context.MIDI_SERVICE) as MidiManager
+        midiManager.registerDeviceCallback(object : MidiManager.DeviceCallback() {
+            override fun onDeviceAdded(device: MidiDeviceInfo) {
+
+                // open this device
+                midiManager.openDevice(device, {
+                    Log.d(TAG, "Opened MIDI device")
+
+                    val targetSeekBar = findViewById<SeekBar>(R.id.seekBar)
+                    if (targetSeekBar != null) {
+
+                        val midiReceiver = MyMidiReceiver(targetSeekBar)
+                        val outputPort = it.openOutputPort(0)
+                        outputPort?.connect(midiReceiver)
+                    }
+
+                }, Handler())
+            }
+        }, Handler())
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    class MyMidiReceiver(var seekBar: SeekBar) : MidiReceiver() {
+
+        private val TAG: String = "MyMidiReceiver"
+
+        override fun onSend(data: ByteArray?, offset: Int, count: Int, timestamp: Long) {
+
+            Log.d(TAG, "Got midi message, offset " + offset + " count " + count)
+            Log.d(TAG, "Byte 0 " + Integer.toHexString(data!![offset].toInt()))
+            Log.d(TAG, "Byte 1 " + Integer.toHexString(data[offset+1].toInt()))
+            Log.d(TAG, "Byte 2 " + data[offset+2].toInt())
+
+            val CONTROL_CHANGE_CH1 : Byte = 0xB0.toByte()
+
+            if (data[offset] == CONTROL_CHANGE_CH1){
+                seekBar.progress = (data[offset+2].toInt() / 1.27).toInt()
+            }
+        }
+    }
+
 }
