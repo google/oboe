@@ -55,13 +55,13 @@ object NativeInterface {
             String.format(
                 "Params were updated at index %d to %f",
                 index,
-                effect.effectValue.params[0]
+                effect.paramValues[0]
             )
         )
         modifyEffectNative(
             convertEffectToId(
                 effect
-            ), index, effect.effectValue.params
+            ), index, effect.paramValues
         )
     }
 

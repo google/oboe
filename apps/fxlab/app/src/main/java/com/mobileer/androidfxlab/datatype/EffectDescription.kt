@@ -20,7 +20,7 @@ data class EffectDescription(
     val name: String,
     val category: String,
     val id: Int,
-    val paramArray: Array<ParamDescription>
+    val paramValues: Array<ParamDescription>
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
