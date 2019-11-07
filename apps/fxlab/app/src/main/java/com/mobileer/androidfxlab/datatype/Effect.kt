@@ -16,11 +16,13 @@
 
 package com.mobileer.androidfxlab.datatype
 
+/**
+ * Class which represents an audio effect
+ */
 data class Effect(val effectDescription: EffectDescription) {
     val name = effectDescription.name
-
-    val effectValue = EffectValue(effectDescription.name,
-        FloatArray(effectDescription.paramArray.size) { i -> effectDescription.paramArray[i].defaultValue }
-    )
-
+    val paramValues = FloatArray(effectDescription.paramValues.size) {
+        i -> effectDescription.paramValues[i].defaultValue
+    }
+    var enable: Boolean = true
 }

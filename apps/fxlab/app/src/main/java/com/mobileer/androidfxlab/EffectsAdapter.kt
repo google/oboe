@@ -26,8 +26,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.mobileer.androidfxlab.R
 import com.mobileer.androidfxlab.datatype.Effect
+import java.util.*
+import kotlin.concurrent.timerTask
 import kotlin.math.max
 import kotlin.math.min
 
@@ -55,9 +56,9 @@ object EffectsAdapter :
             val label: TextView = header.findViewById(R.id.effectLabel)
             // Bind header views
             label.text = effect.name
-            checkBoxView.isChecked = effectList[index].effectValue.enable
+            checkBoxView.isChecked = effectList[index].enable
             checkBoxView.setOnCheckedChangeListener { _, checked ->
-                effectList[index].effectValue.enable = checked
+                effectList[index].enable = checked
                 NativeInterface.enableEffectAt(checked, index)
             }
             dragHandleView.setOnTouchListener { _, event ->
@@ -74,8 +75,8 @@ object EffectsAdapter :
                 }
                 false
             }
-            // Add correct number of spinners based on effect
-            for (ind in effect.effectDescription.paramArray.withIndex()) {
+            // Add correct number of SeekBars based on effect
+            for (ind in effect.effectDescription.paramValues.withIndex()) {
                 val param = ind.value
                 val counter = ind.index
                 val view = View.inflate(layoutContainer.context,
@@ -96,19 +97,27 @@ object EffectsAdapter :
                 // Bind param listeners to effects
                 seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                     val paramInd = counter
+                    var timer : Timer? = null
+
                     override fun onStartTrackingTouch(p0: SeekBar?) {}
 
-                    override fun onStopTrackingTouch(seekbar: SeekBar?) {
-                        val fracprogress =
-                            ((seekbar!!.progress / 100f) * (param.maxValue - param.minValue) + param.minValue)
-                        curLabelView.text = floatFormat.format(fracprogress)
-                        effectList[index].effectValue.params[paramInd] = fracprogress
-                        NativeInterface.updateParamsAt(effect, index)
-                    }
+                    override fun onStopTrackingTouch(seekbar: SeekBar?) {}
 
                     override fun onProgressChanged(
                         seekBar: SeekBar?, progress: Int, fromUser: Boolean
                     ) {
+                        val fracprogress =
+                            ((seekBar!!.progress / 100f) * (param.maxValue - param.minValue) + param.minValue)
+                        curLabelView.text = floatFormat.format(fracprogress)
+
+                        timer?.cancel()
+                        timer = Timer()
+                        timer?.schedule(timerTask { updateEffectParam(fracprogress) }, 100)
+                    }
+
+                    fun updateEffectParam(fracprogress : Float){
+                        effectList[index].paramValues[paramInd] = fracprogress
+                        NativeInterface.updateParamsAt(effect, index)
                     }
                 })
             }
