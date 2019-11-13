@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
+package com.google.oboe.sample.drumthumper
 
-include ':audio-device', ':drumthumper', ':wavlib'
-include ':hello-oboe'
-include ':RhythmGame'
-include ':MegaDrone'
-include ':LiveEffect'
-
+class WavLoader {
+    external fun loadWavFile(filePath: String)
+}

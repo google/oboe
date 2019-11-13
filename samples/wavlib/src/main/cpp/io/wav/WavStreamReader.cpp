@@ -1,0 +1,151 @@
+/*
+ * Copyright 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <algorithm>
+#include <string.h>
+
+#include <android/log.h>
+
+#include "io/stream/InputStream.h"
+
+#include "AudioFormat.h"
+#include "WavRIFFChunkHeader.h"
+#include "WavFmtChunkHeader.h"
+#include "WavChunkHeader.h"
+#include "WavStreamReader.h"
+
+static const char *TAG = "WavStreamReader";
+
+namespace wavlib {
+
+WavStreamReader::WavStreamReader(InputStream *stream) {
+    mStream = stream;
+
+    mWavChunk = 0;
+    mFmtChunk = 0;
+    mDataChunk = 0;
+
+    mAudioDataStartPos = -1;
+
+    mChunkMap = new std::map<RiffID, WavChunkHeader *>();
+}
+
+int WavStreamReader::getSampleFormat() {
+    if (mFmtChunk->mFormatId == WavFmtChunkHeader::kFORMAT_PCM) {
+        return mFmtChunk->mSampleSize == 8
+               ? AudioFormat::PCM_8
+               : AudioFormat::PCM_16;
+    } else if (mFmtChunk->mFormatId == WavFmtChunkHeader::kFORMAT_IEEE_FLOAT) {
+        return AudioFormat::PCM_IEEEFLOAT;
+    }
+
+    return AudioFormat::INVALID;
+}
+
+void WavStreamReader::parse() {
+    RiffID tag;
+
+    while (true) {
+        int numRead = mStream->peek(&tag, sizeof(tag));
+        if (numRead <= 0) {
+            break; // done
+        }
+
+        char *tagStr = (char *) &tag;
+        __android_log_print(ANDROID_LOG_INFO, TAG, "[%c%c%c%c]",
+                            tagStr[0], tagStr[1], tagStr[2], tagStr[3]);
+        int tagInt = tag;
+
+        RiffID tagRIFF = WavRIFFChunkHeader::RIFFID_RIFF;
+        int riffInt = tagRIFF;
+
+        WavChunkHeader *chunk = 0;
+        if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
+            chunk = mWavChunk = new WavRIFFChunkHeader(tag);
+            mWavChunk->readHeader(mStream);
+        } else if (tag == WavFmtChunkHeader::RIFFID_FMT) {
+            chunk = mFmtChunk = new WavFmtChunkHeader(tag);
+            mFmtChunk->readHeader(mStream);
+            mFmtChunk->log();
+        } else if (tag == WavChunkHeader::RIFFID_DATA) {
+            chunk = mDataChunk = new WavChunkHeader(tag);
+            mDataChunk->readHeader(mStream);
+            // We are now positioned at the start of the audio data.
+            mAudioDataStartPos = mStream->getPos();
+            mStream->advance(mDataChunk->mChunkSize);
+        } else {
+            chunk = new WavChunkHeader(tag);
+            chunk->readHeader(mStream);
+            mStream->advance(mDataChunk->mChunkSize); // skip the body
+        }
+
+        (*mChunkMap)[tag] = chunk;
+    }
+
+    if (mDataChunk != 0) {
+        mStream->setPos(mAudioDataStartPos);
+    }
+}
+
+// Data access
+void WavStreamReader::positionToAudio() {
+    if (mDataChunk != 0) {
+        mStream->setPos(mAudioDataStartPos);
+    }
+}
+
+int WavStreamReader::getData(float *buff, int numFrames) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
+
+    if (mDataChunk == 0 || mFmtChunk == 0) {
+        return 0;
+    }
+
+    int totalFramesRead = 0;
+
+    int numChans = mFmtChunk->mNumChannels;
+    int buffOffset = 0;
+
+    if (mFmtChunk->mSampleSize == 16) {
+        short *readBuff = new short[128 * numChans];
+        int framesLeft = numFrames;
+        while (framesLeft > 0) {
+            int framesThisRead = std::min(framesLeft, 128);
+            __android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
+            int numFramesRead =
+                    mStream->read(readBuff, framesThisRead * sizeof(short) * numChans) /
+                    (sizeof(short) * numChans);
+            totalFramesRead += numFramesRead;
+
+            // convert
+            for (int offset = 0; offset < numFramesRead * numChans; offset++) {
+                buff[buffOffset++] = (float) readBuff[offset] / (float) 0x7FFF;
+            }
+
+            if (numFramesRead < framesThisRead) {
+                break; // none left
+            }
+
+            framesLeft -= framesThisRead;
+        }
+        delete[] readBuff;
+
+        __android_log_print(ANDROID_LOG_INFO, TAG, "  returns:%d", totalFramesRead);
+        return totalFramesRead;
+    }
+    return 0;
+}
+
+} // namespace wavlib
