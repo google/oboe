@@ -462,13 +462,13 @@ namespace oboe {
      * On API 17+ these values should be obtained from the AudioManager using this code:
      *
      * <pre><code>
-        // Note that this technique only works for built-in speakers and headphones.
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-        int defaultSampleRate = Integer.parseInt(sampleRateStr);
-        String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-        int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
-        </code></pre>
+     * // Note that this technique only works for built-in speakers and headphones.
+     * AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+     * String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+     * int defaultSampleRate = Integer.parseInt(sampleRateStr);
+     * String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+     * int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+     * </code></pre>
      *
      * It can then be passed down to Oboe through JNI.
      *
