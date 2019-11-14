@@ -87,13 +87,15 @@ Static Public Attributes</h2></td></tr>
 <tr class="separator:ad5dce538d5963c81bf58350ab730962d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">   On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
-   framesPerBurst are not known by the native code.
-   On API 17+ these values should be obtained from the AudioManager using this code:
-
-   &lt;pre&gt;&lt;code&gt;
-</pre><p> Note that this technique only works for built-in speakers and headphones. AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE); String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE); int defaultSampleRate = Integer.parseInt(sampleRateStr); String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER); int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr); </p>
-<p>It can then be passed down to Oboe through JNI.</p>
+<div class="textblock"><p>On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and framesPerBurst are not known by the native code. On API 17+ these values should be obtained from the AudioManager using this code:</p>
+<pre><code>
+// Note that this technique only works for built-in speakers and headphones.
+AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+int defaultSampleRate = Integer.parseInt(sampleRateStr);
+String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+</code></pre><p>It can then be passed down to Oboe through JNI.</p>
 <p>AAudio will get the optimal framesPerBurst from the HAL and will ignore this value. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="ad5dce538d5963c81bf58350ab730962d"></a>
