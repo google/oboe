@@ -376,7 +376,16 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getState(JNIEnv *env, job
             oboe::Result result = oboeStream->waitForStateChange(
                     oboe::StreamState::Uninitialized,
                     &state, 0);
-            if (result != oboe::Result::OK) state = oboe::StreamState::Unknown;
+
+            if (result != oboe::Result::OK){
+                if (result == oboe::Result::ErrorClosed) {
+                    state = oboe::StreamState::Closed;
+                } else if (result == oboe::Result::ErrorDisconnected){
+                    state = oboe::StreamState::Disconnected;
+                } else {
+                    state = oboe::StreamState::Unknown;
+                }
+            }
         }
         return (jint) state;
     }
