@@ -1,8 +1,27 @@
 var searchData=
 [
-  ['none',['None',['../namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f',1,'oboe::None()'],['../namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754',1,'oboe::None()']]],
-  ['notification',['Notification',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a96d008db67fc0b5551a926842bbb6a71',1,'oboe']]],
-  ['notificationevent',['NotificationEvent',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f',1,'oboe']]],
-  ['notificationringtone',['NotificationRingtone',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a4e7a4b08274d472394b740a20d3bbdaf',1,'oboe']]],
-  ['number',['Number',['../structoboe_1_1_version.html#ac579661e79bcee45dc676d4647891de0',1,'oboe::Version']]]
+  ['major',['Major',['../structoboe_1_1_version.html#a270f2e92582d5187be339eeda8e2b276',1,'oboe::Version']]],
+  ['mbuffercapacityinframes',['mBufferCapacityInFrames',['../classoboe_1_1_audio_stream_base.html#ac81d4719b350f8138aad1af38f0873b6',1,'oboe::AudioStreamBase']]],
+  ['mbuffersizeinframes',['mBufferSizeInFrames',['../classoboe_1_1_audio_stream_base.html#a3b65595d26d1eae1b8ce9925a5b98f6a',1,'oboe::AudioStreamBase']]],
+  ['mchannelcount',['mChannelCount',['../classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206',1,'oboe::AudioStreamBase']]],
+  ['mcontenttype',['mContentType',['../classoboe_1_1_audio_stream_base.html#a5f8f0e5add381b841856de80ea4cdb2b',1,'oboe::AudioStreamBase']]],
+  ['mdeviceid',['mDeviceId',['../classoboe_1_1_audio_stream_base.html#a23dafa12fb1a6242b088ebd5a52798c8',1,'oboe::AudioStreamBase']]],
+  ['mdirection',['mDirection',['../classoboe_1_1_audio_stream_base.html#a26e9294721561d3b16bcaeec5faf4880',1,'oboe::AudioStreamBase']]],
+  ['media',['Media',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74',1,'oboe']]],
+  ['mformat',['mFormat',['../classoboe_1_1_audio_stream_base.html#a7869f04836c2c2bdc10c7309ad4b8e09',1,'oboe::AudioStreamBase']]],
+  ['mframesperburst',['mFramesPerBurst',['../classoboe_1_1_audio_stream_base.html#a54061319ed348329a29d883a5de2482e',1,'oboe::AudioStreamBase']]],
+  ['mframespercallback',['mFramesPerCallback',['../classoboe_1_1_audio_stream_base.html#a3962eb94420ad0ecea70029236001899',1,'oboe::AudioStreamBase']]],
+  ['mframesread',['mFramesRead',['../classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58',1,'oboe::AudioStream']]],
+  ['mframeswritten',['mFramesWritten',['../classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23',1,'oboe::AudioStream']]],
+  ['minor',['Minor',['../structoboe_1_1_version.html#ae460bb95e3a9099696205a35fffb5469',1,'oboe::Version']]],
+  ['minputpreset',['mInputPreset',['../classoboe_1_1_audio_stream_base.html#a1e5d4f5b30c4cc36f81ffd858cc00589',1,'oboe::AudioStreamBase']]],
+  ['mono',['Mono',['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79',1,'oboe']]],
+  ['movie',['Movie',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1',1,'oboe']]],
+  ['mperformancemode',['mPerformanceMode',['../classoboe_1_1_audio_stream_base.html#ab99671c2d0552557e75dc7b4afe91765',1,'oboe::AudioStreamBase']]],
+  ['msamplerate',['mSampleRate',['../classoboe_1_1_audio_stream_base.html#a998885bb6c4f37e145f4626ad4177dea',1,'oboe::AudioStreamBase']]],
+  ['msessionid',['mSessionId',['../classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737',1,'oboe::AudioStreamBase']]],
+  ['msharingmode',['mSharingMode',['../classoboe_1_1_audio_stream_base.html#ae9187492b679c97a0963e264954be473',1,'oboe::AudioStreamBase']]],
+  ['mstreamcallback',['mStreamCallback',['../classoboe_1_1_audio_stream_base.html#ae3f72318212dd9977d7fa0ced92c91f4',1,'oboe::AudioStreamBase']]],
+  ['musage',['mUsage',['../classoboe_1_1_audio_stream_base.html#a5b518e82f39c9fcbd7050fd66adb253c',1,'oboe::AudioStreamBase']]],
+  ['music',['Music',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517',1,'oboe']]]
 ];

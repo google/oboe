@@ -112,12 +112,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6bd5d633ff999e4da1faf3cd949aa602"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a820e634f741e6b5efdcef8104cecb919"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a820e634f741e6b5efdcef8104cecb919">requestStop</a> ()=0</td></tr>
 <tr class="separator:a820e634f741e6b5efdcef8104cecb919"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47bb5798275f14d76444283a6b6f35eb"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a47bb5798275f14d76444283a6b6f35eb">getState</a> ()=0</td></tr>
-<tr class="separator:a47bb5798275f14d76444283a6b6f35eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d37cc6513823c685ae892626ff83ea8"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a9d37cc6513823c685ae892626ff83ea8">getState</a> () const =0</td></tr>
+<tr class="separator:a9d37cc6513823c685ae892626ff83ea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c865a5501f369d959c39d8ab8b46a07"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0c865a5501f369d959c39d8ab8b46a07">waitForStateChange</a> (<a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> inputState, <a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> *nextState, int64_t timeoutNanoseconds)=0</td></tr>
 <tr class="separator:a0c865a5501f369d959c39d8ab8b46a07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac93b18e18487e809151f63ec3c6228bb"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#ac93b18e18487e809151f63ec3c6228bb">setBufferSizeInFrames</a> (int32_t requestedFrames)</td></tr>
-<tr class="separator:ac93b18e18487e809151f63ec3c6228bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06e3f9e133b3a75515e7793939d1cd03"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a06e3f9e133b3a75515e7793939d1cd03">setBufferSizeInFrames</a> (int32_t)</td></tr>
+<tr class="separator:a06e3f9e133b3a75515e7793939d1cd03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1a1d3bbf3b348ed92b7ed18ce9cc261"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#ad1a1d3bbf3b348ed92b7ed18ce9cc261">getXRunCount</a> () const</td></tr>
 <tr class="separator:ad1a1d3bbf3b348ed92b7ed18ce9cc261"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43d8a098440cde28f4ee8bedd6d107c4"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4">isXRunCountSupported</a> () const =0</td></tr>
@@ -134,14 +134,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aeebfc59abd978cd6dff07c16cfe266df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae023cb001f3261d064f423101798d6be"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#ae023cb001f3261d064f423101798d6be">calculateLatencyMillis</a> ()</td></tr>
 <tr class="separator:ae023cb001f3261d064f423101798d6be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d7cf4e43fb9d7b31857a90d9eceee6d"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a1d7cf4e43fb9d7b31857a90d9eceee6d">getTimestamp</a> (clockid_t clockId, int64_t *framePosition, int64_t *timeNanoseconds)</td></tr>
-<tr class="separator:a1d7cf4e43fb9d7b31857a90d9eceee6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29431d1311cbf6659cfbb70e58feb7ab"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; <a class="el" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a29431d1311cbf6659cfbb70e58feb7ab">getTimestamp</a> (clockid_t clockId)</td></tr>
-<tr class="separator:a29431d1311cbf6659cfbb70e58feb7ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3f6bf8abed87f3804ac4df3472c3670"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#ab3f6bf8abed87f3804ac4df3472c3670">write</a> (const void *buffer, int32_t numFrames, int64_t timeoutNanoseconds)</td></tr>
-<tr class="separator:ab3f6bf8abed87f3804ac4df3472c3670"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbf3933af829313d281b5455053338da"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#acbf3933af829313d281b5455053338da">read</a> (void *buffer, int32_t numFrames, int64_t timeoutNanoseconds)</td></tr>
-<tr class="separator:acbf3933af829313d281b5455053338da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb8edbc17ff79993a8ed996d216fe6f3"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#acb8edbc17ff79993a8ed996d216fe6f3">getTimestamp</a> (clockid_t, int64_t *, int64_t *)</td></tr>
+<tr class="separator:acb8edbc17ff79993a8ed996d216fe6f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49254e6b1b19cb6d0ca6c63058029771"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; <a class="el" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a49254e6b1b19cb6d0ca6c63058029771">getTimestamp</a> (clockid_t)</td></tr>
+<tr class="separator:a49254e6b1b19cb6d0ca6c63058029771"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3612c05ed6b01a213dde67d913c07e11"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a3612c05ed6b01a213dde67d913c07e11">write</a> (const void *, int32_t, int64_t)</td></tr>
+<tr class="separator:a3612c05ed6b01a213dde67d913c07e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8089f0a0cb68d4039cf33e6584129978"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a8089f0a0cb68d4039cf33e6584129978">read</a> (void *, int32_t, int64_t)</td></tr>
+<tr class="separator:a8089f0a0cb68d4039cf33e6584129978"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b7a3cee7444114843dbdd1fc705f6bb"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6">AudioApi</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a2b7a3cee7444114843dbdd1fc705f6bb">getAudioApi</a> () const =0</td></tr>
 <tr class="separator:a2b7a3cee7444114843dbdd1fc705f6bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15cdaaaa4c1e8da322d6da33334c8147"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a15cdaaaa4c1e8da322d6da33334c8147">usesAAudio</a> () const</td></tr>
@@ -150,6 +150,17 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5458d7130415eb4defe3dbc11d479e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5f4801cca6877eeaa4735b93933269d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#aa5f4801cca6877eeaa4735b93933269d">launchStopThread</a> ()</td></tr>
 <tr class="separator:aa5f4801cca6877eeaa4735b93933269d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64ad978c5f70ced17ef5a96605496515"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a64ad978c5f70ced17ef5a96605496515">updateFramesWritten</a> ()=0</td></tr>
+<tr class="separator:a64ad978c5f70ced17ef5a96605496515"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a462358ddab709c79d1a7968d6d55b727"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a462358ddab709c79d1a7968d6d55b727">updateFramesRead</a> ()=0</td></tr>
+<tr class="separator:a462358ddab709c79d1a7968d6d55b727"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20f75fce32d3a203404de0883c2de34f"><td class="memItemLeft" align="right" valign="top"><a id="a20f75fce32d3a203404de0883c2de34f"></a>
+<a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>swapCallback</b> (<a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *streamCallback)</td></tr>
+<tr class="separator:a20f75fce32d3a203404de0883c2de34f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa35ee4b8629fbffe26b9be7c7ed55d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#afa35ee4b8629fbffe26b9be7c7ed55d2">getAvailableFrames</a> ()</td></tr>
+<tr class="separator:afa35ee4b8629fbffe26b9be7c7ed55d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afddb0962863ccf9ec6672a042fe15941"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#afddb0962863ccf9ec6672a042fe15941">waitForAvailableFrames</a> (int32_t numFrames, int64_t timeoutNanoseconds)</td></tr>
+<tr class="separator:afddb0962863ccf9ec6672a042fe15941"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
 <tr class="memitem:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa6b103e1b0f808bbc4949d56f0829f98">AudioStreamBase</a> (const <a class="el" href="classoboe_1_1_audio_stream_base.html">AudioStreamBase</a> &amp;)=default</td></tr>
 <tr class="separator:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -185,19 +196,23 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5c773b93b8aa38191c7199cab023428a inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3c502ce09bbad7690a2dd6acaf8892e inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa3c502ce09bbad7690a2dd6acaf8892e">getSessionId</a> () const</td></tr>
 <tr class="separator:aa3c502ce09bbad7690a2dd6acaf8892e inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4ec3aa76e69350fbce6f00786211495 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa4ec3aa76e69350fbce6f00786211495">isChannelConversionAllowed</a> () const</td></tr>
+<tr class="separator:aa4ec3aa76e69350fbce6f00786211495 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace3625a7332bf02a86818fdf63fcccb4 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ace3625a7332bf02a86818fdf63fcccb4">isFormatConversionAllowed</a> () const</td></tr>
+<tr class="separator:ace3625a7332bf02a86818fdf63fcccb4 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1de8d6982d411a0cf50a32efba0ca3f2 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a1de8d6982d411a0cf50a32efba0ca3f2">getSampleRateConversionQuality</a> () const</td></tr>
+<tr class="separator:a1de8d6982d411a0cf50a32efba0ca3f2 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
+<tr class="memitem:aa48da7bf28026b7cccee73e6b054af28"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">wasErrorCallbackCalled</a> ()</td></tr>
+<tr class="separator:aa48da7bf28026b7cccee73e6b054af28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8adbacd6a55a94a532916ab037fba1d6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">waitForStateTransition</a> (<a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> startingState, <a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> endingState, int64_t timeoutNanoseconds)</td></tr>
 <tr class="separator:a8adbacd6a55a94a532916ab037fba1d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abda7ae8e6832030572785de3964ed848"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#abda7ae8e6832030572785de3964ed848">onDefaultCallback</a> (void *audioData, int numFrames)</td></tr>
-<tr class="separator:abda7ae8e6832030572785de3964ed848"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ea79e60f5a3d29fc5a1a116aba11dfe"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">onDefaultCallback</a> (void *, int)</td></tr>
+<tr class="separator:a0ea79e60f5a3d29fc5a1a116aba11dfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7a8cfe5d6039386bc5850fd5ee9bd62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#ab7a8cfe5d6039386bc5850fd5ee9bd62">fireDataCallback</a> (void *audioData, int numFrames)</td></tr>
 <tr class="separator:ab7a8cfe5d6039386bc5850fd5ee9bd62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64ad978c5f70ced17ef5a96605496515"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a64ad978c5f70ced17ef5a96605496515">updateFramesWritten</a> ()=0</td></tr>
-<tr class="separator:a64ad978c5f70ced17ef5a96605496515"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a462358ddab709c79d1a7968d6d55b727"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a462358ddab709c79d1a7968d6d55b727">updateFramesRead</a> ()=0</td></tr>
-<tr class="separator:a462358ddab709c79d1a7968d6d55b727"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add85011ba825f74931deeb92c5edf831"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">isDataCallbackEnabled</a> ()</td></tr>
 <tr class="separator:add85011ba825f74931deeb92c5edf831"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0faa6d3a6fd4f367e6f80d5a29e6dcba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">setDataCallbackEnabled</a> (bool enabled)</td></tr>
@@ -245,6 +260,15 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 <tr class="separator:a1e5d4f5b30c4cc36f81ffd858cc00589 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe1c1e9cada1ced9b5c1504ac9b07737 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737">mSessionId</a> = SessionId::None</td></tr>
 <tr class="separator:abe1c1e9cada1ced9b5c1504ac9b07737 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae47a39b573250751f933dd159d09bf0f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a id="ae47a39b573250751f933dd159d09bf0f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mChannelConversionAllowed</b> = false</td></tr>
+<tr class="separator:ae47a39b573250751f933dd159d09bf0f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9394a88eb5f8b74fa72eabf28f403f87 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a id="a9394a88eb5f8b74fa72eabf28f403f87"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllowed</b> = false</td></tr>
+<tr class="separator:a9394a88eb5f8b74fa72eabf28f403f87 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dd35a6f009f36172838260144218f6d inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a id="a2dd35a6f009f36172838260144218f6d"></a>
+<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mSampleRateConversionQuality</b> = SampleRateConversionQuality::None</td></tr>
+<tr class="separator:a2dd35a6f009f36172838260144218f6d inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for Oboe C++ audio stream. </p>
@@ -305,7 +329,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Calculate the latency of a stream based on <a class="el" href="classoboe_1_1_audio_stream.html#a1d7cf4e43fb9d7b31857a90d9eceee6d">getTimestamp()</a>.</p>
+<p>Calculate the latency of a stream based on <a class="el" href="classoboe_1_1_audio_stream.html#acb8edbc17ff79993a8ed996d216fe6f3">getTimestamp()</a>.</p>
 <p>Output latency is the time it takes for a given frame to travel from the app to some type of digital-to-analog converter. If the DAC is external, for example in a USB interface or a TV connected by HDMI, then there may be additional latency that the Android device is unaware of.</p>
 <p>Input latency is the time it takes to a given frame to travel from an analog-to-digital converter (ADC) to the app.</p>
 <p>Note that the latency of an OUTPUT stream will increase abruptly when you write data to it and then decrease slowly over time as the data is consumed.</p>
@@ -440,6 +464,24 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
+<a id="afa35ee4b8629fbffe26b9be7c7ed55d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa35ee4b8629fbffe26b9be7c7ed55d2">&#9670;&nbsp;</a></span>getAvailableFrames()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;int32_t&gt; oboe::AudioStream::getAvailableFrames </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>number of frames of data currently in the buffer </dd></dl>
+
+</div>
+</div>
 <a id="a5c01907a59d5f89a5e4b819fe66b08bc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5c01907a59d5f89a5e4b819fe66b08bc">&#9670;&nbsp;</a></span>getBytesPerFrame()</h2>
 
@@ -567,8 +609,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="a47bb5798275f14d76444283a6b6f35eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a47bb5798275f14d76444283a6b6f35eb">&#9670;&nbsp;</a></span>getState()</h2>
+<a id="a9d37cc6513823c685ae892626ff83ea8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d37cc6513823c685ae892626ff83ea8">&#9670;&nbsp;</a></span>getState()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -580,7 +622,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> oboe::AudioStream::getState </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -594,8 +636,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="a1d7cf4e43fb9d7b31857a90d9eceee6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d7cf4e43fb9d7b31857a90d9eceee6d">&#9670;&nbsp;</a></span>getTimestamp() <span class="overload">[1/2]</span></h2>
+<a id="acb8edbc17ff79993a8ed996d216fe6f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb8edbc17ff79993a8ed996d216fe6f3">&#9670;&nbsp;</a></span>getTimestamp() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -607,19 +649,19 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a> oboe::AudioStream::getTimestamp </td>
           <td>(</td>
           <td class="paramtype">clockid_t&#160;</td>
-          <td class="paramname"><em>clockId</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t *&#160;</td>
-          <td class="paramname"><em>framePosition</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t *&#160;</td>
-          <td class="paramname"><em>timeNanoseconds</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -636,6 +678,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 <p>Get the estimated time that the frame at <code>framePosition</code> entered or left the audio processing pipeline.</p>
 <p>This can be used to coordinate events and interactions with the external environment, and to estimate the latency of an audio stream. An example of usage can be found in the hello-oboe sample (search for "calculateCurrentOutputLatencyMillis").</p>
 <p>The time is based on the implementation's best effort, using whatever knowledge is available to the system, but cannot account for any delay unknown to the implementation.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>since 1.0, use <a class="el" href="classoboe_1_1_audio_stream.html#a49254e6b1b19cb6d0ca6c63058029771">AudioStream::getTimestamp(clockid_t clockId)</a> instead, which returns <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">clockId</td><td>the type of clock to use e.g. CLOCK_MONOTONIC </td></tr>
@@ -647,8 +690,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="a29431d1311cbf6659cfbb70e58feb7ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29431d1311cbf6659cfbb70e58feb7ab">&#9670;&nbsp;</a></span>getTimestamp() <span class="overload">[2/2]</span></h2>
+<a id="a49254e6b1b19cb6d0ca6c63058029771"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49254e6b1b19cb6d0ca6c63058029771">&#9670;&nbsp;</a></span>getTimestamp() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -660,13 +703,13 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;<a class="el" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a>&gt; oboe::AudioStream::getTimestamp </td>
           <td>(</td>
           <td class="paramtype">clockid_t&#160;</td>
-          <td class="paramname"><em>clockId</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -808,8 +851,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="abda7ae8e6832030572785de3964ed848"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abda7ae8e6832030572785de3964ed848">&#9670;&nbsp;</a></span>onDefaultCallback()</h2>
+<a id="a0ea79e60f5a3d29fc5a1a116aba11dfe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ea79e60f5a3d29fc5a1a116aba11dfe">&#9670;&nbsp;</a></span>onDefaultCallback()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -821,13 +864,13 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a> oboe::AudioStream::onDefaultCallback </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>audioData</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>numFrames</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -871,7 +914,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -908,8 +951,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="acbf3933af829313d281b5455053338da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbf3933af829313d281b5455053338da">&#9670;&nbsp;</a></span>read()</h2>
+<a id="a8089f0a0cb68d4039cf33e6584129978"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8089f0a0cb68d4039cf33e6584129978">&#9670;&nbsp;</a></span>read()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -921,19 +964,19 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;int32_t&gt; oboe::AudioStream::read </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>buffer</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>numFrames</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t&#160;</td>
-          <td class="paramname"><em>timeoutNanoseconds</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1065,8 +1108,8 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 
 </div>
 </div>
-<a id="ac93b18e18487e809151f63ec3c6228bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac93b18e18487e809151f63ec3c6228bb">&#9670;&nbsp;</a></span>setBufferSizeInFrames()</h2>
+<a id="a06e3f9e133b3a75515e7793939d1cd03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06e3f9e133b3a75515e7793939d1cd03">&#9670;&nbsp;</a></span>setBufferSizeInFrames()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1078,7 +1121,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
           <td class="memname">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;int32_t&gt; oboe::AudioStream::setBufferSizeInFrames </td>
           <td>(</td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>requestedFrames</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1199,11 +1242,11 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Update mFramesRead. </p>
+<p>Update mFramesRead. For internal use only. </p>
 
 </div>
 </div>
@@ -1225,11 +1268,11 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Update mFramesWritten. </p>
+<p>Update mFramesWritten. For internal use only. </p>
 
 </div>
 </div>
@@ -1257,6 +1300,43 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 </div><div class="memdoc">
 <p>Returns true if the underlying audio API is AAudio.</p>
 <dl class="section return"><dt>Returns</dt><dd>true if this stream is implemented using the AAudio API. </dd></dl>
+
+</div>
+</div>
+<a id="afddb0962863ccf9ec6672a042fe15941"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afddb0962863ccf9ec6672a042fe15941">&#9670;&nbsp;</a></span>waitForAvailableFrames()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;int32_t&gt; oboe::AudioStream::waitForAvailableFrames </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>numFrames</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&#160;</td>
+          <td class="paramname"><em>timeoutNanoseconds</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wait until the stream has a minimum amount of data available in its buffer. This can be used with an EXCLUSIVE MMAP input stream to avoid reading data too close to the DSP write position, which may cause glitches.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">numFrames</td><td>minimum frames available </td></tr>
+    <tr><td class="paramname">timeoutNanoseconds</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>number of frames available, ErrorTimeout </dd></dl>
 
 </div>
 </div>
@@ -1303,7 +1383,7 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 <p>Note that generally applications do not need to call this. It is considered an advanced technique and is mostly used for testing.</p>
 <pre><code>
 int64_t timeoutNanos = 500 * kNanosPerMillisecond; // arbitrary 1/2 second
-StreamState currentState = stream-&gt;<a class="el" href="classoboe_1_1_audio_stream.html#a47bb5798275f14d76444283a6b6f35eb">getState()</a>;
+StreamState currentState = stream-&gt;<a class="el" href="classoboe_1_1_audio_stream.html#a9d37cc6513823c685ae892626ff83ea8">getState()</a>;
 StreamState nextState = StreamState::Unknown;
 while (result == Result::OK &amp;&amp; currentState != StreamState::Paused) {
     result = stream-&gt;waitForStateChange(
@@ -1366,8 +1446,36 @@ while (result == Result::OK &amp;&amp; currentState != StreamState::Paused) {
 
 </div>
 </div>
-<a id="ab3f6bf8abed87f3804ac4df3472c3670"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab3f6bf8abed87f3804ac4df3472c3670">&#9670;&nbsp;</a></span>write()</h2>
+<a id="aa48da7bf28026b7cccee73e6b054af28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa48da7bf28026b7cccee73e6b054af28">&#9670;&nbsp;</a></span>wasErrorCallbackCalled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::AudioStream::wasErrorCallbackCalled </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>This is used to detect more than one error callback from a stream. These were bugs in some versions of Android that caused multiple error callbacks. Internal bug b/63087953</p>
+<p>Calling this sets an atomic&lt;bool&gt; true and returns the previous value.</p>
+<dl class="section return"><dt>Returns</dt><dd>false on first call, true on subsequent calls </dd></dl>
+
+</div>
+</div>
+<a id="a3612c05ed6b01a213dde67d913c07e11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3612c05ed6b01a213dde67d913c07e11">&#9670;&nbsp;</a></span>write()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1379,19 +1487,19 @@ while (result == Result::OK &amp;&amp; currentState != StreamState::Paused) {
           <td class="memname">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt;int32_t&gt; oboe::AudioStream::write </td>
           <td>(</td>
           <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>buffer</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int32_t&#160;</td>
-          <td class="paramname"><em>numFrames</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t&#160;</td>
-          <td class="paramname"><em>timeoutNanoseconds</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>

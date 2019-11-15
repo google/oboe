@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['error',['error',['../classoboe_1_1_result_with_value.html#adfc76ae6db81535c2e82b856975eed41',1,'oboe::ResultWithValue']]],
-  ['exclusive',['Exclusive',['../namespaceoboe.html#a8330247b25429953a08354f41834d520a2ef50b4c466304dc6ac77bac8a779971',1,'oboe']]]
+  ['datacallbackresult',['DataCallbackResult',['../namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd',1,'oboe']]],
+  ['defaultstreamvalues',['DefaultStreamValues',['../classoboe_1_1_default_stream_values.html',1,'oboe']]],
+  ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],
+  ['direction',['Direction',['../namespaceoboe.html#af2147500089212955498a08ef2edb5ae',1,'oboe']]]
 ];

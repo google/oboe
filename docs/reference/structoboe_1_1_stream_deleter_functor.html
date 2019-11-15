@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Oboe: Namespace Members</title>
+<title>Oboe: oboe::StreamDeleterFunctor Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 });
 /* @license-end */</script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -62,53 +61,32 @@ $(function() {
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceoboe.html">oboe</a></li><li class="navelem"><a class="el" href="structoboe_1_1_stream_deleter_functor.html">StreamDeleterFunctor</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="structoboe_1_1_stream_deleter_functor-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">oboe::StreamDeleterFunctor Struct Reference</div>  </div>
+</div><!--header-->
 <div class="contents">
-&#160;<ul>
-<li>Allocate
-: <a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">oboe</a>
-</li>
-<li>Camcorder
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe">oboe</a>
-</li>
-<li>Generic
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544">oboe</a>
-</li>
-<li>Mono
-: <a class="el" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">oboe</a>
-</li>
-<li>Movie
-: <a class="el" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1">oboe</a>
-</li>
-<li>Music
-: <a class="el" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517">oboe</a>
-</li>
-<li>None
-: <a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">oboe</a>
-</li>
-<li>Sonification
-: <a class="el" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba0885eef555037e94a7cf39fe683c2799">oboe</a>
-</li>
-<li>Speech
-: <a class="el" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba3dc48a4b4619aa4edd1da7b937b4dcd1">oboe</a>
-</li>
-<li>Stereo
-: <a class="el" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">oboe</a>
-</li>
-<li>Unprocessed
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">oboe</a>
-</li>
-<li>Unspecified
-: <a class="el" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">oboe</a>
-</li>
-<li>VoiceCommunication
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">oboe</a>
-</li>
-<li>VoicePerformance
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">oboe</a>
-</li>
-<li>VoiceRecognition
-: <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc">oboe</a>
-</li>
+
+<p><code>#include &lt;<a class="el" href="_audio_stream_8h_source.html">AudioStream.h</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa63f56f03cbdc07e52159c99c7a005be"><td class="memItemLeft" align="right" valign="top"><a id="aa63f56f03cbdc07e52159c99c7a005be"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *audioStream)</td></tr>
+<tr class="separator:aa63f56f03cbdc07e52159c99c7a005be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>This struct is a stateless functor which closes a audiostream prior to its deletion. This means it can be used to safely delete a smart pointer referring to an open stream. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>include/oboe/<a class="el" href="_audio_stream_8h_source.html">AudioStream.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['read',['read',['../classoboe_1_1_audio_stream.html#acbf3933af829313d281b5455053338da',1,'oboe::AudioStream']]],
+  ['read',['read',['../classoboe_1_1_audio_stream.html#a8089f0a0cb68d4039cf33e6584129978',1,'oboe::AudioStream']]],
   ['requestflush',['requestFlush',['../classoboe_1_1_audio_stream.html#a6bd5d633ff999e4da1faf3cd949aa602',1,'oboe::AudioStream']]],
   ['requestpause',['requestPause',['../classoboe_1_1_audio_stream.html#a7f18bb3cc5490fd7fbc1f6da63c730f6',1,'oboe::AudioStream']]],
   ['requestreset',['requestReset',['../classoboe_1_1_latency_tuner.html#a6c0142e08dc65eda8f758b4794450867',1,'oboe::LatencyTuner']]],
