@@ -11,7 +11,7 @@ The easiest way to start using Oboe is to build it from source by adding a few s
 ### 1. Clone the github repository
 Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example:
 
-    git clone -b 1.2-stable https://github.com/google/oboe
+    git clone -b 1.3-stable https://github.com/google/oboe
 
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
