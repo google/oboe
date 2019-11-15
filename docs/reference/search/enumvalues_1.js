@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['camcorder',['Camcorder',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe',1,'oboe']]]
+  ['best',['Best',['../namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd',1,'oboe']]]
 ];

@@ -124,6 +124,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5c773b93b8aa38191c7199cab023428a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3c502ce09bbad7690a2dd6acaf8892e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa3c502ce09bbad7690a2dd6acaf8892e">getSessionId</a> () const</td></tr>
 <tr class="separator:aa3c502ce09bbad7690a2dd6acaf8892e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4ec3aa76e69350fbce6f00786211495"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa4ec3aa76e69350fbce6f00786211495">isChannelConversionAllowed</a> () const</td></tr>
+<tr class="separator:aa4ec3aa76e69350fbce6f00786211495"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace3625a7332bf02a86818fdf63fcccb4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ace3625a7332bf02a86818fdf63fcccb4">isFormatConversionAllowed</a> () const</td></tr>
+<tr class="separator:ace3625a7332bf02a86818fdf63fcccb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1de8d6982d411a0cf50a32efba0ca3f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a1de8d6982d411a0cf50a32efba0ca3f2">getSampleRateConversionQuality</a> () const</td></tr>
+<tr class="separator:a1de8d6982d411a0cf50a32efba0ca3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -159,6 +165,15 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a1e5d4f5b30c4cc36f81ffd858cc00589"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe1c1e9cada1ced9b5c1504ac9b07737"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737">mSessionId</a> = SessionId::None</td></tr>
 <tr class="separator:abe1c1e9cada1ced9b5c1504ac9b07737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae47a39b573250751f933dd159d09bf0f"><td class="memItemLeft" align="right" valign="top"><a id="ae47a39b573250751f933dd159d09bf0f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mChannelConversionAllowed</b> = false</td></tr>
+<tr class="separator:ae47a39b573250751f933dd159d09bf0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9394a88eb5f8b74fa72eabf28f403f87"><td class="memItemLeft" align="right" valign="top"><a id="a9394a88eb5f8b74fa72eabf28f403f87"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllowed</b> = false</td></tr>
+<tr class="separator:a9394a88eb5f8b74fa72eabf28f403f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dd35a6f009f36172838260144218f6d"><td class="memItemLeft" align="right" valign="top"><a id="a2dd35a6f009f36172838260144218f6d"></a>
+<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mSampleRateConversionQuality</b> = SampleRateConversionQuality::None</td></tr>
+<tr class="separator:a2dd35a6f009f36172838260144218f6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class containing parameters for audio streams and builders. </p>
@@ -504,6 +519,32 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a1de8d6982d411a0cf50a32efba0ca3f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1de8d6982d411a0cf50a32efba0ca3f2">&#9670;&nbsp;</a></span>getSampleRateConversionQuality()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a> oboe::AudioStreamBase::getSampleRateConversionQuality </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>whether and how Oboe can convert sample rates to achieve optimal results. </dd></dl>
+
+</div>
+</div>
 <a id="aa3c502ce09bbad7690a2dd6acaf8892e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa3c502ce09bbad7690a2dd6acaf8892e">&#9670;&nbsp;</a></span>getSessionId()</h2>
 
@@ -579,6 +620,58 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the usage for this stream. </dd></dl>
+
+</div>
+</div>
+<a id="aa4ec3aa76e69350fbce6f00786211495"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4ec3aa76e69350fbce6f00786211495">&#9670;&nbsp;</a></span>isChannelConversionAllowed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::AudioStreamBase::isChannelConversionAllowed </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>true if Oboe can convert channel counts to achieve optimal results. </dd></dl>
+
+</div>
+</div>
+<a id="ace3625a7332bf02a86818fdf63fcccb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace3625a7332bf02a86818fdf63fcccb4">&#9670;&nbsp;</a></span>isFormatConversionAllowed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::AudioStreamBase::isFormatConversionAllowed </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>true if Oboe can convert data formats to achieve optimal results. </dd></dl>
 
 </div>
 </div>
@@ -836,7 +929,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Stream input preset. Only active on Android 28+ </p>
+<p>Stream input preset. Only active on Android 28+ TODO InputPreset::Unspecified should be considered as a possible default alternative. </p>
 
 </div>
 </div>

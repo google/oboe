@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['value',['value',['../classoboe_1_1_result_with_value.html#a45f5c99a2c9f8fbaca502276f7ebb434',1,'oboe::ResultWithValue']]],
-  ['version',['Version',['../structoboe_1_1_version.html',1,'oboe']]],
-  ['voicecommunication',['VoiceCommunication',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d',1,'oboe::VoiceCommunication()'],['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a5bad8854288c956062ec1d4d7c14fed6',1,'oboe::VoiceCommunication()']]],
-  ['voicecommunicationsignalling',['VoiceCommunicationSignalling',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a404f62633744bf4da0c6a27a2b78ce74',1,'oboe']]],
-  ['voicerecognition',['VoiceRecognition',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc',1,'oboe']]]
+  ['unprocessed',['Unprocessed',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f',1,'oboe']]],
+  ['unspecified',['Unspecified',['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76',1,'oboe::Unspecified()'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a6fcdc090caeade09d0efd6253932b6f5',1,'oboe::Unspecified()'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a6fcdc090caeade09d0efd6253932b6f5',1,'oboe::Unspecified()']]],
+  ['updateframesread',['updateFramesRead',['../classoboe_1_1_audio_stream.html#a462358ddab709c79d1a7968d6d55b727',1,'oboe::AudioStream']]],
+  ['updateframeswritten',['updateFramesWritten',['../classoboe_1_1_audio_stream.html#a64ad978c5f70ced17ef5a96605496515',1,'oboe::AudioStream']]],
+  ['usage',['Usage',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0',1,'oboe']]],
+  ['usesaaudio',['usesAAudio',['../classoboe_1_1_audio_stream.html#a15cdaaaa4c1e8da322d6da33334c8147',1,'oboe::AudioStream']]]
 ];

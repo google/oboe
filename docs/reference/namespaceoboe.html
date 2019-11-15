@@ -65,6 +65,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -93,8 +94,16 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_stabilized_callback.html">StabilizedCallback</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structoboe_1_1_stream_deleter_functor.html">StreamDeleterFunctor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structoboe_1_1_version.html">Version</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a2b3b25550ebb0c6f792d0d5b870359cd"><td class="memItemLeft" align="right" valign="top"><a id="a2b3b25550ebb0c6f792d0d5b870359cd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>ManagedStream</b> = std::unique_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a>, <a class="el" href="structoboe_1_1_stream_deleter_functor.html">StreamDeleterFunctor</a> &gt;</td></tr>
+<tr class="separator:a2b3b25550ebb0c6f792d0d5b870359cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -187,6 +196,17 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6a99780b1e8d754eb42abed0ca5253e55b">AudioApi::AAudio</a>
  }</td></tr>
 <tr class="separator:a92972414867c81d5974cb2ed7abefbf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82f3720eba7654aceb7282be36f9ff1d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a> : int32_t { <br />
+&#160;&#160;<a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754">None</a>, 
+<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e">SampleRateConversionQuality::Fastest</a>, 
+<b>Low</b>, 
+<b>Medium</b>, 
+<br />
+&#160;&#160;<b>High</b>, 
+<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd">SampleRateConversionQuality::Best</a>
+<br />
+ }</td></tr>
+<tr class="separator:a82f3720eba7654aceb7282be36f9ff1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a104ee8396c173fefac429759ea3c21a0"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">Usage</a> : int32_t { <br />
 &#160;&#160;<a class="el" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74">Usage::Media</a> = 1, 
 <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a5bad8854288c956062ec1d4d7c14fed6">VoiceCommunication</a> = 2, 
@@ -218,12 +238,14 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">VoiceCommunication</a> = 7, 
 <br />
 &#160;&#160;<a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a5bad8854288c956062ec1d4d7c14fed6">VoiceCommunication</a> = 2, 
-<a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">Unprocessed</a> = 9
+<a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">Unprocessed</a> = 9, 
+<a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">VoicePerformance</a> = 10
 <br />
  }</td></tr>
 <tr class="separator:a4477ed232b02e2694d9309baf55a8f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5752250c10e96179e3618d7f72937eaf"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a> { <a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = -1, 
 <a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754">None</a> = 10, 
+<a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754">None</a>, 
 <a class="el" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">Allocate</a> = 0
  }</td></tr>
 <tr class="separator:a5752250c10e96179e3618d7f72937eaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -474,6 +496,8 @@ Variables</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f"></a>Unprocessed&#160;</td><td class="fielddoc"><p>Use this preset to obtain an input with no effects. Note that this input will not have automatic gain control so the recorded volume may be very low. </p>
 </td></tr>
+<tr><td class="fieldname"><a id="a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c"></a>VoicePerformance&#160;</td><td class="fielddoc"><p>Use this preset for capturing audio meant to be processed in real time and played back for live performance (e.g karaoke). The capture path will minimize latency and coupling with playback path. </p>
+</td></tr>
 </table>
 
 </div>
@@ -532,6 +556,37 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a82f3720eba7654aceb7282be36f9ff1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82f3720eba7654aceb7282be36f9ff1d">&#9670;&nbsp;</a></span>SampleRateConversionQuality</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">oboe::SampleRateConversionQuality</a> : int32_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Specifies the quality of the sample rate conversion performed by Oboe. Higher quality will require more CPU load. Higher quality conversion will probably be implemented using a sinc based resampler. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No conversion by Oboe. Underlying APIs may still do conversion. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e"></a>Fastest&#160;</td><td class="fielddoc"><p>Fastest conversion but may not sound great. This may be implemented using bilinear interpolation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd"></a>Best&#160;</td><td class="fielddoc"><p>Highest quality conversion, which may be expensive in terms of CPU. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="a5752250c10e96179e3618d7f72937eaf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5752250c10e96179e3618d7f72937eaf">&#9670;&nbsp;</a></span>SessionId</h2>
 
@@ -549,6 +604,8 @@ Variables</h2></td></tr>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f"></a>None&#160;</td><td class="fielddoc"><p>Do not allocate a session ID. Effects cannot be used with this stream. Default. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No particular performance needs. Default. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a5752250c10e96179e3618d7f72937eafa6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No conversion by Oboe. Underlying APIs may still do conversion. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123"></a>Allocate&#160;</td><td class="fielddoc"><p>Allocate a session ID that can be used to attach and control effects using the Java AudioEffects API. Note that the use of this flag may result in higher latency.</p>
 <p>Note that this matches the value of AudioManager.AUDIO_SESSION_ID_GENERATE. </p>

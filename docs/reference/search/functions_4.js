@@ -1,6 +1,7 @@
 var searchData=
 [
   ['getaudioapi',['getAudioApi',['../classoboe_1_1_audio_stream.html#a2b7a3cee7444114843dbdd1fc705f6bb',1,'oboe::AudioStream::getAudioApi()'],['../classoboe_1_1_audio_stream_builder.html#ac9d41811c297fd28bc61833f640bb8d0',1,'oboe::AudioStreamBuilder::getAudioApi()']]],
+  ['getavailableframes',['getAvailableFrames',['../classoboe_1_1_audio_stream.html#afa35ee4b8629fbffe26b9be7c7ed55d2',1,'oboe::AudioStream']]],
   ['getbuffercapacityinframes',['getBufferCapacityInFrames',['../classoboe_1_1_audio_stream_base.html#ab1531253e64aaebe9e9eddbafb9098fc',1,'oboe::AudioStreamBase']]],
   ['getbuffersizeinframes',['getBufferSizeInFrames',['../classoboe_1_1_audio_stream_base.html#af5217ab05bfde0d7637024b599302d0b',1,'oboe::AudioStreamBase']]],
   ['getbytesperframe',['getBytesPerFrame',['../classoboe_1_1_audio_stream.html#a5c01907a59d5f89a5e4b819fe66b08bc',1,'oboe::AudioStream']]],
@@ -18,11 +19,12 @@ var searchData=
   ['getinputpreset',['getInputPreset',['../classoboe_1_1_audio_stream_base.html#a5c773b93b8aa38191c7199cab023428a',1,'oboe::AudioStreamBase']]],
   ['getperformancemode',['getPerformanceMode',['../classoboe_1_1_audio_stream_base.html#a2ddb935de0e24dd7ae8e2cfbecac9fdc',1,'oboe::AudioStreamBase']]],
   ['getsamplerate',['getSampleRate',['../classoboe_1_1_audio_stream_base.html#ae9d32f3e09174bad69e74f147ee33087',1,'oboe::AudioStreamBase']]],
+  ['getsamplerateconversionquality',['getSampleRateConversionQuality',['../classoboe_1_1_audio_stream_base.html#a1de8d6982d411a0cf50a32efba0ca3f2',1,'oboe::AudioStreamBase']]],
   ['getsdkversion',['getSdkVersion',['../namespaceoboe.html#a54528938e9fccab7ad8947ccf0e409db',1,'oboe']]],
   ['getsessionid',['getSessionId',['../classoboe_1_1_audio_stream_base.html#aa3c502ce09bbad7690a2dd6acaf8892e',1,'oboe::AudioStreamBase']]],
   ['getsharingmode',['getSharingMode',['../classoboe_1_1_audio_stream_base.html#a1fb033fc963f971bd1aa8f6707e49b41',1,'oboe::AudioStreamBase']]],
-  ['getstate',['getState',['../classoboe_1_1_audio_stream.html#a47bb5798275f14d76444283a6b6f35eb',1,'oboe::AudioStream']]],
-  ['gettimestamp',['getTimestamp',['../classoboe_1_1_audio_stream.html#a1d7cf4e43fb9d7b31857a90d9eceee6d',1,'oboe::AudioStream::getTimestamp(clockid_t clockId, int64_t *framePosition, int64_t *timeNanoseconds)'],['../classoboe_1_1_audio_stream.html#a29431d1311cbf6659cfbb70e58feb7ab',1,'oboe::AudioStream::getTimestamp(clockid_t clockId)']]],
+  ['getstate',['getState',['../classoboe_1_1_audio_stream.html#a9d37cc6513823c685ae892626ff83ea8',1,'oboe::AudioStream']]],
+  ['gettimestamp',['getTimestamp',['../classoboe_1_1_audio_stream.html#acb8edbc17ff79993a8ed996d216fe6f3',1,'oboe::AudioStream::getTimestamp(clockid_t, int64_t *, int64_t *)'],['../classoboe_1_1_audio_stream.html#a49254e6b1b19cb6d0ca6c63058029771',1,'oboe::AudioStream::getTimestamp(clockid_t)']]],
   ['getunderlyingstream',['getUnderlyingStream',['../classoboe_1_1_audio_stream.html#a5458d7130415eb4defe3dbc11d479e2f',1,'oboe::AudioStream']]],
   ['getusage',['getUsage',['../classoboe_1_1_audio_stream_base.html#a0bcfb2f8bd11c92b541fd910da9af397',1,'oboe::AudioStreamBase']]],
   ['getxruncount',['getXRunCount',['../classoboe_1_1_audio_stream.html#ad1a1d3bbf3b348ed92b7ed18ce9cc261',1,'oboe::AudioStream']]]

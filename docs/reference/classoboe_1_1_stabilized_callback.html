@@ -196,13 +196,13 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
           <td class="memname">void oboe::StabilizedCallback::onErrorAfterClose </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td>
-          <td class="paramname"><em>oboeStream</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -216,8 +216,8 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This will be called when an error occurs on a stream or when the stream is disconnected. The underlying stream will already be stopped AND closed by Oboe. So the underlyng stream cannot be referenced.</p>
-<p>This callback could be used to reopen a new stream on another device.</p>
+<p>This will be called when an error occurs on a stream or when the stream is disconnected. The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe. So the underlying stream cannot be referenced. But you can still query most parameters.</p>
+<p>This callback could be used to reopen a new stream on another device. You can safely delete the old <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> in this method.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">oboeStream</td><td>pointer to the associated stream </td></tr>
@@ -226,7 +226,7 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
   </dd>
 </dl>
 
-<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a7089c5e18a80cba89eb3f4fe2341aeba">oboe::AudioStreamCallback</a>.</p>
+<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a57a1b21efc764e8bbf8d92008a993bfd">oboe::AudioStreamCallback</a>.</p>
 
 </div>
 </div>
@@ -243,13 +243,13 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
           <td class="memname">void oboe::StabilizedCallback::onErrorBeforeClose </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td>
-          <td class="paramname"><em>oboeStream</em>, </td>
+          <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td>
-          <td class="paramname"><em>error</em>&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -266,6 +266,7 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
 <p>This will be called when an error occurs on a stream or when the stream is disconnected.</p>
 <p>Note that this will be called on a different thread than the <a class="el" href="classoboe_1_1_stabilized_callback.html#ad447e12ebf732cf151655c1fbaf58a49">onAudioReady()</a> thread. This thread will be created by Oboe.</p>
 <p>The underlying stream will already be stopped by Oboe but not yet closed. So the stream can be queried.</p>
+<p>Do not close or delete the stream in this method because it will be closed after this method returns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">oboeStream</td><td>pointer to the associated stream </td></tr>
@@ -274,7 +275,7 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
   </dd>
 </dl>
 
-<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a2407ff537a60301fd161bd2c36913bfd">oboe::AudioStreamCallback</a>.</p>
+<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a77ceb641f941164d7b4d4c51c9a888b9">oboe::AudioStreamCallback</a>.</p>
 
 </div>
 </div>

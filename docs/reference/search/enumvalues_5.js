@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['i16',['I16',['../namespaceoboe.html#a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d',1,'oboe']]],
-  ['input',['Input',['../namespaceoboe.html#af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5',1,'oboe']]],
-  ['invalid',['Invalid',['../namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b',1,'oboe']]]
+  ['game',['Game',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a63d72051e901c069f8aa1b32aa0c43bb',1,'oboe']]],
+  ['generic',['Generic',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544',1,'oboe']]]
 ];
