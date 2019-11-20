@@ -39,7 +39,8 @@ include_directories(
 
 # App specific sources
 set (APP_SOURCES
-        WavLoaderJNI.cpp
+        DrumPlayerJNI.cpp
+        OneShotPlayer.cpp
         )
 
 # Build the libhello-oboe library

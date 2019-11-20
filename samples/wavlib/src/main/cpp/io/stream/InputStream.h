@@ -21,6 +21,7 @@ namespace wavlib {
 class InputStream {
 public:
     InputStream() {}
+    virtual ~InputStream() {}
 
     virtual long read(void *buff, long numBytes) = 0;
 

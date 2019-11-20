@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.oboe.sample.drumthumper
 
-class WavLoader {
-    external fun loadWavFile(filePath: String)
-}
+#ifndef PLAYER_AUDIOSOURCE_H
+#define PLAYER_AUDIOSOURCE_H
+
+#include <cstdint>
+
+struct AudioProperties {
+    int32_t channelCount;
+    int32_t sampleRate;
+};
+
+
+class DataSource {
+public:
+    virtual ~DataSource(){};
+    virtual int64_t getSize() const = 0;
+    virtual AudioProperties getProperties() const  = 0;
+    virtual const float* getData() const = 0;
+};
+
+
+#endif //PLAYER_AUDIOSOURCE_H

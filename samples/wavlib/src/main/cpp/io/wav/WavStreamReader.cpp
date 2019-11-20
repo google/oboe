@@ -106,7 +106,7 @@ void WavStreamReader::positionToAudio() {
     }
 }
 
-int WavStreamReader::getData(float *buff, int numFrames) {
+int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
 
     if (mDataChunk == 0 || mFmtChunk == 0) {
@@ -118,6 +118,7 @@ int WavStreamReader::getData(float *buff, int numFrames) {
     int numChans = mFmtChunk->mNumChannels;
     int buffOffset = 0;
 
+    // TODO - Manage other input formats
     if (mFmtChunk->mSampleSize == 16) {
         short *readBuff = new short[128 * numChans];
         int framesLeft = numFrames;
@@ -147,5 +148,9 @@ int WavStreamReader::getData(float *buff, int numFrames) {
     }
     return 0;
 }
+
+//int WavStreamReader::getData16(short *buff, int numFramees) {
+//
+//}
 
 } // namespace wavlib

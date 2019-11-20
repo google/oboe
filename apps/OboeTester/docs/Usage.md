@@ -29,7 +29,7 @@ MIDI latency is generally under 1 msec.
 
 ### Record and Playback
 
-Record several seconds of audio and play it back.
+Record several seconds of audio and playKickDrum it back.
 The Share button lets you share the recorded WAV file.
 You can then examine the WAV file using a program like Audacity.
 
