@@ -23,6 +23,7 @@ namespace wavlib {
 class FileInputStream : public InputStream {
 public:
     FileInputStream(int fh) : mFH(fh) {}
+    virtual ~FileInputStream() {}
 
     virtual long read(void *buff, long numBytes);
 

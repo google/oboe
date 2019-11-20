@@ -47,7 +47,9 @@ public:
     // Data access
     void positionToAudio();
 
-    int getData(float *buff, int numFrames);
+    int getDataFloat(float *buff, int numFrames);
+
+    // int getData16(short *buff, int numFramees);
 
 protected:
     InputStream *mStream;

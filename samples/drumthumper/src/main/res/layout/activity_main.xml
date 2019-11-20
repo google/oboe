@@ -4,13 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
+    android:orientation="vertical"
+    tools:context=".DrumThumperActivity">
 
     <Button
-        android:id="@+id/loadBtn"
-        android:layout_width="wrap_content"
+        android:id="@+id/kickBtn"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Load" />
+        android:text="Kick" />
+
+    <Button
+        android:id="@+id/snareBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Snare" />
+
+    <Button
+        android:id="@+id/crashBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Crash Cymbal" />
+
+    <Button
+        android:id="@+id/hihatOpenBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open HiHat" />
+
+    <Button
+        android:id="@+id/hihatClosedBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Closed HiHat" />
 </LinearLayout>

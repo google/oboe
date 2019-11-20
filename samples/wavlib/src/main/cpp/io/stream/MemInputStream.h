@@ -23,6 +23,7 @@ namespace wavlib {
 class MemInputStream : public InputStream {
 public:
     MemInputStream(unsigned char *buff, long len) : mBuffer(buff), mPos(0), mBufferLen(len) {}
+    virtual ~MemInputStream() {}
 
     virtual long read(void *buff, long numBytes);
 

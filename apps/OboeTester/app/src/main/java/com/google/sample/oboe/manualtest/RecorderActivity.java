@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Activity to record and play back audio.
+ * Activity to record and playKickDrum back audio.
  */
 public class RecorderActivity extends TestInputActivity {
 

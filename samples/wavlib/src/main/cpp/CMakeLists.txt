@@ -20,7 +20,7 @@ message("NDK is " ${NDK})
 # include folders
 include_directories(
     ${CMAKE_CURRENT_LIST_DIR}
-    ../../../../shared
+        ../../../../shared
 )
 
 # Creates and names a library, sets it as either STATIC
@@ -46,7 +46,7 @@ add_library( # Sets the name of the library.
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp
         #include player
-        ${CMAKE_CURRENT_LIST_DIR}/player/Player.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
 )
 
 # Searches for a specified prebuilt library and stores the path as a
