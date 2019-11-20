@@ -21,20 +21,19 @@
 #include "MegaDroneEngine.h"
 
 
+namespace {
+
 std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray){
 
-    std::vector<int> v;
-    jsize length = env->GetArrayLength(intArray);
+    jsize length;
+    std::unique_ptr<jint[]> elements =
+        CHECK_JNI(FATAL, env).GetIntArrayElements(intArray, &length);
 
-    if (length > 0) {
-        jboolean isCopy;
-        jint *elements = env->GetIntArrayElements(intArray, &isCopy);
-        for (int i = 0; i < length; i++) {
-            v.push_back(elements[i]);
-        }
-    }
-    return v;
+    return std::vector<int> (&elements[0], &elements[length]);
 }
+
+}
+
 extern "C" {
 /**
  * Start the audio engine
