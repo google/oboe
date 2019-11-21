@@ -97,4 +97,8 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <com.google.sample.oboe.manualtest.WaveformView
+        android:id="@+id/waveview_audio"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 </LinearLayout>

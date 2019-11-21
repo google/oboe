@@ -139,6 +139,7 @@ public class GlitchActivity extends AnalyzerActivity {
                 if (glitchFrames > mLastGlitchFrames || glitchCount > mLastGlitchCount) {
                     mTimeOfLastGlitch = now;
                     mSecondsWithoutGlitches = 0.0;
+                    onGlitchDetected();
                 } else if (lockedFrames > mLastLockedFrames) {
                     mSecondsWithoutGlitches = (now - mTimeOfLastGlitch) / 1000.0;
                 }
@@ -215,6 +216,10 @@ public class GlitchActivity extends AnalyzerActivity {
         }
     }
 
+    // Called on UI thread
+    protected void onGlitchDetected() {
+    }
+
     private GlitchSniffer mGlitchSniffer = new GlitchSniffer();
 
     private void setAnalyzerText(String s) {
@@ -276,6 +281,7 @@ public class GlitchActivity extends AnalyzerActivity {
         openAudio();
         startAudio();
         mGlitchSniffer.startSniffer();
+        onTestBegan();
     }
 
     public void onCancel(View view) {
@@ -288,6 +294,10 @@ public class GlitchActivity extends AnalyzerActivity {
         stopAudioTest();
         onTestFinished();
         keepScreenOn(false);
+    }
+
+    // Must be called on UI thread.
+    public void onTestBegan() {
     }
 
     // Must be called on UI thread.
