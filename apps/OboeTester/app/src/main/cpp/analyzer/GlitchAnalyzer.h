@@ -21,6 +21,7 @@
 
 #include "PseudoRandom.h"
 #include "LatencyAnalyzer.h"
+#include "InfiniteRecording.h"
 
 /**
  * Output a steady sinewave and analyze the return signal.
@@ -30,6 +31,10 @@
  */
 class GlitchAnalyzer : public LoopbackProcessor {
 public:
+
+    GlitchAnalyzer()
+    : LoopbackProcessor()
+    , mInfiniteRecording(64 * 1024) {}
 
     int32_t getState() {
         return mState;
@@ -131,6 +136,7 @@ public:
 
         float sample = frameData[0];
         float peak = mPeakFollower.process(sample);
+        mInfiniteRecording.write(sample);
 
         // Force a periodic glitch!
         if (mForceGlitchDuration > 0) {
@@ -312,6 +318,7 @@ public:
         mState = STATE_GLITCHING;
         mGlitchLength = 1;
         mNonGlitchCount = 0;
+        mLastGlitchPosition = mInfiniteRecording.getTotalWritten();
     }
 
     void onGlitchEnd() {
@@ -353,6 +360,11 @@ public:
         for (int i = 0; i < NUM_STATES; i++) {
             mStateFrameCounters[i] = 0;
         }
+    }
+
+
+    int32_t getLastGlitch(float *buffer, int32_t length) {
+        return mInfiniteRecording.readFrom(buffer, mLastGlitchPosition - 32, length);
     }
 
 private:
@@ -417,6 +429,10 @@ private:
     PseudoRandom  mWhiteNoise;
 
     sine_state_t  mState = STATE_IDLE;
+
+    std::mutex    mGlitchLock;
+    InfiniteRecording mInfiniteRecording;
+    int64_t       mLastGlitchPosition;
 };
 
 
