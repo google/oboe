@@ -51,6 +51,14 @@
             android:text="@string/measure" />
 
         <Button
+            android:id="@+id/button_average"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onAverage"
+            android:text="@string/average" />
+
+        <Button
             android:id="@+id/button_cancel"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -73,7 +81,7 @@
         android:id="@+id/text_analyzer_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="12"
+        android:lines="15"
         android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />

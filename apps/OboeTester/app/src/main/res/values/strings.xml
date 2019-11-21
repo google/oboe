@@ -130,6 +130,7 @@
     <string name="save_file">Save</string>
 
     <string name="src_prompt">SRC:</string>
+    <string name="average">Average</string>
     <string-array name="conversion_qualities">
         <item>None</item>
         <item>Fastest</item>
