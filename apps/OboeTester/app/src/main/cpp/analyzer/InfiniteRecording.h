@@ -23,22 +23,23 @@
 /**
  * Record forever. Keep last data.
  */
+template <typename T>
 class InfiniteRecording {
 public:
     InfiniteRecording(size_t maxSamples)
-        : mMaxSamples(maxSamples) {
-        mData = std::make_unique<float[]>(mMaxSamples);
+            : mMaxSamples(maxSamples) {
+        mData = std::make_unique<T[]>(mMaxSamples);
     }
 
-    int32_t readFrom(float *buffer, size_t position, size_t count) {
-        size_t maxPosition = mWritten.load();
+    int32_t readFrom(T *buffer, size_t position, size_t count) {
+        const size_t maxPosition = mWritten.load();
         position = std::min(position, maxPosition);
         size_t numToRead = std::min(count, mMaxSamples);
         numToRead = std::min(numToRead, maxPosition - position);
         if (numToRead == 0) return 0;
         // We may need to read in two parts if it wraps.
-        size_t offset = position % mMaxSamples;
-        size_t firstReadSize = std::min(numToRead, mMaxSamples - offset); // till end
+        const size_t offset = position % mMaxSamples;
+        const size_t firstReadSize = std::min(numToRead, mMaxSamples - offset); // till end
         std::copy(&mData[offset], &mData[offset + firstReadSize], buffer);
         if (firstReadSize < numToRead) {
             // Second read needed.
@@ -47,9 +48,9 @@ public:
         return numToRead;
     }
 
-    void write(float sample) {
-        size_t position = mWritten.load();
-        size_t offset = position % mMaxSamples;
+    void write(T sample) {
+        const size_t position = mWritten.load();
+        const size_t offset = position % mMaxSamples;
         mData[offset] = sample;
         mWritten++;
     }
@@ -59,8 +60,8 @@ public:
     }
 
 private:
-    std::unique_ptr<float[]> mData;
-    std::atomic<size_t> mWritten{0};
-    const size_t mMaxSamples;
+    std::unique_ptr<T[]> mData;
+    std::atomic<size_t>      mWritten{0};
+    const size_t             mMaxSamples;
 };
 #endif //OBOETESTER_INFINITE_RECORDING_H

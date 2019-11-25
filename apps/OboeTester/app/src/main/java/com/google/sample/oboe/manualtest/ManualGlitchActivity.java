@@ -263,23 +263,15 @@ public class ManualGlitchActivity extends GlitchActivity {
     // Called on UI thread
     @Override
     protected void onGlitchDetected() {
-        float[] waveform = getGlitchWaveform();
-        mWaveformView.setSampleData(waveform);
+        int numSamples = getGlitch(mWaveform);
+        mWaveformView.setSampleData(mWaveform, 0, numSamples);
         mWaveformView.postInvalidate();
     }
 
     private float[] getGlitchWaveform() {
-        int numSamples = getGlitch(mWaveform);
         return mWaveform;
     }
 
     private native int getGlitch(float[] mWaveform);
 
-    private float[] getRandomWaveform() {
-        float[] waveform = new float[16];
-        for (int i = 0; i < waveform.length; i++) {
-            waveform[i] = (float) ((Math.random() * 2.0) - 1.0);
-        }
-        return waveform;
-    }
 }
