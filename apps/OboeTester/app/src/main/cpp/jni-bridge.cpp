@@ -590,7 +590,7 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_setTolerance(JNIEnv *env,
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_ManualGlitchActivity_getGlitch(JNIEnv *env, jobject instance,
                                                                       jfloatArray waveform_) {
-    float *waveform = env->GetFloatArrayElements(waveform_, NULL);
+    float *waveform = env->GetFloatArrayElements(waveform_, nullptr);
     jsize length = env->GetArrayLength(waveform_);
     jsize numSamples = 0;
     auto *analyzer = engine.mActivityGlitches.getGlitchAnalyzer();

@@ -33,8 +33,8 @@ class GlitchAnalyzer : public LoopbackProcessor {
 public:
 
     GlitchAnalyzer()
-    : LoopbackProcessor()
-    , mInfiniteRecording(64 * 1024) {}
+            : LoopbackProcessor()
+            , mInfiniteRecording(64 * 1024) {}
 
     int32_t getState() {
         return mState;
@@ -430,8 +430,7 @@ private:
 
     sine_state_t  mState = STATE_IDLE;
 
-    std::mutex    mGlitchLock;
-    InfiniteRecording mInfiniteRecording;
+    InfiniteRecording<float> mInfiniteRecording;
     int64_t       mLastGlitchPosition;
 };
 
