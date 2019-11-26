@@ -57,6 +57,8 @@ public class ManualGlitchActivity extends GlitchActivity {
     private TextView mTextTolerance;
     private SeekBar mFaderTolerance;
     protected ExponentialTaper mTaperTolerance;
+    private WaveformView mWaveformView;
+    private float[] mWaveform = new float[256];
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
 
@@ -94,6 +96,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         mTaperTolerance = new ExponentialTaper(0.0, 0.5, 100.0);
         mFaderTolerance.setOnSeekBarChangeListener(mToleranceListener);
         setToleranceFader(DEFAULT_TOLERANCE);
+
+        mWaveformView = (WaveformView) findViewById(R.id.waveview_audio);
     }
 
     private void setToleranceFader(float tolerance) {
@@ -248,5 +252,26 @@ public class ManualGlitchActivity extends GlitchActivity {
     public void onTestFinished() {
         super.onTestFinished();
     }
+    // Only call from UI thread.
+    @Override
+    public void onTestBegan() {
+        mWaveformView.clearSampleData();
+        mWaveformView.postInvalidate();
+        super.onTestBegan();
+    }
+
+    // Called on UI thread
+    @Override
+    protected void onGlitchDetected() {
+        int numSamples = getGlitch(mWaveform);
+        mWaveformView.setSampleData(mWaveform, 0, numSamples);
+        mWaveformView.postInvalidate();
+    }
+
+    private float[] getGlitchWaveform() {
+        return mWaveform;
+    }
+
+    private native int getGlitch(float[] mWaveform);
 
 }

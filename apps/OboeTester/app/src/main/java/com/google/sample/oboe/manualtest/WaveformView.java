@@ -84,21 +84,34 @@ public class WaveformView extends View {
         if (localData == null || mSampleCount == 0) {
             return;
         }
-        float xScale = ((float) mCurrentWidth) / mSampleCount;
+        float xScale = ((float) mCurrentWidth) / (mSampleCount - 1);
         float x0 = 0.0f;
-        float ymin = mOffsetY;
-        float ymax = mOffsetY;
-        for (int i = 1; i < mSampleCount; i++) {
-            float x1 = i * xScale;
-            float y1 = (localData[i] * mScaleY) + mOffsetY;
-            if ((int)x0 != (int)x1) {
-                canvas.drawLine(x0, ymin, x1, ymax, mWavePaint);
-                x0 = x1;
-                ymin = mOffsetY;
-                ymax = mOffsetY;
-            } else {
+        if (xScale < 1.0) {
+            // Draw a vertical bar for multiple samples.
+            float ymin = mOffsetY;
+            float ymax = mOffsetY;
+            for (int i = 0; i < mSampleCount; i++) {
+                float x1 = i * xScale;
+                if ((int) x0 != (int) x1) {
+                    // draw old data
+                    canvas.drawLine(x0, ymin, x0, ymax, mWavePaint);
+                    x0 = x1;
+                    ymin = mOffsetY;
+                    ymax = mOffsetY;
+                }
+                float y1 = (localData[i] * mScaleY) + mOffsetY;
                 ymin = Math.min(ymin, y1);
                 ymax = Math.max(ymax, y1);
+            }
+        } else {
+            // Draw line between samples.
+            float y0 = (localData[0] * mScaleY) + mOffsetY;
+            for (int i = 1; i < mSampleCount; i++) {
+                float x1 = i * xScale;
+                float y1 = (localData[i] * mScaleY) + mOffsetY;
+                canvas.drawLine(x0, y0, x1, y1, mWavePaint);
+                x0 = x1;
+                y0 = y1;
             }
         }
         if (mCursors != null) {
