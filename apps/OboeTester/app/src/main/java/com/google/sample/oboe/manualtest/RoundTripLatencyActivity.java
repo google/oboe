@@ -266,7 +266,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mCancelButton = (Button) findViewById(R.id.button_cancel);
         mShareButton = (Button) findViewById(R.id.button_share);
         mShareButton.setEnabled(false);
-        mAnalyzerView = (TextView) findViewById(R.id.text_analyzer_result);
+        mAnalyzerView = (TextView) findViewById(R.id.text_status);
         updateEnabledWidgets();
 
         hideSettingsViews();

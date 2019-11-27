@@ -241,7 +241,7 @@ public class GlitchActivity extends AnalyzerActivity {
         mStopButton.setEnabled(false);
         mShareButton = (Button) findViewById(R.id.button_share);
         mShareButton.setEnabled(false);
-        mAnalyzerTextView = (TextView) findViewById(R.id.text_analyzer_result);
+        mAnalyzerTextView = (TextView) findViewById(R.id.text_status);
         updateEnabledWidgets();
         hideSettingsViews();
         // TODO hide sample rate menu
