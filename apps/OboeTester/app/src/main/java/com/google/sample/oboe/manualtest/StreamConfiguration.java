@@ -54,6 +54,8 @@ public class StreamConfiguration {
     public static final int RATE_CONVERSION_QUALITY_HIGH = 4; // must match Oboe
     public static final int RATE_CONVERSION_QUALITY_BEST = 5; // must match Oboe
 
+    public static final int STREAM_STATE_STARTING = 3; // must match Oboe
+    public static final int STREAM_STATE_STARTED = 4; // must match Oboe
 
     public static final int INPUT_PRESET_GENERIC = 1; // must match Oboe
     public static final int INPUT_PRESET_CAMCORDER = 5; // must match Oboe

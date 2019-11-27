@@ -599,6 +599,29 @@ private:
 };
 
 /**
+ * Test a single output stream.
+ */
+class ActivityTestDisconnect : public ActivityContext {
+public:
+    ActivityTestDisconnect() {}
+
+    virtual ~ActivityTestDisconnect() = default;
+
+    void close(int32_t streamIndex) override;
+
+    oboe::Result startStreams() override {
+        return getOutputStream()->start();
+    }
+
+    void configureForStart() override;
+
+private:
+    std::unique_ptr<SineOscillator>         sineOscillator;
+    std::unique_ptr<MonoToMultiConverter>   monoToMulti;
+    std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
+};
+
+/**
  * Switch between various
  */
 class NativeAudioContext {
@@ -635,6 +658,9 @@ public:
             case ActivityType::Glitches:
                 currentActivity = &mActivityGlitches;
                 break;
+            case ActivityType::TestDisconnect:
+                currentActivity = &mActivityTestDisconnect;
+                break;
         }
     }
 
@@ -649,6 +675,7 @@ public:
     ActivityEcho                 mActivityEcho;
     ActivityRoundTripLatency     mActivityRoundTripLatency;
     ActivityGlitches             mActivityGlitches;
+    ActivityTestDisconnect       mActivityTestDisconnect;
 
 private:
 
@@ -662,6 +689,7 @@ private:
         Echo = 4,
         RoundTripLatency = 5,
         Glitches = 6,
+        TestDisconnect = 7,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;

@@ -605,3 +605,28 @@ void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
         mFullDuplexGlitches->setOutputStream(oboeStream);
     }
 }
+
+
+// =================================================================== ActivityTestDisconnect
+void ActivityTestDisconnect::close(int32_t streamIndex) {
+    ActivityContext::close(streamIndex);
+    mSinkFloat.reset();
+}
+
+void ActivityTestDisconnect::configureForStart() {
+    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
+    sineOscillator = std::make_unique<SineOscillator>();
+    monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
+
+    oboe::AudioStream *outputStream = getOutputStream();
+    sineOscillator->setSampleRate(outputStream->getSampleRate());
+    sineOscillator->frequency.setValue(440.0);
+    sineOscillator->amplitude.setValue(AMPLITUDE_SINE);
+    sineOscillator->output.connect(&(monoToMulti->input));
+    monoToMulti->output.connect(&(mSinkFloat->input));
+    // Clear framePosition in sine oscillators.
+    mSinkFloat->pullReset();
+    audioStreamGateway.setAudioSink(mSinkFloat);
+    oboeCallbackProxy.setCallback(&audioStreamGateway);
+}
+

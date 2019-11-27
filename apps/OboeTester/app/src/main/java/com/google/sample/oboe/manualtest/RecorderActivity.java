@@ -16,16 +16,10 @@
 
 package com.google.sample.oboe.manualtest;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.Button;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -35,7 +29,7 @@ public class RecorderActivity extends TestInputActivity {
 
     private static final int STATE_RECORDING = 5;
     private static final int STATE_PLAYING = 6;
-    private int mRecorderState = STATE_STOPPED;
+    private int mRecorderState = AUDIO_STATE_STOPPED;
     private Button mRecordButton;
     private Button mStopButton;
     private Button mPlayButton;
@@ -55,7 +49,7 @@ public class RecorderActivity extends TestInputActivity {
         mStopButton = (Button) findViewById(R.id.button_stop_record_play);
         mPlayButton = (Button) findViewById(R.id.button_start_playback);
         mShareButton = (Button) findViewById(R.id.button_share);
-        mRecorderState = STATE_STOPPED;
+        mRecorderState = AUDIO_STATE_STOPPED;
         mGotRecording = false;
         updateButtons();
     }
@@ -81,7 +75,7 @@ public class RecorderActivity extends TestInputActivity {
     public void onStopRecordPlay(View view) {
         stopAudio();
         closeAudio();
-        mRecorderState = STATE_STOPPED;
+        mRecorderState = AUDIO_STATE_STOPPED;
         updateButtons();
     }
 
@@ -92,10 +86,10 @@ public class RecorderActivity extends TestInputActivity {
     }
 
     private void updateButtons() {
-        mRecordButton.setEnabled(mRecorderState == STATE_STOPPED);
-        mStopButton.setEnabled(mRecorderState != STATE_STOPPED);
-        mPlayButton.setEnabled(mRecorderState == STATE_STOPPED && mGotRecording);
-        mShareButton.setEnabled(mRecorderState == STATE_STOPPED && mGotRecording);
+        mRecordButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED);
+        mStopButton.setEnabled(mRecorderState != AUDIO_STATE_STOPPED);
+        mPlayButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED && mGotRecording);
+        mShareButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED && mGotRecording);
     }
 
     public void startPlayback() {
