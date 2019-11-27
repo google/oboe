@@ -21,9 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -80,7 +78,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAutoTextView = (TextView) findViewById(R.id.text_auto_result);
+        mAutoTextView = (TextView) findViewById(R.id.text_log);
         mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
 
         mDurationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);

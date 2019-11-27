@@ -65,7 +65,7 @@
 
 
     <TextView
-        android:id="@+id/text_analyzer_result"
+        android:id="@+id/text_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:lines="12"
@@ -75,7 +75,7 @@
         />
 
     <TextView
-        android:id="@+id/text_auto_result"
+        android:id="@+id/text_log"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars = "vertical"
