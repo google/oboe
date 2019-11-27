@@ -86,6 +86,12 @@
             android:screenOrientation="portrait">
         </activity>
 
+        <activity
+            android:name="com.google.sample.oboe.manualtest.TestDisconnectActivity"
+            android:label="@string/title_test_disconnect"
+            android:screenOrientation="portrait">
+        </activity>
+
         <service
             android:name="com.google.sample.oboe.manualtest.AudioMidiTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">
@@ -107,6 +113,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
+
     </application>
 
 </manifest>

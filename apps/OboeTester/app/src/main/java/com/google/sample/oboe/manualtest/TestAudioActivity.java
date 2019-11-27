@@ -43,11 +43,13 @@ abstract class TestAudioActivity extends Activity {
     public static final String TAG = "TestOboe";
 
     protected static final int FADER_PROGRESS_MAX = 1000;
-    public static final int STATE_OPEN = 0;
-    public static final int STATE_STARTED = 1;
-    public static final int STATE_PAUSED = 2;
-    public static final int STATE_STOPPED = 3;
-    public static final int STATE_CLOSED = 4;
+
+    public static final int AUDIO_STATE_OPEN = 0;
+    public static final int AUDIO_STATE_STARTED = 1;
+    public static final int AUDIO_STATE_PAUSED = 2;
+    public static final int AUDIO_STATE_STOPPED = 3;
+    public static final int AUDIO_STATE_CLOSED = 4;
+
     public static final int COLOR_ACTIVE = 0xFFD0D0A0;
     public static final int COLOR_IDLE = 0xFFD0D0D0;
 
@@ -60,8 +62,9 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_ECHO = 4;
     public static final int ACTIVITY_RT_LATENCY = 5;
     public static final int ACTIVITY_GLITCHES = 6;
+    public static final int ACTIVITY_TEST_DISCONNECT = 7;
 
-    private int mState = STATE_CLOSED;
+    private int mAudioState = AUDIO_STATE_CLOSED;
     protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
     protected ArrayList<StreamContext> mStreamContexts;
@@ -178,23 +181,19 @@ abstract class TestAudioActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        mState = STATE_CLOSED;
+        mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
-    }
-
-    int getState() {
-        return mState;
     }
 
     protected void updateEnabledWidgets() {
         if (mOpenButton != null) {
-            mOpenButton.setBackgroundColor(mState == STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
-            mStartButton.setBackgroundColor(mState == STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
-            mPauseButton.setBackgroundColor(mState == STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
-            mStopButton.setBackgroundColor(mState == STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
-            mCloseButton.setBackgroundColor(mState == STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
+            mOpenButton.setBackgroundColor(mAudioState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
+            mStartButton.setBackgroundColor(mAudioState == AUDIO_STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
+            mPauseButton.setBackgroundColor(mAudioState == AUDIO_STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
+            mStopButton.setBackgroundColor(mAudioState == AUDIO_STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
+            mCloseButton.setBackgroundColor(mAudioState == AUDIO_STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
         }
-        setConfigViewsEnabled(mState == STATE_CLOSED);
+        setConfigViewsEnabled(mAudioState == AUDIO_STATE_CLOSED);
     }
 
     private void setConfigViewsEnabled(boolean b) {
@@ -405,7 +404,7 @@ abstract class TestAudioActivity extends Activity {
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
         streamContext.tester.open();
         mSampleRate = actualConfig.getSampleRate();
-        mState = STATE_OPEN;
+        mAudioState = AUDIO_STATE_OPEN;
         int sessionId = actualConfig.getSessionId();
         if (sessionId > 0) {
             setupEffects(sessionId);
@@ -432,7 +431,7 @@ abstract class TestAudioActivity extends Activity {
                     configView.updateDisplay();
                 }
             }
-            mState = STATE_STARTED;
+            mAudioState = AUDIO_STATE_STARTED;
             updateEnabledWidgets();
         }
     }
@@ -442,7 +441,7 @@ abstract class TestAudioActivity extends Activity {
         if (result < 0) {
             showErrorToast("Pause failed with " + result);
         } else {
-            mState = STATE_PAUSED;
+            mAudioState = AUDIO_STATE_PAUSED;
             updateEnabledWidgets();
         }
     }
@@ -452,9 +451,15 @@ abstract class TestAudioActivity extends Activity {
         if (result < 0) {
             showErrorToast("Stop failed with " + result);
         } else {
-            mState = STATE_STOPPED;
+            mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
         }
+    }
+
+    public void stopAudioQuiet() {
+        stopNative();
+        mAudioState = AUDIO_STATE_STOPPED;
+        updateEnabledWidgets();
     }
 
     public void closeAudio() {
@@ -462,7 +467,7 @@ abstract class TestAudioActivity extends Activity {
         for (StreamContext streamContext : mStreamContexts) {
             streamContext.tester.close();
         }
-        mState = STATE_CLOSED;
+        mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
     }
 

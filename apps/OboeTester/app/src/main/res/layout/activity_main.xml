@@ -73,6 +73,13 @@
         android:onClick="onLaunchAutoGlitchTest"
         android:text="Auto Glitch Test" />
 
+    <Button
+        android:id="@+id/button_test_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTestDisconnect"
+        android:text="Test Disconnect" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
