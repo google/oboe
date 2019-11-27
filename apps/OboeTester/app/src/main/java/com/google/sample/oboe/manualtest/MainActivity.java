@@ -189,6 +189,12 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void onLaunchTestDisconnect(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, TestDisconnectActivity.class);
+        startActivity(intent);
+    }
+
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());
