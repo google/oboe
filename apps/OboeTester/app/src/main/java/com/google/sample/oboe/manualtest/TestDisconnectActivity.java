@@ -45,6 +45,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     public static final int SETTLING_TIME_MILLIS = 600;
     public static final int TIME_TO_FAILURE_MILLIS = 3000;
 
+    private TextView     mInstructionsTextView;
     private TextView     mAutoTextView;
     private TextView     mStatusTextView;
     private TextView     mPlugTextView;
@@ -92,9 +93,10 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mStatusTextView = (TextView) findViewById(R.id.text_analyzer_result);
+        mInstructionsTextView = (TextView) findViewById(R.id.text_instructions);
+        mStatusTextView = (TextView) findViewById(R.id.text_status);
         mPlugTextView = (TextView) findViewById(R.id.text_plug_events);
-        mAutoTextView = (TextView) findViewById(R.id.text_auto_result);
+        mAutoTextView = (TextView) findViewById(R.id.text_log);
         mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
 
         mStartButton = (Button) findViewById(R.id.button_start);
@@ -146,6 +148,16 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             public void run() {
                 mAutoTextView.append(text);
                 mAutoTextView.append("\n");
+            }
+        });
+    }
+
+    // Write to status and command view
+    private void setInstructionsText(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mInstructionsTextView.setText(text);
             }
         });
     }
@@ -286,7 +298,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             startAudioTest(); // this will fill in actualConfig
             log("Actual:");
             actualConfigText = getConfigText(actualConfig)
-                    + ", path = " + (actualConfig.isMMap() ? "MMAP" : "Legacy");
+                    + ", " + (actualConfig.isMMap() ? "MMAP" : "Legacy");
             log(actualConfigText);
             // Set output size to a level that will avoid glitches.
             AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
@@ -324,7 +336,8 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
             String message = (requestPlugin ? "Plug IN" : "UNplug") + " headset now!";
-            setStatusText(message);
+            setStatusText("Testing:\n" + actualConfigText);
+            setInstructionsText(message);
             int timeoutCount = 0;
             while (!mTestFailed && mThreadEnabled && !mSkipTest &&
                     mAudioOutTester.getCurrentAudioStream().getState() == StreamConfiguration.STREAM_STATE_STARTED) {
@@ -347,6 +360,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             setStatusText(mTestFailed ? "Failed" : "Passed - detected");
         }
         updateFailSkipButton(false);
+        setInstructionsText("Wait...");
 
         if (!openFailed) {
             stopAudioTest();
@@ -422,7 +436,8 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             e.printStackTrace();
         } finally {
             stopAudioTest();
-            setStatusText("Finished. See summary below.");
+            setInstructionsText("See summary below.");
+            setStatusText("Finished.");
             log("\n==== SUMMARY ========");
             if (mFailCount > 0) {
                 log(mPassCount + " passed. " + mFailCount + " failed.");

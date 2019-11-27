@@ -42,11 +42,32 @@
 
 
     <TextView
-        android:id="@+id/text_analyzer_result"
+        android:id="@+id/text_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="4"
+        android:lines="1"
         android:text="@string/test_disconnect_instructions"
+        android:textColor="#F44336"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="2"
+        android:text="---"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        />
+
+
+    <TextView
+        android:id="@+id/text_plug_events"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="1"
+        android:text="plug #"
         android:textSize="18sp"
         android:textStyle="bold"
         />
@@ -75,17 +96,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/text_plug_events"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:lines="1"
-        android:text="plug #"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        />
-
-    <TextView
-        android:id="@+id/text_auto_result"
+        android:id="@+id/text_log"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars = "vertical"
