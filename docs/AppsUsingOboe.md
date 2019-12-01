@@ -9,6 +9,7 @@ your project name and Play Store URL.
 | [Audio Evolution Mobile Studio](https://play.google.com/store/apps/details?id=com.extreamsd.aemobile) | Digital Audio Workstation app | eXtream Software Development | Oboe implemented in version 4.9.8.1 |
 | [Best Piano](https://play.google.com/store/apps/details?id=com.netigen.piano) | Piano tutor app  | Netigen | Stream is opened with 44100 Hz so it will not get an MMAP stream on Pixel |
 | [CSound for Android](https://play.google.com/store/apps/details?id=com.csounds.Csound6) | Audio synthesis app, using CSound framework | Irreducible Productions | [Oboe implementation source code](https://github.com/gogins/csound-extended/blob/develop/CsoundForAndroid/CsoundAndroid/jni/csound_oboe.hpp) |
+| [FluidSynth](https://github.com/FluidSynth/fluidsynth) | MIDI synthesizer based on SoundFont 2 | [fluidsynth.org](http://www.fluidsynth.org) | drivers for Oboe and OpenSL ES |
 | [Grainstorm](https://play.google.com/store/apps/details?id=me.rocks.grainstorm) | Granular synthesizer app | The Secret Laboratory | |
 | [G-Stomper apps](https://play.google.com/store/apps/dev?id=5200192441928542082) | Mobile music production software | planet-h.com | Uses AAudio if you enable it in Settings (Setup->AUD->Audio System->AAudio). |
 | [JUCE](https://juce.com/) | Middleware framework | [ROLI](https://www.roli.com) | Oboe support enabled as experimental feature in Projucer |
