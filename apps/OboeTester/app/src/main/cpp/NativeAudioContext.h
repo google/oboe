@@ -96,7 +96,9 @@ public:
 
     bool isMMapEnabled() {
         if (!loadLibrary()) return false;
-        return mAAudio_getMMapPolicy() != AAUDIO_POLICY_NEVER;
+        int32_t policy = mAAudio_getMMapPolicy();
+        LOGI("%s() mmap policy = %d", __func__, policy);
+        return (policy == AAUDIO_POLICY_AUTO || policy == AAUDIO_POLICY_ALWAYS);
     }
 
     bool isMMapSupported() {
