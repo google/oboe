@@ -18,10 +18,15 @@
 
 #include <map>
 
-#include "AudioFormat.h"
+#include "AudioEncoding.h"
 #include "WavRIFFChunkHeader.h"
 #include "WavFmtChunkHeader.h"
 
+/*
+ * WAV format documentation can be found:
+ * http://soundfile.sapp.org/doc/WaveFormat/
+ * https://web.archive.org/web/20090417165828/http://www.kk.iij4u.or.jp/~kondo/wave/mpidata.txt
+ */
 namespace wavlib {
 
 class InputStream;

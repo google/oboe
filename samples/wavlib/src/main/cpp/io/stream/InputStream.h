@@ -18,19 +18,41 @@
 
 namespace wavlib {
 
+/*
+ * An interface declaration for a stream of bytes. Concrete implements for File and Memory Buffers
+ */
 class InputStream {
 public:
     InputStream() {}
     virtual ~InputStream() {}
 
+    /*
+     * Retreive the specified number of bytes and advance the read position.
+     * Returns: The number of bytes actually retrieved. May be less than requested
+     * if attempt to read beyond the end of the stream.
+     */
     virtual long read(void *buff, long numBytes) = 0;
 
+    /*
+     * Retreive the specified number of bytes. DOES NOT advance the read position.
+     * Returns: The number of bytes actually retrieved. May be less than requested
+     * if attempt to read beyond the end of the stream.
+     */
     virtual long peek(void *buff, long numBytes) = 0;
 
+    /*
+     * Moves the read position forward the (positive) number of bytes specified.
+     */
     virtual void advance(long numBytes) = 0;
 
+    /*
+     * Returns the read position of the stream
+     */
     virtual long getPos() = 0;
 
+    /*
+     * Sets the read position of the stream to the 0 or positive position.
+     */
     virtual void setPos(long pos) = 0;
 };
 

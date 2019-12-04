@@ -37,8 +37,10 @@ long MemInputStream::peek(void *buff, long numBytes) {
 }
 
 void MemInputStream::advance(long numBytes) {
-    long numAvail = mBufferLen - mPos;
-    mPos += std::min(numAvail, numBytes);
+    if (numBytes > 0) {
+        long numAvail = mBufferLen - mPos;
+        mPos += std::min(numAvail, numBytes);
+    }
 }
 
 long MemInputStream::getPos() {
@@ -46,10 +48,12 @@ long MemInputStream::getPos() {
 }
 
 void MemInputStream::setPos(long pos) {
-    if (pos < mBufferLen) {
-        mPos = pos;
-    } else {
-        mPos = mBufferLen - 1;
+    if (pos > 0) {
+        if (pos < mBufferLen) {
+            mPos = pos;
+        } else {
+            mPos = mBufferLen - 1;
+        }
     }
 }
 

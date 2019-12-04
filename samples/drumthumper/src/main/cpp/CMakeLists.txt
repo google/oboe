@@ -16,31 +16,20 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-### INCLUDE OBOE LIBRARY ###
-
-# Set the path to the Oboe library directory
-set (OBOE_DIR ../../../../../)
-message("OBOE_DIR = " + ${OBOE_DIR})
-
+# Pull in WavLib
 set (WAVLIB_DIR ../../../../wavlib)
-message("WAVLIB_DIR = " + ${WAVLIB_DIR})
+#message("WAVLIB_DIR = " + ${WAVLIB_DIR})
 
 include(${WAVLIB_DIR}/src/main/cpp/CMakeLists.txt)
 
-# Add the Oboe library as a subproject. Since Oboe is an out-of-tree source library we must also
-# specify a binary directory
-add_subdirectory(${OBOE_DIR} ./oboe-bin)
-
-# Include the Oboe headers and shared sample code
+# Include the WavLib headers and shared sample code
 include_directories(
-        ${OBOE_DIR}/include
         ${WAVLIB_DIR}/src/main/cpp
 )
 
 # App specific sources
 set (APP_SOURCES
         DrumPlayerJNI.cpp
-        OneShotPlayer.cpp
         )
 
 # Build the libhello-oboe library
@@ -49,7 +38,7 @@ add_library(drumthumper SHARED
         )
 
 # Specify the libraries needed for hello-oboe
-target_link_libraries(drumthumper android log oboe)
+target_link_libraries(drumthumper android log)
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
@@ -64,4 +53,4 @@ target_link_libraries( # Specifies the target library.
 
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib})
+        log)

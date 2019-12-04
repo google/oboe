@@ -29,14 +29,9 @@ WavRIFFChunkHeader::WavRIFFChunkHeader(RiffID tag) : WavChunkHeader(tag) {
     mFormatId = RIFFID_WAVE;
 }
 
-void WavRIFFChunkHeader::readHeader(InputStream *stream) {
-    WavChunkHeader::readHeader(stream);
+void WavRIFFChunkHeader::read(InputStream *stream) {
+    WavChunkHeader::read(stream);
     stream->read(&mFormatId, sizeof(mFormatId));
 }
-
-//void WavRIFFChunkHeader::readBody(P2InputStream* stream) {
-//	stream->read(&mChunkId, sizeof(mChunkId));
-//	stream->read(&mFormatId, sizeof(mFormatId));
-//}
 
 } // namespace wavlib

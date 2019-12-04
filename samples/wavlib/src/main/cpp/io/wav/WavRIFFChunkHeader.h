@@ -34,20 +34,7 @@ public:
 
     WavRIFFChunkHeader(RiffID tag);
 
-    virtual void readHeader(InputStream *stream);
-
-//	virtual void readBody(P2InputStream* stream);
-
-//	public long write(RandomAccessFile outFile) throws IOException {
-//		long tmp = outFile.getFilePointer();
-//
-//		long sizeFilePos = super.write(outFile);
-//		tmp = outFile.getFilePointer();
-//		outFile.write(mFormatId);
-//		tmp = outFile.getFilePointer();
-//
-//		return sizeFilePos;
-//	}
+    virtual void read(InputStream *stream);
 };
 
 } // namespace wavlib

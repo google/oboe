@@ -18,7 +18,10 @@
 
 namespace wavlib {
 
-class AudioFormat {
+/*
+ * Definitions for Audio Encodings in WAV files.
+ */
+class AudioEncoding {
 public:
     static const int INVALID = -1;
     static const int PCM_16 = 0;

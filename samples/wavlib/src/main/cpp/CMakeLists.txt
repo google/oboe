@@ -17,9 +17,16 @@ message("NDK is " ${NDK})
 # -mhard-float -D_NDK_MATH_NO_SOFTFP=1
 #SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mhard-float -D_NDK_MATH_NO_SOFTFP=1" )
 
+# Set the path to the Oboe library directory
+set (OBOE_DIR ../../../../../)
+message("OBOE_DIR = " + ${OBOE_DIR})
+
+add_subdirectory(${OBOE_DIR} ./oboe-bin)
+
 # include folders
 include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}
+        ${OBOE_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}
         ../../../../shared
 )
 
@@ -40,14 +47,16 @@ add_library( # Sets the name of the library.
         ${CMAKE_CURRENT_LIST_DIR}/io/stream/InputStream.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/stream/MemInputStream.cpp
         # io/wav
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/AudioFormat.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/io/wav/AudioEncoding.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavFmtChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp
-        #include player
+        # player
+        ${CMAKE_CURRENT_LIST_DIR}/player/SampleBuffer.cpp
         ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
-)
+        ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp
+        )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -55,11 +64,11 @@ add_library( # Sets the name of the library.
 # you want to add. CMake verifies that the library exists before
 # completing its build.
 
-find_library( # Sets the name of the path variable.
-              log-lib
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+#find_library( # Sets the name of the path variable.
+#              log-lib
+#              # Specifies the name of the NDK library that
+#              # you want CMake to locate.
+#              log )
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
@@ -70,4 +79,5 @@ target_link_libraries( # Specifies the target library.
 
             # Links the target library to the log library
             # included in the NDK.
-            ${log-lib} )
+            log
+            oboe)

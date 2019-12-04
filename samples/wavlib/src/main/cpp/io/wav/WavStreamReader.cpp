@@ -20,7 +20,7 @@
 
 #include "io/stream/InputStream.h"
 
-#include "AudioFormat.h"
+#include "AudioEncoding.h"
 #include "WavRIFFChunkHeader.h"
 #include "WavFmtChunkHeader.h"
 #include "WavChunkHeader.h"
@@ -43,15 +43,15 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
 }
 
 int WavStreamReader::getSampleFormat() {
-    if (mFmtChunk->mFormatId == WavFmtChunkHeader::kFORMAT_PCM) {
+    if (mFmtChunk->mFormatId == WavFmtChunkHeader::ENCODING_PCM) {
         return mFmtChunk->mSampleSize == 8
-               ? AudioFormat::PCM_8
-               : AudioFormat::PCM_16;
-    } else if (mFmtChunk->mFormatId == WavFmtChunkHeader::kFORMAT_IEEE_FLOAT) {
-        return AudioFormat::PCM_IEEEFLOAT;
+               ? AudioEncoding::PCM_8
+               : AudioEncoding::PCM_16;
+    } else if (mFmtChunk->mFormatId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
+        return AudioEncoding::PCM_IEEEFLOAT;
     }
 
-    return AudioFormat::INVALID;
+    return AudioEncoding::INVALID;
 }
 
 void WavStreamReader::parse() {
@@ -74,20 +74,19 @@ void WavStreamReader::parse() {
         WavChunkHeader *chunk = 0;
         if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
             chunk = mWavChunk = new WavRIFFChunkHeader(tag);
-            mWavChunk->readHeader(mStream);
+            mWavChunk->read(mStream);
         } else if (tag == WavFmtChunkHeader::RIFFID_FMT) {
             chunk = mFmtChunk = new WavFmtChunkHeader(tag);
-            mFmtChunk->readHeader(mStream);
-            mFmtChunk->log();
+            mFmtChunk->read(mStream);
         } else if (tag == WavChunkHeader::RIFFID_DATA) {
             chunk = mDataChunk = new WavChunkHeader(tag);
-            mDataChunk->readHeader(mStream);
+            mDataChunk->read(mStream);
             // We are now positioned at the start of the audio data.
             mAudioDataStartPos = mStream->getPos();
             mStream->advance(mDataChunk->mChunkSize);
         } else {
             chunk = new WavChunkHeader(tag);
-            chunk->readHeader(mStream);
+            chunk->read(mStream);
             mStream->advance(mDataChunk->mChunkSize); // skip the body
         }
 
@@ -148,9 +147,5 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     }
     return 0;
 }
-
-//int WavStreamReader::getData16(short *buff, int numFramees) {
-//
-//}
 
 } // namespace wavlib

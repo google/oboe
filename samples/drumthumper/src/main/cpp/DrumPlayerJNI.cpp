@@ -27,7 +27,7 @@
 
 #include <player/OneShotSampleBuffer.h>
 
-#include "OneShotPlayer.h"
+#include "player/SimpleMultiPlayer.h"
 
 static const char* TAG = "DrumPlayerJNI";
 
@@ -37,18 +37,18 @@ extern "C" {
 
 using namespace wavlib;
 
-static OneShotPlayer* sDTPlayer;
+static SimpleMultiPlayer* sDTPlayer;
 
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_initNative(
         JNIEnv* env, jobject, jint numSampleBuffers, jint numChannels, jint sampleRate) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
 
     // we know in this case that the sample buffers are all 1-channel, 41K
-    sDTPlayer = new OneShotPlayer(numSampleBuffers, numChannels, sampleRate);
+    sDTPlayer = new SimpleMultiPlayer(numSampleBuffers, numChannels, sampleRate);
 }
 
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
-    sDTPlayer->trigger(index);
+    sDTPlayer->triggerDown(index);
 }
 
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index) {

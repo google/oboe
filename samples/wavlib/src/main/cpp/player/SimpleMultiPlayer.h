@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_ONESHOTPLAYER_H
-#define SAMPLES_ONESHOTPLAYER_H
+#ifndef _PLAYER_SIMIPLEMULTIPLAYER_H_
+#define _PLAYER_SIMIPLEMULTIPLAYER_H_
 
 #include <oboe/Oboe.h>
 
@@ -24,9 +24,12 @@
 using namespace oboe;
 using namespace wavlib;
 
-class OneShotPlayer : public AudioStreamCallback  {
+/*
+ * A simple streaming player for multiple SampleBuffers.
+ */
+class SimpleMultiPlayer : public AudioStreamCallback  {
 public:
-    OneShotPlayer(int numSampleBuffers, int channelCount, int sampleRate);
+    SimpleMultiPlayer(int numSampleBuffers, int channelCount, int sampleRate);
 
     // Inherited from oboe::AudioStreamCallback
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData,
@@ -34,10 +37,10 @@ public:
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
 
     // Wave Sample Loading...
-    // void loadSampleDataFromFile(const char* filePath, int index);
     void loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index);
 
-    void trigger(int index);
+    void triggerDown(int index);
+    void triggerUp(int index);
 
 private:
     // Oboe Audio Stream
@@ -49,4 +52,4 @@ private:
     OneShotSampleBuffer* mSampleBuffers;
 };
 
-#endif //SAMPLES_ONESHOTPLAYER_H
+#endif //_PLAYER_SIMIPLEMULTIPLAYER_H_

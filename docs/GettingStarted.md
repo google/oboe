@@ -183,7 +183,7 @@ Streams can also be automatically closed when going out of scope:
 	} // Out of this scope the mStream has been automatically closed 
 	
 It is preferable to let the `ManagedStream` object go out of scope (or be explicitly deleted) when the app is no longer playing audio.
-For apps which only playKickDrum or record audio when they are in the foreground this is usually done when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
+For apps which only play or record audio when they are in the foreground this is usually done when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
 ## Reconfiguring streams
 In order to change the configuration of the stream, simply call `openManagedStream`

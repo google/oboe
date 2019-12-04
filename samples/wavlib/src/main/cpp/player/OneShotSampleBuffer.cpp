@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,6 @@
 
 namespace wavlib {
 
-int64_t OneShotSampleBuffer::getSize() const {
-    return 0;
-}
-
-const float* OneShotSampleBuffer::getData() const {
-    return mSampleData;
-}
-
 void OneShotSampleBuffer::loadSampleData(WavStreamReader* reader) {
     mProperties.channelCount = reader->getNumChannels();
     mProperties.sampleRate = reader->getSampleRate();
@@ -38,28 +30,6 @@ void OneShotSampleBuffer::loadSampleData(WavStreamReader* reader) {
     numSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
     mSampleData = new float[numSampleFrames];
     reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
-}
-
-void OneShotSampleBuffer::renderAudio(float* outBuff, int numFrames) {
-    int numWriteFrames = mIsPlaying
-            ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
-            : 0;
-
-    if (numWriteFrames != 0) {
-        // Sample Audio
-        memcpy(outBuff, mSampleData + mCurFrameIndex, numWriteFrames * sizeof(float));
-        // advance
-        mCurFrameIndex += numWriteFrames;
-        if (mCurFrameIndex >= numSampleFrames) {
-            mIsPlaying = false;
-        }
-    }
-
-    // silence
-    int remainingFrames = numWriteFrames - numWriteFrames;
-    if (remainingFrames != 0) {
-        memset(outBuff + numWriteFrames, 0, remainingFrames);
-    }
 }
 
 void OneShotSampleBuffer::mixAudio(float* outBuff, int numFrames) {

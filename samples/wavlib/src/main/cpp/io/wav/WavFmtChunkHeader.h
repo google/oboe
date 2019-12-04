@@ -26,10 +26,10 @@ class WavFmtChunkHeader : public WavChunkHeader {
 public:
     static const RiffID RIFFID_FMT;
 
-    // Microsoft format IDs
-    static const short kFORMAT_PCM = 1;
-    static const short kFORMAT_ADPCM = 2; // Microsoft ADPCM Format
-    static const short kFORMAT_IEEE_FLOAT = 3; // samples from -1.0 -> 1.0
+    // Microsoft Encoding IDs
+    static const short ENCODING_PCM = 1;
+    static const short ENCODING_ADPCM = 2; // Microsoft ADPCM Format
+    static const short ENCODING_IEEE_FLOAT = 3; // samples from -1.0 -> 1.0
 
     RiffInt16 mFormatId;
     RiffInt16 mNumChannels;
@@ -45,9 +45,7 @@ public:
 
     void normalize();
 
-    void readHeader(InputStream *stream);
-
-    void log();
+    void read(InputStream *stream);
 };
 
 } // namespace wavlib

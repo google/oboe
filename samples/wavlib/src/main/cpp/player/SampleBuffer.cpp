@@ -14,25 +14,9 @@
  * limitations under the License.
  */
 
-#ifndef _PLAYER_ONESHOTSAMPLEBUFFER_
-#define _PLAYER_ONESHOTSAMPLEBUFFER_
-
 #include "SampleBuffer.h"
 
 namespace wavlib {
+    // for now, all methods of SampleBuffer are either in-line or pure virtual
+}
 
-class WavStreamReader;
-
-class OneShotSampleBuffer: public SampleBuffer {
-public:
-    OneShotSampleBuffer() : SampleBuffer() {};
-    virtual ~OneShotSampleBuffer() {};
-
-    void loadSampleData(WavStreamReader* reader);
-
-    virtual void mixAudio(float* outBuff, int numFrames);
-};
-
-} // namespace wavlib
-
-#endif //_PLAYER_ONESHOTSAMPLEBUFFER_
