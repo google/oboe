@@ -21,9 +21,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -57,6 +60,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        logScreenSize();
 
         mVersionTextView = (TextView) findViewById(R.id.versionText);
         mCallbackSizeTextView = (TextView) findViewById(R.id.callbackSize);
@@ -95,6 +100,15 @@ public class MainActivity extends Activity {
         mBuildTextView.setText(Build.DISPLAY);
 
         saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    private void logScreenSize() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        Log.i(TestAudioActivity.TAG, "Screen size = " + size.x + " * " + size.y);
     }
 
     @Override
