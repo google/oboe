@@ -26,12 +26,13 @@ public class DrumPlayer {
         val SAMPLE_RATE: Int = 44100
 
         // Sample Buffer IDs
-        val NUM_SAMPLES: Int = 5
+        val NUM_SAMPLES: Int = 6
         val BASSDRUM: Int = 0
         val SNAREDRUM: Int = 1
         val CRASHCYMBAL: Int = 2
-        val HIHATOPEN: Int = 3
-        val HIHATCLOSED: Int = 4
+        val RIDECYMBAL: Int = 3
+        val HIHATOPEN: Int = 4
+        val HIHATCLOSED: Int = 5
 
         // Logging Tag
         val TAG: String = "DrumPlayer"
@@ -43,9 +44,10 @@ public class DrumPlayer {
 
     // asset-based samples
     fun loadWavAssets(assetMgr: AssetManager) {
-        loadWavAsset(assetMgr, "Kick_FrontBack_Mars.wav", BASSDRUM)
-        loadWavAsset(assetMgr, "Snare_Dixon_02.wav", SNAREDRUM)
-        loadWavAsset(assetMgr, "Cymbal_Crash_Tosco_01.wav", CRASHCYMBAL)
+        loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM)
+        loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM)
+        loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL)
+        loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL)
         loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN)
         loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED)
     }

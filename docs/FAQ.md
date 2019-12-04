@@ -13,7 +13,7 @@ Oboe requires a callback to get a low latency stream and that does not work well
 
 Note that [`AudioTrack.PERFORMANCE_MODE_LOW_LATENCY`](https://developer.android.com/reference/android/media/AudioTrack#PERFORMANCE_MODE_LOW_LATENCY) was added in API 26, For API 24 or 25 use [`AudioAttributes.FLAG_LOW_LATENCY`](https://developer.android.com/reference/kotlin/android/media/AudioAttributes#flag_low_latency). That was deprecated but will still work with later APIs.
 
-## Can I use Oboe to playKickDrum compressed audio files, such as MP3 or AAC?
+## Can I use Oboe to play compressed audio files, such as MP3 or AAC?
 Oboe only works with PCM data. It does not include any extraction or decoding classes. However, the [RhythmGame sample](https://github.com/google/oboe/tree/master/samples/RhythmGame) includes extractors for both NDK and FFmpeg. 
 
 For more information on using FFmpeg in your app [check out this article](https://medium.com/@donturner/using-ffmpeg-for-faster-audio-decoding-967894e94e71).

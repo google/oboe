@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-#ifndef PLAYER_AUDIOSOURCE_H
-#define PLAYER_AUDIOSOURCE_H
+#ifndef _PLAYER_AUDIOSOURCE_H_
+#define _PLAYER_AUDIOSOURCE_H_
 
 #include <cstdint>
 
+/*
+ * Defines the relevant properties of the audio data being sourced.
+ */
 struct AudioProperties {
     int32_t channelCount;
     int32_t sampleRate;
 };
 
-
+/*
+ * Defines an interface for audio data sources for the SimpleMultiPlayer class.
+ */
 class DataSource {
 public:
-    virtual ~DataSource(){};
-    virtual int64_t getSize() const = 0;
+    virtual ~DataSource() {};
     virtual AudioProperties getProperties() const  = 0;
-    virtual const float* getData() const = 0;
+    // virtual const float* getData() const = 0;
 };
 
 
-#endif //PLAYER_AUDIOSOURCE_H
+#endif //_PLAYER_AUDIOSOURCE_H_

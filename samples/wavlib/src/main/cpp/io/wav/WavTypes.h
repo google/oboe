@@ -18,12 +18,19 @@
 
 namespace wavlib {
 
-typedef unsigned int RiffID;
-typedef int RiffInt32;
-typedef short RiffInt16;
+/*
+ * Declarations for various (cross-platform) WAV-specific data types.
+ */
+typedef unsigned int RiffID;    // A "four character code" (i.e. FOURCC)
+typedef int RiffInt32;          // A 32-bit signed integer
+typedef short RiffInt16;        // A 16-bit signed integer
 
-typedef unsigned char byte;
+typedef unsigned char byte;     // an 8-bit unsigned value
 
+/*
+ * Packs the specified characters into a 32-bit value in accordance with the Microsoft
+ * FOURCC specification.
+ */
 inline RiffID makeRiffID(char a, char b, char c, char d) {
     return ((RiffID)d << 24) | ((RiffID)c << 16) | ((RiffID)b << 8) | (RiffID)a;
 }

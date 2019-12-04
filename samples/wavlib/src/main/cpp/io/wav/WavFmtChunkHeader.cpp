@@ -26,7 +26,7 @@ namespace wavlib {
 const RiffID WavFmtChunkHeader::RIFFID_FMT = makeRiffID('f', 'm', 't', ' ');
 
 WavFmtChunkHeader::WavFmtChunkHeader() : WavChunkHeader(RIFFID_FMT) {
-    mFormatId = kFORMAT_PCM;
+    mFormatId = ENCODING_PCM;
     mNumChannels = 0;
     mSampleRate = 0;
     mAveBytesPerSecond = 0;
@@ -36,7 +36,7 @@ WavFmtChunkHeader::WavFmtChunkHeader() : WavChunkHeader(RIFFID_FMT) {
 }
 
 WavFmtChunkHeader::WavFmtChunkHeader(RiffID tag) : WavChunkHeader(tag) {
-    mFormatId = kFORMAT_PCM;
+    mFormatId = ENCODING_PCM;
     mNumChannels = 0;
     mSampleRate = 0;
     mAveBytesPerSecond = 0;
@@ -46,7 +46,7 @@ WavFmtChunkHeader::WavFmtChunkHeader(RiffID tag) : WavChunkHeader(tag) {
 }
 
 void WavFmtChunkHeader::normalize() {
-    if (mFormatId == kFORMAT_PCM || mFormatId == kFORMAT_IEEE_FLOAT) {
+    if (mFormatId == ENCODING_PCM || mFormatId == ENCODING_IEEE_FLOAT) {
         mBlockAlign = (short) (mNumChannels * (mSampleSize / 8));
         mAveBytesPerSecond = mSampleRate * mBlockAlign;
         mExtraBytes = 0;
@@ -55,8 +55,8 @@ void WavFmtChunkHeader::normalize() {
     }
 }
 
-void WavFmtChunkHeader::readHeader(InputStream *stream) {
-    WavChunkHeader::readHeader(stream);
+void WavFmtChunkHeader::read(InputStream *stream) {
+    WavChunkHeader::read(stream);
     stream->read(&mFormatId, sizeof(mFormatId));
     stream->read(&mNumChannels, sizeof(mNumChannels));
     stream->read(&mSampleRate, sizeof(mSampleRate));
@@ -64,24 +64,12 @@ void WavFmtChunkHeader::readHeader(InputStream *stream) {
     stream->read(&mBlockAlign, sizeof(mBlockAlign));
     stream->read(&mSampleSize, sizeof(mSampleSize));
 
-    if (mFormatId != kFORMAT_PCM && mFormatId != kFORMAT_IEEE_FLOAT) {
+    if (mFormatId != ENCODING_PCM && mFormatId != ENCODING_IEEE_FLOAT) {
         // only read this if NOT PCM
         stream->read(&mExtraBytes, sizeof(mExtraBytes));
     } else {
         mExtraBytes = (short) (mChunkSize - 16);
     }
-}
-
-void WavFmtChunkHeader::log() {
-    //	short mFormatId;
-    //	short mNumChannels;
-    //	int mSampleRate;
-    //	int mAveBytesPerSecond;
-    //	short mBlockAlign;
-    //	short mSampleSize;
-    //	short mExtraBytes;
-    __android_log_print(ANDROID_LOG_INFO, TAG, "fmt:%d chans:%d, rate:%d, size:%d", mFormatId,
-                        mNumChannels, mSampleRate, mSampleSize);
 }
 
 } // namespace wavlib

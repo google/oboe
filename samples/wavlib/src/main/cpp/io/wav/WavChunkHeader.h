@@ -22,6 +22,10 @@ namespace wavlib {
 
 class InputStream;
 
+/*
+ * Superclass for all RIFF chunks. Handles the chunk ID and chunk size.
+ * Concrete subclasses include chunks for 'RIFF' and 'fmt ' chunks.
+ */
 class WavChunkHeader {
 public:
     static const RiffID RIFFID_DATA;
@@ -33,36 +37,13 @@ public:
 
     WavChunkHeader(RiffID chunkId) : mChunkId(chunkId), mChunkSize(0) {}
 
-    virtual void readHeader(InputStream *stream);
-
-//	virtual void readBody(InputStream* stream);
-
-//	public void skipBody(InputStream stream) throws IOException {
-//		stream.read(readBuff_);
-//		mChunkSize = ByteUtils.leBytesToInt(readBuff_);
-//		stream.skip(mChunkSize);
-//	}
-//
-//	public void skipBody(RandomAccessFile file) throws IOException {
-//		file.read(readBuff_);
-//		mChunkSize = ByteUtils.leBytesToInt(readBuff_);
-//		file.skipBytes(mChunkSize);
-//	}
-//
-//	/**
-//	 * @param file
-//	 * @return The file position of the chunk size field (for when the size of the chunk isn't
-//	 * known a-priory).
-//	 * @throws IOException
-//	 */
-//	public long write(RandomAccessFile file) throws IOException {
-//		file.write(mChunkId);
-//		long sizeFieldFilePos = file.getFilePointer();
-//		file.write(ByteUtils.intToleBytes(mChunkSize));
-//		return sizeFieldFilePos;
-    private:
-//	byte readBuff_[4];
-    };
+    /*
+     * Reads the contents of the chunk. In this class, just the ID and size fields.
+     * When implemented in a concrete subclass, that implementation MUST call this (super) method
+     * as the first step. It may then read the fields specific to that chunk type.
+     */
+    virtual void read(InputStream *stream);
+};
 
 } // namespace wavlib
 

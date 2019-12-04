@@ -30,7 +30,9 @@ long FileInputStream::peek(void *buff, long numBytes) {
 }
 
 void FileInputStream::advance(long numBytes) {
-    ::lseek(mFH, numBytes, SEEK_CUR);
+    if (numBytes > 0) {
+        ::lseek(mFH, numBytes, SEEK_CUR);
+    }
 }
 
 long FileInputStream::getPos() {
@@ -38,7 +40,9 @@ long FileInputStream::getPos() {
 }
 
 void FileInputStream::setPos(long pos) {
-    ::lseek(mFH, pos, SEEK_SET);
+    if (pos > 0) {
+        ::lseek(mFH, pos, SEEK_SET);
+    }
 }
 
 } /* namespace wavlib */

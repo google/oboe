@@ -21,15 +21,9 @@ namespace wavlib {
 
 const RiffID WavChunkHeader::RIFFID_DATA = makeRiffID('d', 'a', 't', 'a');
 
-void WavChunkHeader::readHeader(InputStream *stream) {
+void WavChunkHeader::read(InputStream *stream) {
     stream->read(&mChunkId, sizeof(mChunkId));
     stream->read(&mChunkSize, sizeof(mChunkSize));
 }
-
-//void WavChunkHeader::readBody(P2InputStream* stream) {
-//	stream->read(&mChunkSize, sizeof(mChunkSize));
-//
-//	stream->advance(mChunkSize);
-//}
 
 } // namespace wavlib
