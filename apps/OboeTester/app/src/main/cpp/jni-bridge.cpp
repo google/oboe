@@ -92,6 +92,11 @@ Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapSupported(JNIEnv *env,
     return AAudioExtensions::getInstance().isMMapSupported();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapExclusiveSupported(JNIEnv *env, jclass type) {
+    return AAudioExtensions::getInstance().isMMapExclusiveSupported();
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,

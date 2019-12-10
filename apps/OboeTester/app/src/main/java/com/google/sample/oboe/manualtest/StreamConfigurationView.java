@@ -197,7 +197,9 @@ public class StreamConfigurationView extends LinearLayout {
                         : StreamConfiguration.SHARING_MODE_SHARED);
             }
         });
-        mRequestedExclusiveView.setChecked(true);
+        boolean mmapExclusiveSupported = NativeEngine.isMMapExclusiveSupported();
+        mRequestedExclusiveView.setEnabled(mmapExclusiveSupported);
+        mRequestedExclusiveView.setChecked(mmapExclusiveSupported);
 
         mActualSessionIdView = (TextView) findViewById(R.id.sessionId);
         mRequestAudioEffect = (CheckBox) findViewById(R.id.requestAudioEffect);
