@@ -42,7 +42,7 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
     mChunkMap = new std::map<RiffID, WavChunkHeader *>();
 }
 
-int WavStreamReader::getSampleFormat() {
+int WavStreamReader::getSampleEncoding() {
     if (mFmtChunk->mFormatId == WavFmtChunkHeader::ENCODING_PCM) {
         return mFmtChunk->mSampleSize == 8
                ? AudioEncoding::PCM_8
@@ -63,13 +63,9 @@ void WavStreamReader::parse() {
             break; // done
         }
 
-        char *tagStr = (char *) &tag;
-        __android_log_print(ANDROID_LOG_INFO, TAG, "[%c%c%c%c]",
-                            tagStr[0], tagStr[1], tagStr[2], tagStr[3]);
-        int tagInt = tag;
-
-        RiffID tagRIFF = WavRIFFChunkHeader::RIFFID_RIFF;
-        int riffInt = tagRIFF;
+//        char *tagStr = (char *) &tag;
+//        __android_log_print(ANDROID_LOG_INFO, TAG, "[%c%c%c%c]",
+//                            tagStr[0], tagStr[1], tagStr[2], tagStr[3]);
 
         WavChunkHeader *chunk = 0;
         if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
@@ -106,7 +102,7 @@ void WavStreamReader::positionToAudio() {
 }
 
 int WavStreamReader::getDataFloat(float *buff, int numFrames) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
+    // __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
 
     if (mDataChunk == 0 || mFmtChunk == 0) {
         return 0;
@@ -123,7 +119,7 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
         int framesLeft = numFrames;
         while (framesLeft > 0) {
             int framesThisRead = std::min(framesLeft, 128);
-            __android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
+            //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
             int numFramesRead =
                     mStream->read(readBuff, framesThisRead * sizeof(short) * numChans) /
                     (sizeof(short) * numChans);
@@ -142,9 +138,10 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
         }
         delete[] readBuff;
 
-        __android_log_print(ANDROID_LOG_INFO, TAG, "  returns:%d", totalFramesRead);
+        // __android_log_print(ANDROID_LOG_INFO, TAG, "  returns:%d", totalFramesRead);
         return totalFramesRead;
     }
+
     return 0;
 }
 

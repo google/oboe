@@ -34,7 +34,6 @@ class DataSource {
 public:
     virtual ~DataSource() {};
     virtual AudioProperties getProperties() const  = 0;
-    // virtual const float* getData() const = 0;
 };
 
 

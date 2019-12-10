@@ -26,13 +26,15 @@ public class DrumPlayer {
         val SAMPLE_RATE: Int = 44100
 
         // Sample Buffer IDs
-        val NUM_SAMPLES: Int = 6
+        val NUM_SAMPLES: Int = 8
         val BASSDRUM: Int = 0
         val SNAREDRUM: Int = 1
         val CRASHCYMBAL: Int = 2
         val RIDECYMBAL: Int = 3
-        val HIHATOPEN: Int = 4
-        val HIHATCLOSED: Int = 5
+        val MIDTOM: Int = 4
+        val LOWTOM: Int = 5
+        val HIHATOPEN: Int = 6
+        val HIHATCLOSED: Int = 7
 
         // Logging Tag
         val TAG: String = "DrumPlayer"
@@ -42,12 +44,18 @@ public class DrumPlayer {
         initNative(NUM_SAMPLES, NUM_CHANNELS, SAMPLE_RATE)
     }
 
+    fun deinit() {
+        deinitNative()
+    }
+
     // asset-based samples
     fun loadWavAssets(assetMgr: AssetManager) {
         loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM)
         loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM)
         loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL)
         loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL)
+        loadWavAsset(assetMgr, "MidTom.wav", MIDTOM)
+        loadWavAsset(assetMgr, "LowTom.wav", LOWTOM)
         loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN)
         loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED)
     }
@@ -60,13 +68,16 @@ public class DrumPlayer {
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
             loadWavAssetNative(dataBytes, index)
+            assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
         }
     }
 
+    external fun initNative(numSampleBuffers: Int, numChannels: Int, sampleRate: Int)
+    external fun deinitNative()
+
     external fun loadWavAssetNative(wavBytes: ByteArray, index: Int)
 
     external fun trigger(drumIndex: Int)
-    external fun initNative(numSampleBuffers: Int, numChannels: Int, sampleRate: Int)
 }

@@ -35,13 +35,8 @@ public:
      */
     AudioProperties getProperties() const { return mProperties; };
 
-    /*
-     * Returns a pointer to the audio data.
-     */
-    // virtual const float* getData() const { return mSampleData; }
-
-    void play() { mCurFrameIndex = 0; mIsPlaying = true; }
-    void stop() { mIsPlaying = false; }
+    void setPlayMode() { mCurFrameIndex = 0; mIsPlaying = true; }
+    void setStopMode() { mIsPlaying = false; }
 
     bool isPlaying() { return mIsPlaying; }
 

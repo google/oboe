@@ -17,6 +17,6 @@
 
 namespace wavlib {
 
-// All of the methods os InputStream are pure virtual
+// All of the methods of InputStream are pure virtual
 
 } /* namespace wavlib */

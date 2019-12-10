@@ -29,6 +29,7 @@ public:
     virtual ~OneShotSampleBuffer() {};
 
     void loadSampleData(WavStreamReader* reader);
+    void unloadSampleData();
 
     virtual void mixAudio(float* outBuff, int numFrames);
 };

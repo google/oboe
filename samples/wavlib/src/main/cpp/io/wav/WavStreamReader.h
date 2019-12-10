@@ -43,7 +43,7 @@ public:
 
     int getNumChannels() { return mFmtChunk != 0 ? mFmtChunk->mNumChannels : 0; }
 
-    int getSampleFormat();
+    int getSampleEncoding();
 
     int getBitsPerSample() { return mFmtChunk->mSampleSize; }
 
