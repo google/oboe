@@ -51,19 +51,16 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "======== onCreate() ========")
         mDrumPlayer.init();
         mDrumPlayer.loadWavAssets(getAssets())
     }
 
     override fun onStart() {
         super.onStart()
-        Log.i(TAG, "======== onStart() ========")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.i(TAG, "======== onResume() ========")
         setContentView(R.layout.drumthumper_activity)
 
         // hookup the UI
@@ -110,17 +107,14 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onPause() {
         super.onPause()
-        Log.i(TAG, "======== onPause() ========")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.i(TAG, "======== onStop() ========")
     }
 
     override fun onDestroy() {
-        super.onStop()
-        Log.i(TAG, "======== onDestroy() ========")
+        super.onDestroy()
         mDrumPlayer.deinit();
     }
 
