@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <string.h>
+
 #include "io/wav/WavStreamReader.h"
 
 #include "OneShotSampleBuffer.h"
@@ -26,10 +28,19 @@ void OneShotSampleBuffer::loadSampleData(WavStreamReader* reader) {
 
     reader->positionToAudio();
 
-    // For now we know that the source sample format is 16bit
     numSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
     mSampleData = new float[numSampleFrames];
     reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
+}
+
+void OneShotSampleBuffer::unloadSampleData() {
+    delete[] mSampleData;
+    mSampleData = nullptr;
+    numSampleFrames = 0;
+
+    // kinda by definition..
+    mCurFrameIndex = 0;
+    mIsPlaying = false;
 }
 
 void OneShotSampleBuffer::mixAudio(float* outBuff, int numFrames) {
@@ -38,10 +49,10 @@ void OneShotSampleBuffer::mixAudio(float* outBuff, int numFrames) {
                          : 0;
 
     if (numWriteFrames != 0) {
-        // Sample Audio
-        for(int index = 0; index < numWriteFrames; index++) {
-            outBuff[index] += mSampleData[mCurFrameIndex++];
-        }
+        // Transfer samples
+        memcpy(outBuff, mSampleData + mCurFrameIndex, sizeof(float) * numWriteFrames);
+        mCurFrameIndex += numWriteFrames;
+
         if (mCurFrameIndex >= numSampleFrames) {
             mIsPlaying = false;
         }

@@ -17,9 +17,32 @@ package com.google.oboe.sample.drumthumper
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
+import android.util.Log
 
-class DrumThumperActivity : AppCompatActivity(), DrumPad.DrumPadTriggerListener {
+/*
+======== onCreate() ========
+======== onStart() ========
+======== onResume() ========
+<---- Rotate Starts Here --->
+======== onPause() ========
+======== onStop() ========
+<---- Rotate Ends Here --->
+
+======== onCreate() ========
+======== onStart() ========
+======== onResume() ========
+<---- Rotate Starts Here --->
+======== onPause() ========
+======== onStop() ========
+<---- Rotate Ends Here --->
+
+======== onCreate() ========
+======== onStart() ========
+======== onResume() ========
+ */
+class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
+    private val TAG = "DrumThumperActivity"
+
     private var mDrumPlayer = DrumPlayer()
 
     init {
@@ -28,85 +51,88 @@ class DrumThumperActivity : AppCompatActivity(), DrumPad.DrumPadTriggerListener 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+        Log.i(TAG, "======== onCreate() ========")
         mDrumPlayer.init();
         mDrumPlayer.loadWavAssets(getAssets())
+    }
 
-        // setup button handlers
-//        run {
-//            var btn: Button = findViewById(R.id.kickBtn)
-//            btn.setOnClickListener {
-//                mDrumPlayer.triggerDown(DrumPlayer.BASSDRUM)
-//            }
-//        }
-//
-//        run {
-//            var btn: Button = findViewById(R.id.snareBtn)
-//            btn.setOnClickListener {
-//                mDrumPlayer.triggerDown(DrumPlayer.SNAREDRUM)
-//            }
-//        }
+    override fun onStart() {
+        super.onStart()
+        Log.i(TAG, "======== onStart() ========")
+    }
 
-//        run {
-//            var btn: Button = findViewById(R.id.crashBtn)
-//            btn.setOnClickListener {
-//                mDrumPlayer.triggerDown(DrumPlayer.CRASHCYMBAL)
-//            }
-//        }
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "======== onResume() ========")
+        setContentView(R.layout.drumthumper_activity)
 
-//        run {
-//            var btn: Button = findViewById(R.id.hihatOpenBtn)
-//            btn.setOnClickListener {
-//                mDrumPlayer.triggerDown(DrumPlayer.HIHATOPEN)
-//            }
-//        }
-//
-//        run {
-//            var btn: Button = findViewById(R.id.hihatClosedBtn)
-//            btn.setOnClickListener {
-//                mDrumPlayer.triggerDown(DrumPlayer.HIHATCLOSED)
-//            }
-//        }
-
+        // hookup the UI
         run {
-            var pad: DrumPad = findViewById(R.id.kickPad)
+            var pad: TriggerPad = findViewById(R.id.kickPad)
             pad.addListener(this)
         }
 
         run {
-            var pad: DrumPad = findViewById(R.id.snarePad)
+            var pad: TriggerPad = findViewById(R.id.snarePad)
             pad.addListener(this)
         }
 
         run {
-            var pad: DrumPad = findViewById(R.id.hihatOpenPad)
+            var pad: TriggerPad = findViewById(R.id.midTomPad)
             pad.addListener(this)
         }
 
         run {
-            var pad: DrumPad = findViewById(R.id.hihatClosedPad)
+            var pad: TriggerPad = findViewById(R.id.lowTomPad)
             pad.addListener(this)
         }
 
         run {
-            var pad: DrumPad = findViewById(R.id.ridePad)
+            var pad: TriggerPad = findViewById(R.id.hihatOpenPad)
             pad.addListener(this)
         }
 
         run {
-            var pad: DrumPad = findViewById(R.id.crashPad)
+            var pad: TriggerPad = findViewById(R.id.hihatClosedPad)
             pad.addListener(this)
         }
+
+        run {
+            var pad: TriggerPad = findViewById(R.id.ridePad)
+            pad.addListener(this)
+        }
+
+        run {
+            var pad: TriggerPad = findViewById(R.id.crashPad)
+            pad.addListener(this)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG, "======== onPause() ========")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(TAG, "======== onStop() ========")
+    }
+
+    override fun onDestroy() {
+        super.onStop()
+        Log.i(TAG, "======== onDestroy() ========")
+        mDrumPlayer.deinit();
     }
 
     //
     // DrumPad.DrumPadTriggerListener
     //
-    override fun trigger(pad: DrumPad) {
+    override fun triggerDown(pad: TriggerPad) {
         when (pad.id) {
             R.id.kickPad -> mDrumPlayer.trigger(DrumPlayer.BASSDRUM)
             R.id.snarePad -> mDrumPlayer.trigger(DrumPlayer.SNAREDRUM)
+            R.id.midTomPad -> mDrumPlayer.trigger(DrumPlayer.MIDTOM)
+            R.id.lowTomPad -> mDrumPlayer.trigger(DrumPlayer.LOWTOM)
             R.id.hihatOpenPad -> mDrumPlayer.trigger(DrumPlayer.HIHATOPEN)
             R.id.hihatClosedPad -> mDrumPlayer.trigger(DrumPlayer.HIHATCLOSED)
             R.id.ridePad -> mDrumPlayer.trigger(DrumPlayer.RIDECYMBAL)
@@ -114,4 +140,7 @@ class DrumThumperActivity : AppCompatActivity(), DrumPad.DrumPadTriggerListener 
         }
     }
 
+    override fun triggerUp(pad: TriggerPad) {
+        // NOP
+    }
 }

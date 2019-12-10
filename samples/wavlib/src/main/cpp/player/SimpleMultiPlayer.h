@@ -36,6 +36,8 @@ public:
             int32_t numFrames) override;
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
 
+    void deinit();
+
     // Wave Sample Loading...
     void loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index);
 

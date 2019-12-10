@@ -26,7 +26,7 @@ import android.view.MotionEvent
 import android.view.View
 
 
-class DrumPad: View {
+class TriggerPad: View {
     val TAG = "DrumPad";
 
     private val mDrawRect = RectF()
@@ -40,6 +40,20 @@ class DrumPad: View {
     private var mTextSizeSp = 28.0f
 
     private val mTextColor = Color.BLACK
+
+    private val DISPLAY_MASK        = 0x00000003
+    private val DISPLAY_RECT        = 0x00000000
+    private val DISPLAY_CIRCLE      = 0x00000001
+    private val DISPLAY_ROUNDRECT   = 0x00000002
+
+    private var mDisplayFlags = DISPLAY_ROUNDRECT
+
+    interface DrumPadTriggerListener {
+        fun triggerDown(pad: TriggerPad)
+        fun triggerUp(pad: TriggerPad)
+    }
+
+    var mListeners = ArrayList<DrumPadTriggerListener>()
 
     constructor(context: Context) : super(context) {
     }
@@ -56,50 +70,23 @@ class DrumPad: View {
     // Attributes
     //
     private fun extractAttributes(context: Context, attrs: AttributeSet) {
-//        var set: IntArray = intArrayOf(android.R.attr.text)
-//        var attrVal = set.get(0)
-//
-//        var styleAttrs = context.obtainStyledAttributes(set)
-//        var numStyes = styleAttrs.getIndexCount()
-//
-//        var numAtts = attrs.attributeCount
-//        var attrName =  ""
-//        var textIndex = -1
-//        for(i in 0..numAtts-1) {
-//            attrName = attrs.getAttributeName(i)
-//            if (attrName == "text") {
-//                textIndex = i
-//                break
-//            }
-//        }
-//
-//        // var styledCound = styleAttrs.indexCount
-//
-//        if (textIndex != -1) {
-//            var chars = attrs.getAttributeValue(3);
-//            mText = chars.toString()
-//        }
-//
-        var xmlns = "http://schemas.android.com/apk/res/android"
-        var textVal = attrs.getAttributeValue(xmlns, "text");
+        val xmlns = "http://schemas.android.com/apk/res/android"
+        val textVal = attrs.getAttributeValue(xmlns, "text");
         if (textVal != null) {
             mText = textVal;
         }
-//
-//        var text = styleAttrs.getString(0)
-//        mText = text.toString()
     }
 
     //
     // Layout Routines
     //
     private fun calcTextSizeInPixels() : Float {
-
         val scaledSizeInPixels: Float = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
                 mTextSizeSp, resources.displayMetrics)
 
         return scaledSizeInPixels;
     }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         var padLeft = getPaddingLeft()
         var padRight = getPaddingRight()
@@ -155,7 +142,22 @@ class DrumPad: View {
         } else {
             mPaint.setColor(mUpColor)
         }
-        canvas.drawRect(mDrawRect, mPaint)
+
+        when (mDisplayFlags and DISPLAY_MASK) {
+            DISPLAY_RECT -> canvas.drawRect(mDrawRect, mPaint)
+
+            DISPLAY_CIRCLE -> run {
+                var midX = mDrawRect.left + mDrawRect.width() / 2.0f
+                var midY = mDrawRect.top + mDrawRect.height() / 2.0f
+                var radius = minOf(mDrawRect.height() / 2.0f, mDrawRect.width() / 2.0f)
+                canvas.drawCircle(midX, midY, radius - 5.0f, mPaint)
+            }
+
+            DISPLAY_ROUNDRECT -> run {
+                var rad = minOf(mDrawRect.width() / 8.0f, mDrawRect.height() / 8.0f)
+                canvas.drawRoundRect(mDrawRect, rad, rad, mPaint)
+            }
+        }
 
         // Text
         val midX = mDrawRect.width() / 2
@@ -175,14 +177,15 @@ class DrumPad: View {
         val action = event.getActionMasked()
         when (action) {
             MotionEvent.ACTION_DOWN -> {
-                trigger()
                 mIsDown = true;
+                triggerDown()
                 invalidate()
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
                 mIsDown = false;
+                triggerUp()
                 invalidate()
                 return true
             }
@@ -194,19 +197,19 @@ class DrumPad: View {
     //
     // Event Listeners
     //
-    interface DrumPadTriggerListener {
-        fun trigger(pad: DrumPad)
-    }
-
-    var mListeners = ArrayList<DrumPadTriggerListener>()
-
     fun addListener(listener: DrumPadTriggerListener) {
         mListeners.add(listener)
     }
 
-    fun trigger() {
+    fun triggerDown() {
         for( listener in mListeners) {
-            listener.trigger(this)
+            listener.triggerDown(this)
+        }
+    }
+
+    fun triggerUp() {
+        for( listener in mListeners) {
+            listener.triggerUp(this)
         }
     }
 }

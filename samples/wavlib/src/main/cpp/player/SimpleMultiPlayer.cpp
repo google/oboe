@@ -80,6 +80,23 @@ bool SimpleMultiPlayer::openStream(int channelCount, int sampleRate) {
     return true;
 }
 
+void SimpleMultiPlayer::deinit() {
+    // tear down the player
+    if (mAudioStream != nullptr) {
+        mAudioStream->stop();
+        delete mAudioStream;
+        mAudioStream = nullptr;
+    }
+
+    // Unload the samples
+    for (int bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
+        mSampleBuffers[bufferIndex].unloadSampleData();
+    }
+    delete[] mSampleBuffers;
+    mSampleBuffers = nullptr;
+    mNumSampleBuffers = 0;
+}
+
 void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index) {
     MemInputStream stream(dataBytes, dataLen);
 
@@ -91,12 +108,12 @@ void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, in
 
 void SimpleMultiPlayer::triggerDown(int index) {
     if (index < mNumSampleBuffers) {
-        mSampleBuffers[index].play();
+        mSampleBuffers[index].setPlayMode();
     }
 }
 
 void SimpleMultiPlayer::triggerUp(int index) {
     if (index < mNumSampleBuffers) {
-        mSampleBuffers[index].stop();
+        mSampleBuffers[index].setStopMode();
     }
 }

@@ -37,7 +37,7 @@ add_library(drumthumper SHARED
         ${APP_SOURCES}
         )
 
-# Specify the libraries needed for hello-oboe
+# Specify the libraries needed for DrumThumper
 target_link_libraries(drumthumper android log)
 
 # Enable optimization flags: if having problems with source level debugging,
