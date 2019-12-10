@@ -19,6 +19,7 @@
 
 #include <dlfcn.h>
 #include <jni.h>
+#include <sys/system_properties.h>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -78,6 +79,18 @@ typedef struct AAudioStreamStruct         AAudioStream;
  */
 class AAudioExtensions {
 public:
+    AAudioExtensions() {
+        int32_t policy = getIntegerProperty("aaudio.mmap_policy", 0);
+        mMMapSupported = (policy == AAUDIO_POLICY_AUTO || policy == AAUDIO_POLICY_ALWAYS);
+
+        policy = getIntegerProperty("aaudio.mmap_exclusive_policy", 0);
+        mMMapExclusiveSupported = isPolicyEnabled(policy);
+    }
+
+    static bool isPolicyEnabled(int32_t policy) {
+        return (policy == AAUDIO_POLICY_AUTO || policy == AAUDIO_POLICY_ALWAYS);
+    }
+
     static AAudioExtensions &getInstance() {
         static AAudioExtensions instance;
         return instance;
@@ -96,12 +109,16 @@ public:
 
     bool isMMapEnabled() {
         if (!loadLibrary()) return false;
-        return mAAudio_getMMapPolicy() != AAUDIO_POLICY_NEVER;
+        int32_t policy = mAAudio_getMMapPolicy();
+        return isPolicyEnabled(policy);
     }
 
     bool isMMapSupported() {
-        if (!loadLibrary()) return false;
         return mMMapSupported;
+    }
+
+    bool isMMapExclusiveSupported() {
+        return mMMapExclusiveSupported;
     }
 
 private:
@@ -113,55 +130,56 @@ private:
     };
     typedef int32_t aaudio_policy_t;
 
+    int getIntegerProperty(const char *name, int defaultValue) {
+        int result = defaultValue;
+        char valueText[PROP_VALUE_MAX] = {0};
+        if (__system_property_get(name, valueText) != 0) {
+            result = atoi(valueText);
+        }
+        return result;
+    }
+
     // return true if it succeeds
     bool loadLibrary() {
         if (mFirstTime) {
             mFirstTime = false;
             mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
             if (mLibHandle == nullptr) {
-                LOGI("%s() could not find "
-                             LIB_AAUDIO_NAME, __func__);
+                LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
                 return false;
             }
 
             mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
                     dlsym(mLibHandle, FUNCTION_IS_MMAP);
-
             if (mAAudioStream_isMMap == nullptr) {
-                LOGI("%s() could not find "
-                             FUNCTION_IS_MMAP, __func__);
+                LOGI("%s() could not find " FUNCTION_IS_MMAP, __func__);
                 return false;
             }
 
             mAAudio_setMMapPolicy = (int32_t (*)(aaudio_policy_t policy))
                     dlsym(mLibHandle, FUNCTION_SET_MMAP_POLICY);
-
             if (mAAudio_setMMapPolicy == nullptr) {
-                LOGI("%s() could not find "
-                             FUNCTION_SET_MMAP_POLICY, __func__);
+                LOGI("%s() could not find " FUNCTION_SET_MMAP_POLICY, __func__);
                 return false;
             }
 
             mAAudio_getMMapPolicy = (aaudio_policy_t (*)())
                     dlsym(mLibHandle, FUNCTION_GET_MMAP_POLICY);
-
             if (mAAudio_getMMapPolicy == nullptr) {
-                LOGI("%s() could not find "
-                             FUNCTION_GET_MMAP_POLICY, __func__);
+                LOGI("%s() could not find " FUNCTION_GET_MMAP_POLICY, __func__);
                 return false;
             }
-
-            mMMapSupported = isMMapEnabled(); // still supported even if disabled later
         }
         return true;
     }
 
-    bool     mFirstTime = true;
+    bool      mFirstTime = true;
     void     *mLibHandle = nullptr;
     bool    (*mAAudioStream_isMMap)(AAudioStream *stream) = nullptr;
     int32_t (*mAAudio_setMMapPolicy)(aaudio_policy_t policy) = nullptr;
     aaudio_policy_t (*mAAudio_getMMapPolicy)() = nullptr;
     bool      mMMapSupported = false;
+    bool      mMMapExclusiveSupported = false;
 };
 
 /**
