@@ -81,7 +81,7 @@ class AAudioExtensions {
 public:
     AAudioExtensions() {
         int32_t policy = getIntegerProperty("aaudio.mmap_policy", 0);
-        mMMapSupported = (policy == AAUDIO_POLICY_AUTO || policy == AAUDIO_POLICY_ALWAYS);
+        mMMapSupported = isPolicyEnabled(policy);
 
         policy = getIntegerProperty("aaudio.mmap_exclusive_policy", 0);
         mMMapExclusiveSupported = isPolicyEnabled(policy);
