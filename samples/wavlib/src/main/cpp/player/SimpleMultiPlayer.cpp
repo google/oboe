@@ -27,10 +27,7 @@ using namespace wavlib;
 
 constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
-SimpleMultiPlayer::SimpleMultiPlayer(int numSampleBuffers, int channelCount, int sampleRate) {
-    mSampleBuffers = new OneShotSampleBuffer[mNumSampleBuffers = numSampleBuffers];
-    openStream(channelCount, sampleRate);
-}
+SimpleMultiPlayer::SimpleMultiPlayer() {}
 
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
         int32_t numFrames) {
@@ -80,7 +77,12 @@ bool SimpleMultiPlayer::openStream(int channelCount, int sampleRate) {
     return true;
 }
 
-void SimpleMultiPlayer::deinit() {
+void SimpleMultiPlayer::setupAudioStream(int numSampleBuffers, int channelCount, int sampleRate) {
+    mSampleBuffers = new OneShotSampleBuffer[mNumSampleBuffers = numSampleBuffers];
+    openStream(channelCount, sampleRate);
+}
+
+void SimpleMultiPlayer::teardownAudioStream() {
     // tear down the player
     if (mAudioStream != nullptr) {
         mAudioStream->stop();
@@ -89,12 +91,7 @@ void SimpleMultiPlayer::deinit() {
     }
 
     // Unload the samples
-    for (int bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleBuffers[bufferIndex].unloadSampleData();
-    }
-    delete[] mSampleBuffers;
-    mSampleBuffers = nullptr;
-    mNumSampleBuffers = 0;
+    unloadSampleData();
 }
 
 void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index) {
@@ -104,6 +101,15 @@ void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, in
     reader.parse();
 
     mSampleBuffers[index].loadSampleData(&reader);
+}
+
+void SimpleMultiPlayer::unloadSampleData() {
+    for (int bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
+        mSampleBuffers[bufferIndex].unloadSampleData();
+    }
+    delete[] mSampleBuffers;
+    mSampleBuffers = nullptr;
+    mNumSampleBuffers = 0;
 }
 
 void SimpleMultiPlayer::triggerDown(int index) {

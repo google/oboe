@@ -30,43 +30,54 @@
 
 static const char* TAG = "DrumPlayerJNI";
 
+// JNI functions are "C" calling convention
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 using namespace wavlib;
 
-static SimpleMultiPlayer* sDTPlayer = nullptr;
+static SimpleMultiPlayer sDTPlayer;
 
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_initNative(
+/**
+ * Native (JNI) implementation of DrumPlayer.setupAudioStreamNative()
+ */
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_setupAudioStreamNative(
         JNIEnv* env, jobject, jint numSampleBuffers, jint numChannels, jint sampleRate) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
 
     // we know in this case that the sample buffers are all 1-channel, 41K
-    sDTPlayer = new SimpleMultiPlayer(numSampleBuffers, numChannels, sampleRate);
+    sDTPlayer.setupAudioStream(numSampleBuffers, numChannels, sampleRate);
 }
 
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_deinitNative(
+/**
+ * Native (JNI) implementation of DrumPlayer.teardownAudioStreamNative()
+ */
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_teardownAudioStreamNative(
         JNIEnv* env, jobject, jint numSampleBuffers, jint numChannels, jint sampleRate) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "deinit()");
 
     // we know in this case that the sample buffers are all 1-channel, 41K
-    sDTPlayer->deinit();
-    delete sDTPlayer;
-    sDTPlayer = nullptr;
+    sDTPlayer.teardownAudioStream();
 }
 
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
-    sDTPlayer->triggerDown(index);
-}
-
+/**
+ * Native (JNI) implementation of DrumPlayer.loadWavAssetNative()
+ */
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index) {
     int len = env->GetArrayLength (bytearray);
 
     unsigned char* buf = new unsigned char[len];
     env->GetByteArrayRegion (bytearray, 0, len, reinterpret_cast<jbyte*>(buf));
-    sDTPlayer->loadSampleDataFromAsset(buf, len, index);
+    sDTPlayer.loadSampleDataFromAsset(buf, len, index);
     delete[] buf;
+}
+
+/**
+ * Native (JNI) implementation of DrumPlayer.trigger()
+ */
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
+    sDTPlayer.triggerDown(index);
 }
 
 #ifdef __cplusplus

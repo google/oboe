@@ -43,11 +43,11 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
 }
 
 int WavStreamReader::getSampleEncoding() {
-    if (mFmtChunk->mFormatId == WavFmtChunkHeader::ENCODING_PCM) {
+    if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
         return mFmtChunk->mSampleSize == 8
                ? AudioEncoding::PCM_8
                : AudioEncoding::PCM_16;
-    } else if (mFmtChunk->mFormatId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
+    } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
         return AudioEncoding::PCM_IEEEFLOAT;
     }
 

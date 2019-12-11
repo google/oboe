@@ -22,7 +22,7 @@ namespace wavlib {
 
 class InputStream;
 
-/*
+/**
  * Superclass for all RIFF chunks. Handles the chunk ID and chunk size.
  * Concrete subclasses include chunks for 'RIFF' and 'fmt ' chunks.
  */
@@ -37,7 +37,7 @@ public:
 
     WavChunkHeader(RiffID chunkId) : mChunkId(chunkId), mChunkSize(0) {}
 
-    /*
+    /**
      * Reads the contents of the chunk. In this class, just the ID and size fields.
      * When implemented in a concrete subclass, that implementation MUST call this (super) method
      * as the first step. It may then read the fields specific to that chunk type.

@@ -17,41 +17,20 @@ package com.google.oboe.sample.drumthumper
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 
-/*
-======== onCreate() ========
-======== onStart() ========
-======== onResume() ========
-<---- Rotate Starts Here --->
-======== onPause() ========
-======== onStop() ========
-<---- Rotate Ends Here --->
-
-======== onCreate() ========
-======== onStart() ========
-======== onResume() ========
-<---- Rotate Starts Here --->
-======== onPause() ========
-======== onStop() ========
-<---- Rotate Ends Here --->
-
-======== onCreate() ========
-======== onStart() ========
-======== onResume() ========
- */
 class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
     private val TAG = "DrumThumperActivity"
 
     private var mDrumPlayer = DrumPlayer()
 
     init {
+        // Load the library containing the a native code inxlusinf rhw JNI  functions
         System.loadLibrary("drumthumper")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mDrumPlayer.init();
+        mDrumPlayer.setupAudioStream();
         mDrumPlayer.loadWavAssets(getAssets())
     }
 
@@ -61,6 +40,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onResume() {
         super.onResume()
+
         setContentView(R.layout.drumthumper_activity)
 
         // hookup the UI
@@ -115,13 +95,14 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onDestroy() {
         super.onDestroy()
-        mDrumPlayer.deinit();
+        mDrumPlayer.teardownAudioStream();
     }
 
     //
     // DrumPad.DrumPadTriggerListener
     //
     override fun triggerDown(pad: TriggerPad) {
+        // trigger the sound based on the pad
         when (pad.id) {
             R.id.kickPad -> mDrumPlayer.trigger(DrumPlayer.BASSDRUM)
             R.id.snarePad -> mDrumPlayer.trigger(DrumPlayer.SNAREDRUM)

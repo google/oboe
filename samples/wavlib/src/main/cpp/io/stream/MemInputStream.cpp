@@ -20,8 +20,8 @@
 
 namespace wavlib {
 
-long MemInputStream::read(void *buff, long numBytes) {
-    long numAvail = mBufferLen - mPos;
+int32_t MemInputStream::read(void *buff, int32_t numBytes) {
+    int32_t numAvail = mBufferLen - mPos;
     numBytes = std::min(numBytes, numAvail);
 
     memcpy(buff, mBuffer + mPos, numBytes);
@@ -29,25 +29,25 @@ long MemInputStream::read(void *buff, long numBytes) {
     return numBytes;
 }
 
-long MemInputStream::peek(void *buff, long numBytes) {
-    long numAvail = mBufferLen - mPos;
+int32_t MemInputStream::peek(void *buff, int32_t numBytes) {
+    int32_t numAvail = mBufferLen - mPos;
     numBytes = std::min(numBytes, numAvail);
     memcpy(buff, mBuffer + mPos, numBytes);
     return numBytes;
 }
 
-void MemInputStream::advance(long numBytes) {
+void MemInputStream::advance(int32_t numBytes) {
     if (numBytes > 0) {
-        long numAvail = mBufferLen - mPos;
+        int32_t numAvail = mBufferLen - mPos;
         mPos += std::min(numAvail, numBytes);
     }
 }
 
-long MemInputStream::getPos() {
+int32_t MemInputStream::getPos() {
     return mPos;
 }
 
-void MemInputStream::setPos(long pos) {
+void MemInputStream::setPos(int32_t pos) {
     if (pos > 0) {
         if (pos < mBufferLen) {
             mPos = pos;

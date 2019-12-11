@@ -115,7 +115,7 @@ public class SimpleAudioOutput {
     }
 
     /**
-     * Create an audio track then call playKickDrum().
+     * Create an audio track then call play().
      */
     public void start(int framesPerBlock) {
         stop();
