@@ -21,7 +21,7 @@
 
 namespace wavlib {
 
-/*
+/**
  * Defines an interface for audio data provided to a player object.
  * Concrete examples include OneShotSampleBuffer. One could imagine a LoopingSampleBuffer.
  */

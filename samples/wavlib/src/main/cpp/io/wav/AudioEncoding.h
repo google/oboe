@@ -18,7 +18,7 @@
 
 namespace wavlib {
 
-/*
+/**
  * Definitions for Audio Encodings in WAV files.
  */
 class AudioEncoding {

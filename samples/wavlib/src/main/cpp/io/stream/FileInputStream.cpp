@@ -19,27 +19,27 @@
 
 namespace wavlib {
 
-long FileInputStream::read(void *buff, long numBytes) {
+int32_t FileInputStream::read(void *buff, int32_t numBytes) {
     return ::read(mFH, buff, numBytes);
 }
 
-long FileInputStream::peek(void *buff, long numBytes) {
-    long numRead = ::read(mFH, buff, numBytes);
+int32_t FileInputStream::peek(void *buff, int32_t numBytes) {
+    int32_t numRead = ::read(mFH, buff, numBytes);
     ::lseek(mFH, -numBytes, SEEK_CUR);
     return numRead;
 }
 
-void FileInputStream::advance(long numBytes) {
+void FileInputStream::advance(int32_t numBytes) {
     if (numBytes > 0) {
         ::lseek(mFH, numBytes, SEEK_CUR);
     }
 }
 
-long FileInputStream::getPos() {
+int32_t FileInputStream::getPos() {
     return ::lseek(mFH, 0L, SEEK_CUR);
 }
 
-void FileInputStream::setPos(long pos) {
+void FileInputStream::setPos(int32_t pos) {
     if (pos > 0) {
         ::lseek(mFH, pos, SEEK_SET);
     }

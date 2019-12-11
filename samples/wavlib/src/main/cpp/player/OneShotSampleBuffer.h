@@ -23,6 +23,9 @@ namespace wavlib {
 
 class WavStreamReader;
 
+/**
+ * Provides audio data which will play through once when triggered
+ */
 class OneShotSampleBuffer: public SampleBuffer {
 public:
     OneShotSampleBuffer() : SampleBuffer() {};

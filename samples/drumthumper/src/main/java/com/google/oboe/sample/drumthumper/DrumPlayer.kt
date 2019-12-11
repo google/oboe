@@ -40,12 +40,12 @@ public class DrumPlayer {
         val TAG: String = "DrumPlayer"
     }
 
-    fun init() {
-        initNative(NUM_SAMPLES, NUM_CHANNELS, SAMPLE_RATE)
+    fun setupAudioStream() {
+        setupAudioStreamNative(NUM_SAMPLES, NUM_CHANNELS, SAMPLE_RATE)
     }
 
-    fun deinit() {
-        deinitNative()
+    fun teardownAudioStream() {
+        teardownAudioStreamNative()
     }
 
     // asset-based samples
@@ -74,8 +74,8 @@ public class DrumPlayer {
         }
     }
 
-    external fun initNative(numSampleBuffers: Int, numChannels: Int, sampleRate: Int)
-    external fun deinitNative()
+    external fun setupAudioStreamNative(numSampleBuffers: Int, numChannels: Int, sampleRate: Int)
+    external fun teardownAudioStreamNative()
 
     external fun loadWavAssetNative(wavBytes: ByteArray, index: Int)
 

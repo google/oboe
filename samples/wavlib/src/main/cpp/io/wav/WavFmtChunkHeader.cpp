@@ -26,7 +26,7 @@ namespace wavlib {
 const RiffID WavFmtChunkHeader::RIFFID_FMT = makeRiffID('f', 'm', 't', ' ');
 
 WavFmtChunkHeader::WavFmtChunkHeader() : WavChunkHeader(RIFFID_FMT) {
-    mFormatId = ENCODING_PCM;
+    mEncodingId = ENCODING_PCM;
     mNumChannels = 0;
     mSampleRate = 0;
     mAveBytesPerSecond = 0;
@@ -36,7 +36,7 @@ WavFmtChunkHeader::WavFmtChunkHeader() : WavChunkHeader(RIFFID_FMT) {
 }
 
 WavFmtChunkHeader::WavFmtChunkHeader(RiffID tag) : WavChunkHeader(tag) {
-    mFormatId = ENCODING_PCM;
+    mEncodingId = ENCODING_PCM;
     mNumChannels = 0;
     mSampleRate = 0;
     mAveBytesPerSecond = 0;
@@ -46,7 +46,7 @@ WavFmtChunkHeader::WavFmtChunkHeader(RiffID tag) : WavChunkHeader(tag) {
 }
 
 void WavFmtChunkHeader::normalize() {
-    if (mFormatId == ENCODING_PCM || mFormatId == ENCODING_IEEE_FLOAT) {
+    if (mEncodingId == ENCODING_PCM || mEncodingId == ENCODING_IEEE_FLOAT) {
         mBlockAlign = (short) (mNumChannels * (mSampleSize / 8));
         mAveBytesPerSecond = mSampleRate * mBlockAlign;
         mExtraBytes = 0;
@@ -57,14 +57,14 @@ void WavFmtChunkHeader::normalize() {
 
 void WavFmtChunkHeader::read(InputStream *stream) {
     WavChunkHeader::read(stream);
-    stream->read(&mFormatId, sizeof(mFormatId));
+    stream->read(&mEncodingId, sizeof(mEncodingId));
     stream->read(&mNumChannels, sizeof(mNumChannels));
     stream->read(&mSampleRate, sizeof(mSampleRate));
     stream->read(&mAveBytesPerSecond, sizeof(mAveBytesPerSecond));
     stream->read(&mBlockAlign, sizeof(mBlockAlign));
     stream->read(&mSampleSize, sizeof(mSampleSize));
 
-    if (mFormatId != ENCODING_PCM && mFormatId != ENCODING_IEEE_FLOAT) {
+    if (mEncodingId != ENCODING_PCM && mEncodingId != ENCODING_IEEE_FLOAT) {
         // only read this if NOT PCM
         stream->read(&mExtraBytes, sizeof(mExtraBytes));
     } else {

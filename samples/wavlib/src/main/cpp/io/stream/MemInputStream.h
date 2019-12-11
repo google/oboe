@@ -20,25 +20,34 @@
 
 namespace wavlib {
 
+/**
+ * A concrete implementation of InputStream for a memory buffer data source
+ */
 class MemInputStream : public InputStream {
 public:
-    MemInputStream(unsigned char *buff, long len) : mBuffer(buff), mPos(0), mBufferLen(len) {}
+    /** constructor. Caller is presumed to have allocated and filled the memory buffer */
+    MemInputStream(unsigned char *buff, int32_t len) : mBuffer(buff), mPos(0), mBufferLen(len) {}
     virtual ~MemInputStream() {}
 
-    virtual long read(void *buff, long numBytes);
+    virtual int32_t read(void *buff, int32_t numBytes);
 
-    virtual long peek(void *buff, long numBytes);
+    virtual int32_t peek(void *buff, int32_t numBytes);
 
-    virtual void advance(long numBytes);
+    virtual void advance(int32_t numBytes);
 
-    virtual long getPos();
+    virtual int32_t getPos();
 
-    virtual void setPos(long pos);
+    virtual void setPos(int32_t pos);
 
 private:
+    /** Points to the data buffer to stream from. */
     unsigned char *mBuffer;
-    long mPos;
-    long mBufferLen;
+
+    /** Total number of bytes in the memory buffer */
+    int32_t mBufferLen;
+
+    /** The index of the next byte to read */
+    int32_t mPos;
 };
 
 } // namespace wavlib

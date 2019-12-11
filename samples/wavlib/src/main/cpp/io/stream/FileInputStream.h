@@ -20,22 +20,27 @@
 
 namespace wavlib {
 
+/**
+ * A concrete implementation of InputStream for a file data source
+ */
 class FileInputStream : public InputStream {
 public:
+    /** constructor. Caller is presumed to have opened the file with (at least) read permission */
     FileInputStream(int fh) : mFH(fh) {}
     virtual ~FileInputStream() {}
 
-    virtual long read(void *buff, long numBytes);
+    virtual int32_t read(void *buff, int32_t numBytes);
 
-    virtual long peek(void *buff, long numBytes);
+    virtual int32_t peek(void *buff, int32_t numBytes);
 
-    virtual void advance(long numBytes);
+    virtual void advance(int32_t numBytes);
 
-    virtual long getPos();
+    virtual int32_t getPos();
 
-    virtual void setPos(long pos);
+    virtual void setPos(int32_t pos);
 
 private:
+    /** File handle of the data file to read from */
     int mFH;
 };
 

@@ -24,22 +24,24 @@
 using namespace oboe;
 using namespace wavlib;
 
-/*
+/**
  * A simple streaming player for multiple SampleBuffers.
  */
 class SimpleMultiPlayer : public AudioStreamCallback  {
 public:
-    SimpleMultiPlayer(int numSampleBuffers, int channelCount, int sampleRate);
+    SimpleMultiPlayer();
 
     // Inherited from oboe::AudioStreamCallback
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData,
             int32_t numFrames) override;
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
 
-    void deinit();
+    void setupAudioStream(int numSampleBuffers, int channelCount, int sampleRate);
+    void teardownAudioStream();
 
     // Wave Sample Loading...
     void loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index);
+    void unloadSampleData();
 
     void triggerDown(int index);
     void triggerUp(int index);

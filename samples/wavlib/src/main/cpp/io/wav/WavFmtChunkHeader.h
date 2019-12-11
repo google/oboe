@@ -22,6 +22,9 @@ class InputStream;
 
 namespace wavlib {
 
+/**
+ * Encapsulates a WAV file 'fmt ' chunk.
+ */
 class WavFmtChunkHeader : public WavChunkHeader {
 public:
     static const RiffID RIFFID_FMT;
@@ -31,7 +34,7 @@ public:
     static const short ENCODING_ADPCM = 2; // Microsoft ADPCM Format
     static const short ENCODING_IEEE_FLOAT = 3; // samples from -1.0 -> 1.0
 
-    RiffInt16 mFormatId;
+    RiffInt16 mEncodingId;  /** Microsoft WAV encoding ID (see above) */
     RiffInt16 mNumChannels;
     RiffInt32 mSampleRate;
     RiffInt32 mAveBytesPerSecond;
