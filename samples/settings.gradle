@@ -15,9 +15,10 @@
  *
  */
 
-include ':audio-device', ':drumthumper', ':wavlib'
+include ':audio-device'
 include ':hello-oboe'
 include ':RhythmGame'
 include ':MegaDrone'
 include ':LiveEffect'
-
+include ':drumthumper'
+include ':wavlib'
