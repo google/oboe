@@ -26,7 +26,8 @@ To build Oboe you'll need a compiler which supports C++14 and the Android header
 - [Getting started with Oboe](https://www.youtube.com/playlist?list=PLWz5rJ2EKKc_duWv9IPNvx9YBudNMmLSa)
 - [Low Latency Audio - Because Your Ears Are Worth It](https://www.youtube.com/watch?v=8vOf_fDtur4) (Android Dev Summit '18)
 - [Real-time audio with the 100 oscillator synthesizer](https://www.youtube.com/watch?v=J04iPJBkAKs) (DroidCon Berlin '18)
-- [Winning on Android](https://www.youtube.com/watch?v=tWBojmBpS74) (ADC '18) 
+- [Winning on Android](https://www.youtube.com/watch?v=tWBojmBpS74) - How to optimize an Android audio app. (ADC '18)
+- [Real-Time Processing on Android](https://youtu.be/hY9BrS2uX-c) (ADC '19)
 
 ## Sample code
 Sample apps can be found in the [samples directory](samples). Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
