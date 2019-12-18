@@ -57,7 +57,7 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_teardo
         JNIEnv* env, jobject, jint numSampleBuffers, jint numChannels, jint sampleRate) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "deinit()");
 
-    // we know in this case that the sample buffers are all 1-channel, 41K
+    // we know in this case that the sample buffers are all 1-channel, 44.1K
     sDTPlayer.teardownAudioStream();
 }
 

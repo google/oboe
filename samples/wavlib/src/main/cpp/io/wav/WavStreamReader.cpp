@@ -44,9 +44,20 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
 
 int WavStreamReader::getSampleEncoding() {
     if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
-        return mFmtChunk->mSampleSize == 8
-               ? AudioEncoding::PCM_8
-               : AudioEncoding::PCM_16;
+        switch (mFmtChunk->mSampleSize) {
+            case 8:
+                return AudioEncoding::PCM_8;
+
+            case 16:
+                return AudioEncoding::PCM_16;
+
+            case 24:
+                // TODO - Support 24-bit WAV data
+                return AudioEncoding::INVALID; // for now
+
+            default:
+                return AudioEncoding::INVALID;
+        }
     } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
         return AudioEncoding::PCM_IEEEFLOAT;
     }

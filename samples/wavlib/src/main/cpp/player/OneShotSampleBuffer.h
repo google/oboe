@@ -34,7 +34,7 @@ public:
     void loadSampleData(WavStreamReader* reader);
     void unloadSampleData();
 
-    virtual void mixAudio(float* outBuff, int numFrames);
+    virtual void mixAudio(float* outBuff, int32_t numFrames);
 };
 
 } // namespace wavlib

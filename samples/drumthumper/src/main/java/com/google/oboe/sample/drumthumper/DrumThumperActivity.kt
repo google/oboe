@@ -24,14 +24,12 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     private var mDrumPlayer = DrumPlayer()
 
     init {
-        // Load the library containing the a native code inxlusinf rhw JNI  functions
+        // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mDrumPlayer.setupAudioStream();
-        mDrumPlayer.loadWavAssets(getAssets())
     }
 
     override fun onStart() {
@@ -83,10 +81,15 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             var pad: TriggerPad = findViewById(R.id.crashPad)
             pad.addListener(this)
         }
+
+        mDrumPlayer.setupAudioStream()
+        mDrumPlayer.loadWavAssets(getAssets())
     }
 
     override fun onPause() {
         super.onPause()
+
+        mDrumPlayer.teardownAudioStream()
     }
 
     override fun onStop() {
@@ -95,7 +98,6 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onDestroy() {
         super.onDestroy()
-        mDrumPlayer.teardownAudioStream();
     }
 
     //

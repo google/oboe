@@ -43,8 +43,8 @@ void OneShotSampleBuffer::unloadSampleData() {
     mIsPlaying = false;
 }
 
-void OneShotSampleBuffer::mixAudio(float* outBuff, int numFrames) {
-    int numWriteFrames = mIsPlaying
+void OneShotSampleBuffer::mixAudio(float* outBuff, int32_t numFrames) {
+    int32_t numWriteFrames = mIsPlaying
                          ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
                          : 0;
 

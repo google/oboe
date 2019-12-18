@@ -36,23 +36,23 @@ public:
             int32_t numFrames) override;
     void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
 
-    void setupAudioStream(int numSampleBuffers, int channelCount, int sampleRate);
+    void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();
 
     // Wave Sample Loading...
-    void loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index);
+    void loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index);
     void unloadSampleData();
 
-    void triggerDown(int index);
-    void triggerUp(int index);
+    void triggerDown(int32_t index);
+    void triggerUp(int32_t index);
 
 private:
     // Oboe Audio Stream
     AudioStream *mAudioStream { nullptr };
-    bool openStream(int channelCount, int sampleRate);
+    bool openStream(int32_t channelCount, int32_t sampleRate);
 
     // Sample Data
-    int mNumSampleBuffers;
+    int32_t mNumSampleBuffers;
     OneShotSampleBuffer* mSampleBuffers;
 };
 
