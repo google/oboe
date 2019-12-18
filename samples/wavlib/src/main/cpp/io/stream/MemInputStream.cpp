@@ -24,7 +24,7 @@ int32_t MemInputStream::read(void *buff, int32_t numBytes) {
     int32_t numAvail = mBufferLen - mPos;
     numBytes = std::min(numBytes, numAvail);
 
-    memcpy(buff, mBuffer + mPos, numBytes);
+    peek(buff, numBytes);
     mPos += numBytes;
     return numBytes;
 }

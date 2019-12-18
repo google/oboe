@@ -19,7 +19,7 @@ import android.content.res.AssetManager
 import android.util.Log
 import java.io.IOException
 
-public class DrumPlayer {
+class DrumPlayer {
     companion object {
         // Sample attributes
         val NUM_CHANNELS: Int = 1

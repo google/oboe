@@ -17,6 +17,8 @@
 #ifndef _PLAYER_SAMPLEBUFFER_
 #define _PLAYER_SAMPLEBUFFER_
 
+#include <cstdint>
+
 #include "DataSource.h"
 
 namespace wavlib {
@@ -46,8 +48,8 @@ protected:
     AudioProperties mProperties;
 
     float*  mSampleData;
-    int numSampleFrames;
-    int mCurFrameIndex;
+    int32_t numSampleFrames;
+    int32_t mCurFrameIndex;
 
     bool mIsPlaying;
 };

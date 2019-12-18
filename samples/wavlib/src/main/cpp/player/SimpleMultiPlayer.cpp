@@ -25,7 +25,7 @@ static const char* TAG = "SimpleMultiPlayer";
 
 using namespace wavlib;
 
-constexpr int kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
+constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
 SimpleMultiPlayer::SimpleMultiPlayer() {}
 
@@ -34,7 +34,7 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 
     memset(audioData, 0, numFrames * sizeof(float));
 
-    for(int index = 0; index < mNumSampleBuffers; index++) {
+    for(int32_t index = 0; index < mNumSampleBuffers; index++) {
         if (mSampleBuffers[index].isPlaying()) {
             mSampleBuffers[index].mixAudio((float*)audioData, numFrames);
         }
@@ -47,7 +47,7 @@ void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error)
 
 }
 
-bool SimpleMultiPlayer::openStream(int channelCount, int sampleRate) {
+bool SimpleMultiPlayer::openStream(int32_t channelCount, int32_t sampleRate) {
     // Create an audio stream
     AudioStreamBuilder builder;
     builder.setChannelCount(channelCount);
@@ -77,7 +77,8 @@ bool SimpleMultiPlayer::openStream(int channelCount, int sampleRate) {
     return true;
 }
 
-void SimpleMultiPlayer::setupAudioStream(int numSampleBuffers, int channelCount, int sampleRate) {
+void SimpleMultiPlayer::setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate) {
+
     mSampleBuffers = new OneShotSampleBuffer[mNumSampleBuffers = numSampleBuffers];
     openStream(channelCount, sampleRate);
 }
@@ -94,7 +95,7 @@ void SimpleMultiPlayer::teardownAudioStream() {
     unloadSampleData();
 }
 
-void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, int index) {
+void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index) {
     MemInputStream stream(dataBytes, dataLen);
 
     WavStreamReader reader(&stream);
@@ -104,7 +105,7 @@ void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int dataLen, in
 }
 
 void SimpleMultiPlayer::unloadSampleData() {
-    for (int bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
+    for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
         mSampleBuffers[bufferIndex].unloadSampleData();
     }
     delete[] mSampleBuffers;
@@ -112,13 +113,13 @@ void SimpleMultiPlayer::unloadSampleData() {
     mNumSampleBuffers = 0;
 }
 
-void SimpleMultiPlayer::triggerDown(int index) {
+void SimpleMultiPlayer::triggerDown(int32_t index) {
     if (index < mNumSampleBuffers) {
         mSampleBuffers[index].setPlayMode();
     }
 }
 
-void SimpleMultiPlayer::triggerUp(int index) {
+void SimpleMultiPlayer::triggerUp(int32_t index) {
     if (index < mNumSampleBuffers) {
         mSampleBuffers[index].setStopMode();
     }
