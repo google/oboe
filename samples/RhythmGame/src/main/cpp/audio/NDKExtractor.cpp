@@ -154,7 +154,7 @@ int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties
                 if (info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM){
                     LOGD("Reached end of decoding stream");
                     isDecoding = false;
-                } else {
+                } // else { // The following code needs to be executed also if end of stream has been reached. Otherwise last samples are not decoded.
                     // Valid index, acquire buffer
                     size_t outputSize;
                     uint8_t *outputBuffer = AMediaCodec_getOutputBuffer(codec, outputIndex, &outputSize);
@@ -169,7 +169,7 @@ int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties
                     memcpy(targetData + bytesWritten, outputBuffer, info.size);
                     bytesWritten+=info.size;
                     AMediaCodec_releaseOutputBuffer(codec, outputIndex, false);
-                }
+               // }
 
             } else {
 
