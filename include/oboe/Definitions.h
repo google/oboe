@@ -503,8 +503,8 @@ namespace oboe {
         }
 
         /**
-         * Test programs that want to reproduce bugs in AAudio or OpenSL ES
-         * that have workarounds in Oboe, can disable them by setting this false.\\\\
+         * Disable this when writing tests to reproduce bugs in AAudio or OpenSL ES
+         * that have workarounds in Oboe.
          * @param enabled
          */
         static void setWorkaroundsEnabled(bool enabled) {
