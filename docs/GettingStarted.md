@@ -69,7 +69,6 @@ Here's a complete example `CMakeLists.txt` file:
     target_link_libraries (native-lib log oboe)
 
 
-
 Now go to `Build->Refresh Linked C++ Projects` to have Android Studio index the Oboe library.
 
 Verify that your project builds correctly. If you have any issues building please [report them here](issues/new).
@@ -82,7 +81,6 @@ Include the Oboe header:
 
     #include <oboe/Oboe.h>
     
-
 Streams are built using an `AudioStreamBuilder`. Create one like this:
 
     oboe::AudioStreamBuilder builder;
@@ -95,7 +93,7 @@ Use the builder's set methods to set properties on the stream (you can read more
     builder.setFormat(oboe::AudioFormat::Float);
     builder.setChannelCount(oboe::ChannelCount::Mono);
 
-The builder's set methods can be easily chained:
+The builder's set methods return a pointer to the builder. So they can be easily chained:
 
 ```
 oboe::AudioStreamBuilder builder;
@@ -112,11 +110,12 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
         oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
             
-            // We requested AudioFormat::Float so we assume we got it. For production code always check what format
-	    // the stream has and cast to the appropriate type.
+            // We requested AudioFormat::Float so we assume we got it.
+            // For production code always check what format
+            // the stream has and cast to the appropriate type.
             auto *outputData = static_cast<float *>(audioData);
 	    
-            // Generate random numbers centered around zero.
+            // Generate random numbers (white noise) centered around zero.
             const float amplitude = 0.2f;
             for (int i = 0; i < numFrames; ++i){
                 outputData[i] = ((float)drand48() - 0.5f) * 2 * amplitude;
@@ -128,9 +127,12 @@ Define an `AudioStreamCallback` class to receive callbacks whenever the stream r
 
 You can find examples of how to play sound using digital synthesis and pre-recorded audio in the [code samples](../samples).
 
-Supply this callback class to the builder:
+Declare your callback somewhere that it won't get deleted while you are using it.
 
     MyCallback myCallback;
+
+Supply this callback class to the builder:
+
     builder.setCallback(&myCallback);
     
 Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
@@ -150,7 +152,8 @@ Check the result to make sure the stream was opened successfully. Oboe has a con
 Note that this sample code uses the [logging macros from here](https://github.com/googlesamples/android-audio-high-performance/blob/master/debug-utils/logging_macros.h).
 
 ## Playing audio
-Check the properties of the created stream. The **format** is one property which you should check. This will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback.
+Check the properties of the created stream. If you did not specify a channelCount, sampleRate, or format then you need to 
+query the stream to see what you got. The **format** property will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback. If you did specify any of those three properties then you will get what you requested.
 
     oboe::AudioFormat format = stream->getFormat();
     LOGI("AudioStream format is %s", oboe::convertToText(format));
@@ -163,7 +166,7 @@ At this point you should start receiving callbacks.
 
 To stop receiving callbacks call
     
-	    managedStream->requestStop();
+    managedStream->requestStop();
 
 ## Closing the stream
 It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from obtaining a low latency audio stream.
@@ -268,13 +271,13 @@ the stream is queried for information prior to being started (e.g. burst size),
 and started upon user input.
 For more examples on how to use `ManagedStream` look in the [samples](https://github.com/google/oboe/tree/master/samples) folder.
 
-
 ## Obtaining optimal latency
-One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations. On some devices (namely those which can only use OpenSL ES) the "native" sample rate and buffer size of the audio device must be supplied when the stream is opened.
+One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations.
+When a stream is opened using AAudio, the optimal rate will be chosen unless the app requests a specific rate. The framesPerBurst is also provided by AAudio.
 
-Oboe provides a convenient way of setting global default values so that the sample rate and buffer size do not have to be set each time an audio stream is created.
+But OpenSL ES cannot determine those values. So applications should query them using Java and then pass them to Oboe. They will be used for OpenSL ES streams on older devices.
 
-Here's a code sample showing how the default values for built-in devices can be passed to Oboe:
+Here's a code sample showing how to set these default values. 
 
 *MainActivity.java*
 
@@ -298,6 +301,8 @@ Here's a code sample showing how the default values for built-in devices can be 
 	    oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
 	    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 	}
+
+Note that the values from Java are for built-in audio devices. Peripheral devices, such as Bluetooth may need larger framesPerBurst.
 
 # Further information
 - [Code samples](https://github.com/google/oboe/tree/master/samples)
