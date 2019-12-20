@@ -45,15 +45,15 @@ class MainActivity : AppCompatActivity() {
 
     private var TAG: String = this.toString()
     lateinit var binding: ActivityMainBinding
-	private var isAudioEnabled: Boolean = false
+    private var isAudioEnabled: Boolean = false
 
     val MY_PERMISSIONS_RECORD_AUDIO = 17
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-		binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-		setSupportActionBar(binding.toolbar)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolbar)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             == PackageManager.PERMISSION_GRANTED
         ) {
             NativeInterface.createAudioEngine()
-			NativeInterface.enable(isAudioEnabled)
+            NativeInterface.enable(isAudioEnabled)
         }
     }
 
@@ -165,29 +165,29 @@ class MainActivity : AppCompatActivity() {
         }, Handler())
     }
 
-	override fun onCreateOptionsMenu(menu: Menu) : Boolean {
-    	// Inflate the menu; this adds items to the action bar if it is present.
-    	getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-    	return true
-	}
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
 
-	override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-		R.id.action_toggle_mute -> {
-			isAudioEnabled = !isAudioEnabled
-			NativeInterface.enable(isAudioEnabled)
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_toggle_mute -> {
+            isAudioEnabled = !isAudioEnabled
+            NativeInterface.enable(isAudioEnabled)
 
-			if (isAudioEnabled){
-				item.setIcon(R.drawable.ic_baseline_volume_off_24)
-			} else {
-				item.setIcon(R.drawable.ic_baseline_volume_up_24)
-			}
-			true
-		} else -> {
-			super.onOptionsItemSelected(item)
-		}
-	}
+            if (isAudioEnabled) {
+                item.setIcon(R.drawable.ic_baseline_volume_off_24)
+            } else {
+                item.setIcon(R.drawable.ic_baseline_volume_up_24)
+            }
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
+    }
 
-		@RequiresApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     class MyMidiReceiver(var seekBar: SeekBar) : MidiReceiver() {
 
         private val TAG: String = "MyMidiReceiver"
