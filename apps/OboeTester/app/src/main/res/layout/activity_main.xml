@@ -159,7 +159,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:checked="true"
+        android:checked="false"
         android:onClick="onEnableWorkarounds"
         android:text="enable Oboe workarounds"
         app:layout_constraintStart_toStartOf="@+id/setSpeakerphoneOn"

@@ -23,22 +23,27 @@ using namespace oboe;
 
 int32_t QuirksManager::DeviceQuirks::clipBufferSize(AudioStream &stream,
             int32_t requestedSize) {
-    // We are mainly concerned with Exclusive MMAP streams because they are using a timing
-    // model of the DSP to control IO instead of direct synchronization.
-    bool clippingEnabled = (OboeGlobals::areWorkaroundsEnabled()
-            && stream.getSharingMode() == SharingMode::Exclusive
-            && isMMapUsed(stream));
-    if (!clippingEnabled) {
+    if (!OboeGlobals::areWorkaroundsEnabled()) {
         return requestedSize;
+    }
+    int bottomMargin = kDefaultBottomMarginInBursts;
+    int topMargin = kDefaultTopMarginInBursts;
+    if (isMMapUsed(stream)) {
+        if (stream.getSharingMode() == SharingMode::Exclusive) {
+            bottomMargin = getExclusiveBottomMarginInBursts();
+            topMargin = getExclusiveTopMarginInBursts();
+        }
+    } else {
+        bottomMargin = kLegacyBottomMarginInBursts;
     }
 
     int32_t burst = stream.getFramesPerBurst();
-    int32_t minSize = getBottomMarginInBursts() * burst;
+    int32_t minSize = bottomMargin * burst;
     int32_t adjustedSize = requestedSize;
     if (adjustedSize < minSize ) {
         adjustedSize = minSize;
     } else {
-        int32_t maxSize = stream.getBufferCapacityInFrames() - (getTopMarginInBursts() * burst);
+        int32_t maxSize = stream.getBufferCapacityInFrames() - (topMargin * burst);
         if (adjustedSize > maxSize ) {
             adjustedSize = maxSize;
         }
@@ -55,12 +60,12 @@ public:
 
     virtual ~SamsungDeviceQuirks() = default;
 
-    int32_t getBottomMarginInBursts() const override {
+    int32_t getExclusiveBottomMarginInBursts() const override {
         // TODO Make this conditional on build version when MMAP timing improves.
         return isExynos ? kBottomMarginExynos : kBottomMarginOther;
     }
 
-    int32_t getTopMarginInBursts() const override {
+    int32_t getExclusiveTopMarginInBursts() const override {
         return kTopMargin;
     }
 

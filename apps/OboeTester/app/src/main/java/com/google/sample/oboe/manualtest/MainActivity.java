@@ -99,6 +99,7 @@ public class MainActivity extends Activity {
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
 
+
         saveIntentBundleForLaterProcessing(getIntent());
     }
 
@@ -144,6 +145,7 @@ public class MainActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
+        NativeEngine.setWorkaroundsEnabled(false);
         processBundleFromIntent();
     }
 

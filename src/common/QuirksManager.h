@@ -81,9 +81,23 @@ public:
          */
         int32_t clipBufferSize(AudioStream &stream, int32_t requestedSize);
 
-        virtual int32_t getBottomMarginInBursts() const { return 0; }
+        // Exclusive MMAP streams can have glitches because they are using a timing
+        // model of the DSP to control IO instead of direct synchronization.
+        virtual int32_t getExclusiveBottomMarginInBursts() const {
+            return kDefaultBottomMarginInBursts;
+        }
 
-        virtual int32_t getTopMarginInBursts() const { return 0; }
+        virtual int32_t getExclusiveTopMarginInBursts() const {
+            return kDefaultTopMarginInBursts;
+        }
+
+        static constexpr int32_t kDefaultBottomMarginInBursts = 0;
+        static constexpr int32_t kDefaultTopMarginInBursts = 0;
+
+        // For Legacy streams, do not let the buffer go below one burst.
+        // b/129545119 | AAudio Legacy allows setBufferSizeInFrames too low
+        // Fixed in Q
+        static constexpr int32_t kLegacyBottomMarginInBursts = 1;
     };
 
 private:

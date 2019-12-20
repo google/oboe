@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.sample.oboe.manualtest"
-    android:versionCode="29"
-    android:versionName="1.5.21">
+    android:versionCode="30"
+    android:versionName="1.5.22">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
 
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
