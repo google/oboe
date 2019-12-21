@@ -51,6 +51,7 @@ public class TestInputActivity  extends TestAudioActivity
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
     private InputMarginView mInputMarginView;
     private int mInputMarginBursts = 0;
+    private WorkloadView mWorkloadView;
 
     public native void setMinimumFramesBeforeRead(int frames);
     public native int saveWaveFile(String absolutePath);
@@ -80,6 +81,10 @@ public class TestInputActivity  extends TestAudioActivity
 
         mAudioInputTester = addAudioInputTester();
 
+        mWorkloadView = (WorkloadView) findViewById(R.id.workload_view);
+        if (mWorkloadView != null) {
+            mWorkloadView.setAudioStreamTester(mAudioInputTester);
+        }
     }
 
     @Override

@@ -24,8 +24,6 @@
 
 class OboeStreamCallbackProxy : public oboe::AudioStreamCallback {
 public:
-    OboeStreamCallbackProxy() {}
-    ~OboeStreamCallbackProxy();
 
     void setCallback(oboe::AudioStreamCallback *callback) {
         mCallback = callback;
@@ -56,7 +54,22 @@ public:
 
     void onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result error) override;
 
+    /**
+     * Specify the amount of artificial workload that will waste CPU cycles
+     * and increase the CPU load.
+     * @param workload typically ranges from 0.0 to 100.0
+     */
+    void setWorkload(double workload) {
+        mWorkload = std::max(0.0, workload);
+    }
+
+    double getWorkload() const {
+        return mWorkload;
+    }
+
 private:
+    static constexpr int32_t   kWorkloadScaler = 500;
+    double                     mWorkload = 0.0;
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
