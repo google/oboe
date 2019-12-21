@@ -158,7 +158,7 @@ public abstract class AudioStreamBase {
         return false;
     }
 
-    public void setAmplitude(double amplitude) {}
+    public void setWorkload(double workload) {}
 
     public abstract int getXRunCount();
 

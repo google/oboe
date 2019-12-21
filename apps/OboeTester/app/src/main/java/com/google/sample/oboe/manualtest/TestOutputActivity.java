@@ -26,7 +26,7 @@ import android.widget.Spinner;
 import java.io.IOException;
 
 /**
- * Base class for output test activities
+ * Test basic output.
  */
 public final class TestOutputActivity extends TestOutputActivityBase {
 

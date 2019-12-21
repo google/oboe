@@ -17,10 +17,30 @@
 #include "common/OboeDebug.h"
 #include "OboeStreamCallbackProxy.h"
 
-bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
-
-OboeStreamCallbackProxy::~OboeStreamCallbackProxy() {
+// Linear congruential random number generator.
+static uint32_t s_random16() {
+    static uint32_t seed = 1234;
+    seed = ((seed * 31421) + 6927) & 0x0FFFF;
+    return seed;
 }
+
+/**
+ * The random number generator is good for burning CPU because the compiler cannot
+ * easily optimize away the computation.
+ * @param workload number of times to execute the loop
+ * @return a white noise value between -1.0 and +1.0
+ */
+static float s_burnCPU(int32_t workload) {
+    uint32_t random = 0;
+    for (int32_t i = 0; i < workload; i++) {
+        for (int32_t j = 0; j < 10; j++) {
+            random = random ^ s_random16();
+        }
+    }
+    return (random - 32768) * (1.0 / 32768);
+}
+
+bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
 
 oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         oboe::AudioStream *audioStream,
@@ -30,6 +50,10 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     if (mCallbackReturnStop) {
         return oboe::DataCallbackResult::Stop;
     }
+
+    //
+    s_burnCPU((int32_t)(mWorkload * kWorkloadScaler * numFrames));
+
     if (mCallback != nullptr) {
         return mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
