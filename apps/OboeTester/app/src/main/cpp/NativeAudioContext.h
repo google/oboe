@@ -240,7 +240,10 @@ public:
         return stopAllStreams();
     }
 
-    virtual void setAmplitude(double amplitude) {}
+    void setWorkload(double workload) {
+        LOGD("ActivityContext::%s(%f)", __func__, workload);
+        oboeCallbackProxy.setWorkload(workload);
+    }
 
     virtual oboe::Result startPlayback() {
         return oboe::Result::OK;
@@ -416,15 +419,6 @@ public:
 
     void runBlockingIO() override;
 
-    void setAmplitude(double amplitude) override {
-        LOGD("%s(%f)", __func__, amplitude);
-        for (int i = 0; i < mChannelCount; i++) {
-            sineOscillators[i].amplitude.setValue(amplitude);
-            sawtoothOscillators[i].amplitude.setValue(amplitude);
-        }
-        impulseGenerator.amplitude.setValue(amplitude);
-    }
-
     void setChannelEnabled(int channelIndex, bool enabled) override;
 
     // WARNING - must match order in strings.xml and OboeAudioOutputStream.java
@@ -445,7 +439,6 @@ protected:
 
     std::vector<SineOscillator>      sineOscillators;
     std::vector<SawtoothOscillator>  sawtoothOscillators;
-    ImpulseOscillator                impulseGenerator;
     static constexpr float           kSweepPeriod = 10.0; // for triangle up and down
 
     // A triangle LFO is shaped into either a linear or an exponential range.
@@ -469,12 +462,6 @@ public:
     virtual ~ActivityTapToTone() = default;
 
     void configureForStart() override;
-
-    void setAmplitude(double amplitude) override {
-        LOGD("%s(%f)", __func__, amplitude);
-        ActivityTestOutput::setAmplitude(amplitude);
-        sawPingGenerator.amplitude.setValue(amplitude);
-    }
 
     virtual void setEnabled(bool enabled) override {
         sawPingGenerator.setEnabled(enabled);

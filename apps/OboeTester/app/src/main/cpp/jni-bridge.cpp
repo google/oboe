@@ -372,6 +372,12 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env, j
     return -1.0;
 }
 
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_setWorkload(
+        JNIEnv *env, jobject, jdouble workload) {
+    engine.getCurrentActivity()->setWorkload(workload);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_getState(JNIEnv *env, jobject instance, jint streamIndex) {
     oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
@@ -439,13 +445,6 @@ JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setToneType(
         JNIEnv *env, jobject, jint toneType) {
 // FIXME    engine.getCurrentActivity()->setToneType(toneType);
-}
-
-JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setAmplitude(
-        JNIEnv *env, jobject, jdouble amplitude) {
-    engine.getCurrentActivity()->setAmplitude(amplitude);
-
 }
 
 JNIEXPORT void JNICALL

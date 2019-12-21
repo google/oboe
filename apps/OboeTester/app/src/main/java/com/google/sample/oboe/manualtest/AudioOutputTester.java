@@ -50,10 +50,6 @@ public class AudioOutputTester extends AudioStreamTester {
         mOboeAudioOutputStream.setToneEnabled(flag);
     }
 
-    public void setAmplitude(double amplitude) {
-        mCurrentAudioStream.setAmplitude(amplitude);
-    }
-
     public void setChannelEnabled(int channelIndex, boolean enabled)  {
         mOboeAudioOutputStream.setChannelEnabled(channelIndex, enabled);
     }

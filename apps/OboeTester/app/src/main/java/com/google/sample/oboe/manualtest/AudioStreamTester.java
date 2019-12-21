@@ -45,4 +45,7 @@ class AudioStreamTester {
         mCurrentAudioStream.startPlayback();
     }
 
+    public void setWorkload(double workload) {
+        mCurrentAudioStream.setWorkload(workload);
+    }
 }
