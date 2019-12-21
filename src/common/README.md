@@ -16,7 +16,7 @@ From MultiChannelResampler.cpp, numTaps is
 
 For output, the device sampling rate is used, which is typically 48000.For input, the app sampling rate is used.
 
-2) The is a block size adapter  collects odd sized blocks into larger blocks of the correct size.
+2) There is a block size adapter that collects odd sized blocks into larger blocks of the correct size.
 
 The adapter contains one burst of frames, from getFramesPerBurst(). But if the app specifies a
 particular size using setFramesPerCallback() then that size will be used.
