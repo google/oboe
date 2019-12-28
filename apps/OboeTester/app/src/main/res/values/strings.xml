@@ -40,8 +40,11 @@
     <string-array name="sample_rates">
         <item>0</item>
         <item>8000</item>
+        <item>11025</item>
+        <item>12000</item>
         <item>16000</item>
         <item>22050</item>
+        <item>24000</item>
         <item>32000</item>
         <item>44100</item>
         <item>48000</item>
