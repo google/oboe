@@ -207,8 +207,9 @@ public class ManualGlitchActivity extends GlitchActivity {
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
 
-        text = bundle.getString(KEY_IN_PRESET,
-                StreamConfiguration.convertInputPresetToText(StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION));
+        String defaultText = StreamConfiguration.convertInputPresetToText(
+                StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
+        text = bundle.getString(KEY_IN_PRESET, defaultText);
         int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
         requestedInConfig.setInputPreset(inputPreset);
     }
