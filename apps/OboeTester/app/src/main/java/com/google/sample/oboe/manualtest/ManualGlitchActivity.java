@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
@@ -206,7 +207,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
 
-        text = bundle.getString(KEY_IN_PRESET, "VoiceRec");
+        text = bundle.getString(KEY_IN_PRESET,
+                StreamConfiguration.convertInputPresetToText(StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION));
         int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
         requestedInConfig.setInputPreset(inputPreset);
     }
