@@ -24,4 +24,6 @@ your project name and Play Store URL.
 | [SoundCloud](https://play.google.com/store/apps/details?id=com.soundcloud.android) | Music streaming app | SoundCloud | They [wrote an article](https://developers.soundcloud.com/blog/soundcloud-is-playing-the-oboe) about the integration |
 | [Mini Piano Lite](https://play.google.com/store/apps/details?id=umito.android.minipiano) | Piano keyboard | Umito | Using AAudio  |
 | Volcano Mobile apps | MIDI synthesizer apps: [FluidSynth](https://play.google.com/store/apps/details?id=net.volcanomobile.fluidsynthmidi), [OPL3 MIDI Synth FM](https://play.google.com/store/apps/details?id=net.volcanomobile.opl3midisynth), [MIDI Sequencer](https://play.google.com/store/apps/details?id=net.volcanomobile.midisequencer) | Volcano Mobile |  MIDI Sequencer app is very handy for testing. |
+| [BeatScratch Free](https://play.google.com/store/apps/details?id=com.jonlatane.beatpad.free) | 3-instrument MIDI controller, sequencer, and 5-part musical notepad | Jon Latané | Using FluidSynth's Oboe Driver  |
+| [BeatScratch](https://play.google.com/store/apps/details?id=com.jonlatane.beatpad) | 3-instrument MIDI controller, sequencer, and 8-part musical notepad | Jon Latané | Using FluidSynth's Oboe Driver  |
 
