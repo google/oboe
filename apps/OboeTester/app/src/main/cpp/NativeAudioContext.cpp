@@ -614,19 +614,24 @@ void ActivityTestDisconnect::close(int32_t streamIndex) {
 }
 
 void ActivityTestDisconnect::configureForStart() {
-    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-    sineOscillator = std::make_unique<SineOscillator>();
-    monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
-
     oboe::AudioStream *outputStream = getOutputStream();
-    sineOscillator->setSampleRate(outputStream->getSampleRate());
-    sineOscillator->frequency.setValue(440.0);
-    sineOscillator->amplitude.setValue(AMPLITUDE_SINE);
-    sineOscillator->output.connect(&(monoToMulti->input));
-    monoToMulti->output.connect(&(mSinkFloat->input));
-    // Clear framePosition in sine oscillators.
-    mSinkFloat->pullReset();
-    audioStreamGateway.setAudioSink(mSinkFloat);
+    oboe::AudioStream *inputStream = getInputStream();
+    if (outputStream) {
+        mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
+        sineOscillator = std::make_unique<SineOscillator>();
+        monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
+
+        sineOscillator->setSampleRate(outputStream->getSampleRate());
+        sineOscillator->frequency.setValue(440.0);
+        sineOscillator->amplitude.setValue(AMPLITUDE_SINE);
+        sineOscillator->output.connect(&(monoToMulti->input));
+        monoToMulti->output.connect(&(mSinkFloat->input));
+        // Clear framePosition in sine oscillators.
+        mSinkFloat->pullReset();
+        audioStreamGateway.setAudioSink(mSinkFloat);
+    } else if (inputStream) {
+        audioStreamGateway.setAudioSink(nullptr);
+    }
     oboeCallbackProxy.setCallback(&audioStreamGateway);
 }
 
