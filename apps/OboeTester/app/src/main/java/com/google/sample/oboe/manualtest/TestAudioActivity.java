@@ -206,6 +206,10 @@ abstract class TestAudioActivity extends Activity {
 
     abstract boolean isOutput();
 
+    public void clearStreamContexts() {
+        mStreamContexts.clear();
+    }
+
     public StreamContext addOutputStreamContext() {
         StreamContext streamContext = new StreamContext();
         streamContext.tester = AudioOutputTester.getInstance();
