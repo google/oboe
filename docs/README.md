@@ -7,5 +7,8 @@ Oboe documentation
 - [FAQs](FAQ.md)
 - [Full Guide to Oboe](FullGuide.md)
 - [Getting Started with Oboe](GettingStarted.md)
+- [Tech Notes](notes/)
+  - [Disconnected Streams](notes/disconnect.md)
+
 
 
