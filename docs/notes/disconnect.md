@@ -1,6 +1,6 @@
 [Oboe Docs Home](README.md)
 
-# Tech Note: Disconnecting Streams
+# Tech Note: Disconnected Streams
 
 When Oboe is using **OpenSL ES**, and a headset is plugged in or out, then OpenSL ES will automatically switch between devices.
 This is convenient but can cause problems because the new device may have different burst sizes and different latency.
@@ -19,7 +19,7 @@ An app may choose to reopen a stream in the onErrorAfterClose() method.
 The app should then stop() and close() the stream.
 An app may then choose to reopen a stream.
 
-## Bugs and Workarounds
+## Workaround for not Disconnecting Properly
 
 On some versions of Android the disconnect message does not reach AAudio and the app will not
 know that the device has changed.
