@@ -420,17 +420,19 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         mTestCount++;
     }
 
-    private void testConfiguration(int performanceMode,
+    private void testConfiguration(boolean isInput, int performanceMode,
                                    int sharingMode) throws InterruptedException {
         int channelCount = 2;
-        boolean isInput = true;
-        for (int i = 0; i < 2; i++) {
-            boolean requestPlugin = true; // plug IN
-            testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
-            requestPlugin = false; // UNplug
-            testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
-            isInput = false;
-        }
+        boolean requestPlugin = true; // plug IN
+        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
+        requestPlugin = false; // UNplug
+        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
+    }
+
+    private void testConfiguration(int performanceMode,
+                                   int sharingMode) throws InterruptedException {
+        testConfiguration(false, performanceMode, sharingMode);
+        testConfiguration(true, performanceMode, sharingMode);
     }
 
     @Override
