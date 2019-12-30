@@ -615,7 +615,16 @@ public:
     void close(int32_t streamIndex) override;
 
     oboe::Result startStreams() override {
-        return getOutputStream()->start();
+        oboe::AudioStream *outputStream = getOutputStream();
+        if (outputStream) {
+            return outputStream->start();
+        }
+
+        oboe::AudioStream *inputStream = getInputStream();
+        if (inputStream) {
+            return inputStream->start();
+        }
+        return oboe::Result::ErrorNull;
     }
 
     void configureForStart() override;
