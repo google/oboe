@@ -62,6 +62,8 @@ There are several optional parameters for the "glitch" test:
     --ei out_channels       {samples}    // number of output channels, default is 2
     --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
     --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
+                            // input preset, default is "voicerec"
+    --es in_preset          ("generic", "camcorder", "voicerec", "voicecomm", "unprocessed", "performance"}
     --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
     --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
 
