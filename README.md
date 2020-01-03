@@ -18,9 +18,10 @@ To build Oboe you'll need a compiler which supports C++14 and the Android header
 - [Getting Started Guide](docs/GettingStarted.md)
 - [Full Guide to Oboe](docs/FullGuide.md)
 - [API reference](https://google.github.io/oboe/reference)
+- [Tech Notes](docs/notes/)
 - [History of Audio features/bugs by Android version](docs/AndroidAudioHistory.md)
 - [Frequently Asked Questions](docs/FAQ.md) (FAQ)
-- [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment 
+- [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment.
 - [OboeTester app for measuring latency, glitches, etc.](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
 
 ## Videos
