@@ -22,7 +22,10 @@ An app may then choose to reopen a stream.
 ## Workaround for not Disconnecting Properly
 
 On some versions of Android the disconnect message does not reach AAudio and the app will not
-know that the device has changed.
+know that the device has changed. There is a "Test Disconnects" option in
+[OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
+that can be used to diagnose this problem.
+
 As a workaround you can listen for a Java Intent.HEADSET_PLUG, which is fired when a head set is plugged in or out.
 
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
