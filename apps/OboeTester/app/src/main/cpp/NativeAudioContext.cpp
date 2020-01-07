@@ -210,7 +210,8 @@ int ActivityContext::open(jint nativeApi,
     // Open a stream based on the builder settings.
     oboe::AudioStream *oboeStream = nullptr;
     oboe::Result result = builder.openStream(&oboeStream);
-    LOGD("ActivityContext::open() builder.openStream() returned %d", result);
+    LOGD("ActivityContext::open() builder.openStream() returned %d, oboeStream = %p",
+            result, oboeStream);
     AAudioExtensions::getInstance().setMMapEnabled(oldMMapEnabled);
     if (result != oboe::Result::OK) {
         delete oboeStream;
