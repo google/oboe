@@ -2,4 +2,5 @@
 
 # Oboe Tech Notes
 
+* [Using Audio Effects with Oboe](effects.md)
 * [Disconnected Streams](disconnect.md)
