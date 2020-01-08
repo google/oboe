@@ -34,7 +34,8 @@ public:
     // Inherited from oboe::AudioStreamCallback
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData,
             int32_t numFrames) override;
-    void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
+    virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
+    virtual void onErrorBeforeClose	(AudioStream * oboeStream, Result error) override;
 
     void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();

@@ -49,9 +49,11 @@ void OneShotSampleBuffer::mixAudio(float* outBuff, int32_t numFrames) {
                          : 0;
 
     if (numWriteFrames != 0) {
-        // Transfer samples
-        memcpy(outBuff, mSampleData + mCurFrameIndex, sizeof(float) * numWriteFrames);
-        mCurFrameIndex += numWriteFrames;
+        // Mix in the samples
+        int32_t lastIndex = mCurFrameIndex + numWriteFrames;
+        for(int32_t index = 0; index < numWriteFrames; index++) {
+            outBuff[index] += mSampleData[mCurFrameIndex++];
+        }
 
         if (mCurFrameIndex >= numSampleFrames) {
             mIsPlaying = false;

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <android/log.h>
+
 // wavlib includes
 #include <io/stream/MemInputStream.h>
 #include <io/wav/WavStreamReader.h>
@@ -32,6 +34,14 @@ SimpleMultiPlayer::SimpleMultiPlayer() {}
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
         int32_t numFrames) {
 
+    StreamState streamState = oboeStream->getState();
+    if (streamState != StreamState::Open && streamState != StreamState::Started) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "  streamState:%d", streamState);
+    }
+    if (streamState == StreamState::Disconnected) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "  streamState::Disconnected");
+    }
+
     memset(audioData, 0, numFrames * sizeof(float));
 
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {
@@ -44,10 +54,16 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 }
 
 void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "++++ onErrorAfterClose()");
+}
 
+void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "++++ onErrorBeforeClose()");
 }
 
 bool SimpleMultiPlayer::openStream(int32_t channelCount, int32_t sampleRate) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
+
     // Create an audio stream
     AudioStreamBuilder builder;
     builder.setChannelCount(channelCount);

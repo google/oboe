@@ -32,7 +32,7 @@ set (APP_SOURCES
         DrumPlayerJNI.cpp
         )
 
-# Build the libhello-oboe library
+# Build the drumthumper (native) library
 add_library(drumthumper SHARED
         ${APP_SOURCES}
         )

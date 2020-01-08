@@ -15,8 +15,14 @@
  */
 package com.google.oboe.sample.drumthumper
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
 
 class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
     private val TAG = "DrumThumperActivity"
@@ -28,6 +34,16 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         System.loadLibrary("drumthumper")
     }
 
+    // Receive a broadcast Intent when a headset is plugged in or unplugged.
+    public class PluginBroadcastReceiver : BroadcastReceiver() {
+        private val TAG = "PluginBroadcastReceiver"
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Close the stream if it was not disconnected.
+            Log.i(TAG, "")
+        }
+    }
+
+    private val mPluginReceiver: BroadcastReceiver = PluginBroadcastReceiver()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -38,6 +54,10 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onResume() {
         super.onResume()
+
+        // Connect/Disconnect workaround
+        val filter = IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        this.registerReceiver(mPluginReceiver, filter)
 
         setContentView(R.layout.drumthumper_activity)
 
@@ -87,9 +107,11 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     }
 
     override fun onPause() {
-        super.onPause()
+        unregisterReceiver(mPluginReceiver)
 
         mDrumPlayer.teardownAudioStream()
+        super.onPause()
+
     }
 
     override fun onStop() {
