@@ -2,7 +2,7 @@
 
 # Using Audio Effects with Oboe
 
-# Overview
+## Overview
 
 The Android Audio framework provides some effects processing that can be used by apps.
 It is available through the Java or Kotlin
@@ -10,10 +10,10 @@ It is available through the Java or Kotlin
 
 Another alternative is to do your own effects processing in your own app.
 
-### Reasons to Use the Android AudioEffect in the OS:
+### Reasons to use the Android AudioEffect in the OS:
 1. Functions are provided for you so they are easy to use.
 
-### Reasons to Do your own Effects Processing:
+### Reasons to do your own effects Processing:
 1. They will work on all versions of Android. The AudioEffects can only be used with Oboe on Android 9 (Pie) and above. They are not supported for OpenSL ES.
 2. You can customize the effects as needed.
 3. You can get lower latency when you use your own effects. Using Android AudioEffects prevents you from getting a low latency path.
