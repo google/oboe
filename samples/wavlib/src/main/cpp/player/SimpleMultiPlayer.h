@@ -50,7 +50,11 @@ public:
 private:
     // Oboe Audio Stream
     AudioStream *mAudioStream { nullptr };
-    bool openStream(int32_t channelCount, int32_t sampleRate);
+    bool openStream();
+
+    // Audio attributs
+    int32_t mChannelCount;
+    int32_t mSampleRate;
 
     // Sample Data
     int32_t mNumSampleBuffers;

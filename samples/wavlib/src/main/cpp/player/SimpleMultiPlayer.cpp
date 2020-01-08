@@ -29,7 +29,9 @@ using namespace wavlib;
 
 constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
-SimpleMultiPlayer::SimpleMultiPlayer() {}
+SimpleMultiPlayer::SimpleMultiPlayer()
+  : mChannelCount(0), mSampleRate(0)
+{}
 
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
         int32_t numFrames) {
@@ -54,20 +56,21 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 }
 
 void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "++++ onErrorAfterClose()");
+    __android_log_print(ANDROID_LOG_INFO, TAG, "onErrorAfterClose() error:%d", error);
+    openStream();
 }
 
 void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "++++ onErrorBeforeClose()");
+    __android_log_print(ANDROID_LOG_INFO, TAG, "onErrorBeforeClose() error:%d", error);
 }
 
-bool SimpleMultiPlayer::openStream(int32_t channelCount, int32_t sampleRate) {
+bool SimpleMultiPlayer::openStream() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
 
     // Create an audio stream
     AudioStreamBuilder builder;
-    builder.setChannelCount(channelCount);
-    builder.setSampleRate(sampleRate);
+    builder.setChannelCount(mChannelCount);
+    builder.setSampleRate(mSampleRate);
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
@@ -95,8 +98,11 @@ bool SimpleMultiPlayer::openStream(int32_t channelCount, int32_t sampleRate) {
 
 void SimpleMultiPlayer::setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate) {
 
+    mChannelCount = channelCount;
+    mSampleRate = sampleRate;
+
     mSampleBuffers = new OneShotSampleBuffer[mNumSampleBuffers = numSampleBuffers];
-    openStream(channelCount, sampleRate);
+    openStream();
 }
 
 void SimpleMultiPlayer::teardownAudioStream() {
