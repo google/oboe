@@ -61,13 +61,16 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
 }
 
 void OboeStreamCallbackProxy::onErrorBeforeClose(oboe::AudioStream *audioStream, oboe::Result error) {
+    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
     if (mCallback != nullptr) {
-        return mCallback->onErrorBeforeClose(audioStream, error);
+        mCallback->onErrorBeforeClose(audioStream, error);
     }
 }
 
 void OboeStreamCallbackProxy::onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result  error) {
+
+    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
     if (mCallback != nullptr) {
-        return mCallback->onErrorAfterClose(audioStream, error);
+        mCallback->onErrorAfterClose(audioStream, error);
     }
 }

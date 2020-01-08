@@ -89,3 +89,4 @@ ResultWithValue<int32_t> FilterAudioStream::read(void *buffer,
     int32_t framesRead = mFlowGraph->read(buffer, numFrames, timeoutNanoseconds);
     return ResultWithValue<int32_t>::createBasedOnSign(framesRead);
 }
+
