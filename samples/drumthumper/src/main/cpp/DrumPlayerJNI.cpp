@@ -80,6 +80,28 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_trigge
     sDTPlayer.triggerDown(index);
 }
 
+/**
+ * Native (JNI) implementation of DrumPlayer.getOutputReset()
+ */
+JNIEXPORT jboolean JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getOutputReset() {
+    return sDTPlayer.getOutputReset();
+}
+
+/**
+ * Native (JNI) implementation of DrumPlayer.clearOutputReset()
+ */
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_clearOutputReset() {
+    sDTPlayer.clearOutputReset();
+}
+
+/**
+ * Native (JNI) implementation of DrumPlayer.restartStream()
+ */
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_restartStream() {
+    sDTPlayer.resetAll();
+    sDTPlayer.openStream();
+}
+
 #ifdef __cplusplus
 }
 #endif

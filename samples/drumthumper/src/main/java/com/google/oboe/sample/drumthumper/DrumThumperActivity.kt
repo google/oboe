@@ -21,7 +21,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.*
+import kotlin.concurrent.schedule
 
 
 class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
@@ -29,27 +32,60 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     private var mDrumPlayer = DrumPlayer()
 
+    private val mPluginReceiver: BroadcastReceiver = PluginBroadcastReceiver()
+    private var mInstallingPlugReceiver = false
+
     init {
         // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
     }
 
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
-    public class PluginBroadcastReceiver : BroadcastReceiver() {
+    inner class PluginBroadcastReceiver : BroadcastReceiver() {
         private val TAG = "PluginBroadcastReceiver"
-        override fun onReceive(context: Context?, intent: Intent?) {
-            // Close the stream if it was not disconnected.
-            Log.i(TAG, "")
+        override fun onReceive(context: Context, intent: Intent) {
+            if (isInitialStickyBroadcast) {
+                // ignore the broadcast that comes from registering this receiver
+                return
+            }
+
+            var state = intent.getIntExtra("state", -1)
+
+            var message =
+                if (state == 0) {
+                    "Headset Removed"
+                } else {
+                    "Headset Connected"
+                };
+
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+            if (mDrumPlayer.getOutputReset()) {
+                // the (native) stream has been reset by the onErrorAfterClose() callback
+                mDrumPlayer.clearOutputReset();
+            } else {
+                // give the (native) stream a chance to close it.
+                val timer = Timer("schedule", false);
+
+                // schedule a single event
+                timer.schedule(3000) {
+                    if (!mDrumPlayer.getOutputReset()) {
+                        Log.i(TAG, "==== sTimer Restry");
+                        // still didn't get reset, so lets do it ourselves
+                        mDrumPlayer.restartStream();
+                    }
+                }
+            }
         }
     }
 
-    private val mPluginReceiver: BroadcastReceiver = PluginBroadcastReceiver()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
     override fun onStart() {
         super.onStart()
+
     }
 
     override fun onResume() {
@@ -57,7 +93,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
         // Connect/Disconnect workaround
         val filter = IntentFilter(Intent.ACTION_HEADSET_PLUG)
-        this.registerReceiver(mPluginReceiver, filter)
+        registerReceiver(mPluginReceiver, filter)
 
         setContentView(R.layout.drumthumper_activity)
 
@@ -107,14 +143,13 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     }
 
     override fun onPause() {
-        unregisterReceiver(mPluginReceiver)
-
-        mDrumPlayer.teardownAudioStream()
         super.onPause()
 
+        unregisterReceiver(mPluginReceiver)
     }
 
     override fun onStop() {
+        mDrumPlayer.teardownAudioStream()
         super.onStop()
     }
 

@@ -80,4 +80,9 @@ class DrumPlayer {
     external fun loadWavAssetNative(wavBytes: ByteArray, index: Int)
 
     external fun trigger(drumIndex: Int)
+
+    external fun getOutputReset() : Boolean
+    external fun clearOutputReset()
+
+    external fun restartStream()
 }

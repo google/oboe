@@ -38,11 +38,12 @@ public:
     AudioProperties getProperties() const { return mProperties; };
 
     void setPlayMode() { mCurFrameIndex = 0; mIsPlaying = true; }
-    void setStopMode() { mIsPlaying = false; }
+    void setStopMode() { mIsPlaying = false; mCurFrameIndex = 0; }
 
     bool isPlaying() { return mIsPlaying; }
 
     virtual void mixAudio(float* outBuff, int numFrames) {}
+
 
 protected:
     AudioProperties mProperties;

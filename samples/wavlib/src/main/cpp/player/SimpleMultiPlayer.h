@@ -40,6 +40,8 @@ public:
     void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();
 
+    bool openStream();
+
     // Wave Sample Loading...
     void loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index);
     void unloadSampleData();
@@ -47,10 +49,14 @@ public:
     void triggerDown(int32_t index);
     void triggerUp(int32_t index);
 
+    void resetAll();
+
+    bool getOutputReset() { return mOutputReset; }
+    void clearOutputReset() { mOutputReset = false; }
+
 private:
     // Oboe Audio Stream
     AudioStream *mAudioStream { nullptr };
-    bool openStream();
 
     // Audio attributs
     int32_t mChannelCount;
@@ -59,6 +65,8 @@ private:
     // Sample Data
     int32_t mNumSampleBuffers;
     OneShotSampleBuffer* mSampleBuffers;
+
+    bool    mOutputReset;
 };
 
 #endif //_PLAYER_SIMIPLEMULTIPLAYER_H_

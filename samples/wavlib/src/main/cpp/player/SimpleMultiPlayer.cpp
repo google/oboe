@@ -30,7 +30,7 @@ using namespace wavlib;
 constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
 SimpleMultiPlayer::SimpleMultiPlayer()
-  : mChannelCount(0), mSampleRate(0)
+  : mChannelCount(0), mSampleRate(0), mOutputReset(false)
 {}
 
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
@@ -57,7 +57,10 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 
 void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "onErrorAfterClose() error:%d", error);
+
+    resetAll();
     openStream();
+    mOutputReset = true;
 }
 
 void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
@@ -144,5 +147,11 @@ void SimpleMultiPlayer::triggerDown(int32_t index) {
 void SimpleMultiPlayer::triggerUp(int32_t index) {
     if (index < mNumSampleBuffers) {
         mSampleBuffers[index].setStopMode();
+    }
+}
+
+void SimpleMultiPlayer::resetAll() {
+    for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
+        mSampleBuffers[bufferIndex].setStopMode();
     }
 }
