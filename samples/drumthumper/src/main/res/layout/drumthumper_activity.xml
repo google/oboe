@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".DrumThumperActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="DrumThumper"
+        android:textSize="22pt" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:orientation="horizontal">
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/kickPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Kick" />
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/snarePad"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Snare" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:orientation="horizontal">
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/hihatOpenPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Open Hat" />
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/hihatClosedPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Closed Hat" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:orientation="horizontal">
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/midTomPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Mid Tom" />
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/lowTomPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Low Tom" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:orientation="horizontal">
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/ridePad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Ride" />
+
+        <com.google.oboe.sample.drumthumper.TriggerPad
+            android:id="@+id/crashPad"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="Crash" />
+    </LinearLayout>
+
+
+</LinearLayout>
