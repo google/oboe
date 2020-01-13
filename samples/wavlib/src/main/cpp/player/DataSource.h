@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Android Open Source Project
+ * Copyright (C) 2019 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,13 +12,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-include ':audio-device'
-include ':hello-oboe'
-include ':RhythmGame'
-include ':MegaDrone'
-include ':LiveEffect'
-include ':drumthumper'
-include ':wavlib'
+#ifndef _PLAYER_AUDIOSOURCE_H_
+#define _PLAYER_AUDIOSOURCE_H_
+
+#include <cstdint>
+
+/*
+ * Defines the relevant properties of the audio data being sourced.
+ */
+struct AudioProperties {
+    int32_t channelCount;
+    int32_t sampleRate;
+};
+
+/*
+ * Defines an interface for audio data sources for the SimpleMultiPlayer class.
+ */
+class DataSource {
+public:
+    virtual ~DataSource() {};
+    virtual AudioProperties getProperties() const  = 0;
+};
+
+
+#endif //_PLAYER_AUDIOSOURCE_H_
