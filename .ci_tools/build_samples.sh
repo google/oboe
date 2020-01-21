@@ -20,11 +20,12 @@ done
 
 # Check the apks that all get built fine (RhythmGame uses split APKs so we have to specify each one)
 declare bundles=(
-    samples/hello-oboe/build/outputs/bundle/debug/hello-oboe.aab
-    samples/MegaDrone/build/outputs/bundle/debug/MegaDrone.aab
-    samples/RhythmGame/build/outputs/bundle/ndkExtractorDebug/RhythmGame.aab
-    samples/LiveEffect/build/outputs/bundle/debug/LiveEffect.aab
-    apps/OboeTester/app/build/outputs/bundle/debug/app.aab
+    samples/hello-oboe/build/outputs/bundle/debug/hello-oboe-debug.aab
+    samples/MegaDrone/build/outputs/bundle/debug/MegaDrone-debug.aab
+    samples/RhythmGame/build/outputs/bundle/ndkExtractorDebug/RhythmGame-ndkExtractor-debug.aab
+    samples/LiveEffect/build/outputs/bundle/debug/LiveEffect-debug.aab
+    apps/OboeTester/app/build/outputs/bundle/debug/app-debug.aab
+    samples/drumthumper/build/outputs/bundle/debug/drumthumper-debug.aab
 )
 
 rm -fr ${BUILD_RESULT_FILE}
