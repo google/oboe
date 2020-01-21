@@ -56,7 +56,7 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 }
 
 void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "onErrorAfterClose() error:%d", error);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorAfterClose() error:%d", error);
 
     resetAll();
     openStream();
@@ -64,7 +64,7 @@ void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error)
 }
 
 void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "onErrorBeforeClose() error:%d", error);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorBeforeClose() error:%d", error);
 }
 
 bool SimpleMultiPlayer::openStream() {

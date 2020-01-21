@@ -15,51 +15,46 @@
  */
 package com.google.oboe.sample.drumthumper
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import java.util.*
-import kotlin.concurrent.schedule
 
+import androidx.appcompat.app.AppCompatActivity
+
+import java.util.*
+
+import kotlin.concurrent.schedule
 
 class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
     private val TAG = "DrumThumperActivity"
 
+    private var mAudioMgr: AudioManager? = null
+
     private var mDrumPlayer = DrumPlayer()
 
-    private val mPluginReceiver: BroadcastReceiver = PluginBroadcastReceiver()
-    private var mInstallingPlugReceiver = false
+    private var mDeviceListener: DeviceListener = DeviceListener()
 
     init {
         // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
     }
 
-    // Receive a broadcast Intent when a headset is plugged in or unplugged.
-    inner class PluginBroadcastReceiver : BroadcastReceiver() {
-        private val TAG = "PluginBroadcastReceiver"
-        override fun onReceive(context: Context, intent: Intent) {
-            if (isInitialStickyBroadcast) {
-                // ignore the broadcast that comes from registering this receiver
-                return
-            }
+    inner class DeviceListener: AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo> ) {
+            Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
+            resetOutput()
+        }
 
-            var state = intent.getIntExtra("state", -1)
+        override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo> ) {
+            Toast.makeText(applicationContext, "Removed Device", Toast.LENGTH_LONG).show()
+            resetOutput()
+        }
 
-            var message =
-                if (state == 0) {
-                    "Headset Removed"
-                } else {
-                    "Headset Connected"
-                };
-
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-
+        fun resetOutput() {
             if (mDrumPlayer.getOutputReset()) {
                 // the (native) stream has been reset by the onErrorAfterClose() callback
                 mDrumPlayer.clearOutputReset();
@@ -70,17 +65,19 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
                 // schedule a single event
                 timer.schedule(3000) {
                     if (!mDrumPlayer.getOutputReset()) {
-                        Log.i(TAG, "==== sTimer Retry");
                         // still didn't get reset, so lets do it ourselves
                         mDrumPlayer.restartStream();
                     }
                 }
             }
+
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
 
     override fun onStart() {
@@ -91,10 +88,9 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun onResume() {
         super.onResume()
 
-        // Connect/Disconnect workaround
-        val filter = IntentFilter(Intent.ACTION_HEADSET_PLUG)
-        registerReceiver(mPluginReceiver, filter)
+        mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
 
+        // UI
         setContentView(R.layout.drumthumper_activity)
 
         // hookup the UI
@@ -145,7 +141,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun onPause() {
         super.onPause()
 
-        unregisterReceiver(mPluginReceiver)
+        mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
     }
 
     override fun onStop() {
