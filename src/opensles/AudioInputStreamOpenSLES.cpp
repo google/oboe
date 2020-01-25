@@ -198,7 +198,7 @@ Result AudioInputStreamOpenSLES::open() {
         goto error;
     }
 
-    oboeResult = configureBufferSizes();
+    oboeResult = configureBufferSizes(mSampleRate);
     if (Result::OK != oboeResult) {
         goto error;
     }
