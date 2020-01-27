@@ -287,6 +287,10 @@ public:
         return oboeCallbackProxy.getCallbackCount();
     }
 
+    int32_t getFramesPerCallback() {
+        return oboeCallbackProxy.getFramesPerCallback();
+    }
+
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
 
     virtual void setSignalType(int signalType) {}

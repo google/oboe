@@ -42,6 +42,10 @@ public:
         mCallbackCount = count;
     }
 
+    int32_t getFramesPerCallback() {
+        return mFramesPerCallback.load();
+    }
+
     /**
      * Called when the stream is ready to process audio.
      */
@@ -74,6 +78,7 @@ private:
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
     int64_t                    mCallbackCount = 0;
+    std::atomic<int32_t>       mFramesPerCallback{0};
 };
 
 

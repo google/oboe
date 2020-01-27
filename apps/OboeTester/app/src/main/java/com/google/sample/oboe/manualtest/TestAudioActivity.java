@@ -104,6 +104,7 @@ abstract class TestAudioActivity extends Activity {
                     if (streamContext.configurationView != null) {
                         // Handler runs this on the main UI thread.
                         int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
+                        status.framesPerCallback = getFramesPerCallback();
                         final String msg = status.dump(framesPerBurst);
                         streamContext.configurationView.setStatusText(msg);
                         updateStreamDisplay();
@@ -423,6 +424,7 @@ abstract class TestAudioActivity extends Activity {
     private native int pauseNative();
     private native int stopNative();
     protected native void setActivityType(int activityType);
+    private native int getFramesPerCallback();
 
     public void startAudio() {
         int result = startNative();
