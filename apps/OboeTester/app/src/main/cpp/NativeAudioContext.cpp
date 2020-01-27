@@ -131,11 +131,10 @@ oboe::Result ActivityContext::stopAllStreams() {
     return result;
 }
 
-
 void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
     if (mUseCallback) {
-        LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, size = %d",
+        LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, callback size = %d",
              callbackSize);
         builder.setCallback(&oboeCallbackProxy);
         builder.setFramesPerCallback(callbackSize);
@@ -198,9 +197,6 @@ int ActivityContext::open(jint nativeApi,
 
     configureBuilder(isInput, builder);
 
-    if (audioApi == oboe::AudioApi::OpenSLES) {
-        builder.setFramesPerCallback(framesPerBurst);
-    }
     builder.setAudioApi(audioApi);
 
     // Temporarily set the AAudio MMAP policy to disable MMAP or not.
