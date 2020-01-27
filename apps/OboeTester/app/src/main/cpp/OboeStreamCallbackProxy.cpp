@@ -47,6 +47,8 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         void *audioData,
         int numFrames) {
     mCallbackCount++;
+    mFramesPerCallback = numFrames;
+
     if (mCallbackReturnStop) {
         return oboe::DataCallbackResult::Stop;
     }

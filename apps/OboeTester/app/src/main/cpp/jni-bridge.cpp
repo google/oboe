@@ -150,6 +150,11 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_stopNative(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_getFramesPerCallback(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->getFramesPerCallback();
+}
+
+JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_startPlaybackNative(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->startPlayback();
 }
