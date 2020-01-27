@@ -95,28 +95,32 @@ Result AudioStreamOpenSLES::open() {
 }
 
 Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
+    LOGD("AudioStreamOpenSLES:%s(%d) initial mFramesPerBurst = %d, mFramesPerCallback = %d",
+            __func__, sampleRate, mFramesPerBurst, mFramesPerCallback);
     // Decide frames per burst based on hints from caller.
-    mFramesPerBurst = mFramesPerCallback;
-    if (mFramesPerBurst == kUnspecified) {
+    if (mFramesPerCallback != kUnspecified) {
+        // Requested framesPerCallback must be honored.
+        mFramesPerBurst = mFramesPerCallback;
+    } else {
         mFramesPerBurst = DefaultStreamValues::FramesPerBurst;
-    }
 
-    // Calculate the size of a fixed duration buffer based on sample rate.
-    int32_t framesPerHighLatencyBuffer =
-            (kHighLatencyBufferSizeMillis * sampleRate) / kMillisPerSecond;
+        // Calculate the size of a fixed duration high latency buffer based on sample rate.
+        int32_t framesPerHighLatencyBuffer =
+                (kHighLatencyBufferSizeMillis * sampleRate) / kMillisPerSecond;
 
-    // For high latency streams, use a larger buffer size.
-    // Performance Mode support was added in N_MR1 (7.1)
-    if (getSdkVersion() >= __ANDROID_API_N_MR1__
-        && mPerformanceMode != PerformanceMode::LowLatency
-        && mFramesPerBurst < framesPerHighLatencyBuffer) {
-        // Find a multiple of framesPerBurst >= kFramesPerHighLatencyBurst.
-        int32_t numBursts = (framesPerHighLatencyBuffer + mFramesPerBurst - 1) / mFramesPerBurst;
-        mFramesPerBurst *= numBursts;
-        LOGD("AudioStreamOpenSLES:%s() NOT low latency, set mFramesPerBurst = %d",
-             __func__, mFramesPerBurst);
+        // For high latency streams, use a larger buffer size.
+        // Performance Mode support was added in N_MR1 (7.1)
+        if (getSdkVersion() >= __ANDROID_API_N_MR1__
+            && mPerformanceMode != PerformanceMode::LowLatency
+            && mFramesPerBurst < framesPerHighLatencyBuffer) {
+            // Find a multiple of framesPerBurst >= framesPerHighLatencyBuffer.
+            int32_t numBursts = (framesPerHighLatencyBuffer + mFramesPerBurst - 1) / mFramesPerBurst;
+            mFramesPerBurst *= numBursts;
+            LOGD("AudioStreamOpenSLES:%s() NOT low latency, set mFramesPerBurst = %d",
+                 __func__, mFramesPerBurst);
+        }
+        mFramesPerCallback = mFramesPerBurst;
     }
-    mFramesPerCallback = mFramesPerBurst;
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
     if (mBytesPerCallback <= 0) {
