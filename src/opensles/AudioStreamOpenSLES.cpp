@@ -121,6 +121,8 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
         }
         mFramesPerCallback = mFramesPerBurst;
     }
+    LOGD("AudioStreamOpenSLES:%s(%d) final mFramesPerBurst = %d, mFramesPerCallback = %d",
+         __func__, sampleRate, mFramesPerBurst, mFramesPerCallback);
 
     mBytesPerCallback = mFramesPerCallback * getBytesPerFrame();
     if (mBytesPerCallback <= 0) {
