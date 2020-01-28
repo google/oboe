@@ -20,13 +20,14 @@
 
 using namespace oboe;
 
-class NumFramesCallback : public AudioStreamCallback {
+class CallbackSizeMonitor : public AudioStreamCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
-		framesPerCallback = numFrames;
+        framesPerCallback = numFrames;
         return DataCallbackResult::Continue;
     }
-    
+
+    // This is exposed publicly so that the number of frames per callback can be tested.
     std::atomic<int32_t> framesPerCallback{0};
 };
 
@@ -93,7 +94,7 @@ TEST_F(StreamOpen, OutputForOpenSLESPerformanceModeShouldBeNone){
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     mBuilder.setDirection(Direction::Output);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-	openStream();
+    openStream();
     ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
     closeStream();
 }
@@ -104,16 +105,16 @@ TEST_F(StreamOpen, InputForOpenSLESPerformanceModeShouldBeNone){
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     mBuilder.setDirection(Direction::Input);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-	openStream();
-	ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
+    openStream();
+    ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
     closeStream();
 }
 
 // Make sure the callback is called with the requested FramesPerCallback
 TEST_F(StreamOpen, OpenSLESFramesPerCallback) {
-	const int kRequestedFramesPerCallback = 417;
-	NumFramesCallback callback;
-	
+    const int kRequestedFramesPerCallback = 417;
+    CallbackSizeMonitor callback;
+
     DefaultStreamValues::SampleRate = 48000;
     DefaultStreamValues::ChannelCount = 2;
     DefaultStreamValues::FramesPerBurst = 192;
@@ -124,9 +125,9 @@ TEST_F(StreamOpen, OpenSLESFramesPerCallback) {
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
     while (callback.framesPerCallback == 0 && timeout > 0) {
-		usleep(50 * 1000);
-		timeout--;
-	}
+        usleep(50 * 1000);
+        timeout--;
+    }
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
     ASSERT_EQ(mStream->requestStop(), Result::OK);
@@ -136,8 +137,8 @@ TEST_F(StreamOpen, OpenSLESFramesPerCallback) {
 /* TODO - This is hanging!
 // Make sure the LowLatency callback has the requested FramesPerCallback.
 TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
-	const int kRequestedFramesPerCallback = 192;
-	NumFramesCallback callback;
+    const int kRequestedFramesPerCallback = 192;
+    CallbackSizeMonitor callback;
 
     mBuilder.setAudioApi(AudioApi::AAudio);
     mBuilder.setFramesPerCallback(kRequestedFramesPerCallback);
@@ -148,9 +149,9 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
     while (callback.framesPerCallback == 0 && timeout > 0) {
-		usleep(50 * 1000);
-		timeout--;
-	}
+        usleep(50 * 1000);
+        timeout--;
+    }
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(mStream->requestStop(), Result::OK);
     closeStream();
@@ -160,8 +161,8 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
 /* TODO - This is hanging!
 // Make sure the regular callback has the requested FramesPerCallback.
 TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
-	const int kRequestedFramesPerCallback = 1024;
-	NumFramesCallback callback;
+    const int kRequestedFramesPerCallback = 1024;
+    CallbackSizeMonitor callback;
 
     mBuilder.setAudioApi(AudioApi::AAudio);
     mBuilder.setFramesPerCallback(kRequestedFramesPerCallback);
@@ -173,9 +174,9 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
     while (callback.framesPerCallback == 0 && timeout > 0) {
-		usleep(50 * 1000);
-		timeout--;
-	}
+        usleep(50 * 1000);
+        timeout--;
+    }
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(mStream->requestStop(), Result::OK);
     closeStream();
