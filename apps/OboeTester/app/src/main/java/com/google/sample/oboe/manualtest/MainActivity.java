@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Select various Audio tests.
@@ -214,10 +215,31 @@ public class MainActivity extends Activity {
         OboeAudioStream.setUseCallback(checkBox.isChecked());
     }
 
+    protected void showErrorToast(String message) {
+        showToast("Error: " + message);
+    }
+
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void updateCallbackSize() {
         CharSequence chars = mCallbackSizeTextView.getText();
         String text = chars.toString();
-        int callbackSize = Integer.parseInt(text);
+        int callbackSize = 0;
+        try {
+            callbackSize = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            showErrorToast("Badly formated callback size: " + text);
+            mCallbackSizeTextView.setText("0");
+        }
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 
