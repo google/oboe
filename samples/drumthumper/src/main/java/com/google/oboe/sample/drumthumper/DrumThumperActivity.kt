@@ -43,7 +43,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         System.loadLibrary("drumthumper")
     }
 
-    inner class DeviceListener: AudioDeviceCallback() {
+        inner class DeviceListener: AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo> ) {
             Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
             resetOutput()
@@ -134,6 +134,11 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             pad.addListener(this)
         }
 
+        run {
+            var pad: TriggerPad = findViewById(R.id.pianoPad)
+            pad.addListener(this)
+        }
+
         mDrumPlayer.setupAudioStream()
         mDrumPlayer.loadWavAssets(getAssets())
     }
@@ -167,6 +172,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             R.id.hihatClosedPad -> mDrumPlayer.trigger(DrumPlayer.HIHATCLOSED)
             R.id.ridePad -> mDrumPlayer.trigger(DrumPlayer.RIDECYMBAL)
             R.id.crashPad -> mDrumPlayer.trigger(DrumPlayer.CRASHCYMBAL)
+            R.id.pianoPad -> mDrumPlayer.trigger(DrumPlayer.PIANO)
         }
     }
 

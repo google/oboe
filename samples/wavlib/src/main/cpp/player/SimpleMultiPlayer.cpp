@@ -20,6 +20,7 @@
 #include <io/stream/MemInputStream.h>
 #include <io/wav/WavStreamReader.h>
 #include <player/OneShotSampleBuffer.h>
+#include <math.h>
 
 #include "SimpleMultiPlayer.h"
 
@@ -32,6 +33,9 @@ constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (d
 SimpleMultiPlayer::SimpleMultiPlayer()
   : mChannelCount(0), mSampleRate(0), mOutputReset(false)
 {}
+
+const double PI = 3.14;
+double x = 0;
 
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
         int32_t numFrames) {
@@ -49,6 +53,14 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {
         if (mSampleBuffers[index].isPlaying()) {
             mSampleBuffers[index].mixAudio((float*)audioData, numFrames);
+        }
+    }
+
+    for(int index = 0; index < numFrames; index++) {
+        ((float*)audioData)[index] = 0.25f * (float)sin(PI * x);
+        x += 0.05f;
+        if (x > 2.0) {
+            x -= 2.0;
         }
     }
 
