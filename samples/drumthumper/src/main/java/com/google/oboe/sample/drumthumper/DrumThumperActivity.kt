@@ -20,6 +20,7 @@ import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
+
 import android.widget.Toast
 
 import androidx.appcompat.app.AppCompatActivity
@@ -44,7 +45,6 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
     }
-
 
     /*:
      * This  implements a "fallback" mechanism for devices that do not correctly call
@@ -77,12 +77,11 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             } else {
                 // give the (native) stream a chance to close it.
                 val timer = Timer("stream restart timer", false)
-
                 // schedule a single event
                 timer.schedule(3000) {
                     if (!mDrumPlayer.getOutputReset()) {
                         // still didn't get reset, so lets do it ourselves
-                        mDrumPlayer.restartStream()
+                        mDrumPlayer.restartStream();
                     }
                 }
             }

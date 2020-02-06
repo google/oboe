@@ -197,6 +197,7 @@ public class StreamConfigurationView extends LinearLayout {
                         : StreamConfiguration.SHARING_MODE_SHARED);
             }
         });
+
         boolean mmapExclusiveSupported = NativeEngine.isMMapExclusiveSupported();
         mRequestedExclusiveView.setEnabled(mmapExclusiveSupported);
         mRequestedExclusiveView.setChecked(mmapExclusiveSupported);
@@ -276,7 +277,6 @@ public class StreamConfigurationView extends LinearLayout {
         // Don't show InputPresets for output streams.
         mInputPresetTableRow.setVisibility(output ? View.GONE : View.VISIBLE);
     }
-
 
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override

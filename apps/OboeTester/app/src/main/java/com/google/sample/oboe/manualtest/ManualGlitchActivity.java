@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
@@ -40,6 +41,8 @@ public class ManualGlitchActivity extends GlitchActivity {
 
     public static final String KEY_SAMPLE_RATE = "sample_rate";
     public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
+
+    public static final String KEY_IN_PRESET = "in_preset";
 
     public static final String KEY_IN_CHANNELS = "in_channels";
     public static final String KEY_OUT_CHANNELS = "out_channels";
@@ -203,6 +206,12 @@ public class ManualGlitchActivity extends GlitchActivity {
         requestedInConfig.setChannelCount(inChannels);
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
+
+        String defaultText = StreamConfiguration.convertInputPresetToText(
+                StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
+        text = bundle.getString(KEY_IN_PRESET, defaultText);
+        int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
+        requestedInConfig.setInputPreset(inputPreset);
     }
 
     public void startAudioTest() throws IOException {

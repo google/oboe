@@ -21,14 +21,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Select various Audio tests.
@@ -57,6 +61,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        logScreenSize();
 
         mVersionTextView = (TextView) findViewById(R.id.versionText);
         mCallbackSizeTextView = (TextView) findViewById(R.id.callbackSize);
@@ -95,6 +101,15 @@ public class MainActivity extends Activity {
         mBuildTextView.setText(Build.DISPLAY);
 
         saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    private void logScreenSize() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        Log.i(TestAudioActivity.TAG, "Screen size = " + size.x + " * " + size.y);
     }
 
     @Override
@@ -200,10 +215,31 @@ public class MainActivity extends Activity {
         OboeAudioStream.setUseCallback(checkBox.isChecked());
     }
 
+    protected void showErrorToast(String message) {
+        showToast("Error: " + message);
+    }
+
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void updateCallbackSize() {
         CharSequence chars = mCallbackSizeTextView.getText();
         String text = chars.toString();
-        int callbackSize = Integer.parseInt(text);
+        int callbackSize = 0;
+        try {
+            callbackSize = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            showErrorToast("Badly formated callback size: " + text);
+            mCallbackSizeTextView.setText("0");
+        }
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 

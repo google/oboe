@@ -92,9 +92,9 @@
         android:id="@+id/text_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="12"
+        android:lines="11"
         android:text="@string/use_loopback"
-        android:textSize="18sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
     <com.google.sample.oboe.manualtest.WaveformView

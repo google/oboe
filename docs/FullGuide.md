@@ -274,18 +274,22 @@ while `waitForStateChange()` is running in another thread.
 
 ### Reading and writing to an audio stream
 
+There are two ways to move data in or out of a stream.
+1) Read from or write directly to the stream.
+2) Specify a callback object that will get called when the stream is ready.
+
+The callback technique offers the lowest latency performance because the callback code can run in a high priority thread.
+Also, attempting to open a low latency output stream without an audio callback (with the intent to use writes)
+may result in a non low latency stream.
+
+The read/write technique may be easier when you do not need low latency. Or, when doing both input and output, it is common to use a callback for output and then just do a non-blocking read from the input stream. Then you have both the input and output data available in one high priority thread.
+
 After the stream is started you can read or write to it using the methods
 `AudioStream::read(buffer, numFrames, timeoutNanos)`
 and
 `AudioStream::write(buffer, numFrames, timeoutNanos)`.
 
-
 For a blocking read or write that transfers the specified number of frames, set timeoutNanos greater than zero. For a non-blocking call, set timeoutNanos to zero. In this case the result is the actual number of frames transferred.
-
-Attempting to open a low latency output stream without an audio callback (with the intent to use writes)
-may result in a non low latency stream.
-
-For low latency performance, *set an audio callback*, which runs in a high priority thread.
 
 When you read input, you should verify the correct number of
 frames was read. If not, the buffer might contain unknown data that could cause an

@@ -25,13 +25,13 @@ include_directories(
 
 # Build the test binary
 add_executable(
-		testOboe
+        testOboe
         testUtilities.cpp
-#		testFlowgraph.cpp
+#        testFlowgraph.cpp
         testStreamClosedMethods.cpp
-        testStreamStates.cpp
         testStreamWaitState.cpp
-		testStreamOpen.cpp
         testXRunBehaviour.cpp
+        testStreamOpen.cpp
+        testStreamStates.cpp
         )
 target_link_libraries(testOboe gtest oboe)

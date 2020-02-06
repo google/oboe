@@ -240,7 +240,10 @@ public:
         return stopAllStreams();
     }
 
-    virtual void setAmplitude(double amplitude) {}
+    void setWorkload(double workload) {
+        LOGD("ActivityContext::%s(%f)", __func__, workload);
+        oboeCallbackProxy.setWorkload(workload);
+    }
 
     virtual oboe::Result startPlayback() {
         return oboe::Result::OK;
@@ -282,6 +285,10 @@ public:
 
     int64_t getCallbackCount() {
         return oboeCallbackProxy.getCallbackCount();
+    }
+
+    int32_t getFramesPerCallback() {
+        return oboeCallbackProxy.getFramesPerCallback();
     }
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
@@ -416,15 +423,6 @@ public:
 
     void runBlockingIO() override;
 
-    void setAmplitude(double amplitude) override {
-        LOGD("%s(%f)", __func__, amplitude);
-        for (int i = 0; i < mChannelCount; i++) {
-            sineOscillators[i].amplitude.setValue(amplitude);
-            sawtoothOscillators[i].amplitude.setValue(amplitude);
-        }
-        impulseGenerator.amplitude.setValue(amplitude);
-    }
-
     void setChannelEnabled(int channelIndex, bool enabled) override;
 
     // WARNING - must match order in strings.xml and OboeAudioOutputStream.java
@@ -445,7 +443,6 @@ protected:
 
     std::vector<SineOscillator>      sineOscillators;
     std::vector<SawtoothOscillator>  sawtoothOscillators;
-    ImpulseOscillator                impulseGenerator;
     static constexpr float           kSweepPeriod = 10.0; // for triangle up and down
 
     // A triangle LFO is shaped into either a linear or an exponential range.
@@ -469,12 +466,6 @@ public:
     virtual ~ActivityTapToTone() = default;
 
     void configureForStart() override;
-
-    void setAmplitude(double amplitude) override {
-        LOGD("%s(%f)", __func__, amplitude);
-        ActivityTestOutput::setAmplitude(amplitude);
-        sawPingGenerator.amplitude.setValue(amplitude);
-    }
 
     virtual void setEnabled(bool enabled) override {
         sawPingGenerator.setEnabled(enabled);
@@ -628,7 +619,16 @@ public:
     void close(int32_t streamIndex) override;
 
     oboe::Result startStreams() override {
-        return getOutputStream()->start();
+        oboe::AudioStream *outputStream = getOutputStream();
+        if (outputStream) {
+            return outputStream->start();
+        }
+
+        oboe::AudioStream *inputStream = getInputStream();
+        if (inputStream) {
+            return inputStream->start();
+        }
+        return oboe::Result::ErrorNull;
     }
 
     void configureForStart() override;

@@ -154,23 +154,22 @@ int32_t NDKExtractor::decode(AAsset *asset, uint8_t *targetData, AudioProperties
                 if (info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM){
                     LOGD("Reached end of decoding stream");
                     isDecoding = false;
-                } else {
-                    // Valid index, acquire buffer
-                    size_t outputSize;
-                    uint8_t *outputBuffer = AMediaCodec_getOutputBuffer(codec, outputIndex, &outputSize);
+                } 
+                
+                // Valid index, acquire buffer
+                size_t outputSize;
+                uint8_t *outputBuffer = AMediaCodec_getOutputBuffer(codec, outputIndex, &outputSize);
 
-                    /*LOGV("Got output buffer index %d, buffer size: %d, info size: %d writing to pcm index %d",
-                         outputIndex,
-                         outputSize,
-                         info.size,
-                         m_writeIndex);*/
+                /*LOGV("Got output buffer index %d, buffer size: %d, info size: %d writing to pcm index %d",
+                     outputIndex,
+                     outputSize,
+                     info.size,
+                     m_writeIndex);*/
 
-                    // copy the data out of the buffer
-                    memcpy(targetData + bytesWritten, outputBuffer, info.size);
-                    bytesWritten+=info.size;
-                    AMediaCodec_releaseOutputBuffer(codec, outputIndex, false);
-                }
-
+                // copy the data out of the buffer
+                memcpy(targetData + bytesWritten, outputBuffer, info.size);
+                bytesWritten+=info.size;
+                AMediaCodec_releaseOutputBuffer(codec, outputIndex, false);
             } else {
 
                 // The outputIndex doubles as a status return if its value is < 0

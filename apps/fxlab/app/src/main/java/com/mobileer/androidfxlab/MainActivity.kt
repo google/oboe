@@ -26,6 +26,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.SubMenu
 import android.view.WindowManager
 import android.widget.PopupMenu
@@ -42,16 +44,16 @@ import com.mobileer.androidfxlab.datatype.Effect
 class MainActivity : AppCompatActivity() {
 
     private var TAG: String = this.toString()
-
     lateinit var binding: ActivityMainBinding
+    private var isAudioEnabled: Boolean = false
 
     val MY_PERMISSIONS_RECORD_AUDIO = 17
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolbar)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -103,6 +105,7 @@ class MainActivity : AppCompatActivity() {
             == PackageManager.PERMISSION_GRANTED
         ) {
             NativeInterface.createAudioEngine()
+            NativeInterface.enable(isAudioEnabled)
         }
     }
 
@@ -160,6 +163,28 @@ class MainActivity : AppCompatActivity() {
                 }, Handler())
             }
         }, Handler())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_toggle_mute -> {
+            isAudioEnabled = !isAudioEnabled
+            NativeInterface.enable(isAudioEnabled)
+
+            if (isAudioEnabled) {
+                item.setIcon(R.drawable.ic_baseline_volume_off_24)
+            } else {
+                item.setIcon(R.drawable.ic_baseline_volume_up_24)
+            }
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
