@@ -36,6 +36,9 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     private var mDrumPlayer = DrumPlayer()
 
+    private val mUseDeviceChangeFallback = true
+    private var mDevicesInitialized = false
+
     private var mDeviceListener: DeviceListener = DeviceListener()
 
     init {
@@ -45,8 +48,13 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     inner class DeviceListener: AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo> ) {
-            Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
-            resetOutput()
+            // Note: This will get called when the callback is installed.
+            if (mDevicesInitialized) {
+                // This is not the initial callback, so devices have changed
+                Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
+                resetOutput()
+            }
+            mDevicesInitialized = true
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo> ) {
@@ -57,11 +65,10 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         fun resetOutput() {
             if (mDrumPlayer.getOutputReset()) {
                 // the (native) stream has been reset by the onErrorAfterClose() callback
-                mDrumPlayer.clearOutputReset();
+                mDrumPlayer.clearOutputReset()
             } else {
                 // give the (native) stream a chance to close it.
-                val timer = Timer("stream restart timer", false);
-
+                val timer = Timer("stream restart timer", false)
                 // schedule a single event
                 timer.schedule(3000) {
                     if (!mDrumPlayer.getOutputReset()) {
@@ -70,7 +77,6 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
                     }
                 }
             }
-
         }
     }
 
@@ -88,7 +94,9 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun onResume() {
         super.onResume()
 
-        mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
+        if (mUseDeviceChangeFallback) {
+            mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
+        }
 
         // UI
         setContentView(R.layout.drumthumper_activity)
