@@ -20,7 +20,6 @@ import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 
 import androidx.appcompat.app.AppCompatActivity
@@ -38,15 +37,32 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     private var mDeviceListener: DeviceListener = DeviceListener()
 
+    private val mUseDeviceChangeFallback = true
+    private var mDevicesInitialized = false
+
     init {
         // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
     }
 
-        inner class DeviceListener: AudioDeviceCallback() {
+
+    /*:
+     * This  implements a "fallback" mechanism for devices that do not correctly call
+     * AudioStreamCallback::onErrorAfterClose(). It works by noticing that the connected
+     * Devices have changed, and so the player needs to be restarted.
+     *
+     * Caveat: This callback also gets called when it is installed in the AudioManager and in
+     * that case, there is as yet no device change so no need to restart the audio stream.
+     */
+    inner class DeviceListener: AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo> ) {
-            Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
-            resetOutput()
+            // Note: This will get called when the callback is installed.
+            if (mDevicesInitialized) {
+                // This is not the initial callback, so devices have changed
+                Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
+                resetOutput()
+            }
+            mDevicesInitialized = true
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo> ) {
@@ -57,16 +73,16 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         fun resetOutput() {
             if (mDrumPlayer.getOutputReset()) {
                 // the (native) stream has been reset by the onErrorAfterClose() callback
-                mDrumPlayer.clearOutputReset();
+                mDrumPlayer.clearOutputReset()
             } else {
                 // give the (native) stream a chance to close it.
-                val timer = Timer("stream restart timer", false);
+                val timer = Timer("stream restart timer", false)
 
                 // schedule a single event
                 timer.schedule(3000) {
                     if (!mDrumPlayer.getOutputReset()) {
                         // still didn't get reset, so lets do it ourselves
-                        mDrumPlayer.restartStream();
+                        mDrumPlayer.restartStream()
                     }
                 }
             }
@@ -88,7 +104,9 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun onResume() {
         super.onResume()
 
-        mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
+        if (mUseDeviceChangeFallback) {
+            mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
+        }
 
         // UI
         setContentView(R.layout.drumthumper_activity)
@@ -134,11 +152,6 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             pad.addListener(this)
         }
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.pianoPad)
-            pad.addListener(this)
-        }
-
         mDrumPlayer.setupAudioStream()
         mDrumPlayer.loadWavAssets(getAssets())
     }
@@ -172,7 +185,6 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             R.id.hihatClosedPad -> mDrumPlayer.trigger(DrumPlayer.HIHATCLOSED)
             R.id.ridePad -> mDrumPlayer.trigger(DrumPlayer.RIDECYMBAL)
             R.id.crashPad -> mDrumPlayer.trigger(DrumPlayer.CRASHCYMBAL)
-            R.id.pianoPad -> mDrumPlayer.trigger(DrumPlayer.PIANO)
         }
     }
 
