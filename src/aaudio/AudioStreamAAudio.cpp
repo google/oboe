@@ -26,6 +26,8 @@
 
 #ifdef __ANDROID__
 #include <sys/system_properties.h>
+#include <common/QuirksManager.h>
+
 #endif
 
 #ifndef OBOE_FIX_FORCE_STARTING_TO_STARTED
@@ -161,7 +163,8 @@ Result AudioStreamAAudio::open() {
     // does not increase latency.
     int32_t capacity = mBufferCapacityInFrames;
     constexpr int kCapacityRequiredForFastLegacyTrack = 4096; // matches value in AudioFinger
-    if (mDirection == oboe::Direction::Input
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && mDirection == oboe::Direction::Input
             && capacity != oboe::Unspecified
             && capacity < kCapacityRequiredForFastLegacyTrack
             && mPerformanceMode == oboe::PerformanceMode::LowLatency) {
@@ -445,7 +448,8 @@ Result AudioStreamAAudio::waitForStateChange(StreamState currentState,
             break;
         }
 #if OBOE_FIX_FORCE_STARTING_TO_STARTED
-        if (aaudioNextState == static_cast<aaudio_stream_state_t >(StreamState::Starting)) {
+        if (OboeGlobals::areWorkaroundsEnabled()
+            && aaudioNextState == static_cast<aaudio_stream_state_t >(StreamState::Starting)) {
             aaudioNextState = static_cast<aaudio_stream_state_t >(StreamState::Started);
         }
 #endif // OBOE_FIX_FORCE_STARTING_TO_STARTED
@@ -481,11 +485,13 @@ ResultWithValue<int32_t> AudioStreamAAudio::setBufferSizeInFrames(int32_t reques
     AAudioStream *stream = mAAudioStream.load();
 
     if (stream != nullptr) {
-
-        if (requestedFrames > mBufferCapacityInFrames) {
-            requestedFrames = mBufferCapacityInFrames;
+        int32_t adjustedFrames = requestedFrames;
+        if (adjustedFrames > mBufferCapacityInFrames) {
+            adjustedFrames = mBufferCapacityInFrames;
         }
-        int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, requestedFrames);
+        adjustedFrames = QuirksManager::getInstance().clipBufferSize(*this, adjustedFrames);
+
+        int32_t newBufferSize = mLibLoader->stream_setBufferSize(mAAudioStream, adjustedFrames);
 
         // Cache the result if it's valid
         if (newBufferSize > 0) mBufferSizeInFrames = newBufferSize;
@@ -502,7 +508,8 @@ StreamState AudioStreamAAudio::getState() const {
     if (stream != nullptr) {
         aaudio_stream_state_t aaudioState = mLibLoader->stream_getState(stream);
 #if OBOE_FIX_FORCE_STARTING_TO_STARTED
-        if (aaudioState == AAUDIO_STREAM_STATE_STARTING) {
+        if (OboeGlobals::areWorkaroundsEnabled()
+            && aaudioState == AAUDIO_STREAM_STATE_STARTING) {
             aaudioState = AAUDIO_STREAM_STATE_STARTED;
         }
 #endif // OBOE_FIX_FORCE_STARTING_TO_STARTED
