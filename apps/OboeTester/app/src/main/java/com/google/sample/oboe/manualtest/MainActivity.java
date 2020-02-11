@@ -100,6 +100,7 @@ public class MainActivity extends Activity {
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
 
+
         saveIntentBundleForLaterProcessing(getIntent());
     }
 
@@ -145,6 +146,7 @@ public class MainActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
+        NativeEngine.setWorkaroundsEnabled(false);
         processBundleFromIntent();
     }
 
@@ -250,4 +252,9 @@ public class MainActivity extends Activity {
         myAudioMgr.setSpeakerphoneOn(enabled);
     }
 
+    public void onEnableWorkarounds(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        boolean enabled = checkBox.isChecked();
+        NativeEngine.setWorkaroundsEnabled(enabled);
+    }
 }
