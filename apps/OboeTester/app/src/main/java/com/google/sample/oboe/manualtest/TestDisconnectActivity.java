@@ -49,7 +49,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     private TextView     mAutoTextView;
     private TextView     mStatusTextView;
     private TextView     mPlugTextView;
-    private AudioOutputTester    mAudioOutTester;
 
     private Thread       mAutoThread;
     private volatile boolean mThreadEnabled;
@@ -60,7 +59,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     private StringBuffer mFailedSummary;
     private int          mPassCount;
     private int          mFailCount;
-    private BroadcastReceiver pluginReceiver = new PluginBroadcastReceiver();
+    private BroadcastReceiver mPluginReceiver = new PluginBroadcastReceiver();
     private Button       mStartButton;
     private Button       mStopButton;
     private Button       mShareButton;
@@ -70,7 +69,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
     // Display a count on screen.
     public class PluginBroadcastReceiver extends BroadcastReceiver {
-        private static final String TAG = "MyBroadcastReceiver";
         @Override
         public void onReceive(Context context, Intent intent) {
             mPlugCount++;
@@ -107,8 +105,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         mSkipButton = (Button) findViewById(R.id.button_skip);
         updateStartStopButtons(false);
         updateFailSkipButton(false);
-
-        mAudioOutTester = addAudioOutputTester();
     }
 
     private void updateStartStopButtons(boolean running) {
@@ -185,12 +181,12 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     public void onResume() {
         super.onResume();
         IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        this.registerReceiver(pluginReceiver, filter);
+        this.registerReceiver(mPluginReceiver, filter);
     }
 
     @Override
     public void onPause() {
-        this.unregisterReceiver(pluginReceiver);
+        this.unregisterReceiver(mPluginReceiver);
         super.onPause();
     }
 
@@ -271,15 +267,32 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode());
     }
 
-    private void testConfiguration(int perfMode,
+    private void testConfiguration(boolean isInput,
+                                   int perfMode,
                                    int sharingMode,
                                    int channelCount,
                                    boolean requestPlugin) throws InterruptedException {
         String actualConfigText = "none";
         mSkipTest = false;
+
+        AudioInputTester    mAudioInTester = null;
+        AudioOutputTester   mAudioOutTester = null;
+
+        clearStreamContexts();
+
+        if (isInput) {
+            mAudioInTester = addAudioInputTester();
+        } else {
+            mAudioOutTester = addAudioOutputTester();
+        }
+
         // Configure settings
-        StreamConfiguration requestedConfig = mAudioOutTester.requestedConfiguration;
-        StreamConfiguration actualConfig = mAudioOutTester.actualConfiguration;
+        StreamConfiguration requestedConfig = (isInput)
+                ? mAudioInTester.requestedConfiguration
+                : mAudioOutTester.requestedConfiguration;
+        StreamConfiguration actualConfig = (isInput)
+                ? mAudioInTester.actualConfiguration
+                : mAudioOutTester.actualConfiguration;
 
         requestedConfig.reset();
         requestedConfig.setPerformanceMode(perfMode);
@@ -294,16 +307,17 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         Thread.sleep(SETTLING_TIME_MILLIS);
         if (!mThreadEnabled) return;
         boolean openFailed = false;
+        AudioStreamBase stream = null;
         try {
             startAudioTest(); // this will fill in actualConfig
             log("Actual:");
             actualConfigText = getConfigText(actualConfig)
                     + ", " + (actualConfig.isMMap() ? "MMAP" : "Legacy");
             log(actualConfigText);
-            // Set output size to a level that will avoid glitches.
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            int sizeFrames = stream.getBufferCapacityInFrames() / 2;
-            stream.setBufferSizeInFrames(sizeFrames);
+
+            stream = (isInput)
+                    ? mAudioInTester.getCurrentAudioStream()
+                    : mAudioOutTester.getCurrentAudioStream();
         } catch (IOException e) {
             openFailed = true;
             log(e.getMessage());
@@ -332,23 +346,25 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             updateFailSkipButton(true);
             // poll for stream disconnected
             while (!mTestFailed && mThreadEnabled && !mSkipTest &&
-                    mAudioOutTester.getCurrentAudioStream().getState() == StreamConfiguration.STREAM_STATE_STARTING) {
+                    stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
             String message = (requestPlugin ? "Plug IN" : "UNplug") + " headset now!";
             setStatusText("Testing:\n" + actualConfigText);
             setInstructionsText(message);
             int timeoutCount = 0;
+            // Wait for Java plug count to change or stream to disconnect.
             while (!mTestFailed && mThreadEnabled && !mSkipTest &&
-                    mAudioOutTester.getCurrentAudioStream().getState() == StreamConfiguration.STREAM_STATE_STARTED) {
+                    stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
                 Thread.sleep(POLL_DURATION_MILLIS);
                 if (mPlugCount > oldPlugCount) {
                     timeoutCount = TIME_TO_FAILURE_MILLIS / POLL_DURATION_MILLIS;
                     break;
                 }
             }
+            // Wait for timeout or stream to disconnect.
             while (!mTestFailed && mThreadEnabled && !mSkipTest && (timeoutCount > 0) &&
-                    mAudioOutTester.getCurrentAudioStream().getState() == StreamConfiguration.STREAM_STATE_STARTED) {
+                    stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
                 Thread.sleep(POLL_DURATION_MILLIS);
                 timeoutCount--;
                 if (timeoutCount == 0) {
@@ -404,13 +420,19 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         mTestCount++;
     }
 
-    private void testConfiguration(int performanceMode,
+    private void testConfiguration(boolean isInput, int performanceMode,
                                    int sharingMode) throws InterruptedException {
         int channelCount = 2;
         boolean requestPlugin = true; // plug IN
-        testConfiguration(performanceMode, sharingMode, channelCount, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
         requestPlugin = false; // UNplug
-        testConfiguration(performanceMode, sharingMode, channelCount, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
+    }
+
+    private void testConfiguration(int performanceMode,
+                                   int sharingMode) throws InterruptedException {
+        testConfiguration(false, performanceMode, sharingMode);
+        testConfiguration(true, performanceMode, sharingMode);
     }
 
     @Override

@@ -14,13 +14,18 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 ## Requirements
 To build Oboe you'll need a compiler which supports C++14 and the Android header files. The easiest way to obtain these is by downloading the Android NDK r17 or above. It can be installed using Android Studio's SDK manager, or via [direct download](https://developer.android.com/ndk/downloads/).
 
-## Documentation
+## API Documentation
 - [Getting Started Guide](docs/GettingStarted.md)
 - [Full Guide to Oboe](docs/FullGuide.md)
 - [API reference](https://google.github.io/oboe/reference)
+- [Tech Notes](docs/notes/)
 - [History of Audio features/bugs by Android version](docs/AndroidAudioHistory.md)
 - [Frequently Asked Questions](docs/FAQ.md) (FAQ)
-- [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment 
+- [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment.
+
+## Testing
+- [**OboeTester** app for measuring latency, glitches, etc.](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
+- [Oboe unit tests](https://github.com/google/oboe/tree/master/tests)
 
 ## Videos
 - [Getting started with Oboe](https://www.youtube.com/playlist?list=PLWz5rJ2EKKc_duWv9IPNvx9YBudNMmLSa)

@@ -216,6 +216,10 @@ public class StreamConfiguration {
         message.append(String.format("%s.channels = %d\n", prefix, mChannelCount));
         message.append(String.format("%s.perf = %s\n", prefix,
                 convertPerformanceModeToText(mPerformanceMode).toLowerCase()));
+        if (getDirection() == DIRECTION_INPUT) {
+            message.append(String.format("%s.preset = %s\n", prefix,
+                    convertInputPresetToText(mInputPreset).toLowerCase()));
+        }
         message.append(String.format("%s.sharing = %s\n", prefix,
                 convertSharingModeToText(mSharingMode).toLowerCase()));
         message.append(String.format("%s.api = %s\n", prefix,
@@ -227,37 +231,55 @@ public class StreamConfiguration {
         return message.toString();
     }
 
+    // text must match menu values
+    public static final String NAME_INPUT_PRESET_GENERIC = "Generic";
+    public static final String NAME_INPUT_PRESET_CAMCORDER = "Camcorder";
+    public static final String NAME_INPUT_PRESET_VOICE_RECOGNITION = "VoiceRec";
+    public static final String NAME_INPUT_PRESET_VOICE_COMMUNICATION = "VoiceComm";
+    public static final String NAME_INPUT_PRESET_UNPROCESSED = "Unprocessed";
+    public static final String NAME_INPUT_PRESET_VOICE_PERFORMANCE = "Performance";
+
     public static String convertInputPresetToText(int inputPreset) {
         switch(inputPreset) {
             case INPUT_PRESET_GENERIC:
-                return "Generic"; // text must match menu values
+                return NAME_INPUT_PRESET_GENERIC;
             case INPUT_PRESET_CAMCORDER:
-                return "Camcorder";
+                return NAME_INPUT_PRESET_CAMCORDER;
             case INPUT_PRESET_VOICE_RECOGNITION:
-                return "VoiceRec";
+                return NAME_INPUT_PRESET_VOICE_RECOGNITION;
             case INPUT_PRESET_VOICE_COMMUNICATION:
-                return "VoiceComm";
+                return NAME_INPUT_PRESET_VOICE_COMMUNICATION;
             case INPUT_PRESET_UNPROCESSED:
-                return "Unprocessed";
+                return NAME_INPUT_PRESET_UNPROCESSED;
             case INPUT_PRESET_VOICE_PERFORMANCE:
-                return "Performance";
+                return NAME_INPUT_PRESET_VOICE_PERFORMANCE;
             default:
                 return "Invalid";
         }
     }
 
+    private static boolean matchInputPreset(String text, int preset) {
+        return convertInputPresetToText(preset).toLowerCase().equals(text);
+    }
+
+    /**
+     * Case insensitive.
+     * @param text
+     * @return inputPreset, eg. INPUT_PRESET_CAMCORDER
+     */
     public static int convertTextToInputPreset(String text) {
-        if (convertInputPresetToText(INPUT_PRESET_GENERIC).equals(text)) {
+        text = text.toLowerCase();
+        if (matchInputPreset(text, INPUT_PRESET_GENERIC)) {
             return INPUT_PRESET_GENERIC;
-        } else if (convertInputPresetToText(INPUT_PRESET_CAMCORDER).equals(text)) {
-                return INPUT_PRESET_CAMCORDER;
-        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_RECOGNITION).equals(text)) {
+        } else if (matchInputPreset(text, INPUT_PRESET_CAMCORDER)) {
+            return INPUT_PRESET_CAMCORDER;
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_RECOGNITION)) {
             return INPUT_PRESET_VOICE_RECOGNITION;
-        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_COMMUNICATION).equals(text)) {
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_COMMUNICATION)) {
             return INPUT_PRESET_VOICE_COMMUNICATION;
-        } else if (convertInputPresetToText(INPUT_PRESET_UNPROCESSED).equals(text)) {
+        } else if (matchInputPreset(text, INPUT_PRESET_UNPROCESSED)) {
             return INPUT_PRESET_UNPROCESSED;
-        } else if (convertInputPresetToText(INPUT_PRESET_VOICE_PERFORMANCE).equals(text)) {
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_PERFORMANCE)) {
             return INPUT_PRESET_VOICE_PERFORMANCE;
         }
         return -1;

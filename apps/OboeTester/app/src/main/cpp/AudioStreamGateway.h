@@ -36,7 +36,9 @@ public:
 
     void setAudioSink(std::shared_ptr<flowgraph::FlowGraphSink>  sink) {
         mAudioSink = sink;
-        mFramePosition = sink->getLastFramePosition();
+        if (sink) {
+            mFramePosition = sink->getLastFramePosition();
+        }
     }
 
     /**

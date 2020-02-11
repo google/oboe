@@ -100,7 +100,7 @@ protected:
     PerformanceMode convertPerformanceMode(SLuint32 openslMode) const;
     SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
 
-    Result configureBufferSizes();
+    Result configureBufferSizes(int32_t sampleRate);
 
     void logUnsupportedAttributes();
 

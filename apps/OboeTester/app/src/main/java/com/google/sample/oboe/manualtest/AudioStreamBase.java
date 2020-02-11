@@ -51,6 +51,7 @@ public abstract class AudioStreamBase {
         public double latency; // msec
         public int state;
         public long callbackCount;
+        public int framesPerCallback;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -64,10 +65,13 @@ public abstract class AudioStreamBase {
 
             String latencyText = (latency < 0.0)
                     ? "?"
-                    : String.format("%6.1f msec", latency);
-            buffer.append("latency = " + latencyText
-                    + ", " + convertStateToString(state)
-                    + ", #callbacks " + callbackCount+ "\n");
+                    : String.format("%6.1f ms", latency);
+            buffer.append(
+                    convertStateToString(state)
+                    + ", #cb=" + callbackCount
+                    + ", f/cb=" + String.format("%3d", framesPerCallback)
+                    + ", latency = " + latencyText
+                    + "\n");
 
             buffer.append("buffer size = ");
             if (bufferSize < 0) {
@@ -158,8 +162,9 @@ public abstract class AudioStreamBase {
         return false;
     }
 
-    public void setAmplitude(double amplitude) {}
+    public void setWorkload(double workload) {}
 
     public abstract int getXRunCount();
+
 
 }

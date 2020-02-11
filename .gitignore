@@ -1,6 +1,6 @@
 */.DS_Store
 .DS_Store
 .externalNativeBuild/
+.cxx/
 .idea
 build
-

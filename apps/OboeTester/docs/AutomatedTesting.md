@@ -47,7 +47,7 @@ There are two required parameters:
             The "glitch" test will perform a single Glitch test.
     --es file {full path for resulting file}
     
-There is one optional parameters for the "latency" test.
+There is one optional parameter for the "latency" test.
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     
@@ -62,8 +62,10 @@ There are several optional parameters for the "glitch" test:
     --ei out_channels       {samples}    // number of output channels, default is 2
     --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
     --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
+                            // input preset, default is "voicerec"
+    --es in_preset          ("generic", "camcorder", "voicerec", "voicecomm", "unprocessed", "performance"}
     --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
-    --es out_sharing         {"shared", "exclusive"} // output sharing mode, default is "exclusive"
+    --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
 
 For example, a complete command might be:
 
