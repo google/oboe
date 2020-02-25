@@ -71,9 +71,16 @@ public:
         return mWorkload;
     }
 
+    double getCpuLoad() const {
+        return mCpuLoad;
+    }
+
+    static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
+
 private:
     static constexpr int32_t   kWorkloadScaler = 500;
     double                     mWorkload = 0.0;
+    std::atomic<double>        mCpuLoad{0};
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;

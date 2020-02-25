@@ -36,6 +36,7 @@ public abstract class AudioStreamBase {
         status.framesWritten = getFramesWritten();
         status.callbackCount = getCallbackCount();
         status.latency = getLatency();
+        status.cpuLoad = getCpuLoad();
         status.state = getState();
         return status;
     }
@@ -52,6 +53,7 @@ public abstract class AudioStreamBase {
         public int state;
         public long callbackCount;
         public int framesPerCallback;
+        public double cpuLoad;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -66,11 +68,13 @@ public abstract class AudioStreamBase {
             String latencyText = (latency < 0.0)
                     ? "?"
                     : String.format("%6.1f ms", latency);
+            String cpuLoadText = String.format("%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
                     convertStateToString(state)
                     + ", #cb=" + callbackCount
                     + ", f/cb=" + String.format("%3d", framesPerCallback)
-                    + ", latency = " + latencyText
+                    + ", latnc = " + latencyText
+                    + ", " + cpuLoadText + " cpu"
                     + "\n");
 
             buffer.append("buffer size = ");
@@ -155,6 +159,8 @@ public abstract class AudioStreamBase {
     public long getFramesRead() { return -1; }
 
     public double getLatency() { return -1.0; }
+
+    public double getCpuLoad() { return 0.0; }
 
     public int getState() { return -1; }
 

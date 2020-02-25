@@ -231,6 +231,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native double getLatency(int streamIndex);
 
     @Override
+    public double getCpuLoad() {
+        return getCpuLoad(streamIndex);
+    }
+    public native double getCpuLoad(int streamIndex);
+
+    @Override
     public native void setWorkload(double workload);
 
     @Override

@@ -240,6 +240,10 @@ public:
         return stopAllStreams();
     }
 
+    double getCpuLoad() {
+        return oboeCallbackProxy.getCpuLoad();
+    }
+
     void setWorkload(double workload) {
         LOGD("ActivityContext::%s(%f)", __func__, workload);
         oboeCallbackProxy.setWorkload(workload);

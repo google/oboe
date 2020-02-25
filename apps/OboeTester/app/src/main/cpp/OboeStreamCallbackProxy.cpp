@@ -42,10 +42,22 @@ static float s_burnCPU(int32_t workload) {
 
 bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
 
+int64_t OboeStreamCallbackProxy::getNanoseconds(clockid_t clockId) {
+    struct timespec time;
+    int result = clock_gettime(clockId, &time);
+    if (result < 0) {
+        return result;
+    }
+    return (time.tv_sec * 1e9) + time.tv_nsec;
+}
+
 oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         oboe::AudioStream *audioStream,
         void *audioData,
         int numFrames) {
+    oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
+    int64_t startTimeNanos = getNanoseconds();
+
     mCallbackCount++;
     mFramesPerCallback = numFrames;
 
@@ -53,13 +65,19 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         return oboe::DataCallbackResult::Stop;
     }
 
-    //
     s_burnCPU((int32_t)(mWorkload * kWorkloadScaler * numFrames));
 
     if (mCallback != nullptr) {
-        return mCallback->onAudioReady(audioStream, audioData, numFrames);
+        callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
-    return oboe::DataCallbackResult::Stop;
+
+    // Update CPU load
+    double calculationTime = (double)(getNanoseconds() - startTimeNanos);
+    double inverseRealTime = audioStream->getSampleRate() / (1.0e9 * numFrames);
+    double currentCpuLoad = calculationTime * inverseRealTime; // avoid a divide
+    mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
+
+    return callbackResult;
 }
 
 void OboeStreamCallbackProxy::onErrorBeforeClose(oboe::AudioStream *audioStream, oboe::Result error) {
