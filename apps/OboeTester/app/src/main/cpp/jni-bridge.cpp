@@ -383,6 +383,11 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env, j
     return -1.0;
 }
 
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
+    return engine.getCurrentActivity()->getCpuLoad();
+}
+
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setWorkload(
         JNIEnv *env, jobject, jdouble workload) {
