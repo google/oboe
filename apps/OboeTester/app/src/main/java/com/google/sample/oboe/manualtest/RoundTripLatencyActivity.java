@@ -103,11 +103,11 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 final double averageLatency = mWeightedLatencySum / mConfidenceSum;
                 final double mAverageConfidence = mConfidenceSum / mCount;
                 message =
-                        "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
-                                + "max.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMax) + "\n"
-                                + "num.iterations = " + mCount + "\n"
-                                + "average.latency.msec = " + String.format(LATENCY_FORMAT, averageLatency) + "\n"
-                                + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n";
+                        "average.latency.msec = " + String.format(LATENCY_FORMAT, averageLatency) + "\n"
+                        + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
+                        + "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
+                        + "max.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMax) + "\n"
+                        + "num.iterations = " + mCount + "\n";
             }
             mLastReport = message;
             return message;
