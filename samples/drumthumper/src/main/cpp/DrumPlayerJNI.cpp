@@ -22,9 +22,6 @@
 
 #include <android/log.h>
 
-#include <io/stream/FileInputStream.h>
-#include <io/wav/WavStreamReader.h>
-
 #include <player/OneShotSampleBuffer.h>
 #include <player/SimpleMultiPlayer.h>
 

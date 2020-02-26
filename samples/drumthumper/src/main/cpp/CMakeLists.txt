@@ -16,16 +16,34 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-# Pull in WavLib
-set (WAVLIB_DIR ../../../../wavlib)
-#message("WAVLIB_DIR = " + ${WAVLIB_DIR})
+# Pull in parselib
+set (PARSELIB_DIR ../../../../parselib)
+#message("PARSELIB_DIR = " + ${PARSELIB_DIR})
 
-include(${WAVLIB_DIR}/src/main/cpp/CMakeLists.txt)
+# Pull in iolib
+set (IOLIB_DIR ../../../../iolib)
+#message("IOLIB_DIR = " + ${IOLIB_DIR})
+
+# Set the path to the Oboe library directory
+set (OBOE_DIR ../../../../../)
+message("OBOE_DIR = " + ${OBOE_DIR})
+
+add_subdirectory(${OBOE_DIR} ./oboe-bin)
+
+# include folders
+include_directories(
+        ${OBOE_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}
+#        ../../../../shared
+)
+
+include(${PARSELIB_DIR}/src/main/cpp/CMakeLists.txt)
+include(${IOLIB_DIR}/src/main/cpp/CMakeLists.txt)
 
 # Include the WavLib headers and shared sample code
 include_directories(
-        ${WAVLIB_DIR}/src/main/cpp
-)
+        ${PARSELIB_DIR}/src/main/cpp
+        ${IOLIB_DIR}/src/main/cpp)
 
 # App specific sources
 set (APP_SOURCES
@@ -37,9 +55,6 @@ add_library(drumthumper SHARED
         ${APP_SOURCES}
         )
 
-# Specify the libraries needed for DrumThumper
-target_link_libraries(drumthumper android log)
-
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
 target_compile_options(drumthumper PRIVATE -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
@@ -48,8 +63,11 @@ target_link_libraries( # Specifies the target library.
         drumthumper
 
         -Wl,--whole-archive
-        wavlib
+        iolib
+        parselib
         -Wl,--no-whole-archive
+
+        oboe
 
         # Links the target library to the log library
         # included in the NDK.

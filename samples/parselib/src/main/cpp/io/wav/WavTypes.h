@@ -25,8 +25,6 @@ typedef unsigned int RiffID;    // A "four character code" (i.e. FOURCC)
 typedef int RiffInt32;          // A 32-bit signed integer
 typedef short RiffInt16;        // A 16-bit signed integer
 
-typedef unsigned char byte;     // an 8-bit unsigned value
-
 /*
  * Packs the specified characters into a 32-bit value in accordance with the Microsoft
  * FOURCC specification.
