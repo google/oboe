@@ -24,6 +24,8 @@
 using namespace oboe;
 using namespace wavlib;
 
+typedef unsigned char byte;     // an 8-bit unsigned value
+
 /**
  * A simple streaming player for multiple SampleBuffers.
  */
@@ -35,7 +37,7 @@ public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData,
             int32_t numFrames) override;
     virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
-    virtual void onErrorBeforeClose	(AudioStream * oboeStream, Result error) override;
+    virtual void onErrorBeforeClose(AudioStream * oboeStream, Result error) override;
 
     void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();

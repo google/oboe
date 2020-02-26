@@ -19,7 +19,7 @@
 // wavlib includes
 #include <io/stream/MemInputStream.h>
 #include <io/wav/WavStreamReader.h>
-#include <player/OneShotSampleBuffer.h>
+#include "OneShotSampleBuffer.h"
 
 #include "SimpleMultiPlayer.h"
 

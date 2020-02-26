@@ -1,7 +1,7 @@
 # For more information about using CMake with Android Studio, read the
 # documentation: https://d.android.com/studio/projects/add-native-code.html
 
-# Sets the minimum version of CMake required to build the native library.
+# Sets the minimum version of CMake required toboe build the native library.
 cmake_minimum_required(VERSION 3.4.1)
 
 #PROJECT(wavlib C CXX)
@@ -21,7 +21,7 @@ message("NDK is " ${NDK})
 set (OBOE_DIR ../../../../../)
 message("OBOE_DIR = " + ${OBOE_DIR})
 
-add_subdirectory(${OBOE_DIR} ./oboe-bin)
+#add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
 # include folders
 include_directories(
@@ -36,7 +36,7 @@ include_directories(
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-        wavlib
+        parselib
 
         # Sets the library as a static library.
         STATIC
@@ -53,9 +53,9 @@ add_library( # Sets the name of the library.
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp
         # player
-        ${CMAKE_CURRENT_LIST_DIR}/player/SampleBuffer.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp
+        # ${CMAKE_CURRENT_LIST_DIR}/player/SampleBuffer.cpp
+        # ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
+        # ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp
         )
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -75,9 +75,8 @@ add_library( # Sets the name of the library.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-            wavlib
+            parselib
 
             # Links the target library to the log library
             # included in the NDK.
-            log
-            oboe)
+            log)
