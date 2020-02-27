@@ -6,18 +6,16 @@ cmake_minimum_required(VERSION 3.4.1)
 
 #PROJECT(wavlib C CXX)
 
-message("CMAKE_CURRENT_LIST_DIR = " ${CMAKE_CURRENT_LIST_DIR})
+#message("CMAKE_CURRENT_LIST_DIR = " ${CMAKE_CURRENT_LIST_DIR})
 
-message("HOME is " ${HOME})
+#message("HOME is " ${HOME})
 
 # SET(NDK "")
-message("NDK is " ${NDK})
+#message("NDK is " ${NDK})
 
 # Set the path to the Oboe library directory
 set (OBOE_DIR ../../../../../)
-message("OBOE_DIR = " + ${OBOE_DIR})
-
-#add_subdirectory(${OBOE_DIR} ./oboe-bin)
+#message("OBOE_DIR = " + ${OBOE_DIR})
 
 # Pull in parselib
 set (PARSELIB_DIR ../../../../parselib)
@@ -32,8 +30,7 @@ include_directories(
         ${PARSELIB_DIR}/src/main/cpp
         ${OBOE_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}
-        ../../../../shared
-)
+        ../../../../shared)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -46,34 +43,10 @@ add_library( # Sets the name of the library.
         # Sets the library as a static library.
         STATIC
 
-        # Provides a relative path to your source file(s).
-        # io/stream
-        # ${CMAKE_CURRENT_LIST_DIR}/io/stream/FileInputStream.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/stream/InputStream.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/stream/MemInputStream.cpp
-        # io/wav
-        # ${CMAKE_CURRENT_LIST_DIR}/io/wav/AudioEncoding.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavChunkHeader.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavFmtChunkHeader.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp
-        # player
+        # source
         ${CMAKE_CURRENT_LIST_DIR}/player/SampleBuffer.cpp
         ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp
-        )
-
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-
-#find_library( # Sets the name of the path variable.
-#              log-lib
-#              # Specifies the name of the NDK library that
-#              # you want CMake to locate.
-#              log )
+        ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this

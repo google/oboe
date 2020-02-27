@@ -1,17 +1,17 @@
 # For more information about using CMake with Android Studio, read the
 # documentation: https://d.android.com/studio/projects/add-native-code.html
 
-# Sets the minimum version of CMake required toboe build the native library.
+# Sets the minimum version of CMake required to build the native library.
 cmake_minimum_required(VERSION 3.4.1)
 
 #PROJECT(wavlib C CXX)
 
-message("CMAKE_CURRENT_LIST_DIR = " ${CMAKE_CURRENT_LIST_DIR})
+#message("CMAKE_CURRENT_LIST_DIR = " ${CMAKE_CURRENT_LIST_DIR})
 
-message("HOME is " ${HOME})
+#message("HOME is " ${HOME})
 
 # SET(NDK "")
-message("NDK is " ${NDK})
+#message("NDK is " ${NDK})
 
 # compiler flags
 # -mhard-float -D_NDK_MATH_NO_SOFTFP=1
@@ -27,8 +27,7 @@ message("OBOE_DIR = " + ${OBOE_DIR})
 include_directories(
         ${OBOE_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}
-        ../../../../shared
-)
+        ../../../../shared)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -51,24 +50,7 @@ add_library( # Sets the name of the library.
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavFmtChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp
-        # player
-        # ${CMAKE_CURRENT_LIST_DIR}/player/SampleBuffer.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/player/OneShotSampleBuffer.cpp
-        # ${CMAKE_CURRENT_LIST_DIR}/player/SimpleMultiPlayer.cpp
-        )
-
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-
-#find_library( # Sets the name of the path variable.
-#              log-lib
-#              # Specifies the name of the NDK library that
-#              # you want CMake to locate.
-#              log )
+        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
