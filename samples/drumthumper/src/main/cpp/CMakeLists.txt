@@ -26,7 +26,7 @@ set (IOLIB_DIR ../../../../iolib)
 
 # Set the path to the Oboe library directory
 set (OBOE_DIR ../../../../../)
-message("OBOE_DIR = " + ${OBOE_DIR})
+#message("OBOE_DIR = " + ${OBOE_DIR})
 
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
@@ -34,7 +34,6 @@ add_subdirectory(${OBOE_DIR} ./oboe-bin)
 include_directories(
         ${OBOE_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}
-#        ../../../../shared
 )
 
 include(${PARSELIB_DIR}/src/main/cpp/CMakeLists.txt)
