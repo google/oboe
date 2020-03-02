@@ -1,12 +1,36 @@
-# Getting Started
-The easiest way to start using Oboe is to build it from source by adding a few steps to an existing Android Studio project.
+# Adding Oboe to your project
+There are two ways use Oboe in your Android Studio project: 
 
-## Creating an Android app with native support
-+ Create a new project: `File > New > New Project`
-+ When selecting the project type, select Native C++
-+ Finish configuring project
+1) Use the Oboe pre-built library binaries and headers. Use this approach if you just want to use a stable version of the Oboe library in your project. 
 
-## Adding Oboe to your project
+or
+
+2) Build Oboe from source. Use this approach if you would like to make changes to the Oboe source code and contribute back to the project. 
+
+## Option 1) Using pre-built binaries and headers
+Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio Preview 4.0 Canary 9](https://developer.android.com/studio/preview) so you'll need to be using this version of Android Studio or above. 
+
+Add the oboe dependency to your app's `build.gradle`. Replace "1.3.0" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe: 
+
+    dependencies {
+        implementation 'com.google.oboe:oboe:1.3.0'
+    }
+
+Prefab isn't enabled by default (this may change in future versions of Android Studio) so enable it by adding following to your `gradle.properties`: 
+
+    # Enables Prefab
+    android.enablePrefab=true
+    # Work around https://issuetracker.google.com/149575364
+    android.enableParallelJsonGen=false
+    # 4.0.0 canary 9 defaults to Prefab 1.0.0-alpha3, which is not the latest.
+    android.prefabVersion=1.0.0-alpha5
+
+Include and link to oboe by updating your `CMakeLists.txt`: 
+
+    find_package (oboe REQUIRED CONFIG)
+    target_link_libraries(app oboe::oboe)
+
+## Option 2) Building from source
 
 ### 1. Clone the github repository
 Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example:
