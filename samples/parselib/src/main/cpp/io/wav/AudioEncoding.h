@@ -16,7 +16,7 @@
 #ifndef _IO_WAV_AUDIOFORMAT_H_
 #define _IO_WAV_AUDIOFORMAT_H_
 
-namespace wavlib {
+namespace parselib {
 
 /**
  * Definitions for Audio Encodings in WAV files.
@@ -29,6 +29,6 @@ public:
     static const int PCM_IEEEFLOAT = 2;
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_WAV_AUDIOFORMAT_H_

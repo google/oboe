@@ -15,6 +15,6 @@
  */
 #include "AudioEncoding.h"
 
-namespace wavlib {
+namespace parselib {
 
 } // namespace wavlib

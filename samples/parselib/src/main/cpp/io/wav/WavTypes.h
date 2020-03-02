@@ -16,7 +16,7 @@
 #ifndef __WAVTYPES_H__
 #define __WAVTYPES_H__
 
-namespace wavlib {
+namespace parselib {
 
 /*
  * Declarations for various (cross-platform) WAV-specific data types.
@@ -33,6 +33,6 @@ inline RiffID makeRiffID(char a, char b, char c, char d) {
     return ((RiffID)d << 24) | ((RiffID)c << 16) | ((RiffID)b << 8) | (RiffID)a;
 }
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif /* __WAVTYPES_H__ */

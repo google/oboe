@@ -19,10 +19,12 @@
 
 #include <oboe/Oboe.h>
 
-#include <player/OneShotSampleBuffer.h>
+#include "OneShotSampleSource.h"
+#include "SampleBuffer.h"
 
 using namespace oboe;
-using namespace wavlib;
+
+namespace iolib {
 
 typedef unsigned char byte;     // an 8-bit unsigned value
 
@@ -66,9 +68,11 @@ private:
 
     // Sample Data
     int32_t mNumSampleBuffers;
-    OneShotSampleBuffer* mSampleBuffers;
+    SampleBuffer**          mSampleBuffers;
+    OneShotSampleSource**   mSampleSources;
 
     bool    mOutputReset;
 };
 
+}
 #endif //_PLAYER_SIMIPLEMULTIPLAYER_H_

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,27 @@
 
 #include "SampleBuffer.h"
 
-namespace wavlib {
-    // for now, all methods of SampleBuffer are either in-line or pure virtual
+#include "io/wav/WavStreamReader.h"
+
+using namespace parselib;
+
+namespace iolib {
+
+void SampleBuffer::loadSampleData(WavStreamReader* reader) {
+    mAudioProperties.channelCount = reader->getNumChannels();
+    mAudioProperties.sampleRate = reader->getSampleRate();
+
+    reader->positionToAudio();
+
+    mNumSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
+    mSampleData = new float[mNumSampleFrames];
+    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
 }
 
+void SampleBuffer::unloadSampleData() {
+    delete[] mSampleData;
+    mSampleData = nullptr;
+    mNumSampleFrames = 0;
+}
+
+}

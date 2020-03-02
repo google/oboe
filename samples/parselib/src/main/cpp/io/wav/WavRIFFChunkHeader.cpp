@@ -16,7 +16,7 @@
 #include "WavRIFFChunkHeader.h"
 #include "io/stream/InputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 const RiffID WavRIFFChunkHeader::RIFFID_RIFF = makeRiffID('R', 'I', 'F', 'F');
 const RiffID WavRIFFChunkHeader::RIFFID_WAVE = makeRiffID('W', 'A', 'V', 'E');
@@ -34,4 +34,4 @@ void WavRIFFChunkHeader::read(InputStream *stream) {
     stream->read(&mFormatId, sizeof(mFormatId));
 }
 
-} // namespace wavlib
+} // namespace parselib

@@ -14,23 +14,9 @@
  * limitations under the License.
  */
 
-#ifndef _PLAYER_AUDIOSOURCE_H_
-#define _PLAYER_AUDIOSOURCE_H_
-
-#include <cstdint>
+#include "SampleSource.h"
 
 namespace iolib {
-
-/*
- * Defines an interface for audio data sources for the SimpleMultiPlayer class.
- */
-class DataSource {
-public:
-    virtual ~DataSource() {};
-
-    virtual void mixAudio(float* outBuff, int numFrames) =0;
-};
-
+    // for now, all methods of SampleSource are either in-line or pure virtual
 }
 
-#endif //_PLAYER_AUDIOSOURCE_H_

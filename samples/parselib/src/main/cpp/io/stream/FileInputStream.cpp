@@ -17,7 +17,7 @@
 
 #include "FileInputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 int32_t FileInputStream::read(void *buff, int32_t numBytes) {
     return ::read(mFH, buff, numBytes);
@@ -45,4 +45,4 @@ void FileInputStream::setPos(int32_t pos) {
     }
 }
 
-} /* namespace wavlib */
+} /* namespace parselib */

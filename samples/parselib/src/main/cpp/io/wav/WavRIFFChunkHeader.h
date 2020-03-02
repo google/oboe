@@ -18,7 +18,7 @@
 
 #include "WavChunkHeader.h"
 
-namespace wavlib {
+namespace parselib {
 
 class InputStream;
 
@@ -37,6 +37,6 @@ public:
     virtual void read(InputStream *stream);
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_WAV_WAVRIFFCHUNKHEADER_H_

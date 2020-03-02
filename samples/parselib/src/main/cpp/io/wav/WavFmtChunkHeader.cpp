@@ -21,7 +21,7 @@
 
 static const char *TAG = "WavFmtChunkHeader";
 
-namespace wavlib {
+namespace parselib {
 
 const RiffID WavFmtChunkHeader::RIFFID_FMT = makeRiffID('f', 'm', 't', ' ');
 
@@ -72,4 +72,4 @@ void WavFmtChunkHeader::read(InputStream *stream) {
     }
 }
 
-} // namespace wavlib
+} // namespace parselib

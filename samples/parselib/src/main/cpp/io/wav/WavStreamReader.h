@@ -27,7 +27,7 @@
  * http://soundfile.sapp.org/doc/WaveFormat/
  * https://web.archive.org/web/20090417165828/http://www.kk.iij4u.or.jp/~kondo/wave/mpidata.txt
  */
-namespace wavlib {
+namespace parselib {
 
 class InputStream;
 
@@ -68,6 +68,6 @@ protected:
     std::map<RiffID, WavChunkHeader *> *mChunkMap;
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_WAV_WAVSTREAMREADER_H_

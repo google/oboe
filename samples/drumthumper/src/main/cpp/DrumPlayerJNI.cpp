@@ -22,7 +22,7 @@
 
 #include <android/log.h>
 
-#include <player/OneShotSampleBuffer.h>
+#include <player/OneShotSampleSource.h>
 #include <player/SimpleMultiPlayer.h>
 
 static const char* TAG = "DrumPlayerJNI";
@@ -32,7 +32,7 @@ static const char* TAG = "DrumPlayerJNI";
 extern "C" {
 #endif
 
-using namespace wavlib;
+using namespace iolib;
 
 static SimpleMultiPlayer sDTPlayer;
 
