@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <logging_macros.h>
 
-
 LiveEffectEngine::LiveEffectEngine() {
     assert(mOutputChannelCount == mInputChannelCount);
 }
@@ -28,7 +27,6 @@ LiveEffectEngine::~LiveEffectEngine() {
     mFullDuplexPass.stop();
     closeStream(mPlayStream);
     closeStream(mRecordingStream);
-
 }
 
 void LiveEffectEngine::setRecordingDeviceId(int32_t deviceId) {
@@ -43,19 +41,25 @@ bool LiveEffectEngine::isAAudioSupported() {
     oboe::AudioStreamBuilder builder;
     return builder.isAAudioSupported();
 }
+
 bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
     if (mIsEffectOn) return false;
 
     mAudioApi = api;
     return true;
 }
-void LiveEffectEngine::setEffectOn(bool isOn) {
+
+bool LiveEffectEngine::setEffectOn(bool isOn) {
+    bool success = true;
     if (isOn != mIsEffectOn) {
-        mIsEffectOn = isOn;
         if (isOn) {
-            openStreams();
-            mFullDuplexPass.start();
+            success = openStreams() == oboe::Result::OK;
+            if (success) {
+                mFullDuplexPass.start();
+                mIsEffectOn = isOn;
+            }
         } else {
+            mIsEffectOn = isOn;
             mFullDuplexPass.stop();
             /*
             * Note: The order of events is important here.
@@ -69,23 +73,32 @@ void LiveEffectEngine::setEffectOn(bool isOn) {
             closeStream(mRecordingStream);
        }
     }
+    return success;
 }
-void LiveEffectEngine::openStreams() {
+
+oboe::Result  LiveEffectEngine::openStreams() {
     // Note: The order of stream creation is important. We create the playback
     // stream first, then use properties from the playback stream
     // (e.g. sample rate) to create the recording stream. By matching the
     // properties we should get the lowest latency path
     oboe::AudioStreamBuilder inBuilder, outBuilder;
     setupPlaybackStreamParameters(&outBuilder);
-    outBuilder.openStream(&mPlayStream);
+    oboe::Result result = outBuilder.openStream(&mPlayStream);
+    if (result != oboe::Result::OK) {
+        return result;
+    }
     warnIfNotLowLatency(mPlayStream);
 
     setupRecordingStreamParameters(&inBuilder);
-    inBuilder.openStream(&mRecordingStream);
+    result = inBuilder.openStream(&mRecordingStream);
+    if (result != oboe::Result::OK) {
+        return result;
+    }
     warnIfNotLowLatency(mRecordingStream);
 
     mFullDuplexPass.setInputStream(mRecordingStream);
     mFullDuplexPass.setOutputStream(mPlayStream);
+    return result;
 }
 
 /**

@@ -42,17 +42,17 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
     engine = nullptr;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setEffectOn(
     JNIEnv *env, jclass, jboolean isEffectOn) {
     if (engine == nullptr) {
         LOGE(
             "Engine is null, you must call createEngine before calling this "
             "method");
-        return;
+        return JNI_FALSE;
     }
 
-    engine->setEffectOn(isEffectOn);
+    return (jboolean) engine->setEffectOn(isEffectOn);
 }
 
 JNIEXPORT void JNICALL

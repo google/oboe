@@ -29,8 +29,11 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     ~LiveEffectEngine();
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
-    void setEffectOn(bool isOn);
-    void openStreams();
+    /**
+     * @param isOn
+     * @return true if it succeeds
+     */
+    bool setEffectOn(bool isOn);
 
     /*
      * oboe::AudioStreamCallback interface implementation
@@ -56,6 +59,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     oboe::AudioStream *mPlayStream = nullptr;
     oboe::AudioApi mAudioApi = oboe::AudioApi::AAudio;
 
+    oboe::Result openStreams();
     void closeStream(oboe::AudioStream *stream);
 
 
