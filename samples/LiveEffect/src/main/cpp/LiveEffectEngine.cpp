@@ -83,21 +83,22 @@ oboe::Result  LiveEffectEngine::openStreams() {
     // properties we should get the lowest latency path
     oboe::AudioStreamBuilder inBuilder, outBuilder;
     setupPlaybackStreamParameters(&outBuilder);
-    oboe::Result result = outBuilder.openStream(&mPlayStream);
+    oboe::Result result = outBuilder.openManagedStream(mPlayStream);
     if (result != oboe::Result::OK) {
         return result;
     }
     warnIfNotLowLatency(mPlayStream);
 
     setupRecordingStreamParameters(&inBuilder);
-    result = inBuilder.openStream(&mRecordingStream);
+    result = inBuilder.openManagedStream(mRecordingStream);
     if (result != oboe::Result::OK) {
+        closeStream(mPlayStream);
         return result;
     }
     warnIfNotLowLatency(mRecordingStream);
 
-    mFullDuplexPass.setInputStream(mRecordingStream);
-    mFullDuplexPass.setOutputStream(mPlayStream);
+    mFullDuplexPass.setInputStream(mRecordingStream.get());
+    mFullDuplexPass.setOutputStream(mPlayStream.get());
     return result;
 }
 
@@ -161,13 +162,14 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
  * [the closing thread is the UI thread in this sample].
  * @param stream the stream to close
  */
-void LiveEffectEngine::closeStream(oboe::AudioStream *stream) {
+void LiveEffectEngine::closeStream(oboe::ManagedStream &stream) {
     if (stream) {
         oboe::Result result = stream->close();
         if (result != oboe::Result::OK) {
             LOGE("Error closing stream. %s", oboe::convertToText(result));
         }
         LOGW("Successfully closed streams");
+        stream.reset();
     }
 }
 
@@ -177,7 +179,7 @@ void LiveEffectEngine::closeStream(oboe::AudioStream *stream) {
  * @param stream: newly created stream
  *
  */
-void LiveEffectEngine::warnIfNotLowLatency(oboe::AudioStream *stream) {
+void LiveEffectEngine::warnIfNotLowLatency(oboe::ManagedStream &stream) {
     if (stream->getPerformanceMode() != oboe::PerformanceMode::LowLatency) {
         LOGW(
             "Stream is NOT low latency."
