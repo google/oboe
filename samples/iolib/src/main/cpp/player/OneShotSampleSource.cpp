@@ -20,30 +20,7 @@
 
 #include "OneShotSampleSource.h"
 
-//using namespace parselib;
-
 namespace iolib {
-
-//void OneShotSampleSource::loadSampleData(WavStreamReader* reader) {
-//    mProperties.channelCount = reader->getNumChannels();
-//    mProperties.sampleRate = reader->getSampleRate();
-//
-//    reader->positionToAudio();
-//
-//    numSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
-//    mSampleData = new float[numSampleFrames];
-//    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
-//}
-//
-//void OneShotSampleSource::unloadSampleData() {
-//    delete[] mSampleData;
-//    mSampleData = nullptr;
-//    numSampleFrames = 0;
-//
-//    // kinda by definition..
-//    mCurFrameIndex = 0;
-//    mIsPlaying = false;
-//}
 
 void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
     int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
@@ -54,9 +31,12 @@ void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
     if (numWriteFrames != 0) {
         // Mix in the samples
         int32_t lastIndex = mCurFrameIndex + numWriteFrames;
-        const float* sampleData = mSampleBuffer->getSampleData();
+        std::shared_ptr<float*> sampleData = mSampleBuffer->getSampleData();
+
+        // investigate unrolling this loop...
+        const float* data  = *(sampleData.get());
         for(int32_t index = 0; index < numWriteFrames; index++) {
-            outBuff[index] += sampleData[mCurFrameIndex++];
+            outBuff[index] += data[mCurFrameIndex++];
         }
 
         if (mCurFrameIndex >= numSampleFrames) {

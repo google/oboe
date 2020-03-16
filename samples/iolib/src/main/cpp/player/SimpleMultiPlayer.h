@@ -22,8 +22,6 @@
 #include "OneShotSampleSource.h"
 #include "SampleBuffer.h"
 
-using namespace oboe;
-
 namespace iolib {
 
 typedef unsigned char byte;     // an 8-bit unsigned value
@@ -31,15 +29,15 @@ typedef unsigned char byte;     // an 8-bit unsigned value
 /**
  * A simple streaming player for multiple SampleBuffers.
  */
-class SimpleMultiPlayer : public AudioStreamCallback  {
+class SimpleMultiPlayer : public oboe::AudioStreamCallback  {
 public:
     SimpleMultiPlayer();
 
     // Inherited from oboe::AudioStreamCallback
-    DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData,
+    oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData,
             int32_t numFrames) override;
-    virtual void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
-    virtual void onErrorBeforeClose(AudioStream * oboeStream, Result error) override;
+    virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
+    virtual void onErrorBeforeClose(oboe::AudioStream * oboeStream, oboe::Result error) override;
 
     void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();
@@ -60,7 +58,7 @@ public:
 
 private:
     // Oboe Audio Stream
-    AudioStream *mAudioStream { nullptr };
+    oboe::AudioStream *mAudioStream { nullptr };
 
     // Audio attributs
     int32_t mChannelCount;
@@ -68,8 +66,8 @@ private:
 
     // Sample Data
     int32_t mNumSampleBuffers;
-    SampleBuffer**          mSampleBuffers;
-    OneShotSampleSource**   mSampleSources;
+    std::unique_ptr<SampleBuffer**> mSampleBuffers;
+    std::unique_ptr<OneShotSampleSource**>   mSampleSources;
 
     bool    mOutputReset;
 };

@@ -19,12 +19,14 @@
 // parselib includes
 #include <io/stream/MemInputStream.h>
 #include <io/wav/WavStreamReader.h>
-#include "OneShotSampleSource.h"
 
+// local includes
+#include "OneShotSampleSource.h"
 #include "SimpleMultiPlayer.h"
 
 static const char* TAG = "SimpleMultiPlayer";
 
+using namespace oboe;
 using namespace parselib;
 
 namespace iolib {
@@ -48,9 +50,10 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 
     memset(audioData, 0, numFrames * sizeof(float));
 
+    OneShotSampleSource *** sources = mSampleSources.get();
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {
-        if (mSampleSources[index]->isPlaying()) {
-            mSampleSources[index]->mixAudio((float*)audioData, numFrames);
+        if ((*sources)[index]->isPlaying()) {
+            (*sources)[index]->mixAudio((float*)audioData, numFrames);
         }
     }
 
@@ -107,13 +110,17 @@ void SimpleMultiPlayer::setupAudioStream(int32_t numSampleBuffers, int32_t chann
     mSampleRate = sampleRate;
 
     mNumSampleBuffers = numSampleBuffers;
-    mSampleBuffers = new SampleBuffer*[mNumSampleBuffers];
-    mSampleSources = new OneShotSampleSource*[mNumSampleBuffers];
 
+    SampleBuffer** buffers = new SampleBuffer*[mNumSampleBuffers];
+    OneShotSampleSource** sources = new OneShotSampleSource*[mNumSampleBuffers];
     for(int index = 0; index < numSampleBuffers; index++) {
-        mSampleBuffers[index] = new SampleBuffer();
-        mSampleSources[index] = new OneShotSampleSource(mSampleBuffers[index]);
+        buffers[index] = new SampleBuffer();
+        sources[index] = new OneShotSampleSource(buffers[index]);
     }
+
+    mSampleBuffers = std::make_unique<SampleBuffer**>(buffers);
+    mSampleSources = std::make_unique<OneShotSampleSource**>(sources);
+
     openStream();
 }
 
@@ -135,35 +142,35 @@ void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen
     WavStreamReader reader(&stream);
     reader.parse();
 
-    mSampleBuffers[index]->loadSampleData(&reader);
+    (*mSampleBuffers.get())[index]->loadSampleData(&reader);
 }
 
 void SimpleMultiPlayer::unloadSampleData() {
+    SampleBuffer*** buffers = mSampleBuffers.get();
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleBuffers[bufferIndex]->unloadSampleData();
+        (*buffers)[bufferIndex]->unloadSampleData();
     }
 
-    delete[] mSampleSources;
-
-    mSampleSources = nullptr;
+    mSampleSources.reset();
+    mSampleSources.reset();
     mNumSampleBuffers = 0;
 }
 
 void SimpleMultiPlayer::triggerDown(int32_t index) {
     if (index < mNumSampleBuffers) {
-        mSampleSources[index]->setPlayMode();
+        (*mSampleSources.get())[index]->setPlayMode();
     }
 }
 
 void SimpleMultiPlayer::triggerUp(int32_t index) {
     if (index < mNumSampleBuffers) {
-        mSampleSources[index]->setStopMode();
+        (*mSampleSources.get())[index]->setStopMode();
     }
 }
 
 void SimpleMultiPlayer::resetAll() {
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleSources[bufferIndex]->setStopMode();
+        (*mSampleSources.get())[bufferIndex]->setStopMode();
     }
 }
 

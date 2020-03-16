@@ -19,8 +19,6 @@
 
 #include <io/wav/WavStreamReader.h>
 
-using parselib::WavStreamReader;
-
 namespace iolib {
 
 /*
@@ -33,21 +31,22 @@ struct AudioProperties {
 
 class SampleBuffer {
 public:
-    SampleBuffer() : mSampleData(nullptr), mNumSampleFrames(0) {};
+    SampleBuffer() : mNumSampleFrames(0) {};
+    ~SampleBuffer() { unloadSampleData(); }
 
     // Data load/unload
-    void loadSampleData(WavStreamReader* reader);
+    void loadSampleData(parselib::WavStreamReader* reader);
     void unloadSampleData();
 
     virtual AudioProperties getProperties() const { return mAudioProperties; }
 
-    const float* getSampleData() { return mSampleData; }
+    std::shared_ptr<float*> getSampleData() { return mSampleData; }
     int32_t getNumSampleFrames() { return mNumSampleFrames; }
 
 protected:
     AudioProperties mAudioProperties;
 
-    float*  mSampleData;
+    std::shared_ptr<float*>   mSampleData;
     int32_t mNumSampleFrames;
 };
 

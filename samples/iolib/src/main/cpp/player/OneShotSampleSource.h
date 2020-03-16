@@ -19,10 +19,6 @@
 
 #include "SampleSource.h"
 
-namespace parselib {
-class WavStreamReader;
-}
-
 namespace iolib {
 
 /**
@@ -32,9 +28,6 @@ class OneShotSampleSource: public SampleSource {
 public:
     OneShotSampleSource(SampleBuffer *sampleBuffer) : SampleSource(sampleBuffer) {};
     virtual ~OneShotSampleSource() {};
-
-//    void loadSampleData(parselib::WavStreamReader* reader);
-//    void unloadSampleData();
 
     virtual void mixAudio(float* outBuff, int32_t numFrames);
 };

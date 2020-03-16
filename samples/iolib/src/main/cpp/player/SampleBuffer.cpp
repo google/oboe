@@ -18,24 +18,22 @@
 
 #include "io/wav/WavStreamReader.h"
 
-using namespace parselib;
-
 namespace iolib {
 
-void SampleBuffer::loadSampleData(WavStreamReader* reader) {
+void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
     mAudioProperties.channelCount = reader->getNumChannels();
     mAudioProperties.sampleRate = reader->getSampleRate();
 
     reader->positionToAudio();
 
     mNumSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
-    mSampleData = new float[mNumSampleFrames];
-    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
+    mSampleData = std::make_shared<float*>(new float[mNumSampleFrames]);
+
+    reader->getDataFloat(*(mSampleData.get()), reader->getNumSampleFrames());
 }
 
 void SampleBuffer::unloadSampleData() {
-    delete[] mSampleData;
-    mSampleData = nullptr;
+    mSampleData.reset();
     mNumSampleFrames = 0;
 }
 
