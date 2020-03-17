@@ -1,22 +1,24 @@
 # Adding Oboe to your project
 There are two ways use Oboe in your Android Studio project: 
 
-1) Use the Oboe pre-built library binaries and headers. Use this approach if you just want to use a stable version of the Oboe library in your project. 
+1) **Use the Oboe pre-built library binaries and headers** *(Experimental)*. Use this approach if you just want to use a stable version of the Oboe library in your project.
 
 or
 
-2) Build Oboe from source. Use this approach if you would like to make changes to the Oboe source code and contribute back to the project. 
+2) **Build Oboe from source.** Use this approach if you would like to debug or make changes to the Oboe source code and contribute back to the project.
 
 ## Option 1) Using pre-built binaries and headers
+*This approach is currently experimental as it uses a preview version of Android Studio.*
+
 Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio Preview 4.0 Canary 9](https://developer.android.com/studio/preview) so you'll need to be using this version of Android Studio or above. 
 
-Add the oboe dependency to your app's `build.gradle`. Replace "1.3.0" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe: 
+Add the oboe dependency to your app's `build.gradle` file. Replace "1.3.0" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe:
 
     dependencies {
         implementation 'com.google.oboe:oboe:1.3.0'
     }
 
-Prefab isn't enabled by default (this may change in future versions of Android Studio) so enable it by adding following to your `gradle.properties`: 
+Prefab isn't enabled by default so enable it by adding following to your `gradle.properties` file, which is in the root folder of your app:
 
     # Enables Prefab
     android.enablePrefab=true
@@ -25,10 +27,12 @@ Prefab isn't enabled by default (this may change in future versions of Android S
     # 4.0.0 canary 9 defaults to Prefab 1.0.0-alpha3, which is not the latest.
     android.prefabVersion=1.0.0-alpha5
 
+**Note:** Please check back regularly to see whether these workarounds are still required. This will ensure you don't get stuck on an unecessary Android Studio configuration or outdated Prefab version.
+
 Include and link to oboe by updating your `CMakeLists.txt`: 
 
     find_package (oboe REQUIRED CONFIG)
-    target_link_libraries(app oboe::oboe)
+    target_link_libraries(app oboe::oboe) # You may have other libraries here such as `log`.
 
 ## Option 2) Building from source
 
