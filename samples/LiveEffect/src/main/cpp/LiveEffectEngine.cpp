@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include "LiveEffectEngine.h"
-#include <assert.h>
+#include <cassert>
 #include <logging_macros.h>
+
+#include "LiveEffectEngine.h"
 
 LiveEffectEngine::LiveEffectEngine() {
     assert(mOutputChannelCount == mInputChannelCount);
@@ -59,7 +60,6 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
                 mIsEffectOn = isOn;
             }
         } else {
-            mIsEffectOn = isOn;
             mFullDuplexPass.stop();
             /*
             * Note: The order of events is important here.
@@ -71,6 +71,7 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
             */
             closeStream(mPlayStream);
             closeStream(mRecordingStream);
+            mIsEffectOn = isOn;
        }
     }
     return success;

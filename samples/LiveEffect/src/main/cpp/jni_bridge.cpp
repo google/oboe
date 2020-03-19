@@ -25,14 +25,14 @@ static LiveEffectEngine *engine = nullptr;
 
 extern "C" {
 
-JNIEXPORT bool JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_create(JNIEnv *env,
                                                                jclass) {
     if (engine == nullptr) {
         engine = new LiveEffectEngine();
     }
 
-    return (engine != nullptr);
+    return (engine != nullptr) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
@@ -52,7 +52,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setEffectOn(
         return JNI_FALSE;
     }
 
-    return (jboolean) engine->setEffectOn(isEffectOn);
+    return engine->setEffectOn(isEffectOn) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
@@ -105,8 +105,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
             return JNI_FALSE;
     }
 
-    return static_cast<jboolean>(engine->setAudioApi(audioApi) ? JNI_TRUE
-                                                               : JNI_FALSE);
+    return engine->setAudioApi(audioApi) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL
@@ -118,15 +117,14 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_isAAudioSupported(
             "before calling this method");
         return JNI_FALSE;
     }
-    return static_cast<jboolean>(engine->isAAudioSupported() ? JNI_TRUE
-                                                             : JNI_FALSE);
+    return engine->isAAudioSupported() ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_native_1setDefaultStreamValues(JNIEnv *env,
-                                                                            jclass type,
-                                                                            jint sampleRate,
-                                                                            jint framesPerBurst) {
+                                               jclass type,
+                                               jint sampleRate,
+                                               jint framesPerBurst) {
     oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
     oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
