@@ -31,7 +31,7 @@ struct AudioProperties {
 
 class SampleBuffer {
 public:
-    SampleBuffer() : mNumSampleFrames(0) {};
+    SampleBuffer() : mNumSamples(0) {};
     ~SampleBuffer() { unloadSampleData(); }
 
     // Data load/unload
@@ -41,13 +41,13 @@ public:
     virtual AudioProperties getProperties() const { return mAudioProperties; }
 
     std::shared_ptr<float*> getSampleData() { return mSampleData; }
-    int32_t getNumSampleFrames() { return mNumSampleFrames; }
+    int32_t getNumSampleFrames() { return mNumSamples; }
 
 protected:
     AudioProperties mAudioProperties;
 
     std::shared_ptr<float*>   mSampleData;
-    int32_t mNumSampleFrames;
+    int32_t mNumSamples;
 };
 
 }
