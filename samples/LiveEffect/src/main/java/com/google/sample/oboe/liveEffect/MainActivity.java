@@ -131,7 +131,7 @@ public class MainActivity extends Activity
         }
         findViewById(R.id.slesButton).setEnabled(enable);
         if(!aaudioSupported) {
-          findViewById(R.id.aaudioButton).setEnabled(false);
+            findViewById(R.id.aaudioButton).setEnabled(false);
         } else {
             findViewById(R.id.aaudioButton).setEnabled(enable);
         }
@@ -139,6 +139,7 @@ public class MainActivity extends Activity
         ((RadioGroup)findViewById(R.id.apiSelectionGroup))
           .check(apiSelection == OBOE_API_AAUDIO ? R.id.aaudioButton : R.id.slesButton);
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -163,9 +164,7 @@ public class MainActivity extends Activity
     public void toggleEffect() {
         if (isPlaying) {
             stopEffect();
-            EnableAudioApiUI(true);
         } else {
-            EnableAudioApiUI(false);
             LiveEffectEngine.setAPI(apiSelection);
             startEffect();
         }
@@ -179,11 +178,17 @@ public class MainActivity extends Activity
             return;
         }
 
-        setSpinnersEnabled(false);
-        LiveEffectEngine.setEffectOn(true);
-        statusText.setText(R.string.status_playing);
-        toggleEffectButton.setText(R.string.stop_effect);
-        isPlaying = true;
+        boolean success = LiveEffectEngine.setEffectOn(true);
+        if (success) {
+            setSpinnersEnabled(false);
+            statusText.setText(R.string.status_playing);
+            toggleEffectButton.setText(R.string.stop_effect);
+            isPlaying = true;
+            EnableAudioApiUI(false);
+        } else {
+            statusText.setText(R.string.status_open_failed);
+            isPlaying = false;
+        }
     }
 
     private void stopEffect() {
@@ -193,6 +198,7 @@ public class MainActivity extends Activity
         toggleEffectButton.setText(R.string.start_effect);
         isPlaying = false;
         setSpinnersEnabled(true);
+        EnableAudioApiUI(true);
     }
 
     private void setSpinnersEnabled(boolean isEnabled){
@@ -219,6 +225,7 @@ public class MainActivity extends Activity
                 new String[]{Manifest.permission.RECORD_AUDIO},
                 AUDIO_EFFECT_REQUEST);
     }
+
     private void resetStatusView() {
         statusText.setText(R.string.status_warning);
     }
