@@ -34,6 +34,18 @@ Include and link to oboe by updating your `CMakeLists.txt`:
     find_package (oboe REQUIRED CONFIG)
     target_link_libraries(app oboe::oboe) # You may have other libraries here such as `log`.
 
+Configure your app to use the shared STL by updating your `app/build.gradle`: 
+
+    android { 
+        defaultConfig { 
+            externalNativeBuild {
+                cmake {
+                    arguments "-DANDROID_STL=c++_shared"
+                }
+	    }
+	}
+    }
+
 ## Option 2) Building from source
 
 ### 1. Clone the github repository
