@@ -40,13 +40,13 @@ public:
 
     virtual AudioProperties getProperties() const { return mAudioProperties; }
 
-    std::shared_ptr<float*> getSampleData() { return mSampleData; }
+    float* getSampleData() { return mSampleData; }
     int32_t getNumSampleFrames() { return mNumSamples; }
 
 protected:
     AudioProperties mAudioProperties;
 
-    std::shared_ptr<float*>   mSampleData;
+    float*  mSampleData;
     int32_t mNumSamples;
 };
 

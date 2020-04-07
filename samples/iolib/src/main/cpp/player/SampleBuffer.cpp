@@ -27,13 +27,12 @@ void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
     reader->positionToAudio();
 
     mNumSamples = reader->getNumSampleFrames() * reader->getNumChannels();
-    mSampleData = std::make_shared<float*>(new float[mNumSamples]);
-
-    reader->getDataFloat(*(mSampleData.get()), reader->getNumSampleFrames());
+    mSampleData = new float[mNumSamples];
+    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
 }
 
 void SampleBuffer::unloadSampleData() {
-    mSampleData.reset();
+    delete[] mSampleData;
     mNumSamples = 0;
 }
 

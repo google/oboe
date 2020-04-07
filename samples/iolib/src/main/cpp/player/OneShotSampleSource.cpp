@@ -31,10 +31,9 @@ void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
     if (numWriteFrames != 0) {
         // Mix in the samples
         int32_t lastIndex = mCurFrameIndex + numWriteFrames;
-        std::shared_ptr<float*> sampleData = mSampleBuffer->getSampleData();
 
         // investigate unrolling this loop...
-        const float* data  = *(sampleData.get());
+        const float* data  = mSampleBuffer->getSampleData();
         for(int32_t index = 0; index < numWriteFrames; index++) {
             outBuff[index] += data[mCurFrameIndex++];
         }

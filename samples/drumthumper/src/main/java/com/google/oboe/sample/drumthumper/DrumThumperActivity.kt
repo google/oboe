@@ -27,6 +27,8 @@ import androidx.appcompat.app.AppCompatActivity
 
 import java.util.*
 
+import java.time.LocalDateTime;
+
 import kotlin.concurrent.schedule
 
 class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
@@ -37,6 +39,8 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     private var mDrumPlayer = DrumPlayer()
 
     private val mUseDeviceChangeFallback = true
+    private val mSwitchTimerMs = 500L
+
     private var mDevicesInitialized = false
 
     private var mDeviceListener: DeviceListener = DeviceListener()
@@ -47,9 +51,20 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     }
 
     inner class DeviceListener: AudioDeviceCallback() {
+        fun logDevices(label: String, devices: Array<AudioDeviceInfo> ) {
+            Log.i(TAG, label + " " + devices.size)
+            for(device in devices) {
+                Log.i(TAG, "  " + device.getProductName().toString()
+                    + " type:" + device.getType()
+                    + " source:" + device.isSource()
+                    + " sink:" + device.isSink())
+            }
+        }
+
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo> ) {
             // Note: This will get called when the callback is installed.
             if (mDevicesInitialized) {
+                logDevices("onAudioDevicesAdded", addedDevices)
                 // This is not the initial callback, so devices have changed
                 Toast.makeText(applicationContext, "Added Device", Toast.LENGTH_LONG).show()
                 resetOutput()
@@ -58,22 +73,26 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo> ) {
+            logDevices("onAudioDevicesRemoved", removedDevices)
             Toast.makeText(applicationContext, "Removed Device", Toast.LENGTH_LONG).show()
             resetOutput()
         }
 
-        fun resetOutput() {
+        private fun resetOutput() {
+            Log.i(TAG, "resetOutput() time:" + LocalDateTime.now() + " native reset:" + mDrumPlayer.getOutputReset());
             if (mDrumPlayer.getOutputReset()) {
                 // the (native) stream has been reset by the onErrorAfterClose() callback
                 mDrumPlayer.clearOutputReset()
             } else {
                 // give the (native) stream a chance to close it.
-                val timer = Timer("stream restart timer", false)
+                val timer = Timer("stream restart timer time:" + LocalDateTime.now(),
+                        false)
                 // schedule a single event
-                timer.schedule(3000) {
+                timer.schedule(mSwitchTimerMs) {
                     if (!mDrumPlayer.getOutputReset()) {
                         // still didn't get reset, so lets do it ourselves
-                        mDrumPlayer.restartStream();
+                        Log.i(TAG, "restartStream() time:" + LocalDateTime.now())
+                        mDrumPlayer.restartStream()
                     }
                 }
             }
@@ -84,19 +103,21 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         super.onCreate(savedInstanceState)
 
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-    }
-
-    override fun onResume() {
-        super.onResume()
 
         if (mUseDeviceChangeFallback) {
             mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
         }
+
+        mDrumPlayer.setupAudioStream()
+        mDrumPlayer.loadWavAssets(getAssets())
+    }
+
+    override fun onStart() {
+        super.onStart()
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         // UI
         setContentView(R.layout.drumthumper_activity)
@@ -142,23 +163,24 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
             pad.addListener(this)
         }
 
-        mDrumPlayer.setupAudioStream()
-        mDrumPlayer.loadWavAssets(getAssets())
     }
 
     override fun onPause() {
         super.onPause()
-
-        mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
     }
 
     override fun onStop() {
-        mDrumPlayer.teardownAudioStream()
         super.onStop()
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
+
+        if (mUseDeviceChangeFallback) {
+            mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
+        }
+        mDrumPlayer.teardownAudioStream()
     }
 
     //
