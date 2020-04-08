@@ -33,7 +33,7 @@ For example, suppose you are converting from 44100 Hz to 48000 Hz and using an i
 
     940 * 48000 * 44100 = 1023.1292517...
     
-You cannot generate a fractional number of frames. So the resampler will sometimes generate 1023 frames and sometimes 1024 frames. On average it will generate 1023.1292517 frames. The resample stores the fraction internally and keeps track of when to consume or generate a frame.
+You cannot generate a fractional number of frames. So the resampler will sometimes generate 1023 frames and sometimes 1024 frames. On average it will generate 1023.1292517 frames. The resampler stores the fraction internally and keeps track of when to consume or generate a frame.
 
 You can either use a fixed number of input frames or a fixed number of output frames. The other frame count will vary.
 
