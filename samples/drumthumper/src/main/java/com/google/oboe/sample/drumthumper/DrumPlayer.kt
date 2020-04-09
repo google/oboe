@@ -41,7 +41,7 @@ class DrumPlayer {
     }
 
     fun setupAudioStream() {
-        setupAudioStreamNative(NUM_SAMPLES, NUM_CHANNELS, SAMPLE_RATE)
+        setupAudioStreamNative(NUM_CHANNELS, SAMPLE_RATE)
     }
 
     fun teardownAudioStream() {
@@ -49,6 +49,10 @@ class DrumPlayer {
     }
 
     // asset-based samples
+    fun allocSampleData() {
+        allocSampleDataNative(NUM_SAMPLES)
+    }
+
     fun loadWavAssets(assetMgr: AssetManager) {
         loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM)
         loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM)
@@ -58,6 +62,10 @@ class DrumPlayer {
         loadWavAsset(assetMgr, "LowTom.wav", LOWTOM)
         loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN)
         loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED)
+    }
+
+    fun unloadWavAssets() {
+        unloadWavAssetsNative()
     }
 
     fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int) {
@@ -74,10 +82,12 @@ class DrumPlayer {
         }
     }
 
-    external fun setupAudioStreamNative(numSampleBuffers: Int, numChannels: Int, sampleRate: Int)
+    external fun setupAudioStreamNative(numChannels: Int, sampleRate: Int)
     external fun teardownAudioStreamNative()
 
+    external fun allocSampleDataNative(numSampleBuffers: Int)
     external fun loadWavAssetNative(wavBytes: ByteArray, index: Int)
+    external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)
 

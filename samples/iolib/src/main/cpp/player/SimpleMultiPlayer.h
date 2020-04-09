@@ -17,6 +17,8 @@
 #ifndef _PLAYER_SIMIPLEMULTIPLAYER_H_
 #define _PLAYER_SIMIPLEMULTIPLAYER_H_
 
+#include <vector>
+
 #include <oboe/Oboe.h>
 
 #include "OneShotSampleSource.h"
@@ -39,12 +41,13 @@ public:
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
     virtual void onErrorBeforeClose(oboe::AudioStream * oboeStream, oboe::Result error) override;
 
-    void setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate);
+    void setupAudioStream(int32_t channelCount, int32_t sampleRate);
     void teardownAudioStream();
 
     bool openStream();
 
     // Wave Sample Loading...
+    void allocSampleData(int32_t numSampleBuffers);
     void loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index);
     void unloadSampleData();
 
@@ -58,7 +61,7 @@ public:
 
 private:
     // Oboe Audio Stream
-    oboe::AudioStream *mAudioStream { nullptr };
+    oboe::ManagedStream mAudioStream;
 
     // Audio attributs
     int32_t mChannelCount;
@@ -66,8 +69,8 @@ private:
 
     // Sample Data
     int32_t mNumSampleBuffers;
-    std::unique_ptr<SampleBuffer**> mSampleBuffers;
-    std::unique_ptr<OneShotSampleSource**>   mSampleSources;
+    std::vector<SampleBuffer*> mSampleBuffers;
+    std::vector<OneShotSampleSource*>   mSampleSources;
 
     bool    mOutputReset;
 };

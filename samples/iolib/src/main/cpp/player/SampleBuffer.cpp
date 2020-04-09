@@ -28,6 +28,7 @@ void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
 
     mNumSamples = reader->getNumSampleFrames() * reader->getNumChannels();
     mSampleData = new float[mNumSamples];
+
     reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
 }
 

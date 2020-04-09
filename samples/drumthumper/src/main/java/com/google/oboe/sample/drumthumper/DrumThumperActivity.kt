@@ -38,7 +38,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     private var mDrumPlayer = DrumPlayer()
 
-    private val mUseDeviceChangeFallback = true
+    private val mUseDeviceChangeFallback = false
     private val mSwitchTimerMs = 500L
 
     private var mDevicesInitialized = false
@@ -104,16 +104,17 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        if (mUseDeviceChangeFallback) {
-            mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
-        }
-
-        mDrumPlayer.setupAudioStream()
+        mDrumPlayer.allocSampleData()
         mDrumPlayer.loadWavAssets(getAssets())
     }
 
     override fun onStart() {
         super.onStart()
+        if (mUseDeviceChangeFallback) {
+            mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
+        }
+
+        mDrumPlayer.setupAudioStream()
     }
 
     override fun onResume() {
@@ -172,15 +173,17 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun onStop() {
         super.onStop()
 
+        if (mUseDeviceChangeFallback) {
+            mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
+        }
+
+        mDrumPlayer.teardownAudioStream()
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        if (mUseDeviceChangeFallback) {
-            mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
-        }
-        mDrumPlayer.teardownAudioStream()
+        mDrumPlayer.unloadWavAssets();
     }
 
     //
