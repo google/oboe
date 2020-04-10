@@ -171,19 +171,18 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     }
 
     override fun onStop() {
-        super.onStop()
-
         if (mUseDeviceChangeFallback) {
             mAudioMgr!!.unregisterAudioDeviceCallback(mDeviceListener)
         }
 
         mDrumPlayer.teardownAudioStream()
+
+        super.onStop()
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-
         mDrumPlayer.unloadWavAssets();
+        super.onDestroy()
     }
 
     //
