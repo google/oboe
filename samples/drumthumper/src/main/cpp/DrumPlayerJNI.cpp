@@ -81,7 +81,7 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_loadWa
 }
 
 /**
- * Native (JNI) implementation of DrumPlayer.nloadWavAssetsNative()
+ * Native (JNI) implementation of DrumPlayer.unloadWavAssetsNative()
  */
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_unloadWavAssetsNative(JNIEnv* env, jobject) {
     sDTPlayer.unloadSampleData();
