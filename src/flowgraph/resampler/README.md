@@ -48,14 +48,15 @@ Assume you start with these variables and a method that returns the next input f
     
 The resampler has a method isWriteNeeded() that tells you whether to write to or read from the resampler.
 
-    while (numOutputFrames > 0) {
+    int outputFramesLeft = numOutputFrames;
+    while (outputFramesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             const float *frame = getNextInputFrame(); // you provide this
             resampler->writeNextFrame(frame);
         } else {
             resampler->readNextFrame(outputBuffer);
             outputBuffer += channelCount;
-            numOutputFrames--;
+            outputFramesLeft--;
         }
     }
 
@@ -71,11 +72,12 @@ Assume you start with these variables:
     int    numOutputFrames = 0;
     int    channelCount;    // 1 for mono, 2 for stereo
 
-    while (numInputFrames > 0) {
+    int inputFramesLeft = numInputFrames;
+    while (inputFramesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
             inputBuffer += channelCount;
-            numInputFrames--;
+            inputFramesLeft--;
         } else {
             resampler->readNextFrame(outputBuffer);
             outputBuffer += channelCount;
