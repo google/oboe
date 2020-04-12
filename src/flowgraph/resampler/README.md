@@ -2,7 +2,7 @@
 
 This folder contains a sample rate converter, or "resampler".
 It is part of [Oboe](https://github.com/google/oboe) but has no dependencies on Oboe.
-So it can be used outside of Oboe.
+So the contents of this folder can be used outside of Oboe.
 
 The converter is based on a sinc function that has been windowed by a hyperbolic cosine.
 We found this had fewer artifacts than the more traditional Kaiser window.
