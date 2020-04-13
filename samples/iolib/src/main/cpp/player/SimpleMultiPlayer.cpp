@@ -150,7 +150,7 @@ void SimpleMultiPlayer::unloadSampleData() {
         delete mSampleSources[bufferIndex];
     }
 
-    mSampleSources.clear();
+    mSampleBuffers.clear();
     mSampleSources.clear();
 
     mNumSampleBuffers = 0;

@@ -110,11 +110,12 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
     override fun onStart() {
         super.onStart()
+
+        mDrumPlayer.setupAudioStream()
+
         if (mUseDeviceChangeFallback) {
             mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
         }
-
-        mDrumPlayer.setupAudioStream()
     }
 
     override fun onResume() {
