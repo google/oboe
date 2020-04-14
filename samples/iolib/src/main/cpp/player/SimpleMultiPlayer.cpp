@@ -86,18 +86,31 @@ bool SimpleMultiPlayer::openStream() {
 
     Result result = builder.openManagedStream(mAudioStream);
     if (result != Result::OK){
+        __android_log_print(
+                ANDROID_LOG_ERROR,
+                TAG,
+                "openStream failed. Error: %s", convertToText(result));
         return false;
     }
 
     // Reduce stream latency by setting the buffer size to a multiple of the burst size
-    auto setBufferSizeResult = mAudioStream->setBufferSizeInFrames(
+    // Note: this will fail with ErrorUnimplemented if we are using a callback with OpenSL ES
+    // See oboe::AudioStreamBuffered::setBufferSizeInFrames
+    result = mAudioStream->setBufferSizeInFrames(
             mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    if (setBufferSizeResult != Result::OK) {
-        return false;
+    if (result != Result::OK) {
+        __android_log_print(
+                ANDROID_LOG_WARN,
+                TAG,
+                "setBufferSizeInFrames failed. Error: %s", convertToText(result));
     }
 
-    result = mAudioStream->start();
+    result = mAudioStream->requestStart();
     if (result != Result::OK){
+        __android_log_print(
+                ANDROID_LOG_ERROR,
+                TAG,
+                "requestStart failed. Error: %s", convertToText(result));
         return false;
     }
 
