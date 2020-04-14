@@ -29,16 +29,19 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     ~LiveEffectEngine();
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
-    void setEffectOn(bool isOn);
-    void openStreams();
+    /**
+     * @param isOn
+     * @return true if it succeeds
+     */
+    bool setEffectOn(bool isOn);
 
     /*
      * oboe::AudioStreamCallback interface implementation
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream,
-                                          void *audioData, int32_t numFrames);
-    void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error);
-    void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error);
+                                          void *audioData, int32_t numFrames) override;
+    void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
+    void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 
     bool setAudioApi(oboe::AudioApi);
     bool isAAudioSupported(void);
@@ -52,12 +55,14 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     int32_t mSampleRate = oboe::kUnspecified;
     int32_t mInputChannelCount = oboe::ChannelCount::Stereo;
     int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
-    oboe::AudioStream *mRecordingStream = nullptr;
-    oboe::AudioStream *mPlayStream = nullptr;
+
+    oboe::ManagedStream mRecordingStream;
+    oboe::ManagedStream mPlayStream;
+
     oboe::AudioApi mAudioApi = oboe::AudioApi::AAudio;
 
-    void closeStream(oboe::AudioStream *stream);
-
+    oboe::Result openStreams();
+    void closeStream(oboe::ManagedStream &stream);
 
     oboe::AudioStreamBuilder *setupCommonStreamParameters(
         oboe::AudioStreamBuilder *builder);
@@ -65,7 +70,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
         oboe::AudioStreamBuilder *builder);
     oboe::AudioStreamBuilder *setupPlaybackStreamParameters(
         oboe::AudioStreamBuilder *builder);
-    void warnIfNotLowLatency(oboe::AudioStream *stream);
+    void warnIfNotLowLatency(oboe::ManagedStream &stream);
 };
 
 #endif  // OBOE_LIVEEFFECTENGINE_H

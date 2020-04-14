@@ -113,7 +113,11 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_clearO
  */
 JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_restartStream() {
     sDTPlayer.resetAll();
-    sDTPlayer.openStream();
+    if (sDTPlayer.openStream()){
+        __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "openStream failed");
+    }
 }
 
 #ifdef __cplusplus

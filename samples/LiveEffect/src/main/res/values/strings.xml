@@ -5,6 +5,7 @@
     <string name="stop_effect">Stop</string>
     <string name="need_record_audio_permission">"This sample needs RECORD_AUDIO permission"</string>
     <string name="status_playing">Engine Playing ....</string>
+    <string name="status_open_failed">Engine Failed to Open Streams!</string>
     <string name="status_record_audio_denied">Error: Permission for RECORD_AUDIO was denied</string>
     <string name="status_touch_to_begin">RECORD_AUDIO permission granted, touch START to begin</string>
     <string name="status_warning">Warning: If you run this sample using the built-in microphone
