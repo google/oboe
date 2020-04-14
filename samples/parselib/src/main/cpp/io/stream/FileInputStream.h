@@ -18,7 +18,7 @@
 
 #include "InputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 /**
  * A concrete implementation of InputStream for a file data source
@@ -44,6 +44,6 @@ private:
     int mFH;
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_STREAM_FILEINPUTSTREAM_H_

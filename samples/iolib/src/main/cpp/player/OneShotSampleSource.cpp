@@ -18,32 +18,12 @@
 
 #include "io/wav/WavStreamReader.h"
 
-#include "OneShotSampleBuffer.h"
+#include "OneShotSampleSource.h"
 
-namespace wavlib {
+namespace iolib {
 
-void OneShotSampleBuffer::loadSampleData(WavStreamReader* reader) {
-    mProperties.channelCount = reader->getNumChannels();
-    mProperties.sampleRate = reader->getSampleRate();
-
-    reader->positionToAudio();
-
-    numSampleFrames = reader->getNumSampleFrames() * reader->getNumChannels();
-    mSampleData = new float[numSampleFrames];
-    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
-}
-
-void OneShotSampleBuffer::unloadSampleData() {
-    delete[] mSampleData;
-    mSampleData = nullptr;
-    numSampleFrames = 0;
-
-    // kinda by definition..
-    mCurFrameIndex = 0;
-    mIsPlaying = false;
-}
-
-void OneShotSampleBuffer::mixAudio(float* outBuff, int32_t numFrames) {
+void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
+    int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
     int32_t numWriteFrames = mIsPlaying
                          ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
                          : 0;
@@ -51,8 +31,11 @@ void OneShotSampleBuffer::mixAudio(float* outBuff, int32_t numFrames) {
     if (numWriteFrames != 0) {
         // Mix in the samples
         int32_t lastIndex = mCurFrameIndex + numWriteFrames;
+
+        // investigate unrolling this loop...
+        const float* data  = mSampleBuffer->getSampleData();
         for(int32_t index = 0; index < numWriteFrames; index++) {
-            outBuff[index] += mSampleData[mCurFrameIndex++];
+            outBuff[index] += data[mCurFrameIndex++];
         }
 
         if (mCurFrameIndex >= numSampleFrames) {

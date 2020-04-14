@@ -18,7 +18,7 @@
 
 #include "InputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 /**
  * A concrete implementation of InputStream for a memory buffer data source
@@ -50,6 +50,6 @@ private:
     int32_t mPos;
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_STREAM_MEMINPUTSTREAM_H_

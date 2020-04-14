@@ -15,7 +15,7 @@
  */
 #include "InputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 // All of the methods of InputStream are pure virtual
 

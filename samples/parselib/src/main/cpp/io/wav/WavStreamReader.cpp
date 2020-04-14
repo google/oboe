@@ -28,7 +28,7 @@
 
 static const char *TAG = "WavStreamReader";
 
-namespace wavlib {
+namespace parselib {
 
 WavStreamReader::WavStreamReader(InputStream *stream) {
     mStream = stream;
@@ -156,4 +156,4 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     return 0;
 }
 
-} // namespace wavlib
+} // namespace parselib

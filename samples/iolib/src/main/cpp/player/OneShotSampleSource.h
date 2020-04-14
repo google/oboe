@@ -14,29 +14,24 @@
  * limitations under the License.
  */
 
-#ifndef _PLAYER_ONESHOTSAMPLEBUFFER_
-#define _PLAYER_ONESHOTSAMPLEBUFFER_
+#ifndef _PLAYER_ONESHOTSAMPLESOURCE_
+#define _PLAYER_ONESHOTSAMPLESOURCE_
 
-#include "SampleBuffer.h"
+#include "SampleSource.h"
 
-namespace wavlib {
-
-class WavStreamReader;
+namespace iolib {
 
 /**
  * Provides audio data which will play through once when triggered
  */
-class OneShotSampleBuffer: public SampleBuffer {
+class OneShotSampleSource: public SampleSource {
 public:
-    OneShotSampleBuffer() : SampleBuffer() {};
-    virtual ~OneShotSampleBuffer() {};
-
-    void loadSampleData(WavStreamReader* reader);
-    void unloadSampleData();
+    OneShotSampleSource(SampleBuffer *sampleBuffer) : SampleSource(sampleBuffer) {};
+    virtual ~OneShotSampleSource() {};
 
     virtual void mixAudio(float* outBuff, int32_t numFrames);
 };
 
-} // namespace wavlib
+} // namespace iolib
 
-#endif //_PLAYER_ONESHOTSAMPLEBUFFER_
+#endif //_PLAYER_ONESHOTSAMPLESOURCE_

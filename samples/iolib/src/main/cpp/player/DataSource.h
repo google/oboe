@@ -19,13 +19,7 @@
 
 #include <cstdint>
 
-/*
- * Defines the relevant properties of the audio data being sourced.
- */
-struct AudioProperties {
-    int32_t channelCount;
-    int32_t sampleRate;
-};
+namespace iolib {
 
 /*
  * Defines an interface for audio data sources for the SimpleMultiPlayer class.
@@ -33,8 +27,10 @@ struct AudioProperties {
 class DataSource {
 public:
     virtual ~DataSource() {};
-    virtual AudioProperties getProperties() const  = 0;
+
+    virtual void mixAudio(float* outBuff, int numFrames) = 0;
 };
 
+}
 
 #endif //_PLAYER_AUDIOSOURCE_H_

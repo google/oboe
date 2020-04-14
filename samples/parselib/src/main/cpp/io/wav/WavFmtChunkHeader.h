@@ -20,7 +20,7 @@
 
 class InputStream;
 
-namespace wavlib {
+namespace parselib {
 
 /**
  * Encapsulates a WAV file 'fmt ' chunk.
@@ -51,6 +51,6 @@ public:
     void read(InputStream *stream);
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_WAV_WAVFMTCHUNKHEADER_H_

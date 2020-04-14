@@ -14,27 +14,8 @@
  * limitations under the License.
  */
 
-#include "SampleBuffer.h"
-
-#include "io/wav/WavStreamReader.h"
+#include "SampleSource.h"
 
 namespace iolib {
-
-void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
-    mAudioProperties.channelCount = reader->getNumChannels();
-    mAudioProperties.sampleRate = reader->getSampleRate();
-
-    reader->positionToAudio();
-
-    mNumSamples = reader->getNumSampleFrames() * reader->getNumChannels();
-    mSampleData = new float[mNumSamples];
-
-    reader->getDataFloat(mSampleData, reader->getNumSampleFrames());
-}
-
-void SampleBuffer::unloadSampleData() {
-    delete[] mSampleData;
-    mNumSamples = 0;
-}
-
+    // for now, all methods of SampleSource are either in-line or pure virtual
 }

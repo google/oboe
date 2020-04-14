@@ -16,16 +16,20 @@
 
 #include <android/log.h>
 
-// wavlib includes
+// parselib includes
 #include <io/stream/MemInputStream.h>
 #include <io/wav/WavStreamReader.h>
-#include "OneShotSampleBuffer.h"
 
+// local includes
+#include "OneShotSampleSource.h"
 #include "SimpleMultiPlayer.h"
 
 static const char* TAG = "SimpleMultiPlayer";
 
-using namespace wavlib;
+using namespace oboe;
+using namespace parselib;
+
+namespace iolib {
 
 constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
@@ -46,9 +50,10 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
 
     memset(audioData, 0, numFrames * sizeof(float));
 
+    // OneShotSampleSource* sources = mSampleSources.get();
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {
-        if (mSampleBuffers[index].isPlaying()) {
-            mSampleBuffers[index].mixAudio((float*)audioData, numFrames);
+        if (mSampleSources[index]->isPlaying()) {
+            mSampleSources[index]->mixAudio((float*)audioData, numFrames);
         }
     }
 
@@ -79,79 +84,107 @@ bool SimpleMultiPlayer::openStream() {
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 
-    Result result = builder.openStream(&mAudioStream);
+    Result result = builder.openManagedStream(mAudioStream);
     if (result != Result::OK){
+        __android_log_print(
+                ANDROID_LOG_ERROR,
+                TAG,
+                "openStream failed. Error: %s", convertToText(result));
         return false;
     }
 
     // Reduce stream latency by setting the buffer size to a multiple of the burst size
-    auto setBufferSizeResult = mAudioStream->setBufferSizeInFrames(
+    // Note: this will fail with ErrorUnimplemented if we are using a callback with OpenSL ES
+    // See oboe::AudioStreamBuffered::setBufferSizeInFrames
+    result = mAudioStream->setBufferSizeInFrames(
             mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    if (setBufferSizeResult != Result::OK) {
-        return false;
+    if (result != Result::OK) {
+        __android_log_print(
+                ANDROID_LOG_WARN,
+                TAG,
+                "setBufferSizeInFrames failed. Error: %s", convertToText(result));
     }
 
-    result = mAudioStream->start();
+    result = mAudioStream->requestStart();
     if (result != Result::OK){
+        __android_log_print(
+                ANDROID_LOG_ERROR,
+                TAG,
+                "requestStart failed. Error: %s", convertToText(result));
         return false;
     }
 
     return true;
 }
 
-void SimpleMultiPlayer::setupAudioStream(int32_t numSampleBuffers, int32_t channelCount, int32_t sampleRate) {
-
+void SimpleMultiPlayer::setupAudioStream(int32_t channelCount, int32_t sampleRate) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
     mChannelCount = channelCount;
     mSampleRate = sampleRate;
+    mSampleRate = sampleRate;
 
-    mSampleBuffers = new OneShotSampleBuffer[mNumSampleBuffers = numSampleBuffers];
     openStream();
 }
 
 void SimpleMultiPlayer::teardownAudioStream() {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "teardownAudioStream()");
     // tear down the player
     if (mAudioStream != nullptr) {
         mAudioStream->stop();
-        delete mAudioStream;
-        mAudioStream = nullptr;
     }
+}
 
-    // Unload the samples
-    unloadSampleData();
+void SimpleMultiPlayer::allocSampleData(int32_t numSampleBuffers) {
+    mNumSampleBuffers = numSampleBuffers;
+
+    for(int index = 0; index < numSampleBuffers; index++) {
+        SampleBuffer* buffer = new SampleBuffer();
+        OneShotSampleSource* source = new OneShotSampleSource(buffer);
+        mSampleBuffers.push_back(buffer);
+        mSampleSources.push_back(source);
+    }
 }
 
 void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "loadSampleDataFromAsset()");
     MemInputStream stream(dataBytes, dataLen);
 
     WavStreamReader reader(&stream);
     reader.parse();
 
-    mSampleBuffers[index].loadSampleData(&reader);
+    mSampleBuffers[index]->loadSampleData(&reader);
 }
 
 void SimpleMultiPlayer::unloadSampleData() {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "unloadSampleData()");
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleBuffers[bufferIndex].unloadSampleData();
+        mSampleBuffers[bufferIndex]->unloadSampleData();
+        delete mSampleBuffers[bufferIndex];
+        delete mSampleSources[bufferIndex];
     }
-    delete[] mSampleBuffers;
-    mSampleBuffers = nullptr;
+
+    mSampleBuffers.clear();
+    mSampleSources.clear();
+
     mNumSampleBuffers = 0;
 }
 
 void SimpleMultiPlayer::triggerDown(int32_t index) {
     if (index < mNumSampleBuffers) {
-        mSampleBuffers[index].setPlayMode();
+        mSampleSources[index]->setPlayMode();
     }
 }
 
 void SimpleMultiPlayer::triggerUp(int32_t index) {
     if (index < mNumSampleBuffers) {
-        mSampleBuffers[index].setStopMode();
+        mSampleSources[index]->setStopMode();
     }
 }
 
 void SimpleMultiPlayer::resetAll() {
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleBuffers[bufferIndex].setStopMode();
+        mSampleSources[bufferIndex]->setStopMode();
     }
+}
+
 }

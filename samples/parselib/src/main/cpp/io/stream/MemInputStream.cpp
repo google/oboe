@@ -18,7 +18,7 @@
 
 #include "MemInputStream.h"
 
-namespace wavlib {
+namespace parselib {
 
 int32_t MemInputStream::read(void *buff, int32_t numBytes) {
     int32_t numAvail = mBufferLen - mPos;
@@ -57,4 +57,4 @@ void MemInputStream::setPos(int32_t pos) {
     }
 }
 
-} // namespace wavelib
+} // namespace parselib

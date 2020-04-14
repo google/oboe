@@ -18,7 +18,7 @@
 
 #include <cstdint>
 
-namespace wavlib {
+namespace parselib {
 
 /**
  * An interface declaration for a stream of bytes. Concrete implements for File and Memory Buffers
@@ -58,6 +58,6 @@ public:
     virtual void setPos(int32_t pos) = 0;
 };
 
-} // namespace wavlib
+} // namespace parselib
 
 #endif // _IO_STREAM_INPUTSTREAM_H_
