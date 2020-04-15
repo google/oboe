@@ -85,6 +85,8 @@ void OboeStreamCallbackProxy::onErrorBeforeClose(oboe::AudioStream *audioStream,
     if (mCallback != nullptr) {
         mCallback->onErrorBeforeClose(audioStream, error);
     }
+    usleep(2000 * 1000); // FIXME - sleep to provoke a race condition
+    LOGD("OboeStreamCallbackProxy::%s(%p, %d) returning after sleep", __func__, audioStream, error);
 }
 
 void OboeStreamCallbackProxy::onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result  error) {
