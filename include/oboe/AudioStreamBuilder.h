@@ -25,6 +25,7 @@ namespace oboe {
     // This depends on AudioStream, so we use forward declaration, it will close and delete the stream
     struct StreamDeleterFunctor;
     using ManagedStream = std::unique_ptr<AudioStream, StreamDeleterFunctor>;
+
 /**
  * Factory class for an audio Stream.
  */
@@ -398,6 +399,8 @@ public:
      * @return OBOE_OK if successful or a negative error code.
      */
     Result openManagedStream(ManagedStream &stream);
+
+    Result openSharedStream(std::shared_ptr<oboe::AudioStream> &sharedStream);
 
 private:
 

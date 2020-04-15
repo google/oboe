@@ -74,6 +74,17 @@ static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
+// This runs in its own thread.
+// Only one of these threads will be launched from internalErrorCallback().
+// Prevents deletion of the stream if the app is using AudioStreamBuilder::openSharedStream()
+static void oboe_aaudio_error_thread_proc_shared(std::shared_ptr<AudioStream> sharedStream,
+                                          Result error) {
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
+    oboe_aaudio_error_thread_proc(oboeStream, error);
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
+}
+
 namespace oboe {
 
 /*
@@ -101,12 +112,21 @@ void AudioStreamAAudio::internalErrorCallback(
         void *userData,
         aaudio_result_t error) {
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+
+    // Prevents deletion of the stream if the app is using AudioStreamBuilder::openSharedStream()
+    std::shared_ptr<AudioStream> sharedStream = oboeStream->lockWeakThis();
+
     // These checks should be enough because we assume that the stream close()
     // will join() any active callback threads and will not allow new callbacks.
     if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
         LOGE("%s() multiple error callbacks called!", __func__);
     } else if (stream != oboeStream->getUnderlyingStream()) {
         LOGD("%s() stream already closed", __func__); // can happen if there are bugs
+    } else if (sharedStream) {
+        // Handle error on a separate thread using shared pointer.
+        std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream,
+                      static_cast<Result>(error));
+        t.detach();
     } else {
         // Handle error on a separate thread.
         std::thread t(oboe_aaudio_error_thread_proc, oboeStream,

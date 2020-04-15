@@ -418,6 +418,22 @@ public:
     ResultWithValue<int32_t> waitForAvailableFrames(int32_t numFrames,
                                                     int64_t timeoutNanoseconds);
 
+    /*
+     * INTERNAL USE ONLY
+     * Set a weak_ptr to this stream from the shared_ptr so that we can
+     * later use a shared_ptr in the error callback.
+     */
+    void setWeakThis(std::shared_ptr<oboe::AudioStream> &sharedStream) {
+        mWeakThis = sharedStream;
+    }
+
+    /*
+     * Make a shared_ptr that will prevent this stream from being deleted.
+     */
+    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
+        return mWeakThis.lock();
+    }
+
 protected:
 
     /**
@@ -497,17 +513,18 @@ protected:
 
     std::mutex           mLock; // for synchronizing start/stop/close
 
+
 private:
     int                  mPreviousScheduler = -1;
 
     std::atomic<bool>    mDataCallbackEnabled{false};
     std::atomic<bool>    mErrorCallbackCalled{false};
 
-
+    std::weak_ptr<AudioStream> mWeakThis;
 };
 
 /**
- * This struct is a stateless functor which closes a audiostream prior to its deletion.
+ * This struct is a stateless functor which closes an AudioStream prior to its deletion.
  * This means it can be used to safely delete a smart pointer referring to an open stream.
  */
     struct StreamDeleterFunctor {
