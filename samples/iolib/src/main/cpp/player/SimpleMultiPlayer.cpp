@@ -48,12 +48,12 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
         __android_log_print(ANDROID_LOG_ERROR, TAG, "  streamState::Disconnected");
     }
 
-    memset(audioData, 0, numFrames * sizeof(float));
+    memset(audioData, 0, numFrames * mChannelCount * sizeof(float));
 
     // OneShotSampleSource* sources = mSampleSources.get();
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {
         if (mSampleSources[index]->isPlaying()) {
-            mSampleSources[index]->mixAudio((float*)audioData, numFrames);
+            mSampleSources[index]->mixAudio((float*)audioData, mChannelCount, numFrames);
         }
     }
 
@@ -134,25 +134,10 @@ void SimpleMultiPlayer::teardownAudioStream() {
     }
 }
 
-void SimpleMultiPlayer::allocSampleData(int32_t numSampleBuffers) {
-    mNumSampleBuffers = numSampleBuffers;
-
-    for(int index = 0; index < numSampleBuffers; index++) {
-        SampleBuffer* buffer = new SampleBuffer();
-        OneShotSampleSource* source = new OneShotSampleSource(buffer);
-        mSampleBuffers.push_back(buffer);
-        mSampleSources.push_back(source);
-    }
-}
-
-void SimpleMultiPlayer::loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "loadSampleDataFromAsset()");
-    MemInputStream stream(dataBytes, dataLen);
-
-    WavStreamReader reader(&stream);
-    reader.parse();
-
-    mSampleBuffers[index]->loadSampleData(&reader);
+void SimpleMultiPlayer::addSampleSource(OneShotSampleSource* source, SampleBuffer* buffer) {
+    mSampleBuffers.push_back(buffer);
+    mSampleSources.push_back(source);
+    mNumSampleBuffers++;
 }
 
 void SimpleMultiPlayer::unloadSampleData() {

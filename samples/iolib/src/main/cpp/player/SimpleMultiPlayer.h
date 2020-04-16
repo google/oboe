@@ -47,8 +47,16 @@ public:
     bool openStream();
 
     // Wave Sample Loading...
-    void allocSampleData(int32_t numSampleBuffers);
-    void loadSampleDataFromAsset(byte* dataBytes, int32_t dataLen, int32_t index);
+    /**
+     * Adds the SampleSource/Samplebuffer pair to the list of source channels.
+     * Transfers ownership of those objects so that they can be deleted/unloaded.
+     * The indexes associated with each source channel is the order in which they
+     * are added.
+     */
+    void addSampleSource(OneShotSampleSource* source, SampleBuffer* buffer);
+    /**
+     * Deallocates and deletes all added source/buffer (see addSampleSource()).
+     */
     void unloadSampleData();
 
     void triggerDown(int32_t index);
@@ -63,7 +71,7 @@ private:
     // Oboe Audio Stream
     oboe::ManagedStream mAudioStream;
 
-    // Audio attributs
+    // Audio attributes
     int32_t mChannelCount;
     int32_t mSampleRate;
 

@@ -28,11 +28,18 @@ namespace iolib {
 /**
  * Defines an interface for audio data provided to a player object.
  * Concrete examples include OneShotSampleBuffer. One could imagine a LoopingSampleBuffer.
+ * Supports stereo position via mPan member.
  */
 class SampleSource: public DataSource {
 public:
-    SampleSource(SampleBuffer *sampleBuffer)
-     : mSampleBuffer(sampleBuffer), mCurFrameIndex(0), mIsPlaying(false) {};
+    // Pan position of the audio in a stereo mix
+    // [left:-1.0f] <- [center: 0.0f] -> -[right: 1.0f]
+    static constexpr float PAN_HARDLEFT = -1.0f;
+    static constexpr float PAN_HARDRIGHT = 1.0f;
+    static constexpr float PAN_CENTER = 0.0f;
+
+    SampleSource(SampleBuffer *sampleBuffer, float pan)
+     : mSampleBuffer(sampleBuffer), mCurFrameIndex(0), mIsPlaying(false), mPan(pan) {};
     virtual ~SampleSource() {};
 
     void setPlayMode() { mCurFrameIndex = 0; mIsPlaying = true; }
@@ -40,12 +47,24 @@ public:
 
     bool isPlaying() { return mIsPlaying; }
 
+    void setPan(float pan) {
+        if (pan < PAN_HARDLEFT) {
+            mPan = PAN_HARDLEFT;
+        } else if (pan > PAN_HARDRIGHT) {
+            mPan = PAN_HARDRIGHT;
+        } else {
+            mPan = pan;
+        }
+    }
+
 protected:
     SampleBuffer    *mSampleBuffer;
 
     int32_t mCurFrameIndex;
 
     bool mIsPlaying;
+
+    float mPan;
 };
 
 } // namespace wavlib

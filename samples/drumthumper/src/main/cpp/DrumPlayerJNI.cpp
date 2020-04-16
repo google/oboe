@@ -22,6 +22,10 @@
 
 #include <android/log.h>
 
+// parselib includes
+#include <io/stream/MemInputStream.h>
+#include <io/wav/WavStreamReader.h>
+
 #include <player/OneShotSampleSource.h>
 #include <player/SimpleMultiPlayer.h>
 
@@ -33,6 +37,7 @@ extern "C" {
 #endif
 
 using namespace iolib;
+using namespace parselib;
 
 static SimpleMultiPlayer sDTPlayer;
 
@@ -60,23 +65,26 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_teardo
 /**
  * Native (JNI) implementation of DrumPlayer.allocSampleDataNative()
  */
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_allocSampleDataNative(
-        JNIEnv* env, jobject, jint numSampleBuffers) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "allocSampleDataNative()");
-
-    // we know in this case that the sample buffers are all 1-channel, 44.1K
-    sDTPlayer.allocSampleData(numSampleBuffers);
-}
-
 /**
  * Native (JNI) implementation of DrumPlayer.loadWavAssetNative()
  */
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index) {
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index, jfloat pan) {
     int len = env->GetArrayLength (bytearray);
 
     unsigned char* buf = new unsigned char[len];
     env->GetByteArrayRegion (bytearray, 0, len, reinterpret_cast<jbyte*>(buf));
-    sDTPlayer.loadSampleDataFromAsset(buf, len, index);
+
+    MemInputStream stream(buf, len);
+
+    WavStreamReader reader(&stream);
+    reader.parse();
+
+    SampleBuffer* sampleBuffer = new SampleBuffer();
+    sampleBuffer->loadSampleData(&reader);
+
+    OneShotSampleSource* source = new OneShotSampleSource(sampleBuffer, pan);
+    sDTPlayer.addSampleSource(source, sampleBuffer);
+
     delete[] buf;
 }
 
@@ -97,21 +105,21 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_trigge
 /**
  * Native (JNI) implementation of DrumPlayer.getOutputReset()
  */
-JNIEXPORT jboolean JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getOutputReset() {
+JNIEXPORT jboolean JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getOutputReset(JNIEnv*, jobject) {
     return sDTPlayer.getOutputReset();
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.clearOutputReset()
  */
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_clearOutputReset() {
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_clearOutputReset(JNIEnv*, jobject) {
     sDTPlayer.clearOutputReset();
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.restartStream()
  */
-JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_restartStream() {
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
     sDTPlayer.resetAll();
     if (sDTPlayer.openStream()){
         __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");

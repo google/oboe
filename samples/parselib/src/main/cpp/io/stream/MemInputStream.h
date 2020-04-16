@@ -26,7 +26,7 @@ namespace parselib {
 class MemInputStream : public InputStream {
 public:
     /** constructor. Caller is presumed to have allocated and filled the memory buffer */
-    MemInputStream(unsigned char *buff, int32_t len) : mBuffer(buff), mPos(0), mBufferLen(len) {}
+    MemInputStream(unsigned char *buff, int32_t len) : mBuffer(buff), mBufferLen(len), mPos(0) {}
     virtual ~MemInputStream() {}
 
     virtual int32_t read(void *buff, int32_t numBytes);
