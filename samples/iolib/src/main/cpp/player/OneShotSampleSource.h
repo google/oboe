@@ -22,14 +22,15 @@
 namespace iolib {
 
 /**
- * Provides audio data which will play through once when triggered
+ * Provides audio data which will play through ONCE when triggered
+ * Currently the sample data is assumed to be MONO
  */
 class OneShotSampleSource: public SampleSource {
 public:
-    OneShotSampleSource(SampleBuffer *sampleBuffer) : SampleSource(sampleBuffer) {};
+    OneShotSampleSource(SampleBuffer *sampleBuffer, float pan) : SampleSource(sampleBuffer, pan) {};
     virtual ~OneShotSampleSource() {};
 
-    virtual void mixAudio(float* outBuff, int32_t numFrames);
+    virtual void mixAudio(float* outBuff, int numChannels, int32_t numFrames);
 };
 
 } // namespace iolib

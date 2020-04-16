@@ -22,11 +22,10 @@ import java.io.IOException
 class DrumPlayer {
     companion object {
         // Sample attributes
-        val NUM_CHANNELS: Int = 1
-        val SAMPLE_RATE: Int = 44100
+        val NUM_CHANNELS: Int = 2       // Stereo Playback, set to 1 for Mono playback
+        val SAMPLE_RATE: Int = 44100    // All the input samples are 44.1K
 
         // Sample Buffer IDs
-        val NUM_SAMPLES: Int = 8
         val BASSDRUM: Int = 0
         val SNAREDRUM: Int = 1
         val CRASHCYMBAL: Int = 2
@@ -35,6 +34,16 @@ class DrumPlayer {
         val LOWTOM: Int = 5
         val HIHATOPEN: Int = 6
         val HIHATCLOSED: Int = 7
+
+        // Pan position for each drum sample
+        val PAN_BASSDRUM: Float = 0f         // Dead Center
+        val PAN_SNAREDRUM: Float = 0.25f     // A little Right
+        val PAN_CRASHCYMBAL: Float = -0.75f  // Mostly Left
+        val PAN_RIDECYMBAL: Float = 1.0f     // Hard Right
+        val PAN_MIDTOM: Float = -0.75f       // Mostly Left
+        val PAN_LOWTOM: Float = 0.75f        // Mostly Right
+        val PAN_HIHATOPEN: Float = -1.0f     // Hard Left
+        val PAN_HIHATCLOSED: Float = -1.0f   // Hard Left
 
         // Logging Tag
         val TAG: String = "DrumPlayer"
@@ -49,33 +58,29 @@ class DrumPlayer {
     }
 
     // asset-based samples
-    fun allocSampleData() {
-        allocSampleDataNative(NUM_SAMPLES)
-    }
-
     fun loadWavAssets(assetMgr: AssetManager) {
-        loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM)
-        loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM)
-        loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL)
-        loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL)
-        loadWavAsset(assetMgr, "MidTom.wav", MIDTOM)
-        loadWavAsset(assetMgr, "LowTom.wav", LOWTOM)
-        loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN)
-        loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED)
+        loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM, PAN_BASSDRUM)
+        loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM, PAN_SNAREDRUM)
+        loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL, PAN_CRASHCYMBAL)
+        loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL, PAN_RIDECYMBAL)
+        loadWavAsset(assetMgr, "MidTom.wav", MIDTOM, PAN_MIDTOM)
+        loadWavAsset(assetMgr, "LowTom.wav", LOWTOM, PAN_LOWTOM)
+        loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN, PAN_HIHATOPEN)
+        loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED, PAN_HIHATCLOSED)
     }
 
     fun unloadWavAssets() {
         unloadWavAssetsNative()
     }
 
-    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int) {
+    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) {
         try {
             val assetFD = assetMgr.openFd(assetName)
             val dataStream = assetFD.createInputStream();
             var dataLen = assetFD.getLength().toInt()
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
-            loadWavAssetNative(dataBytes, index)
+            loadWavAssetNative(dataBytes, index, pan)
             assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
@@ -85,8 +90,7 @@ class DrumPlayer {
     external fun setupAudioStreamNative(numChannels: Int, sampleRate: Int)
     external fun teardownAudioStreamNative()
 
-    external fun allocSampleDataNative(numSampleBuffers: Int)
-    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int)
+    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float)
     external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)

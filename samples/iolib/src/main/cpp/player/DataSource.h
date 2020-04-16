@@ -28,7 +28,7 @@ class DataSource {
 public:
     virtual ~DataSource() {};
 
-    virtual void mixAudio(float* outBuff, int numFrames) = 0;
+    virtual void mixAudio(float* outBuff, int numChannels, int numFrames) = 0;
 };
 
 }

@@ -104,7 +104,7 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
 
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        mDrumPlayer.allocSampleData()
+        // mDrumPlayer.allocSampleData()
         mDrumPlayer.loadWavAssets(getAssets())
     }
 

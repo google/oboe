@@ -22,7 +22,7 @@
 
 namespace iolib {
 
-void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
+void OneShotSampleSource::mixAudio(float* outBuff, int numChannels, int32_t numFrames) {
     int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
     int32_t numWriteFrames = mIsPlaying
                          ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
@@ -30,12 +30,24 @@ void OneShotSampleSource::mixAudio(float* outBuff, int32_t numFrames) {
 
     if (numWriteFrames != 0) {
         // Mix in the samples
-        int32_t lastIndex = mCurFrameIndex + numWriteFrames;
+        // int32_t lastIndex = mCurFrameIndex + numWriteFrames;
 
         // investigate unrolling this loop...
         const float* data  = mSampleBuffer->getSampleData();
-        for(int32_t index = 0; index < numWriteFrames; index++) {
-            outBuff[index] += data[mCurFrameIndex++];
+        if (numChannels == 1) {
+            // MONO output
+            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                outBuff[frameIndex] += data[mCurFrameIndex++];
+            }
+        } else if (numChannels == 2) {
+            // STEREO output
+            int dstSampleIndex = 0;
+            float leftGain = -(-mPan + 1.0) / 2.0f;
+            float rightGain = (mPan + 1.0) / 2.0f;
+            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                outBuff[dstSampleIndex++] += data[mCurFrameIndex] * leftGain;
+                outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * rightGain;
+            }
         }
 
         if (mCurFrameIndex >= numSampleFrames) {

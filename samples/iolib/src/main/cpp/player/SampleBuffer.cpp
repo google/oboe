@@ -21,6 +21,7 @@
 namespace iolib {
 
 void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
+    // Although we read this in, at this time we know a-priori that the data is mono
     mAudioProperties.channelCount = reader->getNumChannels();
     mAudioProperties.sampleRate = reader->getSampleRate();
 
