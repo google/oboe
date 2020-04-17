@@ -39,8 +39,10 @@ public:
     static constexpr float PAN_CENTER = 0.0f;
 
     SampleSource(SampleBuffer *sampleBuffer, float pan)
-     : mSampleBuffer(sampleBuffer), mCurFrameIndex(0), mIsPlaying(false), mPan(pan) {};
-    virtual ~SampleSource() {};
+     : mSampleBuffer(sampleBuffer), mCurFrameIndex(0), mIsPlaying(false) {
+        setPan(pan);
+    }
+    virtual ~SampleSource() {}
 
     void setPlayMode() { mCurFrameIndex = 0; mIsPlaying = true; }
     void setStopMode() { mIsPlaying = false; mCurFrameIndex = 0; }
@@ -55,6 +57,10 @@ public:
         } else {
             mPan = pan;
         }
+
+        // useful information: http://www.cs.cmu.edu/~music/icm-online/readings/panlaws/
+        mLeftGain = (mPan * 0.5) + 0.5;
+        mRightGain = 1.0 - mLeftGain;
     }
 
 protected:
@@ -64,7 +70,12 @@ protected:
 
     bool mIsPlaying;
 
+    // Logical pan value
     float mPan;
+
+    // precomputed channel gains
+    float mLeftGain;
+    float mRightGain;
 };
 
 } // namespace wavlib
