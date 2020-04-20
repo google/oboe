@@ -21,6 +21,7 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
 
 import androidx.appcompat.app.AppCompatActivity
@@ -30,8 +31,11 @@ import java.util.*
 import java.time.LocalDateTime;
 
 import kotlin.concurrent.schedule
+import kotlin.math.roundToInt
 
-class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListener {
+class DrumThumperActivity : AppCompatActivity(),
+        TriggerPad.DrumPadTriggerListener,
+        SeekBar.OnSeekBarChangeListener {
     private val TAG = "DrumThumperActivity"
 
     private var mAudioMgr: AudioManager? = null
@@ -99,6 +103,26 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         }
     }
 
+    // UI Helpers
+    fun gainPosToGainVal(pos: Int) : Float {
+        // map 0 -> 200 to 0.0f -> 2.0f
+        return pos.toFloat() / 100.0f
+    }
+
+    fun gainValToGainPos(value: Float) : Int {
+        return (value * 100.0f).toInt()
+    }
+
+    fun panPosToPanVal(pos: Int) : Float {
+        // map 0 -> 200 to -1.0f -> 1..0f
+        return (pos.toFloat() - 100.0f) / 100.0f
+    }
+
+    fun panValToPanPos(value: Float) : Int {
+        // map -1.0f -> 1.0f to 0 -> 200
+        return ((value * 200.0f) + 100.0f).toInt()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -125,46 +149,79 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
         setContentView(R.layout.drumthumper_activity)
 
         // hookup the UI
-        run {
-            var pad: TriggerPad = findViewById(R.id.kickPad)
-            pad.addListener(this)
-        }
+        var sb : SeekBar;
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.snarePad)
-            pad.addListener(this)
-        }
+        // "Kick" drum
+        (findViewById(R.id.kickPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.kickPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.BASSDRUM)))
+        sb = (findViewById(R.id.kickGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.BASSDRUM)))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.midTomPad)
-            pad.addListener(this)
-        }
+        // Snare drum
+        (findViewById(R.id.snarePad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.snarePan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.SNAREDRUM)))
+        sb = (findViewById(R.id.snareGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.SNAREDRUM)))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.lowTomPad)
-            pad.addListener(this)
-        }
+        // Mid tom
+        (findViewById(R.id.midTomPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.midTomPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.MIDTOM)))
+        sb = (findViewById(R.id.midTomGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain((DrumPlayer.MIDTOM))))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.hihatOpenPad)
-            pad.addListener(this)
-        }
+        // Low tom
+        (findViewById(R.id.lowTomPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.lowTomPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.LOWTOM)))
+        sb = (findViewById(R.id.lowTomGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.LOWTOM)))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.hihatClosedPad)
-            pad.addListener(this)
-        }
+        // Open hihat
+        (findViewById(R.id.hihatOpenPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.hihatOpenPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.HIHATOPEN)))
+        sb = (findViewById(R.id.hihatOpenGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.HIHATOPEN)))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.ridePad)
-            pad.addListener(this)
-        }
+        // Closed hihat
+        (findViewById(R.id.hihatClosedPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.hihatClosedPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.HIHATCLOSED)))
+        sb = (findViewById(R.id.hihatClosedGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.HIHATCLOSED)))
 
-        run {
-            var pad: TriggerPad = findViewById(R.id.crashPad)
-            pad.addListener(this)
-        }
+        // Ride cymbal
+        (findViewById(R.id.ridePad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.ridePan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.RIDECYMBAL)))
+        sb = (findViewById(R.id.rideGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.RIDECYMBAL)))
 
+        // Crash cymbal
+        (findViewById(R.id.crashPad) as TriggerPad).addListener(this)
+        sb = (findViewById(R.id.crashPan) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.CRASHCYMBAL)))
+        sb = (findViewById(R.id.crashGain) as SeekBar)
+        sb.setOnSeekBarChangeListener(this)
+        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.CRASHCYMBAL)))
     }
 
     override fun onPause() {
@@ -206,4 +263,52 @@ class DrumThumperActivity : AppCompatActivity(), TriggerPad.DrumPadTriggerListen
     override fun triggerUp(pad: TriggerPad) {
         // NOP
     }
+
+    //
+    // SeekBar.OnSeekBarChangeListener
+    //
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        when (seekBar!!.id) {
+            // BASSDRUM
+            R.id.kickGain -> mDrumPlayer.setGain(DrumPlayer.BASSDRUM, gainPosToGainVal(progress))
+            R.id.kickPan -> mDrumPlayer.setPan(DrumPlayer.BASSDRUM, panPosToPanVal(progress))
+
+            // SNAREDRUM
+            R.id.snareGain -> mDrumPlayer.setGain(DrumPlayer.SNAREDRUM, gainPosToGainVal(progress))
+            R.id.snarePan -> mDrumPlayer.setPan(DrumPlayer.SNAREDRUM, panPosToPanVal(progress))
+
+            // MIDTOM
+            R.id.midTomGain -> mDrumPlayer.setGain(DrumPlayer.MIDTOM, gainPosToGainVal(progress))
+            R.id.midTomPan -> mDrumPlayer.setPan(DrumPlayer.MIDTOM, panPosToPanVal(progress))
+
+            // LOWTOM
+            R.id.lowTomGain -> mDrumPlayer.setGain(DrumPlayer.LOWTOM, gainPosToGainVal(progress))
+            R.id.lowTomPan -> mDrumPlayer.setPan(DrumPlayer.LOWTOM, panPosToPanVal(progress))
+
+            // HIHATOPEN
+            R.id.hihatOpenGain -> mDrumPlayer.setGain(DrumPlayer.HIHATOPEN, gainPosToGainVal(progress))
+            R.id.hihatOpenPan -> mDrumPlayer.setPan(DrumPlayer.HIHATOPEN, panPosToPanVal(progress))
+
+            // HIHATCLOSED
+            R.id.hihatClosedGain -> mDrumPlayer.setGain(DrumPlayer.HIHATCLOSED, gainPosToGainVal(progress))
+            R.id.hihatClosedPan -> mDrumPlayer.setPan(DrumPlayer.HIHATCLOSED, panPosToPanVal(progress))
+
+            // RIDECYMBAL
+            R.id.rideGain -> mDrumPlayer.setGain(DrumPlayer.RIDECYMBAL, gainPosToGainVal(progress))
+            R.id.ridePan -> mDrumPlayer.setPan(DrumPlayer.RIDECYMBAL, panPosToPanVal(progress))
+
+            // CRASHCYMBAL
+            R.id.crashGain -> mDrumPlayer.setGain(DrumPlayer.CRASHCYMBAL, gainPosToGainVal(progress))
+            R.id.crashPan -> mDrumPlayer.setPan(DrumPlayer.CRASHCYMBAL, panPosToPanVal(progress))
+        }
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+        // NOP
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+        // NOP
+    }
+
 }

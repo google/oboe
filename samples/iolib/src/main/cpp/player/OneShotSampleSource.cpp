@@ -31,12 +31,12 @@ void OneShotSampleSource::mixAudio(float* outBuff, int numChannels, int32_t numF
     if (numWriteFrames != 0) {
         // Mix in the samples
 
-        // investigate unrolling this loop...
+        // investigate unrolling these loops...
         const float* data  = mSampleBuffer->getSampleData();
         if (numChannels == 1) {
             // MONO output
             for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                outBuff[frameIndex] += data[mCurFrameIndex++];
+                outBuff[frameIndex] += data[mCurFrameIndex++] * mGain;
             }
         } else if (numChannels == 2) {
             // STEREO output
