@@ -95,6 +95,12 @@ class DrumPlayer {
 
     external fun trigger(drumIndex: Int)
 
+    external fun setPan(index: Int, pan: Float)
+    external fun getPan(index: Int): Float
+
+    external fun setGain(index: Int, gain: Float)
+    external fun getGain(index: Int): Float
+
     external fun getOutputReset() : Boolean
     external fun clearOutputReset()
 

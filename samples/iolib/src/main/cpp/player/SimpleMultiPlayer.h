@@ -53,7 +53,7 @@ public:
      * The indexes associated with each source channel is the order in which they
      * are added.
      */
-    void addSampleSource(OneShotSampleSource* source, SampleBuffer* buffer);
+    void addSampleSource(SampleSource* source, SampleBuffer* buffer);
     /**
      * Deallocates and deletes all added source/buffer (see addSampleSource()).
      */
@@ -67,6 +67,12 @@ public:
     bool getOutputReset() { return mOutputReset; }
     void clearOutputReset() { mOutputReset = false; }
 
+    void setPan(int index, float pan);
+    float getPan(int index);
+
+    void setGain(int index, float gain);
+    float getGain(int index);
+
 private:
     // Oboe Audio Stream
     oboe::ManagedStream mAudioStream;
@@ -77,8 +83,8 @@ private:
 
     // Sample Data
     int32_t mNumSampleBuffers;
-    std::vector<SampleBuffer*> mSampleBuffers;
-    std::vector<OneShotSampleSource*>   mSampleSources;
+    std::vector<SampleBuffer*>  mSampleBuffers;
+    std::vector<SampleSource*>  mSampleSources;
 
     bool    mOutputReset;
 };

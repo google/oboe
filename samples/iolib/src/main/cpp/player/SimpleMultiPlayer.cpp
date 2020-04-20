@@ -134,7 +134,7 @@ void SimpleMultiPlayer::teardownAudioStream() {
     }
 }
 
-void SimpleMultiPlayer::addSampleSource(OneShotSampleSource* source, SampleBuffer* buffer) {
+void SimpleMultiPlayer::addSampleSource(SampleSource* source, SampleBuffer* buffer) {
     mSampleBuffers.push_back(buffer);
     mSampleSources.push_back(source);
     mNumSampleBuffers++;
@@ -170,6 +170,22 @@ void SimpleMultiPlayer::resetAll() {
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
         mSampleSources[bufferIndex]->setStopMode();
     }
+}
+
+void SimpleMultiPlayer::setPan(int index, float pan) {
+    mSampleSources[index]->setPan(pan);
+}
+
+float SimpleMultiPlayer::getPan(int index) {
+    return mSampleSources[index]->getPan();
+}
+
+void SimpleMultiPlayer::setGain(int index, float gain) {
+    mSampleSources[index]->setGain(gain);
+}
+
+float SimpleMultiPlayer::getGain(int index) {
+    return mSampleSources[index]->getGain();
 }
 
 }

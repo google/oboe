@@ -128,6 +128,27 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_restar
     }
 }
 
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_setPan(
+        JNIEnv *env, jobject thiz, jint index, jfloat pan) {
+    sDTPlayer.setPan(index, pan);
+}
+
+JNIEXPORT jfloat JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getPan(
+        JNIEnv *env, jobject thiz, jint  index) {
+    // TODO: implement getPan()
+    return sDTPlayer.getPan(index);
+}
+
+JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_setGain(
+        JNIEnv *env, jobject thiz, jint  index, jfloat gain) {
+    sDTPlayer.setGain(index, gain);
+}
+
+JNIEXPORT jfloat JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getGain(
+        JNIEnv *env, jobject thiz, jint index) {
+    return sDTPlayer.getGain(index);
+}
+
 #ifdef __cplusplus
 }
 #endif
