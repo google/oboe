@@ -103,24 +103,38 @@ class DrumThumperActivity : AppCompatActivity(),
         }
     }
 
+    val GAIN_FACTOR = 100.0f;
+    val MAX_PAN_POSITION = 200.0f;
+    val HALF_PAN_POSITION = MAX_PAN_POSITION / 2.0f
+
     // UI Helpers
     fun gainPosToGainVal(pos: Int) : Float {
         // map 0 -> 200 to 0.0f -> 2.0f
-        return pos.toFloat() / 100.0f
+        return pos.toFloat() / GAIN_FACTOR
     }
 
     fun gainValToGainPos(value: Float) : Int {
-        return (value * 100.0f).toInt()
+        return (value * GAIN_FACTOR).toInt()
     }
 
     fun panPosToPanVal(pos: Int) : Float {
         // map 0 -> 200 to -1.0f -> 1..0f
-        return (pos.toFloat() - 100.0f) / 100.0f
+        return (pos.toFloat() - HALF_PAN_POSITION) / HALF_PAN_POSITION
     }
 
     fun panValToPanPos(value: Float) : Int {
         // map -1.0f -> 1.0f to 0 -> 200
-        return ((value * 200.0f) + 100.0f).toInt()
+        return ((value * HALF_PAN_POSITION) + HALF_PAN_POSITION).toInt()
+    }
+
+    fun connectMixSliders(panSliderId : Int, gainSliderId : Int, drumIndex : Int) {
+        var panSeekbar = (findViewById(panSliderId) as SeekBar)
+        panSeekbar.setOnSeekBarChangeListener(this)
+        panSeekbar.setProgress(panValToPanPos(mDrumPlayer.getPan(drumIndex)))
+
+        var gainSeekbar = (findViewById(gainSliderId) as SeekBar)
+        gainSeekbar.setOnSeekBarChangeListener(this)
+        gainSeekbar.setProgress(gainValToGainPos(mDrumPlayer.getGain(drumIndex)))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -153,75 +167,35 @@ class DrumThumperActivity : AppCompatActivity(),
 
         // "Kick" drum
         (findViewById(R.id.kickPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.kickPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.BASSDRUM)))
-        sb = (findViewById(R.id.kickGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.BASSDRUM)))
+        connectMixSliders(R.id.kickPan, R.id.kickGain, DrumPlayer.BASSDRUM)
 
         // Snare drum
         (findViewById(R.id.snarePad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.snarePan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.SNAREDRUM)))
-        sb = (findViewById(R.id.snareGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.SNAREDRUM)))
+        connectMixSliders(R.id.snarePan, R.id.snareGain, DrumPlayer.SNAREDRUM)
 
         // Mid tom
         (findViewById(R.id.midTomPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.midTomPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.MIDTOM)))
-        sb = (findViewById(R.id.midTomGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain((DrumPlayer.MIDTOM))))
+        connectMixSliders(R.id.midTomPan, R.id.midTomGain, DrumPlayer.MIDTOM)
 
         // Low tom
         (findViewById(R.id.lowTomPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.lowTomPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.LOWTOM)))
-        sb = (findViewById(R.id.lowTomGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.LOWTOM)))
+        connectMixSliders(R.id.lowTomPan, R.id.lowTomGain, DrumPlayer.LOWTOM)
 
         // Open hihat
         (findViewById(R.id.hihatOpenPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.hihatOpenPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.HIHATOPEN)))
-        sb = (findViewById(R.id.hihatOpenGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.HIHATOPEN)))
+        connectMixSliders(R.id.hihatOpenPan, R.id.hihatOpenGain, DrumPlayer.HIHATOPEN)
 
         // Closed hihat
         (findViewById(R.id.hihatClosedPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.hihatClosedPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.HIHATCLOSED)))
-        sb = (findViewById(R.id.hihatClosedGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.HIHATCLOSED)))
+        connectMixSliders(R.id.hihatClosedPan, R.id.hihatClosedGain, DrumPlayer.HIHATCLOSED)
 
         // Ride cymbal
         (findViewById(R.id.ridePad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.ridePan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.RIDECYMBAL)))
-        sb = (findViewById(R.id.rideGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.RIDECYMBAL)))
+        connectMixSliders(R.id.ridePan, R.id.rideGain, DrumPlayer.RIDECYMBAL)
 
         // Crash cymbal
         (findViewById(R.id.crashPad) as TriggerPad).addListener(this)
-        sb = (findViewById(R.id.crashPan) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(panValToPanPos(mDrumPlayer.getPan(DrumPlayer.CRASHCYMBAL)))
-        sb = (findViewById(R.id.crashGain) as SeekBar)
-        sb.setOnSeekBarChangeListener(this)
-        sb.setProgress(gainValToGainPos(mDrumPlayer.getGain(DrumPlayer.CRASHCYMBAL)))
+        connectMixSliders(R.id.crashPan, R.id.crashGain, DrumPlayer.CRASHCYMBAL)
     }
 
     override fun onPause() {
