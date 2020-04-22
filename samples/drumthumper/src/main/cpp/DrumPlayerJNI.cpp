@@ -135,7 +135,6 @@ JNIEXPORT void JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_setPan
 
 JNIEXPORT jfloat JNICALL Java_com_google_oboe_sample_drumthumper_DrumPlayer_getPan(
         JNIEnv *env, jobject thiz, jint  index) {
-    // TODO: implement getPan()
     return sDTPlayer.getPan(index);
 }
 
