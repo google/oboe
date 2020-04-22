@@ -186,14 +186,31 @@ Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
     return result;
 }
 
-Result AudioStreamBuilder::openSharedStream(std::shared_ptr<oboe::AudioStream> &sharedStream) {
+// FIXME Remove this before release. Just for comparison with next method.
+Result AudioStreamBuilder::openSharedStream(std::shared_ptr<AudioStream> &sharedStream) {
     sharedStream.reset();
     AudioStream *streamptr;
     auto result = openStream(&streamptr);
-    sharedStream.reset(streamptr);
-    // Save a weak_ptr in the stream for use with callbacks.
-    streamptr->setWeakThis(sharedStream);
+    if (result == Result::OK) {
+        sharedStream.reset(streamptr);
+        // Save a weak_ptr in the stream for use with callbacks.
+        streamptr->setWeakThis(sharedStream);
+    }
     return result;
+}
+
+ResultWithValue<std::shared_ptr<AudioStream>> AudioStreamBuilder::openSharedStream() {
+    std::shared_ptr<AudioStream> sharedStream;
+    AudioStream *streamptr;
+    auto result = openStream(&streamptr);
+    if (result == Result::OK) {
+        sharedStream.reset(streamptr);
+        // Save a weak_ptr in the stream for use with callbacks.
+        streamptr->setWeakThis(sharedStream);
+        return ResultWithValue<std::shared_ptr<AudioStream>>(sharedStream);
+    } else {
+        return  ResultWithValue<std::shared_ptr<AudioStream>>(result);
+    }
 }
 
 } // namespace oboe

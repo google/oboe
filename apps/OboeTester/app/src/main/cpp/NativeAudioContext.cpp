@@ -207,14 +207,16 @@ int ActivityContext::open(jint nativeApi,
 
     // Open a stream based on the builder settings.
     std::shared_ptr<oboe::AudioStream> oboeStream;
-    oboe::Result result = builder.openSharedStream(oboeStream);
+    auto resultWith = builder.openSharedStream();
+    Result result = resultWith.error();
     LOGD("ActivityContext::open() builder.openStream() returned %d, oboeStream = %p",
-            result, oboeStream.get());
+            resultWith.error(), oboeStream.get());
     AAudioExtensions::getInstance().setMMapEnabled(oldMMapEnabled);
-    if (result != oboe::Result::OK) {
+    if (!resultWith) {
         freeStreamIndex(streamIndex);
         streamIndex = -1;
     } else {
+        oboeStream = resultWith.value();
         mOboeStreams[streamIndex] = oboeStream; // save shared_ptr
 
         mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
@@ -226,14 +228,12 @@ int ActivityContext::open(jint nativeApi,
         finishOpen(isInput, oboeStream.get());
     }
 
-
     if (!mUseCallback) {
         int numSamples = getFramesPerBlock() * mChannelCount;
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
 
-
-    return ((int)result < 0) ? (int)result : streamIndex;
+    return (result != Result::OK) ? (int)result : streamIndex;
 }
 
 oboe::Result ActivityContext::start() {

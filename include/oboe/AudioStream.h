@@ -42,6 +42,7 @@ constexpr int64_t kDefaultTimeoutNanos = (2000 * kNanosPerMillisecond);
  * Base class for Oboe C++ audio stream.
  */
 class AudioStream : public AudioStreamBase {
+    friend class AudioStreamBuilder; // allow access to setWeakThis() and lockWeakThis()
 public:
 
     AudioStream() {}
@@ -418,22 +419,6 @@ public:
     ResultWithValue<int32_t> waitForAvailableFrames(int32_t numFrames,
                                                     int64_t timeoutNanoseconds);
 
-    /*
-     * INTERNAL USE ONLY
-     * Set a weak_ptr to this stream from the shared_ptr so that we can
-     * later use a shared_ptr in the error callback.
-     */
-    void setWeakThis(std::shared_ptr<oboe::AudioStream> &sharedStream) {
-        mWeakThis = sharedStream;
-    }
-
-    /*
-     * Make a shared_ptr that will prevent this stream from being deleted.
-     */
-    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
-        return mWeakThis.lock();
-    }
-
 protected:
 
     /**
@@ -495,6 +480,23 @@ protected:
         mDataCallbackEnabled = enabled;
     }
 
+    /*
+     * Set a weak_ptr to this stream from the shared_ptr so that we can
+     * later use a shared_ptr in the error callback.
+     */
+    void setWeakThis(std::shared_ptr<oboe::AudioStream> &sharedStream) {
+        mWeakThis = sharedStream;
+    }
+
+    /*
+     * Make a shared_ptr that will prevent this stream from being deleted.
+     */
+    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
+        return mWeakThis.lock();
+    }
+
+    std::weak_ptr<AudioStream> mWeakThis; // weak pointer to this object
+
     /**
      * Number of frames which have been written into the stream
      *
@@ -520,7 +522,6 @@ private:
     std::atomic<bool>    mDataCallbackEnabled{false};
     std::atomic<bool>    mErrorCallbackCalled{false};
 
-    std::weak_ptr<AudioStream> mWeakThis;
 };
 
 /**

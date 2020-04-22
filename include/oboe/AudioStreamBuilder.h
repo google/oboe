@@ -19,6 +19,7 @@
 
 #include "oboe/Definitions.h"
 #include "oboe/AudioStreamBase.h"
+#include "ResultWithValue.h"
 
 namespace oboe {
 
@@ -401,6 +402,8 @@ public:
     Result openManagedStream(ManagedStream &stream);
 
     Result openSharedStream(std::shared_ptr<oboe::AudioStream> &sharedStream);
+
+    ResultWithValue<std::shared_ptr<oboe::AudioStream>> openSharedStream();
 
 private:
 
