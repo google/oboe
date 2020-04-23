@@ -18,6 +18,8 @@ Connect the android device to the correct audio input and output devices. A simp
 
 Tap the plus button to add various effects. The current list of effects being applied to the input audio will be shown on the main screen (in order from top to bottom). Use the drag handles on the right of the effect to re-order the effects. Swiping the effect near the title to the right or left will remove the effect. Use the sliders to modify the parameters of each audio effect. Some effect combinations or parameters might lead to unpleasant sounds!
 
+By default the sound output is off when you start the app (this is to avoid a feedback loop if you're not using headphones).  Tap the "Unmute" button in the top right corner to enable sound output.
+
 ## Development
 
 A guide to the code, as well as a pdf of a slideshow discussing the code in depth are in the [docs](docs) folder.
