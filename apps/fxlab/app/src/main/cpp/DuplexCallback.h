@@ -35,10 +35,12 @@ public:
 
 
     oboe::DataCallbackResult
-    onAudioReady(oboe::AudioStream *, void *audioData, int32_t numFrames) override {
+    onAudioReady(oboe::AudioStream *outputStream, void *audioData, int32_t numFrames) override {
         auto *outputData = static_cast<numeric_type *>(audioData);
+        auto outputChannelCount = outputStream->getChannelCount();
+
         // Silence first to simplify glitch detection
-        std::fill(outputData, outputData + numFrames * kChannelCount, 0);
+        std::fill(outputData, outputData + numFrames * outputChannelCount, 0);
         oboe::ResultWithValue<int32_t> result = inRef.read(inputBuffer.get(), numFrames, 0);
         int32_t framesRead = result.value();
         if (!result) {
@@ -51,7 +53,7 @@ public:
         }
         f(inputBuffer.get(), inputBuffer.get() + framesRead);
         for (int i = 0; i < framesRead; i++) {
-            for (size_t j = 0; j < kChannelCount; j++) {
+            for (size_t j = 0; j < outputChannelCount; j++) {
                 *outputData++ = inputBuffer[i];
             }
         }
@@ -68,7 +70,6 @@ public:
 
 private:
     int mSpinUpCallbacks = 10; // We will let the streams sync for the first few valid frames
-    static constexpr size_t kChannelCount = 2;
     const size_t kBufferSize;
     oboe::AudioStream &inRef;
     std::function<void(numeric_type *, numeric_type *)> f;
