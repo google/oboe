@@ -36,7 +36,7 @@ To build Oboe you'll need a compiler which supports C++14 and the Android header
 
 ## Sample code and apps
 - Sample apps can be found in the [samples directory](samples). 
-- A complete "effects processor" app called FXLab can  be found in the [apps](apps/fxlab). 
+- A complete "effects processor" app called FXLab can  be found in the [apps/fxlab folder](apps/fxlab). 
 - Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
 
 ### Third party sample code
