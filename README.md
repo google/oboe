@@ -34,8 +34,10 @@ To build Oboe you'll need a compiler which supports C++14 and the Android header
 - [Winning on Android](https://www.youtube.com/watch?v=tWBojmBpS74) - How to optimize an Android audio app. (ADC '18)
 - [Real-Time Processing on Android](https://youtu.be/hY9BrS2uX-c) (ADC '19)
 
-## Sample code
-Sample apps can be found in the [samples directory](samples). Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
+## Sample code and apps
+- Sample apps can be found in the [samples directory](samples). 
+- A complete "effects processor" app called FXLab can  be found in the [apps](apps/fxlab). 
+- Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
 
 ### Third party sample code
 - [Ableton Link integration demo](https://github.com/jbloit/AndroidLinkAudio) (author: jbloit)
