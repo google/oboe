@@ -176,9 +176,9 @@ class MainActivity : AppCompatActivity() {
             NativeInterface.enable(isAudioEnabled)
 
             if (isAudioEnabled) {
-                item.setIcon(R.drawable.ic_baseline_volume_off_24)
+                item.setIcon(R.drawable.ic_baseline_audio_is_enabled_24)
             } else {
-                item.setIcon(R.drawable.ic_baseline_volume_up_24)
+                item.setIcon(R.drawable.ic_baseline_audio_is_disabled_24)
             }
             true
         }

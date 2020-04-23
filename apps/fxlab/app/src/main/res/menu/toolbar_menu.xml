@@ -5,7 +5,7 @@
     <!-- Add a mute toggle action to our Toolbar-->
     <item
         android:id="@+id/action_toggle_mute"
-        android:icon="@drawable/ic_baseline_volume_off_24"
+        android:icon="@drawable/ic_baseline_audio_is_disabled_24"
         android:title="@string/action_toggle_mute"
         app:showAsAction="ifRoom"
         />

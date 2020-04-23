@@ -78,7 +78,7 @@ object NativeInterface {
     }
 
     fun enable(enable: Boolean) {
-        Log.d("INTERFACE", "Enabling effects")
+        Log.d("INTERFACE", "Enabling effects: $enable")
         enablePassthroughNative(enable)
     }
 
