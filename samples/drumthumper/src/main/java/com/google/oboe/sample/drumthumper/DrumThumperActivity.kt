@@ -21,6 +21,9 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Toast
 
@@ -35,7 +38,8 @@ import kotlin.math.roundToInt
 
 class DrumThumperActivity : AppCompatActivity(),
         TriggerPad.DrumPadTriggerListener,
-        SeekBar.OnSeekBarChangeListener {
+        SeekBar.OnSeekBarChangeListener,
+        View.OnClickListener {
     private val TAG = "DrumThumperActivity"
 
     private var mAudioMgr: AudioManager? = null
@@ -48,6 +52,8 @@ class DrumThumperActivity : AppCompatActivity(),
     private var mDevicesInitialized = false
 
     private var mDeviceListener: DeviceListener = DeviceListener()
+
+    private var mMixControlsShowing = false;
 
     init {
         // Load the library containing the a native code including the JNI  functions
@@ -103,11 +109,13 @@ class DrumThumperActivity : AppCompatActivity(),
         }
     }
 
+    //
+    // UI Helpers
+    //
     val GAIN_FACTOR = 100.0f;
     val MAX_PAN_POSITION = 200.0f;
     val HALF_PAN_POSITION = MAX_PAN_POSITION / 2.0f
 
-    // UI Helpers
     fun gainPosToGainVal(pos: Int) : Float {
         // map 0 -> 200 to 0.0f -> 2.0f
         return pos.toFloat() / GAIN_FACTOR
@@ -127,12 +135,28 @@ class DrumThumperActivity : AppCompatActivity(),
         return ((value * HALF_PAN_POSITION) + HALF_PAN_POSITION).toInt()
     }
 
+    fun showMixControls(show : Boolean) {
+        mMixControlsShowing = show;
+        var showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE;
+        findViewById<LinearLayout>(R.id.kickMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.snareMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.hihatOpenMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.hihatClosedMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.midTomMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.lowTomMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.rideMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.crashMixControls).setVisibility(showFlag)
+
+        findViewById<Button>(R.id.mixCtrlBtn).setText(
+                if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls")
+    }
+
     fun connectMixSliders(panSliderId : Int, gainSliderId : Int, drumIndex : Int) {
-        var panSeekbar = (findViewById(panSliderId) as SeekBar)
+        var panSeekbar = findViewById<SeekBar>(panSliderId)
         panSeekbar.setOnSeekBarChangeListener(this)
         panSeekbar.setProgress(panValToPanPos(mDrumPlayer.getPan(drumIndex)))
 
-        var gainSeekbar = (findViewById(gainSliderId) as SeekBar)
+        var gainSeekbar = findViewById<SeekBar>(gainSliderId)
         gainSeekbar.setOnSeekBarChangeListener(this)
         gainSeekbar.setProgress(gainValToGainPos(mDrumPlayer.getGain(drumIndex)))
     }
@@ -162,40 +186,40 @@ class DrumThumperActivity : AppCompatActivity(),
         // UI
         setContentView(R.layout.drumthumper_activity)
 
-        // hookup the UI
-        var sb : SeekBar;
-
         // "Kick" drum
-        (findViewById(R.id.kickPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.kickPad).addListener(this)
         connectMixSliders(R.id.kickPan, R.id.kickGain, DrumPlayer.BASSDRUM)
 
         // Snare drum
-        (findViewById(R.id.snarePad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.snarePad).addListener(this)
         connectMixSliders(R.id.snarePan, R.id.snareGain, DrumPlayer.SNAREDRUM)
 
         // Mid tom
-        (findViewById(R.id.midTomPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.midTomPad).addListener(this)
         connectMixSliders(R.id.midTomPan, R.id.midTomGain, DrumPlayer.MIDTOM)
 
         // Low tom
-        (findViewById(R.id.lowTomPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.lowTomPad).addListener(this)
         connectMixSliders(R.id.lowTomPan, R.id.lowTomGain, DrumPlayer.LOWTOM)
 
         // Open hihat
-        (findViewById(R.id.hihatOpenPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.hihatOpenPad).addListener(this)
         connectMixSliders(R.id.hihatOpenPan, R.id.hihatOpenGain, DrumPlayer.HIHATOPEN)
 
         // Closed hihat
-        (findViewById(R.id.hihatClosedPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.hihatClosedPad).addListener(this)
         connectMixSliders(R.id.hihatClosedPan, R.id.hihatClosedGain, DrumPlayer.HIHATCLOSED)
 
         // Ride cymbal
-        (findViewById(R.id.ridePad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.ridePad).addListener(this)
         connectMixSliders(R.id.ridePan, R.id.rideGain, DrumPlayer.RIDECYMBAL)
 
         // Crash cymbal
-        (findViewById(R.id.crashPad) as TriggerPad).addListener(this)
+        findViewById<TriggerPad>(R.id.crashPad).addListener(this)
         connectMixSliders(R.id.crashPan, R.id.crashGain, DrumPlayer.CRASHCYMBAL)
+
+        findViewById<Button>(R.id.mixCtrlBtn).setOnClickListener(this)
+        showMixControls(false);
     }
 
     override fun onPause() {
@@ -283,6 +307,10 @@ class DrumThumperActivity : AppCompatActivity(),
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
         // NOP
+    }
+
+    override fun onClick(v: View?) {
+        showMixControls(!mMixControlsShowing)
     }
 
 }

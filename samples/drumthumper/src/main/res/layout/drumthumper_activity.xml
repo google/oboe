@@ -37,39 +37,45 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/kickPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/kickMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/kickGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/kickPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/kickGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -90,40 +96,46 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/snarePan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/snareMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/snareGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/snarePan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/snareGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -150,41 +162,46 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/hihatOpenPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/hihatOpenMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/hihatOpenGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/hihatOpenPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/hihatOpenGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -204,39 +221,45 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/hihatClosedPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/hihatClosedMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/hihatClosedPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/hihatClosedGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="G:"/>
-
-                <SeekBar
-                    android:id="@+id/hihatClosedGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -263,39 +286,45 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/midTomPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/midTomMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/midTomGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/midTomPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/midTomGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -316,39 +345,45 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/lowTomPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/lowTomMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/lowTomGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/lowTomPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/lowTomGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -375,39 +410,45 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/ridePan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/rideMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/rideGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/ridePan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/rideGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -428,41 +469,51 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P:"/>
-
-                <SeekBar
-                    android:id="@+id/crashPan"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                android:orientation="vertical"
+                android:id="@+id/crashMixControls">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="G:"/>
+                    android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/crashGain"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="P:"/>
+
+                    <SeekBar
+                        android:id="@+id/crashPan"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:max="200" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G:"/>
+
+                    <SeekBar
+                        android:id="@+id/crashGain"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:max="200" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hide/Show Mix Controls"
+        android:id="@+id/mixCtrlBtn"/>
 </LinearLayout>
