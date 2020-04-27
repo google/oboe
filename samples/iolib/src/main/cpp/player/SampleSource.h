@@ -93,9 +93,9 @@ protected:
 private:
     void calcGainFactors() {
         // useful panning information: http://www.cs.cmu.edu/~music/icm-online/readings/panlaws/
-        mRightGain = ((mPan * 0.5) + 0.5) * mGain;
-        mLeftGain = (1.0 - mRightGain) * mGain;
-    }
+        float rightPan = (mPan * 0.5) + 0.5;
+        mRightGain = rightPan * mGain;
+        mLeftGain = (1.0 - rightPan) * mGain;    }
 };
 
 } // namespace wavlib
