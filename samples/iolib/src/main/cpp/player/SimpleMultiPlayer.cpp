@@ -142,8 +142,9 @@ void SimpleMultiPlayer::addSampleSource(SampleSource* source, SampleBuffer* buff
 
 void SimpleMultiPlayer::unloadSampleData() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "unloadSampleData()");
+    resetAll();
+
     for (int32_t bufferIndex = 0; bufferIndex < mNumSampleBuffers; bufferIndex++) {
-        mSampleBuffers[bufferIndex]->unloadSampleData();
         delete mSampleBuffers[bufferIndex];
         delete mSampleSources[bufferIndex];
     }

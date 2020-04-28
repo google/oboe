@@ -34,7 +34,9 @@ void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
 }
 
 void SampleBuffer::unloadSampleData() {
-    delete[] mSampleData;
+    if (mSampleData != nullptr) {
+        delete[] mSampleData;
+    }
     mNumSamples = 0;
 }
 
