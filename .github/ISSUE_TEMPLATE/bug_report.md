@@ -7,18 +7,19 @@ assignees: ''
 
 ---
 
-Android Version(s):
-Android Device(s):
-Oboe Version:
+Android version(s):
+Android device(s):
+Oboe version:
+App name used for testing (please try to reproduce the issue using the Oboe samples and apps): 
 
-**Short Description**
+**Short description**
 
-**Steps To Reproduce**
+**Steps to reproduce**
 
 **Expected behavior**
 
 **Actual behavior**
 
-**Additional context**
+**Any additional context**
 
 If applicable, please attach a recording of the sound.
