@@ -4,7 +4,7 @@ Android audio history
 A list of important audio features, bugs, fixes and workarounds for various Android versions. 
 
 ### 10.0 Q - API 29
-- Fixed: Setting capacity of Legacy input streams < 4096 can prevent use of FAST path. https://github.com/google/oboe/issues/183
+- Fixed: Setting capacity of Legacy input streams < 4096 can prevent use of FAST path. https://github.com/google/oboe/issues/183. also ag/7116429
 - Add InputPreset:VoicePerformance for low latency recording.
 
 ### 9.0 Pie - API 28 (August 6, 2018)
