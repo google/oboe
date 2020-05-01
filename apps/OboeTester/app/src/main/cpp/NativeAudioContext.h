@@ -194,7 +194,7 @@ public:
     oboe::AudioStream *getStream(int32_t streamIndex) {
         auto it = mOboeStreams.find(streamIndex);
         if (it != mOboeStreams.end()) {
-            return it->second;
+            return it->second.get();
         } else {
             return nullptr;
         }
@@ -329,7 +329,7 @@ protected:
     std::unique_ptr<MultiChannelRecording>  mRecording{};
 
     int32_t                      mNextStreamHandle = 0;
-    std::unordered_map<int32_t, oboe::AudioStream *>  mOboeStreams;
+    std::unordered_map<int32_t, std::shared_ptr<oboe::AudioStream>>  mOboeStreams;
     int32_t                      mFramesPerBurst = 0; // TODO per stream
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
