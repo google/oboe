@@ -17,6 +17,7 @@
 
 include ':audio-device'
 include ':hello-oboe'
+include ':hello-oboe-with-prefab'
 include ':RhythmGame'
 include ':MegaDrone'
 include ':LiveEffect'
