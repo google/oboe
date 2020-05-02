@@ -22,10 +22,12 @@ Prefab isn't enabled by default so enable it by adding following to your `gradle
 
     # Enables Prefab
     android.enablePrefab=true
+
+    # Set the latest prefab release version (https://github.com/google/prefab/releases)
+    android.prefabVersion=1.0.0
     # Work around https://issuetracker.google.com/149575364
     android.enableParallelJsonGen=false
-    # 4.0.0 canary 9 defaults to Prefab 1.0.0-alpha3, which is not the latest.
-    android.prefabVersion=1.0.0-alpha5
+    
 
 **Note:** Please check back regularly to see whether these workarounds are still required. This will ensure you don't get stuck on an unecessary Android Studio configuration or outdated Prefab version.
 
