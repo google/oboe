@@ -25,6 +25,8 @@ Prefab isn't enabled by default so enable it by adding following to your `gradle
 
     # Set the latest prefab release version (https://github.com/google/prefab/releases)
     android.prefabVersion=1.0.0
+
+    # Only add if you are using AGP < 4.0.0-beta03. This is fixed in later versions.
     # Work around https://issuetracker.google.com/149575364
     android.enableParallelJsonGen=false
     
