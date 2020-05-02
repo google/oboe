@@ -46,8 +46,8 @@ Configure your app to use the shared STL by updating your `app/build.gradle`:
                 cmake {
                     arguments "-DANDROID_STL=c++_shared"
                 }
+	        }
 	    }
-	}
     }
 
 ## Option 2) Building from source
