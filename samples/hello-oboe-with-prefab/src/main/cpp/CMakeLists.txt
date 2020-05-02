@@ -41,10 +41,13 @@ add_library(hello-oboe SHARED
             ${APP_SOURCES}
             )
 
+find_package (oboe REQUIRED CONFIG)
+
 # Specify the libraries needed for hello-oboe
 target_link_libraries(hello-oboe
                       android
                       log
+                      oboe::oboe
                       )
 
 # Enable optimization flags: if having problems with source level debugging,
