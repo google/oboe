@@ -15,7 +15,6 @@ install:
   - touch ~/.android/repositories.cfg
   - echo y | sdkmanager "ndk-bundle"
   - echo y | sdkmanager "cmake;3.6.4111459"
-  - echo y | sdkmanager "lldb;3.1"
   # the following line triggers Trivis-CI's 4MB log limit
     #  - sdkmanager --update
 before_script:
