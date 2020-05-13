@@ -16,7 +16,7 @@
 
 #include "SampleBuffer.h"
 
-#include "io/wav/WavStreamReader.h"
+#include "wav/WavStreamReader.h"
 
 namespace iolib {
 

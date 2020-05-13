@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include "WavRIFFChunkHeader.h"
-#include "io/stream/InputStream.h"
+#include "stream/InputStream.h"
 
 namespace parselib {
 

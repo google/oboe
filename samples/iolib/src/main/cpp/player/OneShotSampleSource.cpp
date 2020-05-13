@@ -16,7 +16,7 @@
 
 #include <string.h>
 
-#include "io/wav/WavStreamReader.h"
+#include "wav/WavStreamReader.h"
 
 #include "OneShotSampleSource.h"
 

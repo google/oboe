@@ -18,7 +18,7 @@
 
 #include <android/log.h>
 
-#include "io/stream/InputStream.h"
+#include "stream/InputStream.h"
 
 #include "AudioEncoding.h"
 #include "WavRIFFChunkHeader.h"
