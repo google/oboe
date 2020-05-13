@@ -17,7 +17,7 @@
 #ifndef _PLAYER_SAMPLEBUFFER_
 #define _PLAYER_SAMPLEBUFFER_
 
-#include <io/wav/WavStreamReader.h>
+#include <wav/WavStreamReader.h>
 
 namespace iolib {
 

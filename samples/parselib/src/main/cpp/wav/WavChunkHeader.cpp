@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "io/stream/InputStream.h"
+#include "stream/InputStream.h"
 
 #include "WavChunkHeader.h"
 

@@ -42,15 +42,15 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         # io/stream
-        ${CMAKE_CURRENT_LIST_DIR}/io/stream/FileInputStream.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/stream/InputStream.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/stream/MemInputStream.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/stream/FileInputStream.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/stream/InputStream.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/stream/MemInputStream.cpp
         # io/wav
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/AudioEncoding.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavChunkHeader.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavFmtChunkHeader.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavRIFFChunkHeader.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/io/wav/WavStreamReader.cpp)
+        ${CMAKE_CURRENT_LIST_DIR}/wav/AudioEncoding.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/wav/WavChunkHeader.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/wav/WavFmtChunkHeader.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/wav/WavRIFFChunkHeader.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/wav/WavStreamReader.cpp)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this

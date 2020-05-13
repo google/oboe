@@ -15,7 +15,7 @@
  */
 #include <android/log.h>
 
-#include "io/stream/InputStream.h"
+#include "stream/InputStream.h"
 
 #include "WavFmtChunkHeader.h"
 
