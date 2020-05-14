@@ -41,11 +41,11 @@ add_library( # Sets the name of the library.
         STATIC
 
         # Provides a relative path to your source file(s).
-        # io/stream
+        # stream
         ${CMAKE_CURRENT_LIST_DIR}/stream/FileInputStream.cpp
         ${CMAKE_CURRENT_LIST_DIR}/stream/InputStream.cpp
         ${CMAKE_CURRENT_LIST_DIR}/stream/MemInputStream.cpp
-        # io/wav
+        # wav
         ${CMAKE_CURRENT_LIST_DIR}/wav/AudioEncoding.cpp
         ${CMAKE_CURRENT_LIST_DIR}/wav/WavChunkHeader.cpp
         ${CMAKE_CURRENT_LIST_DIR}/wav/WavFmtChunkHeader.cpp
