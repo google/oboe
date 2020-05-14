@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.oboe.sample.drumthumper
+package com.plausible.drumthumper
 
 import android.content.Context
 import android.graphics.Canvas
@@ -25,9 +25,8 @@ import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 
-
 class TriggerPad: View {
-    val TAG = "DrumPad";
+    val TAG = "TriggerPad";
 
     private val mDrawRect = RectF()
     private val mPaint = Paint()
