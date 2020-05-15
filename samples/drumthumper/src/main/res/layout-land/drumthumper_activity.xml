@@ -26,7 +26,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/kickPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -85,7 +85,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/snarePad"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -145,7 +145,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/hihatOpenPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -204,7 +204,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/hihatClosedPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -269,7 +269,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/midTomPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -328,7 +328,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/lowTomPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -387,7 +387,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/ridePad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -446,7 +446,7 @@
             android:layout_weight=".5"
             android:orientation="vertical">
 
-            <com.plausible.drumthumper.TriggerPad
+            <com.mobileer.drumthumper.TriggerPad
                 android:id="@+id/crashPad"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
