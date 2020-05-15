@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.plausible.drumthumper
+package com.mobileer.drumthumper
 
 import android.content.res.AssetManager
 import android.util.Log
