@@ -1,4 +1,4 @@
-[Oboe Docs Home](README.md)
+[Tech Notes Home](README.md)
 
 # Assert in releaseBuffer()
 
@@ -7,7 +7,10 @@ The bug was originally reported at: https://github.com/google/oboe/issues/535
 
 ## Platforms Affected
 
-The crash happens primarily when using OpenSL ES. It does not happen when using AAudio MMAP because it does not call releaseBuffer(). It can happen when using AAudio “Legacy”, through AudioFlinger. But it is rare because AAudio generally disconnects the stream and stops callbacks before the device is rerouted.
+The crash happens primarily when using OpenSL ES. It does not happen when using AAudio MMAP because it
+does not call releaseBuffer(). It can happen when using AAudio “Legacy”, through AudioFlinger.
+But it is rare because AAudio generally disconnects the stream and stops callbacks before the device is rerouted.
+
 It can occur on any Android device running Android version 10 (Q) or earlier.
 
 ## Root Cause
@@ -48,3 +51,9 @@ These steps will trigger the bug most of the time:
 You may see a message like this in the logcat:
 
     AudioTrackShared: releaseBuffer: mUnreleased out of range, !(stepCount:96 <= mUnreleased:0 <= mFrameCount:480), BufferSizeInFrames:480
+
+# OEM Information
+
+These patches are available in Q AOSP:
+1. [AudioTrack](https://android-review.googlesource.com/c/platform/frameworks/av/+/1251871/)
+1. [AudioRecord](https://android-review.googlesource.com/c/platform/frameworks/av/+/1251872/)
