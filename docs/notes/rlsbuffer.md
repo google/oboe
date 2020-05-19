@@ -2,8 +2,12 @@
 
 # Assert in releaseBuffer()
 
-There is a bug that can sometimes cause an assert in ClientProxy::releaseBuffer() when headsets are connected or disconnected. 
+There is a bug that can sometimes cause an assert in ClientProxy or AudioTrackShared::releaseBuffer() when headsets are connected or disconnected. 
 The bug was originally reported at: https://github.com/google/oboe/issues/535
+
+You will see signatures like this in the logcat:
+
+    F AudioTrackShared: releaseBuffer: mUnreleased out of range, !(stepCount:96 <= mUnreleased:0 <= mFrameCount:480), BufferSizeInFrames:480
 
 ## Platforms Affected
 
