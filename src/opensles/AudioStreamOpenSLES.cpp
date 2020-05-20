@@ -302,22 +302,20 @@ int32_t AudioStreamOpenSLES::getBufferDepth(SLAndroidSimpleBufferQueueItf bq) {
 
 void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     bool stopStream = false;
-    // Ask the callback to fill the output buffer with data.
+    // Ask the app callback to process the buffer.
     DataCallbackResult result = fireDataCallback(mCallbackBuffer.get(), mFramesPerCallback);
     if (result == DataCallbackResult::Continue) {
-        // Update Oboe service position based on OpenSL ES position.
-        updateServiceFrameCounter();
+        // Pass the buffer to OpenSLES.
+        SLresult enqueueResult = enqueueCallbackBuffer(bq);
+        if (enqueueResult != SL_RESULT_SUCCESS) {
+            LOGE("%s() returned %d", __func__, enqueueResult);
+            stopStream = true;
+        }
         // Update Oboe client position with frames handled by the callback.
         if (getDirection() == Direction::Input) {
             mFramesRead += mFramesPerCallback;
         } else {
             mFramesWritten += mFramesPerCallback;
-        }
-        // Pass the data to OpenSLES.
-        SLresult enqueueResult = enqueueCallbackBuffer(bq);
-        if (enqueueResult != SL_RESULT_SUCCESS) {
-            LOGE("%s() returned %d", __func__, enqueueResult);
-            stopStream = true;
         }
     } else if (result == DataCallbackResult::Stop) {
         LOGD("Oboe callback returned Stop");
@@ -331,7 +329,7 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
     }
 }
 
-// this callback handler is called every time a buffer needs processing
+// This callback handler is called every time a buffer has been processed by OpenSL ES.
 static void bqCallbackGlue(SLAndroidSimpleBufferQueueItf bq, void *context) {
     (reinterpret_cast<AudioStreamOpenSLES *>(context))->processBufferCallback(bq);
 }
@@ -359,7 +357,8 @@ int32_t AudioStreamOpenSLES::getFramesPerBurst() {
     return mFramesPerBurst;
 }
 
-int64_t AudioStreamOpenSLES::getFramesProcessedByServer() const {
+int64_t AudioStreamOpenSLES::getFramesProcessedByServer() {
+    updateServiceFrameCounter();
     int64_t millis64 = mPositionMillis.get();
     int64_t framesProcessed = millis64 * getSampleRate() / kMillisPerSecond;
     return framesProcessed;

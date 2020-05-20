@@ -112,7 +112,7 @@ protected:
         mState.store(state);
     }
 
-    int64_t getFramesProcessedByServer() const;
+    int64_t getFramesProcessedByServer();
 
     // OpenSLES stuff
     SLObjectItf                   mObjectInterface = nullptr;
