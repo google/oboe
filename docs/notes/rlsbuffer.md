@@ -11,38 +11,46 @@ You will see signatures like this in the logcat:
 
 ## Platforms Affected
 
-The crash happens primarily when using OpenSL ES. It does not happen when using AAudio MMAP because it
-does not call releaseBuffer(). It can happen when using AAudio “Legacy”, through AudioFlinger.
-But it is rare because AAudio generally disconnects the stream and stops callbacks before the device is rerouted.
+Android version 10 (Q) or earlier.
 
-It can occur on any Android device running Android version 10 (Q) or earlier.
+Oboe version 1.4.0 or earlier when using OpenSLES with an OUTPUT stream callback.
+
+OR any version of Oboe if:
+* Oboe is using using OpenSL ES or a non-MMAP Legacy AAudio stream
+* AND you call stream->getFramesRead() or stream->getTimestamp(...) from inside
+an OUTPUT stream callback,
+
+It does **not** happen when Oboe uses AAudio MMAP because it does not call releaseBuffer().
+
+## Workarounds
+
+1. Use Oboe 1.4.1 or later.
+1. Do not call stream->getFramesRead() or stream->getTimestamp() from inside the callback of an OUTPUT stream. If you absolutely must, then call them at the beginning of your callback to reduce the probability of a crash.
+
+Here is a [fix in Oboe 1.4.1](https://github.com/google/oboe/pull/863) that removed a call to getPosition().
 
 ## Root Cause
 
 The sequence of events is:
-1. audio callback starts by obtaining a buffer from the device
-1. app is called to render audio
-1. device routing change occurs during the callback
-1. callback ends by releasing the buffer back to the new device
+1. AudioFlinger AudioTrack obtains a buffer from the audio device
+1. user plugs in headphones, which invalidates the audio device
+1. app is called (callback) to render audio using the buffer
+1. the app or Oboe calls getFramesRead() or getTimestamp(), which calls down to AudioTrack::getPosition() or AudioTrack::getTimestamp()
+1. device routing change occurs because the audio device is [invalid](https://cs.android.com/android/platform/superproject/+/master:frameworks/av/media/libaudioclient/AudioTrack.cpp;l=1239;drc=48e98cf8dbd9fa212a0e129822929dc40e6c3898)
+1. callback ends by releasing the buffer back to a different device
+1. AudioTrackShared::releaseBuffer() checks to make sure the device matches the one in ObtainBuffer() and asserts if they do not match.
 
-The method releaseBuffer() checks to make sure the device matches the one in ObtainBuffer() and asserts if they do not match.
+Oboe, before V1.4.1, would update the server position in its callback. This called getPosition() in OpenSL ES, which called AudioTrack::getPosition().
+
+The probability of the assert() is proportional to the time that the CPU spends between obtaining a buffer and calling restoreTrack_l().
+
 This bug is tracked internally at: b/136268149
-
-## Workarounds
-
-The bug can generally be avoided by using AAudio on Android 8.1 or above.
-
-We are currently investigating possible workarounds for OpenSL ES on earlier versions.
-
-If the callback is very quick, then the window is small and the crash is less likely to not occur.
-If the callback is taking a long time, because the computation is complex, then the window
-is wide and the probability very high for hitting this bug.
 
 ## Reproduce the Bug
 
 These steps will trigger the bug most of the time:
 
-1. Install OboeTester 1.5.22 or later.
+1. Install OboeTester 1.5.22 or later, with Oboe < 1.4.1
 1. Enter in a Terminal window: adb logcat | grep releaseBuffer
 1. Launch OboeTester
 1. Click TEST OUTPUT
