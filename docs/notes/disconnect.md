@@ -26,7 +26,7 @@ know that the device has changed. There is a "Test Disconnects" option in
 [OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
 that can be used to diagnose this problem.
 
-As a workaround you can listen for a Java Intent.HEADSET_PLUG, which is fired when a head set is plugged in or out.
+As a workaround you can listen for a Java Intent.ACTION_HEADSET_PLUG, which is fired when a head set is plugged in or out.
 
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
     public class PluginBroadcastReceiver extends BroadcastReceiver {
