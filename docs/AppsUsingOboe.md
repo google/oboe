@@ -22,7 +22,8 @@ your project name and Play Store URL.
 | [Music Speed Changer](https://play.google.com/store/apps/details?id=com.smp.musicspeed) | Play song files while changing the pitch and tempo. | Single Minded Productions |  | 
 | [n-Track Studio](https://play.google.com/store/apps/details?id=com.ntrack.studio.demo) | Mobile audio workstation | n-Track Software | Settings->Select AAudio for input and/or output->OK |
 | [Pinoy Piano](https://play.google.com/store/apps/details?id=kheldiente.midien.pinoypiano) | Piano rhythm game. Play and Listen to your favorite Filipino songs. | Michael Diente | |
-| [Serial communication via audio](https://davidawehr.com/blog/audioserial/) | | David Wehr |  |
+| [RemixLive](https://www.mixvibes.com/remixlive-remix-app/) | Loop sequences, create beats | [Mixvibes](https://www.mixvibes.com/) | using AAudio |
+| [AudioSerial](https://davidawehr.com/blog/audioserial/) | Serial communication via audio | David Wehr | blog and source code |
 | [Sound Amplifier](https://play.google.com/store/apps/details?id=com.google.android.accessibility.soundamplifier) | Hearing assistant | Google | Enable through Settings > Accessability |
 | [SoundCloud](https://play.google.com/store/apps/details?id=com.soundcloud.android) | Music streaming app | SoundCloud | They [wrote an article](https://developers.soundcloud.com/blog/soundcloud-is-playing-the-oboe) about the integration |
 | [Mini Piano Lite](https://play.google.com/store/apps/details?id=umito.android.minipiano) | Piano keyboard | Umito | Using AAudio  |
