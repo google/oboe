@@ -39,14 +39,14 @@ Result AudioStream::close() {
     return Result::OK;
 }
 
-// Call this from fireDataCallback to monitor CPU scheduler.
+// Call this from fireDataCallback() if you want to monitor CPU scheduler.
 void AudioStream::checkScheduler() {
     int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
     if (scheduler != mPreviousScheduler) {
         LOGD("AudioStream::%s() scheduler = %s", __func__,
-             ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
-              ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
-               ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
+                ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
+                ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
+                ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
         );
         mPreviousScheduler = scheduler;
     }
