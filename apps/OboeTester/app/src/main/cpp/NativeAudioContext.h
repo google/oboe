@@ -245,7 +245,6 @@ public:
     }
 
     void setWorkload(double workload) {
-        LOGD("ActivityContext::%s(%f)", __func__, workload);
         oboeCallbackProxy.setWorkload(workload);
     }
 
@@ -260,9 +259,7 @@ public:
     virtual void runBlockingIO() {};
 
     static void threadCallback(ActivityContext *context) {
-        LOGD("%s: called", __func__);
         context->runBlockingIO();
-        LOGD("%s: exiting", __func__);
     }
 
     void stopBlockingIOThread() {
@@ -654,7 +651,6 @@ public:
     };
 
     void setActivityType(int activityType) {
-        LOGD("%s(%d)", __func__, activityType);
         mActivityType = (ActivityType) activityType;
         switch(mActivityType) {
             default:
