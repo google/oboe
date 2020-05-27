@@ -87,7 +87,7 @@ bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
 
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     Result result = Result::OK;
-    LOGD("%s() %s -------- %s --------",
+    LOGI("%s() %s -------- %s --------",
          __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
 
     if (streamPP == nullptr) {
