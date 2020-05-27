@@ -89,10 +89,8 @@ int32_t ActivityContext::allocateStreamIndex() {
 }
 
 void ActivityContext::close(int32_t streamIndex) {
-    LOGD("ActivityContext::%s() called for stream %d ", __func__, streamIndex);
     stopBlockingIOThread();
     oboe::AudioStream *oboeStream = getStream(streamIndex);
-    LOGD("ActivityContext::%s() close stream %p ", __func__, oboeStream);
     if (oboeStream != nullptr) {
         oboeStream->close();
         LOGD("ActivityContext::%s() delete stream %d ", __func__, streamIndex);
@@ -108,7 +106,6 @@ bool ActivityContext::isMMapUsed(int32_t streamIndex) {
 }
 
 oboe::Result ActivityContext::pause() {
-    LOGD("ActivityContext::%s() called", __func__);
     oboe::Result result = oboe::Result::OK;
     stopBlockingIOThread();
     for (auto entry : mOboeStreams) {
@@ -122,10 +119,7 @@ oboe::Result ActivityContext::pause() {
 oboe::Result ActivityContext::stopAllStreams() {
     oboe::Result result = oboe::Result::OK;
     stopBlockingIOThread();
-    LOGD("ActivityContext::stopAllStreams() called");
     for (auto entry : mOboeStreams) {
-        LOGD("ActivityContext::stopAllStreams() handle = %d, stream %p",
-             entry.first, entry.second.get());
         oboe::AudioStream *oboeStream = entry.second.get();
         result = oboeStream->requestStop();
         printScheduler();
@@ -208,8 +202,6 @@ int ActivityContext::open(jint nativeApi,
     // Open a stream based on the builder settings.
     std::shared_ptr<oboe::AudioStream> oboeStream;
     Result result = builder.openStream(oboeStream);
-    LOGD("ActivityContext::open() builder.openStream() returned %d, oboeStream = %p",
-            result, oboeStream.get());
     AAudioExtensions::getInstance().setMMapEnabled(oldMMapEnabled);
     if (result != Result::OK) {
         freeStreamIndex(streamIndex);
@@ -235,7 +227,6 @@ int ActivityContext::open(jint nativeApi,
 }
 
 oboe::Result ActivityContext::start() {
-    LOGD("ActivityContext: %s() called", __func__);
     oboe::Result result = oboe::Result::OK;
     oboe::AudioStream *inputStream = getInputStream();
     oboe::AudioStream *outputStream = getOutputStream();
@@ -249,7 +240,6 @@ oboe::Result ActivityContext::start() {
     result = startStreams();
 
     if (!mUseCallback && result == oboe::Result::OK) {
-        LOGD("start thread for blocking I/O");
         // Instead of using the callback, start a thread that writes the stream.
         threadEnabled.store(true);
         dataThread = new std::thread(threadCallback, this);
@@ -467,7 +457,6 @@ void ActivityTestInput::runBlockingIO() {
 }
 
 oboe::Result ActivityRecording::stopPlayback() {
-    LOGD("ActivityRecording::%s() called", __func__);
     oboe::Result result = oboe::Result::OK;
     if (playbackStream != nullptr) {
         result = playbackStream->requestStop();
@@ -481,7 +470,6 @@ oboe::Result ActivityRecording::stopPlayback() {
 
 oboe::Result ActivityRecording::startPlayback() {
     stop();
-    LOGD("ActivityRecording::%s() called, mSampleRate = %d", __func__, mSampleRate);
     oboe::AudioStreamBuilder builder;
     builder.setChannelCount(mChannelCount)
             ->setSampleRate(mSampleRate)
@@ -489,7 +477,6 @@ oboe::Result ActivityRecording::startPlayback() {
             ->setCallback(&mPlayRecordingCallback)
             ->setAudioApi(oboe::AudioApi::OpenSLES);
     oboe::Result result = builder.openStream(&playbackStream);
-    LOGD("ActivityRecording::%s() openStream() returned %d", __func__, result);
     if (result != oboe::Result::OK) {
         delete playbackStream;
         playbackStream = nullptr;
@@ -604,7 +591,6 @@ void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
 
 // =================================================================== ActivityTestDisconnect
 void ActivityTestDisconnect::close(int32_t streamIndex) {
-    LOGD("ActivityTestDisconnect::%s() called for stream %d ", __func__, streamIndex);
     ActivityContext::close(streamIndex);
     mSinkFloat.reset();
 }

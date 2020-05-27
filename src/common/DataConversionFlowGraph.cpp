@@ -86,7 +86,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     int32_t sinkChannelCount = sinkStream->getChannelCount();
     int32_t sinkSampleRate = sinkStream->getSampleRate();
 
-    LOGD("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d, qual = %d",
+    LOGI("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d, qual = %d",
             __func__,
             sourceChannelCount, sinkChannelCount,
             sourceFormat, sinkFormat,

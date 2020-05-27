@@ -79,10 +79,8 @@ static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
 // Prevents deletion of the stream if the app is using AudioStreamBuilder::openSharedStream()
 static void oboe_aaudio_error_thread_proc_shared(std::shared_ptr<AudioStream> sharedStream,
                                           Result error) {
-    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
     oboe_aaudio_error_thread_proc(oboeStream, error);
-    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
 namespace oboe {
@@ -94,7 +92,6 @@ AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
     : AudioStream(builder)
     , mAAudioStream(nullptr) {
     mCallbackThreadEnabled.store(false);
-    LOGD("AudioStreamAAudio() call isSupported()");
     isSupported();
 }
 
@@ -121,7 +118,7 @@ void AudioStreamAAudio::internalErrorCallback(
     if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
         LOGE("%s() multiple error callbacks called!", __func__);
     } else if (stream != oboeStream->getUnderlyingStream()) {
-        LOGD("%s() stream already closed", __func__); // can happen if there are bugs
+        LOGW("%s() stream already closed", __func__); // can happen if there are bugs
     } else if (sharedStream) {
         // Handle error on a separate thread using shared pointer.
         std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream,
@@ -273,15 +270,14 @@ Result AudioStreamAAudio::open() {
         mSessionId = SessionId::None;
     }
 
-    LOGD("AudioStreamAAudio.open() app    format = %d", static_cast<int>(mFormat));
-    LOGD("AudioStreamAAudio.open() sample rate   = %d", static_cast<int>(mSampleRate));
-    LOGD("AudioStreamAAudio.open() capacity      = %d", static_cast<int>(mBufferCapacityInFrames));
+    LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
+            static_cast<int>(mFormat), static_cast<int>(mSampleRate),
+            static_cast<int>(mBufferCapacityInFrames));
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
-    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s, mAAudioStream = %p",
-         mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)),
-         mAAudioStream.load());
+    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s",
+         mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)));
     return result;
 }
 
@@ -311,7 +307,7 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
         return result;
     } else {
         if (result == DataCallbackResult::Stop) {
-            LOGE("Oboe callback returned DataCallbackResult::Stop");
+            LOGD("Oboe callback returned DataCallbackResult::Stop");
         } else {
             LOGE("Oboe callback returned unexpected value = %d", result);
         }

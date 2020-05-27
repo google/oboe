@@ -69,8 +69,7 @@ SLuint32 AudioStreamOpenSLES::getDefaultByteOrder() {
 
 Result AudioStreamOpenSLES::open() {
 
-    LOGI("AudioStreamOpenSLES::open(chans:%d, rate:%d)",
-         mChannelCount, mSampleRate);
+    LOGI("AudioStreamOpenSLES::open() chans=%d, rate=%d", mChannelCount, mSampleRate);
 
     SLresult result = EngineOpenSLES::getInstance().open();
     if (SL_RESULT_SUCCESS != result) {
