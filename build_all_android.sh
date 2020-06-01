@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to build Oboe for multiple Android ABIs and prepare them for distribution 
+# Script to build Oboe for multiple Android ABIs and prepare them for distribution
 # via Prefab (github.com/google/prefab)
 #
 # Ensure that ANDROID_NDK environment variable is set to your Android NDK location
@@ -29,6 +29,7 @@ fi
 BUILD_DIR=build
 
 CMAKE_ARGS="-H. \
+  -DBUILD_SHARED_LIBS=true \
   -DCMAKE_BUILD_TYPE=Release \
   -DANDROID_TOOLCHAIN=clang \
   -DANDROID_STL=c++_shared \
