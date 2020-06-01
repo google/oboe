@@ -18,21 +18,14 @@ Add the oboe dependency to your app's `build.gradle` file. Replace "1.3.0" with 
         implementation 'com.google.oboe:oboe:1.3.0'
     }
 
-Prefab isn't enabled by default so enable it by adding following to your `gradle.properties` file, which is in the root folder of your app:
+Also enable prefab by adding:
 
-    # Enables Prefab
-    android.enablePrefab=true
-
-    # Set the latest prefab release version (https://github.com/google/prefab/releases)
-    android.prefabVersion=1.0.0
-
-    # Only add if you are using AGP < 4.0.0-beta03. This is fixed in later versions.
-    # Work around https://issuetracker.google.com/149575364
-    android.enableParallelJsonGen=false
+    android {
+        buildFeatures {
+            prefab true
+        }
+    }
     
-
-**Note:** Please check back regularly to see whether these workarounds are still required. This will ensure you don't get stuck on an unecessary Android Studio configuration or outdated Prefab version.
-
 Include and link to oboe by updating your `CMakeLists.txt`: 
 
     find_package (oboe REQUIRED CONFIG)
