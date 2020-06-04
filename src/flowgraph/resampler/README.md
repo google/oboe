@@ -9,7 +9,7 @@ We found this had fewer artifacts than the more traditional Kaiser window.
 
 ## Creating a Resampler
 
-Include the main header for the resampler.
+Include the [main header](MultiChannelResampler.h) for the resampler.
 
     #include "resampler/MultiChannelResampler.h"
 
