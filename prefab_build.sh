@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Test that the prefab binary exists
 if hash prefab 2>/dev/null; then
   echo "Prefab is installed"
@@ -7,9 +9,9 @@ else
 fi
 
 # Get the version string from the source
-major=`grep "#define OBOE_VERSION_MAJOR" include/oboe/Version.h | cut -d' ' -f3`
-minor=`grep "#define OBOE_VERSION_MINOR" include/oboe/Version.h | cut -d' ' -f3`
-patch=`grep "#define OBOE_VERSION_PATCH" include/oboe/Version.h | cut -d' ' -f3`
+major=$(grep "#define OBOE_VERSION_MAJOR" include/oboe/Version.h | cut -d' ' -f3)
+minor=$(grep "#define OBOE_VERSION_MINOR" include/oboe/Version.h | cut -d' ' -f3)
+patch=$(grep "#define OBOE_VERSION_PATCH" include/oboe/Version.h | cut -d' ' -f3)
 version=$major"."$minor"."$patch
 
 echo "Building libraries for Oboe version "$version
