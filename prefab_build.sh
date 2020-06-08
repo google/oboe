@@ -47,8 +47,8 @@ pushd build/prefab
   do
 
     prefab --build-system cmake --platform android --os-version 29 \
-    --stl c++_shared --ndk-version 21 --abi ${abi} \
-    --output prefab-output-tmp $(pwd)/oboe-${version}/prefab
+        --stl c++_shared --ndk-version 21 --abi ${abi} \
+        --output prefab-output-tmp $(pwd)/oboe-${version}/prefab
 
     result=$?; if [[ $result == 0 ]]; then
       echo "${abi} package verified"
