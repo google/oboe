@@ -19,13 +19,13 @@
 using namespace oboe;
 
 LatencyTuner::LatencyTuner(AudioStream &stream)
-    : LatencyTuner(stream, stream.getBufferCapacityInFrames()){
-    }
+        : LatencyTuner(stream, stream.getBufferCapacityInFrames()) {
+}
 
 LatencyTuner::LatencyTuner(oboe::AudioStream &stream, int32_t maximumBufferSize)
-    : mStream(stream)
-    , mMaxBufferSize(maximumBufferSize) {
-        reset();
+        : mStream(stream)
+        , mMaxBufferSize(maximumBufferSize) {
+    reset();
 }
 
 Result LatencyTuner::tune() {
@@ -94,7 +94,7 @@ void LatencyTuner::reset() {
     mState = State::Idle;
     mIdleCountDown = kIdleCount;
     // Set to minimal latency
-    mStream.setBufferSizeInFrames(2 * mStream.getFramesPerBurst());
+    mStream.setBufferSizeInFrames(mInitialNumBursts * mStream.getFramesPerBurst());
 }
 
 bool LatencyTuner::isAtMaximumBufferSize() {
