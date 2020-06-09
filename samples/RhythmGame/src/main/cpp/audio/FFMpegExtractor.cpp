@@ -252,7 +252,12 @@ int64_t FFMpegExtractor::decode(
 
                 // Retrieve our raw data from the codec
                 result = avcodec_receive_frame(codecContext.get(), decodedFrame);
-                if (result != 0) {
+                if (result == AVERROR(EAGAIN)) {
+                    // The codec needs more data before it can decode
+                    avPacket.size = 0;
+                    avPacket.data = nullptr;
+                    continue;
+                } else if (result != 0) {
                     LOGE("avcodec_receive_frame error: %s", av_err2str(result));
                     goto cleanup;
                 }
