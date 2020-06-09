@@ -54,7 +54,7 @@ public:
      * @param stream the stream who's latency will be tuned
      * @param the maximum buffer size which the tune() operation will set the buffer size to
      */
-     explicit LatencyTuner(AudioStream &stream, int32_t maximumBufferSize);
+    explicit LatencyTuner(AudioStream &stream, int32_t maximumBufferSize);
 
     /**
      * Adjust the bufferSizeInFrames to optimize latency.
@@ -81,8 +81,20 @@ public:
      * was specified when constructing the LatencyTuner then the value of
      * stream->getBufferCapacityInFrames is used
      */
-     bool isAtMaximumBufferSize();
+    bool isAtMaximumBufferSize();
 
+    /**
+     * Set the number of bursts to use when setting the initial size of
+     * the buffer, and when reset() is called.
+     * @param initialBursts
+     */
+    void setInitialNumBursts(int32_t initialBursts) {
+        mInitialNumBursts = initialBursts;
+    }
+
+    int32_t getInitialNumBursts() const {
+        return mInitialNumBursts;
+    }
 
 private:
 
@@ -103,12 +115,14 @@ private:
 
     // arbitrary number of calls to wait before bumping up the latency
     static constexpr int32_t kIdleCount = 8;
+    static constexpr int32_t kInitialNumBursts = 2;
 
     AudioStream           &mStream;
     State                 mState = State::Idle;
     int32_t               mMaxBufferSize = 0;
     int32_t               mPreviousXRuns = 0;
     int32_t               mIdleCountDown = 0;
+    int32_t               mInitialNumBursts = kInitialNumBursts;
     std::atomic<int32_t>  mLatencyTriggerRequests{0}; // TODO user atomic requester from AAudio
     std::atomic<int32_t>  mLatencyTriggerResponses{0};
 };
