@@ -25,6 +25,9 @@ LatencyTuner::LatencyTuner(AudioStream &stream)
 LatencyTuner::LatencyTuner(oboe::AudioStream &stream, int32_t maximumBufferSize)
         : mStream(stream)
         , mMaxBufferSize(maximumBufferSize) {
+    int32_t burstSize = stream.getFramesPerBurst();
+    setMinimumBufferSize(kMinimumNumBursts * burstSize);
+    setBufferSizeIncrement(burstSize);
     reset();
 }
 
@@ -55,7 +58,7 @@ Result LatencyTuner::tune() {
             if ((xRunCountResult.value() - mPreviousXRuns) > 0) {
                 mPreviousXRuns = xRunCountResult.value();
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
-                int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
+                int32_t requestedBufferSize = oldBufferSize + getBufferSizeIncrement();
 
                 // Do not request more than the maximum buffer size (which was either user-specified
                 // or was from stream->getBufferCapacityInFrames())
@@ -94,7 +97,7 @@ void LatencyTuner::reset() {
     mState = State::Idle;
     mIdleCountDown = kIdleCount;
     // Set to minimal latency
-    mStream.setBufferSizeInFrames(mInitialNumBursts * mStream.getFramesPerBurst());
+    mStream.setBufferSizeInFrames(getMinimumBufferSize());
 }
 
 bool LatencyTuner::isAtMaximumBufferSize() {
