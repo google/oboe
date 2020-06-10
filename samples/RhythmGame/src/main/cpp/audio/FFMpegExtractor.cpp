@@ -240,58 +240,57 @@ int64_t FFMpegExtractor::decode(
     // While there is more data to read, read it into the avPacket
     while (av_read_frame(formatContext.get(), &avPacket) == 0){
 
-        if (avPacket.stream_index == stream->index) {
+        if (avPacket.stream_index == stream->index && avPacket.size > 0) {
 
-            while (avPacket.size > 0) {
-                // Pass our compressed data into the codec
-                result = avcodec_send_packet(codecContext.get(), &avPacket);
-                if (result != 0) {
-                    LOGE("avcodec_send_packet error: %s", av_err2str(result));
-                    goto cleanup;
-                }
+            // Pass our compressed data into the codec
+            result = avcodec_send_packet(codecContext.get(), &avPacket);
+            if (result != 0) {
+                LOGE("avcodec_send_packet error: %s", av_err2str(result));
+                goto cleanup;
+            }
 
-                // Retrieve our raw data from the codec
-                result = avcodec_receive_frame(codecContext.get(), decodedFrame);
-                if (result == AVERROR(EAGAIN)) {
-                    // The codec needs more data before it can decode
-                    avPacket.size = 0;
-                    avPacket.data = nullptr;
-                    continue;
-                } else if (result != 0) {
-                    LOGE("avcodec_receive_frame error: %s", av_err2str(result));
-                    goto cleanup;
-                }
-
-                // DO RESAMPLING
-                auto dst_nb_samples = (int32_t) av_rescale_rnd(
-                        swr_get_delay(swr, decodedFrame->sample_rate) + decodedFrame->nb_samples,
-                        targetProperties.sampleRate,
-                        decodedFrame->sample_rate,
-                        AV_ROUND_UP);
-
-                short *buffer1;
-                av_samples_alloc(
-                        (uint8_t **) &buffer1,
-                        nullptr,
-                        targetProperties.channelCount,
-                        dst_nb_samples,
-                        AV_SAMPLE_FMT_FLT,
-                        0);
-                int frame_count = swr_convert(
-                        swr,
-                        (uint8_t **) &buffer1,
-                        dst_nb_samples,
-                        (const uint8_t **) decodedFrame->data,
-                        decodedFrame->nb_samples);
-
-                int64_t bytesToWrite = frame_count * sizeof(float) * targetProperties.channelCount;
-                memcpy(targetData + bytesWritten, buffer1, (size_t)bytesToWrite);
-                bytesWritten += bytesToWrite;
-                av_freep(&buffer1);
-
+            // Retrieve our raw data from the codec
+            result = avcodec_receive_frame(codecContext.get(), decodedFrame);
+            if (result == AVERROR(EAGAIN)) {
+                // The codec needs more data before it can decode
+                LOGI("avcodec_receive_frame returned EAGAIN");
                 avPacket.size = 0;
                 avPacket.data = nullptr;
+                continue;
+            } else if (result != 0) {
+                LOGE("avcodec_receive_frame error: %s", av_err2str(result));
+                goto cleanup;
             }
+
+            // DO RESAMPLING
+            auto dst_nb_samples = (int32_t) av_rescale_rnd(
+                    swr_get_delay(swr, decodedFrame->sample_rate) + decodedFrame->nb_samples,
+                    targetProperties.sampleRate,
+                    decodedFrame->sample_rate,
+                    AV_ROUND_UP);
+
+            short *buffer1;
+            av_samples_alloc(
+                    (uint8_t **) &buffer1,
+                    nullptr,
+                    targetProperties.channelCount,
+                    dst_nb_samples,
+                    AV_SAMPLE_FMT_FLT,
+                    0);
+            int frame_count = swr_convert(
+                    swr,
+                    (uint8_t **) &buffer1,
+                    dst_nb_samples,
+                    (const uint8_t **) decodedFrame->data,
+                    decodedFrame->nb_samples);
+
+            int64_t bytesToWrite = frame_count * sizeof(float) * targetProperties.channelCount;
+            memcpy(targetData + bytesWritten, buffer1, (size_t)bytesToWrite);
+            bytesWritten += bytesToWrite;
+            av_freep(&buffer1);
+
+            avPacket.size = 0;
+            avPacket.data = nullptr;
         }
     }
 
