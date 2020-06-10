@@ -15,100 +15,101 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="V?"
-        app:layout_constraintEnd_toEndOf="@+id/buttonTestOutput"
-        app:layout_constraintStart_toStartOf="@+id/buttonTestOutput"
+        app:layout_constraintEnd_toEndOf="@+id/buttonGrid"
+        app:layout_constraintStart_toStartOf="@+id/buttonGrid"
         />
+
+    <GridLayout
+        android:id="@+id/buttonGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        app:layout_constraintTop_toBottomOf="@+id/versionText">
 
     <Button
         android:id="@+id/buttonTestOutput"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchTestOutput"
         android:text="Test Output"
-        app:layout_constraintEnd_toEndOf="@+id/buttonTestInput"
-        app:layout_constraintStart_toStartOf="@+id/buttonTestInput"
-        app:layout_constraintTop_toBottomOf="@+id/versionText" />
+        />
 
     <Button
         android:id="@+id/buttonTestInput"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchTestInput"
-        android:text="Test Input"
-        app:layout_constraintEnd_toEndOf="@+id/buttonTapToTone"
-        app:layout_constraintStart_toStartOf="@+id/buttonTapToTone"
-        app:layout_constraintTop_toBottomOf="@+id/buttonTestOutput" />
+        android:text="Test Input" />
 
     <Button
         android:id="@+id/buttonTapToTone"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchTapToTone"
         android:text="Tap to Tone Latency"
-        app:layout_constraintEnd_toEndOf="@+id/buttonRecorder"
-        app:layout_constraintStart_toStartOf="@+id/buttonRecorder"
-        app:layout_constraintTop_toBottomOf="@+id/buttonTestInput" />
-
-    <Button
-        android:id="@+id/buttonRecorder"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="onLaunchRecorder"
-        android:text="Record and Play"
-        app:layout_constraintEnd_toEndOf="@+id/buttonEcho"
-        app:layout_constraintStart_toStartOf="@+id/buttonEcho"
-        app:layout_constraintTop_toBottomOf="@+id/buttonTapToTone" />
-
-    <Button
-        android:id="@+id/buttonEcho"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="onLaunchEcho"
-        android:text="Echo Input to Output"
-        app:layout_constraintEnd_toEndOf="@+id/button_rt_latency"
-        app:layout_constraintStart_toStartOf="@+id/button_rt_latency"
-        app:layout_constraintTop_toBottomOf="@+id/buttonRecorder" />
+        />
 
     <Button
         android:id="@+id/button_rt_latency"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchRoundTripLatency"
-        android:text="Round Trip Latency"
-        app:layout_constraintEnd_toEndOf="@+id/button_manual_glitches"
-        app:layout_constraintStart_toStartOf="@+id/button_manual_glitches"
-        app:layout_constraintTop_toBottomOf="@+id/buttonEcho" />
+        android:text="Round Trip Latency" />
+
+    <Button
+        android:id="@+id/buttonEcho"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchEcho"
+        android:text="Echo Input to Output" />
+
+    <Button
+        android:id="@+id/buttonRecorder"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchRecorder"
+        android:text="Record and Play"
+        />
 
     <Button
         android:id="@+id/button_manual_glitches"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchManualGlitchTest"
-        android:text="Glitch Test"
-        app:layout_constraintEnd_toEndOf="@+id/button_auto_glitches"
-        app:layout_constraintStart_toStartOf="@+id/button_auto_glitches"
-        app:layout_constraintTop_toBottomOf="@+id/button_rt_latency" />
+        android:text="Glitch Test" />
 
     <Button
         android:id="@+id/button_auto_glitches"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchAutoGlitchTest"
-        android:text="Auto Glitch Test"
-        app:layout_constraintEnd_toEndOf="@+id/button_test_disconnect"
-        app:layout_constraintStart_toStartOf="@+id/button_test_disconnect"
-        app:layout_constraintTop_toBottomOf="@+id/button_manual_glitches" />
+        android:text="Auto Glitch Test" />
 
     <Button
         android:id="@+id/button_test_disconnect"
+        android:layout_gravity="fill"
         android:layout_width="0dp"
+        android:layout_columnWeight="1"
         android:layout_height="wrap_content"
         android:onClick="onLaunchTestDisconnect"
-        android:text="Test Disconnect"
-        app:layout_constraintEnd_toEndOf="@+id/text_build_info"
-        app:layout_constraintStart_toStartOf="@+id/useCallback"
-        app:layout_constraintTop_toBottomOf="@+id/button_auto_glitches" />
-
+        android:text="Test Disconnect" />
+    </GridLayout>
 
     <CheckBox
         android:id="@+id/useCallback"
@@ -119,13 +120,13 @@
         android:text="Use Callback"
         app:layout_constraintEnd_toStartOf="@+id/textView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_test_disconnect" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonGrid" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
+        android:layout_marginStart="4dp"
         android:text="Size:"
         app:layout_constraintBaseline_toBaselineOf="@+id/useCallback"
         app:layout_constraintEnd_toStartOf="@+id/callbackSize"
@@ -162,22 +163,22 @@
         app:layout_constraintStart_toStartOf="@+id/setSpeakerphoneOn"
         app:layout_constraintTop_toBottomOf="@+id/setSpeakerphoneOn"
         >
-    <CheckBox
-        android:id="@+id/setBluetoothScoOn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:checked="false"
-        android:onClick="onStartStopBluetoothSco"
-        android:text="start/stopBluetoothSco()"
-        />
+        <CheckBox
+            android:id="@+id/setBluetoothScoOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="false"
+            android:onClick="onStartStopBluetoothSco"
+            android:text="start/stopBluetoothSco()"
+            />
 
         <TextView
             android:id="@+id/textBluetoothScoStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="12sp"
+            android:layout_marginStart="12sp"
             android:text="\?" />
     </LinearLayout>
 
@@ -210,7 +211,6 @@
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/boxEnableWorkarounds" />
 
-
     <TextView
         android:id="@+id/deviceView"
         android:layout_width="wrap_content"
@@ -225,7 +225,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="1dp"
-        android:layout_marginRight="1dp"
         android:ems="10"
         android:text="V?"
         app:layout_constraintEnd_toEndOf="@+id/callbackSize"
