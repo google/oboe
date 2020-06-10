@@ -17,8 +17,10 @@
 package com.google.sample.oboe.manualtest;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
@@ -55,6 +57,7 @@ public class MainActivity extends Activity {
     protected TextView mDeviceView;
     private TextView mVersionTextView;
     private TextView mBuildTextView;
+    private TextView mBluetoothScoStatusView;
     private Bundle mBundleFromIntent;
 
     @Override
@@ -100,6 +103,20 @@ public class MainActivity extends Activity {
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
 
+        mBluetoothScoStatusView = (TextView) findViewById(R.id.textBluetoothScoStatus);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+                if (state == AudioManager.SCO_AUDIO_STATE_CONNECTING) {
+                    mBluetoothScoStatusView.setText("CONNECTING");
+                } else if (state == AudioManager.SCO_AUDIO_STATE_CONNECTED) {
+                    mBluetoothScoStatusView.setText("CONNECTED");
+                } else if (state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) {
+                    mBluetoothScoStatusView.setText("DISCONNECTED");
+                }
+            }
+        }, new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
 
         saveIntentBundleForLaterProcessing(getIntent());
     }
@@ -250,6 +267,16 @@ public class MainActivity extends Activity {
         boolean enabled = checkBox.isChecked();
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.setSpeakerphoneOn(enabled);
+    }
+
+    public void onStartStopBluetoothSco(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (checkBox.isChecked()) {
+            myAudioMgr.startBluetoothSco();
+        } else {
+            myAudioMgr.stopBluetoothSco();
+        }
     }
 
     public void onEnableWorkarounds(View view) {
