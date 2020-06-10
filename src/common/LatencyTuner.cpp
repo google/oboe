@@ -26,7 +26,7 @@ LatencyTuner::LatencyTuner(oboe::AudioStream &stream, int32_t maximumBufferSize)
         : mStream(stream)
         , mMaxBufferSize(maximumBufferSize) {
     int32_t burstSize = stream.getFramesPerBurst();
-    setMinimumBufferSize(kMinimumNumBursts * burstSize);
+    setMinimumBufferSize(kDefaultNumBursts * burstSize);
     setBufferSizeIncrement(burstSize);
     reset();
 }
