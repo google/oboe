@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H
-#define FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H
+#ifndef FLOWGRAPH_MULTI_TO_MONO_CONVERTER_H
+#define FLOWGRAPH_MULTI_TO_MONO_CONVERTER_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -25,25 +25,25 @@
 namespace flowgraph {
 
 /**
- * Convert a monophonic stream to a multi-channel interleaved stream
- * with the same signal on each channel.
+ * Convert a multi-channel interleaved stream to a monophonic stream
+ * by extracting channel[0].
  */
-class MonoToMultiConverter : public FlowGraphNode {
-public:
-    explicit MonoToMultiConverter(int32_t outputChannelCount);
+    class MultiToMonoConverter : public FlowGraphNode {
+    public:
+        explicit MultiToMonoConverter(int32_t inputChannelCount);
 
-    virtual ~MonoToMultiConverter();
+        virtual ~MultiToMonoConverter();
 
-    int32_t onProcess(int32_t numFrames) override;
+        int32_t onProcess(int32_t numFrames) override;
 
-    const char *getName() override {
-        return "MonoToMultiConverter";
-    }
+        const char *getName() override {
+            return "MultiToMonoConverter";
+        }
 
-    FlowGraphPortFloatInput input;
-    FlowGraphPortFloatOutput output;
-};
+        FlowGraphPortFloatInput input;
+        FlowGraphPortFloatOutput output;
+    };
 
 } /* namespace flowgraph */
 
-#endif //FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H
+#endif //FLOWGRAPH_MULTI_TO_MONO_CONVERTER_H
