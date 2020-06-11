@@ -239,6 +239,11 @@ Result AudioStreamAAudio::open() {
         mAAudioStream.store(stream);
     }
     if (result != Result::OK) {
+        // Warn developer because ErrorInternal is not very informative.
+        if (result == Result::ErrorInternal && mDirection == Direction::Input) {
+            LOGW("AudioStreamAAudio.open() may have failed due to lack of "
+                 "audio recording permission.");
+        }
         goto error2;
     }
 
