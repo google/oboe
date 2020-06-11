@@ -23,6 +23,7 @@
 
 #include <flowgraph/ClipToRange.h>
 #include <flowgraph/MonoToMultiConverter.h>
+#include <flowgraph/MultiToMonoConverter.h>
 #include <flowgraph/RampLinear.h>
 #include <flowgraph/SinkFloat.h>
 #include <flowgraph/SinkI16.h>
@@ -139,14 +140,33 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
         lastOutput = &mSource->output;
     }
 
+    if (sourceChannelCount != sinkChannelCount
+        && sourceChannelCount != 1
+        && sinkChannelCount != 1
+        ) {
+        LOGW("%s() Channel conversion %d to %d not supported.", __func__,
+             sourceChannelCount, sinkChannelCount);
+        return Result::ErrorUnimplemented;
+    }
+
+    // If we are going to reduce the number of channels then do it before the
+    // sample rate converter.
+    if (sourceChannelCount > 1 && sinkChannelCount == 1) {
+        mMultiToMonoConverter = std::make_unique<MultiToMonoConverter>(sourceChannelCount);
+        lastOutput->connect(&mMultiToMonoConverter->input);
+        lastOutput = &mMultiToMonoConverter->output;
+    }
+
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
-        mResampler.reset(MultiChannelResampler::make(sourceChannelCount,
+        // Create a resample to do the math.
+        mResampler.reset(MultiChannelResampler::make(lastOutput->getSamplesPerFrame(),
                                                      sourceSampleRate,
                                                      sinkSampleRate,
                                                      convertOboeSRQualityToMCR(
                                                              sourceStream->getSampleRateConversionQuality())));
-        mRateConverter = std::make_unique<SampleRateConverter>(sourceChannelCount,
+        // Make a flowgraph node that uses the resampler.
+        mRateConverter = std::make_unique<SampleRateConverter>(lastOutput->getSamplesPerFrame(),
                                                                *mResampler.get());
         lastOutput->connect(&mRateConverter->input);
         lastOutput = &mRateConverter->output;
@@ -154,12 +174,9 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
 
     // Expand the number of channels if required.
     if (sourceChannelCount == 1 && sinkChannelCount > 1) {
-        mChannelConverter = std::make_unique<MonoToMultiConverter>(sinkChannelCount);
-        lastOutput->connect(&mChannelConverter->input);
-        lastOutput = &mChannelConverter->output;
-    } else if (sourceChannelCount != sinkChannelCount) {
-        LOGW("%s() Channel reduction not supported.", __func__);
-        return Result::ErrorUnimplemented; // TODO
+        mMonoToMultiConverter = std::make_unique<MonoToMultiConverter>(sinkChannelCount);
+        lastOutput->connect(&mMonoToMultiConverter->input);
+        lastOutput = &mMonoToMultiConverter->output;
     }
 
     // Sink

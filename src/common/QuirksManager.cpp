@@ -17,6 +17,7 @@
 #include <oboe/AudioStreamBuilder.h>
 #include <oboe/Oboe.h>
 
+#include "OboeDebug.h"
 #include "QuirksManager.h"
 
 using namespace oboe;
@@ -51,11 +52,24 @@ int32_t QuirksManager::DeviceQuirks::clipBufferSize(AudioStream &stream,
     return adjustedSize;
 }
 
+bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder &builder) {
+    bool isSampleRateCompatible =
+            builder.getSampleRate() == oboe::Unspecified
+            || builder.getSampleRate() == kCommonNativeRate
+            || builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None;
+    return builder.getPerformanceMode() == PerformanceMode::LowLatency
+            && isSampleRateCompatible
+            && builder.getChannelCount() <= 2;
+}
+
 class SamsungDeviceQuirks : public  QuirksManager::DeviceQuirks {
 public:
     SamsungDeviceQuirks() {
         std::string arch = getPropertyString("ro.arch");
         isExynos = (arch.rfind("exynos", 0) == 0); // starts with?
+
+        std::string chipname = getPropertyString("ro.hardware.chipname");
+        isExynos9810 = (chipname == "exynos9810");
     }
 
     virtual ~SamsungDeviceQuirks() = default;
@@ -69,12 +83,18 @@ public:
         return kTopMargin;
     }
 
+    // See Oboe issue #824 for more information.
+    bool isMonoMMapActuallyStereo() const override {
+        return isExynos9810; // TODO We can make this version specific if it gets fixed.
+    }
+
 private:
     // Stay farther away from DSP position on Exynos devices.
     static constexpr int32_t kBottomMarginExynos = 2;
     static constexpr int32_t kBottomMarginOther = 1;
     static constexpr int32_t kTopMargin = 1;
     bool isExynos = false;
+    bool isExynos9810 = false;
 };
 
 QuirksManager::QuirksManager() {
@@ -115,24 +135,39 @@ bool QuirksManager::isConversionNeeded(
             ) {
         childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
         conversionNeeded = true;
+        LOGI("QuirksManager::%s() forcing internal format to I16 for low latency", __func__);
     }
 
-    // Channel Count
-    if (builder.getChannelCount() != oboe::Unspecified
-            && builder.isChannelConversionAllowed()) {
-        if (OboeGlobals::areWorkaroundsEnabled()
-                && builder.getChannelCount() == 2 // stereo?
-                && isInput
-                && isLowLatency
-                && (!builder.willUseAAudio() && (getSdkVersion() == __ANDROID_API_O__))) {
-            // Workaround for heap size regression in O.
-            // b/66967812 AudioRecord does not allow FAST track for stereo capture in O
-            childBuilder.setChannelCount(1);
-            conversionNeeded = true;
-        }
-        // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel 1
-        // phones and they have almost all been updated to 9.0.
+    // Channel Count conversions
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && builder.isChannelConversionAllowed()
+            && builder.getChannelCount() == 2 // stereo?
+            && isInput
+            && isLowLatency
+            && (!builder.willUseAAudio() && (getSdkVersion() == __ANDROID_API_O__))
+            ) {
+        // Workaround for heap size regression in O.
+        // b/66967812 AudioRecord does not allow FAST track for stereo capture in O
+        childBuilder.setChannelCount(1);
+        conversionNeeded = true;
+        LOGI("QuirksManager::%s() using mono internally for low latency on O", __func__);
+    } else if (OboeGlobals::areWorkaroundsEnabled()
+               && builder.getChannelCount() == 1 // mono?
+               && isInput
+               && mDeviceQuirks->isMonoMMapActuallyStereo()
+               && builder.willUseAAudio()
+               // Note: we might use this workaround on a device that supports
+               // MMAP but will use Legacy for this stream.  But this will only happen
+               // on devices that have the broken mono.
+               && mDeviceQuirks->isAAudioMMapPossible(builder)
+               ) {
+        // Workaround for mono actually running in stereo mode.
+        childBuilder.setChannelCount(2); // Use stereo and extract first channel.
+        conversionNeeded = true;
+        LOGI("QuirksManager::%s() using stereo internally to avoid broken mono", __func__);
     }
+    // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel 1
+    // phones and they have almost all been updated to 9.0.
 
     return conversionNeeded;
 }

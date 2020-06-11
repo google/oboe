@@ -30,6 +30,7 @@ set (oboe_sources
     src/flowgraph/ClipToRange.cpp
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoToMultiConverter.cpp
+    src/flowgraph/MultiToMonoConverter.cpp
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp
     src/flowgraph/SinkFloat.cpp
