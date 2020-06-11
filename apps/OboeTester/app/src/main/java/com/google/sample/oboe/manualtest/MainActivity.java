@@ -59,6 +59,7 @@ public class MainActivity extends Activity {
     private TextView mBuildTextView;
     private TextView mBluetoothScoStatusView;
     private Bundle mBundleFromIntent;
+    private BroadcastReceiver mScoStateReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +105,7 @@ public class MainActivity extends Activity {
         mBuildTextView.setText(Build.DISPLAY);
 
         mBluetoothScoStatusView = (TextView) findViewById(R.id.textBluetoothScoStatus);
-        registerReceiver(new BroadcastReceiver() {
+        mScoStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
@@ -116,9 +117,18 @@ public class MainActivity extends Activity {
                     mBluetoothScoStatusView.setText("DISCONNECTED");
                 }
             }
-        }, new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+        };
 
         saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    private void registerScoStateReceiver() {
+        registerReceiver(mScoStateReceiver,
+                new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+    }
+
+    private void unregisterScoStateReceiver() {
+        unregisterReceiver(mScoStateReceiver);
     }
 
     private void logScreenSize() {
@@ -165,6 +175,13 @@ public class MainActivity extends Activity {
         super.onResume();
         NativeEngine.setWorkaroundsEnabled(false);
         processBundleFromIntent();
+        registerScoStateReceiver();
+    }
+
+    @Override
+    public void onPause(){
+        unregisterScoStateReceiver();
+        super.onPause();
     }
 
     private void updateNativeAudioUI() {
