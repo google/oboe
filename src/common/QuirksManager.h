@@ -93,7 +93,7 @@ public:
 
         // On some devices, you can open a mono stream but it is actually running in stereo!
         virtual bool isMonoMMapActuallyStereo() const {
-            return true; // FIXME
+            return false;
         }
 
         bool isAAudioMMapPossible(const AudioStreamBuilder &builder);
