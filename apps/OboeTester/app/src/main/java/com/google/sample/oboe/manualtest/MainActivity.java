@@ -60,6 +60,7 @@ public class MainActivity extends Activity {
     private TextView mBluetoothScoStatusView;
     private Bundle mBundleFromIntent;
     private BroadcastReceiver mScoStateReceiver;
+    private CheckBox mWorkaroundsCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +101,10 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
+
+        mWorkaroundsCheckBox = (CheckBox) findViewById(R.id.boxEnableWorkarounds);
+        // Turn off workarounds so we can test the underlying API bugs.
+        NativeEngine.setWorkaroundsEnabled(false);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
@@ -173,7 +178,7 @@ public class MainActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
-        NativeEngine.setWorkaroundsEnabled(false);
+        mWorkaroundsCheckBox.setChecked(NativeEngine.areWorkaroundsEnabled());
         processBundleFromIntent();
         registerScoStateReceiver();
     }
