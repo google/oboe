@@ -103,6 +103,12 @@ Java_com_google_sample_oboe_manualtest_NativeEngine_setWorkaroundsEnabled(JNIEnv
     oboe::OboeGlobals::setWorkaroundsEnabled(enabled);
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
+        jclass type) {
+    return oboe::OboeGlobals::areWorkaroundsEnabled();
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
