@@ -38,10 +38,11 @@ If you use headphones then you can eliminate the latency caused by speaker prote
 If you use USB-MIDI input then you can eliminate the latency due to the touch screen, which is around 15-30 msec.
 MIDI latency is generally under 1 msec.
 
-### Record and Playback
+### Record and Play
 
-Record several seconds of audio and play it back.
-The Share button lets you share the recorded WAV file.
+* Tap RECORD to record several seconds of audio. You should see the red VU meters move.
+* Tap STOP then PLAY to play it back.
+* Tap SHARE button to the recorded WAV file to GDrive, GMail or another app.
 You can then examine the WAV file using a program like Audacity.
 
 ### Echo Input to Output
@@ -79,3 +80,9 @@ Measure glitches for various combinations of input and output settings.
 Change the test duration to a high value and let it run for a while.
 If you get glitches in one configuration then you can investigate using the previous manual Glitch Test.
 The Share button will let you email the report to yourself.
+
+### Test Disconnect
+
+You can test whether the disconnect logic is working in Android by plugging or unplugging a headset.
+Just follow the instructions in red. You will get a report at the end that you can SHARE by GMail.
+
