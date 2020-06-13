@@ -96,7 +96,7 @@ public:
             return false;
         }
 
-        bool isAAudioMMapPossible(const AudioStreamBuilder &builder);
+        virtual bool isAAudioMMapPossible(const AudioStreamBuilder &builder) const;
 
         static constexpr int32_t kDefaultBottomMarginInBursts = 0;
         static constexpr int32_t kDefaultTopMarginInBursts = 0;

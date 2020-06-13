@@ -52,7 +52,7 @@ int32_t QuirksManager::DeviceQuirks::clipBufferSize(AudioStream &stream,
     return adjustedSize;
 }
 
-bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder &builder) {
+bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder &builder) const {
     bool isSampleRateCompatible =
             builder.getSampleRate() == oboe::Unspecified
             || builder.getSampleRate() == kCommonNativeRate
@@ -86,6 +86,12 @@ public:
     // See Oboe issue #824 for more information.
     bool isMonoMMapActuallyStereo() const override {
         return isExynos9810; // TODO We can make this version specific if it gets fixed.
+    }
+
+    bool isAAudioMMapPossible(const AudioStreamBuilder &builder) const override {
+        return DeviceQuirks::isAAudioMMapPossible(builder)
+                // Samsung says they use Legacy for Camcorder
+                && builder.getInputPreset() != oboe::InputPreset::Camcorder;
     }
 
 private:
