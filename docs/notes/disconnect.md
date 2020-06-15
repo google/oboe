@@ -7,7 +7,7 @@ This is convenient but can cause problems because the new device may have differ
 
 When Oboe is using **AAudio**, and a headset is plugged in or out, then
 the stream is no longer available and becomes "disconnected".
-The app will then be notified in one of two ways. 
+The app should then be notified in one of two ways. 
 
 1) If the app is using a callback then the AudioStreamCallback object will be called.
 It will launch a thread, which will call onErrorBeforeClose().
@@ -21,7 +21,7 @@ An app may then choose to reopen a stream.
 
 ## Workaround for not Disconnecting Properly
 
-On some versions of Android the disconnect message does not reach AAudio and the app will not
+On some versions of Android P the disconnect message does not reach AAudio and the app will not
 know that the device has changed. There is a "Test Disconnects" option in
 [OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
 that can be used to diagnose this problem.
@@ -53,3 +53,9 @@ You can register for the Intent when your app resumes and unregister when it pau
         this.unregisterReceiver(mPluginReceiver);
         super.onPause();
     }
+
+## Internal Notes
+
+* This issue is tracked internally as b/111711159.
+* A fix in AOSP is [here](https://android-review.googlesource.com/c/platform/frameworks/av/+/836184)
+* A fix was also merged into pi-dev on July 30, 2018.
