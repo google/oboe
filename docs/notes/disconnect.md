@@ -56,6 +56,14 @@ You can register for the Intent when your app resumes and unregister when it pau
 
 ## Internal Notes
 
+* Oboe Issues #381 , #893
 * This issue is tracked internally as b/111711159.
 * A fix in AOSP is [here](https://android-review.googlesource.com/c/platform/frameworks/av/+/836184)
 * A fix was also merged into pi-dev on July 30, 2018.
+
+### Results from Test Disconnect in OboeTester
+
+| Device | Build | Result |
+|:--|:--|:--|
+| Pixel 1 | QQ1A.190919.002 | ALL PASS |
+| Samsung S10e | PPR1.180610.011 | MMAP Output plugIN failed |
