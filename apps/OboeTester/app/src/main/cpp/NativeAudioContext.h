@@ -170,7 +170,7 @@ private:
                 return false;
             }
         }
-        return true;
+        return (mLibHandle != nullptr);
     }
 
     bool      mFirstTime = true;
