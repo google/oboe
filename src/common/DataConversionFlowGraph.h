@@ -21,10 +21,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include <flowgraph/ChannelCountConverter.h>
 #include <flowgraph/MonoToMultiConverter.h>
+#include <flowgraph/MultiToMonoConverter.h>
 #include <flowgraph/SampleRateConverter.h>
 #include <oboe/Definitions.h>
-#include <flowgraph/MultiToMonoConverter.h>
 #include "AudioSourceCaller.h"
 #include "FixedBlockWriter.h"
 
@@ -70,6 +71,7 @@ private:
     std::unique_ptr<AudioSourceCaller>                 mSourceCaller;
     std::unique_ptr<flowgraph::MonoToMultiConverter>   mMonoToMultiConverter;
     std::unique_ptr<flowgraph::MultiToMonoConverter>   mMultiToMonoConverter;
+    std::unique_ptr<flowgraph::ChannelCountConverter>  mChannelCountConverter;
     std::unique_ptr<resampler::MultiChannelResampler>  mResampler;
     std::unique_ptr<flowgraph::SampleRateConverter>    mRateConverter;
     std::unique_ptr<flowgraph::FlowGraphSink>              mSink;

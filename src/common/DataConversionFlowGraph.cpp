@@ -140,21 +140,20 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
         lastOutput = &mSource->output;
     }
 
-    if (sourceChannelCount != sinkChannelCount
-        && sourceChannelCount != 1
-        && sinkChannelCount != 1
-        ) {
-        LOGW("%s() Channel conversion %d to %d not supported.", __func__,
-             sourceChannelCount, sinkChannelCount);
-        return Result::ErrorUnimplemented;
-    }
-
     // If we are going to reduce the number of channels then do it before the
     // sample rate converter.
-    if (sourceChannelCount > 1 && sinkChannelCount == 1) {
-        mMultiToMonoConverter = std::make_unique<MultiToMonoConverter>(sourceChannelCount);
-        lastOutput->connect(&mMultiToMonoConverter->input);
-        lastOutput = &mMultiToMonoConverter->output;
+    if (sourceChannelCount > sinkChannelCount) {
+        if (sinkChannelCount == 1) {
+            mMultiToMonoConverter = std::make_unique<MultiToMonoConverter>(sourceChannelCount);
+            lastOutput->connect(&mMultiToMonoConverter->input);
+            lastOutput = &mMultiToMonoConverter->output;
+        } else {
+            mChannelCountConverter = std::make_unique<ChannelCountConverter>(
+                    sourceChannelCount,
+                    sinkChannelCount);
+            lastOutput->connect(&mChannelCountConverter->input);
+            lastOutput = &mChannelCountConverter->output;
+        }
     }
 
     // Sample Rate conversion
@@ -173,10 +172,18 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     }
 
     // Expand the number of channels if required.
-    if (sourceChannelCount == 1 && sinkChannelCount > 1) {
-        mMonoToMultiConverter = std::make_unique<MonoToMultiConverter>(sinkChannelCount);
-        lastOutput->connect(&mMonoToMultiConverter->input);
-        lastOutput = &mMonoToMultiConverter->output;
+    if (sourceChannelCount < sinkChannelCount) {
+        if (sourceChannelCount == 1) {
+            mMonoToMultiConverter = std::make_unique<MonoToMultiConverter>(sinkChannelCount);
+            lastOutput->connect(&mMonoToMultiConverter->input);
+            lastOutput = &mMonoToMultiConverter->output;
+        } else {
+            mChannelCountConverter = std::make_unique<ChannelCountConverter>(
+                    sourceChannelCount,
+                    sinkChannelCount);
+            lastOutput->connect(&mChannelCountConverter->input);
+            lastOutput = &mChannelCountConverter->output;
+        }
     }
 
     // Sink

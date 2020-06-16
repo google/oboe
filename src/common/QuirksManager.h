@@ -110,6 +110,9 @@ public:
 
 private:
 
+    static constexpr int32_t kChannelCountMono = 1;
+    static constexpr int32_t kChannelCountStereo = 2;
+
     std::unique_ptr<DeviceQuirks> mDeviceQuirks{};
 
 };
