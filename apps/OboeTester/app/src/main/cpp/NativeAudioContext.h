@@ -98,17 +98,20 @@ public:
 
     bool isMMapUsed(oboe::AudioStream *oboeStream) {
         if (!loadLibrary()) return false;
+        if (mAAudioStream_isMMap == nullptr) return false;
         AAudioStream *aaudioStream = (AAudioStream *) oboeStream->getUnderlyingStream();
         return mAAudioStream_isMMap(aaudioStream);
     }
 
     bool setMMapEnabled(bool enabled) {
         if (!loadLibrary()) return false;
+        if (mAAudio_setMMapPolicy == nullptr) return false;
         return mAAudio_setMMapPolicy(enabled ? AAUDIO_POLICY_AUTO : AAUDIO_POLICY_NEVER);
     }
 
     bool isMMapEnabled() {
         if (!loadLibrary()) return false;
+        if (mAAudio_getMMapPolicy == nullptr) return false;
         int32_t policy = mAAudio_getMMapPolicy();
         return isPolicyEnabled(policy);
     }
