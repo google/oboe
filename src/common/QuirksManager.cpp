@@ -59,7 +59,7 @@ bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder 
             || builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None;
     return builder.getPerformanceMode() == PerformanceMode::LowLatency
             && isSampleRateCompatible
-            && builder.getChannelCount() <= 2;
+            && builder.getChannelCount() <= kChannelCountStereo;
 }
 
 class SamsungDeviceQuirks : public  QuirksManager::DeviceQuirks {
@@ -147,18 +147,18 @@ bool QuirksManager::isConversionNeeded(
     // Channel Count conversions
     if (OboeGlobals::areWorkaroundsEnabled()
             && builder.isChannelConversionAllowed()
-            && builder.getChannelCount() == 2 // stereo?
+            && builder.getChannelCount() == kChannelCountStereo
             && isInput
             && isLowLatency
             && (!builder.willUseAAudio() && (getSdkVersion() == __ANDROID_API_O__))
             ) {
         // Workaround for heap size regression in O.
         // b/66967812 AudioRecord does not allow FAST track for stereo capture in O
-        childBuilder.setChannelCount(1);
+        childBuilder.setChannelCount(kChannelCountMono);
         conversionNeeded = true;
         LOGI("QuirksManager::%s() using mono internally for low latency on O", __func__);
     } else if (OboeGlobals::areWorkaroundsEnabled()
-               && builder.getChannelCount() == 1 // mono?
+               && builder.getChannelCount() == kChannelCountMono
                && isInput
                && mDeviceQuirks->isMonoMMapActuallyStereo()
                && builder.willUseAAudio()
@@ -168,7 +168,7 @@ bool QuirksManager::isConversionNeeded(
                && mDeviceQuirks->isAAudioMMapPossible(builder)
                ) {
         // Workaround for mono actually running in stereo mode.
-        childBuilder.setChannelCount(2); // Use stereo and extract first channel.
+        childBuilder.setChannelCount(kChannelCountStereo); // Use stereo and extract first channel.
         conversionNeeded = true;
         LOGI("QuirksManager::%s() using stereo internally to avoid broken mono", __func__);
     }
