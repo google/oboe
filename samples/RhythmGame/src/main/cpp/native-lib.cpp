@@ -27,7 +27,7 @@ extern "C" {
 std::unique_ptr<Game> game;
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onStart(JNIEnv *env, jobject instance,
+Java_com_google_oboe_samples_rhythmgame_MainActivity_native_1onStart(JNIEnv *env, jobject instance,
                                                                      jobject jAssetManager) {
 
     AAssetManager *assetManager = AAssetManager_fromJava(env, jAssetManager);
@@ -41,13 +41,13 @@ Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onStart(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onSurfaceCreated(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_RendererWrapper_native_1onSurfaceCreated(JNIEnv *env,
                                                                                 jobject instance) {
     game->onSurfaceCreated();
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onSurfaceChanged(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_RendererWrapper_native_1onSurfaceChanged(JNIEnv *env,
                                                                                 jclass type,
                                                                                 jint width,
                                                                                 jint height) {
@@ -55,13 +55,13 @@ Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onSurfaceChanged(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_RendererWrapper_native_1onDrawFrame(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_RendererWrapper_native_1onDrawFrame(JNIEnv *env,
                                                                            jclass type) {
     game->tick();
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIEnv *env,
                                                                             jclass type,
                                                                             jint event_type,
                                                                             jlong time_since_boot_ms,
@@ -71,19 +71,19 @@ Java_com_google_oboe_sample_rhythmgame_GameSurfaceView_native_1onTouchInput(JNIE
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_GameSurfaceView_native_1surfaceDestroyed__(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_GameSurfaceView_native_1surfaceDestroyed__(JNIEnv *env,
                                                                                   jclass type) {
     game->onSurfaceDestroyed();
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1onStop(JNIEnv *env, jobject instance) {
+Java_com_google_oboe_samples_rhythmgame_MainActivity_native_1onStop(JNIEnv *env, jobject instance) {
 
     game->stop();
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_sample_rhythmgame_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+Java_com_google_oboe_samples_rhythmgame_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
                                                                                   jclass type,
                                                                                   jint sampleRate,
                                                                                   jint framesPerBurst) {
