@@ -26,7 +26,7 @@ static LiveEffectEngine *engine = nullptr;
 extern "C" {
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_create(JNIEnv *env,
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_create(JNIEnv *env,
                                                                jclass) {
     if (engine == nullptr) {
         engine = new LiveEffectEngine();
@@ -36,14 +36,14 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_create(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
                                                                jclass) {
     delete engine;
     engine = nullptr;
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setEffectOn(
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setEffectOn(
     JNIEnv *env, jclass, jboolean isEffectOn) {
     if (engine == nullptr) {
         LOGE(
@@ -56,7 +56,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setEffectOn(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setRecordingDeviceId(
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setRecordingDeviceId(
     JNIEnv *env, jclass, jint deviceId) {
     if (engine == nullptr) {
         LOGE(
@@ -69,7 +69,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setRecordingDeviceId(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setPlaybackDeviceId(
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setPlaybackDeviceId(
     JNIEnv *env, jclass, jint deviceId) {
     if (engine == nullptr) {
         LOGE(
@@ -82,7 +82,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setPlaybackDeviceId(
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
                                                                jclass type,
                                                                jint apiType) {
     if (engine == nullptr) {
@@ -109,7 +109,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_isAAudioSupported(
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_isAAudioSupported(
     JNIEnv *env, jclass type) {
     if (engine == nullptr) {
         LOGE(
@@ -121,7 +121,7 @@ Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_isAAudioSupported(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_liveEffect_LiveEffectEngine_native_1setDefaultStreamValues(JNIEnv *env,
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_native_1setDefaultStreamValues(JNIEnv *env,
                                                jclass type,
                                                jint sampleRate,
                                                jint framesPerBurst) {
