@@ -6,9 +6,9 @@ android {
         applicationId = "com.google.sample.oboe.manualtest"
         minSdkVersion 23
         targetSdkVersion 28
-        // Also update the version in the AndroidManifest.xml file.
-        versionCode 32
-        versionName "1.5.24"
+        // Also update the versions in the AndroidManifest.xml file.
+        versionCode 33
+        versionName "1.5.25"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
