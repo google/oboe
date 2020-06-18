@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.oboe.samples.oboe.liveEffect;
+package com.google.oboe.samples.liveEffect;
 
 import android.Manifest;
 import android.app.Activity;

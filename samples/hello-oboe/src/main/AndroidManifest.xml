@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.google.oboe.samples.oboe.hellooboe" >
+    package="com.google.oboe.samples.hellooboe" >
 
     <uses-feature android:name="android.hardware.audio.output" android:required="true" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
       <activity
-          android:name="com.google.oboe.samples.oboe.hellooboe.MainActivity"
+          android:name="com.google.oboe.samples.hellooboe.MainActivity"
           android:label="@string/app_name"
           android:screenOrientation="portrait">
         <intent-filter>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.oboe.samples.oboe.hellooboe;
+package com.google.oboe.samples.hellooboe;
 
 import android.app.Activity;
 import android.media.AudioManager;
