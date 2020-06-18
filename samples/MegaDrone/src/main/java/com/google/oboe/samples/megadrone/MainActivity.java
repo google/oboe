@@ -1,4 +1,4 @@
-package com.example.oboe.megadrone;
+package com.google.oboe.samples.megadrone;
 
 /*
  * Copyright 2018 The Android Open Source Project
