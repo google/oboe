@@ -93,9 +93,9 @@ class AudioDeviceInfoConverter {
             case AudioDeviceInfo.TYPE_AUX_LINE:
                 return "auxiliary line-level connectors";
             case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
-                return "Bluetooth device supporting the A2DP profile";
+                return "Bluetooth A2DP";
             case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
-                return "Bluetooth device typically used for telephony";
+                return "Bluetooth telephony SCO";
             case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
                 return "built-in earphone speaker";
             case AudioDeviceInfo.TYPE_BUILTIN_MIC:

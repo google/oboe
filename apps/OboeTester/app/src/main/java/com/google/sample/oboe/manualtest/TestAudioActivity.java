@@ -18,6 +18,7 @@ package com.google.sample.oboe.manualtest;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -76,6 +77,7 @@ abstract class TestAudioActivity extends Activity {
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
     private int mSampleRate;
+    private boolean mScoStarted;
 
     public static class StreamContext {
         StreamConfigurationView configurationView;
@@ -402,12 +404,35 @@ abstract class TestAudioActivity extends Activity {
         mStreamSniffer.startStreamSniffer();
     }
 
+    /**
+     * @param deviceId
+     * @return true if the device is TYPE_BLUETOOTH_SCO
+     */
+    boolean isScoDevice(int deviceId) {
+        if (deviceId == 0) return false; // Unspecified
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        final AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        for (AudioDeviceInfo device : devices) {
+            if (device.getId() == deviceId) {
+                return device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO;
+            }
+        }
+        return false;
+    }
+
     private void openStreamContext(StreamContext streamContext) throws IOException {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
-
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
-        streamContext.tester.open();
+
+        // Start Bluetooth SCO if needed.
+        if (isScoDevice(requestedConfig.getDeviceId()) && !mScoStarted) {
+            startBluetoothSco();
+            mScoStarted = true;
+        }
+
+        streamContext.tester.open(); // OPEN the stream
+
         mSampleRate = actualConfig.getSampleRate();
         mAudioState = AUDIO_STATE_OPEN;
         int sessionId = actualConfig.getSessionId();
@@ -473,6 +498,12 @@ abstract class TestAudioActivity extends Activity {
         for (StreamContext streamContext : mStreamContexts) {
             streamContext.tester.close();
         }
+
+        if (mScoStarted) {
+            stopBluetoothSco();
+            mScoStarted = false;
+        }
+
         mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
     }
@@ -483,4 +514,13 @@ abstract class TestAudioActivity extends Activity {
         return df.format(now);
     }
 
+    void startBluetoothSco() {
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        myAudioMgr.startBluetoothSco();
+    }
+
+    void stopBluetoothSco() {
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        myAudioMgr.stopBluetoothSco();
+    }
 }
