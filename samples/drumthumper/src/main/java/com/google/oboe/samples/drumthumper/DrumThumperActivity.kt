@@ -26,10 +26,17 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Toast
+
 import androidx.appcompat.app.AppCompatActivity
+
+import java.util.*
+
+import java.time.LocalDateTime;
+
 import java.time.LocalDateTime
 import java.util.Timer
 import kotlin.concurrent.schedule
+import kotlin.math.roundToInt
 
 
 class DrumThumperActivity : AppCompatActivity(),
