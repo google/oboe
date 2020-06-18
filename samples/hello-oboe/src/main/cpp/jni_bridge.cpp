@@ -27,7 +27,7 @@ extern "C" {
  * @return a pointer to the audio engine. This should be passed to other methods
  */
 JNIEXPORT jlong JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1createEngine(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1createEngine(
         JNIEnv *env,
         jclass /*unused*/) {
     // We use std::nothrow so `new` returns a nullptr if the engine creation fails
@@ -36,7 +36,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1createEngine(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1deleteEngine(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1deleteEngine(
         JNIEnv *env,
         jclass,
         jlong engineHandle) {
@@ -45,7 +45,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1deleteEngine(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setToneOn(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setToneOn(
         JNIEnv *env,
         jclass,
         jlong engineHandle,
@@ -60,7 +60,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setToneOn(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioApi(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setAudioApi(
         JNIEnv *env,
         jclass type,
         jlong engineHandle,
@@ -77,7 +77,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioApi(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioDeviceId(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setAudioDeviceId(
         JNIEnv *env,
         jclass,
         jlong engineHandle,
@@ -92,7 +92,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setAudioDeviceId(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setChannelCount(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setChannelCount(
         JNIEnv *env,
         jclass type,
         jlong engineHandle,
@@ -107,7 +107,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setChannelCount(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setBufferSizeInBursts(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setBufferSizeInBursts(
         JNIEnv *env,
         jclass,
         jlong engineHandle,
@@ -123,7 +123,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setBufferSizeInBurs
 
 
 JNIEXPORT jdouble JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1getCurrentOutputLatencyMillis(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1getCurrentOutputLatencyMillis(
         JNIEnv *env,
         jclass,
         jlong engineHandle) {
@@ -137,7 +137,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1getCurrentOutputLat
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionSupported(
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1isLatencyDetectionSupported(
         JNIEnv *env,
         jclass type,
         jlong engineHandle) {
@@ -151,7 +151,7 @@ Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1isLatencyDetectionS
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_hellooboe_PlaybackEngine_native_1setDefaultStreamValues(JNIEnv *env,
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setDefaultStreamValues(JNIEnv *env,
                                                                                   jclass type,
                                                                                   jint sampleRate,
                                                                                   jint framesPerBurst) {
