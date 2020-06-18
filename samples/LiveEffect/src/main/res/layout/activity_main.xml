@@ -19,7 +19,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.google.sample.oboe.liveEffect.MainActivity"
+    tools:context="com.google.oboe.samples.oboe.liveEffect.MainActivity"
     tools:layout_editor_absoluteY="81dp">
 
     <TextView
@@ -33,7 +33,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.sample.audio_device.AudioDeviceSpinner
+    <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/recording_devices_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recording_devices_spinner" />
 
-    <com.google.sample.audio_device.AudioDeviceSpinner
+    <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/playback_devices_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

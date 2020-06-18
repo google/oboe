@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sample.oboe.hellooboe;
+package com.google.oboe.samples.oboe.hellooboe;
 
 import android.app.Activity;
 import android.media.AudioManager;
@@ -30,8 +30,8 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.sample.audio_device.AudioDeviceListEntry;
-import com.google.sample.audio_device.AudioDeviceSpinner;
+import com.google.oboe.samples.audio_device.AudioDeviceListEntry;
+import com.google.oboe.samples.audio_device.AudioDeviceSpinner;
 
 import java.util.ArrayList;
 import java.util.HashMap;

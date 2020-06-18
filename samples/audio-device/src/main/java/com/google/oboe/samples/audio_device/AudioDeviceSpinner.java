@@ -1,4 +1,4 @@
-package com.google.sample.audio_device;
+package com.google.oboe.samples.audio_device;
 /*
  * Copyright 2017 The Android Open Source Project
  *

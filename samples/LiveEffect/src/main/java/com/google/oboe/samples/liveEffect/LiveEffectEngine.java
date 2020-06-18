@@ -1,4 +1,4 @@
-package com.google.sample.oboe.liveEffect;
+package com.google.oboe.samples.oboe.liveEffect;
 /*
  * Copyright 2018 The Android Open Source Project
  *
