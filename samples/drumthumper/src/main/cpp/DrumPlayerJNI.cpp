@@ -44,7 +44,7 @@ static SimpleMultiPlayer sDTPlayer;
 /**
  * Native (JNI) implementation of DrumPlayer.setupAudioStreamNative()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_setupAudioStreamNative(
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_setupAudioStreamNative(
         JNIEnv* env, jobject, jint numChannels, jint sampleRate) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
 
@@ -55,7 +55,7 @@ JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_setupAudioStream
 /**
  * Native (JNI) implementation of DrumPlayer.teardownAudioStreamNative()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_teardownAudioStreamNative(JNIEnv* , jobject) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_teardownAudioStreamNative(JNIEnv* , jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "deinit()");
 
     // we know in this case that the sample buffers are all 1-channel, 44.1K
@@ -68,7 +68,7 @@ JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_teardownAudioStr
 /**
  * Native (JNI) implementation of DrumPlayer.loadWavAssetNative()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index, jfloat pan) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index, jfloat pan) {
     int len = env->GetArrayLength (bytearray);
 
     unsigned char* buf = new unsigned char[len];
@@ -91,35 +91,35 @@ JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_loadWavAssetNati
 /**
  * Native (JNI) implementation of DrumPlayer.unloadWavAssetsNative()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_unloadWavAssetsNative(JNIEnv* env, jobject) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_unloadWavAssetsNative(JNIEnv* env, jobject) {
     sDTPlayer.unloadSampleData();
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.trigger()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
     sDTPlayer.triggerDown(index);
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.getOutputReset()
  */
-JNIEXPORT jboolean JNICALL Java_com_mobileer_drumthumper_DrumPlayer_getOutputReset(JNIEnv*, jobject) {
+JNIEXPORT jboolean JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_getOutputReset(JNIEnv*, jobject) {
     return sDTPlayer.getOutputReset();
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.clearOutputReset()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_clearOutputReset(JNIEnv*, jobject) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_clearOutputReset(JNIEnv*, jobject) {
     sDTPlayer.clearOutputReset();
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.restartStream()
  */
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
     sDTPlayer.resetAll();
     if (sDTPlayer.openStream()){
         __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");
@@ -128,22 +128,22 @@ JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_restartStream(JN
     }
 }
 
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_setPan(
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_setPan(
         JNIEnv *env, jobject thiz, jint index, jfloat pan) {
     sDTPlayer.setPan(index, pan);
 }
 
-JNIEXPORT jfloat JNICALL Java_com_mobileer_drumthumper_DrumPlayer_getPan(
+JNIEXPORT jfloat JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_getPan(
         JNIEnv *env, jobject thiz, jint  index) {
     return sDTPlayer.getPan(index);
 }
 
-JNIEXPORT void JNICALL Java_com_mobileer_drumthumper_DrumPlayer_setGain(
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_setGain(
         JNIEnv *env, jobject thiz, jint  index, jfloat gain) {
     sDTPlayer.setGain(index, gain);
 }
 
-JNIEXPORT jfloat JNICALL Java_com_mobileer_drumthumper_DrumPlayer_getGain(
+JNIEXPORT jfloat JNICALL Java_com_google_oboe_samples_drumthumper_DrumPlayer_getGain(
         JNIEnv *env, jobject thiz, jint index) {
     return sDTPlayer.getGain(index);
 }
