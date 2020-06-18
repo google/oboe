@@ -22,6 +22,20 @@ android {
         }
     }
 
+    // This sample will also be published on the Google Play Store which needs a different
+    // application id from "com.google" as this is reserved for official Google products.
+    flavorDimensions "publishing-target"
+    productFlavors {
+        codesample {
+            dimension "publishing-target"
+            applicationId "com.google.oboe.samples.drumthumper"
+        }
+        playstore {
+            dimension "publishing-target"
+            applicationId "com.mobilieer.drumthumper"
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path 'src/main/cpp/CMakeLists.txt'
