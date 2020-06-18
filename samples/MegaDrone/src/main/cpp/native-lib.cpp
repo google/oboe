@@ -43,7 +43,7 @@ extern "C" {
  * @return a pointer to the audio engine. This should be passed to other methods
  */
 JNIEXPORT jlong JNICALL
-Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
+Java_com_google_oboe_samples_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
                                                          jintArray jCpuIds) {
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
     LOGD("cpu ids size: %d", static_cast<int>(cpuIds.size()));
@@ -53,7 +53,7 @@ Java_com_example_oboe_megadrone_MainActivity_startEngine(JNIEnv *env, jobject /*
 }
 
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance,
+Java_com_google_oboe_samples_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject instance,
         jlong jEngineHandle) {
     auto engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
     if (engine) {
@@ -65,7 +65,7 @@ Java_com_example_oboe_megadrone_MainActivity_stopEngine(JNIEnv *env, jobject ins
 
 
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance,
+Java_com_google_oboe_samples_megadrone_MainActivity_tap(JNIEnv *env, jobject instance,
         jlong jEngineHandle, jboolean isDown) {
 
     auto *engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
@@ -77,7 +77,7 @@ Java_com_example_oboe_megadrone_MainActivity_tap(JNIEnv *env, jobject instance,
 }
 
 JNIEXPORT void JNICALL
-Java_com_example_oboe_megadrone_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+Java_com_google_oboe_samples_megadrone_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
                                                                             jclass type,
                                                                             jint sampleRate,
                                                                             jint framesPerBurst) {
