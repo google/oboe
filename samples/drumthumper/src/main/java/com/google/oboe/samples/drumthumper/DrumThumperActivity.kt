@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mobileer.drumthumper
+package com.google.oboe.sample.drumthumper
 
 import android.content.Context
 import android.media.AudioDeviceCallback
@@ -26,18 +26,14 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Toast
-
 import androidx.appcompat.app.AppCompatActivity
-
-import java.util.*
-
-import java.time.LocalDateTime;
-
+import java.time.LocalDateTime
+import java.util.Timer
 import kotlin.concurrent.schedule
-import kotlin.math.roundToInt
+
 
 class DrumThumperActivity : AppCompatActivity(),
-        TriggerPad.DrumPadTriggerListener,
+    TriggerPad.DrumPadTriggerListener,
         SeekBar.OnSeekBarChangeListener,
         View.OnClickListener {
     private val TAG = "DrumThumperActivity"
@@ -220,10 +216,6 @@ class DrumThumperActivity : AppCompatActivity(),
 
         findViewById<Button>(R.id.mixCtrlBtn).setOnClickListener(this)
         showMixControls(false);
-    }
-
-    override fun onPause() {
-        super.onPause()
     }
 
     override fun onStop() {
