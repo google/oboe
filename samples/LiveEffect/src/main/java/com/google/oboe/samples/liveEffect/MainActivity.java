@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sample.oboe.liveEffect;
+package com.google.oboe.samples.oboe.liveEffect;
 
 import android.Manifest;
 import android.app.Activity;
@@ -33,8 +33,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.sample.audio_device.AudioDeviceListEntry;
-import com.google.sample.audio_device.AudioDeviceSpinner;
+import com.google.oboe.samples.audio_device.AudioDeviceListEntry;
+import com.google.oboe.samples.audio_device.AudioDeviceSpinner;
 
 /**
  * TODO: Update README.md and go through and comment sample

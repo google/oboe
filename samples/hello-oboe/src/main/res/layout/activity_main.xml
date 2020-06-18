@@ -67,7 +67,7 @@
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_gravity="center_vertical"/>
 
-        <com.google.sample.audio_device.AudioDeviceSpinner
+        <com.google.oboe.samples.audio_device.AudioDeviceSpinner
             android:id="@+id/playbackDevicesSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
