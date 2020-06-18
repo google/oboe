@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.oboe.sample.rhythmgame;
+package com.google.oboe.samples.rhythmgame;
 
 import android.content.Context;
 import android.content.res.AssetManager;
