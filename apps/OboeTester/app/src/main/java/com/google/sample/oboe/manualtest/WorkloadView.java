@@ -101,11 +101,6 @@ public class WorkloadView extends LinearLayout {
         mTextView.setText("Workload = " + String.format("%6.2f", workload));
     }
 
-    public void updateBufferSize() {
-        int progress = mSeekBar.getProgress();
-        setValueByPosition(progress);
-    }
-
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
