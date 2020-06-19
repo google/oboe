@@ -33,6 +33,7 @@ class AudioStreamTester {
     }
 
     public void reset() {
+        setWorkload(0.0);
         requestedConfiguration.reset(); // TODO consider making new ones
         actualConfiguration.reset();
     }
