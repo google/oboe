@@ -6,7 +6,12 @@ android {
     buildToolsVersion "29.0.1"
 
     defaultConfig {
-        applicationId "com.google.oboe.samples.drumthumper"
+        // Usually the applicationId follows the same scheme as the application package name,
+        // however, this sample will be published on the Google Play Store which will not allow an
+        // applicationId starting with "com.google" as this is reserved for official Google
+        // products. The current owner of Oboe sample apps on Google Play is Phil Burk, who
+        // publishes using the application Id prefix of "com.mobileer".
+        applicationId "com.mobileer.drumthumper"
         minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
@@ -19,20 +24,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
-        }
-    }
-
-    // This sample will also be published on the Google Play Store which needs a different
-    // application id from "com.google" as this is reserved for official Google products.
-    flavorDimensions "publishing-target"
-    productFlavors {
-        codesample {
-            dimension "publishing-target"
-            applicationId "com.google.oboe.samples.drumthumper"
-        }
-        playstore {
-            dimension "publishing-target"
-            applicationId "com.mobilieer.drumthumper"
         }
     }
 
