@@ -1,6 +1,6 @@
 [Oboe Docs Home](README.md)
 
-# Tech Note: Disconnected Streams
+# Tech Note: Disconnected Streams and Plugin Issues
 
 When Oboe is using **OpenSL ES**, and a headset is plugged in or out, then OpenSL ES will automatically switch between devices.
 This is convenient but can cause problems because the new device may have different burst sizes and different latency.
@@ -67,3 +67,4 @@ You can register for the Intent when your app resumes and unregister when it pau
 |:--|:--|:--|
 | Pixel 1 | QQ1A.190919.002 | ALL PASS |
 | Samsung S10e | PPR1.180610.011 | MMAP Output plugIN failed |
+| Huawei MAR-LX3A | 10.0.0.216 | MMAP In/Out fails, Legacy In fails. |
