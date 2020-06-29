@@ -75,15 +75,20 @@ public:
     bool isLatencyDetectionSupported();
 
 private:
-    oboe::ManagedStream mStream;
+    oboe::Result reopenStream();
+    oboe::Result createPlaybackStream();
+    void         updateLatencyDetection();
+    oboe::Result start();
+
+    std::shared_ptr<oboe::AudioStream> mStream;
     std::unique_ptr<LatencyTuningCallback> mLatencyCallback;
     std::shared_ptr<SoundGenerator> mAudioSource;
     bool mIsLatencyDetectionSupported = false;
 
-    oboe::Result createPlaybackStream(oboe::AudioStreamBuilder builder);
-    void updateLatencyDetection();
-    void updateAudioSource();
-    void start();
+    int32_t        mDeviceId = oboe::Unspecified;
+    int32_t        mChannelCount = oboe::Unspecified;
+    oboe::AudioApi mAudioApi = oboe::AudioApi::Unspecified;
+    std::mutex     mLock;
 };
 
 #endif //OBOE_HELLO_OBOE_ENGINE_H
