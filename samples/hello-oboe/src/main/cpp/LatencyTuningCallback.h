@@ -54,11 +54,14 @@ public:
 
     void setBufferTuneEnabled(bool enabled) {mBufferTuneEnabled = enabled;}
 
+    void useStream(std::shared_ptr<oboe::AudioStream>  stream);
+
 private:
     bool mBufferTuneEnabled = true;
 
     // This will be used to automatically tune the buffer size of the stream, obtaining optimal latency
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
+    oboe::AudioStream  *mStream = nullptr;
 };
 
 #endif //SAMPLES_LATENCY_TUNING_CALLBACK_H

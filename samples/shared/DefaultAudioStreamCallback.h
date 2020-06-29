@@ -46,13 +46,16 @@ public:
         }
 
         float *outputBuffer = static_cast<float *>(audioData);
-        if (!mRenderable) {
+
+        std::shared_ptr<IRenderableAudio> localRenderable = mRenderable;
+        if (!localRenderable) {
             LOGE("Renderable source not set!");
             return oboe::DataCallbackResult::Stop;
         }
-        mRenderable->renderAudio(outputBuffer, numFrames);
+        localRenderable->renderAudio(outputBuffer, numFrames);
         return oboe::DataCallbackResult::Continue;
     }
+
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
         // Restart the stream when it errors out with disconnect
         if (error == oboe::Result::ErrorDisconnected) {
