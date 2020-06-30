@@ -110,7 +110,7 @@ void AudioStreamAAudio::internalErrorCallback(
         aaudio_result_t error) {
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
 
-    // Prevents deletion of the stream if the app is using AudioStreamBuilder::openSharedStream()
+    // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
     std::shared_ptr<AudioStream> sharedStream = oboeStream->lockWeakThis();
 
     // These checks should be enough because we assume that the stream close()
