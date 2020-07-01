@@ -22,11 +22,13 @@ To test this on Mac or Linux enter:
 They may already be set. If not, then this may work on Mac OS:
 
     export ANDROID_HOME=$HOME/Library/Android/sdk
-    export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
     
 or this may work on Linux:
 
     export ANDROID_HOME=$HOME/Android/Sdk
+    
+Now we need to determine the latest installed version of the NDK. Enter:
+    
     ls $ANDROID_HOME/ndk
     
 Make note of the folder name. Mine was "21.0.6113669" so I entered:
