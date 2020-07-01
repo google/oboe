@@ -37,9 +37,9 @@ If you need to add `cmake` to your path then you can find it by entering:
 
     ls $ANDROID_HOME/cmake
     
-Make note of the folder name. Mine was "3.6.4111459" so I entered:
+Make note of the folder name. Mine was "3.10.2.4988404" so I entered:
     
-    export PATH=$PATH:$ANDROID_HOME/cmake/3.6.4111459/bin
+    export PATH=$PATH:$ANDROID_HOME/cmake/3.10.2.4988404/bin
     cmake --version
     
 ## Running the Tests
