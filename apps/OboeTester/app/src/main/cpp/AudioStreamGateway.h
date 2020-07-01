@@ -36,9 +36,6 @@ public:
 
     void setAudioSink(std::shared_ptr<flowgraph::FlowGraphSink>  sink) {
         mAudioSink = sink;
-        if (sink) {
-            mFramePosition = sink->getLastFramePosition();
-        }
     }
 
     /**
@@ -52,7 +49,6 @@ public:
     int getScheduler();
 
 private:
-    int64_t  mFramePosition = 0;
     bool     mSchedulerChecked = false;
     int      mScheduler;
     std::shared_ptr<flowgraph::FlowGraphSink>  mAudioSink;

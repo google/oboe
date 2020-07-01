@@ -209,7 +209,7 @@ int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames, int64_t t
     if (mSourceCaller) {
         mSourceCaller->setTimeoutNanos(timeoutNanos);
     }
-    int32_t numRead = mSink->read(mFramePosition, buffer, numFrames);
+    int32_t numRead = mSink->read(buffer, numFrames);
     mFramePosition += numRead;
     return numRead;
 }
@@ -220,7 +220,7 @@ int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
     mSource->setData(inputBuffer, numFrames);
     while (true) {
         // Pull and read some data in app format into a small buffer.
-        int32_t framesRead = mSink->read(mFramePosition, mAppBuffer.get(), flowgraph::kDefaultBufferSize);
+        int32_t framesRead = mSink->read(mAppBuffer.get(), flowgraph::kDefaultBufferSize);
         mFramePosition += framesRead;
         if (framesRead <= 0) break;
         // Write to a block adapter, which will call the destination whenever it has enough data.
