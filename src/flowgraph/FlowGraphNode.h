@@ -71,15 +71,17 @@ public:
     virtual int32_t onProcess(int32_t numFrames) = 0;
 
     /**
-     * If the framePosition is at or after the last frame position then call onProcess().
+     * If the callCount is at or after the previous callCount then call
+     * pullData on all of the upstreamNodes.
+     * Then call onProcess().
      * This prevents infinite recursion in case of cyclic graphs.
      * It also prevents nodes upstream from a branch from being executed twice.
      *
-     * @param framePosition
+     * @param callCount
      * @param numFrames
      * @return number of frames valid
      */
-    int32_t pullData(int64_t framePosition, int32_t numFrames);
+    int32_t pullData(int32_t numFrames, int64_t callCount);
 
     /**
      * Recursively reset all the nodes in the graph, starting from a Sink.
@@ -118,12 +120,14 @@ public:
         return "FlowGraph";
     }
 
-    int64_t getLastFramePosition() {
-        return mLastFramePosition;
+    int64_t getLastCallCount() {
+        return mLastCallCount;
     }
 
 protected:
-    int64_t  mLastFramePosition = 0;
+
+    static constexpr int64_t  kInitialCallCount = -1;
+    int64_t  mLastCallCount = kInitialCallCount;
 
     std::vector<std::reference_wrapper<FlowGraphPort>> mInputPorts;
 
@@ -394,8 +398,15 @@ public:
         return numFrames;
     }
 
-    virtual int32_t read(int64_t framePosition, void *data, int32_t numFrames) = 0;
+    virtual int32_t read(void *data, int32_t numFrames) = 0;
 
+protected:
+    /**
+     * Pull data through the graph using this nodes last callCount.
+     * @param numFrames
+     * @return
+     */
+    int32_t pullData(int32_t numFrames);
 };
 
 /***************************************************************************/
