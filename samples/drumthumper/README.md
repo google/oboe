@@ -10,6 +10,26 @@ The audio samples are mixed and played by routines in **iolib**.
 
 **DrumThumper** is written in a combination of Kotlin for the UI and JNI/C++ for the player components (to demonstrate accessing native code from a Kotlin or Java application).
 
+## Scope
+**DrumThumper** is designed with the following goals in mind:
+* To demonstrate the most efficient means of playing audio with the lowest possible latency.
+* To demonstrate how to play multiple sources of audio mixed into a single Oboe stream.
+* To demonstrate the life-cycle of an Oboe audio stream and it's relationship to the application lifecycle.
+* To demonstrate the correct handling of playback errors and output device connection/disconnection.
+
+Secondarily, **DrumThumper** demonstrates:
+* Using Android "assets" for audio data.
+* The mechanism for calling native (C/C++) audio functionality from a Kotlin/Java app.
+* A mechanism for sharing binary data between a Kotlin/Java app with the native (C/C++) layer.
+* A mechanism for parsing/loading one type (WAV) of audio data.
+* How to control the relative levels (gain) of audio sources mixed into an output stream.
+* How to locate a mono data source in a stereo output stream.
+
+To keep things simple, **DrumThumper** specifically does not:
+* Does not provide support audio samples in other than 160bit, 44.1K, mono PCM Samples. It does not support Stereo, different samples rates or different PCM formats.
+* Does not provide support for non-WAV audio data (such as AIFF).
+* Does not provide support for compressed audio data.
+
 ## DrumThumper project structure
 ### Kotlin App Layer
 Contains classes for the application logic and defines the methods for accessing the native data and player functionality.
