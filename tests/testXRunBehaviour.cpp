@@ -65,8 +65,8 @@ protected:
 
 };
 
-// TODO figure out this behaviour - On OpenSLES xRuns are supported withing AudioStreamBuffered, however, these aren't
-// the same as the actual stream underruns
+// TODO figure out this behaviour - On OpenSLES xRuns are supported within AudioStreamBuffered,
+//  however, these aren't the same as the actual stream underruns
 TEST_F(XRunBehaviour, SupportedWhenStreamIsUsingAAudio){
 
     openStream();
