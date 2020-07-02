@@ -52,14 +52,13 @@ protected:
     }
 
     void openAndCloseStream(){
-
         openStream();
         closeStream();
         ASSERT_EQ(mStream->getState(), StreamState::Closed) << "Stream state " << convertToText(mStream->getState());
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    AudioStream       *mStream = nullptr;
 
 };
 
