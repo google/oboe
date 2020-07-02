@@ -280,8 +280,7 @@ TEST_F(StreamOpen, PlaybackFormatFloatReturnsFloatOnLollipopAndLater){
     }
 }
 
-TEST_F(StreamOpen, PlaybackFormatI16ReturnsI16){
-
+TEST_F(StreamOpen, PlaybackFormatI16ReturnsI16) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setFormat(AudioFormat::I16);
     openStream();
@@ -289,13 +288,24 @@ TEST_F(StreamOpen, PlaybackFormatI16ReturnsI16){
     closeStream();
 }
 
-TEST_F(StreamOpen, LowLatencyStreamHasBufferSizeOfTwoBursts){
+TEST_F(StreamOpen, OpenCloseLowLatencyStream){
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+    float *buf = new float[100];
+    openStream();
+    delete[] buf;
+    closeStream();
+}
 
-    if (mBuilder.isAAudioRecommended()){
+TEST_F(StreamOpen, LowLatencyStreamHasSmallBufferSize){
+
+    if (mBuilder.isAAudioRecommended()) {
         mBuilder.setDirection(Direction::Output);
         mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
         openStream();
-        ASSERT_EQ(mStream->getBufferSizeInFrames(), mStream->getFramesPerBurst() * 2);
+        int32_t bufferSize = mStream->getBufferSizeInFrames();
+        int32_t burst = mStream->getFramesPerBurst();
         closeStream();
+        ASSERT_LE(bufferSize, burst * 3);
     }
 }
