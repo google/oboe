@@ -26,7 +26,7 @@ Secondarily, **DrumThumper** demonstrates:
 * How to locate a mono data source in a stereo output stream.
 
 To keep things simple, **DrumThumper** specifically does not:
-* Does not provide support audio samples in other than 160bit, 44.1K, mono PCM Samples. It does not support Stereo, different samples rates or different PCM formats.
+* Does not provide support audio samples in other than 16-bit, 44.1K, mono PCM Samples. It does not support Stereo, different samples rates or different PCM formats.
 * Does not provide support for non-WAV audio data (such as AIFF).
 * Does not provide support for compressed audio data.
 
