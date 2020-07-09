@@ -23,7 +23,7 @@
 /**
  * Convert an input between -1.0 and +1.0 to a linear region between min and max.
  */
-class LinearShape : public flowgraph::FlowGraphFilter {
+class LinearShape : public oboe::flowgraph::FlowGraphFilter {
 public:
     LinearShape();
 

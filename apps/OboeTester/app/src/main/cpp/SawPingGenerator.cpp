@@ -19,7 +19,7 @@
 #include "oboe/Definitions.h"
 #include "SawPingGenerator.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 SawPingGenerator::SawPingGenerator()
         : OscillatorBase()

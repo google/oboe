@@ -25,7 +25,7 @@
  *
  * The waveform is not band-limited so it will have aliasing artifacts at higher frequencies.
  */
-class ExponentialShape : public flowgraph::FlowGraphFilter {
+class ExponentialShape : public oboe::flowgraph::FlowGraphFilter {
 public:
     ExponentialShape();
 

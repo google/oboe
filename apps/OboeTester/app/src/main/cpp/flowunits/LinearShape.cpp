@@ -17,7 +17,7 @@
 
 #include "LinearShape.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 LinearShape::LinearShape()
         : FlowGraphFilter(1) {

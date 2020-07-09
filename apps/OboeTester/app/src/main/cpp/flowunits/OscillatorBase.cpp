@@ -16,7 +16,7 @@
 
 #include "OscillatorBase.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 OscillatorBase::OscillatorBase()
         : frequency(*this, 1)

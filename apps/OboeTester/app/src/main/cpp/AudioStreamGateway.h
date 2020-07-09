@@ -22,7 +22,7 @@
 #include "flowgraph/FlowGraphNode.h"
 #include "oboe/Oboe.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 /**
  * Bridge between an audio flowgraph and an audio device.
@@ -34,7 +34,7 @@ public:
 //    AudioStreamGateway(int samplesPerFrame);
     virtual ~AudioStreamGateway() = default;
 
-    void setAudioSink(std::shared_ptr<flowgraph::FlowGraphSink>  sink) {
+    void setAudioSink(std::shared_ptr<oboe::flowgraph::FlowGraphSink>  sink) {
         mAudioSink = sink;
     }
 
@@ -51,7 +51,7 @@ public:
 private:
     bool     mSchedulerChecked = false;
     int      mScheduler;
-    std::shared_ptr<flowgraph::FlowGraphSink>  mAudioSink;
+    std::shared_ptr<oboe::flowgraph::FlowGraphSink>  mAudioSink;
 };
 
 
