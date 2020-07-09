@@ -33,8 +33,7 @@ oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
     }
 
     if (mAudioSink != nullptr) {
-        mAudioSink->read(mFramePosition, audioData, numFrames);
-        mFramePosition += numFrames;
+        mAudioSink->read(audioData, numFrames);
     }
 
     return oboe::DataCallbackResult::Continue;

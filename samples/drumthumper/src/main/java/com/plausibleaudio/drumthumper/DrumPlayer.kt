@@ -22,8 +22,12 @@ import java.io.IOException
 class DrumPlayer {
     companion object {
         // Sample attributes
-        val NUM_CHANNELS: Int = 2       // Stereo Playback, set to 1 for Mono playback
-        val SAMPLE_RATE: Int = 44100    // All the input samples are 44.1K
+        val NUM_CHANNELS: Int = 2       // The number of channels in the player Stream.
+                                        // Stereo Playback, set to 1 for Mono playback
+                                        // This IS NOT the channel format of the source samples
+                                        // (which must be mono).
+        val SAMPLE_RATE: Int = 44100    // All the input samples are assumed to BE 44.1K
+                                        // All the input samples are assumed to be mono.
 
         // Sample Buffer IDs
         val BASSDRUM: Int = 0
@@ -35,7 +39,7 @@ class DrumPlayer {
         val HIHATOPEN: Int = 6
         val HIHATCLOSED: Int = 7
 
-        // Pan position for each drum sample
+        // initial pan position for each drum sample
         val PAN_BASSDRUM: Float = 0f         // Dead Center
         val PAN_SNAREDRUM: Float = 0.25f     // A little Right
         val PAN_CRASHCYMBAL: Float = -0.75f  // Mostly Left

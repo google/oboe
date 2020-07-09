@@ -28,14 +28,14 @@ using namespace flowgraph;
 SinkI16::SinkI16(int32_t channelCount)
         : FlowGraphSink(channelCount) {}
 
-int32_t SinkI16::read(int64_t framePosition, void *data, int32_t numFrames) {
+int32_t SinkI16::read(void *data, int32_t numFrames) {
     int16_t *shortData = (int16_t *) data;
     const int32_t channelCount = input.getSamplesPerFrame();
 
     int32_t framesLeft = numFrames;
     while (framesLeft > 0) {
         // Run the graph and pull data through the input port.
-        int32_t framesRead = pullData(framePosition, framesLeft);
+        int32_t framesRead = pullData(framesLeft);
         if (framesRead <= 0) {
             break;
         }
@@ -52,7 +52,6 @@ int32_t SinkI16::read(int64_t framePosition, void *data, int32_t numFrames) {
         }
 #endif
         framesLeft -= framesRead;
-        framePosition += framesRead;
     }
     return numFrames - framesLeft;
 }
