@@ -28,7 +28,7 @@ add_executable(
         testOboe
         testAAudio.cpp
         testUtilities.cpp
-#        testFlowgraph.cpp
+        testFlowgraph.cpp
         testStreamClosedMethods.cpp
         testStreamWaitState.cpp
         testXRunBehaviour.cpp
