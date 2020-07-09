@@ -36,7 +36,7 @@
 #include "flowgraph/SourceI16.h"
 #include "flowgraph/SourceI24.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 constexpr int kBytesPerI24Packed = 3;
 
