@@ -456,8 +456,8 @@ protected:
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
-    std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
-    std::shared_ptr<flowgraph::SinkI16>     mSinkI16;
+    std::shared_ptr<oboe::flowgraph::SinkFloat>   mSinkFloat;
+    std::shared_ptr<oboe::flowgraph::SinkI16>     mSinkI16;
 };
 
 /**
@@ -640,7 +640,7 @@ public:
 private:
     std::unique_ptr<SineOscillator>         sineOscillator;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
-    std::shared_ptr<flowgraph::SinkFloat>   mSinkFloat;
+    std::shared_ptr<oboe::flowgraph::SinkFloat>   mSinkFloat;
 };
 
 /**

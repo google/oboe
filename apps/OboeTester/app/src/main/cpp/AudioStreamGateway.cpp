@@ -20,7 +20,7 @@
 #include "oboe/Oboe.h"
 #include "AudioStreamGateway.h"
 
-using namespace flowgraph;
+using namespace oboe::flowgraph;
 
 oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
         oboe::AudioStream *audioStream,
