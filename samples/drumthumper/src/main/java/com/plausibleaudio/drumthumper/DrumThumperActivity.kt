@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.oboe.samples.drumthumper
+package com.plausiblesoftware.drumthumper
 
 import android.content.Context
 import android.media.AudioDeviceCallback
@@ -31,9 +31,8 @@ import java.time.LocalDateTime
 import java.util.Timer
 import kotlin.concurrent.schedule
 
-
 class DrumThumperActivity : AppCompatActivity(),
-    TriggerPad.DrumPadTriggerListener,
+        TriggerPad.DrumPadTriggerListener,
         SeekBar.OnSeekBarChangeListener,
         View.OnClickListener {
     private val TAG = "DrumThumperActivity"
