@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include "FlowGraphNode.h"
 
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 /***************************************************************************/
 int32_t FlowGraphNode::pullData(int32_t numFrames, int64_t callCount) {

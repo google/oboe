@@ -23,6 +23,7 @@
 
 #include "FlowGraphNode.h"
 
+namespace FLOWGRAPH_OUTER_NAMESPACE {
 namespace flowgraph {
 
 /**
@@ -40,5 +41,6 @@ public:
 };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_SINK_FLOAT_H
