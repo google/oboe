@@ -24,6 +24,11 @@
 #include "FlowGraphNode.h"
 #include "SourceI24.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 constexpr int kBytesPerI24Packed = 3;

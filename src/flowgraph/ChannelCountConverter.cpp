@@ -18,6 +18,11 @@
 #include "FlowGraphNode.h"
 #include "ChannelCountConverter.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 ChannelCountConverter::ChannelCountConverter(

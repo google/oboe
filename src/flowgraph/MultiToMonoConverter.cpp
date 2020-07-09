@@ -18,6 +18,11 @@
 #include "FlowGraphNode.h"
 #include "MultiToMonoConverter.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 MultiToMonoConverter::MultiToMonoConverter(int32_t inputChannelCount)

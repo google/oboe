@@ -23,6 +23,11 @@
 #include <audio_utils/primitives.h>
 #endif
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 SinkI16::SinkI16(int32_t channelCount)

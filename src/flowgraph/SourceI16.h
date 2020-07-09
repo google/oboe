@@ -22,6 +22,11 @@
 
 #include "FlowGraphNode.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
 namespace flowgraph {
 /**
  * AudioSource that reads a block of pre-defined 16-bit integer data.
@@ -38,5 +43,6 @@ public:
 };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_SOURCE_I16_H

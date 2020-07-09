@@ -19,6 +19,11 @@
 #include "FlowGraphNode.h"
 #include "RampLinear.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 RampLinear::RampLinear(int32_t channelCount)

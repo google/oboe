@@ -23,6 +23,11 @@
 
 #include "FlowGraphNode.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
 namespace flowgraph {
 
 // This is 3 dB, (10^(3/20)), to match the maximum headroom in AudioTrack for float data.
@@ -64,5 +69,6 @@ private:
 };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_CLIP_TO_RANGE_H

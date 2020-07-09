@@ -16,6 +16,11 @@
 
 #include "SampleRateConverter.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 using namespace resampler;
 

@@ -22,6 +22,11 @@
 
 #include "FlowGraphNode.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
 namespace flowgraph {
 
 /**
@@ -48,5 +53,6 @@ namespace flowgraph {
     };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_CHANNEL_COUNT_CONVERTER_H

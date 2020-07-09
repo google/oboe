@@ -22,6 +22,11 @@
 
 #include "FlowGraphNode.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
 namespace flowgraph {
 
 /**
@@ -39,5 +44,6 @@ public:
 };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_SINK_I16_H

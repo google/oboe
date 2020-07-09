@@ -23,6 +23,13 @@
 
 #include "FlowGraphNode.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
+namespace flowgraph {
+
 /**
  * Combine multiple mono inputs into one interleaved multi-channel output.
  */
@@ -45,5 +52,8 @@ public:
 
 private:
 };
+
+} /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_MANY_TO_MULTI_CONVERTER_H

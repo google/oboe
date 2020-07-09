@@ -20,6 +20,11 @@
 #include "FlowGraphNode.h"
 #include "SourceFloat.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 SourceFloat::SourceFloat(int32_t channelCount)

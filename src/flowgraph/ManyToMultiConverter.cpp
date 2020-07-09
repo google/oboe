@@ -18,6 +18,11 @@
 
 #include "ManyToMultiConverter.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 ManyToMultiConverter::ManyToMultiConverter(int32_t channelCount)

@@ -23,6 +23,11 @@
 #include "FlowGraphNode.h"
 #include "resampler/MultiChannelResampler.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+namespace aaudio {
+#else
+namespace oboe {
+#endif
 namespace flowgraph {
 
 class SampleRateConverter : public FlowGraphFilter {
@@ -52,5 +57,8 @@ private:
     int64_t mInputFramePosition = 0; // monotonic counter of input frames used for pullData
 
 };
+
 } /* namespace flowgraph */
+} /* namespace oboe */
+
 #endif //OBOE_SAMPLE_RATE_CONVERTER_H

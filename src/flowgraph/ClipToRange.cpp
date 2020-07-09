@@ -19,6 +19,11 @@
 #include "FlowGraphNode.h"
 #include "ClipToRange.h"
 
+#if FLOWGRAPH_ANDROID_INTERNAL
+using namespace aaudio;
+#else
+using namespace oboe;
+#endif
 using namespace flowgraph;
 
 ClipToRange::ClipToRange(int32_t channelCount)
