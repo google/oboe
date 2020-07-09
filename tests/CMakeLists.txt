@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # This may work on Linux.
 # set(ANDROID_NDK $ENV{HOME}/Android/sdk/ndk-bundle)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14 -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++14")
 
 # Include GoogleTest library
 set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest)
@@ -28,7 +28,7 @@ add_executable(
         testOboe
         testAAudio.cpp
         testUtilities.cpp
-        testFlowgraph.cpp
+#        testFlowgraph.cpp
         testStreamClosedMethods.cpp
         testStreamWaitState.cpp
         testXRunBehaviour.cpp
