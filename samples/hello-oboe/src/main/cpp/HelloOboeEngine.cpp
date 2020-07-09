@@ -42,22 +42,21 @@ HelloOboeEngine::HelloOboeEngine()
 double HelloOboeEngine::getCurrentOutputLatencyMillis() {
     if (!mIsLatencyDetectionSupported) return -1.0;
 
-    // Save local copy of shared pointer while we measure latency.
-    std::shared_ptr<oboe::AudioStream> localStream = mStream;
-    if (localStream == nullptr) return -1.0;
+    std::lock_guard<std::mutex> lock(mLock);
+    if (!mStream) return -1.0;
 
     // Get the time that a known audio frame was presented for playing
-    auto result = localStream->getTimestamp(CLOCK_MONOTONIC);
+    auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
     double outputLatencyMillis = -1;
     const int64_t kNanosPerMillisecond = 1000000;
     if (result == oboe::Result::OK) {
         oboe::FrameTimestamp playedFrame = result.value();
         // Get the write index for the next audio frame
-        int64_t writeIndex = localStream->getFramesWritten();
+        int64_t writeIndex = mStream->getFramesWritten();
         // Calculate the number of frames between our known frame and the write index
         int64_t frameIndexDelta = writeIndex - playedFrame.position;
         // Calculate the time which the next frame will be presented
-        int64_t frameTimeDelta = (frameIndexDelta * oboe::kNanosPerSecond) /  (localStream->getSampleRate());
+        int64_t frameTimeDelta = (frameIndexDelta * oboe::kNanosPerSecond) /  (mStream->getSampleRate());
         int64_t nextFramePresentationTime = playedFrame.timestamp + frameTimeDelta;
         // Assume that the next frame will be written at the current time
         using namespace std::chrono;
@@ -73,13 +72,13 @@ double HelloOboeEngine::getCurrentOutputLatencyMillis() {
 }
 
 void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
-    std::shared_ptr<oboe::AudioStream> localStream = mStream;
-    if (!localStream) return;
+    std::lock_guard<std::mutex> lock(mLock);
+    if (!mStream) return;
 
     mIsLatencyDetectionSupported = false;
     mLatencyCallback->setBufferTuneEnabled(numBursts == kBufferSizeAutomatic);
-    auto result = localStream->setBufferSizeInFrames(
-            numBursts * localStream->getFramesPerBurst());
+    auto result = mStream->setBufferSizeInFrames(
+            numBursts * mStream->getFramesPerBurst());
     if (result) {
         LOGD("Buffer size successfully changed to %d", result.value());
     } else {
@@ -135,6 +134,8 @@ void HelloOboeEngine::restart() {
 
 oboe::Result HelloOboeEngine::start() {
     std::lock_guard<std::mutex> lock(mLock);
+    if (!mStream) return oboe::Result::ErrorNull;
+
     auto result = createPlaybackStream();
     if (result == oboe::Result::OK){
         mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(),
@@ -163,6 +164,5 @@ oboe::Result HelloOboeEngine::reopenStream() {
             mStream->close();
         }
     }
-    oboe::Result result = start();
-    return result;
+    return start();
 }
