@@ -23,7 +23,7 @@
 #include <audio_utils/primitives.h>
 #endif
 
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 SinkI16::SinkI16(int32_t channelCount)
         : FlowGraphSink(channelCount) {}

@@ -22,6 +22,7 @@
 
 #include "FlowGraphNode.h"
 
+namespace FLOWGRAPH_OUTER_NAMESPACE {
 namespace flowgraph {
 
 /**
@@ -45,5 +46,6 @@ namespace flowgraph {
     };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif //FLOWGRAPH_MULTI_TO_MONO_CONVERTER_H

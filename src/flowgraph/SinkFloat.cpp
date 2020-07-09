@@ -19,7 +19,7 @@
 #include "FlowGraphNode.h"
 #include "SinkFloat.h"
 
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 SinkFloat::SinkFloat(int32_t channelCount)
         : FlowGraphSink(channelCount) {

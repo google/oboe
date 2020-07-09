@@ -40,8 +40,16 @@
 
 // Set this to 1 if using it inside the Android framework.
 // This code is kept here so that it can be moved easily between Oboe and AAudio.
+#ifndef FLOWGRAPH_ANDROID_INTERNAL
 #define FLOWGRAPH_ANDROID_INTERNAL 0
+#endif
 
+// Set this to a name that will prevent AAudio from calling into Oboe.
+#ifndef FLOWGRAPH_OUTER_NAMESPACE
+#define FLOWGRAPH_OUTER_NAMESPACE oboe
+#endif
+
+namespace FLOWGRAPH_OUTER_NAMESPACE {
 namespace flowgraph {
 
 // Default block size that can be overridden when the FlowGraphPortFloat is created.
@@ -429,5 +437,6 @@ public:
 };
 
 } /* namespace flowgraph */
+} /* namespace oboe */
 
 #endif /* FLOWGRAPH_FLOW_GRAPH_NODE_H */

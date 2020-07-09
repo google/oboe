@@ -18,7 +18,7 @@
 #include "FlowGraphNode.h"
 #include "ChannelCountConverter.h"
 
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 ChannelCountConverter::ChannelCountConverter(
         int32_t inputChannelCount,
