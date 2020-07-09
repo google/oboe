@@ -52,7 +52,7 @@ TEST(test_flowgraph, module_sinki16) {
     sourceFloat.output.connect(&sinkI16.input);
 
     int numOutputFrames = sizeof(output) / sizeof(int16_t);
-    int32_t numRead = sinkI16.read(0 /* framePosition */, output, numOutputFrames);
+    int32_t numRead = sinkI16.read(output, numOutputFrames);
     ASSERT_EQ(numInputFrames, numRead);
     for (int i = 0; i < numRead; i++) {
         EXPECT_EQ(expected[i], output[i]);
@@ -71,7 +71,7 @@ TEST(test_flowgraph, module_mono_to_stereo) {
     sourceFloat.output.connect(&monoToStereo.input);
     monoToStereo.output.connect(&sinkFloat.input);
 
-    int32_t numRead = sinkFloat.read(0 /* framePosition */, output, 8);
+    int32_t numRead = sinkFloat.read(output, 8);
     ASSERT_EQ(3, numRead);
     EXPECT_EQ(input[0], output[0]);
     EXPECT_EQ(input[0], output[1]);
@@ -95,7 +95,7 @@ TEST(test_flowgraph, module_ramp_linear) {
 
     rampLinear.output.connect(&sinkFloat.input);
 
-    int32_t numRead = sinkFloat.read(0 /* framePosition */, output, numOutput);
+    int32_t numRead = sinkFloat.read(output, numOutput);
     ASSERT_EQ(numOutput, numRead);
     constexpr float tolerance = 0.0001f; // arbitrary
     int i = 0;
@@ -124,7 +124,7 @@ TEST(test_flowgraph, module_packed_24) {
     sourceI24.setData(input, numInputFrames);
     sourceI24.output.connect(&sinkI24.input);
 
-    int32_t numRead = sinkI24.read(0 /* framePosition */, output, sizeof(output) / kBytesPerI24Packed);
+    int32_t numRead = sinkI24.read(output, sizeof(output) / kBytesPerI24Packed);
     ASSERT_EQ(numInputFrames, numRead);
     for (size_t i = 0; i < sizeof(input); i++) {
         EXPECT_EQ(input[i], output[i]);
@@ -152,7 +152,7 @@ TEST(test_flowgraph, module_clip_to_range) {
     clipper.output.connect(&sinkFloat.input);
 
     int numOutputFrames = sizeof(output) / sizeof(output[0]);
-    int32_t numRead = sinkFloat.read(0 /* framePosition */, output, numOutputFrames);
+    int32_t numRead = sinkFloat.read(output, numOutputFrames);
     ASSERT_EQ(numInputFrames, numRead);
     constexpr float tolerance = 0.000001f; // arbitrary
     for (int i = 0; i < numRead; i++) {
