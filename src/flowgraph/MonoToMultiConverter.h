@@ -46,6 +46,6 @@ public:
 };
 
 } /* namespace flowgraph */
-} /* namespace oboe */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
 #endif //FLOWGRAPH_MONO_TO_MULTI_CONVERTER_H

@@ -46,6 +46,6 @@ namespace flowgraph {
     };
 
 } /* namespace flowgraph */
-} /* namespace oboe */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
 #endif //FLOWGRAPH_MULTI_TO_MONO_CONVERTER_H

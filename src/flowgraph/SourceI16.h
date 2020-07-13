@@ -39,6 +39,6 @@ public:
 };
 
 } /* namespace flowgraph */
-} /* namespace oboe */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
 #endif //FLOWGRAPH_SOURCE_I16_H
