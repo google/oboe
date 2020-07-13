@@ -65,6 +65,6 @@ private:
 };
 
 } /* namespace flowgraph */
-} /* namespace oboe */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
 #endif //FLOWGRAPH_CLIP_TO_RANGE_H

@@ -55,6 +55,6 @@ private:
 };
 
 } /* namespace flowgraph */
-} /* namespace oboe */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
 #endif //OBOE_SAMPLE_RATE_CONVERTER_H
