@@ -45,6 +45,10 @@
 #endif
 
 // Set this to a name that will prevent AAudio from calling into Oboe.
+// AAudio and Oboe both use a version of this flowgraph package.
+// There was a problem in the unit tests where AAudio would call a constructor
+// in AAudio and then call a destructor in Oboe! That caused memory corruption.
+// For more details, see Issue #930.
 #ifndef FLOWGRAPH_OUTER_NAMESPACE
 #define FLOWGRAPH_OUTER_NAMESPACE oboe
 #endif
