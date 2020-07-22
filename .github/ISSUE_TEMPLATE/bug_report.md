@@ -24,10 +24,14 @@ App name used for testing:
 
 **Device**
 
-If device specific, please share the result for the following: 
+If device specific, connect the device and please share the result for the following script. This gets properties of the device. 
 
 ```
-for p in ro.product.brand ro.product.manufacturer ro.product.model ro.product.device ro.product.cpu.abi ro.build.description ro.hardware ro.hardware.chipname ro.arch "| grep aaudio"; do echo "$p = $(adb shell getprop $p)"; done
+for p in \
+    ro.product.brand ro.product.manufacturer ro.product.model \
+    ro.product.device ro.product.cpu.abi ro.build.description \
+    ro.hardware ro.hardware.chipname ro.arch "| grep aaudio";
+    do echo "$p = $(adb shell getprop $p)"; done
 ```
 
 **Any additional context**
