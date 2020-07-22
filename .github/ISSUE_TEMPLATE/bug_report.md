@@ -24,20 +24,10 @@ App name used for testing:
 
 **Device**
 
-If device specific, please share values for these properties:
+If device specific, please share the result for the following: 
 
 ```
-adb shell getprop ro.product.brand
-adb shell getprop ro.product.manufacturer
-adb shell getprop ro.product.model
-adb shell getprop ro.product.device
-adb shell getprop ro.product.cpu.abi
-adb shell getprop ro.build.description
-adb shell getprop ro.hardware
-adb shell getprop ro.hardware.chipname
-adb shell getprop ro.arch
-adb shell getprop | grep aaudio
-
+for p in ro.product.brand ro.product.manufacturer ro.product.model ro.product.device ro.product.cpu.abi ro.build.description ro.hardware ro.hardware.chipname ro.arch "| grep aaudio"; do echo "$p = $(adb shell getprop $p)"; done
 ```
 
 **Any additional context**
