@@ -86,7 +86,10 @@ oboe::Result  LiveEffectEngine::openStreams() {
     setupPlaybackStreamParameters(&outBuilder);
     oboe::Result result = outBuilder.openManagedStream(mPlayStream);
     if (result != oboe::Result::OK) {
+        mSampleRate = oboe::kUnspecified;
         return result;
+    } else {
+        mSampleRate = mPlayStream->getSampleRate();
     }
     warnIfNotLowLatency(mPlayStream);
 
