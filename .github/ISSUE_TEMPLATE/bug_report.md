@@ -24,7 +24,8 @@ App name used for testing:
 
 **Device**
 
-If device specific, connect the device and please share the result for the following script. This gets properties of the device. 
+Please list which devices have this bug.
+If device specific, and you are on Linux or a Macintosh, connect the device and please share the result for the following script. This gets properties of the device. 
 
 ```
 for p in \
