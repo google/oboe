@@ -56,7 +56,10 @@ You can register for the Intent when your app resumes and unregister when it pau
 
 ## Internal Notes
 
-* Oboe Issues #381 , #893
+* Oboe Issues
+  * [#381](https://github.com/google/oboe/issues/381) Connecting headphones does not trigger any event. S9
+  * [#893](https://github.com/google/oboe/issues/893) onErrorBeforeClose and onErrorAfterClose not called, S10
+  * [#908](https://github.com/google/oboe/issues/908) Huawei MAR-LX3A
 * This issue is tracked internally as b/111711159.
 * A fix in AOSP is [here](https://android-review.googlesource.com/c/platform/frameworks/av/+/836184)
 * A fix was also merged into pi-dev on July 30, 2018.
