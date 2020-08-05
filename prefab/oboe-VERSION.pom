@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <groupId>com.google.oboe</groupId>
   <artifactId>oboe</artifactId>
-  <version>1.3.0</version>
+  <version>VERSION</version>
   <packaging>aar</packaging>
   <name>oboe</name>
   <description>The AAR for Oboe.</description>
