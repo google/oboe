@@ -162,7 +162,15 @@ class DrumThumperActivity : AppCompatActivity(),
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         // mDrumPlayer.allocSampleData()
-        mDrumPlayer.loadWavAssets(getAssets())
+        var allAssetsValid = mDrumPlayer.loadWavAssets(getAssets())
+
+        if (!allAssetsValid) {
+            // show toast
+            val toast = Toast.makeText(this,
+                    "One or more audio assets has an incorrect format and may not play correctly",
+                    Toast.LENGTH_LONG)
+            toast.show()
+        }
     }
 
     override fun onStart() {
