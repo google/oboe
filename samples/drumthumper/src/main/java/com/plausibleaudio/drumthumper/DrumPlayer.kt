@@ -62,39 +62,61 @@ class DrumPlayer {
     }
 
     // asset-based samples
-    fun loadWavAssets(assetMgr: AssetManager) {
-        loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM, PAN_BASSDRUM)
-        loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM, PAN_SNAREDRUM)
-        loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL, PAN_CRASHCYMBAL)
-        loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL, PAN_RIDECYMBAL)
-        loadWavAsset(assetMgr, "MidTom.wav", MIDTOM, PAN_MIDTOM)
-        loadWavAsset(assetMgr, "LowTom.wav", LOWTOM, PAN_LOWTOM)
-        loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN, PAN_HIHATOPEN)
-        loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED, PAN_HIHATCLOSED)
+    fun loadWavAssets(assetMgr: AssetManager): Boolean {
+        var allAssetsCorrect = true
+        if (!loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM, PAN_BASSDRUM)) {
+            allAssetsCorrect = false
+        }
+        if (!loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM, PAN_SNAREDRUM)) {
+            allAssetsCorrect = false
+        }
+        if (!loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL, PAN_CRASHCYMBAL)) {
+            allAssetsCorrect  = false
+        }
+        if (!loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL, PAN_RIDECYMBAL)) {
+            allAssetsCorrect  = false
+        }
+        if (!loadWavAsset(assetMgr, "MidTom.wav", MIDTOM, PAN_MIDTOM)) {
+            allAssetsCorrect  = false
+        }
+        if (!loadWavAsset(assetMgr, "LowTom.wav", LOWTOM, PAN_LOWTOM)) {
+            allAssetsCorrect  = false
+        }
+        if (!loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN, PAN_HIHATOPEN)) {
+            allAssetsCorrect  = false
+        }
+        if (!loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED, PAN_HIHATCLOSED)) {
+            allAssetsCorrect  = false
+        }
+
+        return allAssetsCorrect
     }
 
     fun unloadWavAssets() {
         unloadWavAssetsNative()
     }
 
-    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) {
+    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) : Boolean {
+        var returnVal = false
         try {
             val assetFD = assetMgr.openFd(assetName)
             val dataStream = assetFD.createInputStream();
             var dataLen = assetFD.getLength().toInt()
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
-            loadWavAssetNative(dataBytes, index, pan)
+            returnVal = loadWavAssetNative(dataBytes, index, pan)
             assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
         }
+
+        return returnVal
     }
 
     external fun setupAudioStreamNative(numChannels: Int, sampleRate: Int)
     external fun teardownAudioStreamNative()
 
-    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float)
+    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float) : Boolean
     external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)

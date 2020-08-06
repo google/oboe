@@ -68,7 +68,8 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_teardow
 /**
  * Native (JNI) implementation of DrumPlayer.loadWavAssetNative()
  */
-JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loadWavAssetNative(JNIEnv* env, jobject, jbyteArray bytearray, jint index, jfloat pan) {
+JNIEXPORT jboolean JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loadWavAssetNative(
+        JNIEnv* env, jobject, jbyteArray bytearray, jint index, jfloat pan) {
     int len = env->GetArrayLength (bytearray);
 
     unsigned char* buf = new unsigned char[len];
@@ -79,6 +80,10 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loadWav
     WavStreamReader reader(&stream);
     reader.parse();
 
+    int sampleRate = reader.getSampleRate();
+    int numChannels = reader.getNumChannels();
+    jboolean isFormatValid = sampleRate == 41000 && numChannels == 1;
+
     SampleBuffer* sampleBuffer = new SampleBuffer();
     sampleBuffer->loadSampleData(&reader);
 
@@ -86,6 +91,8 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loadWav
     sDTPlayer.addSampleSource(source, sampleBuffer);
 
     delete[] buf;
+
+    return isFormatValid;
 }
 
 /**
