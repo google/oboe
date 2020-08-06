@@ -118,7 +118,7 @@ void AudioStreamAAudio::internalErrorCallback(
     if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
         LOGE("%s() multiple error callbacks called!", __func__);
     } else if (stream != oboeStream->getUnderlyingStream()) {
-        LOGW("%s() stream already closed", __func__); // can happen if there are bugs
+        LOGW("%s() stream already closed or closing", __func__); // can happen if there are bugs
     } else if (sharedStream) {
         // Handle error on a separate thread using shared pointer.
         std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream,
@@ -258,7 +258,6 @@ Result AudioStreamAAudio::open() {
     mBufferCapacityInFrames = mLibLoader->stream_getBufferCapacity(mAAudioStream);
     mBufferSizeInFrames = mLibLoader->stream_getBufferSize(mAAudioStream);
 
-
     // These were added in P so we have to check for the function pointer.
     if (mLibLoader->stream_getUsage != nullptr) {
         mUsage = static_cast<Usage>(mLibLoader->stream_getUsage(mAAudioStream));
@@ -298,6 +297,14 @@ Result AudioStreamAAudio::close() {
     // This will delete the AAudio stream object so we need to null out the pointer.
     AAudioStream *stream = mAAudioStream.exchange(nullptr);
     if (stream != nullptr) {
+        // Sometimes a callback can occur shortly after a stream has been stopped and
+        // even after a close. If the stream has been closed then the callback
+        // can access memory that has been freed. That causes a crash.
+        // Two milliseconds may be enough but 10 msec is even safer.
+        // This seems to be less likely in Q but we have seen some reports.
+        if (getSdkVersion() <= __ANDROID_API_Q__) {
+            usleep(kDelayBeforeCloseMillis * 1000);
+        }
         return static_cast<Result>(mLibLoader->stream_close(stream));
     } else {
         return Result::ErrorClosed;
