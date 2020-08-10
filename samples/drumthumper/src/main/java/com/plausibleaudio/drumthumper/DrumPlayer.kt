@@ -34,7 +34,7 @@ class DrumPlayer {
         val BASSDRUM: Int = 0
         val SNAREDRUM: Int = 1
         val CRASHCYMBAL: Int = 2
-        const val RIDECYMBAL: Int = 3
+        val RIDECYMBAL: Int = 3
         val MIDTOM: Int = 4
         val LOWTOM: Int = 5
         val HIHATOPEN: Int = 6
@@ -89,11 +89,7 @@ class DrumPlayer {
             var dataLen = assetFD.getLength().toInt()
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
-<<<<<<< HEAD
             returnVal = loadWavAssetNative(dataBytes, index, pan, SAMPLE_RATE, NUM_SAMPLE_CHANNELS)
-=======
-            returnVal = loadWavAssetNative(dataBytes, index, pan)
->>>>>>> 08ec9691dd328522a77fd42284b0a265b890a39c
             assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
@@ -105,11 +101,8 @@ class DrumPlayer {
     external fun setupAudioStreamNative(sampleRate: Int, numChannels: Int)
     external fun teardownAudioStreamNative()
 
-<<<<<<< HEAD
-    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float, rate: Int, channels: Int) : Boolean
-=======
-    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float) : Boolean
->>>>>>> 08ec9691dd328522a77fd42284b0a265b890a39c
+    external fun loadWavAssetNative(
+            wavBytes: ByteArray, index: Int, pan: Float, rate: Int, channels: Int) : Boolean
     external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)
