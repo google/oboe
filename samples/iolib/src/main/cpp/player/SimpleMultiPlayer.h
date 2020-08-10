@@ -41,7 +41,7 @@ public:
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
     virtual void onErrorBeforeClose(oboe::AudioStream * oboeStream, oboe::Result error) override;
 
-    void setupAudioStream(int32_t channelCount, int32_t sampleRate);
+    void setupAudioStream(int32_t sampleRate, int32_t channelCount);
     void teardownAudioStream();
 
     bool openStream();

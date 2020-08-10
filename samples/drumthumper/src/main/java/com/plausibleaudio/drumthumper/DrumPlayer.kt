@@ -22,10 +22,11 @@ import java.io.IOException
 class DrumPlayer {
     companion object {
         // Sample attributes
-        val NUM_CHANNELS: Int = 2       // The number of channels in the player Stream.
+        val NUM_PLAY_CHANNELS: Int = 2  // The number of channels in the player Stream.
                                         // Stereo Playback, set to 1 for Mono playback
                                         // This IS NOT the channel format of the source samples
                                         // (which must be mono).
+        val NUM_SAMPLE_CHANNELS: Int = 1;   // All WAV resource must be mono
         val SAMPLE_RATE: Int = 44100    // All the input samples are assumed to BE 44.1K
                                         // All the input samples are assumed to be mono.
 
@@ -54,7 +55,7 @@ class DrumPlayer {
     }
 
     fun setupAudioStream() {
-        setupAudioStreamNative(NUM_CHANNELS, SAMPLE_RATE)
+        setupAudioStreamNative(SAMPLE_RATE, NUM_PLAY_CHANNELS)
     }
 
     fun teardownAudioStream() {
@@ -62,39 +63,46 @@ class DrumPlayer {
     }
 
     // asset-based samples
-    fun loadWavAssets(assetMgr: AssetManager) {
-        loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM, PAN_BASSDRUM)
-        loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM, PAN_SNAREDRUM)
-        loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL, PAN_CRASHCYMBAL)
-        loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL, PAN_RIDECYMBAL)
-        loadWavAsset(assetMgr, "MidTom.wav", MIDTOM, PAN_MIDTOM)
-        loadWavAsset(assetMgr, "LowTom.wav", LOWTOM, PAN_LOWTOM)
-        loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN, PAN_HIHATOPEN)
-        loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED, PAN_HIHATCLOSED)
+    fun loadWavAssets(assetMgr: AssetManager): Boolean {
+        var allAssetsCorrect = true
+        allAssetsCorrect = loadWavAsset(assetMgr, "KickDrum.wav", BASSDRUM, PAN_BASSDRUM) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "SnareDrum.wav", SNAREDRUM, PAN_SNAREDRUM) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "CrashCymbal.wav", CRASHCYMBAL, PAN_CRASHCYMBAL) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "RideCymbal.wav", RIDECYMBAL, PAN_RIDECYMBAL) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "MidTom.wav", MIDTOM, PAN_MIDTOM) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "LowTom.wav", LOWTOM, PAN_LOWTOM) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "HiHat_Open.wav", HIHATOPEN, PAN_HIHATOPEN) && allAssetsCorrect
+        allAssetsCorrect = loadWavAsset(assetMgr, "HiHat_Closed.wav", HIHATCLOSED, PAN_HIHATCLOSED) && allAssetsCorrect
+
+        return allAssetsCorrect
     }
 
     fun unloadWavAssets() {
         unloadWavAssetsNative()
     }
 
-    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) {
+    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) : Boolean {
+        var returnVal = false
         try {
             val assetFD = assetMgr.openFd(assetName)
             val dataStream = assetFD.createInputStream();
             var dataLen = assetFD.getLength().toInt()
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
-            loadWavAssetNative(dataBytes, index, pan)
+            returnVal = loadWavAssetNative(dataBytes, index, pan, SAMPLE_RATE, NUM_SAMPLE_CHANNELS)
             assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
         }
+
+        return returnVal
     }
 
-    external fun setupAudioStreamNative(numChannels: Int, sampleRate: Int)
+    external fun setupAudioStreamNative(sampleRate: Int, numChannels: Int)
     external fun teardownAudioStreamNative()
 
-    external fun loadWavAssetNative(wavBytes: ByteArray, index: Int, pan: Float)
+    external fun loadWavAssetNative(
+            wavBytes: ByteArray, index: Int, pan: Float, rate: Int, channels: Int) : Boolean
     external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)

@@ -117,7 +117,7 @@ bool SimpleMultiPlayer::openStream() {
     return true;
 }
 
-void SimpleMultiPlayer::setupAudioStream(int32_t channelCount, int32_t sampleRate) {
+void SimpleMultiPlayer::setupAudioStream(int32_t sampleRate, int32_t channelCount) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
     mChannelCount = channelCount;
     mSampleRate = sampleRate;
