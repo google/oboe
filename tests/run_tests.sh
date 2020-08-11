@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2018 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,8 +43,6 @@
 # permission, hence the need for the UnitTestRunner app. 
 # 
 ################################################
-
-#!/bin/bash
 
 # Directories, paths and filenames
 BUILD_DIR=build
