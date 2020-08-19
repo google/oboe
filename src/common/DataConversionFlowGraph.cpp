@@ -82,34 +82,38 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     AudioFormat sourceFormat = sourceStream->getFormat();
     int32_t sourceChannelCount = sourceStream->getChannelCount();
     int32_t sourceSampleRate = sourceStream->getSampleRate();
+    int32_t sourceFramesPerCallback = sourceStream->getFramesPerCallback();
 
     AudioFormat sinkFormat = sinkStream->getFormat();
     int32_t sinkChannelCount = sinkStream->getChannelCount();
     int32_t sinkSampleRate = sinkStream->getSampleRate();
+    int32_t sinkFramesPerCallback = sinkStream->getFramesPerCallback();
 
-    LOGI("%s() flowgraph converts channels: %d to %d, format: %d to %d, rate: %d to %d, qual = %d",
+    LOGI("%s() flowgraph converts channels: %d to %d, format: %d to %d"
+         ", rate: %d to %d, cbsize: %d to %d, qual = %d",
             __func__,
             sourceChannelCount, sinkChannelCount,
             sourceFormat, sinkFormat,
             sourceSampleRate, sinkSampleRate,
+            sourceFramesPerCallback, sinkFramesPerCallback,
             sourceStream->getSampleRateConversionQuality());
 
-    int32_t framesPerCallback = (sourceStream->getFramesPerCallback() == kUnspecified)
-                                ? sourceStream->getFramesPerBurst()
-                                : sourceStream->getFramesPerCallback();
     // Source
     // IF OUTPUT and using a callback then call back to the app using a SourceCaller.
     // OR IF INPUT and NOT using a callback then read from the child stream using a SourceCaller.
     if ((sourceStream->getCallback() != nullptr && isOutput)
         || (sourceStream->getCallback() == nullptr && isInput)) {
+        int32_t actualSourceFramesPerCallback = (sourceFramesPerCallback == kUnspecified)
+                ? sourceStream->getFramesPerBurst()
+                : sourceFramesPerCallback;
         switch (sourceFormat) {
             case AudioFormat::Float:
                 mSourceCaller = std::make_unique<SourceFloatCaller>(sourceChannelCount,
-                                                                    framesPerCallback);
+                                                                    actualSourceFramesPerCallback);
                 break;
             case AudioFormat::I16:
                 mSourceCaller = std::make_unique<SourceI16Caller>(sourceChannelCount,
-                                                                  framesPerCallback);
+                                                                  actualSourceFramesPerCallback);
                 break;
             default:
                 LOGE("%s() Unsupported source caller format = %d", __func__, sourceFormat);
@@ -132,8 +136,11 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                 return Result::ErrorIllegalArgument;
         }
         if (isInput) {
+            int32_t actualSinkFramesPerCallback = (sinkFramesPerCallback == kUnspecified)
+                    ? sinkStream->getFramesPerBurst()
+                    : sinkFramesPerCallback;
             // The BlockWriter is after the Sink so use the SinkStream size.
-            mBlockWriter.open(framesPerCallback * sinkStream->getBytesPerFrame());
+            mBlockWriter.open(actualSinkFramesPerCallback * sinkStream->getBytesPerFrame());
             mAppBuffer = std::make_unique<uint8_t[]>(
                     kDefaultBufferSize * sinkStream->getBytesPerFrame());
         }
@@ -158,7 +165,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
 
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
-        // Create a resample to do the math.
+        // Create a resampler to do the math.
         mResampler.reset(MultiChannelResampler::make(lastOutput->getSamplesPerFrame(),
                                                      sourceSampleRate,
                                                      sinkSampleRate,
