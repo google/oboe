@@ -27,9 +27,6 @@
 using namespace oboe;
 
 class UtilityFunctions : public ::testing::Test {
-
-
-
 };
 
 TEST_F(UtilityFunctions, Converts16BitIntegerToSizeOf2Bytes){
