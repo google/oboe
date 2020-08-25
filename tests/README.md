@@ -1,5 +1,17 @@
-Before running the tests you must define $ANDROID_NDK
-and make sure cmake is in the PATH.
+# Oboe Unit Tests
+
+This directory contains the Oboe unit tests. They are run using the bash script `run_tests.sh`. 
+
+The basic operation is:
+
+1. Connect an Android device or start the Android emulator
+2. Open a terminal window and execute `run_tests.sh`
+
+## Prerequisites/caveats
+
+You must have compiled and executed one of the Oboe examples or OboeTester. That ensures that the NDK and cmake is installed.
+
+You must define `ANDROID_NDK` as an environment variable and make sure `cmake` is on your path.
 
 To test this on Mac or Linux enter:
 
@@ -7,26 +19,34 @@ To test this on Mac or Linux enter:
     echo $ANDROID_NDK
     cmake --version
 
-If you need to set ANDROID_NDK then this may work on Mac OS:
+They may already be set. If not, then this may work on Mac OS:
 
     export ANDROID_HOME=$HOME/Library/Android/sdk
-    export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
     
-This may work on Linux:
+or this may work on Linux:
 
     export ANDROID_HOME=$HOME/Android/Sdk
-    export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
+    
+Now we need to determine the latest installed version of the NDK. Enter:
+    
+    ls $ANDROID_HOME/ndk
+    
+Make note of the folder name. Mine was "21.0.6113669" so I entered:
 
-If you need to add cmake to the path then you can find it by entering:
+    export ANDROID_NDK=$ANDROID_HOME/ndk/21.0.6113669/
+
+If you need to add `cmake` to your path then you can find it by entering:
 
     ls $ANDROID_HOME/cmake
     
-Make note of the folder name. Mine was "3.6.4111459" so I entered:
+Make note of the folder name. Mine was "3.10.2.4988404" so I entered:
     
-    export PATH=$PATH:$ANDROID_HOME/cmake/3.6.4111459/bin
+    export PATH=$PATH:$ANDROID_HOME/cmake/3.10.2.4988404/bin
     cmake --version
     
-Then to run the tests, enter:
+## Running the Tests
+
+To run the tests, enter:
 
     cd tests
     ./run_tests.sh
@@ -41,4 +61,4 @@ If you get this error:
 
 then uninstall the app "UnitTestRunner" from the Android device.
 
-See run_tests.sh for more documentation
+See `run_tests.sh` for more documentation

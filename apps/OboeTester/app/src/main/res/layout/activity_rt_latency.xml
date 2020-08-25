@@ -17,6 +17,12 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
+    <com.google.sample.oboe.manualtest.InputMarginView
+        android:id="@+id/input_margin_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
     <com.google.sample.oboe.manualtest.StreamConfigurationView
         android:id="@+id/outputStreamConfiguration"
         android:layout_width="match_parent"
@@ -26,6 +32,13 @@
 
     <com.google.sample.oboe.manualtest.BufferSizeView
         android:id="@+id/buffer_size_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <com.google.sample.oboe.manualtest.WorkloadView
+        android:id="@+id/workload_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -45,6 +58,14 @@
             android:text="@string/measure" />
 
         <Button
+            android:id="@+id/button_average"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onAverage"
+            android:text="@string/average" />
+
+        <Button
             android:id="@+id/button_cancel"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -53,13 +74,21 @@
             android:onClick="onCancel"
             android:text="@string/cancel" />
 
+        <Button
+            android:id="@+id/button_share"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onShareFile"
+            android:text="@string/share"
+            />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/text_analyzer_result"
+        android:id="@+id/text_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="8"
+        android:lines="15"
         android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />

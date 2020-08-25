@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <ctime>
 #include <chrono>
 #include <ui/OpenGLFunctions.h>
 #include <GameConstants.h>
@@ -22,9 +21,8 @@
 #include "logging.h"
 
 int64_t nowUptimeMillis() {
-    struct timespec res;
-    clock_gettime(CLOCK_MONOTONIC, &res);
-    return (res.tv_sec * kMillisecondsInSecond) + res.tv_nsec / kNanosecondsInMillisecond;
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
 void renderEvent(TapResult r){

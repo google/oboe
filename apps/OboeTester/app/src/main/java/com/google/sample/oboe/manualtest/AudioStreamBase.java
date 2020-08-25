@@ -36,6 +36,7 @@ public abstract class AudioStreamBase {
         status.framesWritten = getFramesWritten();
         status.callbackCount = getCallbackCount();
         status.latency = getLatency();
+        status.cpuLoad = getCpuLoad();
         status.state = getState();
         return status;
     }
@@ -51,30 +52,54 @@ public abstract class AudioStreamBase {
         public double latency; // msec
         public int state;
         public long callbackCount;
+        public int framesPerCallback;
+        public double cpuLoad;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
             if (bufferSize < 0 || framesWritten < 0) {
                 return "idle";
             }
-            int numBuffers = 0;
-            if (bufferSize > 0 && framesPerBurst > 0) {
-                numBuffers = bufferSize / framesPerBurst;
-            }
+            StringBuffer buffer = new StringBuffer();
+
+            buffer.append("frames written " + framesWritten + " - read " + framesRead
+                    + " = " + (framesWritten - framesRead) + "\n");
+
             String latencyText = (latency < 0.0)
                     ? "?"
-                    : String.format("%6.1f msec", latency);
-            return "buffer size = "
-                    + ((bufferSize < 0) ? "?" : bufferSize) + " = "
-                    + numBuffers + " * " + framesPerBurst + ", xRunCount = "
-                    +  ((xRunCount < 0) ? "?" : xRunCount) + "\n"
-                    + "frames written " + framesWritten + " - read " + framesRead
-                    + " = " + (framesWritten - framesRead) + "\n"
+                    : String.format("%6.1f ms", latency);
+            String cpuLoadText = String.format("%2d%c", (int)(cpuLoad * 100), '%');
+            buffer.append(
+                    convertStateToString(state)
+                    + ", #cb=" + callbackCount
+                    + ", f/cb=" + String.format("%3d", framesPerCallback)
+                    + ", latnc = " + latencyText
+                    + ", " + cpuLoadText + " cpu"
+                    + "\n");
 
-                    + "latency = " + latencyText
-                    + ", state = " + state
-                    + ", #callbacks " + callbackCount
-                    ;
+            buffer.append("buffer size = ");
+            if (bufferSize < 0) {
+                buffer.append("?");
+            } else {
+                int numBuffers = bufferSize / framesPerBurst;
+                int remainder = bufferSize - (numBuffers * framesPerBurst);
+                buffer.append(bufferSize + " = (" + numBuffers + " * " + framesPerBurst + ") + " + remainder);
+            }
+            buffer.append(",   xRun# = " + ((xRunCount < 0) ? "?" : xRunCount) + "\n");
+
+            return buffer.toString();
+        }
+        /**
+         * Converts ints from Oboe index to human-readable stream state
+         */
+        private String convertStateToString(int stateId) {
+            final String[] STATE_ARRAY = {"Uninit.", "Unknown", "Open", "Starting", "Started",
+                    "Pausing", "Paused", "Flushing", "Flushed",
+                    "Stopping", "Stopped", "Closing", "Closed", "Disconn."};
+            if (stateId < 0 || stateId >= STATE_ARRAY.length) {
+                return "Invalid - " + stateId;
+            }
+            return STATE_ARRAY[stateId];
         }
     }
 
@@ -107,6 +132,10 @@ public abstract class AudioStreamBase {
         return mActualStreamConfiguration.getChannelCount();
     }
 
+    public int getSampleRate() {
+        return mActualStreamConfiguration.getSampleRate();
+    }
+
     public int getFramesPerBurst() {
         return mActualStreamConfiguration.getFramesPerBurst();
     }
@@ -131,14 +160,17 @@ public abstract class AudioStreamBase {
 
     public double getLatency() { return -1.0; }
 
+    public double getCpuLoad() { return 0.0; }
+
     public int getState() { return -1; }
 
     public boolean isThresholdSupported() {
         return false;
     }
 
-    public void setAmplitude(double amplitude) {}
+    public void setWorkload(double workload) {}
 
     public abstract int getXRunCount();
+
 
 }

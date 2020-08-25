@@ -17,6 +17,8 @@
 #ifndef OBOE_AUDIO_STREAM_OPENSL_ES_H_
 #define OBOE_AUDIO_STREAM_OPENSL_ES_H_
 
+#include <memory>
+
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
@@ -45,7 +47,7 @@ public:
     AudioStreamOpenSLES();
     explicit AudioStreamOpenSLES(const AudioStreamBuilder &builder);
 
-    virtual ~AudioStreamOpenSLES();
+    virtual ~AudioStreamOpenSLES() = default;
 
     virtual Result open() override;
     virtual Result close() override;
@@ -55,7 +57,7 @@ public:
      *
      * @return state or a negative error.
      */
-    StreamState getState() override { return mState.load(); }
+    StreamState getState() const override { return mState.load(); }
 
     int32_t getFramesPerBurst() override;
 
@@ -78,7 +80,7 @@ public:
 
 protected:
 
-    SLuint32 channelCountToChannelMaskDefault(int channelCount);
+    SLuint32 channelCountToChannelMaskDefault(int channelCount) const;
 
     virtual Result onBeforeDestroy() { return Result::OK; }
     virtual Result onAfterDestroy() { return Result::OK; }
@@ -86,6 +88,8 @@ protected:
     static SLuint32 getDefaultByteOrder();
 
     SLresult registerBufferQueueCallback();
+
+    int32_t getBufferDepth(SLAndroidSimpleBufferQueueItf bq);
 
     SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
 
@@ -96,6 +100,10 @@ protected:
     PerformanceMode convertPerformanceMode(SLuint32 openslMode) const;
     SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
 
+    Result configureBufferSizes(int32_t sampleRate);
+
+    void logUnsupportedAttributes();
+
     /**
      * Internal use only.
      * Use this instead of directly setting the internal state variable.
@@ -104,17 +112,17 @@ protected:
         mState.store(state);
     }
 
-    int64_t getFramesProcessedByServer() const;
+    int64_t getFramesProcessedByServer();
 
     // OpenSLES stuff
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
 
-    uint8_t                      *mCallbackBuffer = nullptr;
     int32_t                       mBytesPerCallback = oboe::kUnspecified;
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
+    std::unique_ptr<uint8_t[]>    mCallbackBuffer;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};
 
 };

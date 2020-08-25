@@ -198,6 +198,8 @@ bool Game::openStream() {
         LOGW("Failed to set buffer size. Error: %s", convertToText(setBufferSizeResult.error()));
     }
 
+    mMixer.setChannelCount(mAudioStream->getChannelCount());
+
     return true;
 }
 
@@ -217,7 +219,7 @@ bool Game::setupAudioSources() {
         LOGE("Could not load source data for clap sound");
         return false;
     }
-    mClap = std::make_shared<Player>(mClapSource);
+    mClap = std::make_unique<Player>(mClapSource);
 
     // Create a data source and player for our backing track
     std::shared_ptr<AAssetDataSource> backingTrackSource {
@@ -227,13 +229,13 @@ bool Game::setupAudioSources() {
         LOGE("Could not load source data for backing track");
         return false;
     }
-    mBackingTrack = std::make_shared<Player>(backingTrackSource);
+    mBackingTrack = std::make_unique<Player>(backingTrackSource);
     mBackingTrack->setPlaying(true);
     mBackingTrack->setLooping(true);
 
     // Add both players to a mixer
-    mMixer.addTrack(mClap);
-    mMixer.addTrack(mBackingTrack);
+    mMixer.addTrack(mClap.get());
+    mMixer.addTrack(mBackingTrack.get());
 
     return true;
 }

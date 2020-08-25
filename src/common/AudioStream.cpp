@@ -17,8 +17,10 @@
 #include <sys/types.h>
 #include <pthread.h>
 #include <thread>
+
 #include <oboe/AudioStream.h>
 #include "OboeDebug.h"
+#include "AudioClock.h"
 #include <oboe/Utilities.h>
 
 namespace oboe {
@@ -30,11 +32,6 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
         : AudioStreamBase(builder) {
 }
 
-Result AudioStream::open() {
-    // Parameters are validated by the underlying API.
-    return Result::OK;
-}
-
 Result AudioStream::close() {
     // Update local counters so they can be read after the close.
     updateFramesWritten();
@@ -42,20 +39,23 @@ Result AudioStream::close() {
     return Result::OK;
 }
 
+// Call this from fireDataCallback() if you want to monitor CPU scheduler.
+void AudioStream::checkScheduler() {
+    int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
+    if (scheduler != mPreviousScheduler) {
+        LOGD("AudioStream::%s() scheduler = %s", __func__,
+                ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
+                ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
+                ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
+        );
+        mPreviousScheduler = scheduler;
+    }
+}
+
 DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFrames) {
     if (!isDataCallbackEnabled()) {
         LOGW("AudioStream::%s() called with data callback disabled!", __func__);
         return DataCallbackResult::Stop; // We should not be getting called any more.
-    }
-
-    int scheduler = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK; // for current thread
-    if (scheduler != mPreviousScheduler) {
-        LOGD("AudioStream::%s() scheduler = %s", __func__,
-             ((scheduler == SCHED_FIFO) ? "SCHED_FIFO" :
-             ((scheduler == SCHED_OTHER) ? "SCHED_OTHER" :
-             ((scheduler == SCHED_RR) ? "SCHED_RR" : "UNKNOWN")))
-        );
-        mPreviousScheduler = scheduler;
     }
 
     DataCallbackResult result;
@@ -65,7 +65,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         result = mStreamCallback->onAudioReady(this, audioData, numFrames);
     }
     // On Oreo, we might get called after returning stop.
-    // So block there here.
+    // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
 
     return result;
@@ -152,17 +152,58 @@ int64_t AudioStream::getFramesWritten() {
     return mFramesWritten;
 }
 
+ResultWithValue<int32_t> AudioStream::getAvailableFrames() {
+    int64_t readCounter = getFramesRead();
+    if (readCounter < 0) return ResultWithValue<int32_t>::createBasedOnSign(readCounter);
+    int64_t writeCounter = getFramesWritten();
+    if (writeCounter < 0) return ResultWithValue<int32_t>::createBasedOnSign(writeCounter);
+    int32_t framesAvailable = writeCounter - readCounter;
+    return ResultWithValue<int32_t>(framesAvailable);
+}
+
+ResultWithValue<int32_t> AudioStream::waitForAvailableFrames(int32_t numFrames,
+        int64_t timeoutNanoseconds) {
+    if (numFrames == 0) return Result::OK;
+    if (numFrames < 0) return Result::ErrorOutOfRange;
+
+    int64_t framesAvailable = 0;
+    int64_t burstInNanos = getFramesPerBurst() * kNanosPerSecond / getSampleRate();
+    bool ready = false;
+    int64_t deadline = AudioClock::getNanoseconds() + timeoutNanoseconds;
+    do {
+        ResultWithValue<int32_t> result = getAvailableFrames();
+        if (!result) return result;
+        framesAvailable = result.value();
+        ready = (framesAvailable >= numFrames);
+        if (!ready) {
+            int64_t now = AudioClock::getNanoseconds();
+            if (now > deadline) break;
+            AudioClock::sleepForNanos(burstInNanos);
+        }
+    } while (!ready);
+    return (!ready)
+            ? ResultWithValue<int32_t>(Result::ErrorTimeout)
+            : ResultWithValue<int32_t>(framesAvailable);
+}
+
+ResultWithValue<FrameTimestamp> AudioStream::getTimestamp(clockid_t clockId) {
+    FrameTimestamp frame;
+    Result result = getTimestamp(clockId, &frame.position, &frame.timestamp);
+    if (result == Result::OK){
+        return ResultWithValue<FrameTimestamp>(frame);
+    } else {
+        return ResultWithValue<FrameTimestamp>(static_cast<Result>(result));
+    }
+}
+
 static void oboe_stop_thread_proc(AudioStream *oboeStream) {
-    LOGD("%s() called ----)))))", __func__);
     if (oboeStream != nullptr) {
         oboeStream->requestStop();
     }
-    LOGD("%s() returning (((((----", __func__);
 }
 
 void AudioStream::launchStopThread() {
     // Stop this stream on a separate thread
-    // std::thread t(requestStop);
     std::thread t(oboe_stop_thread_proc, this);
     t.detach();
 }

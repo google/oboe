@@ -16,16 +16,11 @@
 
 package com.google.sample.oboe.manualtest;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.Button;
 
-import java.io.File;
+import java.io.IOException;
 
 /**
  * Activity to record and play back audio.
@@ -34,9 +29,12 @@ public class RecorderActivity extends TestInputActivity {
 
     private static final int STATE_RECORDING = 5;
     private static final int STATE_PLAYING = 6;
-    private int mRecorderState = STATE_STOPPED;
-    private Button mShareButton;
+    private int mRecorderState = AUDIO_STATE_STOPPED;
+    private Button mRecordButton;
+    private Button mStopButton;
     private Button mPlayButton;
+    private Button mShareButton;
+    private boolean mGotRecording;
 
     @Override
     protected void inflateActivity() {
@@ -47,10 +45,13 @@ public class RecorderActivity extends TestInputActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mRecordButton = (Button) findViewById(R.id.button_start_recording);
+        mStopButton = (Button) findViewById(R.id.button_stop_record_play);
         mPlayButton = (Button) findViewById(R.id.button_start_playback);
         mShareButton = (Button) findViewById(R.id.button_share);
-        mPlayButton.setEnabled(false);
-        mShareButton.setEnabled(false);
+        mRecorderState = AUDIO_STATE_STOPPED;
+        mGotRecording = false;
+        updateButtons();
     }
 
     @Override
@@ -60,23 +61,35 @@ public class RecorderActivity extends TestInputActivity {
     }
 
     public void onStartRecording(View view) {
-        openAudio();
-        startAudio();
-        mRecorderState = STATE_RECORDING;
-
+        try {
+            openAudio();
+            startAudio();
+            mRecorderState = STATE_RECORDING;
+            mGotRecording = true;
+            updateButtons();
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
     }
 
     public void onStopRecordPlay(View view) {
         stopAudio();
         closeAudio();
-        mRecorderState = STATE_STOPPED;
-        mPlayButton.setEnabled(true);
-        mShareButton.setEnabled(true);
+        mRecorderState = AUDIO_STATE_STOPPED;
+        updateButtons();
     }
 
     public void onStartPlayback(View view) {
         startPlayback();
         mRecorderState = STATE_PLAYING;
+        updateButtons();
+    }
+
+    private void updateButtons() {
+        mRecordButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED);
+        mStopButton.setEnabled(mRecorderState != AUDIO_STATE_STOPPED);
+        mPlayButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED && mGotRecording);
+        mShareButton.setEnabled(mRecorderState == AUDIO_STATE_STOPPED && mGotRecording);
     }
 
     public void startPlayback() {
@@ -88,46 +101,11 @@ public class RecorderActivity extends TestInputActivity {
             e.printStackTrace();
             showErrorToast(e.getMessage());
         }
-
     }
 
-    protected int saveWaveFile(File file) {
-        // Pass filename to native to write WAV file
-        int result = saveWaveFile(file.getAbsolutePath());
-        if (result < 0) {
-            showErrorToast("Save returned " + result);
-        } else {
-            showToast("Saved " + result + " bytes.");
-        }
-        return result;
+    @Override
+    String getWaveTag() {
+        return "recording";
     }
 
-    @NonNull
-    private File createFileName() {
-        // Get directory and filename
-        File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        return new File(dir, "oboe_recording.wav");
-    }
-
-    public void onShareFile(View view) {
-        shareWaveFile();
-    }
-
-    public void shareWaveFile() {
-        // Share text from log via GMail, Drive or other method.
-        File file = createFileName();
-        int result = saveWaveFile(file);
-        if (result > 0) {
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-            sharingIntent.setType("audio/wav");
-            String subjectText = "OboeTester recording at " + getTimestampString();
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
-            Uri uri = FileProvider.getUriForFile(this,
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    file);
-            sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(sharingIntent, "Share WAV using:"));
-        }
-    }
 }

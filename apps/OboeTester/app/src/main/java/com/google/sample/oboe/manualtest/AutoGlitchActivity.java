@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.sample.oboe.manualtest;
 
 import android.content.Intent;
@@ -5,12 +21,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class AutoGlitchActivity extends GlitchActivity implements Runnable {
@@ -23,7 +38,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     public static final String TEXT_FAIL = "FAIL !!!!";
 
     private TextView mAutoTextView;
-    private Button mButtonShare;
 
     private Thread mAutoThread;
     private volatile boolean mThreadEnabled = false;
@@ -31,7 +45,16 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     private int mDurationSeconds = DEFAULT_DURATION_SECONDS;
     private int mGapMillis = DEFAULT_GAP_MILLIS;
     private StringBuffer mFailedSummary;
+    private int mPassCount = 0;
+    private int mFailCount = 0;
     private Spinner mDurationSpinner;
+
+    // Test with these configurations.
+    private static final int[] PERFORMANCE_MODES = {
+            StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+            StreamConfiguration.PERFORMANCE_MODE_NONE
+    };
+    private static final int[] SAMPLE_RATES = { 48000, 44100, 16000 };
 
     private class DurationSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -55,10 +78,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mButtonShare = (Button) findViewById(R.id.button_share);
-        mButtonShare.setEnabled(false);
-
-        mAutoTextView = (TextView) findViewById(R.id.text_auto_result);
+        mAutoTextView = (TextView) findViewById(R.id.text_log);
         mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
 
         mDurationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);
@@ -75,16 +95,16 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             }
         });
     }
-
-    public void startAudioTest() {
+    private void logClear() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mButtonShare.setEnabled(false);
-                // Keep screen on because the test takes a while and sleep might cause glitches.
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                mAutoTextView.setText("");
             }
         });
+    }
+
+    public void startAudioTest() {
         mThreadEnabled = true;
         mAutoThread = new Thread(this);
         mAutoThread.start();
@@ -93,8 +113,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     // Only call from UI thread.
     @Override
     public void onTestFinished() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mButtonShare.setEnabled(true);
         super.onTestFinished();
     }
 
@@ -110,21 +128,6 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             e.printStackTrace();
         }
     }
-
-    // Parameters to be tested.
-    private static final int[] PERF_MODES = {
-        StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-        StreamConfiguration.PERFORMANCE_MODE_NONE
-    };
-
-    private static final int[] SHARING_MODES = {
-        StreamConfiguration.SHARING_MODE_EXCLUSIVE,
-        StreamConfiguration.SHARING_MODE_SHARED
-    };
-
-    private static final int[] CHANNEL_COUNTS = {1, 2};
-
-    private static final int[] SAMPLE_RATES = {48000, 44100};
 
     // Share text from log via GMail, Drive or other method.
     public void onShareResult(View view) {
@@ -149,125 +152,164 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
                 + ", ch = " + config.getChannelCount();
     }
 
-    private void testConfiguration(StreamConfiguration requestedConfig,
-                                    StreamConfiguration actualConfig) throws InterruptedException {
-        int perfMode = requestedConfig.getPerformanceMode();
-        int sharingMode = requestedConfig.getSharingMode();
-        if ((perfMode != StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY)
-                && (sharingMode == StreamConfiguration.SHARING_MODE_EXCLUSIVE)) {
-            return;
+    private void testConfiguration(int perfMode,
+                                   int sharingMode,
+                                   int sampleRate,
+                                   int inChannels,
+                                   int outChannels) throws InterruptedException {
+
+        // Configure settings
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
+
+        requestedInConfig.reset();
+        requestedOutConfig.reset();
+
+        requestedInConfig.setPerformanceMode(perfMode);
+        requestedOutConfig.setPerformanceMode(perfMode);
+
+        requestedInConfig.setSharingMode(sharingMode);
+        requestedOutConfig.setSharingMode(sharingMode);
+
+        requestedInConfig.setSampleRate(sampleRate);
+        requestedOutConfig.setSampleRate(sampleRate);
+
+        requestedInConfig.setChannelCount(inChannels);
+        requestedOutConfig.setChannelCount(outChannels);
+
+        log("========================== #" + mTestCount);
+        log("Requested:");
+        log(getConfigText(requestedInConfig));
+        log(getConfigText(requestedOutConfig));
+
+        // Give previous stream time to close and release resources. Avoid race conditions.
+        Thread.sleep(1000);
+        boolean openFailed = false;
+        try {
+            super.startAudioTest(); // this will fill in actualConfig
+            log("Actual:");
+            log(getConfigText(actualInConfig));
+            log(getConfigText(actualOutConfig));
+            // Set output size to a level that will avoid glitches.
+            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
+            int sizeFrames = stream.getBufferCapacityInFrames() / 2;
+            stream.setBufferSizeInFrames(sizeFrames);
+        } catch (IOException e) {
+            openFailed = true;
+            log(e.getMessage());
         }
-        log("------------------ #" + mTestCount++);
-        String configText = getConfigText(requestedConfig);
-        log(configText);
-        super.startAudioTest(); // this will fill in actualConfig
 
-        // Set output size to a level that will avoit glitches.
-        int sizeFrames = mAudioOutTester.getCurrentAudioStream().getBufferCapacityInFrames() / 2;
-        mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
-
-        // The test would only be valid if we got the configuration we requested.
+        // The test would only be worth running if we got the configuration we requested on input or output.
         boolean valid = true;
-        int actualPerfMode = actualConfig.getPerformanceMode();
-        if (actualPerfMode != perfMode) {
-            log("actual perf mode = "
-                    + StreamConfiguration.convertPerformanceModeToText(actualPerfMode));
+        // No point running the test if we don't get the sharing mode we requested.
+        if (!openFailed && actualInConfig.getSharingMode() != sharingMode
+                && actualOutConfig.getSharingMode() != sharingMode) {
+            log("did not get requested sharing mode");
             valid = false;
         }
-        int actualSharingMode = actualConfig.getSharingMode();
-        if (actualSharingMode != sharingMode) {
-            log("actual sharing mode = "
-                    + StreamConfiguration.convertSharingModeToText(actualSharingMode));
-            valid = false;
-        }
+        // We don't skip based on performance mode because if you request LOW_LATENCY you might
+        // get a smaller burst than if you request NONE.
 
-        if (valid) {
+        if (!openFailed && valid) {
             Thread.sleep(mDurationSeconds * 1000);
         }
+        int inXRuns = 0;
+        int outXRuns = 0;
 
-        int inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
-        int outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
+        if (!openFailed) {
+            // get xRuns before closing the streams.
+            inXRuns = mAudioInputTester.getCurrentAudioStream().getXRunCount();
+            outXRuns = mAudioOutTester.getCurrentAudioStream().getXRunCount();
 
-        super.stopAudioTest();
+            super.stopAudioTest();
+        }
+
         if (valid) {
-            boolean passed = (getMaxSecondsWithNoGlitch()
-                    > (mDurationSeconds - SETUP_TIME_SECONDS));
-            String resultText = "#gl = " + getLastGlitchCount()
-                    + ", time no gl = " + getMaxSecondsWithNoGlitch()
-                    + ", xruns = " + inXRuns + "/" + outXRuns;
-            log(resultText + ", " + (passed ? TEXT_PASS : TEXT_FAIL)
-            );
-            if (!passed) {
-                mFailedSummary.append("  ");
-                mFailedSummary.append(configText);
+            if (openFailed) {
+                mFailedSummary.append("------ #" + mTestCount);
                 mFailedSummary.append("\n");
-                mFailedSummary.append("    ");
-                mFailedSummary.append(resultText);
+                mFailedSummary.append(getConfigText(requestedInConfig));
                 mFailedSummary.append("\n");
+                mFailedSummary.append(getConfigText(requestedOutConfig));
+                mFailedSummary.append("\n");
+                mFailedSummary.append("Open failed!\n");
+                mFailCount++;
+            } else {
+                log("Result:");
+                boolean passed = (getMaxSecondsWithNoGlitch()
+                        > (mDurationSeconds - SETUP_TIME_SECONDS));
+                String resultText = getShortReport();
+                resultText += ", xruns = " + inXRuns + "/" + outXRuns;
+                resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+                log(resultText);
+                if (!passed) {
+                    mFailedSummary.append("------ #" + mTestCount);
+                    mFailedSummary.append("\n");
+                    mFailedSummary.append("  ");
+                    mFailedSummary.append(getConfigText(actualInConfig));
+                    mFailedSummary.append("\n");
+                    mFailedSummary.append("    ");
+                    mFailedSummary.append(resultText);
+                    mFailedSummary.append("\n");
+                    mFailCount++;
+                } else {
+                    mPassCount++;
+                }
             }
         } else {
             log(TEXT_SKIP);
         }
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
+        mTestCount++;
     }
 
-    private void testCombinations(StreamConfiguration requestedConfig,
-                                    StreamConfiguration actualConfig) throws InterruptedException {
-         for (int perfMode : PERF_MODES) {
-            for (int sharingMode : SHARING_MODES) {
-                for (int channelCount : CHANNEL_COUNTS) {
-                    if (!mThreadEnabled) return;
-
-                    requestedConfig.setPerformanceMode(perfMode);
-                    requestedConfig.setSharingMode(sharingMode);
-                    requestedConfig.setChannelCount(channelCount);
-
-                    testConfiguration(requestedConfig, actualConfig);
-                }
-            }
-        }
+    private void testConfiguration(int performanceMode,
+                                   int sharingMode,
+                                   int sampleRate) throws InterruptedException {
+        testConfiguration(performanceMode,
+                sharingMode,
+                sampleRate, 1, 2);
+        testConfiguration(performanceMode,
+                sharingMode,
+                sampleRate, 2, 1);
     }
+
 
     @Override
     public void run() {
+        logClear();
         log("=== STARTED at " + new Date());
         log(Build.MANUFACTURER + " " + Build.PRODUCT);
         log(Build.DISPLAY);
         mFailedSummary = new StringBuffer();
         mTestCount = 0;
+        mPassCount = 0;
+        mFailCount = 0;
         try {
-            // Configure settings
-            StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-            StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-            StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
-            StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
+            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_EXCLUSIVE,
+                    0);
+            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_SHARED,
+                    0);
 
-            for (int sampleRate : SAMPLE_RATES) {
-                // Sample rates must match.
-                requestedOutConfig.setSampleRate(sampleRate);
-                requestedInConfig.setSampleRate(sampleRate);
-
-                // Use optimal input configuration while testing for output glitches.
-                requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
-                requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
-                log("===========================");
-                log(getConfigText(requestedInConfig));
-                testCombinations(requestedOutConfig, actualOutConfig);
-
-                // Use optimal output configuration while testing for input glitches.
-                requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
-                requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_EXCLUSIVE);
-                log("===========================");
-                log(getConfigText(requestedOutConfig));
-                testCombinations(requestedInConfig, actualInConfig);
+            for (int perfMode : PERFORMANCE_MODES) {
+                for (int sampleRate : SAMPLE_RATES) {
+                    testConfiguration(perfMode,
+                            StreamConfiguration.SHARING_MODE_SHARED,
+                            sampleRate);
+                }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             super.stopAudioTest();
             log("\n==== SUMMARY ========");
-            if (mFailedSummary.length() > 0) {
+            if (mFailCount > 0) {
+                log(mPassCount + " passed. " + mFailCount + " failed.");
                 log("These tests FAILED:");
                 log(mFailedSummary.toString());
             } else {
@@ -282,4 +324,5 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             });
         }
     }
+
 }

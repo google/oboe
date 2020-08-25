@@ -17,17 +17,24 @@
 package com.google.sample.oboe.manualtest;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Select various Audio tests.
@@ -35,20 +42,32 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+    private static final String KEY_TEST_NAME = "test";
+    public static final String VALUE_TEST_NAME_LATENCY = "latency";
+    public static final String VALUE_TEST_NAME_GLITCH = "glitch";
+
     static {
         // Must match name in CMakeLists.txt
         System.loadLibrary("oboetester");
     }
 
+
     private Spinner mModeSpinner;
     private TextView mCallbackSizeTextView;
     protected TextView mDeviceView;
     private TextView mVersionTextView;
+    private TextView mBuildTextView;
+    private TextView mBluetoothScoStatusView;
+    private Bundle mBundleFromIntent;
+    private BroadcastReceiver mScoStateReceiver;
+    private CheckBox mWorkaroundsCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        logScreenSize();
 
         mVersionTextView = (TextView) findViewById(R.id.versionText);
         mCallbackSizeTextView = (TextView) findViewById(R.id.callbackSize);
@@ -73,12 +92,101 @@ public class MainActivity extends Activity {
 
         try {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            int versionCode = pinfo.versionCode;
-            String versionName = pinfo.versionName;
-            mVersionTextView.setText("V# = " + versionCode + ", name = " + versionName);
+            int oboeVersion = OboeAudioStream.getOboeVersionNumber();
+            int oboeMajor = (oboeVersion >> 24) & 0xFF;
+            int oboeMinor = (oboeVersion >> 16) & 0xFF;
+            int oboePatch = oboeVersion & 0xFF;
+            mVersionTextView.setText("Test v (" + pinfo.versionCode + ") " + pinfo.versionName
+                    + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch);
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
+
+        mWorkaroundsCheckBox = (CheckBox) findViewById(R.id.boxEnableWorkarounds);
+        // Turn off workarounds so we can test the underlying API bugs.
+        NativeEngine.setWorkaroundsEnabled(false);
+
+        mBuildTextView = (TextView) findViewById(R.id.text_build_info);
+        mBuildTextView.setText(Build.DISPLAY);
+
+        mBluetoothScoStatusView = (TextView) findViewById(R.id.textBluetoothScoStatus);
+        mScoStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+                if (state == AudioManager.SCO_AUDIO_STATE_CONNECTING) {
+                    mBluetoothScoStatusView.setText("CONNECTING");
+                } else if (state == AudioManager.SCO_AUDIO_STATE_CONNECTED) {
+                    mBluetoothScoStatusView.setText("CONNECTED");
+                } else if (state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) {
+                    mBluetoothScoStatusView.setText("DISCONNECTED");
+                }
+            }
+        };
+
+        saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    private void registerScoStateReceiver() {
+        registerReceiver(mScoStateReceiver,
+                new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+    }
+
+    private void unregisterScoStateReceiver() {
+        unregisterReceiver(mScoStateReceiver);
+    }
+
+    private void logScreenSize() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        Log.i(TestAudioActivity.TAG, "Screen size = " + size.x + " * " + size.y);
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        saveIntentBundleForLaterProcessing(intent);
+    }
+
+    // This will get processed during onResume.
+    private void saveIntentBundleForLaterProcessing(Intent intent) {
+        mBundleFromIntent = intent.getExtras();
+    }
+
+    private void processBundleFromIntent() {
+        if (mBundleFromIntent == null) {
+            return;
+        }
+
+        if (mBundleFromIntent.containsKey(KEY_TEST_NAME)) {
+            String testName = mBundleFromIntent.getString(KEY_TEST_NAME);
+            if (VALUE_TEST_NAME_LATENCY.equals(testName)) {
+                Intent intent = new Intent(this, RoundTripLatencyActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
+            } else if (VALUE_TEST_NAME_GLITCH.equals(testName)) {
+                Intent intent = new Intent(this, ManualGlitchActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
+            }
+        }
+        mBundleFromIntent = null;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mWorkaroundsCheckBox.setChecked(NativeEngine.areWorkaroundsEnabled());
+        processBundleFromIntent();
+        registerScoStateReceiver();
+    }
+
+    @Override
+    public void onPause(){
+        unregisterScoStateReceiver();
+        super.onPause();
     }
 
     private void updateNativeAudioUI() {
@@ -137,15 +245,42 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void onLaunchTestDisconnect(View view) {
+        updateCallbackSize();
+        Intent intent = new Intent(this, TestDisconnectActivity.class);
+        startActivity(intent);
+    }
+
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());
     }
 
+    protected void showErrorToast(String message) {
+        showToast("Error: " + message);
+    }
+
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void updateCallbackSize() {
         CharSequence chars = mCallbackSizeTextView.getText();
         String text = chars.toString();
-        int callbackSize = Integer.parseInt(text);
+        int callbackSize = 0;
+        try {
+            callbackSize = Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            showErrorToast("Badly formated callback size: " + text);
+            mCallbackSizeTextView.setText("0");
+        }
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 
@@ -156,4 +291,19 @@ public class MainActivity extends Activity {
         myAudioMgr.setSpeakerphoneOn(enabled);
     }
 
+    public void onStartStopBluetoothSco(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (checkBox.isChecked()) {
+            myAudioMgr.startBluetoothSco();
+        } else {
+            myAudioMgr.stopBluetoothSco();
+        }
+    }
+
+    public void onEnableWorkarounds(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        boolean enabled = checkBox.isChecked();
+        NativeEngine.setWorkaroundsEnabled(enabled);
+    }
 }

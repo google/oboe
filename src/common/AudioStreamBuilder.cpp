@@ -17,12 +17,16 @@
 #include <sys/types.h>
 
 #include "aaudio/AudioStreamAAudio.h"
+#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "opensles/AudioInputStreamOpenSLES.h"
 #include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
+#include "QuirksManager.h"
+
+bool oboe::OboeGlobals::mWorkaroundsEnabled = true;
 
 namespace oboe {
 
@@ -60,12 +64,11 @@ bool AudioStreamBuilder::isAAudioRecommended() {
 
 AudioStream *AudioStreamBuilder::build() {
     AudioStream *stream = nullptr;
-    if (mAudioApi == AudioApi::AAudio && isAAudioSupported()) {
+    if (isAAudioRecommended() && mAudioApi != AudioApi::OpenSLES) {
         stream = new AudioStreamAAudio(*this);
-
-    // If unspecified, only use AAudio if recommended.
-    } else if (mAudioApi == AudioApi::Unspecified && isAAudioRecommended()) {
+    } else if (isAAudioSupported() && mAudioApi == AudioApi::AAudio) {
         stream = new AudioStreamAAudio(*this);
+        LOGE("Creating AAudio stream on 8.0 because it was specified. This is error prone.");
     } else {
         if (getDirection() == oboe::Direction::Output) {
             stream = new AudioOutputStreamOpenSLES(*this);
@@ -76,35 +79,121 @@ AudioStream *AudioStreamBuilder::build() {
     return stream;
 }
 
+bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
+    return getSampleRate() == other.getSampleRate()
+           && getFormat() == other.getFormat()
+           && getChannelCount() == other.getChannelCount();
+}
+
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
-    LOGD("%s() %s -------- Oboe version " OBOE_VERSION_TEXT " --------",
-         __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT");
+    Result result = Result::OK;
+    LOGI("%s() %s -------- %s --------",
+         __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
 
     if (streamPP == nullptr) {
         return Result::ErrorNull;
     }
     *streamPP = nullptr;
-    AudioStream *streamP = build();
-    if (streamP == nullptr) {
-        return Result::ErrorNull;
+
+    AudioStream *streamP = nullptr;
+
+    // Maybe make a FilterInputStream.
+    AudioStreamBuilder childBuilder(*this);
+    // Check need for conversion and modify childBuilder for optimal stream.
+    bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
+    // Do we need to make a child stream and convert.
+    if (conversionNeeded) {
+        AudioStream *tempStream;
+
+        result = childBuilder.openStream(&tempStream);
+        if (result != Result::OK) {
+            return result;
+        }
+
+        if (isCompatible(*tempStream)) {
+            // Everything matches so we can just use the child stream directly.
+            *streamPP = tempStream;
+            return result;
+        } else {
+            AudioStreamBuilder parentBuilder = *this;
+            // Build a stream that is as close as possible to the childStream.
+            if (getFormat() == oboe::AudioFormat::Unspecified) {
+                parentBuilder.setFormat(tempStream->getFormat());
+            }
+            if (getChannelCount() == oboe::Unspecified) {
+                parentBuilder.setChannelCount(tempStream->getChannelCount());
+            }
+            if (getSampleRate() == oboe::Unspecified) {
+                parentBuilder.setSampleRate(tempStream->getSampleRate());
+            }
+
+            // Use childStream in a FilterAudioStream.
+            LOGI("%s() create a FilterAudioStream for data conversion.", __func__);
+            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
+            result = filterStream->configureFlowGraph();
+            if (result !=  Result::OK) {
+                filterStream->close();
+                delete filterStream;
+                // Just open streamP the old way.
+            } else {
+                streamP = static_cast<AudioStream *>(filterStream);
+            }
+        }
     }
-    Result result = streamP->open(); // TODO review API
+
+    if (streamP == nullptr) {
+        streamP = build();
+        if (streamP == nullptr) {
+            return Result::ErrorNull;
+        }
+    }
+
+    result = streamP->open(); // TODO review API
     if (result == Result::OK) {
 
-        // Use a reasonable default buffer size for low latency streams.
-        if (streamP->getPerformanceMode() == PerformanceMode::LowLatency){
-            int32_t optimalBufferSize = streamP->getFramesPerBurst() *
-                                        kBufferSizeInBurstsForLowLatencyStreams;
+        int32_t  optimalBufferSize = -1;
+        // Use a reasonable default buffer size.
+        if (streamP->getDirection() == Direction::Input) {
+            // For input, small size does not improve latency because the stream is usually
+            // run close to empty. And a low size can result in XRuns so always use the maximum.
+            optimalBufferSize = streamP->getBufferCapacityInFrames();
+        } else if (streamP->getPerformanceMode() == PerformanceMode::LowLatency
+                && streamP->getDirection() == Direction::Output)  { // Output check is redundant.
+            optimalBufferSize = streamP->getFramesPerBurst() *
+                                    kBufferSizeInBurstsForLowLatencyStreams;
+        }
+        if (optimalBufferSize >= 0) {
             auto setBufferResult = streamP->setBufferSizeInFrames(optimalBufferSize);
-            if (!setBufferResult){
-                LOGW("Failed to set buffer size to %d. Error was %s",
+            if (!setBufferResult) {
+                LOGW("Failed to setBufferSizeInFrames(%d). Error was %s",
                      optimalBufferSize,
                      convertToText(setBufferResult.error()));
             }
         }
+
         *streamPP = streamP;
     } else {
         delete streamP;
+    }
+    return result;
+}
+
+Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
+    stream.reset();
+    AudioStream *streamptr;
+    auto result = openStream(&streamptr);
+    stream.reset(streamptr);
+    return result;
+}
+
+Result AudioStreamBuilder::openStream(std::shared_ptr<AudioStream> &sharedStream) {
+    sharedStream.reset();
+    AudioStream *streamptr;
+    auto result = openStream(&streamptr);
+    if (result == Result::OK) {
+        sharedStream.reset(streamptr);
+        // Save a weak_ptr in the stream for use with callbacks.
+        streamptr->setWeakThis(sharedStream);
     }
     return result;
 }

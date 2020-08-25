@@ -18,7 +18,7 @@
 #define OBOE_STREAM_BUFFERED_H
 
 #include <cstring>
-#include <assert.h>
+#include <cassert>
 #include "common/OboeDebug.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamCallback.h"
@@ -47,8 +47,6 @@ public:
 
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override;
 
-    int32_t getBufferSizeInFrames() override;
-
     int32_t getBufferCapacityInFrames() const override;
 
     ResultWithValue<int32_t> getXRunCount() const override {
@@ -64,7 +62,7 @@ protected:
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
     bool usingFIFO() const { return getCallback() == nullptr; }
 
-    virtual Result updateServiceFrameCounter() { return Result::OK; }
+    virtual Result updateServiceFrameCounter() = 0;
 
     void updateFramesRead() override;
     void updateFramesWritten() override;
@@ -73,13 +71,13 @@ private:
 
     int64_t predictNextCallbackTime();
 
-    void markCallbackTime(int numFrames);
+    void markCallbackTime(int32_t numFrames);
 
     // Read or write to the FIFO.
     ResultWithValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
 
     void incrementXRunCount() {
-        mXRunCount++;
+        ++mXRunCount;
     }
 
     std::unique_ptr<FifoBuffer>   mFifoBuffer{};

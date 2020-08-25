@@ -58,7 +58,7 @@ AudioInputStreamOpenSLES::~AudioInputStreamOpenSLES() {
 }
 
 // Calculate masks specific to INPUT streams.
-SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
+SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) const {
     // Derived from internal sles_channel_in_mask_from_count(chanCount);
     // in "frameworks/wilhelm/src/android/channels.cpp".
     // Yes, it seems strange to use SPEAKER constants to describe inputs.
@@ -74,6 +74,8 @@ SLuint32 AudioInputStreamOpenSLES::channelCountToChannelMask(int channelCount) {
 }
 
 Result AudioInputStreamOpenSLES::open() {
+    logUnsupportedAttributes();
+
     SLAndroidConfigurationItf configItf = nullptr;
 
     if (getSdkVersion() < __ANDROID_API_M__ && mFormat == AudioFormat::Float){
@@ -92,7 +94,7 @@ Result AudioInputStreamOpenSLES::open() {
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult) return oboeResult;
 
-    SLuint32 bitsPerSample = getBytesPerSample() * kBitsPerByte;
+    SLuint32 bitsPerSample = static_cast<SLuint32>(getBytesPerSample() * kBitsPerByte);
 
     // configure audio sink
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -196,12 +198,17 @@ Result AudioInputStreamOpenSLES::open() {
         goto error;
     }
 
+    oboeResult = configureBufferSizes(mSampleRate);
+    if (Result::OK != oboeResult) {
+        goto error;
+    }
+
     allocateFifo();
 
     setState(StreamState::Open);
     return Result::OK;
 
-    error:
+error:
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }
 
@@ -216,7 +223,7 @@ Result AudioInputStreamOpenSLES::close() {
         requestStop();
         mLock.lock();
         // invalidate any interfaces
-        mRecordInterface = NULL;
+        mRecordInterface = nullptr;
         result = AudioStreamOpenSLES::close();
     }
     mLock.unlock(); // avoid recursive lock
@@ -224,7 +231,7 @@ Result AudioInputStreamOpenSLES::close() {
 }
 
 Result AudioInputStreamOpenSLES::setRecordState_l(SLuint32 newState) {
-    LOGD("AudioInputStreamOpenSLES::%s(%d)", __func__, newState);
+    LOGD("AudioInputStreamOpenSLES::%s(%u)", __func__, newState);
     Result result = Result::OK;
 
     if (mRecordInterface == nullptr) {
@@ -232,8 +239,10 @@ Result AudioInputStreamOpenSLES::setRecordState_l(SLuint32 newState) {
         return Result::ErrorInvalidState;
     }
     SLresult slResult = (*mRecordInterface)->SetRecordState(mRecordInterface, newState);
+    //LOGD("AudioInputStreamOpenSLES::%s(%u) returned %u", __func__, newState, slResult);
     if (SL_RESULT_SUCCESS != slResult) {
-        LOGE("AudioInputStreamOpenSLES::%s() returned %s", __func__, getSLErrStr(slResult));
+        LOGE("AudioInputStreamOpenSLES::%s(%u) returned error %s",
+                __func__, newState, getSLErrStr(slResult));
         result = Result::ErrorInternal; // TODO review
     }
     return result;
@@ -324,14 +333,14 @@ Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
     // and this is being called from a callback.
     if (mLock.try_lock()) {
 
-        if (mRecordInterface == NULL) {
+        if (mRecordInterface == nullptr) {
             mLock.unlock();
             return Result::ErrorNull;
         }
         SLmillisecond msec = 0;
         SLresult slResult = (*mRecordInterface)->GetPosition(mRecordInterface, &msec);
         if (SL_RESULT_SUCCESS != slResult) {
-            LOGD("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
+            LOGW("%s(): GetPosition() returned %s", __func__, getSLErrStr(slResult));
             // set result based on SLresult
             result = Result::ErrorInternal;
         } else {

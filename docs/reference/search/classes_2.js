@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['latencytuner',['LatencyTuner',['../classoboe_1_1_latency_tuner.html',1,'oboe']]]
+  ['frametimestamp',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]]
 ];

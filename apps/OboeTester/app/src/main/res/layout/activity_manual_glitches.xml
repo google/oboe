@@ -17,6 +17,12 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
+    <com.google.sample.oboe.manualtest.InputMarginView
+        android:id="@+id/input_margin_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
     <com.google.sample.oboe.manualtest.StreamConfigurationView
         android:id="@+id/outputStreamConfiguration"
         android:layout_width="match_parent"
@@ -30,6 +36,25 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textTolerance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tolerance" />
+
+        <SeekBar
+            android:id="@+id/faderTolerance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="1000"
+            android:progress="1000" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,16 +75,30 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onStopAudioTest"
-            android:text="@string/stopAudio" />
+            android:text="@string/stopAudio"
+            />
+
+        <Button
+            android:id="@+id/button_share"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:onClick="onShareFile"
+            android:text="@string/share"
+            />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/text_analyzer_result"
+        android:id="@+id/text_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="8"
+        android:lines="11"
         android:text="@string/use_loopback"
-        android:textSize="18sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
+    <com.google.sample.oboe.manualtest.WaveformView
+        android:id="@+id/waveview_audio"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 </LinearLayout>

@@ -13,6 +13,12 @@
             android:clickable="true"
             android:text="@string/hint_hide_settings" />
 
+    <LinearLayout
+        android:id="@+id/hideableView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
         <TableLayout
             android:id="@+id/optionTable"
             android:layout_width="wrap_content"
@@ -36,6 +42,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="\?" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device: " />
+
+                <com.google.sample.audio_device.AudioDeviceSpinner
+                    android:id="@+id/devices_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
             </TableRow>
 
             <TableRow>
@@ -125,61 +147,119 @@
                     android:text="\?" />
 
             </TableRow>
+
             <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:id="@+id/rowInputPreset">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device: " />
+                    android:text="@string/input_preset_prompt"/>
 
-                <com.google.sample.audio_device.AudioDeviceSpinner
-                    android:id="@+id/devices_spinner"
+                <Spinner
+                    android:id="@+id/spinnerInputPreset"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:entries="@array/audio_input_presets" />
+
+                <TextView
+                    android:id="@+id/actualInputPreset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
 
             </TableRow>
         </TableLayout>
 
-        <TableLayout
-            android:id="@+id/flagTable"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:shrinkColumns="*"
-            >
-            <TableRow>
+            android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/requestedMMapEnable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8sp"
+                    android:text="MMAP" />
+
+                <TextView
+                    android:id="@+id/actualMMap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="12sp"
+                    android:text="\?" />
 
                 <CheckBox
                     android:id="@+id/requestedExclusiveMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="30sp"
+                    android:layout_marginRight="8sp"
                     android:text="Exclusive" />
 
                 <TextView
                     android:id="@+id/actualExclusiveMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginRight="15sp"
                     android:text="\?" />
 
+        </LinearLayout>
 
-                <CheckBox
-                    android:id="@+id/requestAudioEffect"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="30sp"
-                    android:text="Effect" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/sessionId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="\?" />
+            <CheckBox
+                android:id="@+id/requestAudioEffect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10sp"
+                android:text="Effect" />
 
-            </TableRow>
+            <TextView
+                android:id="@+id/sessionId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\?" />
 
-        </TableLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Convert:" />
+            <CheckBox
+                android:id="@+id/checkChannelConversion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chan, " />
+            <CheckBox
+                android:id="@+id/checkFormatConversion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Format, " />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/src_prompt" />
+            <Spinner
+                android:id="@+id/spinnerSRCQuality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/conversion_qualities"
+                android:prompt="@string/src_prompt" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 
         <TextView

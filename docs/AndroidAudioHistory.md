@@ -1,14 +1,18 @@
 Android audio history
 ===
 
-A list of important audio features, bugs, fixes and workarounds for various Android versions. 
+A list of important audio features, bugs, fixes and workarounds for various Android versions. [(List of all Android Versions)](https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels)
+
+### 10.0 Q - API 29
+- Fixed: Setting capacity of Legacy input streams < 4096 can prevent use of FAST path. https://github.com/google/oboe/issues/183. also ag/7116429
+- Add InputPreset:VoicePerformance for low latency recording.
 
 ### 9.0 Pie - API 28 (August 6, 2018)
 - AAudio adds support for setUsage(), setSessionId(), setContentType(), setInputPreset() for builders.
 - Regression bug: [AAudio] Headphone disconnect event not fired for MMAP streams. https://github.com/google/oboe/issues/252
 - AAudio input streams with LOW_LATENCY will open a FAST path using INT16 and convert the data to FLOAT if needed. See: https://github.com/google/oboe/issues/276
 
-### 8.1 Oreo MR1 - API 27 
+### 8.1 Oreo MR1 - API 27
 - Oboe uses AAudio by default.
 - AAudio MMAP data path enabled on Pixel devices. PerformanceMode::Exclusive supported.
 - Fixed: [AAudio] RefBase issue
@@ -29,6 +33,7 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 ### 6.0 Marshmallow - API 23 (October 5, 2015)
 - Floating point recording supported. But it does not allow a FAST "low latency" path.
 - [MIDI API introduced](https://developer.android.com/reference/android/media/midi/package-summary)
+- Sound output is broken on the API 23 emulator
 
 ### 5.0 Lollipop - API 21 (November 12, 2014)
 - Floating point playback supported.

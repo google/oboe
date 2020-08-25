@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['voicecommunication',['VoiceCommunication',['../namespaceoboe.html#a17f63a064de966efddd5d0335992bc04a1862e72c9730c448fbec6f61a5d8234d',1,'oboe::VoiceCommunication()'],['../namespaceoboe.html#a17f63a064de966efddd5d0335992bc04a5bad8854288c956062ec1d4d7c14fed6',1,'oboe::VoiceCommunication()']]],
-  ['voicecommunicationsignalling',['VoiceCommunicationSignalling',['../namespaceoboe.html#a1b2a1bdc891d640eb82724dcd9b7afbba404f62633744bf4da0c6a27a2b78ce74',1,'oboe']]],
-  ['voicerecognition',['VoiceRecognition',['../namespaceoboe.html#a17f63a064de966efddd5d0335992bc04af6e440b4e9edf49afe18aa4be77be6fc',1,'oboe']]]
+  ['unprocessed',['Unprocessed',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f',1,'oboe']]],
+  ['unspecified',['Unspecified',['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76',1,'oboe::Unspecified()'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a6fcdc090caeade09d0efd6253932b6f5',1,'oboe::Unspecified()'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029a6fcdc090caeade09d0efd6253932b6f5',1,'oboe::Unspecified()']]]
 ];

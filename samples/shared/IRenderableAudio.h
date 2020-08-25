@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef MEGADRONE_RENDERABLEAUDIO_H
-#define MEGADRONE_RENDERABLEAUDIO_H
+#ifndef SAMPLES_IRENDERABLEAUDIO_H
+#define SAMPLES_IRENDERABLEAUDIO_H
 
 #include <cstdint>
 #include <string>
@@ -28,4 +28,4 @@ public:
 };
 
 
-#endif //MEGADRONE_RENDERABLEAUDIO_H
+#endif //SAMPLES_IRENDERABLEAUDIO_H

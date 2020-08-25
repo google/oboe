@@ -34,7 +34,7 @@ public:
     AudioOutputStreamOpenSLES();
     explicit AudioOutputStreamOpenSLES(const AudioStreamBuilder &builder);
 
-    virtual ~AudioOutputStreamOpenSLES();
+    virtual ~AudioOutputStreamOpenSLES() = default;
 
     Result open() override;
     Result close() override;
@@ -54,7 +54,7 @@ protected:
 
 private:
 
-    SLuint32 channelCountToChannelMask(int chanCount);
+    SLuint32 channelCountToChannelMask(int chanCount) const;
 
     Result onAfterDestroy() override;
 

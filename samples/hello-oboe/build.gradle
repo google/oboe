@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId 'com.google.sample.oboe.hellooboe'
+        applicationId 'com.google.oboe.samples.hellooboe'
         minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
@@ -27,7 +27,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path 'CMakeLists.txt'
+            path 'src/main/cpp/CMakeLists.txt'
         }
     }
 }

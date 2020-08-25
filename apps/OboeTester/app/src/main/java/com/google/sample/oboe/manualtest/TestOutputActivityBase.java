@@ -22,59 +22,44 @@ import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.google.sample.oboe.manualtest.R;
+import java.io.IOException;
 
 
 abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
 
-    protected TextView mTextAmplitude;
-    protected SeekBar mFaderAmplitude;
-    protected ExponentialTaper mTaperAmplitude;
     private BufferSizeView mBufferSizeView;
+    private WorkloadView mWorkloadView;
 
     @Override boolean isOutput() { return true; }
 
-    private SeekBar.OnSeekBarChangeListener mAmplitudeListener = new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            double amplitude = mTaperAmplitude.linearToExponential(progress);
-            mAudioOutTester.setAmplitude(amplitude);
-            mTextAmplitude.setText("Amplitude = " + amplitude);
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-        }
-    };
+    @Override
+    protected void resetConfiguration() {
+        super.resetConfiguration();
+        mAudioOutTester.reset();
+    }
 
     protected void findAudioCommon() {
         super.findAudioCommon();
-
         mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
-        mTextAmplitude = (TextView) findViewById(R.id.textAmplitude);
-        mFaderAmplitude = (SeekBar) findViewById(R.id.faderAmplitude);
-        mFaderAmplitude.setOnSeekBarChangeListener(mAmplitudeListener);
-        mTaperAmplitude = new ExponentialTaper(FADER_THRESHOLD_MAX, 0.0, 4.0, 100.0);
+        mWorkloadView = (WorkloadView) findViewById(R.id.workload_view);
     }
 
     @Override
     public AudioOutputTester addAudioOutputTester() {
         AudioOutputTester audioOutTester = super.addAudioOutputTester();
         mBufferSizeView.setAudioOutTester(audioOutTester);
+        mWorkloadView.setAudioStreamTester(audioOutTester);
         return audioOutTester;
     }
 
-    public void pauseAudio() {
-        super.pauseAudio();
-    }
 
-    public void stopAudio() {
-        super.stopAudio();
+    @Override
+    public void openAudio() throws IOException {
+        super.openAudio();
+        if (mBufferSizeView != null) {
+            mBufferSizeView.updateBufferSize();
+        }
     }
 
     // TODO Add editor

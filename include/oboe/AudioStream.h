@@ -42,6 +42,7 @@ constexpr int64_t kDefaultTimeoutNanos = (2000 * kNanosPerMillisecond);
  * Base class for Oboe C++ audio stream.
  */
 class AudioStream : public AudioStreamBase {
+    friend class AudioStreamBuilder; // allow access to setWeakThis() and lockWeakThis()
 public:
 
     AudioStream() {}
@@ -63,7 +64,9 @@ public:
      *
      * @return
      */
-    virtual Result open();
+    virtual Result open() {
+        return Result::OK; // Called by subclasses. Might do more in the future.
+    }
 
     /**
      * Close the stream and deallocate any resources from the open() call.
@@ -127,7 +130,7 @@ public:
      *
      * @return state or a negative error.
      */
-    virtual StreamState getState() = 0;
+    virtual StreamState getState() const = 0;
 
     /**
      * Wait until the stream's current state no longer matches the input state.
@@ -172,7 +175,7 @@ public:
     * @return the resulting buffer size in frames (obtained using value()) or an error (obtained
     * using error())
     */
-    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) {
+    virtual ResultWithValue<int32_t> setBufferSizeInFrames(int32_t /* requestedFrames  */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -275,13 +278,15 @@ public:
      * The time is based on the implementation's best effort, using whatever knowledge is available
      * to the system, but cannot account for any delay unknown to the implementation.
      *
+     * @deprecated since 1.0, use AudioStream::getTimestamp(clockid_t clockId) instead, which
+     * returns ResultWithValue
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @param framePosition the frame number to query
      * @param timeNanoseconds an output parameter which will contain the presentation timestamp
      */
-    virtual Result getTimestamp(clockid_t clockId,
-                                int64_t *framePosition,
-                                int64_t *timeNanoseconds) {
+    virtual Result getTimestamp(clockid_t /* clockId  */,
+                                int64_t* /* framePosition */,
+                                int64_t* /* timeNanoseconds */) {
         return Result::ErrorUnimplemented;
     }
 
@@ -300,9 +305,7 @@ public:
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
      */
-	virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId){
-        return Result::ErrorUnimplemented;
-    }
+    virtual ResultWithValue<FrameTimestamp> getTimestamp(clockid_t /* clockId */);
 
     // ============== I/O ===========================
     /**
@@ -317,9 +320,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually written, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> write(const void *buffer,
-                             int32_t numFrames,
-                             int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> write(const void* /* buffer */,
+                             int32_t /* numFrames */,
+                             int64_t /* timeoutNanoseconds */ ) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -335,9 +338,9 @@ public:
      * @return a ResultWithValue which has a result of Result::OK and a value containing the number
      * of frames actually read, or result of Result::Error*.
      */
-    virtual ResultWithValue<int32_t> read(void *buffer,
-                            int32_t numFrames,
-                            int64_t timeoutNanoseconds) {
+    virtual ResultWithValue<int32_t> read(void* /* buffer */,
+                            int32_t /* numFrames */,
+                            int64_t /* timeoutNanoseconds */) {
         return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
     }
 
@@ -374,7 +377,62 @@ public:
      */
     void launchStopThread();
 
+    /**
+     * Update mFramesWritten.
+     * For internal use only.
+     */
+    virtual void updateFramesWritten() = 0;
+
+    /**
+     * Update mFramesRead.
+     * For internal use only.
+     */
+    virtual void updateFramesRead() = 0;
+
+    /*
+     * Swap old callback for new callback.
+     * This not atomic.
+     * This should only be used internally.
+     * @param streamCallback
+     * @return previous streamCallback
+     */
+    AudioStreamCallback *swapCallback(AudioStreamCallback *streamCallback) {
+        AudioStreamCallback *previousCallback = mStreamCallback;
+        mStreamCallback = streamCallback;
+        return previousCallback;
+    }
+
+    /**
+     * @return number of frames of data currently in the buffer
+     */
+    ResultWithValue<int32_t> getAvailableFrames();
+
+    /**
+     * Wait until the stream has a minimum amount of data available in its buffer.
+     * This can be used with an EXCLUSIVE MMAP input stream to avoid reading data too close to
+     * the DSP write position, which may cause glitches.
+     *
+     * @param numFrames minimum frames available
+     * @param timeoutNanoseconds
+     * @return number of frames available, ErrorTimeout
+     */
+    ResultWithValue<int32_t> waitForAvailableFrames(int32_t numFrames,
+                                                    int64_t timeoutNanoseconds);
+
 protected:
+
+    /**
+     * This is used to detect more than one error callback from a stream.
+     * These were bugs in some versions of Android that caused multiple error callbacks.
+     * Internal bug b/63087953
+     *
+     * Calling this sets an atomic<bool> true and returns the previous value.
+     *
+     * @return false on first call, true on subsequent calls
+     */
+    bool wasErrorCallbackCalled() {
+        return mErrorCallbackCalled.exchange(true);
+    }
 
     /**
      * Wait for a transition from one state to another.
@@ -393,7 +451,7 @@ protected:
      * @param numFrames
      * @return result
      */
-    virtual DataCallbackResult onDefaultCallback(void *audioData, int numFrames) {
+    virtual DataCallbackResult onDefaultCallback(void* /* audioData  */, int /* numFrames */) {
         return DataCallbackResult::Stop;
     }
 
@@ -406,16 +464,6 @@ protected:
      *
      */
     DataCallbackResult fireDataCallback(void *audioData, int numFrames);
-
-    /**
-     * Update mFramesWritten.
-     */
-    virtual void updateFramesWritten() = 0;
-
-    /**
-     * Update mFramesRead.
-     */
-    virtual void updateFramesRead() = 0;
 
     /**
      * @return true if callbacks may be called
@@ -431,6 +479,23 @@ protected:
     void setDataCallbackEnabled(bool enabled) {
         mDataCallbackEnabled = enabled;
     }
+
+    /*
+     * Set a weak_ptr to this stream from the shared_ptr so that we can
+     * later use a shared_ptr in the error callback.
+     */
+    void setWeakThis(std::shared_ptr<oboe::AudioStream> &sharedStream) {
+        mWeakThis = sharedStream;
+    }
+
+    /*
+     * Make a shared_ptr that will prevent this stream from being deleted.
+     */
+    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
+        return mWeakThis.lock();
+    }
+
+    std::weak_ptr<AudioStream> mWeakThis; // weak pointer to this object
 
     /**
      * Number of frames which have been written into the stream
@@ -450,13 +515,29 @@ protected:
 
     std::mutex           mLock; // for synchronizing start/stop/close
 
+
 private:
+    // Log the scheduler if it changes.
+    void                 checkScheduler();
     int                  mPreviousScheduler = -1;
 
-    std::atomic<bool>    mDataCallbackEnabled{};
+    std::atomic<bool>    mDataCallbackEnabled{false};
+    std::atomic<bool>    mErrorCallbackCalled{false};
 
 };
 
+/**
+ * This struct is a stateless functor which closes an AudioStream prior to its deletion.
+ * This means it can be used to safely delete a smart pointer referring to an open stream.
+ */
+    struct StreamDeleterFunctor {
+        void operator()(AudioStream  *audioStream) {
+            if (audioStream) {
+                audioStream->close();
+            }
+            delete audioStream;
+        }
+    };
 } // namespace oboe
 
 #endif /* OBOE_STREAM_H_ */

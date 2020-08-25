@@ -34,18 +34,16 @@ package com.google.sample.oboe.manualtest;
  */
 
 public class ExponentialTaper {
-    private int mResolution;
     private double offset = 0.0;
     private double a = 1.0;
     private double b = 2.0;
     private static final double ROOT = 10.0; // because we are using log10
 
-    public ExponentialTaper(int res, double dmin, double dmax) {
-        this(res, dmin, dmax, 10000.0);
+    public ExponentialTaper(double dmin, double dmax) {
+        this(dmin, dmax, 10000.0);
     }
 
-    public ExponentialTaper(int res, double dmin, double dmax, double maxRatio) {
-        this.mResolution = res;
+    public ExponentialTaper(double dmin, double dmax, double maxRatio) {
         a = dmax;
         double curvature;
         if (dmax > dmin * maxRatio) {
@@ -59,9 +57,11 @@ public class ExponentialTaper {
         b = Math.log10(curvature);
     }
 
-    public double linearToExponential(int ival) {
-        double x = (double) ival / mResolution;
-        double y = a * Math.pow(ROOT,  b * x) - offset;
-        return y;
+    public double linearToExponential(double linear) {
+        return a * Math.pow(ROOT,  b * linear) - offset;
+    }
+
+    public double exponentialToLinear(double exponential) {
+        return Math.log((exponential + offset) / a) / (b * Math.log(ROOT));
     }
 }

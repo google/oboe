@@ -21,10 +21,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-// TODO #include "flowgraph/AudioProcessorBase.h"
+// TODO #include "flowgraph/FlowGraph.h"
 #include "oboe/Oboe.h"
 #include "MultiChannelRecording.h"
-#include "PeakDetector.h"
+#include "analyzer/PeakDetector.h"
 
 constexpr int kMaxInputChannels = 8;
 
@@ -53,9 +53,20 @@ public:
         return mPeakDetectors[index].getLevel();
     }
 
+    void setMinimumFramesBeforeRead(int32_t numFrames) {
+        mMinimumFramesBeforeRead = numFrames;
+    }
+
+    int32_t getMinimumFramesBeforeRead() {
+        return mMinimumFramesBeforeRead;
+    }
+
 public:
     PeakDetector            mPeakDetectors[kMaxInputChannels];
     MultiChannelRecording  *mRecording = nullptr;
+
+private:
+    int32_t                 mMinimumFramesBeforeRead = 0;
 };
 
 #endif //NATIVEOBOE_INPUTSTREAMCALLBACKANALYZER_H

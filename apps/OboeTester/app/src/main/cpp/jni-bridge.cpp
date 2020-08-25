@@ -42,9 +42,14 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(JNIEnv *env, j
                                                        jint format,
                                                        jint sharingMode,
                                                        jint performanceMode,
+                                                       jint inputPreset,
                                                        jint deviceId,
                                                        jint sessionId,
                                                        jint framesPerBurst,
+                                                       jboolean channelConversionAllowed,
+                                                       jboolean formatConversionAllowed,
+                                                       jint rateConversionQuality,
+                                                       jboolean isMMap,
                                                        jboolean isInput);
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_close(JNIEnv *env, jobject, jint);
@@ -82,6 +87,28 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setAmplitude(JNIEnv
 /**********************  JNI Implementations *************************************/
 /*********************************************************************************/
 
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapSupported(JNIEnv *env, jclass type) {
+    return AAudioExtensions::getInstance().isMMapSupported();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_isMMapExclusiveSupported(JNIEnv *env, jclass type) {
+    return AAudioExtensions::getInstance().isMMapExclusiveSupported();
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_setWorkaroundsEnabled(JNIEnv *env, jclass type,
+                                                                          jboolean enabled) {
+    oboe::OboeGlobals::setWorkaroundsEnabled(enabled);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_sample_oboe_manualtest_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
+        jclass type) {
+    return oboe::OboeGlobals::areWorkaroundsEnabled();
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
@@ -91,22 +118,32 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_openNative(
         jint format,
         jint sharingMode,
         jint performanceMode,
+        jint inputPreset,
         jint deviceId,
         jint sessionId,
         jint framesPerBurst,
+        jboolean channelConversionAllowed,
+        jboolean formatConversionAllowed,
+        jint rateConversionQuality,
+        jboolean isMMap,
         jboolean isInput) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d, framesPerBurst = %d", sampleRate, framesPerBurst);
 
     return (jint) engine.getCurrentActivity()->open(nativeApi,
-                              sampleRate,
-                              channelCount,
-                              format,
-                              sharingMode,
-                              performanceMode,
-                              deviceId,
-                              sessionId,
-                              framesPerBurst,
-                              isInput);
+                                                    sampleRate,
+                                                    channelCount,
+                                                    format,
+                                                    sharingMode,
+                                                    performanceMode,
+                                                    inputPreset,
+                                                    deviceId,
+                                                    sessionId,
+                                                    framesPerBurst,
+                                                    channelConversionAllowed,
+                                                    formatConversionAllowed,
+                                                    rateConversionQuality,
+                                                    isMMap,
+                                                    isInput);
 }
 
 JNIEXPORT jint JNICALL
@@ -122,6 +159,11 @@ Java_com_google_sample_oboe_manualtest_TestAudioActivity_pauseNative(JNIEnv *env
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_TestAudioActivity_stopNative(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_TestAudioActivity_getFramesPerCallback(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->getFramesPerCallback();
 }
 
 JNIEXPORT jint JNICALL
@@ -224,6 +266,17 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getPerformanceMode(
     oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = (jint) oboeStream->getPerformanceMode();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getInputPreset(
+        JNIEnv *env, jobject, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getInputPreset();
     }
     return result;
 }
@@ -336,6 +389,17 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env, j
     return -1.0;
 }
 
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
+    return engine.getCurrentActivity()->getCpuLoad();
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_setWorkload(
+        JNIEnv *env, jobject, jdouble workload) {
+    engine.getCurrentActivity()->setWorkload(workload);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_getState(JNIEnv *env, jobject instance, jint streamIndex) {
     oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
@@ -345,7 +409,16 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getState(JNIEnv *env, job
             oboe::Result result = oboeStream->waitForStateChange(
                     oboe::StreamState::Uninitialized,
                     &state, 0);
-            if (result != oboe::Result::OK) state = oboe::StreamState::Unknown;
+
+            if (result != oboe::Result::OK){
+                if (result == oboe::Result::ErrorClosed) {
+                    state = oboe::StreamState::Closed;
+                } else if (result == oboe::Result::ErrorDisconnected){
+                    state = oboe::StreamState::Disconnected;
+                } else {
+                    state = oboe::StreamState::Unknown;
+                }
+            }
         }
         return (jint) state;
     }
@@ -362,7 +435,7 @@ Java_com_google_sample_oboe_manualtest_AudioInputTester_getPeakLevel(JNIEnv *env
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_setUseCallback(JNIEnv *env, jclass type,
                                                                       jboolean useCallback) {
-    ActivityContext::useCallback = useCallback;
+    ActivityContext::mUseCallback = useCallback;
 }
 
 JNIEXPORT void JNICALL
@@ -397,16 +470,21 @@ Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setToneType(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setAmplitude(
-        JNIEnv *env, jobject, jdouble amplitude) {
-    engine.getCurrentActivity()->setAmplitude(amplitude);
-
-}
-
-JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setChannelEnabled(
         JNIEnv *env, jobject, jint channelIndex, jboolean enabled) {
     engine.getCurrentActivity()->setChannelEnabled(channelIndex, enabled);
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioOutputStream_setSignalType(
+        JNIEnv *env, jobject, jint signalType) {
+    engine.getCurrentActivity()->setSignalType(signalType);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getOboeVersionNumber(JNIEnv *env,
+                                                                          jclass type) {
+    return OBOE_VERSION_NUMBER;
 }
 
 // ==========================================================================
@@ -431,6 +509,14 @@ Java_com_google_sample_oboe_manualtest_TestInputActivity_saveWaveFile(JNIEnv *en
 
 // ==========================================================================
 JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_TestInputActivity_setMinimumFramesBeforeRead(JNIEnv *env,
+                                                                      jobject instance,
+                                                                      jint numFrames) {
+    engine.getCurrentActivity()->setMinimumFramesBeforeRead(numFrames);
+}
+
+// ==========================================================================
+JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,
                                                                          jdouble delayTimeSeconds) {
@@ -444,7 +530,7 @@ Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getAnalyzerProgr
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getProgress();
 }
 
-JNIEXPORT jdouble JNICALL
+JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredLatency(JNIEnv *env,
                                                                                    jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredLatency();
@@ -454,6 +540,24 @@ JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getMeasuredConfidence(JNIEnv *env,
                                                                                       jobject instance) {
     return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredConfidence();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getBackgroundRMS(JNIEnv *env,
+                                                                                 jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getBackgroundRMS();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_RoundTripLatencyActivity_getSignalRMS(JNIEnv *env,
+                                                                                 jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getSignalRMS();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
+                                                                          jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
 }
 
 // ==========================================================================
@@ -470,12 +574,6 @@ Java_com_google_sample_oboe_manualtest_AnalyzerActivity_isAnalyzerDone(JNIEnv *e
 }
 
 JNIEXPORT jint JNICALL
-Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getMeasuredResult(JNIEnv *env,
-                                                                          jobject instance) {
-    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getResult();
-}
-
-JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_AnalyzerActivity_getResetCount(JNIEnv *env,
                                                                           jobject instance) {
     return ((ActivityFullDuplex *)engine.getCurrentActivity())->getResetCount();
@@ -488,10 +586,46 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_getGlitchCount(JNIEnv *env
     return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getStateFrameCount(JNIEnv *env,
+                                                                     jobject instance,
+                                                                     jint state) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getStateFrameCount(state);
+}
+
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_GlitchActivity_getSignalToNoiseDB(JNIEnv *env,
                                                                          jobject instance) {
     return engine.mActivityGlitches.getGlitchAnalyzer()->getSignalToNoiseDB();
+}
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_getPeakAmplitude(JNIEnv *env,
+                                                                       jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getPeakAmplitude();
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_setTolerance(JNIEnv *env,
+                                                                   jobject instance,
+                                                                   jfloat tolerance) {
+    if (engine.mActivityGlitches.getGlitchAnalyzer()) {
+        engine.mActivityGlitches.getGlitchAnalyzer()->setTolerance(tolerance);
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_ManualGlitchActivity_getGlitch(JNIEnv *env, jobject instance,
+                                                                      jfloatArray waveform_) {
+    float *waveform = env->GetFloatArrayElements(waveform_, nullptr);
+    jsize length = env->GetArrayLength(waveform_);
+    jsize numSamples = 0;
+    auto *analyzer = engine.mActivityGlitches.getGlitchAnalyzer();
+    if (analyzer) {
+        numSamples = analyzer->getLastGlitch(waveform, length);
+    }
+
+    env->ReleaseFloatArrayElements(waveform_, waveform, 0);
+    return numSamples;
 }
 
 }

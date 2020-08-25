@@ -81,9 +81,7 @@ public:
                                        int64_t *framePosition,
                                        int64_t *timeNanoseconds) override;
 
-    ResultWithValue<FrameTimestamp> getTimestamp(clockid_t clockId) override;
-
-    StreamState getState() override;
+    StreamState getState() const override;
 
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
@@ -93,20 +91,27 @@ public:
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    void onErrorInThread(AAudioStream *stream, Result error);
+    bool                 isMMapUsed();
 
+protected:
+    static void internalErrorCallback(
+            AAudioStream *stream,
+            void *userData,
+            aaudio_result_t error);
 
     void *getUnderlyingStream() const override {
         return mAAudioStream.load();
     }
 
-protected:
     void updateFramesRead() override;
     void updateFramesWritten() override;
 
+    void logUnsupportedAttributes();
+
 private:
 
-    bool                 isMMapUsed();
+    // Time to sleep in order to prevent a race condition with a callback after a close().
+    static constexpr int kDelayBeforeCloseMillis = 10;
 
     std::atomic<bool>    mCallbackThreadEnabled;
 

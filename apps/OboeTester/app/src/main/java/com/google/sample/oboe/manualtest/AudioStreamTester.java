@@ -32,6 +32,12 @@ class AudioStreamTester {
                 -1);
     }
 
+    public void reset() {
+        setWorkload(0.0);
+        requestedConfiguration.reset(); // TODO consider making new ones
+        actualConfiguration.reset();
+    }
+
     public void close() {
         mCurrentAudioStream.close();
     }
@@ -40,4 +46,7 @@ class AudioStreamTester {
         mCurrentAudioStream.startPlayback();
     }
 
+    public void setWorkload(double workload) {
+        mCurrentAudioStream.setWorkload(workload);
+    }
 }

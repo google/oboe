@@ -19,8 +19,13 @@
 
 #include "oboe/Definitions.h"
 #include "oboe/AudioStreamBase.h"
+#include "ResultWithValue.h"
 
 namespace oboe {
+
+    // This depends on AudioStream, so we use forward declaration, it will close and delete the stream
+    struct StreamDeleterFunctor;
+    using ManagedStream = std::unique_ptr<AudioStream, StreamDeleterFunctor>;
 
 /**
  * Factory class for an audio Stream.
@@ -29,6 +34,8 @@ class AudioStreamBuilder : public AudioStreamBase {
 public:
 
     AudioStreamBuilder() : AudioStreamBase() {}
+
+    AudioStreamBuilder(const AudioStreamBase &audioStreamBase): AudioStreamBase(audioStreamBase) {}
 
     /**
      * Request a specific number of channels.
@@ -129,6 +136,10 @@ public:
     /**
      * If you leave this unspecified then Oboe will choose the best API
      * for the device and SDK version at runtime.
+     *
+     * This should almost always be left unspecified, except for debugging purposes.
+     * Specifying AAudio will force Oboe to use AAudio on 8.0, which is extremely risky.
+     * Specifying OpenSLES should mainly be used to test legacy performance/functionality.
      *
      * If the caller requests AAudio and it is supported then AAudio will be used.
      *
@@ -270,10 +281,16 @@ public:
     }
 
     /**
-     * Request an audio device identified device using an ID.
-     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * Request a stream to a specific audio input/output device given an audio device ID.
      *
-     * By default, the primary device will be used.
+     * In most cases, the primary device will be the appropriate device to use, and the
+     * deviceId can be left kUnspecified.
+     *
+     * On Android, for example, the ID could be obtained from the Java AudioManager.
+     * AudioManager.getDevices() returns an array of AudioDeviceInfo[], which contains
+     * a getId() method (as well as other type information), that should be passed
+     * to this method.
+     *
      *
      * Note that when using OpenSL ES, this will be ignored and the created
      * stream will have deviceId kUnspecified.
@@ -313,18 +330,96 @@ public:
     }
 
     /**
+     * If true then Oboe might convert channel counts to achieve optimal results.
+     * On some versions of Android for example, stereo streams could not use a FAST track.
+     * So a mono stream might be used instead and duplicated to two channels.
+     * On some devices, mono streams might be broken, so a stereo stream might be opened
+     * and converted to mono.
+     *
+     * Default is true.
+     */
+    AudioStreamBuilder *setChannelConversionAllowed(bool allowed) {
+        mChannelConversionAllowed = allowed;
+        return this;
+    }
+
+    /**
+     * If true then  Oboe might convert data formats to achieve optimal results.
+     * On some versions of Android, for example, a float stream could not get a
+     * low latency data path. So an I16 stream might be opened and converted to float.
+     *
+     * Default is true.
+     */
+    AudioStreamBuilder *setFormatConversionAllowed(bool allowed) {
+        mFormatConversionAllowed = allowed;
+        return this;
+    }
+
+    /**
+     * Specify the quality of the sample rate converter in Oboe.
+     *
+     * If set to None then Oboe will not do sample rate conversion. But the underlying APIs might
+     * still do sample rate conversion if you specify a sample rate.
+     * That can prevent you from getting a low latency stream.
+     *
+     * If you do the conversion in Oboe then you might still get a low latency stream.
+     *
+     * Default is SampleRateConversionQuality::None
+     */
+    AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
+        mSampleRateConversionQuality = quality;
+        return this;
+    }
+
+    /**
+     * @return true if AAudio will be used based on the current settings.
+     */
+    bool willUseAAudio() const {
+        return (mAudioApi == AudioApi::AAudio && isAAudioSupported())
+                || (mAudioApi == AudioApi::Unspecified && isAAudioRecommended());
+    }
+
+    /**
      * Create and open a stream object based on the current settings.
      *
      * The caller owns the pointer to the AudioStream object.
      *
+     * @deprecated Use openStream(std::shared_ptr<oboe::AudioStream> &stream) instead.
      * @param stream pointer to a variable to receive the stream address
      * @return OBOE_OK if successful or a negative error code
      */
     Result openStream(AudioStream **stream);
 
-protected:
+    /**
+     * Create and open a stream object based on the current settings.
+     *
+     * The caller shares the pointer to the AudioStream object.
+     * The shared_ptr is used internally by Oboe to prevent the stream from being
+     * deleted while it is being used by callbacks.
+     *
+     * @param stream reference to a shared_ptr to receive the stream address
+     * @return OBOE_OK if successful or a negative error code
+     */
+    Result openStream(std::shared_ptr<oboe::AudioStream> &stream);
+
+    /**
+     * Create and open a ManagedStream object based on the current builder state.
+     *
+     * The caller must create a unique ptr, and pass by reference so it can be
+     * modified to point to an opened stream. The caller owns the unique ptr,
+     * and it will be automatically closed and deleted when going out of scope.
+     * @param stream Reference to the ManagedStream (uniqueptr) used to keep track of stream
+     * @return OBOE_OK if successful or a negative error code.
+     */
+    Result openManagedStream(ManagedStream &stream);
 
 private:
+
+    /**
+     * @param other
+     * @return true if channels, format and sample rate match
+     */
+    bool isCompatible(AudioStreamBase &other);
 
     /**
      * Create an AudioStream object. The AudioStream must be opened before use.

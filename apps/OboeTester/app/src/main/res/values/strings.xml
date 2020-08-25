@@ -40,8 +40,11 @@
     <string-array name="sample_rates">
         <item>0</item>
         <item>8000</item>
+        <item>11025</item>
+        <item>12000</item>
         <item>16000</item>
         <item>22050</item>
+        <item>24000</item>
         <item>32000</item>
         <item>44100</item>
         <item>48000</item>
@@ -55,6 +58,16 @@
         <item>Unspecified</item>
         <item>PCM_I16</item>
         <item>PCM_FLOAT</item>
+    </string-array>
+
+    <string name="input_preset_prompt">InPreset:</string>
+    <string-array name="audio_input_presets">
+        <item>Generic</item>
+        <item>Camcorder</item>
+        <item>VoiceRec</item>
+        <item>VoiceComm</item>
+        <item>Unprocessed</item>
+        <item>Performance</item>
     </string-array>
 
     <string name="channel_count_prompt">Channels:</string>
@@ -73,8 +86,10 @@
 
     <string-array name="glitch_times">
         <item>10</item>
+        <item>25</item>
         <item>70</item>
-        <item>310</item>
+        <item>200</item>
+        <item>600</item>
     </string-array>
 
     <string name="performance_prompt">Perf:</string>
@@ -84,10 +99,13 @@
         <item>LOW_LATENCY</item>
     </string-array>
 
-    <string name="tone_prompt">Choose a Tone Type</string>
-    <string-array name="tone_types">
-        <item>Saw Ping</item>
-        <item>Sine Steady</item>
+<!--Must match SignalType in NativeAudioContext.h-->
+    <string name="output_signal_prompt">choose a signal</string>
+    <string-array name="output_signals">
+        <item>Sine</item>
+        <item>Sawtooth</item>
+        <item>Freq Sweep</item>
+        <item>Pitch Sweep</item>
     </string-array>
 
     <string name="synth_sender_text">Select Sender for Synth</string>
@@ -113,5 +131,20 @@
     <string name="auto_glitch_instructions">Use loopback adapter or speakers.</string>
     <string name="log_of_glitch_tests">Log of Glitch Tests</string>
     <string name="save_file">Save</string>
+
+    <string name="src_prompt">SRC:</string>
+    <string name="average">Average</string>
+    <string name="failTest">Fail</string>
+    <string name="skipTest">Skip</string>
+    <string name="title_test_disconnect">Test Disconnect</string>
+    <string name="test_disconnect_instructions">Unplug all headsets then click [START]</string>
+    <string-array name="conversion_qualities">
+        <item>None</item>
+        <item>Fastest</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Best</item>
+    </string-array>
 
 </resources>

@@ -161,18 +161,18 @@ const char *convertToText<StreamState>(StreamState state) {
 }
 
 template<>
-const char *convertToText<AudioApi >(AudioApi audioApi) {
+const char *convertToText<AudioApi>(AudioApi audioApi) {
 
     switch (audioApi) {
         case AudioApi::Unspecified: return "Unspecified";
         case AudioApi::OpenSLES:    return "OpenSLES";
         case AudioApi::AAudio:      return "AAudio";
-        default:                    return "Unrecognised audio API";
+        default:                    return "Unrecognized audio API";
     }
 }
 
 template<>
-const char* convertToText<AudioStream*>(AudioStream* stream) {
+const char *convertToText<AudioStream*>(AudioStream* stream) {
     static std::string streamText;
     std::stringstream s;
 
@@ -199,18 +199,107 @@ const char* convertToText<AudioStream*>(AudioStream* stream) {
     return streamText.c_str();
 }
 
-int getSdkVersion() {
-#ifdef __ANDROID__
-    static int sCachedSdkVersion = -1;
-    if (sCachedSdkVersion == -1) {
-        char sdk[PROP_VALUE_MAX] = {0};
-        if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
-            sCachedSdkVersion = atoi(sdk);
-        }
+template<>
+const char *convertToText<Usage>(Usage usage) {
+
+    switch (usage) {
+        case Usage::Media:                         return "Media";
+        case Usage::VoiceCommunication:            return "VoiceCommunication";
+        case Usage::VoiceCommunicationSignalling:  return "VoiceCommunicationSignalling";
+        case Usage::Alarm:                         return "Alarm";
+        case Usage::Notification:                  return "Notification";
+        case Usage::NotificationRingtone:          return "NotificationRingtone";
+        case Usage::NotificationEvent:             return "NotificationEvent";
+        case Usage::AssistanceAccessibility:       return "AssistanceAccessibility";
+        case Usage::AssistanceNavigationGuidance:  return "AssistanceNavigationGuidance";
+        case Usage::AssistanceSonification:        return "AssistanceSonification";
+        case Usage::Game:                          return "Game";
+        case Usage::Assistant:                     return "Assistant";
+        default:                                   return "Unrecognized usage";
     }
-    return sCachedSdkVersion;
+}
+
+template<>
+const char *convertToText<ContentType>(ContentType contentType) {
+
+    switch (contentType) {
+        case ContentType::Speech:        return "Speech";
+        case ContentType::Music:         return "Music";
+        case ContentType::Movie:         return "Movie";
+        case ContentType::Sonification:  return "Sonification";
+        default:                         return "Unrecognized content type";
+    }
+}
+
+template<>
+const char *convertToText<InputPreset>(InputPreset inputPreset) {
+
+    switch (inputPreset) {
+        case InputPreset::Generic:             return "Generic";
+        case InputPreset::Camcorder:           return "Camcorder";
+        case InputPreset::VoiceRecognition:    return "VoiceRecognition";
+        case InputPreset::VoiceCommunication:  return "VoiceCommunication";
+        case InputPreset::Unprocessed:         return "Unprocessed";
+        case InputPreset::VoicePerformance:    return "VoicePerformance";
+        default:                               return "Unrecognized input preset";
+    }
+}
+
+template<>
+const char *convertToText<SessionId>(SessionId sessionId) {
+
+    switch (sessionId) {
+        case SessionId::None:      return "None";
+        case SessionId::Allocate:  return "Allocate";
+        default:                   return "Unrecognized session id";
+    }
+}
+
+template<>
+const char *convertToText<ChannelCount>(ChannelCount channelCount) {
+
+    switch (channelCount) {
+        case ChannelCount::Unspecified:  return "Unspecified";
+        case ChannelCount::Mono:         return "Mono";
+        case ChannelCount::Stereo:       return "Stereo";
+        default:                         return "Unrecognized channel count";
+    }
+}
+
+std::string getPropertyString(const char * name) {
+    std::string result;
+#ifdef __ANDROID__
+    char valueText[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, valueText) != 0) {
+        result = valueText;
+    }
+#else
+    (void) name;
 #endif
-    return -1;
+    return result;
+}
+
+int getPropertyInteger(const char * name, int defaultValue) {
+    int result = defaultValue;
+#ifdef __ANDROID__
+    char valueText[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, valueText) != 0) {
+        result = atoi(valueText);
+    }
+#else
+    (void) name;
+#endif
+    return result;
+}
+
+int getSdkVersion() {
+    static int sCachedSdkVersion = -1;
+#ifdef __ANDROID__
+    if (sCachedSdkVersion == -1) {
+        sCachedSdkVersion = getPropertyInteger("ro.build.version.sdk", -1);
+    }
+#endif
+    return sCachedSdkVersion;
 }
 
 }// namespace oboe

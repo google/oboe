@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2018 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +20,7 @@
 # Prerequisites: 
 # - CMake on PATH. This is usually found in $ANDROID_HOME/cmake/<version>/bin.
 # - ANDROID_NDK environment variable is set to your Android NDK location
-# e.g. $HOME/Library/Android/sdk/ndk-bundle
+# e.g. $HOME/Library/Android/sdk/ndk/<version>
 # - Android device or emulator attached and accessible via adb
 #
 # Instructions:
@@ -41,8 +43,6 @@
 # permission, hence the need for the UnitTestRunner app. 
 # 
 ################################################
-
-#!/bin/bash
 
 # Directories, paths and filenames
 BUILD_DIR=build
@@ -91,7 +91,7 @@ CMAKE_ARGS="-H. \
 	-DANDROID_ABI=${ABI} \
 	-DANDROID_PLATFORM=${PLATFORM} \
   	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
-	-DCMAKE_CXX_FLAGS=-std=c++11 \
+	-DCMAKE_CXX_FLAGS=-std=c++14 \
 	-DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
 	-DCMAKE_VERBOSE_MAKEFILE=1"
 

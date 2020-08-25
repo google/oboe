@@ -47,23 +47,61 @@ public class StreamConfiguration {
     public static final int PERFORMANCE_MODE_POWER_SAVING = 11; // must match AAUDIO
     public static final int PERFORMANCE_MODE_LOW_LATENCY = 12; // must match AAUDIO
 
+    public static final int RATE_CONVERSION_QUALITY_NONE = 0; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_FASTEST = 1; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_LOW = 2; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_MEDIUM = 3; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_HIGH = 4; // must match Oboe
+    public static final int RATE_CONVERSION_QUALITY_BEST = 5; // must match Oboe
+
+    public static final int STREAM_STATE_STARTING = 3; // must match Oboe
+    public static final int STREAM_STATE_STARTED = 4; // must match Oboe
+
+    public static final int INPUT_PRESET_GENERIC = 1; // must match Oboe
+    public static final int INPUT_PRESET_CAMCORDER = 5; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_RECOGNITION = 6; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_COMMUNICATION = 7; // must match Oboe
+    public static final int INPUT_PRESET_UNPROCESSED = 9; // must match Oboe
+    public static final int INPUT_PRESET_VOICE_PERFORMANCE = 10; // must match Oboe
 
     private int mNativeApi;
-    private int mBufferCapacityInFrames = UNSPECIFIED;
-    private int mChannelCount = UNSPECIFIED;
-    private int mDeviceId = UNSPECIFIED;
-    private int mSessionId = -1;
-    private int mDirection = DIRECTION_OUTPUT;
-    private int mFormat = AUDIO_FORMAT_PCM_FLOAT;
-    private int mSampleRate = UNSPECIFIED;
-    private int mSharingMode = SHARING_MODE_SHARED;
-    private int mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
-    private int mFramesPerBurst = 29; // TODO review
+    private int mBufferCapacityInFrames;
+    private int mChannelCount;
+    private int mDeviceId;
+    private int mSessionId;
+    private int mDirection; // does not get reset
+    private int mFormat;
+    private int mSampleRate;
+    private int mSharingMode;
+    private int mPerformanceMode;
+    private boolean mFormatConversionAllowed;
+    private boolean mChannelConversionAllowed;
+    private int mRateConversionQuality;
+    private int mInputPreset;
+
+    private int mFramesPerBurst = 0;
+
     private boolean mMMap = false;
 
-    public void setReasonableDefaults() {
-        mChannelCount = 2;
-        mSampleRate = 48000;
+    public StreamConfiguration() {
+        reset();
+    }
+
+    public void reset() {
+        mNativeApi = NATIVE_API_UNSPECIFIED;
+        mBufferCapacityInFrames = UNSPECIFIED;
+        mChannelCount = UNSPECIFIED;
+        mDeviceId = UNSPECIFIED;
+        mSessionId = -1;
+        mFormat = AUDIO_FORMAT_PCM_FLOAT;
+        mSampleRate = UNSPECIFIED;
+        mSharingMode = SHARING_MODE_EXCLUSIVE;
+        mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
+        mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
+        mFormatConversionAllowed = false;
+        mChannelConversionAllowed = false;
+        mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
+        mMMap = NativeEngine.isMMapSupported();
     }
 
     public int getFramesPerBurst() {
@@ -104,6 +142,13 @@ public class StreamConfiguration {
 
     public void setPerformanceMode(int performanceMode) {
         this.mPerformanceMode = performanceMode;
+    }
+
+    public int getInputPreset() {
+        return mInputPreset;
+    }
+    public void setInputPreset(int inputPreset) {
+        this.mInputPreset = inputPreset;
     }
 
     static String convertPerformanceModeToText(int performanceMode) {
@@ -164,6 +209,82 @@ public class StreamConfiguration {
         }
     }
 
+
+    public String dump() {
+        String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
+        StringBuffer message = new StringBuffer();
+        message.append(String.format("%s.channels = %d\n", prefix, mChannelCount));
+        message.append(String.format("%s.perf = %s\n", prefix,
+                convertPerformanceModeToText(mPerformanceMode).toLowerCase()));
+        if (getDirection() == DIRECTION_INPUT) {
+            message.append(String.format("%s.preset = %s\n", prefix,
+                    convertInputPresetToText(mInputPreset).toLowerCase()));
+        }
+        message.append(String.format("%s.sharing = %s\n", prefix,
+                convertSharingModeToText(mSharingMode).toLowerCase()));
+        message.append(String.format("%s.api = %s\n", prefix,
+                convertNativeApiToText(getNativeApi()).toLowerCase()));
+        message.append(String.format("%s.rate = %d\n", prefix, mSampleRate));
+        message.append(String.format("%s.device = %d\n", prefix, mDeviceId));
+        message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
+        message.append(String.format("%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
+        return message.toString();
+    }
+
+    // text must match menu values
+    public static final String NAME_INPUT_PRESET_GENERIC = "Generic";
+    public static final String NAME_INPUT_PRESET_CAMCORDER = "Camcorder";
+    public static final String NAME_INPUT_PRESET_VOICE_RECOGNITION = "VoiceRec";
+    public static final String NAME_INPUT_PRESET_VOICE_COMMUNICATION = "VoiceComm";
+    public static final String NAME_INPUT_PRESET_UNPROCESSED = "Unprocessed";
+    public static final String NAME_INPUT_PRESET_VOICE_PERFORMANCE = "Performance";
+
+    public static String convertInputPresetToText(int inputPreset) {
+        switch(inputPreset) {
+            case INPUT_PRESET_GENERIC:
+                return NAME_INPUT_PRESET_GENERIC;
+            case INPUT_PRESET_CAMCORDER:
+                return NAME_INPUT_PRESET_CAMCORDER;
+            case INPUT_PRESET_VOICE_RECOGNITION:
+                return NAME_INPUT_PRESET_VOICE_RECOGNITION;
+            case INPUT_PRESET_VOICE_COMMUNICATION:
+                return NAME_INPUT_PRESET_VOICE_COMMUNICATION;
+            case INPUT_PRESET_UNPROCESSED:
+                return NAME_INPUT_PRESET_UNPROCESSED;
+            case INPUT_PRESET_VOICE_PERFORMANCE:
+                return NAME_INPUT_PRESET_VOICE_PERFORMANCE;
+            default:
+                return "Invalid";
+        }
+    }
+
+    private static boolean matchInputPreset(String text, int preset) {
+        return convertInputPresetToText(preset).toLowerCase().equals(text);
+    }
+
+    /**
+     * Case insensitive.
+     * @param text
+     * @return inputPreset, eg. INPUT_PRESET_CAMCORDER
+     */
+    public static int convertTextToInputPreset(String text) {
+        text = text.toLowerCase();
+        if (matchInputPreset(text, INPUT_PRESET_GENERIC)) {
+            return INPUT_PRESET_GENERIC;
+        } else if (matchInputPreset(text, INPUT_PRESET_CAMCORDER)) {
+            return INPUT_PRESET_CAMCORDER;
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_RECOGNITION)) {
+            return INPUT_PRESET_VOICE_RECOGNITION;
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_COMMUNICATION)) {
+            return INPUT_PRESET_VOICE_COMMUNICATION;
+        } else if (matchInputPreset(text, INPUT_PRESET_UNPROCESSED)) {
+            return INPUT_PRESET_UNPROCESSED;
+        } else if (matchInputPreset(text, INPUT_PRESET_VOICE_PERFORMANCE)) {
+            return INPUT_PRESET_VOICE_PERFORMANCE;
+        }
+        return -1;
+    }
+
     public int getChannelCount() {
         return mChannelCount;
     }
@@ -209,6 +330,26 @@ public class StreamConfiguration {
 
     public void setNativeApi(int nativeApi) {
         mNativeApi = nativeApi;
+    }
+
+    public void setChannelConversionAllowed(boolean b) { mChannelConversionAllowed = b; }
+
+    public boolean getChannelConversionAllowed() {
+        return mChannelConversionAllowed;
+    }
+
+    public void setFormatConversionAllowed(boolean b) {
+        mFormatConversionAllowed = b;
+    }
+
+    public boolean getFormatConversionAllowed() {
+        return mFormatConversionAllowed;
+    }
+
+    public void setRateConversionQuality(int quality) { mRateConversionQuality = quality; }
+
+    public int getRateConversionQuality() {
+        return mRateConversionQuality;
     }
 
 }

@@ -52,14 +52,13 @@ protected:
     }
 
     void openAndCloseStream(){
-
         openStream();
         closeStream();
         ASSERT_EQ(mStream->getState(), StreamState::Closed) << "Stream state " << convertToText(mStream->getState());
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    AudioStream       *mStream = nullptr;
 
 };
 
@@ -334,7 +333,7 @@ TEST_F(StreamClosedReturnValues, ReadReturnsClosed){
 
     openAndCloseStream();
 
-    void *buffer;
+    int buffer[8]{0};
     auto r = mStream->read(buffer, 1, 0);
     ASSERT_EQ(r.error(), Result::ErrorClosed);
 }
@@ -343,7 +342,7 @@ TEST_F(StreamClosedReturnValues, WriteReturnsClosed){
 
     openAndCloseStream();
 
-    void *buffer;
+    int buffer[8]{0};
     auto r = mStream->write(buffer, 1, 0);
     ASSERT_EQ(r.error(), Result::ErrorClosed);
 }

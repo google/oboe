@@ -29,32 +29,21 @@ oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
         void *outputData,
         int   numOutputFrames) {
     // FIXME only handles matching stream formats.
-    // TODO use array of delays
     // TODO Add delay node
     // TODO use flowgraph to handle format conversion
     int32_t framesToEcho = std::min(numInputFrames, numOutputFrames);
     float *inputFloat = (float *)inputData;
     float *outputFloat = (float *)outputData;
+    // zero out entire output array
+    memset(outputFloat, 0, numOutputFrames * getOutputStream()->getBytesPerFrame());
+
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
     float delayFrames = mDelayTimeSeconds * getOutputStream()->getSampleRate();
-    if (outputStride == 1) {
-        while (framesToEcho-- > 0) {
-            *outputFloat++ = mDelayLine->process(delayFrames, *inputFloat); // mono delay
-            inputFloat += inputStride;
-        }
-    } else if (outputStride == 2) {
-        while (framesToEcho-- > 0) {
-            *outputFloat++ = mDelayLine->process(delayFrames, *inputFloat); // mono delay
-            *outputFloat++ = 0.0f; // FIXME *inputFloat; // mono
-            inputFloat += inputStride;
-        }
-    } // else TODO
-
-    // zero out remainder of output array
-    int32_t framesLeft = numOutputFrames - numInputFrames;
-    if (framesLeft > 0) {
-        memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
+    while (framesToEcho-- > 0) {
+        *outputFloat = mDelayLine->process(delayFrames, *inputFloat); // mono delay
+        inputFloat += inputStride;
+        outputFloat += outputStride;
     }
     return oboe::DataCallbackResult::Continue;
 };

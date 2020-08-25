@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usage',['Usage',['../namespaceoboe.html#a1b2a1bdc891d640eb82724dcd9b7afbb',1,'oboe']]]
+  ['usage',['Usage',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0',1,'oboe']]]
 ];

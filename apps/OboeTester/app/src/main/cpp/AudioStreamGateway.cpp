@@ -20,9 +20,7 @@
 #include "oboe/Oboe.h"
 #include "AudioStreamGateway.h"
 
-using namespace flowgraph;
-
-int64_t AudioStreamGateway::mFramePosition = 0;
+using namespace oboe::flowgraph;
 
 oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
         oboe::AudioStream *audioStream,
@@ -35,8 +33,7 @@ oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
     }
 
     if (mAudioSink != nullptr) {
-        mAudioSink->read(mFramePosition, audioData, numFrames);
-        mFramePosition += numFrames;
+        mAudioSink->read(audioData, numFrames);
     }
 
     return oboe::DataCallbackResult::Continue;

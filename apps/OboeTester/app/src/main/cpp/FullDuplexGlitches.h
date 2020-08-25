@@ -22,10 +22,13 @@
 
 #include "oboe/Oboe.h"
 #include "FullDuplexAnalyzer.h"
+#include "analyzer/GlitchAnalyzer.h"
 
 class FullDuplexGlitches : public FullDuplexAnalyzer {
 public:
-    FullDuplexGlitches() {}
+    FullDuplexGlitches() {
+        setMNumInputBurstsCushion(1);
+    }
 
     bool isDone() {
         return false;

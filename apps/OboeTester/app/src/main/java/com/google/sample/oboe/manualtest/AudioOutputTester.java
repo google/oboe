@@ -50,21 +50,11 @@ public class AudioOutputTester extends AudioStreamTester {
         mOboeAudioOutputStream.setToneEnabled(flag);
     }
 
-    public void setNormalizedThreshold(double threshold) {
-        if (mCurrentAudioStream.isThresholdSupported()) {
-            int frames = (int) (threshold * mCurrentAudioStream.getBufferCapacityInFrames());
-            Log.i(TapToToneActivity.TAG, mCurrentAudioStream.getClass().getSimpleName()
-                    + ".setBufferSizeInFrames(" + frames + ")");
-            mCurrentAudioStream.setBufferSizeInFrames(frames);
-        }
-    }
-
-    public void setAmplitude(double amplitude) {
-        mCurrentAudioStream.setAmplitude(amplitude);
-    }
-
     public void setChannelEnabled(int channelIndex, boolean enabled)  {
         mOboeAudioOutputStream.setChannelEnabled(channelIndex, enabled);
     }
 
+    public void setSignalType(int type) {
+        mOboeAudioOutputStream.setSignalType(type);
+    }
 }

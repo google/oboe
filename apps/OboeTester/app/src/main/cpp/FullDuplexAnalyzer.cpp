@@ -18,7 +18,8 @@
 #include "FullDuplexAnalyzer.h"
 
 oboe::Result  FullDuplexAnalyzer::start() {
-    getLoopbackProcessor()->reset();
+    getLoopbackProcessor()->setSampleRate(getOutputStream()->getSampleRate());
+    getLoopbackProcessor()->onStartTest();
     return FullDuplexStream::start();
 }
 
@@ -27,27 +28,38 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
         int   numInputFrames,
         void *outputData,
         int   numOutputFrames) {
-    // TODO Pull up into superclass
-    // reset analyzer if we miss some input data
-    if (numInputFrames < numOutputFrames) {
-        LOGD("numInputFrames (%4d) < numOutputFrames (%4d) so reset analyzer",
-             numInputFrames, numOutputFrames);
-        getLoopbackProcessor()->reset();
-    } else {
-        float *inputFloat = (float *) inputData;
-        float *outputFloat = (float *) outputData;
-        int32_t outputStride = getOutputStream()->getChannelCount();
 
-        (void) getLoopbackProcessor()->process(inputFloat, getInputStream()->getChannelCount(),
-                                       outputFloat, outputStride,
-                                       numOutputFrames);
+    int32_t inputStride = getInputStream()->getChannelCount();
+    int32_t outputStride = getOutputStream()->getChannelCount();
+    float *inputFloat = (float *) inputData;
+    float *outputFloat = (float *) outputData;
 
-        // zero out remainder of output array
-        int32_t framesLeft = numOutputFrames - numInputFrames;
-        outputFloat += numOutputFrames * outputStride;
+    (void) getLoopbackProcessor()->process(inputFloat, inputStride, numInputFrames,
+                                   outputFloat, outputStride, numOutputFrames);
 
-        if (framesLeft > 0) {
-            memset(outputFloat, 0, framesLeft * getOutputStream()->getBytesPerFrame());
+    // write the first channel of output and input to the stereo recorder
+    if (mRecording != nullptr) {
+        float buffer[2];
+        int numBoth = std::min(numInputFrames, numOutputFrames);
+        for (int i = 0; i < numBoth; i++) {
+            buffer[0] = *outputFloat;
+            outputFloat += outputStride;
+            buffer[1] = *inputFloat;
+            inputFloat += inputStride;
+            mRecording->write(buffer, 1);
+        }
+        // Handle mismatch in in numFrames.
+        buffer[0] = 0.0f; // gap in output
+        for (int i = numBoth; i < numInputFrames; i++) {
+            buffer[1] = *inputFloat;
+            inputFloat += inputStride;
+            mRecording->write(buffer, 1);
+        }
+        buffer[1] = 0.0f; // gap in input
+        for (int i = numBoth; i < numOutputFrames; i++) {
+            buffer[0] = *outputFloat;
+            outputFloat += outputStride;
+            mRecording->write(buffer, 1);
         }
     }
     return oboe::DataCallbackResult::Continue;

@@ -228,6 +228,30 @@ namespace oboe {
     };
 
     /**
+     * Specifies the quality of the sample rate conversion performed by Oboe.
+     * Higher quality will require more CPU load.
+     * Higher quality conversion will probably be implemented using a sinc based resampler.
+     */
+    enum class SampleRateConversionQuality : int32_t {
+        /**
+         * No conversion by Oboe. Underlying APIs may still do conversion.
+         */
+        None,
+        /**
+         * Fastest conversion but may not sound great.
+         * This may be implemented using bilinear interpolation.
+         */
+        Fastest,
+        Low,
+        Medium,
+        High,
+        /**
+         * Highest quality conversion, which may be expensive in terms of CPU.
+         */
+        Best,
+    };
+
+    /**
      * The Usage attribute expresses *why* you are playing a sound, what is this sound used for.
      * This information is used by certain platforms or routing policies
      * to make more refined volume or routing decisions.
@@ -372,6 +396,14 @@ namespace oboe {
          * so the recorded volume may be very low.
          */
         Unprocessed = 9, // AAUDIO_INPUT_PRESET_UNPROCESSED
+
+        /**
+         * Use this preset for capturing audio meant to be processed in real time
+         * and played back for live performance (e.g karaoke).
+         * The capture path will minimize latency and coupling with playback path.
+         */
+         VoicePerformance = 10, // AAUDIO_INPUT_PRESET_VOICE_PERFORMANCE
+
     };
 
     /**
@@ -430,13 +462,13 @@ namespace oboe {
      * On API 17+ these values should be obtained from the AudioManager using this code:
      *
      * <pre><code>
-        // Note that this technique only works for built-in speakers and headphones.
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-        int defaultSampleRate = Integer.parseInt(sampleRateStr);
-        String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-        int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
-        </code></pre>
+     * // Note that this technique only works for built-in speakers and headphones.
+     * AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+     * String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+     * int defaultSampleRate = Integer.parseInt(sampleRateStr);
+     * String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+     * int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
+     * </code></pre>
      *
      * It can then be passed down to Oboe through JNI.
      *
@@ -463,6 +495,25 @@ namespace oboe {
         int64_t timestamp; // in nanoseconds
     };
 
+    class OboeGlobals {
+    public:
+
+        static bool areWorkaroundsEnabled() {
+            return mWorkaroundsEnabled;
+        }
+
+        /**
+         * Disable this when writing tests to reproduce bugs in AAudio or OpenSL ES
+         * that have workarounds in Oboe.
+         * @param enabled
+         */
+        static void setWorkaroundsEnabled(bool enabled) {
+            mWorkaroundsEnabled = enabled;
+        }
+
+    private:
+        static bool mWorkaroundsEnabled;
+    };
 } // namespace oboe
 
 #endif // OBOE_DEFINITIONS_H
