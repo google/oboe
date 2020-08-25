@@ -301,8 +301,8 @@ Result AudioStreamAAudio::close() {
         // even after a close. If the stream has been closed then the callback
         // can access memory that has been freed. That causes a crash.
         // Two milliseconds may be enough but 10 msec is even safer.
-        // This seems to be less likely in Q but we have seen some reports.
-        if (getSdkVersion() <= __ANDROID_API_Q__) {
+        // This seems to be more likely in P or earlier. But it can also occur in later versions.
+        if (OboeGlobals::areWorkaroundsEnabled()) {
             usleep(kDelayBeforeCloseMillis * 1000);
         }
         return static_cast<Result>(mLibLoader->stream_close(stream));
