@@ -80,8 +80,6 @@ private:
     DataCallbackResult                                 mCallbackResult = DataCallbackResult::Continue;
     AudioStream                                       *mFilterStream = nullptr;
     std::unique_ptr<uint8_t[]>                         mAppBuffer;
-
-    int64_t mFramePosition = 0;
 };
 
 }
