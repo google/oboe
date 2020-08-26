@@ -16,7 +16,12 @@
 
 #include "SampleBuffer.h"
 
+// Resampler Includes
+#include <resampler/MultiChannelResampler.h>
+
 #include "wav/WavStreamReader.h"
+
+using namespace resampler;
 
 namespace iolib {
 
@@ -41,4 +46,73 @@ void SampleBuffer::unloadSampleData() {
     mNumSamples = 0;
 }
 
+class ResampleBlock {
+public:
+    int32_t mSampleRate;
+    float*  mBuffer;
+    int32_t mNumFrames;
+};
+
+void resampleData(const ResampleBlock& input, ResampleBlock* output) {
+    // Calculate output buffer size
+    double temp =
+            ((double)input.mNumFrames * (double)output->mSampleRate) / (double)input.mSampleRate;
+
+    // round up
+    int32_t numOutFrames = (int32_t)(temp + 0.5);
+    output->mNumFrames = numOutFrames;
+
+    MultiChannelResampler *resampler = MultiChannelResampler::make(
+            1, // channel count
+            input.mSampleRate, // input sampleRate
+            output->mSampleRate, // output sampleRate
+            MultiChannelResampler::Quality::Medium); // conversion quality
+
+    float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
+    float *outputBuffer = new float[numOutFrames];    // multi-channel buffer to be filled
+    output->mBuffer = outputBuffer;
+    int    numInputFrames = input.mNumFrames;  // number of frames of input
+    int    numOutputFrames = 0;
+    int    channelCount = 1;    // 1 for mono, 2 for stereo
+
+    int inputFramesLeft = numInputFrames;
+    while (inputFramesLeft > 0) {
+        if(resampler->isWriteNeeded()) {
+            resampler->writeNextFrame(inputBuffer);
+            inputBuffer += channelCount;
+            inputFramesLeft--;
+        } else {
+            resampler->readNextFrame(outputBuffer);
+            outputBuffer += channelCount;
+            numOutputFrames++;
+        }
+    }
+
+    delete resampler;
 }
+
+void SampleBuffer::resampleData(int sampleRate) {
+    if (mAudioProperties.sampleRate == sampleRate) {
+        // nothing to do
+        return;
+    }
+
+    ResampleBlock inputBlock;
+    inputBlock.mBuffer = mSampleData;
+    inputBlock.mNumFrames = mNumSamples;
+    inputBlock.mSampleRate = mAudioProperties.sampleRate;
+
+    ResampleBlock outputBlock;
+    outputBlock.mSampleRate = sampleRate;
+    iolib::resampleData(inputBlock, &outputBlock);
+
+    // delete previous samples
+    delete[] mSampleData;
+
+    // install the resampled data
+    mSampleData = outputBlock.mBuffer;
+    mNumSamples = outputBlock.mNumFrames;
+    mAudioProperties.sampleRate = outputBlock.mSampleRate;
+}
+
+} // namespace iolib
