@@ -467,10 +467,14 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    protected void toastPauseError(int result) {
+        showErrorToast("Pause failed with " + result);
+    }
+
     public void pauseAudio() {
         int result = pauseNative();
         if (result < 0) {
-            showErrorToast("Pause failed with " + result);
+            toastPauseError(result);
         } else {
             mAudioState = AUDIO_STATE_PAUSED;
             updateEnabledWidgets();

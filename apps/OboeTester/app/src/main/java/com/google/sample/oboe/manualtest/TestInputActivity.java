@@ -143,6 +143,11 @@ public class TestInputActivity  extends TestAudioActivity
         resetVolumeBars();
     }
 
+    @Override
+    protected void toastPauseError(int result) {
+        showToast("Pause not implemented. Returned " + result);
+    }
+
     private boolean isRecordPermissionGranted() {
         return (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
