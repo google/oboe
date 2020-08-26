@@ -29,6 +29,7 @@ set (PARSELIB_DIR ../../../../parselib)
 include_directories(
         ${PARSELIB_DIR}/src/main/cpp
         ${OBOE_DIR}/include
+        ${OBOE_DIR}/src/flowgraph
         ${CMAKE_CURRENT_LIST_DIR}
         ../../../../shared)
 

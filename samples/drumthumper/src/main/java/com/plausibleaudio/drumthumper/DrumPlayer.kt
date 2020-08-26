@@ -27,8 +27,8 @@ class DrumPlayer {
                                         // This IS NOT the channel format of the source samples
                                         // (which must be mono).
         val NUM_SAMPLE_CHANNELS: Int = 1;   // All WAV resource must be mono
-        val SAMPLE_RATE: Int = 44100    // All the input samples are assumed to BE 44.1K
-                                        // All the input samples are assumed to be mono.
+//        val SAMPLE_RATE: Int = 44100    // All the input samples are assumed to BE 44.1K
+//                                        // All the input samples are assumed to be mono.
 
         // Sample Buffer IDs
         val BASSDRUM: Int = 0
@@ -55,7 +55,7 @@ class DrumPlayer {
     }
 
     fun setupAudioStream() {
-        setupAudioStreamNative(SAMPLE_RATE, NUM_PLAY_CHANNELS)
+        setupAudioStreamNative(NUM_PLAY_CHANNELS)
     }
 
     fun teardownAudioStream() {
@@ -89,7 +89,7 @@ class DrumPlayer {
             var dataLen = assetFD.getLength().toInt()
             var dataBytes: ByteArray = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
-            returnVal = loadWavAssetNative(dataBytes, index, pan, SAMPLE_RATE, NUM_SAMPLE_CHANNELS)
+            returnVal = loadWavAssetNative(dataBytes, index, pan, NUM_SAMPLE_CHANNELS)
             assetFD.close()
         } catch (ex: IOException) {
             Log.i(TAG, "IOException" + ex)
@@ -98,11 +98,11 @@ class DrumPlayer {
         return returnVal
     }
 
-    external fun setupAudioStreamNative(sampleRate: Int, numChannels: Int)
+    external fun setupAudioStreamNative(numChannels: Int)
     external fun teardownAudioStreamNative()
 
     external fun loadWavAssetNative(
-            wavBytes: ByteArray, index: Int, pan: Float, rate: Int, channels: Int) : Boolean
+            wavBytes: ByteArray, index: Int, pan: Float, channels: Int) : Boolean
     external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)

@@ -20,7 +20,7 @@ Only do this once, when you open your stream. Then use the sample resampler to p
             2, // channel count
             44100, // input sampleRate
             48000, // output sampleRate
-            MultiChannelResampler::Medium); // conversion quality
+            MultiChannelResampler::Quality::Medium); // conversion quality
 
 Possible values for quality include { Fastest, Low, Medium, High, Best }.
 Higher quality levels will sound better but consume more CPU because they have more taps in the filter.

@@ -34,7 +34,7 @@ namespace iolib {
 constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
 SimpleMultiPlayer::SimpleMultiPlayer()
-  : mChannelCount(0), mSampleRate(0), mOutputReset(false)
+  : mChannelCount(0), mOutputReset(false)
 {}
 
 DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
@@ -72,13 +72,34 @@ void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorBeforeClose() error:%d", error);
 }
 
+int SimpleMultiPlayer::getDeviceSampleRate(int32_t channelCount) {
+
+    // Create an audio stream
+    AudioStreamBuilder builder;
+    builder.setChannelCount(channelCount);
+    builder.setPerformanceMode(PerformanceMode::LowLatency);
+    builder.setSharingMode(SharingMode::Exclusive);
+    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+
+    oboe::ManagedStream audioStream;
+    Result result = builder.openManagedStream(audioStream);
+    if (result != Result::OK) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                "openStream failed. Error: %s", convertToText(result));
+        return 0;
+    } else {
+        int rate = audioStream->getSampleRate();
+        return rate;
+    }
+}
+
 bool SimpleMultiPlayer::openStream() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
 
     // Create an audio stream
     AudioStreamBuilder builder;
     builder.setChannelCount(mChannelCount);
-    builder.setSampleRate(mSampleRate);
+    // builder.setSampleRate(mSampleRate);  // we will resample to device rate
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
@@ -117,11 +138,9 @@ bool SimpleMultiPlayer::openStream() {
     return true;
 }
 
-void SimpleMultiPlayer::setupAudioStream(int32_t sampleRate, int32_t channelCount) {
+void SimpleMultiPlayer::setupAudioStream(int32_t channelCount) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
     mChannelCount = channelCount;
-    mSampleRate = sampleRate;
-    mSampleRate = sampleRate;
 
     openStream();
 }
