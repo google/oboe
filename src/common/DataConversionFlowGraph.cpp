@@ -98,8 +98,8 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                                 ? sourceStream->getFramesPerBurst()
                                 : sourceStream->getFramesPerCallback();
     // Source
-    // If OUTPUT and using a callback then call back to the app using a SourceCaller.
-    // If INPUT and NOT using a callback then read from the child stream using a SourceCaller.
+    // IF OUTPUT and using a callback then call back to the app using a SourceCaller.
+    // OR IF INPUT and NOT using a callback then read from the child stream using a SourceCaller.
     if ((sourceStream->getCallback() != nullptr && isOutput)
         || (sourceStream->getCallback() == nullptr && isInput)) {
         switch (sourceFormat) {
@@ -118,8 +118,8 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
         mSourceCaller->setStream(sourceStream);
         lastOutput = &mSourceCaller->output;
     } else {
-        // If OUTPUT and NOT using a callback then write to the child stream using a BlockWriter.
-        // If INPUT and using a callback then write to the app using a BlockWriter.
+        // IF OUTPUT and NOT using a callback then write to the child stream using a BlockWriter.
+        // OR IF INPUT and using a callback then write to the app using a BlockWriter.
         switch (sourceFormat) {
             case AudioFormat::Float:
                 mSource = std::make_unique<SourceFloat>(sourceChannelCount);
@@ -200,8 +200,6 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     }
     lastOutput->connect(&mSink->input);
 
-    mFramePosition = 0;
-
     return Result::OK;
 }
 
@@ -210,7 +208,6 @@ int32_t DataConversionFlowGraph::read(void *buffer, int32_t numFrames, int64_t t
         mSourceCaller->setTimeoutNanos(timeoutNanos);
     }
     int32_t numRead = mSink->read(buffer, numFrames);
-    mFramePosition += numRead;
     return numRead;
 }
 
@@ -221,7 +218,6 @@ int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
     while (true) {
         // Pull and read some data in app format into a small buffer.
         int32_t framesRead = mSink->read(mAppBuffer.get(), flowgraph::kDefaultBufferSize);
-        mFramePosition += framesRead;
         if (framesRead <= 0) break;
         // Write to a block adapter, which will call the destination whenever it has enough data.
         int32_t bytesRead = mBlockWriter.write(mAppBuffer.get(),

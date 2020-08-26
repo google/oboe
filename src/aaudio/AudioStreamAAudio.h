@@ -110,6 +110,9 @@ protected:
 
 private:
 
+    // Time to sleep in order to prevent a race condition with a callback after a close().
+    static constexpr int kDelayBeforeCloseMillis = 10;
+
     std::atomic<bool>    mCallbackThreadEnabled;
 
     // pointer to the underlying AAudio stream, valid if open, null if closed

@@ -25,11 +25,17 @@ SampleRateConverter::SampleRateConverter(int32_t channelCount, MultiChannelResam
     setDataPulledAutomatically(false);
 }
 
+void SampleRateConverter::reset() {
+    FlowGraphNode::reset();
+    mInputCursor = kInitialCallCount;
+}
+
 // Return true if there is a sample available.
 bool SampleRateConverter::isInputAvailable() {
+    // If we have consumed all of the input data then go out and get some more.
     if (mInputCursor >= mNumValidInputFrames) {
-        mNumValidInputFrames = input.pullData(mInputFramePosition, input.getFramesPerBuffer());
-        mInputFramePosition += mNumValidInputFrames;
+        mInputCallCount++;
+        mNumValidInputFrames = input.pullData(mInputCallCount, input.getFramesPerBuffer());
         mInputCursor = 0;
     }
     return (mInputCursor < mNumValidInputFrames);

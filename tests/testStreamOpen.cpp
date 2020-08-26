@@ -24,18 +24,20 @@ class CallbackSizeMonitor : public AudioStreamCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         framesPerCallback = numFrames;
+        callbackCount++;
         return DataCallbackResult::Continue;
     }
 
     // This is exposed publicly so that the number of frames per callback can be tested.
     std::atomic<int32_t> framesPerCallback{0};
+    std::atomic<int32_t> callbackCount{0};
 };
 
 class StreamOpen : public ::testing::Test {
 
 protected:
 
-    bool openStream(){
+    bool openStream() {
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         EXPECT_EQ(0, openCount) << "Should start with a fresh object every time.";
@@ -43,19 +45,45 @@ protected:
         return (r == Result::OK);
     }
 
-    void closeStream(){
-        if (mStream != nullptr){
+    void closeStream() {
+        if (mStream != nullptr) {
             Result r = mStream->close();
-            if (r != Result::OK){
+            if (r != Result::OK) {
                 FAIL() << "Failed to close stream. " << convertToText(r);
             }
         }
         usleep(500 * 1000); // give previous stream time to settle
     }
 
+    void checkSampleRateConversionAdvancing(Direction direction) {
+        CallbackSizeMonitor callback;
+
+        mBuilder.setDirection(direction);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setCallback(&callback);
+        mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+        mBuilder.setSampleRate(44100);
+        mBuilder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+
+        openStream();
+
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
+        int timeout = 20;
+        while (callback.framesPerCallback == 0 && timeout > 0) {
+            usleep(50 * 1000);
+            timeout--;
+        }
+        ASSERT_GT(callback.callbackCount, 0);
+        ASSERT_GT(callback.framesPerCallback, 0);
+        ASSERT_EQ(mStream->requestStop(), Result::OK);
+
+        closeStream();
+    }
+
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
     int32_t openCount = 0;
+
 };
 
 TEST_F(StreamOpen, ForOpenSLESDefaultSampleRateIsUsed){
@@ -308,4 +336,14 @@ TEST_F(StreamOpen, LowLatencyStreamHasSmallBufferSize){
         closeStream();
         ASSERT_LE(bufferSize, burst * 3);
     }
+}
+
+// See if sample rate conversion by Oboe is calling the callback.
+TEST_F(StreamOpen, AAudioOutputSampleRate44100) {
+    checkSampleRateConversionAdvancing(Direction::Output);
+}
+
+// See if sample rate conversion by Oboe is calling the callback.
+TEST_F(StreamOpen, AAudioInputSampleRate44100) {
+    checkSampleRateConversionAdvancing(Direction::Input);
 }
