@@ -63,7 +63,6 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output) {
     // We iterate thousands of times through the loop. Roundoff error could accumulate
     // so add a few more frames for padding
     numOutFrames += 8;
-    output->mNumFrames = numOutFrames;
 
     const int channelCount = 1;    // 1 for mono, 2 for stereo
     MultiChannelResampler *resampler = MultiChannelResampler::make(
@@ -74,7 +73,6 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output) {
 
     float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
     float *outputBuffer = new float[numOutFrames];    // multi-channel buffer to be filled
-    memset(outputBuffer, 0, sizeof(float) * numOutFrames);
     output->mBuffer = outputBuffer;
 
     int numOutputFrames = 0;
@@ -90,6 +88,7 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output) {
             numOutputFrames++;
         }
     }
+    output->mNumFrames = numOutputFrames;
 
     delete resampler;
 }
