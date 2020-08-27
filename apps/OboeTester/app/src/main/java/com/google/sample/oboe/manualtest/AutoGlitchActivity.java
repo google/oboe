@@ -307,21 +307,23 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
             e.printStackTrace();
         } finally {
             super.stopAudioTest();
-            log("\n==== SUMMARY ========");
-            if (mFailCount > 0) {
-                log(mPassCount + " passed. " + mFailCount + " failed.");
-                log("These tests FAILED:");
-                log(mFailedSummary.toString());
-            } else {
-                log("All tests PASSED.");
-            }
-            log("== FINISHED at " + new Date());
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    onTestFinished();
+            if (mThreadEnabled) {
+                log("\n==== SUMMARY ========");
+                if (mFailCount > 0) {
+                    log(mPassCount + " passed. " + mFailCount + " failed.");
+                    log("These tests FAILED:");
+                    log(mFailedSummary.toString());
+                } else {
+                    log("All tests PASSED.");
                 }
-            });
+                log("== FINISHED at " + new Date());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onTestFinished();
+                    }
+                });
+            }
         }
     }
 

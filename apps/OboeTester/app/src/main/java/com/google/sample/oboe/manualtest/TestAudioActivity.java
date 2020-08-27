@@ -49,7 +49,8 @@ abstract class TestAudioActivity extends Activity {
     public static final int AUDIO_STATE_STARTED = 1;
     public static final int AUDIO_STATE_PAUSED = 2;
     public static final int AUDIO_STATE_STOPPED = 3;
-    public static final int AUDIO_STATE_CLOSED = 4;
+    public static final int AUDIO_STATE_CLOSING = 4;
+    public static final int AUDIO_STATE_CLOSED = 5;
 
     public static final int COLOR_ACTIVE = 0xFFD0D0A0;
     public static final int COLOR_IDLE = 0xFFD0D0D0;
@@ -497,10 +498,26 @@ abstract class TestAudioActivity extends Activity {
         updateEnabledWidgets();
     }
 
-    public void closeAudio() {
+    // Make synchronized so we don't close from two streams at the same time.
+    public synchronized void closeAudio() {
+        if (mAudioState >= AUDIO_STATE_CLOSING) {
+            Log.d(TAG, "closeAudio() already closing");
+            return;
+        }
+        mAudioState = AUDIO_STATE_CLOSING;
+
         mStreamSniffer.stopStreamSniffer();
+        // Close output streams first because legacy callbacks may still be active
+        // and an output stream may be calling the input stream.
         for (StreamContext streamContext : mStreamContexts) {
-            streamContext.tester.close();
+            if (!streamContext.isInput()) {
+                streamContext.tester.close();
+            }
+        }
+        for (StreamContext streamContext : mStreamContexts) {
+            if (streamContext.isInput()) {
+                streamContext.tester.close();
+            }
         }
 
         if (mScoStarted) {
