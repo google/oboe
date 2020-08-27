@@ -72,34 +72,13 @@ void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorBeforeClose() error:%d", error);
 }
 
-int SimpleMultiPlayer::getDeviceSampleRate(int32_t channelCount) {
-
-    // Create an audio stream
-    AudioStreamBuilder builder;
-    builder.setChannelCount(channelCount);
-    builder.setPerformanceMode(PerformanceMode::LowLatency);
-    builder.setSharingMode(SharingMode::Exclusive);
-    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
-
-    oboe::ManagedStream audioStream;
-    Result result = builder.openManagedStream(audioStream);
-    if (result != Result::OK) {
-        __android_log_print(ANDROID_LOG_ERROR, TAG,
-                "openStream failed. Error: %s", convertToText(result));
-        return 0;
-    } else {
-        int rate = audioStream->getSampleRate();
-        return rate;
-    }
-}
-
 bool SimpleMultiPlayer::openStream() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
 
     // Create an audio stream
     AudioStreamBuilder builder;
     builder.setChannelCount(mChannelCount);
-    // builder.setSampleRate(mSampleRate);  // we will resample to device rate
+    // we will resample source data to device rate, so take default sample rate
     builder.setCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
@@ -126,7 +105,13 @@ bool SimpleMultiPlayer::openStream() {
                 "setBufferSizeInFrames failed. Error: %s", convertToText(result));
     }
 
-    result = mAudioStream->requestStart();
+    mSampleRate = mAudioStream->getSampleRate();
+
+    return true;
+}
+
+bool SimpleMultiPlayer::startStream() {
+    Result result = mAudioStream->requestStart();
     if (result != Result::OK){
         __android_log_print(
                 ANDROID_LOG_ERROR,
@@ -154,6 +139,8 @@ void SimpleMultiPlayer::teardownAudioStream() {
 }
 
 void SimpleMultiPlayer::addSampleSource(SampleSource* source, SampleBuffer* buffer) {
+    buffer->resampleData(mSampleRate);
+
     mSampleBuffers.push_back(buffer);
     mSampleSources.push_back(source);
     mNumSampleBuffers++;
