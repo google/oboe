@@ -198,10 +198,11 @@ public:
 
 
     /**
-     * Set the intended use case for the stream.
+     * Set the intended use case for an output stream.
      *
      * The system will use this information to optimize the behavior of the stream.
      * This could, for example, affect how volume and focus is handled for the stream.
+     * The usage is ignored for input streams.
      *
      * The default, if you do not call this function, is Usage::Media.
      *
@@ -215,10 +216,11 @@ public:
     }
 
     /**
-     * Set the type of audio data that the stream will carry.
+     * Set the type of audio data that an output stream will carry.
      *
      * The system will use this information to optimize the behavior of the stream.
      * This could, for example, affect whether a stream is paused when a notification occurs.
+     * The contentType is ignored for input streams.
      *
      * The default, if you do not call this function, is ContentType::Music.
      *
