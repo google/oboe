@@ -27,8 +27,6 @@ class DrumPlayer {
                                         // This IS NOT the channel format of the source samples
                                         // (which must be mono).
         val NUM_SAMPLE_CHANNELS: Int = 1;   // All WAV resource must be mono
-//        val SAMPLE_RATE: Int = 44100    // All the input samples are assumed to BE 44.1K
-//                                        // All the input samples are assumed to be mono.
 
         // Sample Buffer IDs
         val BASSDRUM: Int = 0
@@ -56,6 +54,10 @@ class DrumPlayer {
 
     fun setupAudioStream() {
         setupAudioStreamNative(NUM_PLAY_CHANNELS)
+    }
+
+    fun startAudioStream() {
+        startAudioStreamNative();
     }
 
     fun teardownAudioStream() {
@@ -99,6 +101,7 @@ class DrumPlayer {
     }
 
     external fun setupAudioStreamNative(numChannels: Int)
+    external fun startAudioStreamNative();
     external fun teardownAudioStreamNative()
 
     external fun loadWavAssetNative(

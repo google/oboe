@@ -52,6 +52,12 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_setupAu
     sDTPlayer.setupAudioStream(numChannels);
 }
 
+JNIEXPORT void JNICALL
+Java_com_plausiblesoftware_drumthumper_DrumPlayer_startAudioStreamNative(
+        JNIEnv *env, jobject thiz) {
+    sDTPlayer.startStream();
+}
+
 /**
  * Native (JNI) implementation of DrumPlayer.teardownAudioStreamNative()
  */
@@ -85,8 +91,8 @@ JNIEXPORT jboolean JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loa
     SampleBuffer* sampleBuffer = new SampleBuffer();
     sampleBuffer->loadSampleData(&reader);
 
-    int sampleRate = sDTPlayer.getDeviceSampleRate(2 /*channelCount*/);
-    sampleBuffer->resampleData(sampleRate);
+//    int sampleRate = sDTPlayer.getDeviceSampleRate(2 /*channelCount*/);
+//    sampleBuffer->resampleData(sampleRate);
 
     OneShotSampleSource* source = new OneShotSampleSource(sampleBuffer, pan);
     sDTPlayer.addSampleSource(source, sampleBuffer);
@@ -129,7 +135,7 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_clearOu
  */
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
     sDTPlayer.resetAll();
-    if (sDTPlayer.openStream()){
+    if (sDTPlayer.openStream() && sDTPlayer.startStream()){
         __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");
     } else {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "openStream failed");

@@ -161,7 +161,13 @@ class DrumThumperActivity : AppCompatActivity(),
 
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        // mDrumPlayer.allocSampleData()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        mDrumPlayer.setupAudioStream()
+
         var allAssetsValid = mDrumPlayer.loadWavAssets(getAssets())
 
         if (!allAssetsValid) {
@@ -171,12 +177,7 @@ class DrumThumperActivity : AppCompatActivity(),
                     Toast.LENGTH_LONG)
             toast.show()
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        mDrumPlayer.setupAudioStream()
+        mDrumPlayer.startAudioStream()
 
         if (mUseDeviceChangeFallback) {
             mAudioMgr!!.registerAudioDeviceCallback(mDeviceListener, null)
@@ -232,11 +233,12 @@ class DrumThumperActivity : AppCompatActivity(),
 
         mDrumPlayer.teardownAudioStream()
 
+        mDrumPlayer.unloadWavAssets()
+
         super.onStop()
     }
 
     override fun onDestroy() {
-        mDrumPlayer.unloadWavAssets();
         super.onDestroy()
     }
 

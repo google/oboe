@@ -44,9 +44,10 @@ public:
     void setupAudioStream(int32_t channelCount);
     void teardownAudioStream();
 
-    static int getDeviceSampleRate(int32_t channelCount);
-
     bool openStream();
+    bool startStream();
+
+    int getSampleRate() { return mSampleRate; }
 
     // Wave Sample Loading...
     /**
@@ -79,7 +80,7 @@ private:
     // Oboe Audio Stream
     oboe::ManagedStream mAudioStream;
 
-    // Audio attributes
+    // Playback Audio attributes
     int32_t mChannelCount;
     int32_t mSampleRate;
 

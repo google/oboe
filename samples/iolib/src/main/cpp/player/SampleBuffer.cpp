@@ -60,22 +60,25 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output) {
 
     // round up
     int32_t numOutFrames = (int32_t)(temp + 0.5);
+    // We iterate thousands of times through the loop. Roundoff error could accumulate
+    // so add a few more frames for padding
+    numOutFrames += 8;
     output->mNumFrames = numOutFrames;
 
+    const int channelCount = 1;    // 1 for mono, 2 for stereo
     MultiChannelResampler *resampler = MultiChannelResampler::make(
-            1, // channel count
+            channelCount, // channel count
             input.mSampleRate, // input sampleRate
             output->mSampleRate, // output sampleRate
             MultiChannelResampler::Quality::Medium); // conversion quality
 
     float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
     float *outputBuffer = new float[numOutFrames];    // multi-channel buffer to be filled
+    memset(outputBuffer, 0, sizeof(float) * numOutFrames);
     output->mBuffer = outputBuffer;
-    int    numInputFrames = input.mNumFrames;  // number of frames of input
-    int    numOutputFrames = 0;
-    int    channelCount = 1;    // 1 for mono, 2 for stereo
 
-    int inputFramesLeft = numInputFrames;
+    int numOutputFrames = 0;
+    int inputFramesLeft = input.mNumFrames;
     while (inputFramesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
