@@ -7,8 +7,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 28
         // Also update the versions in the AndroidManifest.xml file.
-        versionCode 33
-        versionName "1.5.25"
+        versionCode 34
+        versionName "1.5.26"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
