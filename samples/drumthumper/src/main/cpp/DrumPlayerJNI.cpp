@@ -91,9 +91,6 @@ JNIEXPORT jboolean JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_loa
     SampleBuffer* sampleBuffer = new SampleBuffer();
     sampleBuffer->loadSampleData(&reader);
 
-//    int sampleRate = sDTPlayer.getDeviceSampleRate(2 /*channelCount*/);
-//    sampleBuffer->resampleData(sampleRate);
-
     OneShotSampleSource* source = new OneShotSampleSource(sampleBuffer, pan);
     sDTPlayer.addSampleSource(source, sampleBuffer);
 
