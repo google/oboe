@@ -23,6 +23,8 @@ oboe::DataCallbackResult InputStreamCallbackAnalyzer::onAudioReady(
         int numFrames) {
     int32_t channelCount = audioStream->getChannelCount();
 
+    printScheduler();
+
     if (audioStream->getFormat() == oboe::AudioFormat::I16) {
         int16_t *shortData = (int16_t *) audioData;
         if (mRecording != nullptr) {

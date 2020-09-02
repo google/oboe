@@ -111,7 +111,6 @@ oboe::Result ActivityContext::pause() {
     for (auto entry : mOboeStreams) {
         oboe::AudioStream *oboeStream = entry.second.get();
         result = oboeStream->requestPause();
-        printScheduler();
     }
     return result;
 }
@@ -122,7 +121,6 @@ oboe::Result ActivityContext::stopAllStreams() {
     for (auto entry : mOboeStreams) {
         oboe::AudioStream *oboeStream = entry.second.get();
         result = oboeStream->requestStop();
-        printScheduler();
     }
     return result;
 }
@@ -237,6 +235,7 @@ oboe::Result ActivityContext::start() {
 
     configureForStart();
 
+    audioStreamGateway.reset();
     result = startStreams();
 
     if (!mUseCallback && result == oboe::Result::OK) {
