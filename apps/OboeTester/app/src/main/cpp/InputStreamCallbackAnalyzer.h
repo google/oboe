@@ -24,17 +24,19 @@
 // TODO #include "flowgraph/FlowGraph.h"
 #include "oboe/Oboe.h"
 #include "MultiChannelRecording.h"
+#include "OboeTesterStreamCallback.h"
 #include "analyzer/PeakDetector.h"
 
 constexpr int kMaxInputChannels = 8;
 
-class InputStreamCallbackAnalyzer : public oboe::AudioStreamCallback  {
+class InputStreamCallbackAnalyzer : public OboeTesterStreamCallback {
 public:
 
     void reset() {
         for (auto detector : mPeakDetectors) {
             detector.reset();
         }
+        OboeTesterStreamCallback::reset();
     }
 
     /**

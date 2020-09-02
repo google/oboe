@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Android Open Source Project
+ * Copyright 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-#include <cstring>
-#include <sched.h>
+#ifndef OBOETESTER_STREAM_CALLBACK_H
+#define OBOETESTER_STREAM_CALLBACK_H
 
-#include "common/OboeDebug.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include "flowgraph/FlowGraphNode.h"
 #include "oboe/Oboe.h"
-#include "AudioStreamGateway.h"
 
-using namespace oboe::flowgraph;
+class OboeTesterStreamCallback : public oboe::AudioStreamCallback {
+public:
+    virtual ~OboeTesterStreamCallback() = default;
 
-oboe::DataCallbackResult AudioStreamGateway::onAudioReady(
-        oboe::AudioStream *audioStream,
-        void *audioData,
-        int numFrames) {
-
-    printScheduler();
-
-    if (mAudioSink != nullptr) {
-        mAudioSink->read(audioData, numFrames);
+    // Call this before starting.
+    void reset() {
+        mPreviousScheduler = -1;
     }
 
-    return oboe::DataCallbackResult::Continue;
-}
+protected:
+    void    printScheduler();
 
+    int     mPreviousScheduler = -1;
+};
+
+
+#endif //OBOETESTER_STREAM_CALLBACK_H
