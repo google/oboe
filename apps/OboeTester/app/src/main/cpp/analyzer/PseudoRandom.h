@@ -22,8 +22,7 @@
 
 class PseudoRandom {
 public:
-    PseudoRandom() {}
-    PseudoRandom(int64_t seed)
+    PseudoRandom(int64_t seed = 99887766)
             :    mSeed(seed)
     {}
 
@@ -36,7 +35,8 @@ public:
         return nextRandomInteger() * (0.5 / (((int32_t)1) << 30));
     }
 
-    /** Calculate random 32 bit number using linear-congruential method.
+    /** Calculate random 32 bit number using linear-congruential method
+     * with known real-time performance.
      */
     int32_t nextRandomInteger() {
 #if __has_builtin(__builtin_mul_overflow) && __has_builtin(__builtin_add_overflow)
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    int64_t mSeed = 99887766;
+    int64_t mSeed;
 };
 
 #endif //ANALYZER_PSEUDORANDOM_H

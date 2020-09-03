@@ -41,6 +41,8 @@ public:
             , mCursor(samplesPerPulse) {
     }
 
+    virtual ~ManchesterEncoder() = default;
+
     /**
      * This will be called when the next byte is needed.
      * @return
@@ -64,10 +66,10 @@ protected:
     /**
      * This will be called when a new bit is ready to be encoded.
      * It can be used to prepare the encoded samples.
-     * @param current 
+     * @param current
      */
-    virtual void onNextBit(bool current) {};
-    
+    virtual void onNextBit(bool /* current */) {};
+
     void advanceSample() {
         // Are we ready for a new bit?
         if (++mCursor >= mSamplesPerPulse) {
