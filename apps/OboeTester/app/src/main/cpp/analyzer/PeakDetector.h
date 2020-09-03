@@ -19,6 +19,11 @@
 
 #include <math.h>
 
+/**
+ * Measure a peak envelope by rising with the peaks,
+ * and decaying exponentially after each peak.
+ * The absolute value of the input signal is used.
+ */
 class PeakDetector {
 public:
 
@@ -27,20 +32,35 @@ public:
     }
 
     double process(double input) {
-        mLevel *= mDecay;
+        mLevel *= mDecay; // exponential decay
         input = fabs(input);
+        // never fall below the input signal
         if (input > mLevel) {
             mLevel = input;
         }
         return mLevel;
     }
 
-    double getLevel() {
+    double getLevel() const {
         return mLevel;
     }
 
+    double getDecay() const {
+        return mDecay;
+    }
+
+    /**
+     * Multiply the level by this amount on every iteration.
+     * This provides an exponential decay curve.
+     * A value just under 1.0 is best, for example, 0.99;
+     * @param decay scale level for each input
+     */
+    void setDecay(double decay) {
+        mDecay = decay;
+    }
+
 private:
-    static constexpr float kDefaultDecay = 0.99f;
+    static constexpr double kDefaultDecay = 0.99f;
 
     double mLevel = 0.0;
     double mDecay = kDefaultDecay;

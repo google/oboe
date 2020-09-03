@@ -25,16 +25,26 @@
 #include <algorithm>
 #include <assert.h>
 #include <cctype>
+#include <iomanip>
+#include <iostream>
 #include <math.h>
 #include <memory>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <vector>
 
-#include "RandomPulseGenerator.h"
 #include "PeakDetector.h"
 #include "PseudoRandom.h"
+#include "RandomPulseGenerator.h"
+
+// This is used when the code is in Oboe.
+#ifndef ALOGD
+#define ALOGD LOGD
+#define ALOGE LOGE
+#define ALOGW LOGW
+#endif
 
 #define LOOPBACK_RESULT_TAG  "RESULT: "
 
@@ -43,7 +53,7 @@ static constexpr int32_t kMillisPerSecond   = 1000;
 static constexpr int32_t kMaxLatencyMillis  = 700;  // arbitrary and generous
 static constexpr double  kMinimumConfidence = 0.2;
 
-typedef struct LatencyReport_s {
+struct LatencyReport {
     int32_t latencyInFrames = 0.0;
     double confidence = 0.0;
 
@@ -51,13 +61,12 @@ typedef struct LatencyReport_s {
         latencyInFrames = 0;
         confidence = 0.0;
     }
-} LatencyReport;
+};
 
 // Calculate a normalized cross correlation.
 static double calculateNormalizedCorrelation(const float *a,
                                              const float *b,
-                                             int windowSize)
-{
+                                             int windowSize) {
     double correlation = 0.0;
     double sumProducts = 0.0;
     double sumSquares = 0.0;
@@ -72,7 +81,7 @@ static double calculateNormalizedCorrelation(const float *a,
     }
 
     if (sumSquares >= 1.0e-9) {
-        correlation = (float) (2.0 * sumProducts / sumSquares);
+        correlation = 2.0 * sumProducts / sumSquares;
     }
     return correlation;
 }
@@ -92,15 +101,9 @@ static double calculateRootMeanSquare(float *data, int32_t numSamples) {
 class AudioRecording
 {
 public:
-    AudioRecording() {
-    }
-    ~AudioRecording() {
-        delete[] mData;
-    }
 
     void allocate(int maxFrames) {
-        delete[] mData;
-        mData = new float[maxFrames];
+        mData = std::make_unique<float[]>(maxFrames);
         mMaxFrames = maxFrames;
     }
 
@@ -133,30 +136,31 @@ public:
         // stop at end of buffer
         if (mFrameCounter < mMaxFrames) {
             mData[mFrameCounter++] = sample;
+            return 1;
         }
-        return 1;
+        return 0;
     }
 
     void clear() {
         mFrameCounter = 0;
     }
-    int32_t size() {
+    int32_t size() const {
         return mFrameCounter;
     }
 
-    bool isFull() {
+    bool isFull() const {
         return mFrameCounter >= mMaxFrames;
     }
 
-    float *getData() {
-        return mData;
+    float *getData() const {
+        return mData.get();
     }
 
     void setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
     }
 
-    int32_t getSampleRate() {
+    int32_t getSampleRate() const {
         return mSampleRate;
     }
 
@@ -164,9 +168,9 @@ public:
      * Square the samples so they are all positive and so the peaks are emphasized.
      */
     void square() {
+        float *x = mData.get();
         for (int i = 0; i < mFrameCounter; i++) {
-            const float sample = mData[i];
-            mData[i] = sample * sample;
+            x[i] *= x[i];
         }
     }
 
@@ -189,7 +193,7 @@ public:
     }
 
 private:
-    float        *mData = nullptr;
+    std::unique_ptr<float[]> mData;
     int32_t       mFrameCounter = 0;
     int32_t       mMaxFrames = 0;
     int32_t       mSampleRate = kDefaultSampleRate; // common default
@@ -197,7 +201,6 @@ private:
 
 static int measureLatencyFromPulse(AudioRecording &recorded,
                                    AudioRecording &pulse,
-                                   int32_t framesPerEncodedBit,
                                    LatencyReport *report) {
 
     report->latencyInFrames = 0;
@@ -205,7 +208,7 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
 
     int numCorrelations = recorded.size() - pulse.size();
     if (numCorrelations < 10) {
-        LOGE("%s() recording too small = %d frames", __func__, recorded.size());
+        ALOGE("%s() recording too small = %d frames\n", __func__, recorded.size());
         return -1;
     }
     std::unique_ptr<float[]> correlations= std::make_unique<float[]>(numCorrelations);
@@ -229,7 +232,7 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
         }
     }
     if (peakIndex < 0) {
-        LOGE("%s() no signal for correlation", __func__);
+        ALOGE("%s() no signal for correlation\n", __func__);
         return -2;
     }
 
@@ -244,7 +247,6 @@ class LoopbackProcessor {
 public:
     virtual ~LoopbackProcessor() = default;
 
-    // Note that these values must match the switch in RoundTripLatencyActivity.h
     enum result_code {
         RESULT_OK = 0,
         ERROR_NOISY = -99,
@@ -256,7 +258,7 @@ public:
         ERROR_NO_LOCK
     };
 
-    virtual void onStartTest() {
+    virtual void prepareToTest() {
         reset();
     }
 
@@ -269,7 +271,7 @@ public:
     virtual result_code processOutputFrame(float *frameData, int channelCount) = 0;
 
     void process(float *inputData, int inputChannelCount, int numInputFrames,
-                        float *outputData, int outputChannelCount, int numOutputFrames) {
+                 float *outputData, int outputChannelCount, int numOutputFrames) {
         int numBoth = std::min(numInputFrames, numOutputFrames);
         // Process one frame at a time.
         for (int i = 0; i < numBoth; i++) {
@@ -290,7 +292,7 @@ public:
         }
     }
 
-    virtual void analyze() = 0;
+    virtual std::string analyze() = 0;
 
     virtual void printStatus() {};
 
@@ -320,11 +322,11 @@ public:
         mSampleRate = sampleRate;
     }
 
-    int32_t getSampleRate() {
+    int32_t getSampleRate() const {
         return mSampleRate;
     }
 
-    int32_t getResetCount() {
+    int32_t getResetCount() const {
         return mResetCount;
     }
 
@@ -348,7 +350,7 @@ public:
     LatencyAnalyzer() : LoopbackProcessor() {}
     virtual ~LatencyAnalyzer() = default;
 
-    virtual int32_t getProgress() = 0;
+    virtual int32_t getProgress() const = 0;
 
     virtual int getState() = 0;
 
@@ -380,7 +382,6 @@ public:
                 / (kFramesPerEncodedBit * kMillisPerSecond);
         int32_t  pulseLength = numPulseBits * kFramesPerEncodedBit;
         mFramesToRecord = pulseLength + maxLatencyFrames;
-        LOGD("PulseLatencyAnalyzer: allocate recording with %d frames", mFramesToRecord);
         mAudioRecording.allocate(mFramesToRecord);
         mAudioRecording.setSampleRate(getSampleRate());
         generateRandomPulse(pulseLength);
@@ -414,7 +415,6 @@ public:
         mBackgroundRMS = 0.0f;
         mSignalRMS = 0.0f;
 
-        LOGD("state reset to STATE_MEASURE_BACKGROUND");
         mState = STATE_MEASURE_BACKGROUND;
         mAudioRecording.clear();
         mLatencyReport.reset();
@@ -428,51 +428,53 @@ public:
         return mState == STATE_DONE;
     }
 
-    int32_t getProgress() override {
+    int32_t getProgress() const override {
         return mAudioRecording.size();
     }
 
-    void analyze() override {
-        LOGD("PulseLatencyAnalyzer ---------------");
-        LOGD(LOOPBACK_RESULT_TAG "test.state             = %8d", mState);
-        LOGD(LOOPBACK_RESULT_TAG "test.state.name        = %8s", convertStateToText(mState));
-        LOGD(LOOPBACK_RESULT_TAG "background.rms         = %8f", mBackgroundRMS);
+    std::string analyze() override {
+        std::stringstream report;
+        report << "PulseLatencyAnalyzer ---------------\n";
+        report << LOOPBACK_RESULT_TAG "test.state             = "
+                << std::setw(8) << mState << "\n";
+        report << LOOPBACK_RESULT_TAG "test.state.name        = "
+                << convertStateToText(mState) << "\n";
+        report << LOOPBACK_RESULT_TAG "background.rms         = "
+                << std::setw(8) << mBackgroundRMS << "\n";
 
         int32_t newResult = RESULT_OK;
         if (mState != STATE_GOT_DATA) {
-            LOGD("WARNING - Bad state. Check volume on device.");
+            report << "WARNING - Bad state. Check volume on device.\n";
             // setResult(ERROR_INVALID_STATE);
         } else {
-            LOGD("Please wait several seconds for cross-correlation to complete.");
             float gain = mAudioRecording.normalize(1.0f);
             measureLatencyFromPulse(mAudioRecording,
                                     mPulse,
-                                    kFramesPerEncodedBit,
                                     &mLatencyReport);
 
             if (mLatencyReport.confidence < kMinimumConfidence) {
-                LOGD("   ERROR - confidence too low!");
+                report << "   ERROR - confidence too low!";
                 newResult = ERROR_CONFIDENCE;
             } else {
                 mSignalRMS = calculateRootMeanSquare(
                         &mAudioRecording.getData()[mLatencyReport.latencyInFrames], mPulse.size())
                                 / gain;
             }
-#if OBOE_ENABLE_LOGGING
             double latencyMillis = kMillisPerSecond * (double) mLatencyReport.latencyInFrames
                                    / getSampleRate();
-#endif
-            LOGD(LOOPBACK_RESULT_TAG "latency.frames         = %8d",
-                   mLatencyReport.latencyInFrames);
-            LOGD(LOOPBACK_RESULT_TAG "latency.msec           = %8.2f",
-                   latencyMillis);
-            LOGD(LOOPBACK_RESULT_TAG "latency.confidence     = %8.6f",
-                   mLatencyReport.confidence);
+            report << LOOPBACK_RESULT_TAG "latency.frames         = " << std::setw(8)
+                   << mLatencyReport.latencyInFrames << "\n";
+            report << LOOPBACK_RESULT_TAG "latency.msec           = " << std::setw(8)
+                   << latencyMillis << "\n";
+            report << LOOPBACK_RESULT_TAG "latency.confidence     = " << std::setw(8)
+                   << mLatencyReport.confidence << "\n";
         }
         mState = STATE_DONE;
         if (getResult() == RESULT_OK) {
             setResult(newResult);
         }
+
+        return report.str();
     }
 
     int32_t getMeasuredLatency() override {
@@ -491,8 +493,12 @@ public:
         return mSignalRMS;
     }
 
+    bool isRecordingComplete() {
+        return mState == STATE_GOT_DATA;
+    }
+
     void printStatus() override {
-        LOGD("st = %d", mState);
+        ALOGD("latency: st = %d = %s", mState, convertStateToText(mState));
     }
 
     result_code processInputFrame(float *frameData, int channelCount) override {
@@ -509,7 +515,6 @@ public:
                     mBackgroundRMS = sqrtf(mBackgroundSumSquare / mBackgroundSumCount);
                     nextState = STATE_IN_PULSE;
                     mPulseCursor = 0;
-                    LOGD("LatencyAnalyzer state => STATE_SENDING_PULSE");
                 }
                 break;
 
@@ -517,7 +522,6 @@ public:
                 // Record input until the mAudioRecording is full.
                 mAudioRecording.write(frameData, channelCount, 1);
                 if (hasEnoughData()) {
-                    LOGD("LatencyAnalyzer state => STATE_GOT_DATA");
                     nextState = STATE_GOT_DATA;
                 }
                 break;
@@ -570,22 +574,17 @@ private:
     };
 
     const char *convertStateToText(echo_state state) {
-        const char *result = "Unknown";
-        switch(state) {
+        switch (state) {
             case STATE_MEASURE_BACKGROUND:
-                result = "INIT";
-                break;
+                return "INIT";
             case STATE_IN_PULSE:
-                result = "PULSE";
-                break;
+                return "PULSE";
             case STATE_GOT_DATA:
-                result = "GOT_DATA";
-                break;
+                return "GOT_DATA";
             case STATE_DONE:
-                result = "DONE";
-                break;
+                return "DONE";
         }
-        return result;
+        return "UNKNOWN";
     }
 
     int32_t         mDownCounter = 500;
@@ -598,10 +597,10 @@ private:
     AudioRecording     mPulse;
     int32_t            mPulseCursor = 0;
 
-    float              mBackgroundSumSquare = 0.0f;
+    double             mBackgroundSumSquare = 0.0;
     int32_t            mBackgroundSumCount = 0;
-    float              mBackgroundRMS = 0.0f;
-    float              mSignalRMS = 0.0f;
+    double             mBackgroundRMS = 0.0;
+    double             mSignalRMS = 0.0;
     int32_t            mFramesToRecord = 0;
 
     AudioRecording     mAudioRecording; // contains only the input after starting the pulse

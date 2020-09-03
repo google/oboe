@@ -35,30 +35,30 @@ public:
         mZeroAfterZero = std::make_unique<float[]>(samplesPerPulse);
         mZeroAfterOne = std::make_unique<float[]>(samplesPerPulse);
 
-        int i = 0;
-        for (int j = 0; j < rampSize; j++) {
-            float phase = (j + 1) * M_PI / rampSize;
+        int sampleIndex = 0;
+        for (int rampIndex = 0; rampIndex < rampSize; rampIndex++) {
+            float phase = (rampIndex + 1) * M_PI / rampSize;
             float sample = -cosf(phase);
-            mZeroAfterZero[i] = sample;
-            mZeroAfterOne[i] = 1.0f;
-            i++;
+            mZeroAfterZero[sampleIndex] = sample;
+            mZeroAfterOne[sampleIndex] = 1.0f;
+            sampleIndex++;
         }
-        for (int j = 0; j < rampSize; j++) {
-            mZeroAfterZero[i] = 1.0f;
-            mZeroAfterOne[i] = 1.0f;
-            i++;
+        for (int rampIndex = 0; rampIndex < rampSize; rampIndex++) {
+            mZeroAfterZero[sampleIndex] = 1.0f;
+            mZeroAfterOne[sampleIndex] = 1.0f;
+            sampleIndex++;
         }
-        for (int j = 0; j < rampSize; j++) {
-            float phase = (j + 1) * M_PI / rampSize;
+        for (int rampIndex = 0; rampIndex < rampSize; rampIndex++) {
+            float phase = (rampIndex + 1) * M_PI / rampSize;
             float sample = cosf(phase);
-            mZeroAfterZero[i] = sample;
-            mZeroAfterOne[i] = sample;
-            i++;
+            mZeroAfterZero[sampleIndex] = sample;
+            mZeroAfterOne[sampleIndex] = sample;
+            sampleIndex++;
         }
-        for (int j = 0; j < rampSize; j++) {
-            mZeroAfterZero[i] = -1.0f;
-            mZeroAfterOne[i] = -1.0f;
-            i++;
+        for (int rampIndex = 0; rampIndex < rampSize; rampIndex++) {
+            mZeroAfterZero[sampleIndex] = -1.0f;
+            mZeroAfterOne[sampleIndex] = -1.0f;
+            sampleIndex++;
         }
     }
 
@@ -69,7 +69,6 @@ public:
                           : mZeroAfterZero.get();
         mPreviousBit = current;
     }
-
 
     float nextFloat() override {
         advanceSample();

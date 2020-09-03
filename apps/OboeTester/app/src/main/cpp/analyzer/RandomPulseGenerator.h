@@ -29,12 +29,14 @@ public:
     : RoundedManchesterEncoder(samplesPerPulse) {
     }
 
+    virtual ~RandomPulseGenerator() = default;
+
     /**
      * This will be called when the next byte is needed.
      * @return random byte
      */
     uint8_t onNextByte() override {
-        return static_cast<uint8_t>(rand() & 0x00FF);
+        return static_cast<uint8_t>(rand());
     }
 };
 

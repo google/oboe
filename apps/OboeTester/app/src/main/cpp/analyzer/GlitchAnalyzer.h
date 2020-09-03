@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_GLITCHANALYZER_H
-#define OBOETESTER_GLITCHANALYZER_H
+#ifndef ANALYZER_GLITCH_ANALYZER_H
+#define ANALYZER_GLITCH_ANALYZER_H
 
+#include <algorithm>
 #include <cctype>
+#include <iomanip>
+#include <iostream>
 
-#include "PseudoRandom.h"
-#include "LatencyAnalyzer.h"
 #include "InfiniteRecording.h"
+#include "LatencyAnalyzer.h"
+#include "PseudoRandom.h"
 
 /**
- * Output a steady sinewave and analyze the return signal.
+ * Output a steady sine wave and analyze the return signal.
  *
  * Use a cosine transform to measure the predicted magnitude and relative phase of the
  * looped back sine wave. Then generate a predicted signal and compare with the actual signal.
@@ -36,19 +39,19 @@ public:
             : LoopbackProcessor()
             , mInfiniteRecording(64 * 1024) {}
 
-    int32_t getState() {
+    int32_t getState() const {
         return mState;
     }
 
-    float getPeakAmplitude() {
+    double getPeakAmplitude() const {
         return mPeakFollower.getLevel();
     }
 
-    float getTolerance() {
+    double getTolerance() {
         return mTolerance;
     }
 
-    void setTolerance(float tolerance) {
+    void setTolerance(double tolerance) {
         mTolerance = tolerance;
         mScaledTolerance = mMagnitude * mTolerance;
     }
@@ -58,11 +61,11 @@ public:
         mScaledTolerance = mMagnitude * mTolerance;
     }
 
-    int32_t getGlitchCount() {
+    int32_t getGlitchCount() const {
         return mGlitchCount;
     }
 
-    int32_t getStateFrameCount(int state) {
+    int32_t getStateFrameCount(int state) const {
         return mStateFrameCounters[state];
     }
 
@@ -73,55 +76,72 @@ public:
         } else {
             double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio
             double signalToNoiseDB = 10.0 * log(signalToNoise);
-            if (signalToNoiseDB < MIN_SNRATIO_DB) {
-                LOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
-                     MIN_SNRATIO_DB);
+            if (signalToNoiseDB < MIN_SNR_DB) {
+                ALOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
+                     MIN_SNR_DB);
                 setResult(ERROR_VOLUME_TOO_LOW);
             }
             return signalToNoiseDB;
         }
     }
 
-    void analyze() override {
-        LOGD("GlitchAnalyzer ------------------");
-        LOGD(LOOPBACK_RESULT_TAG "peak.amplitude     = %8f", getPeakAmplitude());
-        LOGD(LOOPBACK_RESULT_TAG "sine.magnitude     = %8f", mMagnitude);
-        LOGD(LOOPBACK_RESULT_TAG "rms.noise          = %8f", mMeanSquareNoise);
-        LOGD(LOOPBACK_RESULT_TAG "signal.to.noise.db = %8.2f", getSignalToNoiseDB());
-        LOGD(LOOPBACK_RESULT_TAG "frames.accumulated = %8d", mFramesAccumulated);
-        LOGD(LOOPBACK_RESULT_TAG "sine.period        = %8d", mSinePeriod);
-        LOGD(LOOPBACK_RESULT_TAG "test.state         = %8d", mState);
-        LOGD(LOOPBACK_RESULT_TAG "frame.count        = %8d", mFrameCounter);
+    std::string analyze() override {
+        std::stringstream report;
+        report << "GlitchAnalyzer ------------------\n";
+        report << LOOPBACK_RESULT_TAG "peak.amplitude     = " << std::setw(8)
+               << getPeakAmplitude() << "\n";
+        report << LOOPBACK_RESULT_TAG "sine.magnitude     = " << std::setw(8)
+               << mMagnitude << "\n";
+        report << LOOPBACK_RESULT_TAG "rms.noise          = " << std::setw(8)
+               << mMeanSquareNoise << "\n";
+        report << LOOPBACK_RESULT_TAG "signal.to.noise.db = " << std::setw(8)
+               << getSignalToNoiseDB() << "\n";
+        report << LOOPBACK_RESULT_TAG "frames.accumulated = " << std::setw(8)
+               << mFramesAccumulated << "\n";
+        report << LOOPBACK_RESULT_TAG "sine.period        = " << std::setw(8)
+               << mSinePeriod << "\n";
+        report << LOOPBACK_RESULT_TAG "test.state         = " << std::setw(8)
+               << mState << "\n";
+        report << LOOPBACK_RESULT_TAG "frame.count        = " << std::setw(8)
+               << mFrameCounter << "\n";
         // Did we ever get a lock?
         bool gotLock = (mState == STATE_LOCKED) || (mGlitchCount > 0);
         if (!gotLock) {
-            LOGD("ERROR - failed to lock on reference sine tone");
+            report << "ERROR - failed to lock on reference sine tone.\n";
             setResult(ERROR_NO_LOCK);
         } else {
             // Only print if meaningful.
-            LOGD(LOOPBACK_RESULT_TAG "glitch.count       = %8d", mGlitchCount);
-            LOGD(LOOPBACK_RESULT_TAG "max.glitch         = %8f", mMaxGlitchDelta);
+            report << LOOPBACK_RESULT_TAG "glitch.count       = " << std::setw(8)
+                   << mGlitchCount << "\n";
+            report << LOOPBACK_RESULT_TAG "max.glitch         = " << std::setw(8)
+                   << mMaxGlitchDelta << "\n";
             if (mGlitchCount > 0) {
-                LOGD("ERROR - number of glitches > 0");
+                report << "ERROR - number of glitches > 0\n";
                 setResult(ERROR_GLITCHES);
             }
         }
+        return report.str();
     }
 
     void printStatus() override {
-        LOGD("st = %d, #gl = %3d,", mState, mGlitchCount);
+        ALOGD("st = %d, #gl = %3d,", mState, mGlitchCount);
     }
-
-    double calculateMagnitude(double *phasePtr = NULL) {
+    /**
+     * Calculate the magnitude of the component of the input signal
+     * that matches the analysis frequency.
+     * Also calculate the phase that we can use to create a
+     * signal that matches that component.
+     * The phase will be between -PI and +PI.
+     */
+    double calculateMagnitude(double *phasePtr = nullptr) {
         if (mFramesAccumulated == 0) {
             return 0.0;
         }
         double sinMean = mSinAccumulator / mFramesAccumulated;
         double cosMean = mCosAccumulator / mFramesAccumulated;
-        double magnitude = 2.0 * sqrt( (sinMean * sinMean) + (cosMean * cosMean ));
-        if( phasePtr != NULL )
-        {
-            double phase = M_PI_2 - atan2( sinMean, cosMean );
+        double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
+        if (phasePtr != nullptr) {
+            double phase = M_PI_2 - atan2(sinMean, cosMean);
             *phasePtr = phase;
         }
         return magnitude;
@@ -131,19 +151,20 @@ public:
      * @param frameData contains microphone data with sine signal feedback
      * @param channelCount
      */
-    result_code processInputFrame(float *frameData, int channelCount) override {
+    result_code processInputFrame(float *frameData, int /* channelCount */) override {
         result_code result = RESULT_OK;
 
         float sample = frameData[0];
         float peak = mPeakFollower.process(sample);
         mInfiniteRecording.write(sample);
 
-        // Force a periodic glitch!
+        // Force a periodic glitch to test the detector!
         if (mForceGlitchDuration > 0) {
             if (mForceGlitchCounter == 0) {
-                LOGE("%s: force a glitch!!", __func__);
+                ALOGE("%s: force a glitch!!", __func__);
                 mForceGlitchCounter = getSampleRate();
             } else if (mForceGlitchCounter <= mForceGlitchDuration) {
+                // Force an abrupt offset.
                 sample += (sample > 0.0) ? -0.5f : 0.5f;
             }
             --mForceGlitchCounter;
@@ -172,7 +193,7 @@ public:
             case STATE_WAITING_FOR_SIGNAL:
                 if (peak > mThreshold) {
                     mState = STATE_WAITING_FOR_LOCK;
-                    //LOGD("%5d: switch to STATE_WAITING_FOR_LOCK", mFrameCounter);
+                    //ALOGD("%5d: switch to STATE_WAITING_FOR_LOCK", mFrameCounter);
                     resetAccumulator();
                 }
                 break;
@@ -185,12 +206,12 @@ public:
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
                     double phaseOffset = 0.0;
                     setMagnitude(calculateMagnitude(&phaseOffset));
-//                    LOGD("%s() mag = %f, offset = %f, prev = %f",
+//                    ALOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
                         if (abs(phaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;
-//                            LOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
+//                            ALOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
                         // Adjust mInputPhase to match measured phase
                         mInputPhase += phaseOffset;
@@ -202,9 +223,9 @@ public:
 
             case STATE_LOCKED: {
                 // Predict next sine value
-                float predicted = sinf(mInputPhase) * mMagnitude;
-                float diff = predicted - sample;
-                float absDiff = fabs(diff);
+                double predicted = sinf(mInputPhase) * mMagnitude;
+                double diff = predicted - sample;
+                double absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff > mScaledTolerance) {
                     result = ERROR_GLITCHES;
@@ -233,11 +254,11 @@ public:
                         if (abs(phaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
-                            LOGD("phase glitch detected, phaseOffset = %g", phaseOffset);
+                            ALOGD("phase glitch detected, phaseOffset = %g", phaseOffset);
                         } else if (mMagnitude < mThreshold) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
-                            LOGD("magnitude glitch detected, mMagnitude = %g", mMagnitude);
+                            ALOGD("magnitude glitch detected, mMagnitude = %g", mMagnitude);
                         }
                     }
                 }
@@ -247,9 +268,9 @@ public:
             case STATE_GLITCHING: {
                 // Predict next sine value
                 mGlitchLength++;
-                float predicted = sinf(mInputPhase) * mMagnitude;
-                float diff = predicted - sample;
-                float absDiff = fabs(diff);
+                double predicted = sinf(mInputPhase) * mMagnitude;
+                double diff = predicted - sample;
+                double absDiff = fabs(diff);
                 mMaxGlitchDelta = std::max(mMaxGlitchDelta, absDiff);
                 if (absDiff < mScaledTolerance) { // close enough?
                     // If we get a full sine period of non-glitch samples in a row then consider the glitch over.
@@ -303,7 +324,7 @@ public:
             incrementOutputPhase();
             output = (sinOut * mOutputAmplitude)
                      + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
-            // LOGD("%5d: sin(%f) = %f, %f", i, mPhase, sinOut,  mPhaseIncrement);
+            // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  mPhaseIncrement);
         }
         frameData[0] = output;
         for (int i = 1; i < channelCount; i++) {
@@ -314,7 +335,7 @@ public:
 
     void onGlitchStart() {
         mGlitchCount++;
-//        LOGD("%5d: STARTED a glitch # %d", mFrameCounter, mGlitchCount);
+//        ALOGD("%5d: STARTED a glitch # %d", mFrameCounter, mGlitchCount);
         mState = STATE_GLITCHING;
         mGlitchLength = 1;
         mNonGlitchCount = 0;
@@ -322,7 +343,7 @@ public:
     }
 
     void onGlitchEnd() {
-//        LOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
+//        ALOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
         mState = STATE_LOCKED;
         resetAccumulator();
     }
@@ -337,7 +358,7 @@ public:
     }
 
     void relock() {
-//        LOGD("relock: %d because of a very long %d glitch", mFrameCounter, mGlitchLength);
+//        ALOGD("relock: %d because of a very long %d glitch", mFrameCounter, mGlitchLength);
         mState = STATE_WAITING_FOR_LOCK;
         resetAccumulator();
     }
@@ -349,8 +370,8 @@ public:
         resetAccumulator();
     }
 
-    void onStartTest() override {
-        LoopbackProcessor::onStartTest();
+    void prepareToTest() override {
+        LoopbackProcessor::prepareToTest();
         mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
         mOutputPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
@@ -361,7 +382,6 @@ public:
             mStateFrameCounters[i] = 0;
         }
     }
-
 
     int32_t getLastGlitch(float *buffer, int32_t length) {
         return mInfiniteRecording.readFrom(buffer, mLastGlitchPosition - 32, length);
@@ -382,10 +402,10 @@ private:
 
     enum constants {
         // Arbitrary durations, assuming 48000 Hz
-                IDLE_FRAME_COUNT = 48 * 100,
+        IDLE_FRAME_COUNT = 48 * 100,
         IMMUNE_FRAME_COUNT = 48 * 100,
         PERIODS_NEEDED_FOR_LOCK = 8,
-        MIN_SNRATIO_DB = 65
+        MIN_SNR_DB = 65
     };
 
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
@@ -406,14 +426,15 @@ private:
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;
     double  mCosAccumulator = 0.0;
-    float   mMaxGlitchDelta = 0.0f;
+    double  mMaxGlitchDelta = 0.0;
     int32_t mGlitchCount = 0;
     int32_t mNonGlitchCount = 0;
     int32_t mGlitchLength = 0;
-    float   mScaledTolerance = 0.0;
+    // This is used for processing every frame so we cache it here.
+    double  mScaledTolerance = 0.0;
     int     mDownCounter = IDLE_FRAME_COUNT;
     int32_t mFrameCounter = 0;
-    float   mOutputAmplitude = 0.75;
+    double  mOutputAmplitude = 0.75;
 
     int32_t mForceGlitchDuration = 0; // if > 0 then force a glitch for debugging
     int32_t mForceGlitchCounter = 4 * 48000; // count down and trigger at zero
@@ -435,4 +456,4 @@ private:
 };
 
 
-#endif //OBOETESTER_GLITCHANALYZER_H
+#endif //ANALYZER_GLITCH_ANALYZER_H
