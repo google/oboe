@@ -235,6 +235,17 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
         ALOGE("%s() no signal for correlation\n", __func__);
         return -2;
     }
+#if 0
+    // Dump correlation data for charting.
+    else {
+        const int margin = 50;
+        int startIndex = std::max(0, peakIndex - margin);
+        int endIndex = std::min(numCorrelations - 1, peakIndex + margin);
+        for (int index = startIndex; index < endIndex; index++) {
+            ALOGD("Correlation, %d, %f", index, correlations[index]);
+        }
+    }
+#endif
 
     report->latencyInFrames = peakIndex;
     report->confidence = peakCorrelation;
@@ -406,7 +417,8 @@ public:
 
     void reset() override {
         LoopbackProcessor::reset();
-        mDownCounter = getSampleRate() / 2;
+        mState = STATE_MEASURE_BACKGROUND;
+        mDownCounter = (int32_t) (getSampleRate() * kBackgroundMeasurementLengthSeconds);
         mLoopCounter = 0;
 
         mPulseCursor = 0;
@@ -415,7 +427,6 @@ public:
         mBackgroundRMS = 0.0f;
         mSignalRMS = 0.0f;
 
-        mState = STATE_MEASURE_BACKGROUND;
         mAudioRecording.clear();
         mLatencyReport.reset();
     }
@@ -593,6 +604,7 @@ private:
 
     static constexpr int32_t kFramesPerEncodedBit = 8; // multiple of 2
     static constexpr int32_t kPulseLengthMillis = 500;
+    static constexpr double  kBackgroundMeasurementLengthSeconds = 0.5;
 
     AudioRecording     mPulse;
     int32_t            mPulseCursor = 0;
