@@ -51,8 +51,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     // Run the test several times and report the acverage latency.
     protected class LatencyAverager {
         private final static int AVERAGE_TEST_DELAY_MSEC = 1000; // arbitrary
-        private static final int AVERAGE_MAX_ITERATIONS = 10; // arbitrary
-        private int mCount = 0;
+        private static final int GOOD_RUNS_REQUIRED = 10; // arbitrary
+        private static final int MAX_BAD_RUNS_ALLOWED = 10; // arbitrary
+        private int mBadCount = 0; // number of bad measurements
+        private int mGoodCount = 0; // number of good measurements
 
         private double  mWeightedLatencySum;
         private double  mLatencyMin;
@@ -64,51 +66,63 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         // Called on UI thread.
         String onAnalyserDone() {
             String message;
+            boolean reschedule = false;
             if (!mActive) {
                 message = "";
             } else if (getMeasuredResult() != 0) {
-                cancel();
-                updateButtons(false);
-                message = "averaging cancelled due to error\n";
+                mBadCount++;
+                if (mBadCount > MAX_BAD_RUNS_ALLOWED) {
+                    cancel();
+                    updateButtons(false);
+                    message = "averaging cancelled due to error\n";
+                } else {
+                    message = "skipping this bad run, "
+                            + mBadCount + " of " + MAX_BAD_RUNS_ALLOWED + " max\n";
+                    reschedule = true;
+                }
             } else {
-                mCount++;
+                mGoodCount++;
                 double latency = getMeasuredLatencyMillis();
                 double confidence = getMeasuredConfidence();
                 mWeightedLatencySum += latency * confidence; // weighted average based on confidence
                 mConfidenceSum += confidence;
                 mLatencyMin = Math.min(mLatencyMin, latency);
                 mLatencyMax = Math.max(mLatencyMax, latency);
-                if (mCount < AVERAGE_MAX_ITERATIONS) {
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            measureSingleLatency();
-                        }
-                    }, AVERAGE_TEST_DELAY_MSEC);
+                if (mGoodCount < GOOD_RUNS_REQUIRED) {
+                    reschedule = true;
                 } else {
                     mActive = false;
                     updateButtons(false);
                 }
                 message = reportAverage();
             }
+            if (reschedule) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        measureSingleLatency();
+                    }
+                }, AVERAGE_TEST_DELAY_MSEC);
+            }
             return message;
         }
 
         private String reportAverage() {
             String message;
-            if (mCount == 0 || mConfidenceSum == 0.0) {
-                message = "num.iterations = " + mCount + "\n";
+            if (mGoodCount == 0 || mConfidenceSum == 0.0) {
+                message = "num.iterations = " + mGoodCount + "\n";
             } else {
                 // When I use 5.3g I only get one digit after the decimal point!
                 final double averageLatency = mWeightedLatencySum / mConfidenceSum;
-                final double mAverageConfidence = mConfidenceSum / mCount;
+                final double mAverageConfidence = mConfidenceSum / mGoodCount;
                 message =
                         "average.latency.msec = " + String.format(LATENCY_FORMAT, averageLatency) + "\n"
                         + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
                         + "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
                         + "max.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMax) + "\n"
-                        + "num.iterations = " + mCount + "\n";
+                        + "num.iterations = " + mGoodCount + "\n";
             }
+            message += "num.failed = " + mBadCount + "\n";
             mLastReport = message;
             return message;
         }
@@ -119,7 +133,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             mConfidenceSum = 0.0;
             mLatencyMax = Double.MIN_VALUE;
             mLatencyMin = Double.MAX_VALUE;
-            mCount = 0;
+            mBadCount = 0;
+            mGoodCount = 0;
             mActive = true;
             mLastReport = "";
             measureSingleLatency();

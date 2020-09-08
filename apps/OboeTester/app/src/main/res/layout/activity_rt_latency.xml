@@ -88,7 +88,7 @@
         android:id="@+id/text_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="15"
+        android:lines="16"
         android:text="@string/use_loopback"
         android:textSize="18sp"
         android:textStyle="bold" />
