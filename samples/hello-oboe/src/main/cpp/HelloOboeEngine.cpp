@@ -134,7 +134,6 @@ void HelloOboeEngine::restart() {
 
 oboe::Result HelloOboeEngine::start() {
     std::lock_guard<std::mutex> lock(mLock);
-    if (!mStream) return oboe::Result::ErrorNull;
 
     auto result = createPlaybackStream();
     if (result == oboe::Result::OK){
