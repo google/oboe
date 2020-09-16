@@ -53,7 +53,7 @@ public:
     int32_t mNumFrames;
 };
 
-void resampleData(const ResampleBlock& input, ResampleBlock* output) {
+void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChannels) {
     // Calculate output buffer size
     double temp =
             ((double)input.mNumFrames * (double)output->mSampleRate) / (double)input.mSampleRate;
@@ -64,7 +64,7 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output) {
     // so add a few more frames for padding
     numOutFrames += 8;
 
-    const int channelCount = 1;    // 1 for mono, 2 for stereo
+    const int channelCount = numChannels;    // 1 for mono, 2 for stereo
     MultiChannelResampler *resampler = MultiChannelResampler::make(
             channelCount, // channel count
             input.mSampleRate, // input sampleRate
@@ -106,7 +106,7 @@ void SampleBuffer::resampleData(int sampleRate) {
 
     ResampleBlock outputBlock;
     outputBlock.mSampleRate = sampleRate;
-    iolib::resampleData(inputBlock, &outputBlock);
+    iolib::resampleData(inputBlock, &outputBlock, mAudioProperties.channelCount);
 
     // delete previous samples
     delete[] mSampleData;
