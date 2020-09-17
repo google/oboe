@@ -355,7 +355,6 @@ void ActivityTestOutput::configureForStart() {
     manyToMulti->output.connect(&(mSinkFloat.get()->input));
     manyToMulti->output.connect(&(mSinkI16.get()->input));
 
-    // Clear framePosition in sine oscillators.
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
 
@@ -505,6 +504,9 @@ void ActivityTapToTone::configureForStart() {
     monoToMulti->output.connect(&(mSinkFloat.get()->input));
     monoToMulti->output.connect(&(mSinkI16.get()->input));
 
+    mSinkFloat->pullReset();
+    mSinkI16->pullReset();
+
     sawPingGenerator.setEnabled(false);
     configureStreamGateway();
 }
@@ -606,8 +608,8 @@ void ActivityTestDisconnect::configureForStart() {
         sineOscillator->frequency.setValue(440.0);
         sineOscillator->amplitude.setValue(AMPLITUDE_SINE);
         sineOscillator->output.connect(&(monoToMulti->input));
+
         monoToMulti->output.connect(&(mSinkFloat->input));
-        // Clear framePosition in sine oscillators.
         mSinkFloat->pullReset();
         audioStreamGateway.setAudioSink(mSinkFloat);
     } else if (inputStream) {
