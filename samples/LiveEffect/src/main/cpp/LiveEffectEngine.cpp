@@ -84,7 +84,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     // properties we should get the lowest latency path
     oboe::AudioStreamBuilder inBuilder, outBuilder;
     setupPlaybackStreamParameters(&outBuilder);
-    oboe::Result result = outBuilder.openManagedStream(mPlayStream);
+    oboe::Result result = outBuilder.openStream(mPlayStream);
     if (result != oboe::Result::OK) {
         mSampleRate = oboe::kUnspecified;
         return result;
@@ -94,7 +94,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     warnIfNotLowLatency(mPlayStream);
 
     setupRecordingStreamParameters(&inBuilder);
-    result = inBuilder.openManagedStream(mRecordingStream);
+    result = inBuilder.openStream(mRecordingStream);
     if (result != oboe::Result::OK) {
         closeStream(mPlayStream);
         return result;
@@ -166,14 +166,13 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
  * [the closing thread is the UI thread in this sample].
  * @param stream the stream to close
  */
-void LiveEffectEngine::closeStream(oboe::ManagedStream &stream) {
+void LiveEffectEngine::closeStream(SharedStream &stream) {
     if (stream) {
         oboe::Result result = stream->close();
         if (result != oboe::Result::OK) {
             LOGE("Error closing stream. %s", oboe::convertToText(result));
         }
         LOGW("Successfully closed streams");
-        stream.reset();
     }
 }
 
@@ -183,7 +182,7 @@ void LiveEffectEngine::closeStream(oboe::ManagedStream &stream) {
  * @param stream: newly created stream
  *
  */
-void LiveEffectEngine::warnIfNotLowLatency(oboe::ManagedStream &stream) {
+void LiveEffectEngine::warnIfNotLowLatency(SharedStream &stream) {
     if (stream->getPerformanceMode() != oboe::PerformanceMode::LowLatency) {
         LOGW(
             "Stream is NOT low latency."

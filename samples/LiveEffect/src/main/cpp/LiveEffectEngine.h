@@ -23,6 +23,8 @@
 #include <thread>
 #include "FullDuplexPass.h"
 
+using SharedStream = std::shared_ptr<oboe::AudioStream>;
+
 class LiveEffectEngine : public oboe::AudioStreamCallback {
    public:
     LiveEffectEngine();
@@ -56,13 +58,13 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     int32_t mInputChannelCount = oboe::ChannelCount::Stereo;
     int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
 
-    oboe::ManagedStream mRecordingStream;
-    oboe::ManagedStream mPlayStream;
+    SharedStream mRecordingStream;
+    SharedStream mPlayStream;
 
     oboe::AudioApi mAudioApi = oboe::AudioApi::AAudio;
 
     oboe::Result openStreams();
-    void closeStream(oboe::ManagedStream &stream);
+    void closeStream(SharedStream &stream);
 
     oboe::AudioStreamBuilder *setupCommonStreamParameters(
         oboe::AudioStreamBuilder *builder);
@@ -70,7 +72,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
         oboe::AudioStreamBuilder *builder);
     oboe::AudioStreamBuilder *setupPlaybackStreamParameters(
         oboe::AudioStreamBuilder *builder);
-    void warnIfNotLowLatency(oboe::ManagedStream &stream);
+    void warnIfNotLowLatency(SharedStream &stream);
 };
 
 #endif  // OBOE_LIVEEFFECTENGINE_H

@@ -56,10 +56,8 @@ void Game::start() {
 
 void Game::stop(){
 
-    if (mAudioStream != nullptr){
+    if (mAudioStream){
         mAudioStream->close();
-        delete mAudioStream;
-        mAudioStream = nullptr;
     }
 }
 
@@ -179,7 +177,7 @@ bool Game::openStream() {
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
 
-    Result result = builder.openStream(&mAudioStream);
+    Result result = builder.openStream(mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
         return false;

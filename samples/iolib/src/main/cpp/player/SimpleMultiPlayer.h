@@ -78,7 +78,7 @@ public:
 
 private:
     // Oboe Audio Stream
-    oboe::ManagedStream mAudioStream;
+    std::shared_ptr<oboe::AudioStream> mAudioStream;
 
     // Playback Audio attributes
     int32_t mChannelCount;

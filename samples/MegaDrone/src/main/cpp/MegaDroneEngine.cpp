@@ -51,7 +51,7 @@ oboe::Result MegaDroneEngine::createPlaybackStream() {
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setCallback(mCallback.get())
-            ->openManagedStream(mStream);
+            ->openStream(mStream);
 }
 
 // Create the callback and set its thread affinity to the supplied CPU core IDs

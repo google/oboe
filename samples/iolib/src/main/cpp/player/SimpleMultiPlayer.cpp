@@ -84,7 +84,7 @@ bool SimpleMultiPlayer::openStream() {
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 
-    Result result = builder.openManagedStream(mAudioStream);
+    Result result = builder.openStream(mAudioStream);
     if (result != Result::OK){
         __android_log_print(
                 ANDROID_LOG_ERROR,
@@ -135,6 +135,7 @@ void SimpleMultiPlayer::teardownAudioStream() {
     // tear down the player
     if (mAudioStream != nullptr) {
         mAudioStream->stop();
+        mAudioStream->close();
     }
 }
 

@@ -41,7 +41,7 @@ public:
     virtual void restart() override;
 
 private:
-    oboe::ManagedStream mStream;
+    std::shared_ptr<AudioStream> mStream;
     std::shared_ptr<TappableAudioSource> mAudioSource;
     std::unique_ptr<DefaultAudioStreamCallback> mCallback;
 
