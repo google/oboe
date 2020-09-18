@@ -325,11 +325,15 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    onMeasure(null);
+                    startAutomaticTest();
                 }
             }, 500); // TODO where is the race, close->open?
-
         }
+    }
+
+    void startAutomaticTest() {
+        configureStreamsFromBundleForApi(mBundleFromIntent);
+        onMeasure(null);
         mBundleFromIntent = null;
     }
 

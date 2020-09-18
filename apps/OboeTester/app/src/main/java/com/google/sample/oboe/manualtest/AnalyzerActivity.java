@@ -26,6 +26,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -46,6 +47,12 @@ public class AnalyzerActivity extends TestInputActivity {
 
     protected static final String KEY_FILE_NAME = "file";
     protected static final String KEY_BUFFER_BURSTS = "buffer_bursts";
+
+    public static final String VALUE_UNSPECIFIED = "unspecified";
+    public static final String KEY_IN_API = "in_api";
+    public static final String KEY_OUT_API = "out_api";
+    public static final String VALUE_API_AAUDIO = "aaudio";
+    public static final String VALUE_API_OPENSLES = "opensles";
 
     AudioOutputTester mAudioOutTester;
     protected BufferSizeView mBufferSizeView;
@@ -160,6 +167,30 @@ public class AnalyzerActivity extends TestInputActivity {
     }
 
     public void stopAudioTest() {
+    }
+
+    private int getApiFromText(String text) {
+        if (VALUE_API_AAUDIO.equals(text)) {
+            return StreamConfiguration.NATIVE_API_AAUDIO;
+        } else if (VALUE_API_OPENSLES.equals(text)) {
+            return StreamConfiguration.NATIVE_API_OPENSLES;
+        } else {
+            return StreamConfiguration.NATIVE_API_UNSPECIFIED;
+        }
+    }
+
+    void configureStreamsFromBundleForApi(Bundle bundle) {
+        // Configure settings
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+
+        // OpenSL ES or AAudio API
+        String text = bundle.getString(KEY_IN_API, VALUE_UNSPECIFIED);
+        int audioApi = getApiFromText(text);
+        requestedInConfig.setNativeApi(audioApi);
+        text = bundle.getString(KEY_OUT_API, VALUE_UNSPECIFIED);
+        audioApi = getApiFromText(text);
+        requestedOutConfig.setNativeApi(audioApi);
     }
 
     void writeTestResultIfPermitted(String resultString) {

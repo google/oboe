@@ -20,11 +20,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.stream.Stream;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
@@ -176,6 +176,8 @@ public class ManualGlitchActivity extends GlitchActivity {
 
         requestedInConfig.reset();
         requestedOutConfig.reset();
+
+        configureStreamsFromBundleForApi(bundle);
 
         // Extract parameters from the bundle.
         String text = bundle.getString(KEY_IN_PERF, VALUE_PERF_LOW_LATENCY);
