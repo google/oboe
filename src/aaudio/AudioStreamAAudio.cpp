@@ -286,10 +286,9 @@ error2:
 }
 
 Result AudioStreamAAudio::close() {
-    // The main reason we have this mutex if to prevent a collision between a call
-    // by the application to stop a stream at the same time that an onError callback
-    // is being executed because of a disconnect. The close will delete the stream,
-    // which could otherwise cause the requestStop() to crash.
+    // Prevent two threads from closing the stream at the same time and crashing.
+    // This could occur, for example, if an application called close() at the same
+    // time that an onError callback was being executed because of a disconnect.
     std::lock_guard<std::mutex> lock(mLock);
 
     AudioStream::close();
@@ -297,12 +296,15 @@ Result AudioStreamAAudio::close() {
     // This will delete the AAudio stream object so we need to null out the pointer.
     AAudioStream *stream = mAAudioStream.exchange(nullptr);
     if (stream != nullptr) {
-        // Sometimes a callback can occur shortly after a stream has been stopped and
-        // even after a close. If the stream has been closed then the callback
-        // can access memory that has been freed. That causes a crash.
-        // Two milliseconds may be enough but 10 msec is even safer.
-        // This seems to be more likely in P or earlier. But it can also occur in later versions.
         if (OboeGlobals::areWorkaroundsEnabled()) {
+            // Make sure we are really stopped. Do it under mLock
+            // so another thread cannot call requestStart() right before the close.
+            requestStop_l(stream);
+            // Sometimes a callback can occur shortly after a stream has been stopped and
+            // even after a close! If the stream has been closed then the callback
+            // can access memory that has been freed. That causes a crash.
+            // This seems to be more likely in Android P or earlier.
+            // But it can also occur in later versions.
             usleep(kDelayBeforeCloseMillis * 1000);
         }
         return static_cast<Result>(mLibLoader->stream_close(stream));
@@ -397,17 +399,22 @@ Result AudioStreamAAudio::requestStop() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
-        // Avoid state machine errors in O_MR1.
-        if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
-            StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
-            if (state == StreamState::Stopping || state == StreamState::Stopped) {
-                return Result::OK;
-            }
-        }
-        return static_cast<Result>(mLibLoader->stream_requestStop(stream));
+        return requestStop_l(stream);
     } else {
         return Result::ErrorClosed;
     }
+}
+
+// Call under mLock
+Result AudioStreamAAudio::requestStop_l(AAudioStream *stream) {
+    // Avoid state machine errors in O_MR1.
+    if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+        StreamState state = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+        if (state == StreamState::Stopping || state == StreamState::Stopped) {
+            return Result::OK;
+        }
+    }
+    return static_cast<Result>(mLibLoader->stream_requestStop(stream));
 }
 
 ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,

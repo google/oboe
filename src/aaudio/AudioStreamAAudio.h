@@ -109,8 +109,11 @@ protected:
     void logUnsupportedAttributes();
 
 private:
+    // Must call under mLock. And stream must NOT be nullptr.
+    Result requestStop_l(AAudioStream *stream);
 
     // Time to sleep in order to prevent a race condition with a callback after a close().
+    // Two milliseconds may be enough but 10 msec is even safer.
     static constexpr int kDelayBeforeCloseMillis = 10;
 
     std::atomic<bool>    mCallbackThreadEnabled;
