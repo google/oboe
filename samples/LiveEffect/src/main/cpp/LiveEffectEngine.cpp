@@ -168,11 +168,17 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
  */
 void LiveEffectEngine::closeStream(std::shared_ptr<oboe::AudioStream> &stream) {
     if (stream) {
-        oboe::Result result = stream->close();
+        oboe::Result result = stream->stop();
         if (result != oboe::Result::OK) {
-            LOGE("Error closing stream. %s", oboe::convertToText(result));
+            LOGW("Error stopping stream: %s", oboe::convertToText(result));
         }
-        LOGW("Successfully closed streams");
+        result = stream->close();
+        if (result != oboe::Result::OK) {
+            LOGE("Error closing stream: %s", oboe::convertToText(result));
+        } else {
+            LOGW("Successfully closed streams");
+        }
+        stream.reset();
     }
 }
 

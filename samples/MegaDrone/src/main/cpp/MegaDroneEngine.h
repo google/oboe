@@ -48,6 +48,7 @@ private:
     oboe::Result createPlaybackStream();
     void createCallback(std::vector<int> cpuIds);
     void start();
+    void stop();
 };
 
 
