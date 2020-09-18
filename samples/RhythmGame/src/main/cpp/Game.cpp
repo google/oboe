@@ -57,7 +57,9 @@ void Game::start() {
 void Game::stop(){
 
     if (mAudioStream){
+        mAudioStream->stop();
         mAudioStream->close();
+        mAudioStream.reset();
     }
 }
 

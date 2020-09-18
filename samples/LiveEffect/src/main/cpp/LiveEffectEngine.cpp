@@ -166,7 +166,7 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
  * [the closing thread is the UI thread in this sample].
  * @param stream the stream to close
  */
-void LiveEffectEngine::closeStream(SharedStream &stream) {
+void LiveEffectEngine::closeStream(std::shared_ptr<oboe::AudioStream> &stream) {
     if (stream) {
         oboe::Result result = stream->close();
         if (result != oboe::Result::OK) {
@@ -182,7 +182,7 @@ void LiveEffectEngine::closeStream(SharedStream &stream) {
  * @param stream: newly created stream
  *
  */
-void LiveEffectEngine::warnIfNotLowLatency(SharedStream &stream) {
+void LiveEffectEngine::warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream) {
     if (stream->getPerformanceMode() != oboe::PerformanceMode::LowLatency) {
         LOGW(
             "Stream is NOT low latency."

@@ -133,9 +133,10 @@ void SimpleMultiPlayer::setupAudioStream(int32_t channelCount) {
 void SimpleMultiPlayer::teardownAudioStream() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "teardownAudioStream()");
     // tear down the player
-    if (mAudioStream != nullptr) {
+    if (mAudioStream) {
         mAudioStream->stop();
         mAudioStream->close();
+        mAudioStream.reset();
     }
 }
 

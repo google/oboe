@@ -33,7 +33,7 @@ class MegaDroneEngine : public IRestartable {
 public:
     MegaDroneEngine(std::vector<int> cpuIds);
 
-    virtual ~MegaDroneEngine() = default;
+    virtual ~MegaDroneEngine();
 
     void tap(bool isDown);
 

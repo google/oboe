@@ -36,11 +36,25 @@ MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) {
     start();
 }
 
+MegaDroneEngine::~MegaDroneEngine() {
+    if(mStream && mStream->getState() != oboe::StreamState::Closed) {
+       mStream->stop();
+       mStream->close();
+    }
+    mStream.reset();
+}
+
 void MegaDroneEngine::tap(bool isDown) {
     mAudioSource->tap(isDown);
 }
 
 void MegaDroneEngine::restart() {
+    if(mStream && mStream->getState() != oboe::StreamState::Closed) {
+        mStream->stop();
+        mStream->close();
+    }
+
+    mStream.reset();
     start();
 }
 
