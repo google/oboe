@@ -64,9 +64,8 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
     // so add a few more frames for padding
     numOutFrames += 8;
 
-    const int channelCount = numChannels;    // 1 for mono, 2 for stereo
     MultiChannelResampler *resampler = MultiChannelResampler::make(
-            channelCount, // channel count
+            numChannels, // channel count
             input.mSampleRate, // input sampleRate
             output->mSampleRate, // output sampleRate
             MultiChannelResampler::Quality::Medium); // conversion quality
@@ -80,11 +79,11 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
     while (inputFramesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
-            inputBuffer += channelCount;
+            inputBuffer += numChannels;
             inputFramesLeft--;
         } else {
             resampler->readNextFrame(outputBuffer);
-            outputBuffer += channelCount;
+            outputBuffer += numChannels;
             numOutputFrames++;
         }
     }
