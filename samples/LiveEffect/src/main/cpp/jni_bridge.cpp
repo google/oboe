@@ -47,8 +47,8 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setEffectOn(
     JNIEnv *env, jclass, jboolean isEffectOn) {
     if (engine == nullptr) {
         LOGE(
-            "Engine is null, you must call createEngine before calling this "
-            "method");
+                "Engine is null, you must call createEngine "
+                "before calling %s", __FUNCTION__ );
         return JNI_FALSE;
     }
 
@@ -60,8 +60,8 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setRecordingDeviceId(
     JNIEnv *env, jclass, jint deviceId) {
     if (engine == nullptr) {
         LOGE(
-            "Engine is null, you must call createEngine before calling this "
-            "method");
+                "Engine is null, you must call createEngine "
+                "before calling %s", __FUNCTION__ );
         return;
     }
 
@@ -73,8 +73,8 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setPlaybackDeviceId(
     JNIEnv *env, jclass, jint deviceId) {
     if (engine == nullptr) {
         LOGE(
-            "Engine is null, you must call createEngine before calling this "
-            "method");
+            "Engine is null, you must call createEngine "
+            "before calling %s", __FUNCTION__ );
         return;
     }
 
@@ -88,7 +88,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
     if (engine == nullptr) {
         LOGE(
             "Engine is null, you must call createEngine "
-            "before calling this method");
+            "before calling %s", __FUNCTION__ );
         return JNI_FALSE;
     }
 
@@ -114,7 +114,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_isAAudioSupported(
     if (engine == nullptr) {
         LOGE(
             "Engine is null, you must call createEngine "
-            "before calling this method");
+            "before calling %s", __FUNCTION__ );
         return JNI_FALSE;
     }
     return engine->isAAudioSupported() ? JNI_TRUE : JNI_FALSE;
@@ -128,4 +128,18 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_native_1setDefaultStrea
     oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
     oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
 }
+
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setInputPresetId(JNIEnv *env, jclass clazz,
+                                                                          jint input_preset_id) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine "
+                "before calling %s", __FUNCTION__ );
+    } else {
+        engine->setInputPresetId((int32_t) input_preset_id);
+    }
+
+}
+
 } // extern "C"

@@ -44,6 +44,27 @@
         app:layout_constraintTop_toBottomOf="@+id/recDeviceLabel" />
 
     <TextView
+        android:id="@+id/inputPresetLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/input_preset"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recording_devices_spinner" />
+
+    <com.google.oboe.samples.liveEffect.InputPresetSpinner
+        android:id="@+id/input_preset_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/inputPresetLabel" />
+
+    <TextView
         android:id="@+id/playDeviceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -52,7 +73,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/playback_device"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recording_devices_spinner" />
+        app:layout_constraintTop_toBottomOf="@+id/input_preset_spinner" />
 
     <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/playback_devices_spinner"

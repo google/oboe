@@ -16,4 +16,5 @@
     <string name="apiSelection">APIs</string>
     <string name="aaudio">AAudio</string>
     <string name="sles">OpenSL ES</string>
+    <string name="input_preset">Input preset</string>
 </resources>

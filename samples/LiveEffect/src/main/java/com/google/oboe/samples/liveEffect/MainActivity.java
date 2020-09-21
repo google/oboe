@@ -87,6 +87,22 @@ public class MainActivity extends Activity
             });
         }
 
+        final InputPresetSpinner inputPresetSpinner =
+                (InputPresetSpinner) findViewById(R.id.input_preset_spinner);
+        inputPresetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int inputPresetId =
+                        ((InputPresetSpinner.InputPreset) inputPresetSpinner.getSelectedItem()).id;
+                LiveEffectEngine.setInputPresetId(inputPresetId);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
+
         playbackDeviceSpinner = findViewById(R.id.playback_devices_spinner);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             playbackDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_OUTPUTS);

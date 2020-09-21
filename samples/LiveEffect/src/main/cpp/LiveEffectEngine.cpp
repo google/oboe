@@ -120,6 +120,7 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupRecordingStreamParameters(
         ->setDeviceId(mRecordingDeviceId)
         ->setDirection(oboe::Direction::Input)
         ->setSampleRate(mSampleRate)
+        ->setInputPreset(mInputPresetId)
         ->setChannelCount(mInputChannelCount);
     return setupCommonStreamParameters(builder);
 }
@@ -229,4 +230,12 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
     LOGE("%s stream Error after close: %s",
          oboe::convertToText(oboeStream->getDirection()),
          oboe::convertToText(error));
+}
+
+/**
+ * Sets the input preset, @see include/Definitions.h for valid values.
+ * @param inputPresetId
+ */
+void LiveEffectEngine::setInputPresetId(int32_t inputPresetId) {
+    mInputPresetId = (oboe::InputPreset) inputPresetId;
 }

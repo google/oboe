@@ -46,7 +46,9 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     bool setAudioApi(oboe::AudioApi);
     bool isAAudioSupported(void);
 
-   private:
+    void setInputPresetId(int32_t inputPresetId);
+
+  private:
     FullDuplexPass mFullDuplexPass;
     bool mIsEffectOn = false;
     int32_t mRecordingDeviceId = oboe::kUnspecified;
@@ -55,6 +57,7 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     int32_t mSampleRate = oboe::kUnspecified;
     int32_t mInputChannelCount = oboe::ChannelCount::Stereo;
     int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
+    oboe::InputPreset mInputPresetId = oboe::InputPreset::VoiceRecognition; // Same as Oboe default.
 
     oboe::ManagedStream mRecordingStream;
     oboe::ManagedStream mPlayStream;
