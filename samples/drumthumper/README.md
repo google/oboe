@@ -27,13 +27,13 @@ Secondarily, **DrumThumper** demonstrates:
 * How to use the Oboe resampler to resample source audio to the device playback rate, and therefore not incur this overhead at playback time.
 
 To keep things simple, **DrumThumper** specifically does not:
-* Does not provide support audio samples in other than 16-bit, mono PCM Samples. It does not support Stereo or different PCM formats.
-* Does not provide support for non-WAV audio data (such as AIFF).
-* Does not provide support for compressed audio data.
+* Does not support audio samples in other than 16-bit, mono PCM Samples. It does not support Stereo or different PCM formats.
+* Does not support for non-WAV audio data (such as AIFF).
+* Does not support for compressed audio data.
 
-**DrumThumper** does now support different sample rates for the source samples.
+**DrumThumper** now supports different sample rates for the source samples.
 
-If an one wanted to extend **DrumThumper** to support Stereo samples, one would need to:
+If an one wanted to extend **DrumThumper** to support Stereo samples:
 * The SampleSource class would need to be extended to understand Stereo SampleBuffer objects, it currently assumes Mono.
 * The OneShotSampleSource.mixAudio() method would need to have separate mixing logic for Stereo and Mono SampleSource.
 
