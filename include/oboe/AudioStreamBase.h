@@ -195,6 +195,31 @@ protected:
     bool                            mFormatConversionAllowed = false;
     // Control whether and how Oboe can convert sample rates to achieve optimal results.
     SampleRateConversionQuality     mSampleRateConversionQuality = SampleRateConversionQuality::None;
+
+    /** Validate stream parameters that might not be checked in lower layers */
+    virtual Result isValidConfig() {
+        switch (mFormat) {
+            case AudioFormat::Unspecified:
+            case AudioFormat::I16:
+            case AudioFormat::Float:
+                break;
+
+            default:
+                return Result::ErrorInvalidFormat;
+        }
+
+        switch (mSampleRateConversionQuality) {
+            case SampleRateConversionQuality::None:
+            case SampleRateConversionQuality::Fastest:
+            case SampleRateConversionQuality::Low:
+            case SampleRateConversionQuality::Medium:
+            case SampleRateConversionQuality::High:
+            case SampleRateConversionQuality::Best:
+                return Result::OK;
+            default:
+                return Result::ErrorIllegalArgument;
+        }
+    }
 };
 
 } // namespace oboe
