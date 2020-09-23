@@ -187,11 +187,11 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
 }
 
 Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
+    stream.reset();
     auto result = isValidConfig();
     if (result != Result::OK) {
         return result;
     }
-    stream.reset();
     AudioStream *streamptr;
     result = openStream(&streamptr);
     stream.reset(streamptr);
@@ -199,12 +199,11 @@ Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
 }
 
 Result AudioStreamBuilder::openStream(std::shared_ptr<AudioStream> &sharedStream) {
+    sharedStream.reset();
     auto result = isValidConfig();
     if (result != Result::OK) {
         return result;
     }
-
-    sharedStream.reset();
     AudioStream *streamptr;
     result = openStream(&streamptr);
     if (result == Result::OK) {
