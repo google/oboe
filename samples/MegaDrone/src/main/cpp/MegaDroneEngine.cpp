@@ -36,14 +36,18 @@ MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) {
     start();
 }
 
+MegaDroneEngine::~MegaDroneEngine() {
+    stop();
+}
+
 void MegaDroneEngine::tap(bool isDown) {
     mAudioSource->tap(isDown);
 }
 
 void MegaDroneEngine::restart() {
+    stop();
     start();
 }
-
 // Create the playback stream
 oboe::Result MegaDroneEngine::createPlaybackStream() {
     oboe::AudioStreamBuilder builder;
@@ -51,7 +55,7 @@ oboe::Result MegaDroneEngine::createPlaybackStream() {
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setCallback(mCallback.get())
-            ->openManagedStream(mStream);
+            ->openStream(mStream);
 }
 
 // Create the callback and set its thread affinity to the supplied CPU core IDs
@@ -77,3 +81,12 @@ void MegaDroneEngine::start(){
         LOGE("Failed to create the playback stream. Error: %s", convertToText(result));
     }
 }
+
+void MegaDroneEngine::stop() {
+    if(mStream && mStream->getState() != oboe::StreamState::Closed) {
+        mStream->stop();
+        mStream->close();
+    }
+    mStream.reset();
+}
+
