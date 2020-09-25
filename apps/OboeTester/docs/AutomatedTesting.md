@@ -49,13 +49,13 @@ There are two required parameters:
             The "glitch" test will perform a single Glitch test.
     --es file {full path for resulting file}
     
-There are several parameter in common for both the "latency" and "glitch" test:
+There are several optional parameter in common for all tests:
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
     --es out_api            {"unspecified", "opensles", "aaudio"}  // native output API, default is "unspecified"
     
-There are several optional parameters for the "glitch" test:
+There are several optional parameters for just the "glitch" test:
 
     --ei sample_rate        {hertz}
     --ef tolerance          {tolerance}  // amount of deviation from expected that is considered a glitch
