@@ -28,12 +28,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.sample.oboe.manualtest.R;
 
 import java.io.File;
 import java.io.IOException;
@@ -218,7 +214,7 @@ public class TestInputActivity  extends TestAudioActivity
     private File createFileName() {
         // Get directory and filename
         File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        return new File(dir, "oboe_" +  getWaveTag() + "_" + getTimestampString() + ".wav");
+        return new File(dir, "oboe_" +  getWaveTag() + "_" + AutomatedTestRunner.getTimestampString() + ".wav");
     }
 
     public void shareWaveFile() {

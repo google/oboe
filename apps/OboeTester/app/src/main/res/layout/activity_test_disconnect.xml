@@ -10,37 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.google.sample.oboe.manualtest.TestDisconnectActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/button_start"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:onClick="onStartDisconnectTest"
-            android:text="@string/startAudio" />
-
-        <Button
-            android:id="@+id/button_stop"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:onClick="onStopDisconnectTest"
-            android:text="@string/stopAudio" />
-
-        <Button
-            android:id="@+id/button_share"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:onClick="onShareResult"
-            android:text="@string/share" />
-    </LinearLayout>
-
-
     <TextView
         android:id="@+id/text_instructions"
         android:layout_width="match_parent"
@@ -52,17 +21,6 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/text_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:lines="2"
-        android:text="---"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        />
-
-
-    <TextView
         android:id="@+id/text_plug_events"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -71,6 +29,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         />
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -95,13 +54,10 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/text_log"
+    <com.google.sample.oboe.manualtest.AutomatedTestRunner
+        android:id="@+id/auto_test_runner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars = "vertical"
-        android:gravity="bottom"
-        android:text="@string/log_of_glitch_tests"
-        />
+        android:orientation="vertical" />
 
 </LinearLayout>

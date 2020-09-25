@@ -20,21 +20,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.Date;
 
 /**
  * Guide the user through a series of tests plugging in and unplugging a headset.
  * Print a summary at the end of any failures.
  */
-public class TestDisconnectActivity extends TestAudioActivity implements Runnable {
+public class TestDisconnectActivity extends TestAudioActivity {
 
     private static final String TEXT_SKIP = "SKIP";
     private static final String TEXT_PASS = "PASS";
@@ -44,25 +41,17 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     public static final int TIME_TO_FAILURE_MILLIS = 3000;
 
     private TextView     mInstructionsTextView;
-    private TextView     mAutoTextView;
     private TextView     mStatusTextView;
     private TextView     mPlugTextView;
 
-    private Thread       mAutoThread;
-    private volatile boolean mThreadEnabled;
     private volatile boolean mTestFailed;
     private volatile boolean mSkipTest;
     private volatile int mPlugCount;
-    private int          mTestCount;
-    private StringBuffer mFailedSummary;
-    private int          mPassCount;
-    private int          mFailCount;
     private BroadcastReceiver mPluginReceiver = new PluginBroadcastReceiver();
-    private Button       mStartButton;
-    private Button       mStopButton;
-    private Button       mShareButton;
     private Button       mFailButton;
     private Button       mSkipButton;
+
+    protected AutomatedTestRunner mAutomatedTestRunner;
 
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
     // Display a count on screen.
@@ -89,25 +78,16 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mAutomatedTestRunner = findViewById(R.id.auto_test_runner);
+        mAutomatedTestRunner.setActivity(this);
+
         mInstructionsTextView = (TextView) findViewById(R.id.text_instructions);
         mStatusTextView = (TextView) findViewById(R.id.text_status);
         mPlugTextView = (TextView) findViewById(R.id.text_plug_events);
-        mAutoTextView = (TextView) findViewById(R.id.text_log);
-        mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
 
-        mStartButton = (Button) findViewById(R.id.button_start);
-        mStopButton = (Button) findViewById(R.id.button_stop);
-        mShareButton = (Button) findViewById(R.id.button_share);
-        mShareButton.setEnabled(false);
         mFailButton = (Button) findViewById(R.id.button_fail);
         mSkipButton = (Button) findViewById(R.id.button_skip);
-        updateStartStopButtons(false);
         updateFailSkipButton(false);
-    }
-
-    private void updateStartStopButtons(boolean running) {
-        mStartButton.setEnabled(!running);
-        mStopButton.setEnabled(running);
     }
 
     @Override
@@ -135,17 +115,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         });
     }
 
-    // Write to scrollable TextView
-    private void log(final String text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.append(text);
-                mAutoTextView.append("\n");
-            }
-        });
-    }
-
     // Write to status and command view
     private void setInstructionsText(final String text) {
         runOnUiThread(new Runnable() {
@@ -166,15 +135,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         });
     }
 
-    private void logClear() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.setText("");
-            }
-        });
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -186,12 +146,6 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     public void onPause() {
         this.unregisterReceiver(mPluginReceiver);
         super.onPause();
-    }
-
-    // Only call from UI thread.
-    public void onTestFinished() {
-        updateStartStopButtons(false);
-        mShareButton.setEnabled(true);
     }
 
     public void startAudioTest() throws IOException {
@@ -206,34 +160,14 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
 
     public void onCancel(View view) {
         stopAudioTest();
-        onTestFinished();
+        mAutomatedTestRunner.onTestFinished();
     }
 
     // Called on UI thread
     public void onStopAudioTest(View view) {
         stopAudioTest();
-        onTestFinished();
+        mAutomatedTestRunner.onTestFinished();
         keepScreenOn(false);
-    }
-
-    public void onStartDisconnectTest(View view) {
-        updateStartStopButtons(true);
-        mThreadEnabled = true;
-        mAutoThread = new Thread(this);
-        mAutoThread.start();
-    }
-
-    public void onStopDisconnectTest(View view) {
-        try {
-            if (mAutoThread != null) {
-                mThreadEnabled = false;
-                mAutoThread.interrupt();
-                mAutoThread.join(100);
-                mAutoThread = null;
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public void onFailTest(View view) {
@@ -244,26 +178,20 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         mSkipTest = true;
     }
 
-    // Share text from log via GMail, Drive or other method.
-    public void onShareResult(View view) {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-
-        String subjectText = "OboeTester Test Disconnect result " + getTimestampString();
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, subjectText);
-
-        String shareBody = mAutoTextView.getText().toString();
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
-
-        startActivity(Intent.createChooser(sharingIntent, "Share using:"));
-    }
-
     private String getConfigText(StreamConfiguration config) {
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
                 + ", " + config.getSampleRate();
+    }
+
+    private void log(String text) {
+        mAutomatedTestRunner.log(text);
+    }
+
+    private void appendSummary(String text) {
+        mAutomatedTestRunner.appendSummary(text);
     }
 
     private void testConfiguration(boolean isInput,
@@ -301,13 +229,13 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             requestedConfig.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_MEDIUM);
         }
 
-        log("========================== #" + mTestCount);
+        log("========================== #" + mAutomatedTestRunner.getTestCount());
         log("Requested:");
         log(getConfigText(requestedConfig));
 
         // Give previous stream time to close and release resources. Avoid race conditions.
         Thread.sleep(SETTLING_TIME_MILLIS);
-        if (!mThreadEnabled) return;
+        if (!mAutomatedTestRunner.isThreadEnabled()) return;
         boolean openFailed = false;
         AudioStreamBase stream = null;
         try {
@@ -347,7 +275,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             mTestFailed = false;
             updateFailSkipButton(true);
             // poll until stream started
-            while (!mTestFailed && mThreadEnabled && !mSkipTest &&
+            while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
@@ -356,7 +284,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
             setInstructionsText(message);
             int timeoutCount = 0;
             // Wait for Java plug count to change or stream to disconnect.
-            while (!mTestFailed && mThreadEnabled && !mSkipTest &&
+            while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
                 Thread.sleep(POLL_DURATION_MILLIS);
                 if (mPlugCount > oldPlugCount) {
@@ -365,7 +293,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
                 }
             }
             // Wait for timeout or stream to disconnect.
-            while (!mTestFailed && mThreadEnabled && !mSkipTest && (timeoutCount > 0) &&
+            while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest && (timeoutCount > 0) &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
                 Thread.sleep(POLL_DURATION_MILLIS);
                 timeoutCount--;
@@ -396,12 +324,10 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
 
         if (valid) {
             if (openFailed) {
-                mFailedSummary.append("------ #" + mTestCount);
-                mFailedSummary.append("\n");
-                mFailedSummary.append(getConfigText(requestedConfig));
-                mFailedSummary.append("\n");
-                mFailedSummary.append("Open failed!\n");
-                mFailCount++;
+                appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendSummary(getConfigText(requestedConfig) + "\n");
+                appendSummary("Open failed!\n");
+                mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
                 boolean passed = !mTestFailed;
@@ -409,17 +335,12 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
                 log(resultText);
                 if (!passed) {
-                    mFailedSummary.append("------ #" + mTestCount);
-                    mFailedSummary.append("\n");
-                    mFailedSummary.append("  ");
-                    mFailedSummary.append(actualConfigText);
-                    mFailedSummary.append("\n");
-                    mFailedSummary.append("    ");
-                    mFailedSummary.append(resultText);
-                    mFailedSummary.append("\n");
-                    mFailCount++;
+                    appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                    appendSummary("  " + actualConfigText + "\n");
+                    appendSummary("    " + resultText + "\n");
+                    mAutomatedTestRunner.incrementFailCount();
                 } else {
-                    mPassCount++;
+                    mAutomatedTestRunner.incrementPassCount();
                 }
             }
         } else {
@@ -427,7 +348,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         }
         // Give hardware time to settle between tests.
         Thread.sleep(1000);
-        mTestCount++;
+        mAutomatedTestRunner.incrementTestCount();
     }
 
     private void testConfiguration(boolean isInput, int performanceMode,
@@ -451,49 +372,24 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     }
 
     @Override
-    public void run() {
+    public void runTest() {
         mPlugCount = 0;
-        logClear();
-        log("=== STARTED at " + new Date());
-        log(Build.MANUFACTURER + " " + Build.PRODUCT);
-        log(Build.DISPLAY);
-        mFailedSummary = new StringBuffer();
-        mTestCount = 0;
-        mPassCount = 0;
-        mFailCount = 0;
         // Try several different configurations.
         try {
             testConfiguration(false, StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                     StreamConfiguration.SHARING_MODE_EXCLUSIVE, 44100);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                        StreamConfiguration.SHARING_MODE_EXCLUSIVE);
+                    StreamConfiguration.SHARING_MODE_EXCLUSIVE);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                        StreamConfiguration.SHARING_MODE_SHARED);
+                    StreamConfiguration.SHARING_MODE_SHARED);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_NONE,
-                        StreamConfiguration.SHARING_MODE_SHARED);
+                    StreamConfiguration.SHARING_MODE_SHARED);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log(e.getMessage());
+            showErrorToast(e.getMessage());
         } finally {
-            stopAudioTest();
-            setInstructionsText("See summary below.");
-            setStatusText("Finished.");
-            log("\n==== SUMMARY ========");
-            if (mFailCount > 0) {
-                log(mPassCount + " passed. " + mFailCount + " failed.");
-                log("These tests FAILED:");
-                log(mFailedSummary.toString());
-            } else {
-                log("All tests PASSED.");
-            }
-            log("== FINISHED at " + new Date());
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    onTestFinished();
-                }
-            });
+            setInstructionsText("Test completed.");
             updateFailSkipButton(false);
         }
     }
-
 }

@@ -16,19 +16,14 @@
 
 package com.google.sample.oboe.manualtest;
 
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.Date;
 
-public class AutoGlitchActivity extends GlitchActivity implements Runnable {
+public class AutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
     private static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
@@ -37,17 +32,11 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     public static final String TEXT_PASS = "PASS";
     public static final String TEXT_FAIL = "FAIL !!!!";
 
-    private TextView mAutoTextView;
-
-    private Thread mAutoThread;
-    private volatile boolean mThreadEnabled = false;
-    int mTestCount = 0;
     private int mDurationSeconds = DEFAULT_DURATION_SECONDS;
     private int mGapMillis = DEFAULT_GAP_MILLIS;
-    private StringBuffer mFailedSummary;
-    private int mPassCount = 0;
-    private int mFailCount = 0;
     private Spinner mDurationSpinner;
+
+    protected AutomatedTestRunner mAutomatedTestRunner;
 
     // Test with these configurations.
     private static final int[] PERFORMANCE_MODES = {
@@ -78,69 +67,11 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAutoTextView = (TextView) findViewById(R.id.text_log);
-        mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
+        mAutomatedTestRunner = findViewById(R.id.auto_test_runner);
+        mAutomatedTestRunner.setActivity(this);
 
         mDurationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);
         mDurationSpinner.setOnItemSelectedListener(new DurationSpinnerListener());
-    }
-
-    // Write to scrollable TextView
-    private void log(final String text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.append(text);
-                mAutoTextView.append("\n");
-            }
-        });
-    }
-    private void logClear() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.setText("");
-            }
-        });
-    }
-
-    public void startAudioTest() {
-        mThreadEnabled = true;
-        mAutoThread = new Thread(this);
-        mAutoThread.start();
-    }
-
-    // Only call from UI thread.
-    @Override
-    public void onTestFinished() {
-        super.onTestFinished();
-    }
-
-    public void stopAudioTest() {
-        try {
-            if (mAutoThread != null) {
-                mThreadEnabled = false;
-                mAutoThread.interrupt();
-                mAutoThread.join(100);
-                mAutoThread = null;
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Share text from log via GMail, Drive or other method.
-    public void onShareResult(View view) {
-        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-
-        String subjectText = "OboeTester AutoGlitch result " + getTimestampString();
-        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
-
-        String shareBody = mAutoTextView.getText().toString();
-        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-
-        startActivity(Intent.createChooser(sharingIntent, "Share using:"));
     }
 
     private String getConfigText(StreamConfiguration config) {
@@ -150,6 +81,14 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
                         config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
                 + ", ch = " + config.getChannelCount();
+    }
+
+    private void log(String text) {
+        mAutomatedTestRunner.log(text);
+    }
+
+    private void appendSummary(String text) {
+        mAutomatedTestRunner.appendSummary(text);
     }
 
     private void testConfiguration(int perfMode,
@@ -179,7 +118,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
         requestedInConfig.setChannelCount(inChannels);
         requestedOutConfig.setChannelCount(outChannels);
 
-        log("========================== #" + mTestCount);
+        log("========================== #" + mAutomatedTestRunner.getTestCount());
         log("Requested:");
         log(getConfigText(requestedInConfig));
         log(getConfigText(requestedOutConfig));
@@ -228,14 +167,11 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
 
         if (valid) {
             if (openFailed) {
-                mFailedSummary.append("------ #" + mTestCount);
-                mFailedSummary.append("\n");
-                mFailedSummary.append(getConfigText(requestedInConfig));
-                mFailedSummary.append("\n");
-                mFailedSummary.append(getConfigText(requestedOutConfig));
-                mFailedSummary.append("\n");
-                mFailedSummary.append("Open failed!\n");
-                mFailCount++;
+                appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendSummary(getConfigText(requestedInConfig) + "\n");
+                appendSummary(getConfigText(requestedOutConfig) + "\n");
+                appendSummary("Open failed!\n");
+                mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
                 boolean passed = (getMaxSecondsWithNoGlitch()
@@ -245,17 +181,12 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
                 log(resultText);
                 if (!passed) {
-                    mFailedSummary.append("------ #" + mTestCount);
-                    mFailedSummary.append("\n");
-                    mFailedSummary.append("  ");
-                    mFailedSummary.append(getConfigText(actualInConfig));
-                    mFailedSummary.append("\n");
-                    mFailedSummary.append("    ");
-                    mFailedSummary.append(resultText);
-                    mFailedSummary.append("\n");
-                    mFailCount++;
+                    appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                    appendSummary("  " + getConfigText(actualInConfig) + "\n");
+                    appendSummary("    " + resultText + "\n");
+                    mAutomatedTestRunner.incrementFailCount();
                 } else {
-                    mPassCount++;
+                    mAutomatedTestRunner.incrementPassCount();
                 }
             }
         } else {
@@ -263,7 +194,7 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
         }
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
-        mTestCount++;
+        mAutomatedTestRunner.incrementTestCount();
     }
 
     private void testConfiguration(int performanceMode,
@@ -277,17 +208,8 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
                 sampleRate, 2, 1);
     }
 
-
     @Override
-    public void run() {
-        logClear();
-        log("=== STARTED at " + new Date());
-        log(Build.MANUFACTURER + " " + Build.PRODUCT);
-        log(Build.DISPLAY);
-        mFailedSummary = new StringBuffer();
-        mTestCount = 0;
-        mPassCount = 0;
-        mFailCount = 0;
+    public void runTest() {
         try {
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                     StreamConfiguration.SHARING_MODE_EXCLUSIVE,
@@ -304,26 +226,8 @@ public class AutoGlitchActivity extends GlitchActivity implements Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            super.stopAudioTest();
-            if (mThreadEnabled) {
-                log("\n==== SUMMARY ========");
-                if (mFailCount > 0) {
-                    log(mPassCount + " passed. " + mFailCount + " failed.");
-                    log("These tests FAILED:");
-                    log(mFailedSummary.toString());
-                } else {
-                    log("All tests PASSED.");
-                }
-                log("== FINISHED at " + new Date());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onTestFinished();
-                    }
-                });
-            }
+            log(e.getMessage());
+            showErrorToast(e.getMessage());
         }
     }
 

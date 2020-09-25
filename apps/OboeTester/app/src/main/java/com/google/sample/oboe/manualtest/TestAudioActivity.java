@@ -529,12 +529,6 @@ abstract class TestAudioActivity extends Activity {
         updateEnabledWidgets();
     }
 
-    String getTimestampString() {
-        DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
-        Date now = Calendar.getInstance().getTime();
-        return df.format(now);
-    }
-
     void startBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.startBluetoothSco();
@@ -544,4 +538,6 @@ abstract class TestAudioActivity extends Activity {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.stopBluetoothSco();
     }
+
+    public void runTest() {}
 }
