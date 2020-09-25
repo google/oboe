@@ -125,14 +125,15 @@
     <string name="title_activity_glitches">Test Glitches</string>
     <string name="title_test_disconnect">Test Disconnect</string>
     <string name="title_report_devices">Report Devices</string>
+    <string name="title_data_paths">Data Paths</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
     <string name="seconds_per_test">seconds per test</string>
     <string name="duration">Duration:</string>
     <string name="auto_glitch_instructions">Use loopback adapter or speakers.</string>
-    <string name="log_of_glitch_tests">Log of Glitch Tests</string>
     <string name="device_report">Device Report</string>
+    <string name="log_of_test_results">Log of Test Results</string>
     <string name="save_file">Save</string>
 
     <string name="src_prompt">SRC:</string>
@@ -140,6 +141,7 @@
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
     <string name="test_disconnect_instructions">Unplug all headsets then click [START]</string>
+
     <string-array name="conversion_qualities">
         <item>None</item>
         <item>Fastest</item>

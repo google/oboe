@@ -119,7 +119,17 @@
         android:onClick="onLaunchTestDeviceReport"
         android:text="@string/title_report_devices" />
 
+    <Button
+        android:id="@+id/button_test_data_paths"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTestDataPaths"
+        android:text="Data Paths" />
+
     </GridLayout>
+
 
     <CheckBox
         android:id="@+id/useCallback"

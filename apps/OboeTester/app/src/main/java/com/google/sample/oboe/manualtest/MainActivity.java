@@ -198,62 +198,53 @@ public class MainActivity extends Activity {
     }
 
     public void onLaunchTestOutput(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, TestOutputActivity.class);
-        startActivity(intent);
+        onLaunchTest(TestOutputActivity.class);
     }
 
     public void onLaunchTestInput(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, TestInputActivity.class);
-        startActivity(intent);
+        onLaunchTest(TestInputActivity.class);
     }
 
     public void onLaunchTapToTone(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, TapToToneActivity.class);
-        startActivity(intent);
+        onLaunchTest(TapToToneActivity.class);
     }
 
     public void onLaunchRecorder(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, RecorderActivity.class);
-        startActivity(intent);
+        onLaunchTest(RecorderActivity.class);
     }
 
     public void onLaunchEcho(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, EchoActivity.class);
-        startActivity(intent);
+        onLaunchTest(EchoActivity.class);
     }
 
     public void onLaunchRoundTripLatency(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, RoundTripLatencyActivity.class);
-        startActivity(intent);
+        onLaunchTest(RoundTripLatencyActivity.class);
     }
 
     public void onLaunchManualGlitchTest(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, ManualGlitchActivity.class);
-        startActivity(intent);
+        onLaunchTest(ManualGlitchActivity.class);
     }
 
     public void onLaunchAutoGlitchTest(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, AutoGlitchActivity.class);
-        startActivity(intent);
+        onLaunchTest(AutoGlitchActivity.class);
     }
 
     public void onLaunchTestDisconnect(View view) {
-        updateCallbackSize();
-        Intent intent = new Intent(this, TestDisconnectActivity.class);
-        startActivity(intent);
+        onLaunchTest(TestDisconnectActivity.class);
     }
 
-    public void onLaunchTestDeviceReport(View view) {
+    public void onLaunchTestDataPaths(View view) {
+        onLaunchTest(TestDataPathsActivity.class);
+    }
+
+
+    public void onLaunchTestDeviceReport(View view)  {
+        onLaunchTest(DeviceReportActivity.class);
+    }
+
+    private void onLaunchTest(Class clazz) {
         updateCallbackSize();
-        Intent intent = new Intent(this, DeviceReportActivity.class);
+        Intent intent = new Intent(this, clazz);
         startActivity(intent);
     }
 

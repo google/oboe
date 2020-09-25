@@ -17,6 +17,7 @@
         android:fontFamily="monospace"
         android:gravity="bottom"
         android:scrollbars="vertical"
-        android:text="@string/device_report" />
+        android:text="@string/device_report"
+        />
 
 </LinearLayout>
