@@ -32,11 +32,6 @@ class XRunBehaviour : public ::testing::Test {
 
 protected:
 
-    void SetUp(){
-
-    }
-
-
     void openStream(){
         Result r = mBuilder.openStream(&mStream);
         if (r != Result::OK){
@@ -51,13 +46,6 @@ protected:
                 FAIL() << "Failed to close stream. " << convertToText(r);
             }
         }
-    }
-
-    void openAndCloseStream(){
-
-        openStream();
-        closeStream();
-        ASSERT_EQ(mStream->getState(), StreamState::Closed);
     }
 
     AudioStreamBuilder mBuilder;

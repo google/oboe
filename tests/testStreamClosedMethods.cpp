@@ -32,10 +32,6 @@ class StreamClosedReturnValues : public ::testing::Test {
 
 protected:
 
-    void SetUp(){
-
-    }
-
     bool openStream(){
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
