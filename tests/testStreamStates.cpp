@@ -59,13 +59,6 @@ protected:
         }
     }
 
-    void openAndCloseStream(){
-
-        openStream();
-        closeStream();
-        ASSERT_EQ(mStream->getState(), StreamState::Closed) << "Stream state " << convertToText(mStream->getState());
-    }
-
     void checkStreamStateIsStartedAfterStartingTwice(Direction direction) {
         openStream(direction);
 
