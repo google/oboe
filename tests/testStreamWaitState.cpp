@@ -33,6 +33,7 @@ protected:
 
     bool openStream(Direction direction, PerformanceMode perfMode) {
         mBuilder.setDirection(direction);
+        mBuilder.setPerformanceMode(perfMode);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         if (r != Result::OK)
