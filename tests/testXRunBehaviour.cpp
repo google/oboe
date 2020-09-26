@@ -32,20 +32,16 @@ class XRunBehaviour : public ::testing::Test {
 
 protected:
 
-    void openStream(){
+    bool openStream() {
         Result r = mBuilder.openStream(&mStream);
-        if (r != Result::OK){
-            FAIL() << "Failed to open stream. " << convertToText(r);
-        }
+        EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
+        return (r == Result::OK);
     }
 
-    void closeStream(){
-        if (mStream != nullptr){
-            Result r = mStream->close();
-            if (r != Result::OK){
-                FAIL() << "Failed to close stream. " << convertToText(r);
-            }
-        }
+    bool closeStream() {
+        Result r = mStream->close();
+        EXPECT_EQ(r, Result::OK) << "Failed to close stream. " << convertToText(r);
+        return (r == Result::OK);
     }
 
     AudioStreamBuilder mBuilder;
@@ -57,29 +53,29 @@ protected:
 //  however, these aren't the same as the actual stream underruns
 TEST_F(XRunBehaviour, SupportedWhenStreamIsUsingAAudio){
 
-    openStream();
+    ASSERT_TRUE(openStream());
     if (mStream->getAudioApi() == AudioApi::AAudio){
         ASSERT_TRUE(mStream->isXRunCountSupported());
     }
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(XRunBehaviour, NotSupportedOnOpenSLESWhenStreamIsUsingCallback){
 
     MyCallback callback;
     mBuilder.setCallback(&callback);
-    openStream();
+    ASSERT_TRUE(openStream());
     if (mStream->getAudioApi() == AudioApi::OpenSLES){
         ASSERT_FALSE(mStream->isXRunCountSupported());
     }
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(XRunBehaviour, SupportedOnOpenSLESWhenStreamIsUsingBlockingIO){
 
-    openStream();
+    ASSERT_TRUE(openStream());
     if (mStream->getAudioApi() == AudioApi::OpenSLES){
         ASSERT_TRUE(mStream->isXRunCountSupported());
     }
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }

@@ -35,8 +35,12 @@ protected:
         mBuilder.setDirection(direction);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
-        EXPECT_EQ(mStream->getDirection(), direction) << convertToText(mStream->getDirection());
-        return (r == Result::OK);
+        if (r != Result::OK)
+            return false;
+
+        Direction d = mStream->getDirection();
+        EXPECT_EQ(d, direction) << convertToText(mStream->getDirection());
+        return (d == direction);
     }
 
     bool openStream(AudioStreamBuilder &builder) {
@@ -45,14 +49,11 @@ protected:
         return (r == Result::OK);
     }
 
-    void closeStream() {
-        if (mStream != nullptr){
-            Result r = mStream->close();
-            mStream = nullptr;
-            if (r != Result::OK && r != Result::ErrorClosed){
-                FAIL() << "Failed to close stream. " << convertToText(r);
-            }
-        }
+    bool closeStream() {
+        Result r = mStream->close();
+        EXPECT_TRUE(r == Result::OK || r == Result::ErrorClosed) <<
+            "Failed to close stream. " << convertToText(r);
+        return (r == Result::OK || r == Result::ErrorClosed);
     }
 
     void checkWaitZeroTimeout() {
@@ -119,46 +120,46 @@ protected:
 };
 
 TEST_F(TestStreamWaitState, OutputLowWaitZero) {
-    openStream(Direction::Output, PerformanceMode::LowLatency);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
     checkWaitZeroTimeout();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputNoneWaitZero) {
-    openStream(Direction::Output, PerformanceMode::None);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::None));
     checkWaitZeroTimeout();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputLowWaitZeroSLES) {
     AudioStreamBuilder builder;
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setAudioApi(AudioApi::OpenSLES);
-    openStream(builder);
+    ASSERT_TRUE(openStream(builder));
     checkWaitZeroTimeout();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputNoneWaitZeroSLES) {
     AudioStreamBuilder builder;
     builder.setPerformanceMode(PerformanceMode::None);
     builder.setAudioApi(AudioApi::OpenSLES);
-    openStream(builder);
+    ASSERT_TRUE(openStream(builder));
     checkWaitZeroTimeout();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 
 TEST_F(TestStreamWaitState, OutputLowStopWhileWaiting) {
-    openStream(Direction::Output, PerformanceMode::LowLatency);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
     checkStopWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputNoneStopWhileWaiting) {
-    openStream(Direction::Output, PerformanceMode::LowLatency);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
     checkStopWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 
@@ -166,43 +167,43 @@ TEST_F(TestStreamWaitState, OutputLowStopWhileWaitingSLES) {
     AudioStreamBuilder builder;
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setAudioApi(AudioApi::OpenSLES);
-    openStream(builder);
+    ASSERT_TRUE(openStream(builder));
     checkStopWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 
 TEST_F(TestStreamWaitState, OutputLowCloseWhileWaiting) {
-    openStream(Direction::Output, PerformanceMode::LowLatency);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputNoneCloseWhileWaiting) {
-    openStream(Direction::Output, PerformanceMode::None);
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::None));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, InputLowCloseWhileWaiting) {
-    openStream(Direction::Input, PerformanceMode::LowLatency);
+    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::LowLatency));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, InputNoneCloseWhileWaiting) {
-    openStream(Direction::Input, PerformanceMode::None);
+    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::None));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(TestStreamWaitState, OutputNoneCloseWhileWaitingSLES) {
     AudioStreamBuilder builder;
     builder.setPerformanceMode(PerformanceMode::None);
     builder.setAudioApi(AudioApi::OpenSLES);
-    openStream(builder);
+    ASSERT_TRUE(openStream(builder));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 
@@ -210,7 +211,7 @@ TEST_F(TestStreamWaitState, OutputLowCloseWhileWaitingSLES) {
     AudioStreamBuilder builder;
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setAudioApi(AudioApi::OpenSLES);
-    openStream(builder);
+    ASSERT_TRUE(openStream(builder));
     checkCloseWhileWaiting();
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }

@@ -45,14 +45,11 @@ protected:
         return (r == Result::OK);
     }
 
-    void closeStream() {
-        if (mStream != nullptr) {
-            Result r = mStream->close();
-            if (r != Result::OK) {
-                FAIL() << "Failed to close stream. " << convertToText(r);
-            }
-        }
+    bool closeStream() {
+        Result r = mStream->close();
+        EXPECT_EQ(r, Result::OK) << "Failed to close stream. " << convertToText(r);
         usleep(500 * 1000); // give previous stream time to settle
+        return (r == Result::OK);
     }
 
     void checkSampleRateConversionAdvancing(Direction direction) {
@@ -65,7 +62,7 @@ protected:
         mBuilder.setSampleRate(44100);
         mBuilder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 
-        openStream();
+        ASSERT_TRUE(openStream());
 
         ASSERT_EQ(mStream->requestStart(), Result::OK);
         int timeout = 20;
@@ -77,7 +74,7 @@ protected:
         ASSERT_GT(callback.framesPerCallback, 0);
         ASSERT_EQ(mStream->requestStop(), Result::OK);
 
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 
     AudioStreamBuilder mBuilder;
@@ -91,9 +88,9 @@ TEST_F(StreamOpen, ForOpenSLESDefaultSampleRateIsUsed){
     DefaultStreamValues::SampleRate = 44100;
     DefaultStreamValues::FramesPerBurst = 192;
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getSampleRate(), 44100);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, ForOpenSLESDefaultFramesPerBurstIsUsed){
@@ -102,18 +99,18 @@ TEST_F(StreamOpen, ForOpenSLESDefaultFramesPerBurstIsUsed){
     DefaultStreamValues::FramesPerBurst = 128; // used for low latency
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getFramesPerBurst(), 128);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, ForOpenSLESDefaultChannelCountIsUsed){
 
     DefaultStreamValues::ChannelCount = 1;
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getChannelCount(), 1);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, OutputForOpenSLESPerformanceModeShouldBeNone){
@@ -122,9 +119,9 @@ TEST_F(StreamOpen, OutputForOpenSLESPerformanceModeShouldBeNone){
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     mBuilder.setDirection(Direction::Output);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    openStream();
+	ASSERT_TRUE(openStream());
     ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, InputForOpenSLESPerformanceModeShouldBeNone){
@@ -133,9 +130,9 @@ TEST_F(StreamOpen, InputForOpenSLESPerformanceModeShouldBeNone){
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     mBuilder.setDirection(Direction::Input);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ((int)mStream->getPerformanceMode(), (int)PerformanceMode::None);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, ForOpenSlesIllegalFormatRejectedOutput) {
@@ -172,7 +169,7 @@ TEST_F(StreamOpen, OpenSLESFramesPerCallback) {
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setFramesPerCallback(kRequestedFramesPerCallback);
     mBuilder.setCallback(&callback);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
     while (callback.framesPerCallback == 0 && timeout > 0) {
@@ -182,7 +179,7 @@ TEST_F(StreamOpen, OpenSLESFramesPerCallback) {
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
     ASSERT_EQ(mStream->requestStop(), Result::OK);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 /* TODO - This is hanging!
@@ -195,7 +192,7 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
     mBuilder.setFramesPerCallback(kRequestedFramesPerCallback);
     mBuilder.setCallback(&callback);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
@@ -205,7 +202,7 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
     }
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(mStream->requestStop(), Result::OK);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 */
 
@@ -219,7 +216,7 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     mBuilder.setFramesPerCallback(kRequestedFramesPerCallback);
     mBuilder.setCallback(&callback);
     mBuilder.setPerformanceMode(PerformanceMode::None);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
     ASSERT_EQ(mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames()), Result::OK);
     ASSERT_EQ(mStream->requestStart(), Result::OK);
@@ -230,7 +227,7 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     }
     ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
     ASSERT_EQ(mStream->requestStop(), Result::OK);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 */
 
@@ -239,9 +236,9 @@ TEST_F(StreamOpen, RecordingFormatUnspecifiedReturnsI16BeforeMarshmallow){
     if (getSdkVersion() < __ANDROID_API_M__){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setFormat(AudioFormat::Unspecified);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::I16);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -250,9 +247,9 @@ TEST_F(StreamOpen, RecordingFormatUnspecifiedReturnsFloatOnMarshmallowAndLater){
     if (getSdkVersion() >= __ANDROID_API_M__){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setFormat(AudioFormat::Unspecified);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -263,7 +260,7 @@ TEST_F(StreamOpen, RecordingFormatFloatReturnsErrorBeforeMarshmallow){
         mBuilder.setFormat(AudioFormat::Float);
         Result r = mBuilder.openStream(&mStream);
         ASSERT_EQ(r, Result::ErrorInvalidFormat) << convertToText(r);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -272,9 +269,9 @@ TEST_F(StreamOpen, RecordingFormatFloatReturnsFloatOnMarshmallowAndLater){
     if (getSdkVersion() >= __ANDROID_API_M__){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setFormat(AudioFormat::Float);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -282,9 +279,9 @@ TEST_F(StreamOpen, RecordingFormatI16ReturnsI16){
 
     mBuilder.setDirection(Direction::Input);
     mBuilder.setFormat(AudioFormat::I16);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getFormat(), AudioFormat::I16);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, PlaybackFormatUnspecifiedReturnsI16BeforeLollipop){
@@ -292,9 +289,9 @@ TEST_F(StreamOpen, PlaybackFormatUnspecifiedReturnsI16BeforeLollipop){
     if (getSdkVersion() < __ANDROID_API_L__){
         mBuilder.setDirection(Direction::Output);
         mBuilder.setFormat(AudioFormat::Unspecified);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::I16);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -303,9 +300,9 @@ TEST_F(StreamOpen, PlaybackFormatUnspecifiedReturnsFloatOnLollipopAndLater){
     if (getSdkVersion() >= __ANDROID_API_L__){
         mBuilder.setDirection(Direction::Output);
         mBuilder.setFormat(AudioFormat::Unspecified);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -316,7 +313,7 @@ TEST_F(StreamOpen, PlaybackFormatFloatReturnsErrorBeforeLollipop){
         mBuilder.setFormat(AudioFormat::Float);
         Result r = mBuilder.openStream(&mStream);
         ASSERT_EQ(r, Result::ErrorInvalidFormat);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
@@ -325,27 +322,27 @@ TEST_F(StreamOpen, PlaybackFormatFloatReturnsFloatOnLollipopAndLater){
     if (getSdkVersion() >= __ANDROID_API_L__){
         mBuilder.setDirection(Direction::Output);
         mBuilder.setFormat(AudioFormat::Float);
-        openStream();
+        ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
-        closeStream();
+        ASSERT_TRUE(closeStream());
     }
 }
 
 TEST_F(StreamOpen, PlaybackFormatI16ReturnsI16) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setFormat(AudioFormat::I16);
-    openStream();
+    ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getFormat(), AudioFormat::I16);
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, OpenCloseLowLatencyStream){
     mBuilder.setDirection(Direction::Output);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     float *buf = new float[100];
-    openStream();
+    ASSERT_TRUE(openStream());
     delete[] buf;
-    closeStream();
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpen, LowLatencyStreamHasSmallBufferSize){
@@ -353,10 +350,10 @@ TEST_F(StreamOpen, LowLatencyStreamHasSmallBufferSize){
     if (mBuilder.isAAudioRecommended()) {
         mBuilder.setDirection(Direction::Output);
         mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
-        openStream();
+        ASSERT_TRUE(openStream());
         int32_t bufferSize = mStream->getBufferSizeInFrames();
         int32_t burst = mStream->getFramesPerBurst();
-        closeStream();
+        ASSERT_TRUE(closeStream());
         ASSERT_LE(bufferSize, burst * 3);
     }
 }
