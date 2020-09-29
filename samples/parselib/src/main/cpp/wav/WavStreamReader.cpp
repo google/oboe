@@ -94,7 +94,7 @@ void WavStreamReader::parse() {
         } else {
             chunk = new WavChunkHeader(tag);
             chunk->read(mStream);
-            mStream->advance(mDataChunk->mChunkSize); // skip the body
+            mStream->advance(chunk->mChunkSize); // skip the body
         }
 
         (*mChunkMap)[tag] = chunk;
