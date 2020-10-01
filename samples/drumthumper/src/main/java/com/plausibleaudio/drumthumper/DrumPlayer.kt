@@ -57,7 +57,7 @@ class DrumPlayer {
     }
 
     fun startAudioStream() {
-        startAudioStreamNative();
+        startAudioStreamNative()
     }
 
     fun teardownAudioStream() {
@@ -83,30 +83,30 @@ class DrumPlayer {
         unloadWavAssetsNative()
     }
 
-    fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) : Boolean {
+    private fun loadWavAsset(assetMgr: AssetManager, assetName: String, index: Int, pan: Float) : Boolean {
         var returnVal = false
         try {
             val assetFD = assetMgr.openFd(assetName)
-            val dataStream = assetFD.createInputStream();
-            var dataLen = assetFD.getLength().toInt()
-            var dataBytes: ByteArray = ByteArray(dataLen)
+            val dataStream = assetFD.createInputStream()
+            val dataLen = assetFD.getLength().toInt()
+            val dataBytes = ByteArray(dataLen)
             dataStream.read(dataBytes, 0, dataLen)
             returnVal = loadWavAssetNative(dataBytes, index, pan, NUM_SAMPLE_CHANNELS)
             assetFD.close()
         } catch (ex: IOException) {
-            Log.i(TAG, "IOException" + ex)
+            Log.i(TAG, "IOException$ex")
         }
 
         return returnVal
     }
 
-    external fun setupAudioStreamNative(numChannels: Int)
-    external fun startAudioStreamNative();
-    external fun teardownAudioStreamNative()
+    private external fun setupAudioStreamNative(numChannels: Int)
+    private external fun startAudioStreamNative()
+    private external fun teardownAudioStreamNative()
 
-    external fun loadWavAssetNative(
+    private external fun loadWavAssetNative(
             wavBytes: ByteArray, index: Int, pan: Float, channels: Int) : Boolean
-    external fun unloadWavAssetsNative()
+    private external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)
 

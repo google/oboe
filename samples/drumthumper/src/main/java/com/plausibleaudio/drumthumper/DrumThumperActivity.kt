@@ -56,7 +56,7 @@ class DrumThumperActivity : AppCompatActivity(),
     }
 
     inner class DeviceListener: AudioDeviceCallback() {
-        fun logDevices(label: String, devices: Array<AudioDeviceInfo> ) {
+        private fun logDevices(label: String, devices: Array<AudioDeviceInfo> ) {
             Log.i(TAG, label + " " + devices.size)
             for(device in devices) {
                 Log.i(TAG, "  " + device.getProductName().toString()
@@ -111,28 +111,28 @@ class DrumThumperActivity : AppCompatActivity(),
     val MAX_PAN_POSITION = 200.0f;
     val HALF_PAN_POSITION = MAX_PAN_POSITION / 2.0f
 
-    fun gainPosToGainVal(pos: Int) : Float {
+    private fun gainPosToGainVal(pos: Int) : Float {
         // map 0 -> 200 to 0.0f -> 2.0f
         return pos.toFloat() / GAIN_FACTOR
     }
 
-    fun gainValToGainPos(value: Float) : Int {
+    private fun gainValToGainPos(value: Float) : Int {
         return (value * GAIN_FACTOR).toInt()
     }
 
-    fun panPosToPanVal(pos: Int) : Float {
+    private fun panPosToPanVal(pos: Int) : Float {
         // map 0 -> 200 to -1.0f -> 1..0f
         return (pos.toFloat() - HALF_PAN_POSITION) / HALF_PAN_POSITION
     }
 
-    fun panValToPanPos(value: Float) : Int {
+    private fun panValToPanPos(value: Float) : Int {
         // map -1.0f -> 1.0f to 0 -> 200
         return ((value * HALF_PAN_POSITION) + HALF_PAN_POSITION).toInt()
     }
 
-    fun showMixControls(show : Boolean) {
+    private fun showMixControls(show : Boolean) {
         mMixControlsShowing = show;
-        var showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE;
+        val showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE;
         findViewById<LinearLayout>(R.id.kickMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.snareMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.hihatOpenMixControls).setVisibility(showFlag)
@@ -142,18 +142,17 @@ class DrumThumperActivity : AppCompatActivity(),
         findViewById<LinearLayout>(R.id.rideMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.crashMixControls).setVisibility(showFlag)
 
-        findViewById<Button>(R.id.mixCtrlBtn).setText(
-                if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls")
+        findViewById<Button>(R.id.mixCtrlBtn).text = if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls"
     }
 
-    fun connectMixSliders(panSliderId : Int, gainSliderId : Int, drumIndex : Int) {
-        var panSeekbar = findViewById<SeekBar>(panSliderId)
+    private fun connectMixSliders(panSliderId : Int, gainSliderId : Int, drumIndex : Int) {
+        val panSeekbar = findViewById<SeekBar>(panSliderId)
         panSeekbar.setOnSeekBarChangeListener(this)
-        panSeekbar.setProgress(panValToPanPos(mDrumPlayer.getPan(drumIndex)))
+        panSeekbar.progress = panValToPanPos(mDrumPlayer.getPan(drumIndex))
 
-        var gainSeekbar = findViewById<SeekBar>(gainSliderId)
+        val gainSeekbar = findViewById<SeekBar>(gainSliderId)
         gainSeekbar.setOnSeekBarChangeListener(this)
-        gainSeekbar.setProgress(gainValToGainPos(mDrumPlayer.getGain(drumIndex)))
+        gainSeekbar.progress = gainValToGainPos(mDrumPlayer.getGain(drumIndex))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,7 +167,7 @@ class DrumThumperActivity : AppCompatActivity(),
 
         mDrumPlayer.setupAudioStream()
 
-        var allAssetsValid = mDrumPlayer.loadWavAssets(getAssets())
+        val allAssetsValid = mDrumPlayer.loadWavAssets(getAssets())
 
         if (!allAssetsValid) {
             // show toast
@@ -236,10 +235,6 @@ class DrumThumperActivity : AppCompatActivity(),
         mDrumPlayer.unloadWavAssets()
 
         super.onStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     //

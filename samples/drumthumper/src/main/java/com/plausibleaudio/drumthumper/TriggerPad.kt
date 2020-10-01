@@ -26,26 +26,25 @@ import android.view.MotionEvent
 import android.view.View
 
 class TriggerPad: View {
-    val TAG = "TriggerPad";
 
     private val mDrawRect = RectF()
     private val mPaint = Paint()
 
     private val mUpColor = Color.LTGRAY
     private val mDownColor = Color.DKGRAY
-    private var mIsDown = false;
+    private var mIsDown = false
 
-    private var mText = "DrumPad";
+    private var mText = "DrumPad"
     private var mTextSizeSp = 28.0f
 
     private val mTextColor = Color.BLACK
 
-    private val DISPLAY_MASK        = 0x00000003
-    private val DISPLAY_RECT        = 0x00000000
-    private val DISPLAY_CIRCLE      = 0x00000001
-    private val DISPLAY_ROUNDRECT   = 0x00000002
+    val DISPLAY_MASK        = 0x00000003
+    val DISPLAY_RECT        = 0x00000000
+    val DISPLAY_CIRCLE      = 0x00000001
+    val DISPLAY_ROUND_RECT  = 0x00000002
 
-    private var mDisplayFlags = DISPLAY_ROUNDRECT
+    private var mDisplayFlags = DISPLAY_ROUND_RECT
 
     interface DrumPadTriggerListener {
         fun triggerDown(pad: TriggerPad)
@@ -54,25 +53,24 @@ class TriggerPad: View {
 
     var mListeners = ArrayList<DrumPadTriggerListener>()
 
-    constructor(context: Context) : super(context) {
-    }
+    constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        extractAttributes(context, attrs)
+        extractAttributes(attrs)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int): super(context, attrs, defStyle) {
-        extractAttributes(context, attrs)
+        extractAttributes(attrs)
     }
 
     //
     // Attributes
     //
-    private fun extractAttributes(context: Context, attrs: AttributeSet) {
+    private fun extractAttributes(attrs: AttributeSet) {
         val xmlns = "http://schemas.android.com/apk/res/android"
-        val textVal = attrs.getAttributeValue(xmlns, "text");
+        val textVal = attrs.getAttributeValue(xmlns, "text")
         if (textVal != null) {
-            mText = textVal;
+            mText = textVal
         }
     }
 
@@ -80,17 +78,14 @@ class TriggerPad: View {
     // Layout Routines
     //
     private fun calcTextSizeInPixels() : Float {
-        val scaledSizeInPixels: Float = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-                mTextSizeSp, resources.displayMetrics)
-
-        return scaledSizeInPixels;
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mTextSizeSp, resources.displayMetrics)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        var padLeft = getPaddingLeft()
-        var padRight = getPaddingRight()
-        var padTop = getPaddingTop()
-        var padBottom = getPaddingBottom()
+        val padLeft = paddingLeft
+        val padRight = paddingRight
+        val padTop = paddingTop
+        val padBottom = paddingBottom
 
         mDrawRect.set(padLeft.toFloat(),
                 padTop.toFloat(),
@@ -100,24 +95,24 @@ class TriggerPad: View {
         // mTextSize = mDrawRect.bottom / 4.0f
     }
 
-    override fun onMeasure (widthMeasureSpec: Int, heightMeasureSpec: Int): Unit {
-        var widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        var width = MeasureSpec.getSize(widthMeasureSpec);
+    override fun onMeasure (widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = MeasureSpec.getSize(widthMeasureSpec)
 
-//        var padLeft = getPaddingLeft()
-//        var padRight = getPaddingRight()
-        var padTop = getPaddingTop()
-        var padBottom = getPaddingBottom()
+       /* var padLeft = getPaddingLeft() */
+       /* var padRight = getPaddingRight() */
+
+        val padTop = paddingTop
+        val padBottom = paddingBottom
 
 
-        var heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        var height = MeasureSpec.getSize(heightMeasureSpec);
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        var height = MeasureSpec.getSize(heightMeasureSpec)
 
-        var textSizePixels = calcTextSizeInPixels()
+        val textSizePixels = calcTextSizeInPixels()
         when (heightMode) {
             MeasureSpec.AT_MOST -> run {
                 // mText = "AT_MOST"
-                var newHeight = (textSizePixels.toInt() * 2) + padTop + padBottom
+                val newHeight = (textSizePixels.toInt() * 2) + padTop + padBottom
                 height = minOf(height, newHeight) }
 
             MeasureSpec.EXACTLY -> run {
@@ -128,42 +123,42 @@ class TriggerPad: View {
                 height = textSizePixels.toInt() }
         }
 
-        setMeasuredDimension(width, height);
+        setMeasuredDimension(width, height)
     }
 
     //
     // Drawing Routines
     //
-    protected override fun onDraw(canvas: Canvas): Unit {
+    override fun onDraw(canvas: Canvas) {
         // Face
         if (mIsDown) {
-            mPaint.setColor(mDownColor)
+            mPaint.color = mDownColor
         } else {
-            mPaint.setColor(mUpColor)
+            mPaint.color = mUpColor
         }
 
         when (mDisplayFlags and DISPLAY_MASK) {
             DISPLAY_RECT -> canvas.drawRect(mDrawRect, mPaint)
 
             DISPLAY_CIRCLE -> run {
-                var midX = mDrawRect.left + mDrawRect.width() / 2.0f
-                var midY = mDrawRect.top + mDrawRect.height() / 2.0f
-                var radius = minOf(mDrawRect.height() / 2.0f, mDrawRect.width() / 2.0f)
+                val midX = mDrawRect.left + mDrawRect.width() / 2.0f
+                val midY = mDrawRect.top + mDrawRect.height() / 2.0f
+                val radius = minOf(mDrawRect.height() / 2.0f, mDrawRect.width() / 2.0f)
                 canvas.drawCircle(midX, midY, radius - 5.0f, mPaint)
             }
 
-            DISPLAY_ROUNDRECT -> run {
-                var rad = minOf(mDrawRect.width() / 8.0f, mDrawRect.height() / 8.0f)
+            DISPLAY_ROUND_RECT -> run {
+                val rad = minOf(mDrawRect.width() / 8.0f, mDrawRect.height() / 8.0f)
                 canvas.drawRoundRect(mDrawRect, rad, rad, mPaint)
             }
         }
 
         // Text
         val midX = mDrawRect.width() / 2
-        mPaint.setTextSize(calcTextSizeInPixels())
+        mPaint.textSize = calcTextSizeInPixels()
         val textWidth = mPaint.measureText(mText)
-        mPaint.setColor(mTextColor)
-        var textSizePixels = calcTextSizeInPixels()
+        mPaint.color = mTextColor
+        val textSizePixels = calcTextSizeInPixels()
         canvas.drawText(mText, mDrawRect.left + midX - textWidth / 2,
                 mDrawRect.bottom/2 + textSizePixels/2, mPaint)
 
@@ -173,19 +168,20 @@ class TriggerPad: View {
     // Input Routines
     //
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val action = event.getActionMasked()
-        when (action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                mIsDown = true;
+                mIsDown = true
                 triggerDown()
                 invalidate()
+                performClick()
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
-                mIsDown = false;
+                mIsDown = false
                 triggerUp()
                 invalidate()
+                performClick()
                 return true
             }
         }
@@ -200,13 +196,13 @@ class TriggerPad: View {
         mListeners.add(listener)
     }
 
-    fun triggerDown() {
+    private fun triggerDown() {
         for( listener in mListeners) {
             listener.triggerDown(this)
         }
     }
 
-    fun triggerUp() {
+    private fun triggerUp() {
         for( listener in mListeners) {
             listener.triggerUp(this)
         }
