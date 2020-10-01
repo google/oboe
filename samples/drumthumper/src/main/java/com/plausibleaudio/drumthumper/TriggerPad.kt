@@ -177,6 +177,13 @@ class TriggerPad: View {
                 return true
             }
 
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                mIsDown = true;
+                triggerDown()
+                invalidate()
+                return true
+            }
+
             MotionEvent.ACTION_UP -> {
                 mIsDown = false
                 triggerUp()
