@@ -142,7 +142,8 @@ class DrumThumperActivity : AppCompatActivity(),
         findViewById<LinearLayout>(R.id.rideMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.crashMixControls).setVisibility(showFlag)
 
-        findViewById<Button>(R.id.mixCtrlBtn).text = if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls"
+        findViewById<Button>(R.id.mixCtrlBtn).text =
+                if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls"
     }
 
     private fun connectMixSliders(panSliderId : Int, gainSliderId : Int, drumIndex : Int) {
