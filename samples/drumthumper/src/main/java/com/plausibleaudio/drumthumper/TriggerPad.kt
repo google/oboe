@@ -77,8 +77,12 @@ class TriggerPad: View {
     //
     // Layout Routines
     //
-    private fun calcTextSizeInPixels() : Float {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mTextSizeSp, resources.displayMetrics)
+    private fun calcTextSizeInPixels(): Float {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                mTextSizeSp,
+                resources.displayMetrics
+        )
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -98,12 +102,8 @@ class TriggerPad: View {
     override fun onMeasure (widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
 
-       /* var padLeft = getPaddingLeft() */
-       /* var padRight = getPaddingRight() */
-
         val padTop = paddingTop
         val padBottom = paddingBottom
-
 
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         var height = MeasureSpec.getSize(heightMeasureSpec)
