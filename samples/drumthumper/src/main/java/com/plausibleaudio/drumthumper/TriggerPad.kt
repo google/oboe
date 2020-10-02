@@ -168,7 +168,8 @@ class TriggerPad: View {
     // Input Routines
     //
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN ||
+                event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
             mIsDown = true;
             triggerDown()
             invalidate()
