@@ -36,7 +36,8 @@ MegaDroneEngine::MegaDroneEngine(std::vector<int> cpuIds) {
 
 MegaDroneEngine::~MegaDroneEngine() {
     if (mStream) {
-        LOGE("Stop MegaDroneEngine before deleting it!");
+        LOGE("MegaDroneEngine destructor was called without calling stop()."
+             "Please call stop() to ensure stream resources are not leaked.");
         stop();
     }
 }
