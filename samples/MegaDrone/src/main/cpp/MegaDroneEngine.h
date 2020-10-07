@@ -40,6 +40,9 @@ public:
     // from IRestartable
     virtual void restart() override;
 
+    bool start();
+    bool stop();
+
 private:
     std::shared_ptr<AudioStream> mStream;
     std::shared_ptr<TappableAudioSource> mAudioSource;
@@ -47,8 +50,6 @@ private:
 
     oboe::Result createPlaybackStream();
     void createCallback(std::vector<int> cpuIds);
-    void start();
-    void stop();
 };
 
 

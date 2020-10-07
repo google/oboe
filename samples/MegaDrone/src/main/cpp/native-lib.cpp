@@ -48,7 +48,14 @@ Java_com_google_oboe_samples_megadrone_MainActivity_startEngine(JNIEnv *env, job
     std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
     LOGD("cpu ids size: %d", static_cast<int>(cpuIds.size()));
     MegaDroneEngine  *engine = new MegaDroneEngine(std::move(cpuIds));
-    LOGD("Engine Started");
+
+    if (!engine->start()) {
+        LOGE("Failed to start MegaDrone Engine");
+        delete engine;
+        engine = nullptr;
+    } else  {
+        LOGD("Engine Started");
+    }
     return reinterpret_cast<jlong>(engine);
 }
 
@@ -57,6 +64,7 @@ Java_com_google_oboe_samples_megadrone_MainActivity_stopEngine(JNIEnv *env, jobj
         jlong jEngineHandle) {
     auto engine = reinterpret_cast<MegaDroneEngine*>(jEngineHandle);
     if (engine) {
+        engine->stop();
         delete engine;
     } else {
         LOGD("Engine invalid, call startEngine() to create");
