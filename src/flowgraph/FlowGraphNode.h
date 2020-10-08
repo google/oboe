@@ -164,6 +164,8 @@ public:
             : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
+    
+    virtual ~FlowGraphPort() = default;
 
     // Ports are often declared public. So let's make them non-copyable.
     FlowGraphPort(const FlowGraphPort&) = delete;
