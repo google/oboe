@@ -77,6 +77,10 @@ public:
 
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
 
+    oboe::Result getLastErrorCallbackResult() {
+        return mErrorCallbackResult;
+    }
+
 private:
     static constexpr int32_t   kWorkloadScaler = 500;
     double                     mWorkload = 0.0;
@@ -86,6 +90,7 @@ private:
     static bool                mCallbackReturnStop;
     int64_t                    mCallbackCount = 0;
     std::atomic<int32_t>       mFramesPerCallback{0};
+    oboe::Result               mErrorCallbackResult = oboe::Result::OK;
 };
 
 

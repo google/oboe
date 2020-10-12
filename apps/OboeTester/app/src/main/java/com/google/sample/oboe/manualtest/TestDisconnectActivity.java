@@ -33,8 +33,6 @@ import java.util.Date;
 /**
  * Guide the user through a series of tests plugging in and unplugging a headset.
  * Print a summary at the end of any failures.
- *
- * TODO Test Input
  */
 public class TestDisconnectActivity extends TestAudioActivity implements Runnable {
 
@@ -344,7 +342,7 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         if (!openFailed && valid) {
             mTestFailed = false;
             updateFailSkipButton(true);
-            // poll for stream disconnected
+            // poll until stream started
             while (!mTestFailed && mThreadEnabled && !mSkipTest &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
                 Thread.sleep(POLL_DURATION_MILLIS);
@@ -371,6 +369,14 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
                     mTestFailed = true;
                 } else {
                     setStatusText("Plug detected by Java.\nCounting down to Oboe failure: " + timeoutCount);
+                }
+            }
+            if (!mTestFailed) {
+                int error = stream.getLastErrorCallbackResult();
+                if (error != StreamConfiguration.ERROR_DISCONNECTED) {
+                    log("onEerrorCallback error = " + error
+                            + ", expected " + StreamConfiguration.ERROR_DISCONNECTED);
+                    mTestFailed = true;
                 }
             }
             setStatusText(mTestFailed ? "Failed" : "Passed - detected");
