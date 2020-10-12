@@ -284,6 +284,10 @@ public:
         return oboeCallbackProxy.getCallbackCount();
     }
 
+    oboe::Result getLastErrorCallbackResult() {
+        return oboeCallbackProxy.getLastErrorCallbackResult();
+    }
+
     int32_t getFramesPerCallback() {
         return oboeCallbackProxy.getFramesPerCallback();
     }

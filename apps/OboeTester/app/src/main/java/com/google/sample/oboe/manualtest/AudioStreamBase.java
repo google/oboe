@@ -154,6 +154,8 @@ public abstract class AudioStreamBase {
 
     public long getCallbackCount() { return -1; }
 
+    public int getLastErrorCallbackResult() { return 0; }
+
     public long getFramesWritten() { return -1; }
 
     public long getFramesRead() { return -1; }

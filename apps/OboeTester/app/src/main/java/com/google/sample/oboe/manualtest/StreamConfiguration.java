@@ -64,6 +64,8 @@ public class StreamConfiguration {
     public static final int INPUT_PRESET_UNPROCESSED = 9; // must match Oboe
     public static final int INPUT_PRESET_VOICE_PERFORMANCE = 10; // must match Oboe
 
+    public static final int ERROR_DISCONNECTED = -899; // must match Oboe
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;

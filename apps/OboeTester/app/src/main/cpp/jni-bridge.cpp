@@ -379,8 +379,15 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCallbackCount(
     return engine.getCurrentActivity()->getCallbackCount();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLastErrorCallbackResult(
+        JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->getLastErrorCallbackResult();
+}
+
 JNIEXPORT jdouble JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env, jobject instance, jint streamIndex) {
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env,
+        jobject instance, jint streamIndex) {
     oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         auto result = oboeStream->calculateLatencyMillis();
