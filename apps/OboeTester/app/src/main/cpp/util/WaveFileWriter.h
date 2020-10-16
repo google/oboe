@@ -25,6 +25,7 @@
 
 class WaveFileOutputStream {
 public:
+    virtual ~WaveFileOutputStream() = default;
     virtual void write(uint8_t b) = 0;
 };
 
