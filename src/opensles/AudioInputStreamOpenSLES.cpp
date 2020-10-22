@@ -36,6 +36,7 @@ static SLuint32 OpenSLES_convertInputPreset(InputPreset oboePreset) {
             openslPreset =  SL_ANDROID_RECORDING_PRESET_CAMCORDER;
             break;
         case InputPreset::VoiceRecognition:
+        case InputPreset::VoicePerformance:
             openslPreset =  SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
             break;
         case InputPreset::VoiceCommunication:

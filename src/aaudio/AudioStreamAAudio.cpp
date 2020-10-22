@@ -213,8 +213,13 @@ Result AudioStreamAAudio::open() {
     }
 
     if (mLibLoader->builder_setInputPreset != nullptr) {
+        aaudio_input_preset_t inputPreset = mInputPreset;
+        if (getSdkVersion() <= __ANDROID_API_P__ && inputPreset == InputPreset::VoicePerformance) {
+            LOGD("InputPreset::VoicePerformance not supported before Q. Using VoiceRecognition.");
+            inputPreset = InputPreset::VoiceRecognition; // most similar preset
+        }
         mLibLoader->builder_setInputPreset(aaudioBuilder,
-                                           static_cast<aaudio_input_preset_t>(mInputPreset));
+                                           static_cast<aaudio_input_preset_t>(inputPreset));
     }
 
     if (mLibLoader->builder_setSessionId != nullptr) {
