@@ -17,7 +17,7 @@ package com.google.sample.audio_device;
 
 import android.media.AudioDeviceInfo;
 
-class AudioDeviceInfoConverter {
+public class AudioDeviceInfoConverter {
 
     /**
      * Converts an {@link AudioDeviceInfo} object into a human readable representation
@@ -25,7 +25,7 @@ class AudioDeviceInfoConverter {
      * @param adi The AudioDeviceInfo object to be converted to a String
      * @return String containing all the information from the AudioDeviceInfo object
      */
-    static String toString(AudioDeviceInfo adi){
+    public static String toString(AudioDeviceInfo adi){
 
         StringBuilder sb = new StringBuilder();
         sb.append("Id: ");
@@ -62,7 +62,7 @@ class AudioDeviceInfoConverter {
         sb.append("\nSample Rates: ");
         int[] sampleRates = adi.getSampleRates();
         sb.append(intArrayToString(sampleRates));
-
+        sb.append("\n");
         return sb.toString();
     }
 

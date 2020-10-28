@@ -109,6 +109,16 @@
         android:layout_height="wrap_content"
         android:onClick="onLaunchTestDisconnect"
         android:text="Test Disconnect" />
+
+    <Button
+        android:id="@+id/button_test_device_report"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:onClick="onLaunchTestDeviceReport"
+        android:text="@string/title_report_devices" />
+
     </GridLayout>
 
     <CheckBox

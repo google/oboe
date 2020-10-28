@@ -84,7 +84,9 @@ public class AudioDeviceListEntry {
             if (directionType == AudioManager.GET_DEVICES_ALL ||
                     (directionType == AudioManager.GET_DEVICES_OUTPUTS && info.isSink()) ||
                     (directionType == AudioManager.GET_DEVICES_INPUTS && info.isSource())) {
-                listEntries.add(new AudioDeviceListEntry(info.getId(), info.getProductName() + " " +
+                listEntries.add(new AudioDeviceListEntry(info.getId(),
+                        info.getId() + ": " +
+                                info.getProductName() + " " +
                                 AudioDeviceInfoConverter.typeToString(info.getType())));
             }
         }
