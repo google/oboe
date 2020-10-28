@@ -123,6 +123,8 @@
     <string name="title_activity_echo">Echo Input to Output</string>
     <string name="title_activity_rt_latency">Round Trip Latency</string>
     <string name="title_activity_glitches">Test Glitches</string>
+    <string name="title_test_disconnect">Test Disconnect</string>
+    <string name="title_report_devices">Report Devices</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
@@ -136,7 +138,6 @@
     <string name="average">Average</string>
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
-    <string name="title_test_disconnect">Test Disconnect</string>
     <string name="test_disconnect_instructions">Unplug all headsets then click [START]</string>
     <string-array name="conversion_qualities">
         <item>None</item>
