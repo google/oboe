@@ -1,8 +1,8 @@
 package com.google.sample.oboe.manualtest;
 
 import android.media.MicrophoneInfo;
+import android.util.Pair;
 
-import java.io.IOException;
 import java.util.List;
 
 public class MicrophoneInfoConverter {
@@ -37,10 +37,10 @@ public class MicrophoneInfoConverter {
         }
     }
 
-    static String convertPosition(MicrophoneInfo.Coordinate3F position) {
-        if (position == MicrophoneInfo.POSITION_UNKNOWN) return "Unknown";
+    static String convertCoordinates(MicrophoneInfo.Coordinate3F coordinates) {
+        if (coordinates == MicrophoneInfo.POSITION_UNKNOWN) return "Unknown";
         return String.format("{ %6.4g, %5.3g, %5.3g }",
-                position.x, position.y, position.z);
+                coordinates.x, coordinates.y, coordinates.z);
     }
 
     public static String reportMicrophoneInfo(MicrophoneInfo micInfo) {
@@ -48,12 +48,23 @@ public class MicrophoneInfoConverter {
         sb.append("\n==== Microphone ========= " + micInfo.getId());
         sb.append("\nAddress    : " + micInfo.getAddress());
         sb.append("\nDescription: " + micInfo.getDescription());
-        sb.append("\nDirection  : "+ convertDirectionality(micInfo.getDirectionality()));
-        sb.append("\nLocation   : "+ convertLocation(micInfo.getLocation()));
+        sb.append("\nDirection  : " + convertDirectionality(micInfo.getDirectionality()));
+        sb.append("\nLocation   : " + convertLocation(micInfo.getLocation()));
+        sb.append("\nMinSPL     : " + micInfo.getMinSpl());
+        sb.append("\nMaxSPL     : " + micInfo.getMaxSpl());
+        sb.append("\nSensitivity: " + micInfo.getSensitivity());
         sb.append("\nGroup      : " + micInfo.getGroup());
         sb.append("\nIndexInTheGroup: " + micInfo.getIndexInTheGroup());
-        sb.append("\nPosition   : "+ convertPosition(micInfo.getPosition()));
-        sb.append("\nType       : "+ micInfo.getType());
+        sb.append("\nOrientation: " + convertCoordinates(micInfo.getOrientation()));
+        sb.append("\nPosition   : " + convertCoordinates(micInfo.getPosition()));
+        sb.append("\nType       : " + micInfo.getType());
+
+        List<Pair<Integer, Integer>> mapping = micInfo.getChannelMapping();
+        sb.append("\nChannelMapping: {");
+        for (Pair<Integer, Integer> pair : mapping) {
+            sb.append("[" + pair.first + "," + pair.second + "], ");
+        }
+        sb.append("}");
 
         sb.append("\n");
         return sb.toString();
