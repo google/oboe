@@ -19,6 +19,7 @@ package com.google.sample.oboe.manualtest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -108,6 +109,7 @@ public class DeviceReportActivity extends Activity {
             report.append(item);
         }
         report.append(reportAllMicrophones());
+        report.append(getExtraDeviceInfo());
         log(report.toString());
     }
 
@@ -125,6 +127,27 @@ public class DeviceReportActivity extends Activity {
             e.printStackTrace();
             return e.getMessage();
         }
+        return report.toString();
+    }
+
+    private String getExtraDeviceInfo() {
+        StringBuffer report = new StringBuffer();
+        report.append("\n############################");
+        report.append("\nExtras:\n");
+        String unprocessedSupport = mAudioManager.getParameters(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED);
+        report.append("\nSUPPORT_UNPROCESSED : " + ((unprocessedSupport != null) ? "yes" : "no"));
+
+        report.append("\nProAudio Feature    : "
+            + getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO));
+        report.append("\nLowLatency Feature  : "
+                + getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY));
+        report.append("\nMIDI Feature        : "
+                + getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI));
+        report.append("\nUSB Host Feature    : "
+                + getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST));
+        report.append("\nUSB Accessory Feature: "
+                + getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY));
+
         return report.toString();
     }
 
