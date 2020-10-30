@@ -31,6 +31,19 @@ Include and link to oboe by updating your `CMakeLists.txt`:
     find_package (oboe REQUIRED CONFIG)
     target_link_libraries(app oboe::oboe) # You may have other libraries here such as `log`.
 
+Here's a complete example `CMakeLists.txt` file:
+
+    cmake_minimum_required(VERSION 3.4.1)
+
+    # Build our own native library
+    add_library (native-lib SHARED native-lib.cpp )
+
+    # Find the Oboe package
+    find_package (oboe REQUIRED CONFIG)
+
+    # Specify the libraries which our native library is dependent on, including Oboe
+    target_link_libraries(app log oboe::oboe)
+
 Configure your app to use the shared STL by updating your `app/build.gradle`: 
 
     android { 
