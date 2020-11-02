@@ -29,11 +29,11 @@ Higher quality levels will sound better but consume more CPU because they have m
 
 Note that the number of output frames generated for a given number of input frames can vary.
 
-For example, suppose you are converting from 44100 Hz to 48000 Hz and using an input buffer with 940 frames. If you calculate the number of output frames you get:
+For example, suppose you are converting from 44100 Hz to 48000 Hz and using an input buffer with 960 frames. If you calculate the number of output frames you get:
 
-    940 * 48000 * 44100 = 1023.1292517...
+    960 * 48000 * 44100 = 1044.897959...
     
-You cannot generate a fractional number of frames. So the resampler will sometimes generate 1023 frames and sometimes 1024 frames. On average it will generate 1023.1292517 frames. The resampler stores the fraction internally and keeps track of when to consume or generate a frame.
+You cannot generate a fractional number of frames. So the resampler will sometimes generate 1044 frames and sometimes 1045 frames. On average it will generate 1044.897959 frames. The resampler stores the fraction internally and keeps track of when to consume or generate a frame.
 
 You can either use a fixed number of input frames or a fixed number of output frames. The other frame count will vary.
 
