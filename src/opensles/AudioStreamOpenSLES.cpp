@@ -381,7 +381,7 @@ Result AudioStreamOpenSLES::waitForStateChange(StreamState currentState,
         }
 
         // Did we timeout or did user ask for non-blocking?
-        if (timeoutNanoseconds <= 0) {
+        if (timeLeftNanos <= 0) {
             break;
         }
 
