@@ -57,13 +57,14 @@ public:
     }
 
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
-        // Restart the stream when it errors out with disconnect
+        // Restart the stream regardless of the error.
+        // Sometimes the error may be different, even for a disconnect.
         if (error == oboe::Result::ErrorDisconnected) {
-            LOGE("Restarting AudioStream after disconnect");
-            mParent.restart();
+            LOGW("Restarting AudioStream after disconnect");
         } else {
-            LOGE("Unknown error");
+            LOGE("Restarting AudioStream after unknown error %d", error);
         }
+        mParent.restart();
         mIsThreadAffinitySet = false;
     }
 
