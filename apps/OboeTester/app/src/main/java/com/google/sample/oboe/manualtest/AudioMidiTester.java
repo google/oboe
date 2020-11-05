@@ -129,7 +129,7 @@ public class AudioMidiTester extends MidiDeviceService {
     }
 
     private void noteOn(byte b) {
-        setEnabled(true);
+        trigger();
         fireNoteOn(b);
     }
 
@@ -139,9 +139,7 @@ public class AudioMidiTester extends MidiDeviceService {
         }
     }
 
-    private void noteOff(byte b) {
-        setEnabled(false);
-    }
+    private void noteOff(byte b) {}
 
     @Override
     public MidiReceiver[] onGetInputPortReceivers() {
@@ -155,9 +153,9 @@ public class AudioMidiTester extends MidiDeviceService {
         }
     }
 
-    public void setEnabled(boolean checked) {
-        mAudioOutputTester.setEnabled(checked);
-        if (checked && mRecordEnabled) {
+    public void trigger() {
+        mAudioOutputTester.trigger();
+        if (mRecordEnabled) {
             // schedule an analysis to start in the near future
             int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
             Runnable task = new Runnable() {

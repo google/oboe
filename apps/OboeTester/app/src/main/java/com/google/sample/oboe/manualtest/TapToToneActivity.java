@@ -90,13 +90,12 @@ public class TapToToneActivity extends TestOutputActivityBase {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        mAudioMidiTester.setEnabled(true);
+                        mAudioMidiTester.trigger();
                         break;
                     case MotionEvent.ACTION_MOVE:
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_POINTER_UP:
-                        mAudioMidiTester.setEnabled(false);
                         break;
                 }
                 // Must return true or we do not get the ACTION_MOVE and
@@ -347,11 +346,6 @@ public class TapToToneActivity extends TestOutputActivityBase {
         resetLatency();
         try {
             mAudioMidiTester.start();
-            if (mAudioOutTester != null) {
-                mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SAW_PING);
-            } else {
-                Log.w(TAG, "startAudioPermitted, mAudioOutTester = null, cannot setToneType(ping)");
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

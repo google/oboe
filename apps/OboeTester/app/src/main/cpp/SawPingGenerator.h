@@ -32,7 +32,9 @@ public:
 
     int32_t onProcess(int numFrames) override;
 
-    void setEnabled(bool enabled);
+    void trigger();
+
+    void reset() override;
 
 private:
     std::atomic<int> mRequestCount; // external thread increments this to request a beep

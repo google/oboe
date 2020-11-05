@@ -30,6 +30,11 @@ SawPingGenerator::SawPingGenerator()
 
 SawPingGenerator::~SawPingGenerator() { }
 
+void SawPingGenerator::reset() {
+    FlowGraphNode::reset();
+    mAcknowledgeCount.store(mRequestCount.load());
+}
+
 int32_t SawPingGenerator::onProcess(int numFrames) {
 
     const float *frequencies = frequency.getBuffer();
@@ -58,11 +63,7 @@ int32_t SawPingGenerator::onProcess(int numFrames) {
     return numFrames;
 }
 
-void SawPingGenerator::setEnabled(bool enabled) {
-    if (enabled) {
-        mRequestCount++;
-    } else {
-        mAcknowledgeCount.store(mRequestCount.load());
-    }
+void SawPingGenerator::trigger() {
+    mRequestCount++;
 }
 
