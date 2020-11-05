@@ -36,18 +36,11 @@ public class AudioOutputTester extends AudioStreamTester {
         Log.i(TapToToneActivity.TAG, "create OboeAudioOutputStream ---------");
         mOboeAudioOutputStream = new OboeAudioOutputStream();
         mCurrentAudioStream = mOboeAudioOutputStream;
-        setToneType(OboeAudioOutputStream.TONE_TYPE_SINE);
-        setEnabled(false);
         requestedConfiguration.setDirection(StreamConfiguration.DIRECTION_OUTPUT);
     }
 
-    public void setToneType(int index) {
-        Log.i(TapToToneActivity.TAG, "setToneType(" + index + ")");
-        mOboeAudioOutputStream.setToneType(index);
-    }
-
-    public void setEnabled(boolean flag) {
-        mOboeAudioOutputStream.setToneEnabled(flag);
+    public void trigger() {
+        mOboeAudioOutputStream.trigger();
     }
 
     public void setChannelEnabled(int channelIndex, boolean enabled)  {

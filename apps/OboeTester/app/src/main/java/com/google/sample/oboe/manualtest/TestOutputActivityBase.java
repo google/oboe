@@ -53,7 +53,6 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         return audioOutTester;
     }
 
-
     @Override
     public void openAudio() throws IOException {
         super.openAudio();

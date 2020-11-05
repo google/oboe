@@ -271,8 +271,11 @@ public:
         return 0.0;
     }
 
-    virtual void setEnabled(bool enabled) {
-    }
+    /**
+     * Trigger a sound or impulse.
+     * @param enabled
+     */
+    virtual void trigger() {}
 
     bool isMMapUsed(int32_t streamIndex);
 
@@ -468,8 +471,8 @@ public:
 
     void configureForStart() override;
 
-    virtual void setEnabled(bool enabled) override {
-        sawPingGenerator.setEnabled(enabled);
+    virtual void trigger() override {
+        sawPingGenerator.trigger();
     }
 
     SawPingGenerator             sawPingGenerator;

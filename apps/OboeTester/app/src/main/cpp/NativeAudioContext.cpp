@@ -507,7 +507,6 @@ void ActivityTapToTone::configureForStart() {
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
 
-    sawPingGenerator.setEnabled(false);
     configureStreamGateway();
 }
 

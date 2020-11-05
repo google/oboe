@@ -17,7 +17,6 @@
 package com.google.sample.oboe.manualtest;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -71,7 +70,6 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox7);
         configureChannelBoxes(0);
 
-
         mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         mNativeApiSpinner.setOnItemSelectedListener(new NativeApiSpinnerListener());
         mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
@@ -94,17 +92,6 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             mChannelBoxes[i].setChecked(i < channelCount);
             mChannelBoxes[i].setEnabled(i < channelCount);
         }
-    }
-
-    public void startAudio() {
-        super.startAudio();
-        mAudioOutTester.setToneType(OboeAudioOutputStream.TONE_TYPE_SINE);
-        mAudioOutTester.setEnabled(true);
-    }
-
-    public void stopAudio() {
-        mAudioOutTester.setEnabled(false);
-        super.stopAudio();
     }
 
     public void closeAudio() {
