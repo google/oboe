@@ -34,6 +34,17 @@ public:
 
     void tap(bool isDown);
 
+    /**
+     * Open and start a stream.
+     * @return error or OK
+     */
+    oboe::Result start();
+
+    /**
+     * Stop and close the stream.
+     */
+    void stop();
+
     // From IRestartable
     void restart() override;
 
@@ -78,7 +89,6 @@ private:
     oboe::Result reopenStream();
     oboe::Result createPlaybackStream();
     void         updateLatencyDetection();
-    oboe::Result start();
 
     std::shared_ptr<oboe::AudioStream> mStream;
     std::unique_ptr<LatencyTuningCallback> mLatencyCallback;

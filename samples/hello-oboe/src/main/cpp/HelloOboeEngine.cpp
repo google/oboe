@@ -36,7 +36,6 @@
  */
 HelloOboeEngine::HelloOboeEngine()
         : mLatencyCallback(std::make_unique<LatencyTuningCallback>(*this)) {
-    start();
 }
 
 double HelloOboeEngine::getCurrentOutputLatencyMillis() {
@@ -154,14 +153,17 @@ oboe::Result HelloOboeEngine::start() {
     return result;
 }
 
-oboe::Result HelloOboeEngine::reopenStream() {
-    {
-        // Stop and close in case not already closed.
-        std::lock_guard<std::mutex> lock(mLock);
-        if (mStream) {
-            mStream->stop();
-            mStream->close();
-        }
+void HelloOboeEngine::stop() {
+    // Stop, close and delete in case not already closed.
+    std::lock_guard<std::mutex> lock(mLock);
+    if (mStream) {
+        mStream->stop();
+        mStream->close();
+        mStream.reset();
     }
+}
+
+oboe::Result HelloOboeEngine::reopenStream() {
+    stop();
     return start();
 }
