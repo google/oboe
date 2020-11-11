@@ -381,8 +381,12 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getCallbackCount(
 
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLastErrorCallbackResult(
-        JNIEnv *env, jobject) {
-    return (jint) engine.getCurrentActivity()->getLastErrorCallbackResult();
+        JNIEnv *env, jobject, jint streamIndex) {
+    oboe::AudioStream *oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        return (jint) oboeStream->getLastErrorCallbackResult();
+    }
+    return 0;
 }
 
 JNIEXPORT jdouble JNICALL

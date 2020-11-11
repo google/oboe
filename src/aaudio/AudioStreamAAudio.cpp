@@ -62,14 +62,16 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
 static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
                                           Result error) {
     LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
-    oboeStream->requestStop();
-    if (oboeStream->getCallback() != nullptr) {
-        oboeStream->getCallback()->onErrorBeforeClose(oboeStream, error);
-    }
-    oboeStream->close();
-    if (oboeStream->getCallback() != nullptr) {
+    AudioStreamErrorCallback *errorCallback = oboeStream->getErrorCallback();
+    if (errorCallback == nullptr) return; // should be impossible
+    bool handled = errorCallback->onError(oboeStream, error);
+
+    if (!handled) {
+        oboeStream->requestStop();
+        errorCallback->onErrorBeforeClose(oboeStream, error);
+        oboeStream->close();
         // Warning, oboeStream may get deleted by this callback.
-        oboeStream->getCallback()->onErrorAfterClose(oboeStream, error);
+        errorCallback->onErrorAfterClose(oboeStream, error);
     }
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
@@ -101,14 +103,18 @@ bool AudioStreamAAudio::isSupported() {
     return openResult == 0;
 }
 
-// Static 'C' wrapper for the error callback method.
+// Static method for the error callback.
+// We use a method so we can access protected methods on the stream.
 // Launch a thread to handle the error.
 // That other thread can safely stop, close and delete the stream.
 void AudioStreamAAudio::internalErrorCallback(
         AAudioStream *stream,
         void *userData,
         aaudio_result_t error) {
+    oboe::Result oboeResult = static_cast<Result>(error);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    LOGI("%s() oboeResult = %d", __func__, oboeResult);
+    oboeStream->mErrorCallbackResult = oboeResult;
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
     std::shared_ptr<AudioStream> sharedStream = oboeStream->lockWeakThis();
@@ -118,16 +124,14 @@ void AudioStreamAAudio::internalErrorCallback(
     if (oboeStream->wasErrorCallbackCalled()) { // block extra error callbacks
         LOGE("%s() multiple error callbacks called!", __func__);
     } else if (stream != oboeStream->getUnderlyingStream()) {
-        LOGW("%s() stream already closed or closing", __func__); // can happen if there are bugs
+        LOGW("%s() stream already closed or closing", __func__); // might happen if there are bugs
     } else if (sharedStream) {
         // Handle error on a separate thread using shared pointer.
-        std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream,
-                      static_cast<Result>(error));
+        std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream, oboeResult);
         t.detach();
     } else {
         // Handle error on a separate thread.
-        std::thread t(oboe_aaudio_error_thread_proc, oboeStream,
-                      static_cast<Result>(error));
+        std::thread t(oboe_aaudio_error_thread_proc, oboeStream, oboeResult);
         t.detach();
     }
 }
@@ -229,13 +233,19 @@ Result AudioStreamAAudio::open() {
 
     // TODO get more parameters from the builder?
 
-    if (mStreamCallback != nullptr) {
+    if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
-        // If the data callback is not being used then the write method will return an error
-        // and the app can stop and close the stream.
+
+        if (!isErrorCallbackSpecified()) {
+            // The app did not specify a callback so we should specify
+            // our own so the stream gets closed and stopped.
+            mErrorCallback = &mDefaultErrorCallback;
+        }
         mLibLoader->builder_setErrorCallback(aaudioBuilder, internalErrorCallback, this);
     }
+    // Else if the data callback is not being used then the write method will return an error
+    // and the app can stop and close the stream.
 
     // ============= OPEN THE STREAM ================
     {
@@ -357,7 +367,7 @@ Result AudioStreamAAudio::requestStart() {
                 return Result::OK;
             }
         }
-        if (mStreamCallback != nullptr) { // Was a callback requested?
+        if (isDataCallbackSpecified()) {
             setDataCallbackEnabled(true);
         }
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));

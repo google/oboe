@@ -192,6 +192,7 @@ class ActivityContext {
 public:
 
     ActivityContext() {}
+
     virtual ~ActivityContext() = default;
 
     oboe::AudioStream *getStream(int32_t streamIndex) {
@@ -288,7 +289,11 @@ public:
     }
 
     oboe::Result getLastErrorCallbackResult() {
-        return oboeCallbackProxy.getLastErrorCallbackResult();
+        oboe::AudioStream *stream = getOutputStream();
+        if (stream == nullptr) {
+            stream = getInputStream();
+        }
+        return stream ? oboe::Result::ErrorNull : stream->getLastErrorCallbackResult();
     }
 
     int32_t getFramesPerCallback() {
