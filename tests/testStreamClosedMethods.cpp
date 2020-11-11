@@ -19,14 +19,12 @@
 
 using namespace oboe;
 
-class MyCallback : public AudioStreamCallback {
+class MyCallback : public AudioStreamDataCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         return DataCallbackResult::Continue;
     }
 };
-
-
 
 class StreamClosedReturnValues : public ::testing::Test {
 
@@ -134,13 +132,13 @@ TEST_F(StreamClosedReturnValues, GetDeviceIdReturnsLastKnownValue) {
     ASSERT_EQ(mStream->getDeviceId(), d);
 }
 
-TEST_F(StreamClosedReturnValues, GetCallbackReturnsLastKnownValue) {
+TEST_F(StreamClosedReturnValues, GetDataCallbackReturnsLastKnownValue) {
 
-    AudioStreamCallback *callback = new MyCallback();
-    mBuilder.setCallback(callback);
+    AudioStreamDataCallback *callback = new MyCallback();
+    mBuilder.setDataCallback(callback);
     ASSERT_TRUE(openAndCloseStream());
 
-    AudioStreamCallback *callback2 = mStream->getCallback();
+    AudioStreamDataCallback *callback2 = mStream->getDataCallback();
     ASSERT_EQ(callback, callback2);
 }
 

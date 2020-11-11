@@ -101,8 +101,9 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     // Source
     // IF OUTPUT and using a callback then call back to the app using a SourceCaller.
     // OR IF INPUT and NOT using a callback then read from the child stream using a SourceCaller.
-    if ((sourceStream->getCallback() != nullptr && isOutput)
-        || (sourceStream->getCallback() == nullptr && isInput)) {
+    bool isDataCallbackSpecified = sourceStream->isDataCallbackSpecified();
+    if ((isDataCallbackSpecified && isOutput)
+        || (!isDataCallbackSpecified && isInput)) {
         int32_t actualSourceFramesPerCallback = (sourceFramesPerCallback == kUnspecified)
                 ? sourceStream->getFramesPerBurst()
                 : sourceFramesPerCallback;
@@ -236,7 +237,7 @@ int32_t DataConversionFlowGraph::write(void *inputBuffer, int32_t numFrames) {
 
 int32_t DataConversionFlowGraph::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
     int32_t numFrames = numBytes / mFilterStream->getBytesPerFrame();
-    mCallbackResult = mFilterStream->getCallback()->onAudioReady(mFilterStream, buffer, numFrames);
+    mCallbackResult = mFilterStream->getDataCallback()->onAudioReady(mFilterStream, buffer, numFrames);
     // TODO handle STOP from callback, process data remaining in the block adapter
     return numBytes;
 }

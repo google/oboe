@@ -80,17 +80,18 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     return callbackResult;
 }
 
-void OboeStreamCallbackProxy::onErrorBeforeClose(oboe::AudioStream *audioStream, oboe::Result error) {
-    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
-    mErrorCallbackResult = error;
-    if (mCallback != nullptr) {
-        mCallback->onErrorBeforeClose(audioStream, error);
-    }
-}
-
-void OboeStreamCallbackProxy::onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result  error) {
-    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
-    if (mCallback != nullptr) {
-        mCallback->onErrorAfterClose(audioStream, error);
-    }
-}
+// FIXME
+//void OboeStreamCallbackProxy::onErrorBeforeClose(oboe::AudioStream *audioStream, oboe::Result error) {
+//    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
+//    mErrorCallbackResult = error;
+//    if (mCallback != nullptr) {
+//        mCallback->onErrorBeforeClose(audioStream, error);
+//    }
+//}
+//
+//void OboeStreamCallbackProxy::onErrorAfterClose(oboe::AudioStream *audioStream, oboe::Result  error) {
+//    LOGD("OboeStreamCallbackProxy::%s(%p, %d) called", __func__, audioStream, error);
+//    if (mCallback != nullptr) {
+//        mCallback->onErrorAfterClose(audioStream, error);
+//    }
+//}

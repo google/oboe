@@ -260,7 +260,7 @@ int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
 
 bool AudioStreamBuffered::isXRunCountSupported() const {
     // XRun count is only supported if we're using blocking I/O (not callbacks)
-    return (getCallback() == nullptr);
+    return (!isDataCallbackSpecified());
 }
 
 } // namespace oboe

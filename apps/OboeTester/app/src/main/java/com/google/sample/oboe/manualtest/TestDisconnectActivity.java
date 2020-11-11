@@ -262,13 +262,14 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
-                + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode());
+                + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
+                + ", " + config.getSampleRate();
     }
 
     private void testConfiguration(boolean isInput,
                                    int perfMode,
                                    int sharingMode,
-                                   int channelCount,
+                                   int sampleRate,
                                    boolean requestPlugin) throws InterruptedException {
         String actualConfigText = "none";
         mSkipTest = false;
@@ -295,7 +296,10 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         requestedConfig.reset();
         requestedConfig.setPerformanceMode(perfMode);
         requestedConfig.setSharingMode(sharingMode);
-        requestedConfig.setChannelCount(channelCount);
+        requestedConfig.setSampleRate(sampleRate);
+        if (sampleRate != 0) {
+            requestedConfig.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_MEDIUM);
+        }
 
         log("========================== #" + mTestCount);
         log("Requested:");
@@ -427,12 +431,17 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
     }
 
     private void testConfiguration(boolean isInput, int performanceMode,
-                                   int sharingMode) throws InterruptedException {
-        int channelCount = 2;
+                                   int sharingMode, int sampleRate) throws InterruptedException {
         boolean requestPlugin = true; // plug IN
-        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate, requestPlugin);
         requestPlugin = false; // UNplug
-        testConfiguration(isInput, performanceMode, sharingMode, channelCount, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate, requestPlugin);
+    }
+
+    private void testConfiguration(boolean isInput, int performanceMode,
+                                   int sharingMode) throws InterruptedException {
+        final int sampleRate = 0;
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate);
     }
 
     private void testConfiguration(int performanceMode,
@@ -454,6 +463,8 @@ public class TestDisconnectActivity extends TestAudioActivity implements Runnabl
         mFailCount = 0;
         // Try several different configurations.
         try {
+            testConfiguration(false, StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_EXCLUSIVE, 44100);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                         StreamConfiguration.SHARING_MODE_EXCLUSIVE);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,

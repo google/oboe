@@ -100,10 +100,35 @@ public:
     int32_t getDeviceId() const { return mDeviceId; }
 
     /**
-     * @return the callback object for this stream, if set.
+     * For internal use only.
+     * @return the data callback object for this stream, if set.
      */
-    AudioStreamCallback* getCallback() const {
-        return mStreamCallback;
+    AudioStreamDataCallback *getDataCallback() const {
+        return mDataCallback;
+    }
+
+    /**
+     * For internal use only.
+     * @return the error callback object for this stream, if set.
+     */
+    AudioStreamErrorCallback *getErrorCallback() const {
+        return mErrorCallback;
+    }
+
+    /**
+     * @return true if a data callback was set for this stream
+     */
+    bool isDataCallbackSpecified() const {
+        return mDataCallback != nullptr;
+    }
+
+    /**
+     * Note that if the app does not set an error callback then a
+     * default one may be provided.
+     * @return true if an error callback was set for this stream
+     */
+    bool isErrorCallbackSpecified() const {
+        return mErrorCallback != nullptr;
     }
 
     /**
@@ -148,9 +173,15 @@ public:
     }
 
 protected:
+    /** The callback which will be fired when new data is ready to be read/written. **/
+    AudioStreamDataCallback        *mDataCallback = nullptr;
 
-    /** The callback which will be fired when new data is ready to be read/written **/
-    AudioStreamCallback            *mStreamCallback = nullptr;
+    /** The callback which will be fired when an error or a disconnect occurs. **/
+    AudioStreamErrorCallback       *mErrorCallback = nullptr;
+
+    /** The callback that combines data and error callback. **/
+    // AudioStreamCallback            *mStreamCallback = nullptr;
+
     /** Number of audio frames which will be requested in each callback */
     int32_t                         mFramesPerCallback = kUnspecified;
     /** Stream channel count */

@@ -60,7 +60,7 @@ protected:
     DataCallbackResult onDefaultCallback(void *audioData, int numFrames) override;
 
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
-    bool usingFIFO() const { return getCallback() == nullptr; }
+    bool usingFIFO() const { return !isDataCallbackSpecified(); }
 
     virtual Result updateServiceFrameCounter() = 0;
 

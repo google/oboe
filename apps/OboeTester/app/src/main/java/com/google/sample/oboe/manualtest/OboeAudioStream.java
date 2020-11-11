@@ -204,7 +204,10 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native long getCallbackCount(); // TODO Move to another class?
 
     @Override
-    public native int getLastErrorCallbackResult(); // TODO Move to another class?
+    public int getLastErrorCallbackResult() {
+        return getLastErrorCallbackResult(streamIndex);
+    }
+    public native int getLastErrorCallbackResult(int streamIndex);
 
     @Override
     public long getFramesWritten() {

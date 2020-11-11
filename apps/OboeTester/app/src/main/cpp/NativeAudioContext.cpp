@@ -130,7 +130,7 @@ void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &b
     if (mUseCallback) {
         LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, callback size = %d",
              callbackSize);
-        builder.setCallback(&oboeCallbackProxy);
+        builder.setDataCallback(&oboeCallbackProxy);
         builder.setFramesPerCallback(callbackSize);
     }
 }
