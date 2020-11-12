@@ -42,10 +42,10 @@ public:
     : AudioStream(builder)
     , mChildStream(childStream) {
         // Intercept the callback if used.
-        if (builder.getErrorCallback() != nullptr) {
+        if (builder.isErrorCallbackSpecified()) {
             mErrorCallback = mChildStream->swapErrorCallback(this);
         }
-        if (builder.getDataCallback() != nullptr) {
+        if (builder.isDataCallbackSpecified()) {
             mDataCallback = mChildStream->swapDataCallback(this);
         } else {
             const int size = childStream->getFramesPerBurst() * childStream->getBytesPerFrame();

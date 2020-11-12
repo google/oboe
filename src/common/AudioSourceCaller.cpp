@@ -20,7 +20,7 @@ using namespace oboe;
 using namespace flowgraph;
 
 int32_t AudioSourceCaller::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
-    oboe::AudioStreamDataCallback *callback = mStream->getDataCallback();
+    AudioStreamDataCallback *callback = mStream->getDataCallback();
     int32_t result = 0;
     int32_t numFrames = numBytes / mStream->getBytesPerFrame();
     if (callback != nullptr) {

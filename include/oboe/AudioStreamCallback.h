@@ -104,7 +104,7 @@ public:
      * It can be used to override and customize the normal error processing.
      * Use of this method is considered an advanced technique.
      * It might, for example, be used if an app want to use a high level lock when
-     * closing and reopening  a stream.
+     * closing and reopening a stream.
      * Or it might be used when an app want to signal a management thread that handles
      * all of the stream state.
      *
