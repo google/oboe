@@ -113,7 +113,6 @@ void AudioStreamAAudio::internalErrorCallback(
         aaudio_result_t error) {
     oboe::Result oboeResult = static_cast<Result>(error);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    LOGI("%s() oboeResult = %d", __func__, oboeResult);
     oboeStream->mErrorCallbackResult = oboeResult;
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)

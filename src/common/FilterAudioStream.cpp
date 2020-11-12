@@ -100,7 +100,6 @@ DataCallbackResult FilterAudioStream::onAudioReady(AudioStream *oboeStream,
     } else {
         framesProcessed = mFlowGraph->write(audioData, numFrames);
     }
-    LOGI("%s() framesProcessed = %d, numFrames = %d", __func__, framesProcessed, numFrames);
     return (framesProcessed < numFrames)
            ? DataCallbackResult::Stop
            : mFlowGraph->getDataCallbackResult();
