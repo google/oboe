@@ -162,8 +162,9 @@ Result AudioInputStreamOpenSLES::open() {
                                          &presetValue,
                                          sizeof(SLuint32));
         if (SL_RESULT_SUCCESS != result
-            && presetValue != SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION) {
+                && presetValue != SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION) {
             presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+            LOGD("Setting InputPreset %d failed. Using VoiceRecognition instead.", getInputPreset());
             mInputPreset = InputPreset::VoiceRecognition;
             (*configItf)->SetConfiguration(configItf,
                                              SL_ANDROID_KEY_RECORDING_PRESET,

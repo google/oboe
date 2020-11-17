@@ -208,12 +208,6 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
         LOGW("SessionId [AudioStreamBuilder::setSessionId()] "
              "is not supported on OpenSLES streams.");
     }
-
-    // Input Preset
-    if (mInputPreset != InputPreset::VoiceRecognition) {
-        LOGW("InputPreset [AudioStreamBuilder::setInputPreset()] "
-             "is not supported on OpenSLES streams.");
-    }
 }
 
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {
