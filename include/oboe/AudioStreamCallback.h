@@ -88,7 +88,7 @@ public:
 };
 
 /**
- * AudioStreamDataCallback defines a callback interface for
+ * AudioStreamErrorCallback defines a callback interface for
  * being alerted when a stream has an error or is disconnected
  * using `onError*` methods.
  *
@@ -109,16 +109,17 @@ public:
      * all of the stream state.
      *
      * If this method returns false then
-     * the stream will be stopped, and onErrorBeforeClose() will be called,
+     * the stream will be stopped by Oboe in the following way: onErrorBeforeClose() will be called,
      * then the stream will be closed and onErrorAfterClose() will be closed.
      *
      * If this method returns true then the normal error processing will not occur.
      * In that case, the app MUST stop() and close() the stream!
      *
-     * Note that this will be called on a thread created by Oboe.
+     * Note that this method will be called on a thread created by Oboe.
      *
      * @param audioStream pointer to the associated stream
      * @param error
+     * @return true if the error has been handled, false if not
      */
     virtual bool onError(AudioStream* /* audioStream */, Result /* error */) {
         return false; // false means the stream will be stopped and closed by Oboe
@@ -144,7 +145,7 @@ public:
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected
-     * and if onError() returns false.
+     * and if onError() returns false (indicating that the error has not already been handled).
      *
      * The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe.
      * So the underlying stream cannot be referenced.
@@ -168,7 +169,8 @@ public:
  * It is used with AudioStreamBuilder::setCallback().
  *
  * It combines the interfaces defined by AudioStreamDataCallback and AudioStreamErrorCallback.
- * This was the original callback object. We now recommend using the individual interfaces.
+ * This was the original callback object. We now recommend using the individual interfaces
+ * and using setDataCallback() and setErrorCallback().
  */
 class AudioStreamCallback : public AudioStreamDataCallback,
                             public AudioStreamErrorCallback {
