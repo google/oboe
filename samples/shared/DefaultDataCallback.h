@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
-#define SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
+#ifndef SAMPLES_DEFAULT_DATA_CALLBACK_H
+#define SAMPLES_DEFAULT_DATA_CALLBACK_H
 
 
 #include <vector>
@@ -26,16 +26,12 @@
 #include "IRestartable.h"
 
 /**
- * This is a callback object which will render data from an `IRenderableAudio` source. It is
- * constructed using an `IRestartable` which allows it to automatically restart the parent object
- * if the stream is disconnected (for example, when headphones are attached).
- *
- * @param IRestartable - the object which should be restarted when the stream is disconnected
+ * This is a callback object which will render data from an `IRenderableAudio` source.
  */
-class DefaultAudioStreamCallback : public oboe::AudioStreamCallback {
+class DefaultDataCallback : public oboe::AudioStreamDataCallback {
 public:
-    DefaultAudioStreamCallback(IRestartable &parent): mParent(parent) {}
-    virtual ~DefaultAudioStreamCallback() = default;
+    DefaultDataCallback() {}
+    virtual ~DefaultDataCallback() = default;
 
     virtual oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
@@ -56,19 +52,15 @@ public:
         return oboe::DataCallbackResult::Continue;
     }
 
-    virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
-        // Restart the stream when it errors out with disconnect
-        if (error == oboe::Result::ErrorDisconnected) {
-            LOGE("Restarting AudioStream after disconnect");
-            mParent.restart();
-        } else {
-            LOGE("Unknown error");
-        }
-        mIsThreadAffinitySet = false;
-    }
-
     void setSource(std::shared_ptr<IRenderableAudio> renderable) {
         mRenderable = renderable;
+    }
+
+    /**
+     * Reset the callback to its initial state.
+     */
+    void reset(){
+        mIsThreadAffinitySet = false;
     }
 
     std::shared_ptr<IRenderableAudio> getSource() {
@@ -98,7 +90,6 @@ public:
 
 private:
     std::shared_ptr<IRenderableAudio> mRenderable;
-    IRestartable &mParent;
     std::vector<int> mCpuIds; // IDs of CPU cores which the audio callback should be bound to
     std::atomic<bool> mIsThreadAffinityEnabled { false };
     std::atomic<bool> mIsThreadAffinitySet { false };
@@ -139,4 +130,4 @@ private:
 
 };
 
-#endif //SAMPLES_DEFAULT_AUDIO_STREAM_CALLBACK_H
+#endif //SAMPLES_DEFAULT_DATA_CALLBACK_H

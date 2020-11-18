@@ -175,7 +175,8 @@ bool Game::openStream() {
 
     // Create an audio stream
     AudioStreamBuilder builder;
-    builder.setCallback(this);
+    builder.setDataCallback(this);
+    builder.setErrorCallback(this);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
 
