@@ -135,7 +135,7 @@ public class DeviceReportActivity extends Activity {
         report.append("\n############################");
         report.append("\nExtras:\n");
         String unprocessedSupport = mAudioManager.getParameters(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED);
-        report.append("\nSUPPORT_UNPROCESSED : " + ((unprocessedSupport != null) ? "yes" : "no"));
+        report.append("\nSUPPORT_UNPROCESSED : " + ((unprocessedSupport == null) ?  "null" : "yes"));
 
         report.append("\nProAudio Feature    : "
             + getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO));
