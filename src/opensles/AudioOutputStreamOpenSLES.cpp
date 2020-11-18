@@ -253,7 +253,7 @@ Result AudioOutputStreamOpenSLES::close() {
         mLock.lock();
         // invalidate any interfaces
         mPlayInterface = nullptr;
-        result = AudioStreamOpenSLES::close();
+        result = AudioStreamOpenSLES::close_l();
     }
     mLock.unlock(); // avoid recursive lock
     return result;
