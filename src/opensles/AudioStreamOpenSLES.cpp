@@ -134,6 +134,13 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
 
     if (!usingFIFO()) {
         mBufferCapacityInFrames = mFramesPerBurst * kBufferQueueLength;
+        // Check for overflow.
+        if (mBufferCapacityInFrames <= 0) {
+            mBufferCapacityInFrames = 0;
+            LOGE("AudioStreamOpenSLES::open() numeric overflow because mFramesPerBurst = %d",
+                 mFramesPerBurst);
+            return Result::ErrorOutOfRange;
+        }
         mBufferSizeInFrames = mBufferCapacityInFrames;
     }
 
