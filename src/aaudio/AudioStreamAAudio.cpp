@@ -64,9 +64,9 @@ static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
     LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
     AudioStreamErrorCallback *errorCallback = oboeStream->getErrorCallback();
     if (errorCallback == nullptr) return; // should be impossible
-    bool handled = errorCallback->onError(oboeStream, error);
+    bool isErrorHandled = errorCallback->onError(oboeStream, error);
 
-    if (!handled) {
+    if (!isErrorHandled) {
         oboeStream->requestStop();
         errorCallback->onErrorBeforeClose(oboeStream, error);
         oboeStream->close();
