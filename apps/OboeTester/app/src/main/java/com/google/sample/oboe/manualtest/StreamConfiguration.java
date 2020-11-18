@@ -177,11 +177,11 @@ public class StreamConfiguration {
     static String convertSharingModeToText(int sharingMode) {
         switch(sharingMode) {
             case SHARING_MODE_SHARED:
-                return "SHARED";
+                return "SHRD";
             case SHARING_MODE_EXCLUSIVE:
-                return "EXCLUSIVE";
+                return "EXCL";
             default:
-                return "INVALID";
+                return "NVAL";
         }
     }
 

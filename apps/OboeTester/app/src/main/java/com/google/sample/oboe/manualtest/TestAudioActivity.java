@@ -177,9 +177,8 @@ abstract class TestAudioActivity extends Activity {
 
     @Override
     protected void onStop() {
-        Log.i(TAG, "onStop() called so stopping audio =========================");
-        stopAudio();
-        closeAudio();
+        Log.i(TAG, "onStop() called so stop the test =========================");
+        onStopTest();
         super.onStop();
     }
 
@@ -492,6 +491,18 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    public void runTest() {}
+
+    // This should only be called from UI events such as onStop or a button press.
+    public void onStopTest() {
+        stopTest();
+    }
+
+    public void stopTest() {
+        stopAudio();
+        closeAudio();
+    }
+
     public void stopAudioQuiet() {
         stopNative();
         mAudioState = AUDIO_STATE_STOPPED;
@@ -539,5 +550,4 @@ abstract class TestAudioActivity extends Activity {
         myAudioMgr.stopBluetoothSco();
     }
 
-    public void runTest() {}
 }

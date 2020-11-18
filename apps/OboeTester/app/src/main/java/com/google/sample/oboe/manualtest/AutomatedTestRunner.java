@@ -77,7 +77,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mStartButton.setOnClickListener( new OnClickListener() {
             @Override
             public void onClick(View v) {
-                startAutoThread();
+                startTest();
             }
         });
 
@@ -85,7 +85,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mStopButton.setOnClickListener( new OnClickListener() {
             @Override
             public void onClick(View v) {
-                stopAutoThread();
+                stopTest();
             }
         });
 
@@ -131,6 +131,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     // Write to scrollable TextView
     public void log(final String text) {
+        if (text == null) return;
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -149,24 +150,14 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         });
     }
 
-    public void startAutoThread() {
-        updateStartStopButtons(true);
+
+    private void startAutoThread() {
         mThreadEnabled = true;
         mAutoThread = new Thread(this);
         mAutoThread.start();
     }
 
-    // Only call from UI thread.
-    public void onTestFinished() {
-        updateStartStopButtons(false);
-        mShareButton.setEnabled(true);
-    }
-
-    public void stopAudioTest() {
-        mActivity.stopAudio();
-    }
-
-    public void stopAutoThread() {
+    private void stopAutoThread() {
         try {
             if (mAutoThread != null) {
                 mThreadEnabled = false;
@@ -177,6 +168,21 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    protected void startTest() {
+        updateStartStopButtons(true);
+        startAutoThread();
+    }
+
+    public void stopTest() {
+        stopAutoThread();
+    }
+
+    // Only call from UI thread.
+    public void onTestFinished() {
+        updateStartStopButtons(false);
+        mShareButton.setEnabled(true);
     }
 
     public static String getTimestampString() {
@@ -206,13 +212,14 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         log(Build.MANUFACTURER + " " + Build.PRODUCT);
         log(Build.DISPLAY);
         mFailedSummary = new StringBuffer();
+        appendSummary("Summary\n");
         mTestCount = 0;
         mPassCount = 0;
         mFailCount = 0;
         try {
             mActivity.runTest();
         } finally {
-            stopAudioTest();
+            mActivity.stopTest();
             if (mThreadEnabled) {
                 log("\n==== SUMMARY ========");
                 if (mFailCount > 0) {
@@ -223,13 +230,13 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                     log("All tests PASSED.");
                 }
                 log("== FINISHED at " + new Date());
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        onTestFinished();
-                    }
-                });
             }
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onTestFinished();
+                }
+            });
         }
     }
 

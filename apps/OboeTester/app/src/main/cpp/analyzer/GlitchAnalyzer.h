@@ -24,6 +24,7 @@
 
 #include "InfiniteRecording.h"
 #include "LatencyAnalyzer.h"
+#include "BaseSineAnalyzer.h"
 #include "PseudoRandom.h"
 
 /**
@@ -32,12 +33,10 @@
  * Use a cosine transform to measure the predicted magnitude and relative phase of the
  * looped back sine wave. Then generate a predicted signal and compare with the actual signal.
  */
-class GlitchAnalyzer : public LoopbackProcessor {
+class GlitchAnalyzer : public BaseSineAnalyzer {
 public:
 
-    GlitchAnalyzer()
-            : LoopbackProcessor()
-            , mInfiniteRecording(64 * 1024) {}
+    GlitchAnalyzer() : BaseSineAnalyzer() {}
 
     int32_t getState() const {
         return mState;
@@ -53,12 +52,6 @@ public:
 
     void setTolerance(double tolerance) {
         mTolerance = tolerance;
-        mScaledTolerance = mMagnitude * mTolerance;
-    }
-
-    void setMagnitude(double magnitude) {
-        mMagnitude = magnitude;
-        mScaledTolerance = mMagnitude * mTolerance;
     }
 
     int32_t getGlitchCount() const {
@@ -125,26 +118,6 @@ public:
 
     void printStatus() override {
         ALOGD("st = %d, #gl = %3d,", mState, mGlitchCount);
-    }
-    /**
-     * Calculate the magnitude of the component of the input signal
-     * that matches the analysis frequency.
-     * Also calculate the phase that we can use to create a
-     * signal that matches that component.
-     * The phase will be between -PI and +PI.
-     */
-    double calculateMagnitude(double *phasePtr = nullptr) {
-        if (mFramesAccumulated == 0) {
-            return 0.0;
-        }
-        double sinMean = mSinAccumulator / mFramesAccumulated;
-        double cosMean = mCosAccumulator / mFramesAccumulated;
-        double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
-        if (phasePtr != nullptr) {
-            double phase = M_PI_2 - atan2(sinMean, cosMean);
-            *phasePtr = phase;
-        }
-        return magnitude;
     }
 
     /**
@@ -234,19 +207,13 @@ public:
                 } else {
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
+
+
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
-                    mSinAccumulator += sample * sinf(mInputPhase);
-                    mCosAccumulator += sample * cosf(mInputPhase);
-                    mFramesAccumulated++;
                     // Must be a multiple of the period or the calculation will not be accurate.
-                    if (mFramesAccumulated == mSinePeriod) {
-                        const double coefficient = 0.1;
-                        double phaseOffset = 0.0;
-                        double magnitude = calculateMagnitude(&phaseOffset);
-                        // One pole averaging filter.
-                        setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
-
+                    double phaseOffset = 0.0;
+                    if (transformSample(sample, mInputPhase, &phaseOffset)) {
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();
@@ -304,34 +271,7 @@ public:
         }
     }
 
-    // advance and wrap phase
-    void incrementOutputPhase() {
-        mOutputPhase += mPhaseIncrement;
-        if (mOutputPhase > M_PI) {
-            mOutputPhase -= (2.0 * M_PI);
-        }
-    }
-
-    /**
-     * @param frameData upon return, contains the reference sine wave
-     * @param channelCount
-     */
-    result_code processOutputFrame(float *frameData, int channelCount) override {
-        float output = 0.0f;
-        // Output sine wave so we can measure it.
-        if (mState != STATE_IDLE) {
-            float sinOut = sinf(mOutputPhase);
-            incrementOutputPhase();
-            output = (sinOut * mOutputAmplitude)
-                     + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
-            // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  mPhaseIncrement);
-        }
-        frameData[0] = output;
-        for (int i = 1; i < channelCount; i++) {
-            frameData[i] = 0.0f;
-        }
-        return RESULT_OK;
-    }
+    bool isOutputEnabled() override { return mState != STATE_IDLE; }
 
     void onGlitchStart() {
         mGlitchCount++;
@@ -349,10 +289,8 @@ public:
     }
 
     // reset the sine wave detector
-    void resetAccumulator() {
-        mFramesAccumulated = 0;
-        mSinAccumulator = 0.0;
-        mCosAccumulator = 0.0;
+    void resetAccumulator() override {
+        BaseSineAnalyzer::resetAccumulator();
         mSumSquareSignal = 0.0;
         mSumSquareNoise = 0.0;
     }
@@ -364,18 +302,13 @@ public:
     }
 
     void reset() override {
-        LoopbackProcessor::reset();
+        BaseSineAnalyzer::reset();
         mState = STATE_IDLE;
         mDownCounter = IDLE_FRAME_COUNT;
-        resetAccumulator();
     }
 
     void prepareToTest() override {
-        LoopbackProcessor::prepareToTest();
-        mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
-        mOutputPhase = 0.0f;
-        mInverseSinePeriod = 1.0 / mSinePeriod;
-        mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
+        BaseSineAnalyzer::prepareToTest();
         mGlitchCount = 0;
         mMaxGlitchDelta = 0.0;
         for (int i = 0; i < NUM_STATES; i++) {
@@ -408,33 +341,21 @@ private:
         MIN_SNR_DB = 65
     };
 
-    static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
-    static constexpr int kTargetGlitchFrequency = 607;
     static constexpr double kMaxPhaseError = M_PI * 0.05;
 
-    float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mThreshold = 0.005;
-    int     mSinePeriod = 1; // this will be set before use
-    double  mInverseSinePeriod = 1.0;
 
     int32_t mStateFrameCounters[NUM_STATES];
+    sine_state_t  mState = STATE_IDLE;
+    int64_t       mLastGlitchPosition;
 
-    double  mPhaseIncrement = 0.0;
     double  mInputPhase = 0.0;
-    double  mOutputPhase = 0.0;
-    double  mMagnitude = 0.0;
-    int32_t mFramesAccumulated = 0;
-    double  mSinAccumulator = 0.0;
-    double  mCosAccumulator = 0.0;
     double  mMaxGlitchDelta = 0.0;
     int32_t mGlitchCount = 0;
     int32_t mNonGlitchCount = 0;
     int32_t mGlitchLength = 0;
-    // This is used for processing every frame so we cache it here.
-    double  mScaledTolerance = 0.0;
     int     mDownCounter = IDLE_FRAME_COUNT;
     int32_t mFrameCounter = 0;
-    double  mOutputAmplitude = 0.75;
 
     int32_t mForceGlitchDuration = 0; // if > 0 then force a glitch for debugging
     int32_t mForceGlitchCounter = 4 * 48000; // count down and trigger at zero
@@ -446,13 +367,6 @@ private:
     double  mMeanSquareNoise = 0.0;
 
     PeakDetector  mPeakFollower;
-
-    PseudoRandom  mWhiteNoise;
-
-    sine_state_t  mState = STATE_IDLE;
-
-    InfiniteRecording<float> mInfiniteRecording;
-    int64_t       mLastGlitchPosition;
 };
 
 
