@@ -267,7 +267,8 @@ SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf c
     return result;
 }
 
-Result AudioStreamOpenSLES::close() {
+// This is called under mLock.
+Result AudioStreamOpenSLES::close_l() {
     if (mState == StreamState::Closed) {
         return Result::ErrorClosed;
     }
