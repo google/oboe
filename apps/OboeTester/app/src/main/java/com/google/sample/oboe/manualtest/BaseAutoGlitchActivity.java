@@ -23,7 +23,7 @@ import android.widget.Spinner;
 
 import java.io.IOException;
 
-public class AutoGlitchActivity extends GlitchActivity {
+public class BaseAutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
     private static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.

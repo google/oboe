@@ -226,7 +226,7 @@ public class MainActivity extends Activity {
     }
 
     public void onLaunchAutoGlitchTest(View view) {
-        onLaunchTest(AutoGlitchActivity.class);
+        onLaunchTest(BaseAutoGlitchActivity.class);
     }
 
     public void onLaunchTestDisconnect(View view) {
