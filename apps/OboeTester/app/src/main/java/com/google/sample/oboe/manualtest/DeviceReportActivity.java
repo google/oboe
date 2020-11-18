@@ -109,7 +109,7 @@ public class DeviceReportActivity extends Activity {
             report.append(item);
         }
         report.append(reportAllMicrophones());
-        report.append(getExtraDeviceInfo());
+        report.append(reportExtraDeviceInfo());
         log(report.toString());
     }
 
@@ -117,33 +117,37 @@ public class DeviceReportActivity extends Activity {
         StringBuffer report = new StringBuffer();
         report.append("\n############################");
         report.append("\nMicrophone Report:\n");
-        try {
-            List<MicrophoneInfo> micList = mAudioManager.getMicrophones();
-            for (MicrophoneInfo micInfo : micList) {
-                String micItem = MicrophoneInfoConverter.reportMicrophoneInfo(micInfo);
-                report.append(micItem);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            try {
+                List<MicrophoneInfo> micList = mAudioManager.getMicrophones();
+                for (MicrophoneInfo micInfo : micList) {
+                    String micItem = MicrophoneInfoConverter.reportMicrophoneInfo(micInfo);
+                    report.append(micItem);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return e.getMessage();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return e.getMessage();
+        } else {
+            report.append("\nMicrophoneInfo not available on V" + android.os.Build.VERSION.SDK_INT);
         }
         return report.toString();
     }
 
-    private String getExtraDeviceInfo() {
+    private String reportExtraDeviceInfo() {
         StringBuffer report = new StringBuffer();
-        report.append("\n############################");
-        report.append("\nExtras:\n");
+        report.append("\n\n############################");
+        report.append("\nExtras:");
         String unprocessedSupport = mAudioManager.getParameters(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED);
-        report.append("\nSUPPORT_UNPROCESSED : " + ((unprocessedSupport == null) ?  "null" : "yes"));
+        report.append("\nSUPPORT_UNPROCESSED  : " + ((unprocessedSupport == null) ?  "null" : "yes"));
 
-        report.append("\nProAudio Feature    : "
+        report.append("\nProAudio Feature     : "
             + getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO));
-        report.append("\nLowLatency Feature  : "
+        report.append("\nLowLatency Feature   : "
                 + getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY));
-        report.append("\nMIDI Feature        : "
+        report.append("\nMIDI Feature         : "
                 + getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI));
-        report.append("\nUSB Host Feature    : "
+        report.append("\nUSB Host Feature     : "
                 + getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST));
         report.append("\nUSB Accessory Feature: "
                 + getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY));
