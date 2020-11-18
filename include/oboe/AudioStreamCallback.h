@@ -127,7 +127,7 @@ public:
 
     /**
      * This will be called when an error occurs on a stream or when the stream is disconnected
-     * and if onError() returns false.
+     * and if onError() returns false (indicating that the error has not already been handled).
      *
      * Note that this will be called on a thread created by Oboe.
      *
