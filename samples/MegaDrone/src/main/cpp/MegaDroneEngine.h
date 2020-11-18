@@ -22,9 +22,10 @@
 #include <vector>
 
 #include "Synth.h"
-#include <DefaultAudioStreamCallback.h>
+#include <DefaultDataCallback.h>
 #include <TappableAudioSource.h>
 #include <IRestartable.h>
+#include <DefaultErrorCallback.h>
 
 using namespace oboe;
 
@@ -46,7 +47,8 @@ public:
 private:
     std::shared_ptr<AudioStream> mStream;
     std::shared_ptr<TappableAudioSource> mAudioSource;
-    std::unique_ptr<DefaultAudioStreamCallback> mCallback;
+    std::unique_ptr<DefaultDataCallback> mDataCallback;
+    std::unique_ptr<DefaultErrorCallback> mErrorCallback;
 
     oboe::Result createPlaybackStream();
     void createCallback(std::vector<int> cpuIds);

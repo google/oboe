@@ -22,6 +22,7 @@
 #include "SoundGenerator.h"
 #include "LatencyTuningCallback.h"
 #include "IRestartable.h"
+#include "DefaultErrorCallback.h"
 
 constexpr int32_t kBufferSizeAutomatic = 0;
 
@@ -88,10 +89,10 @@ public:
 private:
     oboe::Result reopenStream();
     oboe::Result createPlaybackStream();
-    void         updateLatencyDetection();
 
     std::shared_ptr<oboe::AudioStream> mStream;
     std::unique_ptr<LatencyTuningCallback> mLatencyCallback;
+    std::unique_ptr<DefaultErrorCallback> mErrorCallback;
     std::shared_ptr<SoundGenerator> mAudioSource;
     bool mIsLatencyDetectionSupported = false;
 

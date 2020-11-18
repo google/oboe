@@ -35,7 +35,8 @@
  *
  */
 HelloOboeEngine::HelloOboeEngine()
-        : mLatencyCallback(std::make_unique<LatencyTuningCallback>(*this)) {
+        : mLatencyCallback(std::make_unique<LatencyTuningCallback>()),
+        mErrorCallback(std::make_unique<DefaultErrorCallback>(*this)){
 }
 
 double HelloOboeEngine::getCurrentOutputLatencyMillis() {
@@ -119,7 +120,8 @@ oboe::Result HelloOboeEngine::createPlaybackStream() {
     return builder.setSharingMode(oboe::SharingMode::Exclusive)
         ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
         ->setFormat(oboe::AudioFormat::Float)
-        ->setCallback(mLatencyCallback.get())
+        ->setDataCallback(mLatencyCallback.get())
+        ->setErrorCallback(mErrorCallback.get())
         ->setAudioApi(mAudioApi)
         ->setChannelCount(mChannelCount)
         ->setDeviceId(mDeviceId)
@@ -128,6 +130,7 @@ oboe::Result HelloOboeEngine::createPlaybackStream() {
 
 void HelloOboeEngine::restart() {
     // The stream will have already been closed by the error callback.
+    mLatencyCallback->reset();
     start();
 }
 
