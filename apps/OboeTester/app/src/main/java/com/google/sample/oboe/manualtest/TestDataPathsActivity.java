@@ -47,4 +47,16 @@ public class TestDataPathsActivity  extends AnalyzerActivity {
         mAutomatedTestRunner.setActivity(this);
     }
 
+    void testChannels() {
+    }
+    @Override
+    public void runTest() {
+        try {
+            testChannels();
+        } catch (Exception e) {
+            //log(e.getMessage());
+            showErrorToast(e.getMessage());
+        }
+    }
+
 }
