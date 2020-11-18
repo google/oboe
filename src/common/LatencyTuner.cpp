@@ -64,6 +64,9 @@ Result LatencyTuner::tune() {
                 // or was from stream->getBufferCapacityInFrames())
                 if (requestedBufferSize > mMaxBufferSize) requestedBufferSize = mMaxBufferSize;
 
+                // Note that this will not allocate more memory. It simply determines
+                // how much of the existing buffer capacity will be used. The size will be
+                // clipped to the bufferCapacity by AAudio.
                 auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
                 if (setBufferResult != Result::OK) {
                     result = setBufferResult;
