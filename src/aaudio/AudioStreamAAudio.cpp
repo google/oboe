@@ -94,7 +94,7 @@ AudioStreamAAudio::AudioStreamAAudio(const AudioStreamBuilder &builder)
     : AudioStream(builder)
     , mAAudioStream(nullptr) {
     mCallbackThreadEnabled.store(false);
-    isSupported();
+    mLibLoader = AAudioLoader::getInstance();
 }
 
 bool AudioStreamAAudio::isSupported() {
