@@ -26,42 +26,16 @@ import java.io.IOException;
 public class BaseAutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
-    private static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
+    protected static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
     private static final int DEFAULT_GAP_MILLIS = 400; // Run time for each test.
     private static final String TEXT_SKIP = "SKIP";
     public static final String TEXT_PASS = "PASS";
     public static final String TEXT_FAIL = "FAIL !!!!";
 
-    private int mDurationSeconds = DEFAULT_DURATION_SECONDS;
+    protected int mDurationSeconds = DEFAULT_DURATION_SECONDS;
     private int mGapMillis = DEFAULT_GAP_MILLIS;
-    private Spinner mDurationSpinner;
 
     protected AutomatedTestRunner mAutomatedTestRunner;
-
-    // Test with these configurations.
-    private static final int[] PERFORMANCE_MODES = {
-            StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-            StreamConfiguration.PERFORMANCE_MODE_NONE
-    };
-    private static final int[] SAMPLE_RATES = { 48000, 44100, 16000 };
-
-    private class DurationSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String text = parent.getItemAtPosition(pos).toString();
-            mDurationSeconds = Integer.parseInt(text);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mDurationSeconds = DEFAULT_DURATION_SECONDS;
-        }
-    }
-
-    @Override
-    protected void inflateActivity() {
-        setContentView(R.layout.activity_auto_glitches);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,21 +43,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
         mAutomatedTestRunner = findViewById(R.id.auto_test_runner);
         mAutomatedTestRunner.setActivity(this);
-
-        mDurationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);
-        mDurationSpinner.setOnItemSelectedListener(new DurationSpinnerListener());
     }
 
-    private String getConfigText(StreamConfiguration config) {
-        return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
-                + ", SR = " + config.getSampleRate()
-                + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
-                        config.getPerformanceMode())
-                + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
-                + ", ch = " + config.getChannelCount();
-    }
-
-    private void log(String text) {
+    protected void log(String text) {
         mAutomatedTestRunner.log(text);
     }
 
@@ -91,32 +53,35 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.appendSummary(text);
     }
 
-    private void testConfiguration(int perfMode,
-                                   int sharingMode,
-                                   int sampleRate,
-                                   int inChannels,
-                                   int outChannels) throws InterruptedException {
 
-        // Configure settings
+    // This should only be called from UI events such as onStop or a button press.
+    @Override
+    public void onStopTest() {
+        mAutomatedTestRunner.stopTest();
+    }
+
+    @Override
+    public void stopAudioTest() {
+        super.stopAudioTest();
+        mAutomatedTestRunner.stopTest();
+    }
+
+    protected String getConfigText(StreamConfiguration config) {
+        return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
+                + ", SR = " + config.getSampleRate()
+                + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
+                config.getPerformanceMode())
+                + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
+                + ", ch = " + config.getChannelCount();
+    }
+
+    // Run test based on the requested input/output configurations.
+    protected void testConfigurations() throws InterruptedException {
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
-        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+
+        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-
-        requestedInConfig.reset();
-        requestedOutConfig.reset();
-
-        requestedInConfig.setPerformanceMode(perfMode);
-        requestedOutConfig.setPerformanceMode(perfMode);
-
-        requestedInConfig.setSharingMode(sharingMode);
-        requestedOutConfig.setSharingMode(sharingMode);
-
-        requestedInConfig.setSampleRate(sampleRate);
-        requestedOutConfig.setSampleRate(sampleRate);
-
-        requestedInConfig.setChannelCount(inChannels);
-        requestedOutConfig.setChannelCount(outChannels);
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
         log("Requested:");
@@ -143,8 +108,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         // The test would only be worth running if we got the configuration we requested on input or output.
         boolean valid = true;
         // No point running the test if we don't get the sharing mode we requested.
-        if (!openFailed && actualInConfig.getSharingMode() != sharingMode
-                && actualOutConfig.getSharingMode() != sharingMode) {
+        if (!openFailed && actualInConfig.getSharingMode() != requestedInConfig.getSharingMode()
+                && actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
             log("did not get requested sharing mode");
             valid = false;
         }
@@ -195,40 +160,6 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
         mAutomatedTestRunner.incrementTestCount();
-    }
-
-    private void testConfiguration(int performanceMode,
-                                   int sharingMode,
-                                   int sampleRate) throws InterruptedException {
-        testConfiguration(performanceMode,
-                sharingMode,
-                sampleRate, 1, 2);
-        testConfiguration(performanceMode,
-                sharingMode,
-                sampleRate, 2, 1);
-    }
-
-    @Override
-    public void runTest() {
-        try {
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_EXCLUSIVE,
-                    0);
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_SHARED,
-                    0);
-
-            for (int perfMode : PERFORMANCE_MODES) {
-                for (int sampleRate : SAMPLE_RATES) {
-                    testConfiguration(perfMode,
-                            StreamConfiguration.SHARING_MODE_SHARED,
-                            sampleRate);
-                }
-            }
-        } catch (InterruptedException e) {
-            log(e.getMessage());
-            showErrorToast(e.getMessage());
-        }
     }
 
 }

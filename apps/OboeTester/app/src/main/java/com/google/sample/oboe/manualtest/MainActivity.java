@@ -225,9 +225,7 @@ public class MainActivity extends Activity {
         onLaunchTest(ManualGlitchActivity.class);
     }
 
-    public void onLaunchAutoGlitchTest(View view) {
-        onLaunchTest(BaseAutoGlitchActivity.class);
-    }
+    public void onLaunchAutoGlitchTest(View view) { onLaunchTest(AutomatedGlitchActivity.class); }
 
     public void onLaunchTestDisconnect(View view) {
         onLaunchTest(TestDisconnectActivity.class);
@@ -236,7 +234,6 @@ public class MainActivity extends Activity {
     public void onLaunchTestDataPaths(View view) {
         onLaunchTest(TestDataPathsActivity.class);
     }
-
 
     public void onLaunchTestDeviceReport(View view)  {
         onLaunchTest(DeviceReportActivity.class);

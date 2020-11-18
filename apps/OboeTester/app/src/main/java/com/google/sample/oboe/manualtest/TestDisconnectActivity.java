@@ -148,6 +148,12 @@ public class TestDisconnectActivity extends TestAudioActivity {
         super.onPause();
     }
 
+    // This should only be called from UI events such as onStop or a button press.
+    @Override
+    public void onStopTest() {
+        mAutomatedTestRunner.stopTest();
+    }
+
     public void startAudioTest() throws IOException {
         openAudio();
         startAudio();

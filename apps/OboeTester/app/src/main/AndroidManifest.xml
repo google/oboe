@@ -81,8 +81,8 @@
         </activity>
 
         <activity
-            android:name="com.google.sample.oboe.manualtest.BaseAutoGlitchActivity"
-            android:label="@string/title_activity_glitches"
+            android:name="com.google.sample.oboe.manualtest.AutomatedGlitchActivity"
+            android:label="@string/title_activity_auto_glitches"
             android:screenOrientation="portrait">
         </activity>
 

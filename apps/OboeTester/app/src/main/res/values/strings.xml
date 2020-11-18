@@ -123,6 +123,7 @@
     <string name="title_activity_echo">Echo Input to Output</string>
     <string name="title_activity_rt_latency">Round Trip Latency</string>
     <string name="title_activity_glitches">Test Glitches</string>
+    <string name="title_activity_auto_glitches">Auto Glitches</string>
     <string name="title_test_disconnect">Test Disconnect</string>
     <string name="title_report_devices">Report Devices</string>
     <string name="title_data_paths">Data Paths</string>

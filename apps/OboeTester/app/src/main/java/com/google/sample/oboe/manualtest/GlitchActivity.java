@@ -313,6 +313,10 @@ public class GlitchActivity extends AnalyzerActivity {
         closeAudio();
     }
 
+    public void stopTest() {
+        stopAudio();
+    }
+
     @Override
     boolean isOutput() {
         return false;

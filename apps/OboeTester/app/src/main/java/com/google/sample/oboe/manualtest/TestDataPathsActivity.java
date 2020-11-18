@@ -28,31 +28,55 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.Date;
 
-public class TestDataPathsActivity  extends AnalyzerActivity {
-
-    private TextView mAutoTextView;
-
-    protected AutomatedTestRunner mAutomatedTestRunner;
+public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_data_paths);
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private static final int[] INPUT_PRESETS = {
+            StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
+            StreamConfiguration.INPUT_PRESET_GENERIC,
+            StreamConfiguration.INPUT_PRESET_CAMCORDER,
+            StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+            StreamConfiguration.INPUT_PRESET_UNPROCESSED,
+            StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
+    };
 
-        mAutomatedTestRunner = findViewById(R.id.auto_test_runner);
-        mAutomatedTestRunner.setActivity(this);
+    protected String getConfigText(StreamConfiguration config) {
+        return (super.getConfigText(config)
+                + ", " + ((config.getDirection() == StreamConfiguration.DIRECTION_INPUT) ?
+                    (" inPre = " + config.getInputPreset()) : ""));
     }
 
-    void testChannels() {
+    void testInputPreset(int inputPreset) throws InterruptedException {
+        // Configure settings
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+
+        requestedInConfig.reset();
+        requestedOutConfig.reset();
+
+        requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
+        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
+
+        requestedInConfig.setInputPreset(inputPreset);
+        setTolerance(0.5f);
+
+        requestedInConfig.setChannelCount(1);
+        requestedOutConfig.setChannelCount(1);
+
+        testConfigurations();
     }
+
     @Override
     public void runTest() {
         try {
-            testChannels();
+            mDurationSeconds = 2;
+            for (int inputPreset : INPUT_PRESETS) {
+                testInputPreset(inputPreset);
+            }
         } catch (Exception e) {
             //log(e.getMessage());
             showErrorToast(e.getMessage());
