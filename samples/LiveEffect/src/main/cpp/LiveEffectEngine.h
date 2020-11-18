@@ -36,10 +36,14 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     bool setEffectOn(bool isOn);
 
     /*
-     * oboe::AudioStreamCallback interface implementation
+     * oboe::AudioStreamDataCallback interface implementation
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream,
                                           void *audioData, int32_t numFrames) override;
+
+    /*
+     * oboe::AudioStreamErrorCallback interface implementation
+     */
     void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
     void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 

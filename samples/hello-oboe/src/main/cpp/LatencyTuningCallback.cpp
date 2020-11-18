@@ -37,7 +37,7 @@ oboe::DataCallbackResult LatencyTuningCallback::onAudioReady(
     */
     if (Trace::isEnabled()) Trace::beginSection("numFrames %d, Underruns %d, buffer size %d",
         numFrames, underrunCountResult.value(), bufferSize);
-    auto result = DefaultAudioStreamCallback::onAudioReady(oboeStream, audioData, numFrames);
+    auto result = DefaultDataCallback::onAudioReady(oboeStream, audioData, numFrames);
     if (Trace::isEnabled()) Trace::endSection();
     return result;
 }
