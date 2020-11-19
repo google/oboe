@@ -216,19 +216,16 @@ error:
 
 Result AudioInputStreamOpenSLES::close() {
     LOGD("AudioInputStreamOpenSLES::%s()", __func__);
-    mLock.lock();
+    std::lock_guard<std::mutex> lock(mLock);
     Result result = Result::OK;
     if (getState() == StreamState::Closed){
         result = Result::ErrorClosed;
     } else {
-        mLock.unlock(); // avoid recursive lock
-        requestStop();
-        mLock.lock();
+        requestStop_l();
         // invalidate any interfaces
         mRecordInterface = nullptr;
         result = AudioStreamOpenSLES::close_l();
     }
-    mLock.unlock(); // avoid recursive lock
     return result;
 }
 
@@ -296,8 +293,12 @@ Result AudioInputStreamOpenSLES::requestFlush() {
 
 Result AudioInputStreamOpenSLES::requestStop() {
     LOGD("AudioInputStreamOpenSLES(): %s() called", __func__);
-
     std::lock_guard<std::mutex> lock(mLock);
+    return requestStop_l();
+}
+
+// Call under mLock
+Result AudioInputStreamOpenSLES::requestStop_l() {
     StreamState initialState = getState();
     switch (initialState) {
         case StreamState::Stopping:
