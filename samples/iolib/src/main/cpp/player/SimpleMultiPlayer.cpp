@@ -64,10 +64,9 @@ void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error)
     __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorAfterClose() error:%d", error);
 
     resetAll();
-    openStream();
-    startStream();
-
-    mOutputReset = true;
+    if (openStream() && startStream()) {
+        mOutputReset = true;
+    }
 }
 
 void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
