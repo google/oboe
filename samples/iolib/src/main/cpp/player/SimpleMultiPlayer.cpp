@@ -65,6 +65,7 @@ void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error)
 
     resetAll();
     openStream();
+    startStream();
     mOutputReset = true;
 }
 
