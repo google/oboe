@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -28,25 +27,7 @@ import java.io.IOException;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
-    public static final String KEY_IN_PERF = "in_perf";
-    public static final String KEY_OUT_PERF = "out_perf";
-    public static final String VALUE_PERF_LOW_LATENCY = "lowlat";
-    public static final String VALUE_PERF_POWERSAVE = "powersave";
-    public static final String VALUE_PERF_NONE = "none";
-
-    public static final String KEY_IN_SHARING = "in_sharing";
-    public static final String KEY_OUT_SHARING = "out_sharing";
-    public static final String VALUE_SHARING_EXCLUSIVE = "exclusive";
-    public static final String VALUE_SHARING_SHARED = "shared";
-
-    public static final String KEY_SAMPLE_RATE = "sample_rate";
-    public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
-
     public static final String KEY_IN_PRESET = "in_preset";
-
-    public static final String KEY_IN_CHANNELS = "in_channels";
-    public static final String KEY_OUT_CHANNELS = "out_channels";
-    public static final int VALUE_DEFAULT_CHANNELS = 2;
 
     public static final String KEY_DURATION = "duration";
     public static final int VALUE_DEFAULT_DURATION = 10;
@@ -150,68 +131,22 @@ public class ManualGlitchActivity extends GlitchActivity {
         }
     }
 
-    private int getPerfFromText(String text) {
-        if (VALUE_PERF_NONE.equals(text)) {
-            return StreamConfiguration.PERFORMANCE_MODE_NONE;
-        } else if (VALUE_PERF_POWERSAVE.equals(text)) {
-            return StreamConfiguration.PERFORMANCE_MODE_POWER_SAVING;
-        } else {
-            return StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY;
-        }
-    }
-
-    private int getSharingFromText(String text) {
-        if (VALUE_SHARING_SHARED.equals(text)) {
-            return StreamConfiguration.SHARING_MODE_SHARED;
-        } else {
-            return StreamConfiguration.SHARING_MODE_EXCLUSIVE;
-        }
-    }
-
     void configureStreamsFromBundle(Bundle bundle) {
+        // Extract common parameters
+        super.configureStreamsFromBundle(bundle);
 
-        // Configure settings
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
-        requestedInConfig.reset();
-        requestedOutConfig.reset();
-
-        configureStreamsFromBundleForApi(bundle);
-
-        // Extract parameters from the bundle.
-        String text = bundle.getString(KEY_IN_PERF, VALUE_PERF_LOW_LATENCY);
-        int perfMode = getPerfFromText(text);
-        requestedInConfig.setPerformanceMode(perfMode);
-
-        text = bundle.getString(KEY_OUT_PERF, VALUE_PERF_LOW_LATENCY);
-        perfMode = getPerfFromText(text);
-        requestedOutConfig.setPerformanceMode(perfMode);
-
-        text = bundle.getString(KEY_IN_SHARING, VALUE_SHARING_EXCLUSIVE);
-        int sharingMode = getSharingFromText(text);
-        requestedInConfig.setSharingMode(sharingMode);
-        text = bundle.getString(KEY_OUT_SHARING, VALUE_SHARING_EXCLUSIVE);
-        sharingMode = getSharingFromText(text);
-        requestedOutConfig.setSharingMode(sharingMode);
-
-        int sampleRate = bundle.getInt(KEY_SAMPLE_RATE, VALUE_DEFAULT_SAMPLE_RATE);
-        requestedInConfig.setSampleRate(sampleRate);
-        requestedOutConfig.setSampleRate(sampleRate);
-
+        // Extract custom parameters from the bundle.
         float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);
         setToleranceFader(tolerance);
         setTolerance(tolerance);
         mTolerance = tolerance;
 
-        int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
-        requestedInConfig.setChannelCount(inChannels);
-        int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
-        requestedOutConfig.setChannelCount(outChannels);
-
         String defaultText = StreamConfiguration.convertInputPresetToText(
                 StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
-        text = bundle.getString(KEY_IN_PRESET, defaultText);
+        String text = bundle.getString(KEY_IN_PRESET, defaultText);
         int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
         requestedInConfig.setInputPreset(inputPreset);
     }
