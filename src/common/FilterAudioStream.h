@@ -55,6 +55,7 @@ public:
         // Copy parameters that may not match builder.
         mBufferCapacityInFrames = mChildStream->getBufferCapacityInFrames();
         mPerformanceMode = mChildStream->getPerformanceMode();
+        mInputPreset = mChildStream->getInputPreset();
     }
 
     virtual ~FilterAudioStream() = default;
