@@ -9,7 +9,7 @@ created with low latency using the AudioTrack.Builder method [`setPerformanceMod
 
 You can dynamically tune the latency of the stream just like in Oboe using [`setBufferSizeInFrames(int)`](https://developer.android.com/reference/android/media/AudioTrack.html#setBufferSizeInFrames(int))
 Also you can use blocking writes with the Java AudioTrack and still get a low latency stream.
-Oboe requires a callback to get a low latency stream and that does not work well with Java.
+Oboe requires a data callback to get a low latency stream and that does not work well with Java.
 
 Note that [`AudioTrack.PERFORMANCE_MODE_LOW_LATENCY`](https://developer.android.com/reference/android/media/AudioTrack#PERFORMANCE_MODE_LOW_LATENCY) was added in API 26, For API 24 or 25 use [`AudioAttributes.FLAG_LOW_LATENCY`](https://developer.android.com/reference/kotlin/android/media/AudioAttributes#flag_low_latency). That was deprecated but will still work with later APIs.
 
@@ -31,7 +31,7 @@ We have had several reports of this happening and are keen to understand the roo
 ## I requested a stream with `PerformanceMode::LowLatency`, but didn't get it. Why not?
 Usually if you call `builder.setPerformanceMode(PerformanceMode::LowLatency)` and don't specify other stream properties you will get a `LowLatency` stream. The most common reasons for not receiving one are: 
 
-- You are opening an output stream and did not specify a **callback**.
+- You are opening an output stream and did not specify a **data callback**.
 - You requested a **sample** rate which does not match the audio device's native sample rate. For playback streams, this means the audio data you write into the stream must be resampled before it's sent to the audio device. For recording streams, the  audio data must be resampled before you can read it. In both cases the resampling process (performed by the Android audio framework) adds latency and therefore providing a `LowLatency` stream is not possible. To avoid the resampler on API 26 and below you can specify a default value for the sample rate [as detailed here](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency).  Or you can use the [new resampler](https://google.github.io/oboe/reference/classoboe_1_1_audio_stream_builder.html#af7d24a9ec975d430732151e5ee0d1027) in Oboe, which allows the lower level code to run at the optimal rate and provide lower latency.
 - If you request **AudioFormat::Float on an Input** stream before Android 9.0 then you will **not** get a FAST track. You need to either request AudioFormat::Int16 or [enable format conversion by Oboe](https://google.github.io/oboe/reference/classoboe_1_1_audio_stream_builder.html#a7ec5f427cd6fe55cb1ce536ff0cbb4d2).
 - The audio **device** does not support `LowLatency` streams, for example Bluetooth. 

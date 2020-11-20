@@ -9,7 +9,7 @@ When Oboe is using **AAudio**, and a headset is plugged in or out, then
 the stream is no longer available and becomes "disconnected".
 The app should then be notified in one of two ways. 
 
-1) If the app is using a callback then the AudioStreamCallback object will be called.
+1) If the app is using an error callback then the AudioStreamErrorCallback methods will be called.
 It will launch a thread, which will call onErrorBeforeClose().
 Then it stops and closes the stream.
 Then onErrorAfterClose() will be called.
