@@ -54,28 +54,29 @@ There are several optional parameter in common for all tests:
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
     --es out_api            {"unspecified", "opensles", "aaudio"}  // native output API, default is "unspecified"
+    --ei in_channels        {samples}    // number of input channels, default is 2
+    --ei out_channels       {samples}    // number of output channels, default is 2
+    --ei sample_rate        {hertz}
+    --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
+    --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
+    --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
+    --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
     
 There are several optional parameters for just the "glitch" test:
 
-    --ei sample_rate        {hertz}
     --ef tolerance          {tolerance}  // amount of deviation from expected that is considered a glitch
                                          // Range of tolerance is 0.0 to 1.0. Default is 0.1. Note use of "-ef".
     --ei duration           {seconds}    // glitch test duration, default is 10 seconds
-    --ei in_channels        {samples}    // number of input channels, default is 2
-    --ei out_channels       {samples}    // number of output channels, default is 2
-    --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
-    --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
                             // input preset, default is "voicerec"
     --es in_preset          ("generic", "camcorder", "voicerec", "voicecomm", "unprocessed", "performance"}
-    --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
-    --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
 
-For example, a complete command might be:
+For example, a complete command for a "latency" test might be:
 
     adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity \
         --es test latency \
         --es file /sdcard/latency20190903.txt \
-        --ei buffer_bursts 2
+        --ei buffer_bursts 2 \
+        --ei out_channels 1
         
 or for a "glitch" test:
 
@@ -90,7 +91,6 @@ or for a "glitch" test:
         --ei sample_rate 48000 \
         --ef tolerance 0.123 \
         --ei in_channels 2 \
-        --ei out_channels 2 
 
 ## Interpreting Test Results
 
