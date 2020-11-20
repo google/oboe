@@ -156,6 +156,10 @@ Result AudioInputStreamOpenSLES::open() {
         LOGW("%s() GetInterface(SL_IID_ANDROIDCONFIGURATION) failed with %s",
              __func__, getSLErrStr(result));
     } else {
+        if (getInputPreset() == InputPreset::VoicePerformance) {
+            LOGD("OpenSL ES does not support InputPreset::VoicePerformance. Use VoiceRecognition.");
+            mInputPreset = InputPreset::VoiceRecognition;
+        }
         SLuint32 presetValue = OpenSLES_convertInputPreset(getInputPreset());
         result = (*configItf)->SetConfiguration(configItf,
                                          SL_ANDROID_KEY_RECORDING_PRESET,
