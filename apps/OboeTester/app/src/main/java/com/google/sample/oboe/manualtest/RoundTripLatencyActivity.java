@@ -332,7 +332,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     }
 
     void startAutomaticTest() {
-        configureStreamsFromBundleForApi(mBundleFromIntent);
+        configureStreamsFromBundle(mBundleFromIntent);
         onMeasure(null);
         mBundleFromIntent = null;
     }
