@@ -82,12 +82,12 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     AudioFormat sourceFormat = sourceStream->getFormat();
     int32_t sourceChannelCount = sourceStream->getChannelCount();
     int32_t sourceSampleRate = sourceStream->getSampleRate();
-    int32_t sourceFramesPerCallback = sourceStream->getFramesPerCallback();
+    int32_t sourceFramesPerCallback = sourceStream->getFramesPerDataCallback();
 
     AudioFormat sinkFormat = sinkStream->getFormat();
     int32_t sinkChannelCount = sinkStream->getChannelCount();
     int32_t sinkSampleRate = sinkStream->getSampleRate();
-    int32_t sinkFramesPerCallback = sinkStream->getFramesPerCallback();
+    int32_t sinkFramesPerCallback = sinkStream->getFramesPerDataCallback();
 
     LOGI("%s() flowgraph converts channels: %d to %d, format: %d to %d"
          ", rate: %d to %d, cbsize: %d to %d, qual = %d",

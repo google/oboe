@@ -139,7 +139,7 @@ bool QuirksManager::isConversionNeeded(
     if (OboeGlobals::areWorkaroundsEnabled()
             && builder.willUseAAudio()
             && builder.isDataCallbackSpecified()
-            && builder.getFramesPerCallback() != 0
+            && builder.getFramesPerDataCallback() != 0
             && getSdkVersion() <= __ANDROID_API_R__) {
         LOGI("QuirksManager::%s() avoid setFramesPerCallback(n>0)", __func__);
         childBuilder.setFramesPerCallback(oboe::Unspecified);

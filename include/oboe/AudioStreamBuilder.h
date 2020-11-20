@@ -75,6 +75,13 @@ public:
     }
 
     /**
+     * @deprecated use `setFramesPerDataCallback` instead.
+     */
+    AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
+        return setFramesPerDataCallback(framesPerCallback);
+    }
+
+    /**
      * Request a specific number of frames for the data callback.
      *
      * Default is kUnspecified. If the value is unspecified then
@@ -88,7 +95,7 @@ public:
      * @param framesPerCallback
      * @return pointer to the builder so calls can be chained
      */
-    AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
+    AudioStreamBuilder *setFramesPerDataCallback(int framesPerCallback) {
         mFramesPerCallback = framesPerCallback;
         return this;
     }

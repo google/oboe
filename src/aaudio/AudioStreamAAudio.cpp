@@ -234,7 +234,7 @@ Result AudioStreamAAudio::open() {
 
     if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
-        mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerCallback());
+        mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerDataCallback());
 
         if (!isErrorCallbackSpecified()) {
             // The app did not specify a callback so we should specify
