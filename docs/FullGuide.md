@@ -111,7 +111,6 @@ The following properties are guaranteed to be set. However, if these properties
 are unspecified, a default value will still be set, and should be queried by the 
 appropriate accessor.
 
-* callback 
 * framesPerCallback
 * sampleRate
 * channelCount
@@ -149,7 +148,7 @@ builder), since it depends on run-time behavior.
 The actual size used may not be what was requested.
 Oboe or the underlyng API will limit the size between zero and the buffer capacity.
 It may also be limited further to reduce glitching on particular devices.
-This features is not supported when using OpenSL ES callbacks.
+This feature is not supported when using a callback with OpenSL ES.
 
 Many of the stream's properties may vary (whether or not you set
 them) depending on the capabilities of the audio device and the Android device on 
@@ -166,7 +165,8 @@ builder setting:
 
 | AudioStreamBuilder set methods | AudioStream get methods |
 | :------------------------ | :----------------- |
-| `setCallback()` |  `getCallback()` |
+| `setDataCallback()` |  `getDataCallback()` |
+| `setErrorCallback()` |  `getErrorCallback()` |
 | `setDirection()` | `getDirection()` |
 | `setSharingMode()` | `getSharingMode()` |
 | `setPerformanceMode()` | `getPerformanceMode()` |
@@ -222,7 +222,7 @@ transition:
 Note that you can only request pause or flush on an output stream:
 
 These functions are asynchronous, and the state change doesn't happen
-immediately. When you request a state change, the stream moves toone of the
+immediately. When you request a state change, the stream moves to one of the
 corresponding transient states:
 
 *   Starting
@@ -276,7 +276,7 @@ while `waitForStateChange()` is running in another thread.
 
 There are two ways to move data in or out of a stream.
 1) Read from or write directly to the stream.
-2) Specify a callback object that will get called when the stream is ready.
+2) Specify a data callback object that will get called when the stream is ready.
 
 The callback technique offers the lowest latency performance because the callback code can run in a high priority thread.
 Also, attempting to open a low latency output stream without an audio callback (with the intent to use writes)
@@ -329,9 +329,8 @@ An audio stream can become disconnected at any time if one of these events happe
 When a stream is disconnected, it has the state "Disconnected" and calls to `write()` or other functions will return `Result::ErrorDisconnected`.  When a stream is disconnected, all you can do is close it.
 
 If you need to be informed when an audio device is disconnected, write a class
-which extends `AudioStreamCallback` and then register your class using `builder.setCallback(yourCallbackClass)`.
+which extends `AudioStreamErrorCallback` and then register your class using `builder.setErrorCallback(yourCallbackClass)`.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
-Note that registering this callback will enable callbacks for both data and errors. So `onAudioReady()` will be called. See the "high priority callback" section below.
 
 Your callback can implement the following methods (called in a separate thread): 
 
@@ -343,7 +342,7 @@ Do not delete the stream or modify its stream state in this callback.
 During this callback, stream properties (those requested by the builder) can be queried, as well as frames written and read.
 The stream can be deleted at the end of this method (as long as it not referenced in other threads).
 Methods that reference the underlying stream should not be called (e.g. `getTimestamp()`, `getXRunCount()`, `read()`, `write()`, etc.).
-Opening a seperate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
+Opening a separate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
 However, it is important to note that the new audio device may have vastly different properties than the stream that was disconnected.
 
 
@@ -351,7 +350,7 @@ However, it is important to note that the new audio device may have vastly diffe
 
 You can optimize the performance of an audio application by using special high-priority threads.
 
-### Using a high priority callback
+### Using a high priority data callback
 
 If your app reads or writes audio data from an ordinary thread, it may be preempted or experience timing jitter. This can cause audio glitches.
 Using larger buffers might guard against such glitches, but a large buffer also introduces longer audio latency.
@@ -359,10 +358,10 @@ For applications that require low latency, an audio stream can use an asynchrono
 The callback runs in a high-priority thread that has better performance.
 
 Your code can access the callback mechanism by implementing the virtual class
-`AudioStreamCallback`. The stream periodically executes `onAudioReady()` (the
+`AudioStreamDataCallback`. The stream periodically executes `onAudioReady()` (the
 callback function) to acquire the data for its next burst.
 
-    class AudioEngine : AudioStreamCallback {
+    class AudioEngine : AudioStreamDataCallback {
     public:
         DataCallbackResult AudioEngine::onAudioReady(
                 AudioStream *oboeStream,
@@ -375,7 +374,7 @@ callback function) to acquire the data for its next burst.
         bool AudioEngine::start() {
             ...
             // register the callback
-            streamBuilder.setCallback(this);
+            streamBuilder.setDataCallback(this);
         }
     private:
         // application data
@@ -383,7 +382,7 @@ callback function) to acquire the data for its next burst.
     }
 
 
-Note that the callback must be registered on the stream with `setCallback`. Any
+Note that the callback must be registered on the stream with `setDataCallback`. Any
 application-specific data (such as `oscillator_` in this case)
 can be included within the class itself.
 
@@ -394,10 +393,10 @@ stream. The input stream is included in the class.
 
 The callback does a non-blocking read from the input stream placing the data into the buffer of the output stream.
 
-    class AudioEngine : AudioStreamCallback {
+    class AudioEngine : AudioStreamDataCallback {
     public:
 
-        oboe_data_callback_result_t AudioEngine::onAudioReady(
+        DataCallbackResult AudioEngine::onAudioReady(
                 AudioStream *oboeStream,
                 void *audioData,
                 int32_t numFrames) {
@@ -419,7 +418,7 @@ The callback does a non-blocking read from the input stream placing the data int
 
         bool AudioEngine::start() {
             ...
-            streamBuilder.setCallback(this);
+            streamBuilder.setDataCallback(this);
         }
 
         void setRecordingStream(AudioStream *stream) {
@@ -433,7 +432,7 @@ The callback does a non-blocking read from the input stream placing the data int
 
 Note that in this example it is assumed the input and output streams have the same number of channels, format and sample rate. The format of the streams can be mismatched - as long as the code handles the translations properly.
 
-#### Callback do's and don'ts 
+#### Data Callback - Do's and Don'ts 
 You should never perform an operation which could block inside `onAudioReady`. Examples of blocking operations include:
 
 - allocate memory using, for example, malloc() or new
@@ -466,7 +465,7 @@ This is useful for apps that are very interactive, such as games or keyboard syn
 If saving power is more important than low latency in your application, use `PerformanceMode::PowerSaving`.
 This is typical for apps that play back previously generated music, such as streaming audio or MIDI file players.
 
-In the current version of Oboe, in order to achieve the lowest possible latency you must use the `PerformanceMode::LowLatency` performance mode along with a high-priority callback. Follow this example:
+In the current version of Oboe, in order to achieve the lowest possible latency you must use the `PerformanceMode::LowLatency` performance mode along with a high-priority data callback. Follow this example:
 
 ```
 // Create a callback object
@@ -474,7 +473,7 @@ MyOboeStreamCallback myCallback;
 
 // Create a stream builder
 AudioStreamBuilder builder;
-builder.setCallback(myCallback);
+builder.setDataCallback(myCallback);
 builder.setPerformanceMode(PerformanceMode::LowLatency);
 
 // Use it to create the stream
@@ -497,8 +496,7 @@ These calls are also thread safe:
 * `convertToText()`
 * `AudioStream::get*()` except for `getTimestamp()` and `getState()`
 
-<b>Note:</b> When a stream uses a callback function, it's safe to read/write from the callback thread while also closing the stream
-from the thread in which it is running.
+<b>Note:</b> When a stream uses an error callback, it's safe to read/write from the callback thread while also closing the stream from the thread in which it is running.
 
 
 ## Code samples

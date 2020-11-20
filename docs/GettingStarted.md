@@ -149,13 +149,13 @@ The builder's set methods return a pointer to the builder. So they can be easily
 oboe::AudioStreamBuilder builder;
 builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
   ->setSharingMode(oboe::SharingMode::Exclusive)
-  ->setCallback(myCallback)
+  ->setDataCallback(myCallback)
   ->setFormat(oboe::AudioFormat::Float);
 ```
 
-Define an `AudioStreamCallback` class to receive callbacks whenever the stream requires new data.
+Define an `AudioStreamDataCallback` class to receive callbacks whenever the stream requires new data.
 
-    class MyCallback : public oboe::AudioStreamCallback {
+    class MyCallback : public oboe::AudioStreamDataCallback {
     public:
         oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
@@ -183,7 +183,7 @@ Declare your callback somewhere that it won't get deleted while you are using it
 
 Supply this callback class to the builder:
 
-    builder.setCallback(&myCallback);
+    builder.setDataCallback(&myCallback);
     
 Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
 ```
@@ -203,7 +203,7 @@ Note that this sample code uses the [logging macros from here](https://github.co
 
 ## Playing audio
 Check the properties of the created stream. If you did not specify a channelCount, sampleRate, or format then you need to 
-query the stream to see what you got. The **format** property will dictate the `audioData` type in the `AudioStreamCallback::onAudioReady` callback. If you did specify any of those three properties then you will get what you requested.
+query the stream to see what you got. The **format** property will dictate the `audioData` type in the `AudioStreamDataCallback::onAudioReady` callback. If you did specify any of those three properties then you will get what you requested.
 
     oboe::AudioFormat format = stream->getFormat();
     LOGI("AudioStream format is %s", oboe::convertToText(format));
@@ -266,7 +266,7 @@ closes the stream.
 #include <oboe/Oboe.h>
 #include <math.h>
 
-class OboeSinePlayer: public oboe::AudioStreamCallback {
+class OboeSinePlayer: public oboe::AudioStreamDataCallback {
 public:
 
 
@@ -278,7 +278,7 @@ public:
           ->setChannelCount(kChannelCount)
           ->setSampleRate(kSampleRate)
           ->setFormat(oboe::AudioFormat::Float)
-          ->setCallback(this)
+          ->setDataCallback(this)
           ->openManagedStream(outStream);
         // Typically, start the stream after querying some stream information, as well as some input from the user
         outStream->requestStart();
@@ -314,8 +314,8 @@ private:
 ```
 Note that this implementation computes  sine values at run-time for simplicity,
 rather than pre-computing them.
-Additionally, best practice is to implement a separate callback class, rather
-than managing the stream and defining its callback in the same class.
+Additionally, best practice is to implement a separate data callback class, rather
+than managing the stream and defining its data callback in the same class.
 This class also automatically starts the stream upon construction. Typically,
 the stream is queried for information prior to being started (e.g. burst size),
 and started upon user input.

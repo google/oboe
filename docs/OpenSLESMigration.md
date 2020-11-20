@@ -26,7 +26,7 @@ OpenSL uses an audio engine object, created using `slCreateEngine`, to create ot
 
 OpenSL uses audio player and audio recorder objects to communicate with audio devices. In Oboe an `AudioStream` is used.
 
-In OpenSL the audio callback mechanism is a user-defined function which is called each time a buffer is enqueued. In Oboe you construct an `AudioStreamCallback` object, and its `onAudioReady` method is called each time audio data is ready to be read or written.  
+In OpenSL the audio callback mechanism is a user-defined function which is called each time a buffer is enqueued. In Oboe you construct an `AudioStreamDataCallback` object, and its `onAudioReady` method is called each time audio data is ready to be read or written.  
 
 Here's a table which summarizes the object mappings:
 
@@ -59,7 +59,7 @@ Here's a table which summarizes the object mappings:
   <tr>
    <td>Callback function
    </td>
-   <td><code>AudioStreamCallback::onAudioReady</code>
+   <td><code>AudioStreamDataCallback::onAudioReady</code>
    </td>
   </tr>
 </table>
@@ -84,7 +84,7 @@ DataCallbackResult onAudioReady(
 ```
 
 
-You supply your implementation of `onAudioReady` when building the audio stream by constructing an `AudioStreamCallback` object. [Here's an example.](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#creating-an-audio-stream)
+You supply your implementation of `onAudioReady` when building the audio stream by constructing an `AudioStreamDataCallback` object. [Here's an example.](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#creating-an-audio-stream)
 
 
 ### Buffer sizes
@@ -124,7 +124,7 @@ However, you may want to specify some properties. These are set using the `Audio
 
 OpenSL has no mechanism, other than stopping callbacks, to indicate that an audio device has been disconnected - for example, when headphones are unplugged.
 
-In Oboe, you can be notified of stream disconnection by overriding one of the `onError` methods in `AudioStreamCallback`. This allows you to clean up any resources associated with the audio stream and create a new stream with optimal properties for the current audio device ([more info](https://github.com/google/oboe/blob/master/docs/FullGuide.md#disconnected-audio-stream)).
+In Oboe, you can be notified of stream disconnection by overriding one of the `onError` methods in `AudioStreamErrorCallback`. This allows you to clean up any resources associated with the audio stream and create a new stream with optimal properties for the current audio device ([more info](https://github.com/google/oboe/blob/master/docs/FullGuide.md#disconnected-audio-stream)).
 
 
 # Unsupported features
@@ -162,8 +162,8 @@ Oboe does **not** support the following features:
 
 *   Replace your audio player or recorder with an `AudioStream` created using an `AudioStreamBuilder`.
 *   Use your value for `numBuffers` to set the audio stream's buffer size as a multiple of the burst size. For example: `audioStream.setBufferSizeInFrames(audioStream.getFramesPerBurst * numBuffers)`.
-*   Create an `AudioStreamCallback` object and move your OpenSL callback code inside the `onAudioReady` method.
-*   Handle stream disconnect events by overriding one of the `AudioStreamCallback::onError` methods.
+*   Create an `AudioStreamDataCallback` object and move your OpenSL callback code inside the `onAudioReady` method.
+*   Handle stream disconnect events by creating an `AudioStreamErrorCallback` object and overriding one of its `onError` methods.
 *   Pass sensible default sample rate and buffer size values to Oboe from `AudioManager` [using this method](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency) so that your app is still performant on older devices.
 
 For more information please read the [Full Guide to Oboe](https://github.com/google/oboe/blob/master/docs/FullGuide.md).
