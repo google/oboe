@@ -62,9 +62,14 @@ public:
     int32_t getSampleRate() const { return mSampleRate; }
 
     /**
-     * @return the number of frames in each callback or kUnspecified.
+     * @deprecated use `getFramesPerDataCallback` instead.
      */
-    int32_t getFramesPerCallback() const { return mFramesPerCallback; }
+    int32_t getFramesPerCallback() const { return getFramesPerDataCallback(); }
+
+    /**
+     * @return the number of frames in each data callback or kUnspecified.
+     */
+    int32_t getFramesPerDataCallback() const { return mFramesPerCallback; }
 
     /**
      * @return the audio sample format (e.g. Float or I16)

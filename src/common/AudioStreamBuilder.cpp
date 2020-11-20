@@ -82,7 +82,7 @@ AudioStream *AudioStreamBuilder::build() {
 bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
     return (getSampleRate() == oboe::Unspecified || getSampleRate() == other.getSampleRate())
            && (getFormat() == (AudioFormat)oboe::Unspecified || getFormat() == other.getFormat())
-           && (getFramesPerCallback() == oboe::Unspecified || getFramesPerCallback() == other.getFramesPerCallback())
+           && (getFramesPerDataCallback() == oboe::Unspecified || getFramesPerDataCallback() == other.getFramesPerDataCallback())
            && (getChannelCount() == oboe::Unspecified || getChannelCount() == other.getChannelCount());
 }
 
@@ -131,8 +131,8 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
             if (getSampleRate() == oboe::Unspecified) {
                 parentBuilder.setSampleRate(tempStream->getSampleRate());
             }
-            if (getFramesPerCallback() == oboe::Unspecified) {
-                parentBuilder.setFramesPerCallback(tempStream->getFramesPerCallback());
+            if (getFramesPerDataCallback() == oboe::Unspecified) {
+                parentBuilder.setFramesPerCallback(tempStream->getFramesPerDataCallback());
             }
 
             // Use childStream in a FilterAudioStream.
