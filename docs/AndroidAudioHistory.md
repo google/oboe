@@ -11,7 +11,7 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 ### 10.0 Q - API 29
 - Fixed: Setting capacity of Legacy input streams < 4096 can prevent use of FAST path. https://github.com/google/oboe/issues/183. Also fixed in AAudio with ag/7116429
 - Add InputPreset:VoicePerformance for low latency recording.
-- Regression bug: [AAudio] Headphone disconnect event not fired for MMAP streams. See P item below. Still in first Q release. Fixed in QP1A.180725.001 update. 
+- Regression bug: [AAudio] Headphone disconnect event not fired for MMAP streams. See P item below. Still in first Q release but fixed in some Q updates. 
 
 ### 9.0 Pie - API 28 (August 6, 2018)
 - AAudio adds support for setUsage(), setSessionId(), setContentType(), setInputPreset() for builders.
