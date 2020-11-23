@@ -4,7 +4,8 @@ Android audio history
 A list of important audio features, bugs, fixes and workarounds for various Android versions. [(List of all Android Versions)](https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels)
 
 ### 11.0 R - API 30
-- Bug in AAudio on RQ1A. A stream is normally disconnected when a **headset is plugged in** or because of other device changes. An AAUDIO_ERROR_DISCONNECTED error code should be passed to the error callback. But a bug in Shared MMAP streams causes a different error to be returned. So if your error callback is checking for AAUDIO_ERROR_DISCONNECTED then it may not respond properly. We recommend **always stopping and closing the stream** regardless of the error code. Oboe does this. So if you are using Oboe callbacks you are OK. This issue was not in the original R release. It was introduced in RQ1A, which is being delivered by OTA starting in November 2020. It will be fixed in a future update.
+- Bug in **AAudio** on RQ1A. A stream is normally disconnected when a **headset is plugged in** or because of other device changes. An `AAUDIO_ERROR_DISCONNECTED` error code should be passed to the error callback. But a bug in Shared MMAP streams causes a different error to be returned. So if your error callback is checking for `AAUDIO_ERROR_DISCONNECTED` then it may not respond properly. We recommend **always stopping and closing the stream** regardless of the error code. Oboe does this. So if you are using Oboe callbacks you are OK. This issue was not in the original R release. It was introduced in RQ1A, which is being delivered by OTA starting in November 2020. It will be fixed in a future update.
+
 - Fixed. A race condition in AudioFlinger could cause an assert in releaseBuffer() when a headset was plugged in or out. More details [here](notes/rlsbuffer.md)
 
 ### 10.0 Q - API 29
@@ -41,7 +42,6 @@ A list of important audio features, bugs, fixes and workarounds for various Andr
 
 ### 5.0 Lollipop - API 21 (November 12, 2014)
 - Floating point playback supported.
-
 
 
 
