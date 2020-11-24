@@ -113,6 +113,16 @@ void AudioStreamAAudio::internalErrorCallback(
         aaudio_result_t error) {
     oboe::Result oboeResult = static_cast<Result>(error);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+
+    // Coerce the error code if needed to workaround a regression in RQ1A that caused
+    // the wrong code to be passed when headsets plugged in. See b/173928197.
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && getSdkVersion() == __ANDROID_API_R__
+            && oboeResult == oboe::Result::ErrorTimeout) {
+        oboeResult = oboe::Result::ErrorDisconnected;
+        LOGD("%s() ErrorTimeout changed to ErrorDisconnected to fix b/173928197", __func__);
+    }
+
     oboeStream->mErrorCallbackResult = oboeResult;
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
