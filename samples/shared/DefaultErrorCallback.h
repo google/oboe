@@ -38,13 +38,13 @@ public:
     virtual ~DefaultErrorCallback() = default;
 
     virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
-        // Restart the stream when it errors out with disconnect
-        if (error == oboe::Result::ErrorDisconnected) {
-            LOGE("Restarting AudioStream after disconnect");
+        // Restart the stream if the error is a disconnect or a timeout, otherwise do nothing
+        // and log the error reason.
+        if (error == oboe::Result::ErrorDisconnected || error == oboe::Result::ErrorTimeout) {
+            LOGI("Restarting AudioStream");
             mParent.restart();
-        } else {
-            LOGE("Unknown error");
         }
+        LOGE("Error was %s", oboe::convertToText(error));
     }
 
 private:
