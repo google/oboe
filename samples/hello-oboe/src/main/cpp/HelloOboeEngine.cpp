@@ -36,7 +36,7 @@
  */
 HelloOboeEngine::HelloOboeEngine()
         : mLatencyCallback(std::make_unique<LatencyTuningCallback>()),
-        mErrorCallback(std::make_unique<DefaultErrorCallback>(*this)){
+        mErrorCallback(std::make_unique<DefaultErrorCallback>(*this)) {
 }
 
 double HelloOboeEngine::getCurrentOutputLatencyMillis() {
