@@ -19,6 +19,7 @@ your project name and Play Store URL.
 | [ktnes](https://github.com/felipecsl/ktnes) | A NES emulator implemented in Kotlin using multiplatform support and Kotlin/Native. | Felipe Lima | | 
 | [Les Talens Lyriques apps](https://play.google.com/store/apps/developer?id=Les+Talens+Lyriques) | Music education apps | Les Talens Lyriques |  Stream opened with 44100 Hz so it will not get an MMAP stream on Pixel |
 | [libGDX Oboe](https://github.com/barsoosayque/libgdx-oboe) | Middleware | barsoosayque |  Libgdx audio replacement for Android built on top of Oboe. |
+| [Koala Sampler](https://play.google.com/store/apps/details?id=com.elf.koalasampler) | Koala is the ultimate pocket-sized sampler. Record anything with your phone's mic instantly. Use Koala to create beats with those samples, add effects and create a track! | elf audio |
 | [Mini Piano Lite](https://play.google.com/store/apps/details?id=umito.android.minipiano) | Piano keyboard | Umito | Using AAudio  |
 | [Mini Tunes](https://play.google.com/store/apps/details?id=com.minitunes) | Microtonal Synthesizer for Android | Fade Apps | Oboe implemented in version 2.0 | 
 | [Music Speed Changer](https://play.google.com/store/apps/details?id=com.smp.musicspeed) | Play song files while changing the pitch and tempo. | Single Minded Productions |  | 
