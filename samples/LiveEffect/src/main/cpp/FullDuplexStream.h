@@ -27,19 +27,12 @@ public:
     FullDuplexStream() {}
     virtual ~FullDuplexStream() = default;
 
-    void setInputStream(oboe::AudioStream *stream) {
+    void setInputStream(std::shared_ptr<oboe::AudioStream> stream) {
         mInputStream = stream;
     }
 
-    oboe::AudioStream *getInputStream() {
-        return mInputStream;
-    }
-
-    void setOutputStream(oboe::AudioStream *stream) {
+    void setOutputStream(std::shared_ptr<oboe::AudioStream> stream) {
         mOutputStream = stream;
-    }
-    oboe::AudioStream *getOutputStream() {
-        return mOutputStream;
     }
 
     virtual oboe::Result start();
@@ -51,8 +44,10 @@ public:
      * App should override this method.
      */
     virtual oboe::DataCallbackResult onBothStreamsReady(
+            std::shared_ptr<oboe::AudioStream> inputStream,
             const void *inputData,
             int   numInputFrames,
+            std::shared_ptr<oboe::AudioStream> outputStream,
             void *outputData,
             int   numOutputFrames
             ) = 0;
@@ -96,8 +91,8 @@ private:
     // Discard some callbacks so the input and output reach equilibrium.
     int32_t              mCountCallbacksToDiscard = kNumCallbacksToDiscard;
 
-    oboe::AudioStream   *mInputStream = nullptr;
-    oboe::AudioStream   *mOutputStream = nullptr;
+    std::shared_ptr<oboe::AudioStream> mInputStream;
+    std::shared_ptr<oboe::AudioStream> mOutputStream;
 
     int32_t              mBufferSize = 0;
     std::unique_ptr<float[]> mInputBuffer;

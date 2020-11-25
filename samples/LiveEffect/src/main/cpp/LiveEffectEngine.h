@@ -24,11 +24,12 @@
 #include "FullDuplexPass.h"
 
 class LiveEffectEngine : public oboe::AudioStreamCallback {
-   public:
+public:
     LiveEffectEngine();
-    ~LiveEffectEngine();
+
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
+
     /**
      * @param isOn
      * @return true if it succeeds
@@ -50,28 +51,30 @@ class LiveEffectEngine : public oboe::AudioStreamCallback {
     bool setAudioApi(oboe::AudioApi);
     bool isAAudioSupported(void);
 
-   private:
-    FullDuplexPass mFullDuplexPass;
-    bool mIsEffectOn = false;
-    int32_t mRecordingDeviceId = oboe::kUnspecified;
-    int32_t mPlaybackDeviceId = oboe::kUnspecified;
-    oboe::AudioFormat mFormat = oboe::AudioFormat::I16;
-    int32_t mSampleRate = oboe::kUnspecified;
-    int32_t mInputChannelCount = oboe::ChannelCount::Stereo;
-    int32_t mOutputChannelCount = oboe::ChannelCount::Stereo;
+private:
+    FullDuplexPass    mFullDuplexPass;
+    bool              mIsEffectOn = false;
+    int32_t           mRecordingDeviceId = oboe::kUnspecified;
+    int32_t           mPlaybackDeviceId = oboe::kUnspecified;
+    const oboe::AudioFormat mFormat = oboe::AudioFormat::Float; // for easier processing
+    oboe::AudioApi    mAudioApi = oboe::AudioApi::AAudio;
+    int32_t           mSampleRate = oboe::kUnspecified;
+    const int32_t     mInputChannelCount = oboe::ChannelCount::Stereo;
+    const int32_t     mOutputChannelCount = oboe::ChannelCount::Stereo;
 
     std::shared_ptr<oboe::AudioStream> mRecordingStream;
     std::shared_ptr<oboe::AudioStream> mPlayStream;
 
-    oboe::AudioApi mAudioApi = oboe::AudioApi::AAudio;
-
     oboe::Result openStreams();
+
+    void closeStreams();
+
     void closeStream(std::shared_ptr<oboe::AudioStream> &stream);
 
     oboe::AudioStreamBuilder *setupCommonStreamParameters(
         oboe::AudioStreamBuilder *builder);
     oboe::AudioStreamBuilder *setupRecordingStreamParameters(
-        oboe::AudioStreamBuilder *builder);
+        oboe::AudioStreamBuilder *builder, int32_t sampleRate);
     oboe::AudioStreamBuilder *setupPlaybackStreamParameters(
         oboe::AudioStreamBuilder *builder);
     void warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &stream);
