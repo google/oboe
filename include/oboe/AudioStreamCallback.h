@@ -99,7 +99,8 @@ public:
     virtual ~AudioStreamErrorCallback() = default;
 
     /**
-     * This will be called first when an error occurs on a stream or when the stream is disconnected.
+     * This will be called before other `onError` methods when an error occurs on a stream,
+     * such as when the stream is disconnected.
      *
      * It can be used to override and customize the normal error processing.
      * Use of this method is considered an advanced technique.
@@ -108,26 +109,29 @@ public:
      * Or it might be used when an app want to signal a management thread that handles
      * all of the stream state.
      *
-     * If this method returns false then
-     * the stream will be stopped by Oboe in the following way: onErrorBeforeClose() will be called,
-     * then the stream will be closed and onErrorAfterClose() will be closed.
+     * If this method returns false it indicates that the stream has *not been stopped and closed
+     * by the application. In this case it will be stopped by Oboe in the following way:
+     * onErrorBeforeClose() will be called, then the stream will be closed and onErrorAfterClose()
+     * will be closed.
      *
-     * If this method returns true then the normal error processing will not occur.
-     * In that case, the app MUST stop() and close() the stream!
+     * If this method returns true it indicates that the stream *has* been stopped and closed
+     * by the application and the normal error processing will *not* occur.
+     * In that case, the app MUST stop() and close() the stream.
      *
-     * Note that this method will be called on a thread created by Oboe.
+     * This method will be called on a thread created by Oboe.
      *
      * @param audioStream pointer to the associated stream
      * @param error
-     * @return true if the error has been handled, false if not
+     * @return true if the stream has been stopped and closed,
+     * false if not
      */
     virtual bool onError(AudioStream* /* audioStream */, Result /* error */) {
-        return false; // false means the stream will be stopped and closed by Oboe
-        // return true; // true means the stream will be stopped and closed by the app
+        return false;
     }
 
     /**
-     * This will be called when an error occurs on a stream or when the stream is disconnected
+     * This will be called when an error occurs on a stream,
+     * such as when the stream is disconnected,
      * and if onError() returns false (indicating that the error has not already been handled).
      *
      * Note that this will be called on a thread created by Oboe.
@@ -144,7 +148,8 @@ public:
     virtual void onErrorBeforeClose(AudioStream* /* audioStream */, Result /* error */) {}
 
     /**
-     * This will be called when an error occurs on a stream or when the stream is disconnected
+     * This will be called when an error occurs on a stream,
+     * such as when the stream is disconnected,
      * and if onError() returns false (indicating that the error has not already been handled).
      *
      * The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe.
@@ -171,6 +176,8 @@ public:
  * It combines the interfaces defined by AudioStreamDataCallback and AudioStreamErrorCallback.
  * This was the original callback object. We now recommend using the individual interfaces
  * and using setDataCallback() and setErrorCallback().
+ *
+ * @deprecated Use `AudioStreamDataCallback` and `AudioStreamErrorCallback` instead
  */
 class AudioStreamCallback : public AudioStreamDataCallback,
                             public AudioStreamErrorCallback {
