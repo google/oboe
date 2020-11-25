@@ -75,7 +75,6 @@ void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
     std::lock_guard<std::mutex> lock(mLock);
     if (!mStream) return;
 
-    mIsLatencyDetectionSupported = false;
     mLatencyCallback->setBufferTuneEnabled(numBursts == kBufferSizeAutomatic);
     auto result = mStream->setBufferSizeInFrames(
             numBursts * mStream->getFramesPerBurst());
@@ -87,19 +86,16 @@ void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
 }
 
 void HelloOboeEngine::setAudioApi(oboe::AudioApi audioApi) {
-    mIsLatencyDetectionSupported = false;
     mAudioApi = audioApi;
     reopenStream();
 }
 
 void HelloOboeEngine::setChannelCount(int channelCount) {
-    mIsLatencyDetectionSupported = false;
     mChannelCount = channelCount;
     reopenStream();
 }
 
 void HelloOboeEngine::setDeviceId(int32_t deviceId) {
-    mIsLatencyDetectionSupported = false;
     mDeviceId = deviceId;
     if (reopenStream() != oboe::Result::OK) {
         LOGW("Open stream failed, forcing deviceId to Unspecified");
@@ -152,6 +148,7 @@ oboe::Result HelloOboeEngine::start() {
                 mStream->getDeviceId());
     } else {
         LOGE("Error creating playback stream. Error: %s", oboe::convertToText(result));
+        mIsLatencyDetectionSupported = false;
     }
     return result;
 }
