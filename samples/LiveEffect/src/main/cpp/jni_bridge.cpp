@@ -38,8 +38,11 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_create(JNIEnv *env,
 JNIEXPORT void JNICALL
 Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
                                                                jclass) {
-    delete engine;
-    engine = nullptr;
+    if (engine) {
+        engine->setEffectOn(false);
+        delete engine;
+        engine = nullptr;
+    }
 }
 
 JNIEXPORT jboolean JNICALL

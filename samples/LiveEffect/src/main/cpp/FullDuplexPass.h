@@ -16,19 +16,36 @@
 
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
+
 #include "FullDuplexStream.h"
 
 class FullDuplexPass : public FullDuplexStream {
 public:
     virtual oboe::DataCallbackResult
-    onBothStreamsReady(const void *inputData, int numInputFrames, void *outputData,
-                       int numOutputFrames) {
-        size_t bytesPerFrame = this->getOutputStream()->getBytesPerFrame();
-        size_t bytesToWrite = numInputFrames * bytesPerFrame;
-        size_t byteDiff = (numOutputFrames - numInputFrames) * bytesPerFrame;
-        size_t bytesToZero = (byteDiff > 0) ? byteDiff : 0;
-        memcpy(outputData, inputData, bytesToWrite);
-        memset((u_char*) outputData + bytesToWrite, 0, bytesToZero);
+    onBothStreamsReady(
+            std::shared_ptr<oboe::AudioStream> inputStream,
+            const void *inputData,
+            int   numInputFrames,
+            std::shared_ptr<oboe::AudioStream> outputStream,
+            void *outputData,
+            int   numOutputFrames) {
+        // Copy the input samples to the output with a little arbitrary gain change.
+        // This code assumes the data format for both streams is Float.
+        const float *inputFloats = static_cast<const float *>(inputData);
+        float *outputFloats = static_cast<float *>(outputData);
+        // It also assume the channel count for each stream is the same.
+        int32_t samplesPerFrame = outputStream->getChannelCount();
+        int32_t numInputSamples = numInputFrames * samplesPerFrame;
+        int32_t numOutputSamples = numInputFrames * samplesPerFrame;
+        // It is possible that there may be fewer input than output samples.
+        int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
+        for (int32_t i = 0; i < samplesToProcess; i++) {
+            *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
+        }
+        int32_t samplesLeft = numOutputSamples - numInputSamples;
+        for (int32_t i = 0; i < samplesLeft; i++) {
+            *outputFloats++ = 0.0; // silence
+        }
         return oboe::DataCallbackResult::Continue;
     }
 };
