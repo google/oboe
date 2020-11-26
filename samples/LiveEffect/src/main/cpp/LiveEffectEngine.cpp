@@ -113,6 +113,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
  * playback stream.
  *
  * @param builder The recording stream builder
+ * @param sampleRate The desired sample rate of the recording stream
  */
 oboe::AudioStreamBuilder *LiveEffectEngine::setupRecordingStreamParameters(
     oboe::AudioStreamBuilder *builder, int32_t sampleRate) {
