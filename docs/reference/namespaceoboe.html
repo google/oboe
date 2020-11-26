@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -84,11 +84,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_latency_tuner.html">LatencyTuner</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_oboe_globals.html">OboeGlobals</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -274,6 +280,10 @@ Functions</h2></td></tr>
 <tr class="memitem:af65aaea3c5d82eee6906664d61c094b3"><td class="memTemplParams" colspan="2">template&lt;typename FromType &gt; </td></tr>
 <tr class="memitem:af65aaea3c5d82eee6906664d61c094b3"><td class="memTemplItemLeft" align="right" valign="top">const char *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#af65aaea3c5d82eee6906664d61c094b3">convertToText</a> (FromType input)</td></tr>
 <tr class="separator:af65aaea3c5d82eee6906664d61c094b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ff1f1323d722494dac353a6b4d1bd5b"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a1ff1f1323d722494dac353a6b4d1bd5b">getPropertyString</a> (const char *name)</td></tr>
+<tr class="separator:a1ff1f1323d722494dac353a6b4d1bd5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4284cffcf4d852ca4f357429303d7af5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a4284cffcf4d852ca4f357429303d7af5">getPropertyInteger</a> (const char *name, int defaultValue)</td></tr>
+<tr class="separator:a4284cffcf4d852ca4f357429303d7af5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54528938e9fccab7ad8947ccf0e409db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a54528938e9fccab7ad8947ccf0e409db">getSdkVersion</a> ()</td></tr>
 <tr class="separator:a54528938e9fccab7ad8947ccf0e409db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78417a797f5306478c8a37cee53fd12a"><td class="memItemLeft" align="right" valign="top"><a id="a78417a797f5306478c8a37cee53fd12a"></a>
@@ -851,6 +861,67 @@ template&lt;typename FromType &gt; </div>
 </dl>
 <dl class="section see"><dt>See also</dt><dd>common/Utilities.cpp for concrete implementations </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>text representation of an Oboe enum value. There is no need to call free on this. </dd></dl>
+
+</div>
+</div>
+<a id="a4284cffcf4d852ca4f357429303d7af5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4284cffcf4d852ca4f357429303d7af5">&#9670;&nbsp;</a></span>getPropertyInteger()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int oboe::getPropertyInteger </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>defaultValue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td></td></tr>
+    <tr><td class="paramname">defaultValue</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>integer value associated with a property or the default value </dd></dl>
+
+</div>
+</div>
+<a id="a1ff1f1323d722494dac353a6b4d1bd5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ff1f1323d722494dac353a6b4d1bd5b">&#9670;&nbsp;</a></span>getPropertyString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string oboe::getPropertyString </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the value of a named system property in a string or empty string </dd></dl>
 
 </div>
 </div>

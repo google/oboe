@@ -5,9 +5,11 @@ var searchData=
   ['mbuffersizeinframes',['mBufferSizeInFrames',['../classoboe_1_1_audio_stream_base.html#a3b65595d26d1eae1b8ce9925a5b98f6a',1,'oboe::AudioStreamBase']]],
   ['mchannelcount',['mChannelCount',['../classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206',1,'oboe::AudioStreamBase']]],
   ['mcontenttype',['mContentType',['../classoboe_1_1_audio_stream_base.html#a5f8f0e5add381b841856de80ea4cdb2b',1,'oboe::AudioStreamBase']]],
+  ['mdatacallback',['mDataCallback',['../classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f',1,'oboe::AudioStreamBase']]],
   ['mdeviceid',['mDeviceId',['../classoboe_1_1_audio_stream_base.html#a23dafa12fb1a6242b088ebd5a52798c8',1,'oboe::AudioStreamBase']]],
   ['mdirection',['mDirection',['../classoboe_1_1_audio_stream_base.html#a26e9294721561d3b16bcaeec5faf4880',1,'oboe::AudioStreamBase']]],
   ['media',['Media',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74',1,'oboe']]],
+  ['merrorcallback',['mErrorCallback',['../classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b',1,'oboe::AudioStreamBase']]],
   ['mformat',['mFormat',['../classoboe_1_1_audio_stream_base.html#a7869f04836c2c2bdc10c7309ad4b8e09',1,'oboe::AudioStreamBase']]],
   ['mframesperburst',['mFramesPerBurst',['../classoboe_1_1_audio_stream_base.html#a54061319ed348329a29d883a5de2482e',1,'oboe::AudioStreamBase']]],
   ['mframespercallback',['mFramesPerCallback',['../classoboe_1_1_audio_stream_base.html#a3962eb94420ad0ecea70029236001899',1,'oboe::AudioStreamBase']]],
@@ -21,7 +23,6 @@ var searchData=
   ['msamplerate',['mSampleRate',['../classoboe_1_1_audio_stream_base.html#a998885bb6c4f37e145f4626ad4177dea',1,'oboe::AudioStreamBase']]],
   ['msessionid',['mSessionId',['../classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737',1,'oboe::AudioStreamBase']]],
   ['msharingmode',['mSharingMode',['../classoboe_1_1_audio_stream_base.html#ae9187492b679c97a0963e264954be473',1,'oboe::AudioStreamBase']]],
-  ['mstreamcallback',['mStreamCallback',['../classoboe_1_1_audio_stream_base.html#ae3f72318212dd9977d7fa0ced92c91f4',1,'oboe::AudioStreamBase']]],
   ['musage',['mUsage',['../classoboe_1_1_audio_stream_base.html#a5b518e82f39c9fcbd7050fd66adb253c',1,'oboe::AudioStreamBase']]],
   ['music',['Music',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517',1,'oboe']]]
 ];

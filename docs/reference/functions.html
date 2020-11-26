@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -131,20 +131,23 @@ $(function() {
 <li>getBytesPerSample()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a44dda61e6e948e49b68f87172f084d62">oboe::AudioStream</a>
 </li>
-<li>getCallback()
-: <a class="el" href="classoboe_1_1_audio_stream_base.html#a1b4a2a191546708da657510c3cd6b797">oboe::AudioStreamBase</a>
-</li>
 <li>getChannelCount()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a87e6bf37d6a2a5e983b8ca8d29aea575">oboe::AudioStreamBase</a>
 </li>
 <li>getContentType()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#ab12e2d068fa87e0553b01a400d96eb82">oboe::AudioStreamBase</a>
 </li>
+<li>getDataCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#a9fb2f34ae62dbda2c10e8513b754fa0c">oboe::AudioStreamBase</a>
+</li>
 <li>getDeviceId()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a093057d625bc896864b959974c265f21">oboe::AudioStreamBase</a>
 </li>
 <li>getDirection()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a6f86f2233a04c5a0b056f0c1c261f1b1">oboe::AudioStreamBase</a>
+</li>
+<li>getErrorCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#a1328fb9288166ff325995ce1ea1867f0">oboe::AudioStreamBase</a>
 </li>
 <li>getFormat()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#ab1e640461d7bf9d596decb913da7ac86">oboe::AudioStreamBase</a>
@@ -155,6 +158,9 @@ $(function() {
 <li>getFramesPerCallback()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a8878a90949badbb5486cc2e022a57086">oboe::AudioStreamBase</a>
 </li>
+<li>getFramesPerDataCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#abc3ee2815568b425d15a40e132aa8e38">oboe::AudioStreamBase</a>
+</li>
 <li>getFramesRead()
 : <a class="el" href="classoboe_1_1_audio_stream.html#aeebfc59abd978cd6dff07c16cfe266df">oboe::AudioStream</a>
 </li>
@@ -163,6 +169,9 @@ $(function() {
 </li>
 <li>getInputPreset()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a5c773b93b8aa38191c7199cab023428a">oboe::AudioStreamBase</a>
+</li>
+<li>getLastErrorCallbackResult()
+: <a class="el" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">oboe::AudioStream</a>
 </li>
 <li>getPerformanceMode()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a2ddb935de0e24dd7ae8e2cfbecac9fdc">oboe::AudioStreamBase</a>
@@ -183,7 +192,7 @@ $(function() {
 : <a class="el" href="classoboe_1_1_audio_stream.html#a9d37cc6513823c685ae892626ff83ea8">oboe::AudioStream</a>
 </li>
 <li>getTimestamp()
-: <a class="el" href="classoboe_1_1_audio_stream.html#a49254e6b1b19cb6d0ca6c63058029771">oboe::AudioStream</a>
+: <a class="el" href="classoboe_1_1_audio_stream.html#acb8edbc17ff79993a8ed996d216fe6f3">oboe::AudioStream</a>
 </li>
 <li>getUnderlyingStream()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a5458d7130415eb4defe3dbc11d479e2f">oboe::AudioStream</a>
@@ -213,8 +222,17 @@ $(function() {
 <li>isDataCallbackEnabled()
 : <a class="el" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">oboe::AudioStream</a>
 </li>
+<li>isDataCallbackSpecified()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#a9a54d38b985a2eb12c6972104dc0ce73">oboe::AudioStreamBase</a>
+</li>
+<li>isErrorCallbackSpecified()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#aef579f6d1f779c89d051f0963f2976b3">oboe::AudioStreamBase</a>
+</li>
 <li>isFormatConversionAllowed()
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#ace3625a7332bf02a86818fdf63fcccb4">oboe::AudioStreamBase</a>
+</li>
+<li>isValidConfig()
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2">oboe::AudioStreamBase</a>
 </li>
 <li>isXRunCountSupported()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4">oboe::AudioStream</a>
@@ -248,11 +266,17 @@ $(function() {
 <li>mContentType
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a5f8f0e5add381b841856de80ea4cdb2b">oboe::AudioStreamBase</a>
 </li>
+<li>mDataCallback
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f">oboe::AudioStreamBase</a>
+</li>
 <li>mDeviceId
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a23dafa12fb1a6242b088ebd5a52798c8">oboe::AudioStreamBase</a>
 </li>
 <li>mDirection
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a26e9294721561d3b16bcaeec5faf4880">oboe::AudioStreamBase</a>
+</li>
+<li>mErrorCallback
+: <a class="el" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">oboe::AudioStreamBase</a>
 </li>
 <li>mFormat
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a7869f04836c2c2bdc10c7309ad4b8e09">oboe::AudioStreamBase</a>
@@ -287,9 +311,6 @@ $(function() {
 <li>mSharingMode
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#ae9187492b679c97a0963e264954be473">oboe::AudioStreamBase</a>
 </li>
-<li>mStreamCallback
-: <a class="el" href="classoboe_1_1_audio_stream_base.html#ae3f72318212dd9977d7fa0ced92c91f4">oboe::AudioStreamBase</a>
-</li>
 <li>mUsage
 : <a class="el" href="classoboe_1_1_audio_stream_base.html#a5b518e82f39c9fcbd7050fd66adb253c">oboe::AudioStreamBase</a>
 </li>
@@ -305,18 +326,21 @@ $(function() {
 
 <h3><a id="index_o"></a>- o -</h3><ul>
 <li>onAudioReady()
-: <a class="el" href="classoboe_1_1_audio_stream_callback.html#af3a7c44f0254abe6e5e5bb566e2317df">oboe::AudioStreamCallback</a>
+: <a class="el" href="classoboe_1_1_audio_stream_data_callback.html#ad8a3a9f609df5fd3a5d885cbe1b2204d">oboe::AudioStreamDataCallback</a>
 , <a class="el" href="classoboe_1_1_stabilized_callback.html#ad447e12ebf732cf151655c1fbaf58a49">oboe::StabilizedCallback</a>
 </li>
 <li>onDefaultCallback()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">oboe::AudioStream</a>
 </li>
+<li>onError()
+: <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3">oboe::AudioStreamErrorCallback</a>
+</li>
 <li>onErrorAfterClose()
-: <a class="el" href="classoboe_1_1_audio_stream_callback.html#a57a1b21efc764e8bbf8d92008a993bfd">oboe::AudioStreamCallback</a>
+: <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a76bd3ef3e00396e10c21812003654cfe">oboe::AudioStreamErrorCallback</a>
 , <a class="el" href="classoboe_1_1_stabilized_callback.html#af7521da42c4b08a71e6102994f6f41f4">oboe::StabilizedCallback</a>
 </li>
 <li>onErrorBeforeClose()
-: <a class="el" href="classoboe_1_1_audio_stream_callback.html#a77ceb641f941164d7b4d4c51c9a888b9">oboe::AudioStreamCallback</a>
+: <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a4eb1e4916b71d8231e97b19898bc9bf0">oboe::AudioStreamErrorCallback</a>
 , <a class="el" href="classoboe_1_1_stabilized_callback.html#a7ec0e9fca3181962ab78716bcda83e10">oboe::StabilizedCallback</a>
 </li>
 <li>open()
@@ -388,6 +412,9 @@ $(function() {
 <li>setBufferCapacityInFrames()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#abaff480867af51ca0899bfa6fd7cc3ef">oboe::AudioStreamBuilder</a>
 </li>
+<li>setBufferSizeIncrement()
+: <a class="el" href="classoboe_1_1_latency_tuner.html#a2684b30205126c8acd2f75d01cce05db">oboe::LatencyTuner</a>
+</li>
 <li>setBufferSizeInFrames()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a06e3f9e133b3a75515e7793939d1cd03">oboe::AudioStream</a>
 </li>
@@ -403,6 +430,9 @@ $(function() {
 <li>setContentType()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#a6a17bafc217c2b624179fbbf77fe4468">oboe::AudioStreamBuilder</a>
 </li>
+<li>setDataCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_builder.html#acad307720e0f370267b4e2f9a626ae70">oboe::AudioStreamBuilder</a>
+</li>
 <li>setDataCallbackEnabled()
 : <a class="el" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">oboe::AudioStream</a>
 </li>
@@ -411,6 +441,9 @@ $(function() {
 </li>
 <li>setDirection()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#ab3fbd47b06197619c26393637e26354c">oboe::AudioStreamBuilder</a>
+</li>
+<li>setErrorCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_builder.html#aacb66f530bfc6f545911b5e169774567">oboe::AudioStreamBuilder</a>
 </li>
 <li>setFormat()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#aa2e1d2d73cd6c2eb9f349bf2fe5f6515">oboe::AudioStreamBuilder</a>
@@ -421,8 +454,14 @@ $(function() {
 <li>setFramesPerCallback()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#a3f397821f61eabaeedaf31064c859a54">oboe::AudioStreamBuilder</a>
 </li>
+<li>setFramesPerDataCallback()
+: <a class="el" href="classoboe_1_1_audio_stream_builder.html#afb8e95e80df7edd1af27af490438785e">oboe::AudioStreamBuilder</a>
+</li>
 <li>setInputPreset()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#a144a3d095fd668210282f1a91f23e1f0">oboe::AudioStreamBuilder</a>
+</li>
+<li>setMinimumBufferSize()
+: <a class="el" href="classoboe_1_1_latency_tuner.html#adc96aa53b18a051b6ccdacb838139bf8">oboe::LatencyTuner</a>
 </li>
 <li>setPerformanceMode()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#a6cd1d65612e844e59da71a68ea0ab3ee">oboe::AudioStreamBuilder</a>
@@ -441,6 +480,9 @@ $(function() {
 </li>
 <li>setUsage()
 : <a class="el" href="classoboe_1_1_audio_stream_builder.html#a593255a2f5eb972665775cfc5bc58f6a">oboe::AudioStreamBuilder</a>
+</li>
+<li>setWorkaroundsEnabled()
+: <a class="el" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals</a>
 </li>
 <li>start()
 : <a class="el" href="classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21">oboe::AudioStream</a>
