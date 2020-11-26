@@ -115,15 +115,14 @@ public:
      * will be closed.
      *
      * If this method returns true it indicates that the stream *has* been stopped and closed
-     * by the application and the normal error processing will *not* occur.
+     * by the application and Oboe will not do this.
      * In that case, the app MUST stop() and close() the stream.
      *
      * This method will be called on a thread created by Oboe.
      *
      * @param audioStream pointer to the associated stream
      * @param error
-     * @return true if the stream has been stopped and closed,
-     * false if not
+     * @return true if the stream has been stopped and closed, false if not
      */
     virtual bool onError(AudioStream* /* audioStream */, Result /* error */) {
         return false;
