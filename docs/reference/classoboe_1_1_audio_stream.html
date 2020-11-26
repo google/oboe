@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -71,6 +71,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classoboe_1_1_audio_stream-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">oboe::AudioStream Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
@@ -154,13 +155,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a64ad978c5f70ced17ef5a96605496515"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a462358ddab709c79d1a7968d6d55b727"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a462358ddab709c79d1a7968d6d55b727">updateFramesRead</a> ()=0</td></tr>
 <tr class="separator:a462358ddab709c79d1a7968d6d55b727"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20f75fce32d3a203404de0883c2de34f"><td class="memItemLeft" align="right" valign="top"><a id="a20f75fce32d3a203404de0883c2de34f"></a>
-<a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>swapCallback</b> (<a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *streamCallback)</td></tr>
-<tr class="separator:a20f75fce32d3a203404de0883c2de34f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1748ad90d9ff9210f0fee19cea71224"><td class="memItemLeft" align="right" valign="top"><a id="ab1748ad90d9ff9210f0fee19cea71224"></a>
+<a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>swapDataCallback</b> (<a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *dataCallback)</td></tr>
+<tr class="separator:ab1748ad90d9ff9210f0fee19cea71224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa75bb1b45bee873715a674df5dac0ef9"><td class="memItemLeft" align="right" valign="top"><a id="aa75bb1b45bee873715a674df5dac0ef9"></a>
+<a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>swapErrorCallback</b> (<a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *errorCallback)</td></tr>
+<tr class="separator:aa75bb1b45bee873715a674df5dac0ef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa35ee4b8629fbffe26b9be7c7ed55d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#afa35ee4b8629fbffe26b9be7c7ed55d2">getAvailableFrames</a> ()</td></tr>
 <tr class="separator:afa35ee4b8629fbffe26b9be7c7ed55d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afddb0962863ccf9ec6672a042fe15941"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#afddb0962863ccf9ec6672a042fe15941">waitForAvailableFrames</a> (int32_t numFrames, int64_t timeoutNanoseconds)</td></tr>
 <tr class="separator:afddb0962863ccf9ec6672a042fe15941"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fe8afdf164a1fe835c514f709743d75"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">getLastErrorCallbackResult</a> () const</td></tr>
+<tr class="separator:a8fe8afdf164a1fe835c514f709743d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
 <tr class="memitem:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa6b103e1b0f808bbc4949d56f0829f98">AudioStreamBase</a> (const <a class="el" href="classoboe_1_1_audio_stream_base.html">AudioStreamBase</a> &amp;)=default</td></tr>
 <tr class="separator:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,6 +180,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae9d32f3e09174bad69e74f147ee33087 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8878a90949badbb5486cc2e022a57086 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a8878a90949badbb5486cc2e022a57086">getFramesPerCallback</a> () const</td></tr>
 <tr class="separator:a8878a90949badbb5486cc2e022a57086 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc3ee2815568b425d15a40e132aa8e38 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#abc3ee2815568b425d15a40e132aa8e38">getFramesPerDataCallback</a> () const</td></tr>
+<tr class="separator:abc3ee2815568b425d15a40e132aa8e38 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1e640461d7bf9d596decb913da7ac86 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ab1e640461d7bf9d596decb913da7ac86">getFormat</a> () const</td></tr>
 <tr class="separator:ab1e640461d7bf9d596decb913da7ac86 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5217ab05bfde0d7637024b599302d0b inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">virtual int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#af5217ab05bfde0d7637024b599302d0b">getBufferSizeInFrames</a> ()</td></tr>
@@ -186,8 +194,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2ddb935de0e24dd7ae8e2cfbecac9fdc inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a093057d625bc896864b959974c265f21 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a093057d625bc896864b959974c265f21">getDeviceId</a> () const</td></tr>
 <tr class="separator:a093057d625bc896864b959974c265f21 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b4a2a191546708da657510c3cd6b797 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a1b4a2a191546708da657510c3cd6b797">getCallback</a> () const</td></tr>
-<tr class="separator:a1b4a2a191546708da657510c3cd6b797 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fb2f34ae62dbda2c10e8513b754fa0c inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a9fb2f34ae62dbda2c10e8513b754fa0c">getDataCallback</a> () const</td></tr>
+<tr class="separator:a9fb2f34ae62dbda2c10e8513b754fa0c inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1328fb9288166ff325995ce1ea1867f0 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a1328fb9288166ff325995ce1ea1867f0">getErrorCallback</a> () const</td></tr>
+<tr class="separator:a1328fb9288166ff325995ce1ea1867f0 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a54d38b985a2eb12c6972104dc0ce73 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a9a54d38b985a2eb12c6972104dc0ce73">isDataCallbackSpecified</a> () const</td></tr>
+<tr class="separator:a9a54d38b985a2eb12c6972104dc0ce73 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef579f6d1f779c89d051f0963f2976b3 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aef579f6d1f779c89d051f0963f2976b3">isErrorCallbackSpecified</a> () const</td></tr>
+<tr class="separator:aef579f6d1f779c89d051f0963f2976b3 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bcfb2f8bd11c92b541fd910da9af397 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">Usage</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a0bcfb2f8bd11c92b541fd910da9af397">getUsage</a> () const</td></tr>
 <tr class="separator:a0bcfb2f8bd11c92b541fd910da9af397 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab12e2d068fa87e0553b01a400d96eb82 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604b">ContentType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ab12e2d068fa87e0553b01a400d96eb82">getContentType</a> () const</td></tr>
@@ -217,9 +231,21 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:add85011ba825f74931deeb92c5edf831"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0faa6d3a6fd4f367e6f80d5a29e6dcba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">setDataCallbackEnabled</a> (bool enabled)</td></tr>
 <tr class="separator:a0faa6d3a6fd4f367e6f80d5a29e6dcba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68b28845855f7391c24ed0c7cee26ffe"><td class="memItemLeft" align="right" valign="top"><a id="a68b28845855f7391c24ed0c7cee26ffe"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setWeakThis</b> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">oboe::AudioStream</a> &gt; &amp;sharedStream)</td></tr>
+<tr class="separator:a68b28845855f7391c24ed0c7cee26ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4882ba4180fa2a984fb9a2002651d50b"><td class="memItemLeft" align="right" valign="top"><a id="a4882ba4180fa2a984fb9a2002651d50b"></a>
+std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">oboe::AudioStream</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lockWeakThis</b> ()</td></tr>
+<tr class="separator:a4882ba4180fa2a984fb9a2002651d50b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
+<tr class="memitem:a5d5e07e98921d0193a5c0ccbe06f68c2 inherit pro_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2">isValidConfig</a> ()</td></tr>
+<tr class="separator:a5d5e07e98921d0193a5c0ccbe06f68c2 inherit pro_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:addb945e8ab2bc395cc99c8ae6504c2cd"><td class="memItemLeft" align="right" valign="top"><a id="addb945e8ab2bc395cc99c8ae6504c2cd"></a>
+std::weak_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mWeakThis</b></td></tr>
+<tr class="separator:addb945e8ab2bc395cc99c8ae6504c2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88a63317b7c58815bac074976b00aa23"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">mFramesWritten</a> {}</td></tr>
 <tr class="separator:a88a63317b7c58815bac074976b00aa23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07e82f9b9e2e4800f23ae9a7193c3b58"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">mFramesRead</a> {}</td></tr>
@@ -227,9 +253,14 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:ad23416968eb9479c300e4a94841bdde4"><td class="memItemLeft" align="right" valign="top"><a id="ad23416968eb9479c300e4a94841bdde4"></a>
 std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td></tr>
 <tr class="separator:ad23416968eb9479c300e4a94841bdde4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4e4e04b87a53e6b286a6059be32b053"><td class="memItemLeft" align="right" valign="top"><a id="af4e4e04b87a53e6b286a6059be32b053"></a>
+<a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mErrorCallbackResult</b> = oboe::Result::OK</td></tr>
+<tr class="separator:af4e4e04b87a53e6b286a6059be32b053"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
-<tr class="memitem:ae3f72318212dd9977d7fa0ced92c91f4 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ae3f72318212dd9977d7fa0ced92c91f4">mStreamCallback</a> = nullptr</td></tr>
-<tr class="separator:ae3f72318212dd9977d7fa0ced92c91f4 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d8493f66a945cb426506c70f0358e5f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f">mDataCallback</a> = nullptr</td></tr>
+<tr class="separator:a6d8493f66a945cb426506c70f0358e5f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc0c8cc54adb6d3350c62b8a74b9c57b inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a> = nullptr</td></tr>
+<tr class="separator:adc0c8cc54adb6d3350c62b8a74b9c57b inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3962eb94420ad0ecea70029236001899 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a3962eb94420ad0ecea70029236001899">mFramesPerCallback</a> = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td></tr>
 <tr class="separator:a3962eb94420ad0ecea70029236001899 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ff460bac9d14dfeac4eeddfcbb6e206 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206">mChannelCount</a> = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td></tr>
@@ -269,6 +300,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 <tr class="memitem:a2dd35a6f009f36172838260144218f6d inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a id="a2dd35a6f009f36172838260144218f6d"></a>
 <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mSampleRateConversionQuality</b> = SampleRateConversionQuality::None</td></tr>
 <tr class="separator:a2dd35a6f009f36172838260144218f6d inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a8468a51a2352c31aef00fade27a43e9e"><td class="memItemLeft" align="right" valign="top"><a id="a8468a51a2352c31aef00fade27a43e9e"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</b></td></tr>
+<tr class="separator:a8468a51a2352c31aef00fade27a43e9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for Oboe C++ audio stream. </p>
@@ -606,6 +643,32 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 </div><div class="memdoc">
 <p>The number of audio frames written into the stream. This monotonic counter will never get reset.</p>
 <dl class="section return"><dt>Returns</dt><dd>the number of frames written so far </dd></dl>
+
+</div>
+</div>
+<a id="a8fe8afdf164a1fe835c514f709743d75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fe8afdf164a1fe835c514f709743d75">&#9670;&nbsp;</a></span>getLastErrorCallbackResult()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a> oboe::AudioStream::getLastErrorCallbackResult </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>last result passed from an error callback </dd></dl>
 
 </div>
 </div>

@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -89,6 +89,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6c0142e08dc65eda8f758b4794450867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45c013fd6787ad09d328385d6314c4d4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_latency_tuner.html#a45c013fd6787ad09d328385d6314c4d4">isAtMaximumBufferSize</a> ()</td></tr>
 <tr class="separator:a45c013fd6787ad09d328385d6314c4d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc96aa53b18a051b6ccdacb838139bf8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_latency_tuner.html#adc96aa53b18a051b6ccdacb838139bf8">setMinimumBufferSize</a> (int32_t bufferSize)</td></tr>
+<tr class="separator:adc96aa53b18a051b6ccdacb838139bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaba4b3f075ed8d7c7ad4cad392545c08"><td class="memItemLeft" align="right" valign="top"><a id="aaba4b3f075ed8d7c7ad4cad392545c08"></a>
+int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getMinimumBufferSize</b> () const</td></tr>
+<tr class="separator:aaba4b3f075ed8d7c7ad4cad392545c08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2684b30205126c8acd2f75d01cce05db"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_latency_tuner.html#a2684b30205126c8acd2f75d01cce05db">setBufferSizeIncrement</a> (int32_t sizeIncrement)</td></tr>
+<tr class="separator:a2684b30205126c8acd2f75d01cce05db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ea6114ac4f78f3e050d405168905123"><td class="memItemLeft" align="right" valign="top"><a id="a5ea6114ac4f78f3e050d405168905123"></a>
+int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getBufferSizeIncrement</b> () const</td></tr>
+<tr class="separator:a5ea6114ac4f78f3e050d405168905123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classoboe_1_1_latency_tuner.html">LatencyTuner</a> can be used to dynamically tune the latency of an output stream. It adjusts the stream's bufferSize by monitoring the number of underruns.</p>
@@ -208,6 +218,72 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>This may be called from another thread. Then <a class="el" href="classoboe_1_1_latency_tuner.html#ad2be756965e6a9af3114008eda892174">tune()</a> will call reset(), which will lower the latency to the minimum and then allow it to rise back up if there are glitches.</p>
 <p>This is typically called in response to a user decision to minimize latency. In other words, call this from a button handler. </p>
+
+</div>
+</div>
+<a id="a2684b30205126c8acd2f75d01cce05db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2684b30205126c8acd2f75d01cce05db">&#9670;&nbsp;</a></span>setBufferSizeIncrement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::LatencyTuner::setBufferSizeIncrement </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>sizeIncrement</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the amount the bufferSize will be incremented while tuning. By default, this will be one burst.</p>
+<p>Note that AAudio will quantize the buffer size to a multiple of the burstSize. So the final buffer sizes may not be a multiple of this increment.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sizeIncrement</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adc96aa53b18a051b6ccdacb838139bf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc96aa53b18a051b6ccdacb838139bf8">&#9670;&nbsp;</a></span>setMinimumBufferSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::LatencyTuner::setMinimumBufferSize </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>bufferSize</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the minimum bufferSize in frames that is used when the tuner is reset. You may wish to call <a class="el" href="classoboe_1_1_latency_tuner.html#a6c0142e08dc65eda8f758b4794450867">requestReset()</a> after calling this. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bufferSize</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

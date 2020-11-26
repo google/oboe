@@ -13,5 +13,7 @@ var searchData=
   ['audiostreambase',['AudioStreamBase',['../classoboe_1_1_audio_stream_base.html',1,'oboe::AudioStreamBase'],['../classoboe_1_1_audio_stream_base.html#aa6b103e1b0f808bbc4949d56f0829f98',1,'oboe::AudioStreamBase::AudioStreamBase()']]],
   ['audiostreambuilder',['AudioStreamBuilder',['../classoboe_1_1_audio_stream_builder.html',1,'oboe']]],
   ['audiostreamcallback',['AudioStreamCallback',['../classoboe_1_1_audio_stream_callback.html',1,'oboe']]],
+  ['audiostreamdatacallback',['AudioStreamDataCallback',['../classoboe_1_1_audio_stream_data_callback.html',1,'oboe']]],
+  ['audiostreamerrorcallback',['AudioStreamErrorCallback',['../classoboe_1_1_audio_stream_error_callback.html',1,'oboe']]],
   ['api_20reference',['API reference',['../index.html',1,'']]]
 ];
