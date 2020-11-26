@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resultwithvalue',['ResultWithValue',['../classoboe_1_1_result_with_value.html',1,'oboe']]]
+  ['oboeglobals',['OboeGlobals',['../classoboe_1_1_oboe_globals.html',1,'oboe']]]
 ];

@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -80,7 +80,9 @@ Inheritance diagram for oboe::StabilizedCallback:</div>
  <div class="center">
   <img src="classoboe_1_1_stabilized_callback.png" usemap="#oboe::StabilizedCallback_map" alt=""/>
   <map id="oboe::StabilizedCallback_map" name="oboe::StabilizedCallback_map">
-<area href="classoboe_1_1_audio_stream_callback.html" alt="oboe::AudioStreamCallback" shape="rect" coords="0,0,167,24"/>
+<area href="classoboe_1_1_audio_stream_callback.html" alt="oboe::AudioStreamCallback" shape="rect" coords="103,56,300,80"/>
+<area href="classoboe_1_1_audio_stream_data_callback.html" alt="oboe::AudioStreamDataCallback" shape="rect" coords="0,0,197,24"/>
+<area href="classoboe_1_1_audio_stream_error_callback.html" alt="oboe::AudioStreamErrorCallback" shape="rect" coords="207,0,404,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -95,6 +97,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a7ec0e9fca3181962ab78716bcda83e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7521da42c4b08a71e6102994f6f41f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_stabilized_callback.html#af7521da42c4b08a71e6102994f6f41f4">onErrorAfterClose</a> (<a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *oboeStream, <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a> error) override</td></tr>
 <tr class="separator:af7521da42c4b08a71e6102994f6f41f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classoboe_1_1_audio_stream_error_callback"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classoboe_1_1_audio_stream_error_callback')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></td></tr>
+<tr class="memitem:a5ad4b8936746ecbb2160a9389b117fc3 inherit pub_methods_classoboe_1_1_audio_stream_error_callback"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3">onError</a> (<a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *, <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>)</td></tr>
+<tr class="separator:a5ad4b8936746ecbb2160a9389b117fc3 inherit pub_methods_classoboe_1_1_audio_stream_error_callback"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="ad447e12ebf732cf151655c1fbaf58a49"></a>
@@ -110,7 +115,7 @@ Public Member Functions</h2></td></tr>
           <td class="memname"><a class="el" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a> oboe::StabilizedCallback::onAudioReady </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td>
-          <td class="paramname"><em>oboeStream</em>, </td>
+          <td class="paramname"><em>audioStream</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -171,7 +176,7 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
 <p>If you need to move data, eg. MIDI commands, in or out of the callback function then we recommend the use of non-blocking techniques such as an atomic FIFO.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">oboeStream</td><td>pointer to the associated stream </td></tr>
+    <tr><td class="paramname">audioStream</td><td>pointer to the associated stream </td></tr>
     <tr><td class="paramname">audioData</td><td>buffer containing input data or a place to put output data </td></tr>
     <tr><td class="paramname">numFrames</td><td>number of frames to be processed </td></tr>
   </table>
@@ -179,7 +184,7 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>DataCallbackResult::Continue or DataCallbackResult::Stop </dd></dl>
 
-<p>Implements <a class="el" href="classoboe_1_1_audio_stream_callback.html#af3a7c44f0254abe6e5e5bb566e2317df">oboe::AudioStreamCallback</a>.</p>
+<p>Implements <a class="el" href="classoboe_1_1_audio_stream_data_callback.html#ad8a3a9f609df5fd3a5d885cbe1b2204d">oboe::AudioStreamDataCallback</a>.</p>
 
 </div>
 </div>
@@ -216,17 +221,18 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This will be called when an error occurs on a stream or when the stream is disconnected. The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe. So the underlying stream cannot be referenced. But you can still query most parameters.</p>
-<p>This callback could be used to reopen a new stream on another device. You can safely delete the old <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> in this method.</p>
+<p>This will be called when an error occurs on a stream, such as when the stream is disconnected, and if <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3">onError()</a> returns false (indicating that the error has not already been handled).</p>
+<p>The underlying AAudio or OpenSL ES stream will already be stopped AND closed by Oboe. So the underlying stream cannot be referenced. But you can still query most parameters.</p>
+<p>This callback could be used to reopen a new stream on another device.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">oboeStream</td><td>pointer to the associated stream </td></tr>
+    <tr><td class="paramname">audioStream</td><td>pointer to the associated stream </td></tr>
     <tr><td class="paramname">error</td><td></td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a57a1b21efc764e8bbf8d92008a993bfd">oboe::AudioStreamCallback</a>.</p>
+<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a76bd3ef3e00396e10c21812003654cfe">oboe::AudioStreamErrorCallback</a>.</p>
 
 </div>
 </div>
@@ -263,19 +269,19 @@ oboeStream-&gt;setBufferSizeInFrames() </li>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>This will be called when an error occurs on a stream or when the stream is disconnected.</p>
-<p>Note that this will be called on a different thread than the <a class="el" href="classoboe_1_1_stabilized_callback.html#ad447e12ebf732cf151655c1fbaf58a49">onAudioReady()</a> thread. This thread will be created by Oboe.</p>
+<p>This will be called when an error occurs on a stream, such as when the stream is disconnected, and if <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3">onError()</a> returns false (indicating that the error has not already been handled).</p>
+<p>Note that this will be called on a thread created by Oboe.</p>
 <p>The underlying stream will already be stopped by Oboe but not yet closed. So the stream can be queried.</p>
 <p>Do not close or delete the stream in this method because it will be closed after this method returns.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">oboeStream</td><td>pointer to the associated stream </td></tr>
+    <tr><td class="paramname">audioStream</td><td>pointer to the associated stream </td></tr>
     <tr><td class="paramname">error</td><td></td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_callback.html#a77ceb641f941164d7b4d4c51c9a888b9">oboe::AudioStreamCallback</a>.</p>
+<p>Reimplemented from <a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a4eb1e4916b71d8231e97b19898bc9bf0">oboe::AudioStreamErrorCallback</a>.</p>
 
 </div>
 </div>

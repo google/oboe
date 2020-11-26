@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Oboe
-   &#160;<span id="projectnumber">1.2</span>
+   &#160;<span id="projectnumber">1.5</span>
    </div>
    <div id="projectbrief">A library for creating real-time audio apps on Android</div>
   </td>
@@ -74,10 +74,13 @@ $(function() {
 
 <p>This is the complete list of members for <a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html#af3a7c44f0254abe6e5e5bb566e2317df">onAudioReady</a>(AudioStream *oboeStream, void *audioData, int32_t numFrames)=0</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html#a57a1b21efc764e8bbf8d92008a993bfd">onErrorAfterClose</a>(AudioStream *, Result)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html#a77ceb641f941164d7b4d4c51c9a888b9">onErrorBeforeClose</a>(AudioStream *, Result)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>~AudioStreamCallback</b>()=default (defined in <a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a>)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html#ad8a3a9f609df5fd3a5d885cbe1b2204d">onAudioReady</a>(AudioStream *audioStream, void *audioData, int32_t numFrames)=0</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">oboe::AudioStreamDataCallback</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3">onError</a>(AudioStream *, Result)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a76bd3ef3e00396e10c21812003654cfe">onErrorAfterClose</a>(AudioStream *, Result)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html#a4eb1e4916b71d8231e97b19898bc9bf0">onErrorBeforeClose</a>(AudioStream *, Result)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~AudioStreamCallback</b>()=default (defined in <a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a>)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_callback.html">oboe::AudioStreamCallback</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>~AudioStreamDataCallback</b>()=default (defined in <a class="el" href="classoboe_1_1_audio_stream_data_callback.html">oboe::AudioStreamDataCallback</a>)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">oboe::AudioStreamDataCallback</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~AudioStreamErrorCallback</b>()=default (defined in <a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a>)</td><td class="entry"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
