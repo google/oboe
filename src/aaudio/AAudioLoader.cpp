@@ -304,7 +304,6 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
             == AAUDIO_PERFORMANCE_MODE_POWER_SAVING, ERRMSG);
     static_assert((int32_t)PerformanceMode::LowLatency
             == AAUDIO_PERFORMANCE_MODE_LOW_LATENCY, ERRMSG);
-#endif
 
 // The aaudio_ usage, content and input_preset types were added in NDK 17,
 // which is the first version to support Android Pie (API 28).
@@ -343,6 +342,9 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
 
     static_assert((int32_t)SessionId::None == AAUDIO_SESSION_ID_NONE, ERRMSG);
     static_assert((int32_t)SessionId::Allocate == AAUDIO_SESSION_ID_ALLOCATE, ERRMSG);
-#endif
+
+#endif // __NDK_MAJOR__ >= 17
+
+#endif // AAUDIO_AAUDIO_H
 
 } // namespace oboe
