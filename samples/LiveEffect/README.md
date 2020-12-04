@@ -15,9 +15,12 @@ Screenshots
 - oboe::I16
 - stereo or mono
 
+### Customizing the App
+
+If you want to customize the effects processing then modify the
+onBothStreamsReady() method in "src/main/cpp/FullDuplexPass.h"
 
 ### Caveats
 When first time starting audio devices, the stream may not be stable.
 The symptom is the strange callback pattern. This sample waits half a second
 for audio system to stablize. It is an estimate, it would vary on different platforms.
-
