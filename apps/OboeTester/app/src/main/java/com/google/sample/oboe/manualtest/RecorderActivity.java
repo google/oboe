@@ -54,10 +54,8 @@ public class RecorderActivity extends TestInputActivity {
         updateButtons();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_RECORD_PLAY);
+    int getActivityType() {
+        return ACTIVITY_RECORD_PLAY;
     }
 
     public void onStartRecording(View view) {

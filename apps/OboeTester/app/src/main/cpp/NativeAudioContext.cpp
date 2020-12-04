@@ -588,6 +588,27 @@ void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
     }
 }
 
+// ======================================================================= ActivityDataPath
+void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityFullDuplex::configureBuilder(isInput, builder);
+
+    if (mFullDuplexDataPath.get() == nullptr) {
+        mFullDuplexDataPath = std::make_unique<FullDuplexDataPath>();
+    }
+    if (!isInput) {
+        // only output uses a callback, input is polled
+        builder.setCallback(mFullDuplexDataPath.get());
+    }
+}
+
+void ActivityDataPath::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+    if (isInput) {
+        mFullDuplexDataPath->setInputStream(oboeStream);
+        mFullDuplexDataPath->setRecording(mRecording.get());
+    } else {
+        mFullDuplexDataPath->setOutputStream(oboeStream);
+    }
+}
 
 // =================================================================== ActivityTestDisconnect
 void ActivityTestDisconnect::close(int32_t streamIndex) {

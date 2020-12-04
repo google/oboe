@@ -65,6 +65,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_RT_LATENCY = 5;
     public static final int ACTIVITY_GLITCHES = 6;
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
+    public static final int ACTIVITY_DATA_PATHS = 8;
 
     private int mAudioState = AUDIO_STATE_CLOSED;
     protected String audioManagerSampleRate;
@@ -166,10 +167,13 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    abstract int getActivityType();
+
     @Override
     protected void onStart() {
         super.onStart();
         resetConfiguration();
+        setActivityType(getActivityType());
     }
 
     protected void resetConfiguration() {

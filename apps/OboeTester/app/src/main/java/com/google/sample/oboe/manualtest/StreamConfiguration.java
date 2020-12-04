@@ -146,13 +146,6 @@ public class StreamConfiguration {
         this.mPerformanceMode = performanceMode;
     }
 
-    public int getInputPreset() {
-        return mInputPreset;
-    }
-    public void setInputPreset(int inputPreset) {
-        this.mInputPreset = inputPreset;
-    }
-
     static String convertPerformanceModeToText(int performanceMode) {
         switch(performanceMode) {
             case PERFORMANCE_MODE_NONE:
@@ -164,6 +157,14 @@ public class StreamConfiguration {
             default:
                 return "INVALID";
         }
+    }
+
+    public int getInputPreset() {
+        return mInputPreset;
+    }
+
+    public void setInputPreset(int inputPreset) {
+        this.mInputPreset = inputPreset;
     }
 
     public int getSharingMode() {

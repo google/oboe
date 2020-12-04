@@ -139,8 +139,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
-                boolean passed = (getMaxSecondsWithNoGlitch()
-                        > (mDurationSeconds - SETUP_TIME_SECONDS));
+                boolean passed = didTestPass();
+
                 String resultText = getShortReport();
                 resultText += ", xruns = " + inXRuns + "/" + outXRuns;
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
@@ -160,6 +160,11 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
         mAutomatedTestRunner.incrementTestCount();
+    }
+
+    public boolean didTestPass() {
+        return getMaxSecondsWithNoGlitch()
+                > (mDurationSeconds - SETUP_TIME_SECONDS);
     }
 
 }

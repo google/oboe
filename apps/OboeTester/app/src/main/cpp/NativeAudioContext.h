@@ -40,6 +40,7 @@
 #include "flowunits/SawtoothOscillator.h"
 #include "flowunits/TriangleOscillator.h"
 
+#include "FullDuplexDataPath.h"
 #include "FullDuplexEcho.h"
 #include "FullDuplexGlitches.h"
 #include "FullDuplexLatency.h"
@@ -500,6 +501,34 @@ private:
 };
 
 /**
+ * Measure Data Path
+ */
+class ActivityDataPath : public ActivityFullDuplex {
+public:
+
+    oboe::Result startStreams() override {
+        return mFullDuplexDataPath->start();
+    }
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+    DataPathAnalyzer *getDataPathAnalyzer() {
+        if (!mFullDuplexDataPath) return nullptr;
+        return mFullDuplexDataPath->getDataPathAnalyzer();
+    }
+
+    FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+        return (FullDuplexAnalyzer *) mFullDuplexDataPath.get();
+    }
+
+protected:
+    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+
+private:
+    std::unique_ptr<FullDuplexDataPath>   mFullDuplexDataPath{};
+};
+
+/**
  * Test a single output stream.
  */
 class ActivityTestDisconnect : public ActivityContext {
@@ -570,6 +599,9 @@ public:
             case ActivityType::TestDisconnect:
                 currentActivity = &mActivityTestDisconnect;
                 break;
+            case ActivityType::DataPath:
+                currentActivity = &mActivityDataPath;
+                break;
         }
     }
 
@@ -584,6 +616,7 @@ public:
     ActivityEcho                 mActivityEcho;
     ActivityRoundTripLatency     mActivityRoundTripLatency;
     ActivityGlitches             mActivityGlitches;
+    ActivityDataPath             mActivityDataPath;
     ActivityTestDisconnect       mActivityTestDisconnect;
 
 private:
@@ -599,6 +632,7 @@ private:
         RoundTripLatency = 5,
         Glitches = 6,
         TestDisconnect = 7,
+        DataPath = 8,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;
