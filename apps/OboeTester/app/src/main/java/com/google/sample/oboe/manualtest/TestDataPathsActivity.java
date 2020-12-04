@@ -30,10 +30,57 @@ import java.util.Date;
 
 public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
+    private double mMagnitude;
+
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_data_paths);
     }
+
+    // Periodically query for glitches from the native detector.
+    protected class DataPathSniffer extends NativeSniffer {
+
+        @Override
+        public void startSniffer() {
+            long now = System.currentTimeMillis();
+            mMagnitude = 0.0;
+            super.startSniffer();
+        }
+
+        public void run() {
+            mMagnitude = getMagnitude();
+            reschedule();
+        }
+
+        public String getCurrentStatusReport() {
+            StringBuffer message = new StringBuffer();
+            message.append(String.format("magnitude = %7.5f\n", mMagnitude));
+            return message.toString();
+        }
+
+        @Override
+        public String getShortReport() {
+            return String.format("magnitude = %7.5f\n", mMagnitude);
+        }
+
+        @Override
+        public void updateStatusText() {
+            mLastGlitchReport = getCurrentStatusReport();
+            setAnalyzerText(mLastGlitchReport);
+        }
+
+        @Override
+        public double getMaxSecondsWithNoGlitch() {
+            return -1.0;
+        }
+    }
+
+    @Override
+    NativeSniffer createNativeSniffer() {
+        return new TestDataPathsActivity.DataPathSniffer();
+    }
+
+    native double getMagnitude();
 
     private static final int[] INPUT_PRESETS = {
             StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
@@ -46,8 +93,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     protected String getConfigText(StreamConfiguration config) {
         return (super.getConfigText(config)
-                + ", " + ((config.getDirection() == StreamConfiguration.DIRECTION_INPUT) ?
-                    (" inPre = " + config.getInputPreset()) : ""));
+                + ", "
+                + ((config.getDirection() == StreamConfiguration.DIRECTION_INPUT)
+                ? (" inPre = " + StreamConfiguration.convertInputPresetToText(config.getInputPreset()))
+                : ""));
+    }
+
+    public boolean didTestPass() {
+        return mMagnitude > 0.001;
     }
 
     void testInputPreset(int inputPreset) throws InterruptedException {
@@ -59,21 +112,26 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedOutConfig.reset();
 
         requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
-        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
+        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
 
         requestedInConfig.setInputPreset(inputPreset);
-        setTolerance(0.5f);
 
         requestedInConfig.setChannelCount(1);
         requestedOutConfig.setChannelCount(1);
 
+        mMagnitude = -1.0;
         testConfigurations();
+    }
+
+    @Override
+    int getActivityType() {
+        return ACTIVITY_DATA_PATHS;
     }
 
     @Override
     public void runTest() {
         try {
-            mDurationSeconds = 2;
+            mDurationSeconds = 4;
             for (int inputPreset : INPUT_PRESETS) {
                 testInputPreset(inputPreset);
             }

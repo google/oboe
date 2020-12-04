@@ -84,9 +84,8 @@ public class TestInputActivity  extends TestAudioActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_TEST_INPUT);
+    int getActivityType() {
+        return ACTIVITY_TEST_INPUT;
     }
 
     @Override

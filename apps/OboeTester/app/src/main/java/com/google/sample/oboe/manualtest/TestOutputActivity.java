@@ -76,9 +76,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_TEST_OUTPUT);
+    int getActivityType() {
+        return ACTIVITY_TEST_OUTPUT;
     }
 
     public void openAudio() throws IOException {

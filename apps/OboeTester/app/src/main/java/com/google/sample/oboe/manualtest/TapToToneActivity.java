@@ -108,9 +108,8 @@ public class TapToToneActivity extends TestOutputActivityBase {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_TAP_TO_TONE);
+    int getActivityType() {
+        return ACTIVITY_TAP_TO_TONE;
     }
 
     @Override

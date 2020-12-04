@@ -90,10 +90,8 @@ public class TestDisconnectActivity extends TestAudioActivity {
         updateFailSkipButton(false);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_TEST_DISCONNECT);
+    int getActivityType() {
+        return ACTIVITY_TEST_DISCONNECT;
     }
 
     @Override

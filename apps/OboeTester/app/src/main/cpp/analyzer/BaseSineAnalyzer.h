@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include "InfiniteRecording.h"
 #include "LatencyAnalyzer.h"
 
-
 /**
  * Output a steady sine wave and analyze the return signal.
  *
@@ -45,6 +44,10 @@ public:
     void setMagnitude(double magnitude) {
         mMagnitude = magnitude;
         mScaledTolerance = mMagnitude * mTolerance;
+    }
+
+    double getMagnitude() const {
+        return mMagnitude;
     }
 
     // advance and wrap phase

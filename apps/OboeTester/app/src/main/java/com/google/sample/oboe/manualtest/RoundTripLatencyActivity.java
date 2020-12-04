@@ -297,9 +297,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     }
 
     @Override
+    int getActivityType() {
+        return ACTIVITY_RT_LATENCY;
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        setActivityType(ACTIVITY_RT_LATENCY);
         mHasRecording = false;
         updateButtons(false);
     }

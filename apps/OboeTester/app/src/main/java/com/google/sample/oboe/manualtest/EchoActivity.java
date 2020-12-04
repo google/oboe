@@ -96,11 +96,10 @@ public class EchoActivity extends TestInputActivity {
 
     private native void setDelayTime(double delayTimeSeconds);
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        setActivityType(ACTIVITY_ECHO);
+    int getActivityType() {
+        return ACTIVITY_ECHO;
     }
+
 
     @Override
     protected void resetConfiguration() {
