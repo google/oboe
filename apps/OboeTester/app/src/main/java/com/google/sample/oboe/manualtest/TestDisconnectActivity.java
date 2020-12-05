@@ -194,8 +194,8 @@ public class TestDisconnectActivity extends TestAudioActivity {
         mAutomatedTestRunner.log(text);
     }
 
-    private void appendSummary(String text) {
-        mAutomatedTestRunner.appendSummary(text);
+    private void appendFailedSummary(String text) {
+        mAutomatedTestRunner.appendFailedSummary(text);
     }
 
     private void testConfiguration(boolean isInput,
@@ -328,9 +328,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
 
         if (valid) {
             if (openFailed) {
-                appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                appendSummary(getConfigText(requestedConfig) + "\n");
-                appendSummary("Open failed!\n");
+                appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendFailedSummary(getConfigText(requestedConfig) + "\n");
+                appendFailedSummary("Open failed!\n");
                 mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
@@ -339,9 +339,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
                 log(resultText);
                 if (!passed) {
-                    appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                    appendSummary("  " + actualConfigText + "\n");
-                    appendSummary("    " + resultText + "\n");
+                    appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                    appendFailedSummary("  " + actualConfigText + "\n");
+                    appendFailedSummary("    " + resultText + "\n");
                     mAutomatedTestRunner.incrementFailCount();
                 } else {
                     mAutomatedTestRunner.incrementPassCount();

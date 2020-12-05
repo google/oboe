@@ -261,6 +261,8 @@ public class GlitchActivity extends AnalyzerActivity {
      */
     public native void setTolerance(float tolerance);
 
+    public native void setOutputChannel(int channel);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

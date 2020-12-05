@@ -97,11 +97,13 @@ public class AudioDeviceInfoConverter {
             case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
                 return "Bluetooth telephony SCO";
             case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
-                return "built-in earphone speaker";
+                return "built-in earpiece";
             case AudioDeviceInfo.TYPE_BUILTIN_MIC:
                 return "built-in microphone";
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
                 return "built-in speaker";
+            case 0x18: // AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
+                return "built-in speaker safe";
             case AudioDeviceInfo.TYPE_BUS:
                 return "BUS";
             case AudioDeviceInfo.TYPE_DOCK:
@@ -134,7 +136,7 @@ public class AudioDeviceInfoConverter {
                 return "wired headset";
             default:
             case AudioDeviceInfo.TYPE_UNKNOWN:
-                return "unknown";
+                return "unknown=" + type;
         }
     }
 }
