@@ -17,9 +17,6 @@
 package com.google.sample.oboe.manualtest;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Spinner;
 
 import java.io.IOException;
 
@@ -49,7 +46,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.log(text);
     }
 
-    private void appendSummary(String text) {
+    private void appendFailedSummary(String text) {
+        mAutomatedTestRunner.appendFailedSummary(text);
+    }
+    public void appendSummary(String text) {
         mAutomatedTestRunner.appendSummary(text);
     }
 
@@ -132,10 +132,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
         if (valid) {
             if (openFailed) {
-                appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                appendSummary(getConfigText(requestedInConfig) + "\n");
-                appendSummary(getConfigText(requestedOutConfig) + "\n");
-                appendSummary("Open failed!\n");
+                appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendFailedSummary(getConfigText(requestedInConfig) + "\n");
+                appendFailedSummary(getConfigText(requestedOutConfig) + "\n");
+                appendFailedSummary("Open failed!\n");
                 mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
@@ -146,9 +146,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
                 log(resultText);
                 if (!passed) {
-                    appendSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                    appendSummary("  " + getConfigText(actualInConfig) + "\n");
-                    appendSummary("    " + resultText + "\n");
+                    appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                    appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
+                    appendFailedSummary("    " + resultText + "\n");
                     mAutomatedTestRunner.incrementFailCount();
                 } else {
                     mAutomatedTestRunner.incrementPassCount();

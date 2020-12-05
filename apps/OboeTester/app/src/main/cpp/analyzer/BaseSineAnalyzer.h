@@ -50,6 +50,14 @@ public:
         return mMagnitude;
     }
 
+    void setOutputChannel(int outputChannel) {
+        mOutputChannel = outputChannel;
+    }
+
+    double getOutputChannel() const {
+        return mOutputChannel;
+    }
+
     // advance and wrap phase
     void incrementOutputPhase() {
         mOutputPhase += mPhaseIncrement;
@@ -72,9 +80,8 @@ public:
                      + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
             // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  mPhaseIncrement);
         }
-        frameData[0] = output;
-        for (int i = 1; i < channelCount; i++) {
-            frameData[i] = 0.0f;
+        for (int i = 0; i < channelCount; i++) {
+            frameData[i] = (i == mOutputChannel) ? output : 0.0f;
         }
         return RESULT_OK;
     }
@@ -153,6 +160,7 @@ protected:
     double  mCosAccumulator = 0.0;
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mScaledTolerance = 0.0;
+    int32_t mOutputChannel = 0;
 
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
     PseudoRandom  mWhiteNoise;

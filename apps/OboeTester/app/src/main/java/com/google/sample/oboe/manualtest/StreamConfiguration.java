@@ -323,9 +323,8 @@ public class StreamConfiguration {
     public boolean isMMap() {
         return mMMap;
     }
-    public void setMMap(boolean b) {
-        mMMap = b;
-    }
+
+    public void setMMap(boolean b) { mMMap = b; }
 
     public int getNativeApi() {
         return mNativeApi;

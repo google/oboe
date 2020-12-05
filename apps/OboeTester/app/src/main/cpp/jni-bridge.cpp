@@ -624,6 +624,17 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_setTolerance(JNIEnv *env,
         engine.mActivityGlitches.getGlitchAnalyzer()->setTolerance(tolerance);
     }
 }
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_setOutputChannel(JNIEnv *env,
+                                                                   jobject instance,
+                                                                   jint channel) {
+    if (engine.mActivityGlitches.getGlitchAnalyzer()) {
+        engine.mActivityGlitches.getGlitchAnalyzer()->setOutputChannel(channel);
+    }
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        engine.mActivityDataPath.getDataPathAnalyzer()->setOutputChannel(channel);
+    }
+}
 
 JNIEXPORT jint JNICALL
 Java_com_google_sample_oboe_manualtest_ManualGlitchActivity_getGlitch(JNIEnv *env, jobject instance,

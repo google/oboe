@@ -1,6 +1,5 @@
 package com.google.sample.oboe.manualtest;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -12,7 +11,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,6 +28,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private TextView     mAutoTextView;
     private TestAudioActivity  mActivity;
     private StringBuffer mFailedSummary;
+    private StringBuffer mSummary;
     private int          mTestCount;
     private int          mPassCount;
     private int          mFailCount;
@@ -115,8 +114,11 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         return mThreadEnabled;
     }
 
-    public void appendSummary(String text) {
+    public void appendFailedSummary(String text) {
         mFailedSummary.append(text);
+    }
+    public void appendSummary(String text) {
+        mSummary.append(text);
     }
 
     public void incrementFailCount() {
@@ -212,7 +214,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         log(Build.MANUFACTURER + " " + Build.PRODUCT);
         log(Build.DISPLAY);
         mFailedSummary = new StringBuffer();
-        appendSummary("Summary\n");
+        mSummary = new StringBuffer();
+        appendFailedSummary("Summary\n");
         mTestCount = 0;
         mPassCount = 0;
         mFailCount = 0;
@@ -222,6 +225,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             mActivity.stopTest();
             if (mThreadEnabled) {
                 log("\n==== SUMMARY ========");
+                log(mSummary.toString());
                 if (mFailCount > 0) {
                     log(mPassCount + " passed. " + mFailCount + " failed.");
                     log("These tests FAILED:");
