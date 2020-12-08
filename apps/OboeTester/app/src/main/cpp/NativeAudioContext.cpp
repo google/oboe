@@ -549,7 +549,7 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     ActivityFullDuplex::configureBuilder(isInput, builder);
 
     if (mFullDuplexLatency.get() == nullptr) {
-        mFullDuplexLatency = std::make_unique<FullDuplexLatency>();
+        mFullDuplexLatency = std::make_unique<FullDuplexAnalyzer>(&mEchoAnalyzer);
     }
     if (!isInput) {
         // only output uses a callback, input is polled
@@ -571,7 +571,7 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     ActivityFullDuplex::configureBuilder(isInput, builder);
 
     if (mFullDuplexGlitches.get() == nullptr) {
-        mFullDuplexGlitches = std::make_unique<FullDuplexGlitches>();
+        mFullDuplexGlitches = std::make_unique<FullDuplexAnalyzer>(&mGlitchAnalyzer);
     }
     if (!isInput) {
         // only output uses a callback, input is polled
@@ -593,7 +593,7 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     ActivityFullDuplex::configureBuilder(isInput, builder);
 
     if (mFullDuplexDataPath.get() == nullptr) {
-        mFullDuplexDataPath = std::make_unique<FullDuplexDataPath>();
+        mFullDuplexDataPath = std::make_unique<FullDuplexAnalyzer>(&mDataPathAnalyzer);
     }
     if (!isInput) {
         // only output uses a callback, input is polled
