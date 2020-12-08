@@ -213,7 +213,7 @@ public:
                     // for drift in the DRC or AGC.
                     // Must be a multiple of the period or the calculation will not be accurate.
                     double phaseOffset = 0.0;
-                    if (transformSample(sample, mInputPhase, &phaseOffset)) {
+                    if (transformSample(sample, mInputPhase)) {
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();

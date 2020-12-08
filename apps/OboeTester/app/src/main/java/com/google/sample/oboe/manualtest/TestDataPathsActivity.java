@@ -26,11 +26,18 @@ import com.google.sample.audio_device.AudioDeviceInfoConverter;
 public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     public static final int DURATION_SECONDS = 3;
-    private double mMagnitude;
-    private double mMaxMagnitude;
+    private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
+    private final static double MAX_ALLOWED_JITTER = 0.1;
+    private final static double JITTER_FILTER_COEFFICIENT = 0.8;
+    private static final double INVALID_PHASE = 9999.0;
     private final static String MAGNITUDE_FORMAT = "%7.5f";
 
-    AudioManager mAudioManager;
+    private double mMagnitude;
+    private double mMaxMagnitude;
+    private double mPhase;
+    private double mPhaseJitter;
+
+    AudioManager   mAudioManager;
 
     // Periodically query for glitches from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
@@ -39,6 +46,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         public void startSniffer() {
             mMagnitude = 0.0;
             mMaxMagnitude = 0.0;
+            mPhase = INVALID_PHASE;
+            mPhaseJitter = 0.0;
             super.startSniffer();
         }
 
@@ -46,6 +55,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         public void run() {
             mMagnitude = getMagnitude();
             mMaxMagnitude = Math.max(mMagnitude, mMaxMagnitude);
+            double phase = getPhase();
+            if (mPhase != INVALID_PHASE) {
+                double diff = phase - mPhase;
+                double diffSquared = diff * diff;
+                // low pass filter
+                mPhaseJitter = (mPhaseJitter * JITTER_FILTER_COEFFICIENT)
+                    + ((diffSquared * (1.0 - JITTER_FILTER_COEFFICIENT)));
+            }
+            mPhase = phase;
             reschedule();
         }
 
@@ -54,13 +72,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             message.append(
                     "magnitude = " + getMagnitudeText(mMagnitude)
                     + ", max = " + getMagnitudeText(mMaxMagnitude)
+                    + ", phase = " + getMagnitudeText(mPhase)
+                    + ", err = " + getMagnitudeText(mPhaseJitter)
                     + "\n");
             return message.toString();
         }
 
         @Override
         public String getShortReport() {
-            return "maxMag = " + getMagnitudeText(mMaxMagnitude);
+            return "maxMag = " + getMagnitudeText(mMaxMagnitude)
+                    + ", jitter = " + getMagnitudeText(mPhaseJitter);
         }
 
         @Override
@@ -79,7 +100,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     NativeSniffer createNativeSniffer() {
         return new TestDataPathsActivity.DataPathSniffer();
     }
+
     native double getMagnitude();
+    native double getPhase();
 
     @Override
     protected void inflateActivity() {
@@ -132,8 +155,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
         boolean passed = true;
-        if (mMaxMagnitude <= 0.001) {
+        if (mMaxMagnitude <= MIN_REQUIRED_MAGNITUDE) {
             why += ", mag";
+        }
+        if (mPhaseJitter > MAX_ALLOWED_JITTER) {
+            why += ", jitter";
         }
         if (requestedInConfig.getPerformanceMode() != actualInConfig.getPerformanceMode()) {
             why += ", inPerf";

@@ -46,6 +46,10 @@ public:
         mScaledTolerance = mMagnitude * mTolerance;
     }
 
+    double getPhaseOffset() {
+        return mPhaseOffset;
+    }
+
     double getMagnitude() const {
         return mMagnitude;
     }
@@ -111,7 +115,7 @@ public:
         return magnitude;
     }
 
-    bool transformSample(float sample, float referencePhase, double *phasePtr = nullptr) {
+    bool transformSample(float sample, float referencePhase) {
 
         // Track incoming signal and slowly adjust magnitude to account
         // for drift in the DRC or AGC.
@@ -121,7 +125,7 @@ public:
         // Must be a multiple of the period or the calculation will not be accurate.
         if (mFramesAccumulated == mSinePeriod) {
             const double coefficient = 0.1;
-            double magnitude = calculateMagnitude(phasePtr);
+            double magnitude = calculateMagnitude(&mPhaseOffset);
             // One pole averaging filter.
             setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
             return true;
@@ -158,6 +162,8 @@ protected:
     double  mPhaseIncrement = 0.0;
     double  mOutputPhase = 0.0;
     double  mOutputAmplitude = 0.75;
+    // If this jumps around then we are probably just hearing noise.
+    double  mPhaseOffset = 0.0;
     double  mMagnitude = 0.0;
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;
