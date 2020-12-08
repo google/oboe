@@ -47,11 +47,9 @@ public:
         float sample = frameData[mInputChannel];
         mInfiniteRecording.write(sample);
 
-        double phaseOffset = 0.0;
-        if (transformSample(sample, mOutputPhase, &phaseOffset)) {
+        if (transformSample(sample, mOutputPhase)) {
             resetAccumulator();
         }
-        // TODO measure phase jitter to detect noise
 
         return result;
     }

@@ -616,6 +616,12 @@ Java_com_google_sample_oboe_manualtest_TestDataPathsActivity_getMagnitude(JNIEnv
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMagnitude();
 }
 
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_TestDataPathsActivity_getPhase(JNIEnv *env,
+                                                                          jobject instance) {
+    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
+}
+
 JNIEXPORT void JNICALL
 Java_com_google_sample_oboe_manualtest_GlitchActivity_setTolerance(JNIEnv *env,
                                                                    jobject instance,
