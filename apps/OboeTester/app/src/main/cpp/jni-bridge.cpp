@@ -624,10 +624,23 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_setTolerance(JNIEnv *env,
         engine.mActivityGlitches.getGlitchAnalyzer()->setTolerance(tolerance);
     }
 }
+
 JNIEXPORT void JNICALL
-Java_com_google_sample_oboe_manualtest_GlitchActivity_setOutputChannel(JNIEnv *env,
+Java_com_google_sample_oboe_manualtest_GlitchActivity_setInputChannelNative(JNIEnv *env,
                                                                    jobject instance,
                                                                    jint channel) {
+    if (engine.mActivityGlitches.getGlitchAnalyzer()) {
+        engine.mActivityGlitches.getGlitchAnalyzer()->setInputChannel(channel);
+    }
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        engine.mActivityDataPath.getDataPathAnalyzer()->setInputChannel(channel);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_sample_oboe_manualtest_GlitchActivity_setOutputChannelNative(JNIEnv *env,
+                                                                       jobject instance,
+                                                                       jint channel) {
     if (engine.mActivityGlitches.getGlitchAnalyzer()) {
         engine.mActivityGlitches.getGlitchAnalyzer()->setOutputChannel(channel);
     }

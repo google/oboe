@@ -50,6 +50,10 @@ public:
         return mMagnitude;
     }
 
+    void setInputChannel(int inputChannel) {
+        mInputChannel = inputChannel;
+    }
+
     void setOutputChannel(int outputChannel) {
         mOutputChannel = outputChannel;
     }
@@ -160,6 +164,7 @@ protected:
     double  mCosAccumulator = 0.0;
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mScaledTolerance = 0.0;
+    int32_t mInputChannel = 0;
     int32_t mOutputChannel = 0;
 
     static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.

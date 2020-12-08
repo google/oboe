@@ -44,16 +44,14 @@ public:
     result_code processInputFrame(float *frameData, int /* channelCount */) override {
         result_code result = RESULT_OK;
 
-        float sample = frameData[0];
+        float sample = frameData[mInputChannel];
         mInfiniteRecording.write(sample);
 
-        // Track incoming signal and slowly adjust magnitude to account
-        // for drift in the DRC or AGC.
-        // Must be a multiple of the period or the calculation will not be accurate.
         double phaseOffset = 0.0;
         if (transformSample(sample, mOutputPhase, &phaseOffset)) {
             resetAccumulator();
         }
+        // TODO measure phase jitter to detect noise
 
         return result;
     }

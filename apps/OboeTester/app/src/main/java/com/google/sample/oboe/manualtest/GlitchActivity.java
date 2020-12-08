@@ -42,6 +42,8 @@ public class GlitchActivity extends AnalyzerActivity {
     final static int STATE_LOCKED = 4;
     final static int STATE_GLITCHING = 5;
     String mLastGlitchReport;
+    private int mInputChannel;
+    private int mOutputChannel;
 
     native int getStateFrameCount(int state);
     native int getGlitchCount();
@@ -261,7 +263,27 @@ public class GlitchActivity extends AnalyzerActivity {
      */
     public native void setTolerance(float tolerance);
 
-    public native void setOutputChannel(int channel);
+    public void setInputChannel(int channel) {
+        mInputChannel = channel;
+        setInputChannelNative(channel);
+    }
+
+    public void setOutputChannel(int channel) {
+        mOutputChannel = channel;
+        setOutputChannelNative(channel);
+    }
+
+    public int getInputChannel() {
+        return mInputChannel;
+    }
+
+    public int getOutputChannel() {
+        return mOutputChannel;
+    }
+
+    public native void setInputChannelNative(int channel);
+
+    public native void setOutputChannelNative(int channel);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

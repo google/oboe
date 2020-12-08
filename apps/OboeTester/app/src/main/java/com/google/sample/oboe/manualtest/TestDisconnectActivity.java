@@ -90,6 +90,11 @@ public class TestDisconnectActivity extends TestAudioActivity {
         updateFailSkipButton(false);
     }
 
+    @Override
+    public String getTestName() {
+        return "Disconnect";
+    }
+
     int getActivityType() {
         return ACTIVITY_TEST_DISCONNECT;
     }

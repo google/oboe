@@ -81,6 +81,10 @@ abstract class TestAudioActivity extends Activity {
     private int mSampleRate;
     private boolean mScoStarted;
 
+    public String getTestName() {
+        return "TestAudio";
+    }
+
     public static class StreamContext {
         StreamConfigurationView configurationView;
         AudioStreamTester tester;

@@ -68,6 +68,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     protected String getConfigText(StreamConfiguration config) {
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
+                + ", ID = " + config.getDeviceId()
                 + ", SR = " + config.getSampleRate()
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
@@ -77,6 +78,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     // Run test based on the requested input/output configurations.
     protected void testConfigurations() throws InterruptedException {
+        mAutomatedTestRunner.incrementTestCount();
+
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
@@ -139,11 +142,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 mAutomatedTestRunner.incrementFailCount();
             } else {
                 log("Result:");
-                boolean passed = didTestPass();
+                String reason = didTestPass();
+                boolean passed = reason.length() == 0;
 
                 String resultText = getShortReport();
                 resultText += ", xruns = " + inXRuns + "/" + outXRuns;
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+                resultText += reason;
                 log(resultText);
                 if (!passed) {
                     appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
@@ -159,12 +164,14 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
-        mAutomatedTestRunner.incrementTestCount();
     }
 
-    public boolean didTestPass() {
-        return getMaxSecondsWithNoGlitch()
-                > (mDurationSeconds - SETUP_TIME_SECONDS);
+    public String didTestPass() {
+        String why = "";
+        if (getMaxSecondsWithNoGlitch() <= (mDurationSeconds - SETUP_TIME_SECONDS)) {
+            why += ", glitch";
+        }
+        return why;
     }
 
 }
