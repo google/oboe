@@ -20,8 +20,6 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
-import android.widget.TextView;
 
 import com.google.sample.audio_device.AudioDeviceInfoConverter;
 
@@ -29,6 +27,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     public static final int DURATION_SECONDS = 3;
     private double mMagnitude;
+    private double mMaxMagnitude;
+    private final static String MAGNITUDE_FORMAT = "%7.5f";
 
     AudioManager mAudioManager;
 
@@ -37,25 +37,30 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         @Override
         public void startSniffer() {
-            long now = System.currentTimeMillis();
             mMagnitude = 0.0;
+            mMaxMagnitude = 0.0;
             super.startSniffer();
         }
 
+        @Override
         public void run() {
             mMagnitude = getMagnitude();
+            mMaxMagnitude = Math.max(mMagnitude, mMaxMagnitude);
             reschedule();
         }
 
         public String getCurrentStatusReport() {
             StringBuffer message = new StringBuffer();
-            message.append(getMagnitudeText() + "\n");
+            message.append(
+                    "magnitude = " + getMagnitudeText(mMagnitude)
+                    + ", max = " + getMagnitudeText(mMaxMagnitude)
+                    + "\n");
             return message.toString();
         }
 
         @Override
         public String getShortReport() {
-            return getMagnitudeText();
+            return "maxMag = " + getMagnitudeText(mMaxMagnitude);
         }
 
         @Override
@@ -87,9 +92,18 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     }
 
+    @Override
+    public String getTestName() {
+        return "DataPaths";
+    }
 
-    String getMagnitudeText() {
-        return String.format("mag = %7.5f", mMagnitude);
+    @Override
+    int getActivityType() {
+        return ACTIVITY_DATA_PATHS;
+    }
+
+    String getMagnitudeText(double value) {
+        return String.format(MAGNITUDE_FORMAT, value);
     }
 
     private static final int[] INPUT_PRESETS = {
@@ -102,27 +116,54 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     };
 
     protected String getConfigText(StreamConfiguration config) {
-        return (super.getConfigText(config)
-                + ", "
-                + ((config.getDirection() == StreamConfiguration.DIRECTION_INPUT)
-                ? (" inPre = " + StreamConfiguration.convertInputPresetToText(config.getInputPreset()))
-                : ""));
+        String text = super.getConfigText(config);
+        if (config.getDirection() == StreamConfiguration.DIRECTION_INPUT) {
+            text += ", inPre = " + StreamConfiguration.convertInputPresetToText(config.getInputPreset());
+        }
+        return text;
     }
 
-    public boolean didTestPass() {
+    // @return reasons for failure of empty string
+    @Override
+    public String didTestPass() {
+        String why = "";
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-        StreamConfiguration actualInConfig = mAudioInputTester. actualConfiguration;
-        StreamConfiguration actualOutConfig = mAudioOutTester. actualConfiguration;
+        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
+        StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
         boolean passed = true;
-        passed &= mMagnitude > 0.001;
-        passed &= requestedInConfig.getPerformanceMode() == actualInConfig.getPerformanceMode();
-        passed &= requestedOutConfig.getPerformanceMode() == actualOutConfig.getPerformanceMode();
-        return passed;
+        if (mMaxMagnitude <= 0.001) {
+            why += ", mag";
+        }
+        if (requestedInConfig.getPerformanceMode() != actualInConfig.getPerformanceMode()) {
+            why += ", inPerf";
+        }
+        if (requestedOutConfig.getPerformanceMode() != actualOutConfig.getPerformanceMode()) {
+            why += ", outPerf";
+        }
+        // Did we request a device and not get that device?
+        if (requestedInConfig.getDeviceId() != 0
+                && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
+            why += ", inDev(" + requestedInConfig.getDeviceId()
+                    + "!=" + actualInConfig.getDeviceId() + ")";
+        }
+        if (requestedOutConfig.getDeviceId() != 0
+                && (requestedOutConfig.getDeviceId() != actualOutConfig.getDeviceId())) {
+            why += ", outDev(" + requestedOutConfig.getDeviceId()
+                    + "!=" + actualOutConfig.getDeviceId() + ")";
+        }
+        return why;
     }
 
-    void testPresetCombo(int inputPreset) throws InterruptedException {
-        testPresetCombo(inputPreset, 1, 0, 1, 0);
+    String getOneLineSummary() {
+        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
+        StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
+        return "#" + mAutomatedTestRunner.getTestCount()
+                + ", IN D=" + actualInConfig.getDeviceId()
+                + ", ch=" + actualInConfig.getChannelCount() + "[" + getInputChannel() + "]"
+                + ", OUT D=" + actualOutConfig.getDeviceId()
+                + ", ch=" + actualOutConfig.getChannelCount() + "[" + getOutputChannel() + "]"
+                + ", mag = " + getMagnitudeText(mMaxMagnitude);
     }
 
     void testPresetCombo(int inputPreset,
@@ -145,28 +186,25 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setChannelCount(numInputChannels);
         requestedOutConfig.setChannelCount(numOutputChannels);
 
-        // FIXME - input not supported
+        setInputChannel(inputChannel);
         setOutputChannel(outputChannel);
 
         mMagnitude = -1.0;
         testConfigurations();
-        String summary =
-                " ch: in = " + numInputChannels + "[" + inputChannel + "]"
-                + ", out = " + numOutputChannels + "[" + outputChannel + "]"
+        String summary = getOneLineSummary()
                 + ", inPre = "
                 + StreamConfiguration.convertInputPresetToText(inputPreset)
-                + ", " + getMagnitudeText()
                 + "\n";
         appendSummary(summary);
     }
 
-    @Override
-    int getActivityType() {
-        return ACTIVITY_DATA_PATHS;
+    void testPresetCombo(int inputPreset) throws InterruptedException {
+        testPresetCombo(inputPreset, 1, 0, 1, 0);
     }
 
-
     private void testInputPresets() throws InterruptedException {
+        logBoth("\nTest InputPreset -------\n");
+
         for (int inputPreset : INPUT_PRESETS) {
             testPresetCombo(inputPreset);
         }
@@ -174,14 +212,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 1, 0, 2, 0);
         testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
                 1, 0, 2, 1);
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION, 2, 0, 2, 0);
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION, 2, 0, 2, 1);
+        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+                2, 0, 2, 0);
+        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+                2, 0, 2, 1);
     }
 
-    void testOutputDeviceCombo(int deviceId,
+    void setupDeviceCombo(int numInputChannels,
+                         int inputChannel,
                          int numOutputChannels,
-                         int outputChannel
-    ) throws InterruptedException {
+                         int outputChannel) throws InterruptedException {
         // Configure settings
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -193,47 +233,120 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
         requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
-        
-        requestedInConfig.setChannelCount(1);
+
+        requestedInConfig.setChannelCount(numInputChannels);
         requestedOutConfig.setChannelCount(numOutputChannels);
 
+        setInputChannel(inputChannel);
         setOutputChannel(outputChannel);
+    }
+
+    void testInputDeviceCombo(int deviceId,
+                              int numInputChannels,
+                              int inputChannel) throws InterruptedException {
+            final int numOutputChannels = 2;
+            setupDeviceCombo(numInputChannels, inputChannel, numOutputChannels, 0);
+            StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+            requestedInConfig.setDeviceId(deviceId);
+
+            mMagnitude = -1.0;
+            testConfigurations();
+            appendSummary(getOneLineSummary() + "\n");
+        }
+
+    void testInputDevices() throws InterruptedException {
+        logBoth("\nTest Input Devices -------\n");
+
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        int numTested = 0;
+        for (AudioDeviceInfo deviceInfo : devices) {
+            log("----\n"
+                    + AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
+            if (!deviceInfo.isSource()) continue; // FIXME log as error?!
+            if (deviceInfo.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
+                int id = deviceInfo.getId();
+                int[] channelCounts = deviceInfo.getChannelCounts();
+                numTested++;
+                // Always test mono and stereo.
+                testInputDeviceCombo(id, 1, 0);
+                testInputDeviceCombo(id, 2, 0);
+                testInputDeviceCombo(id, 2, 1);
+                if (channelCounts.length > 0) {
+                    for (int numChannels : channelCounts) {
+                        // Test higher channel counts.
+                        if (numChannels > 2) {
+                            log("numChannels = " + numChannels + "\n");
+                            for (int channel = 0; channel < numChannels; channel++) {
+                                testInputDeviceCombo(id, numChannels, channel);
+                            }
+                        }
+                    }
+                }
+            } else {
+                log("Device skipped for type.");
+            }
+        }
+
+        if (numTested == 0) {
+            log("NO INPUT DEVICE FOUND!\n");
+        }
+    }
+
+    void testOutputDeviceCombo(int deviceId,
+                               int numOutputChannels,
+                               int outputChannel) throws InterruptedException {
+        final int numInputChannels = 2;
+        setupDeviceCombo(numInputChannels, 0, numOutputChannels, outputChannel);
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        requestedOutConfig.setDeviceId(deviceId);
 
         mMagnitude = -1.0;
         testConfigurations();
-        String summary =
-                " ch: in = " + 1
-                        + ", out = " + numOutputChannels + "[" + outputChannel + "]"
-                        + ", devId = " + deviceId
-                        + ", " + getMagnitudeText()
-                        + "\n";
-        appendSummary(summary);
+        appendSummary(getOneLineSummary() + "\n");
+    }
+
+    void logBoth(String text) {
+        log(text);
+        appendSummary(text);
     }
 
     void testOutputDevices() throws InterruptedException {
+        logBoth("\nTest Output Devices -------\n");
+
         AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        int numTested = 0;
         for (AudioDeviceInfo deviceInfo : devices) {
-            log(AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
+            log("----\n"
+                    + AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
             final int SPEAKER_SAFE = 0x18; // API 30
+            if (!deviceInfo.isSink()) continue;
             if (deviceInfo.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
                 || deviceInfo.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
                 || deviceInfo.getType() == SPEAKER_SAFE) {
                 int id = deviceInfo.getId();
                 int[] channelCounts = deviceInfo.getChannelCounts();
-                log("channelCounts.len = " + channelCounts.length + "\n");
-                if (channelCounts.length == 0) {
-                    testOutputDeviceCombo(id, 1, 0);
-                    testOutputDeviceCombo(id, 2, 0);
-                    testOutputDeviceCombo(id, 2, 1);
-                } else {
+                numTested++;
+                // Always test mono and stereo.
+                testOutputDeviceCombo(id, 1, 0);
+                testOutputDeviceCombo(id, 2, 0);
+                testOutputDeviceCombo(id, 2, 1);
+                if (channelCounts.length > 0) {
                     for (int numChannels : channelCounts) {
-                        log("numChannels = " + numChannels + "\n");
-                        for (int channel = 0; channel < numChannels; channel++) {
-                            testOutputDeviceCombo(id, numChannels, channel);
+                        // Test higher channel counts.
+                        if (numChannels > 2) {
+                            log("numChannels = " + numChannels + "\n");
+                            for (int channel = 0; channel < numChannels; channel++) {
+                                testOutputDeviceCombo(id, numChannels, channel);
+                            }
                         }
                     }
                 }
+            } else {
+                log("Device skipped for type.");
             }
+        }
+        if (numTested == 0) {
+            log("NO OUTPUT DEVICE FOUND!\n");
         }
     }
 
@@ -241,9 +354,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public void runTest() {
         try {
             mDurationSeconds = DURATION_SECONDS;
-//            testInputPresets();
+            testInputPresets();
+            testInputDevices();
             testOutputDevices();
-
         } catch (Exception e) {
             //log(e.getMessage());
             showErrorToast(e.getMessage());

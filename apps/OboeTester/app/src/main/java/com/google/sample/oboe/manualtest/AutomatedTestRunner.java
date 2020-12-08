@@ -198,7 +198,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
 
-        String subjectText = "OboeTester AutoGlitch result " + getTimestampString();
+        String subjectText = "OboeTester " + mActivity.getTestName() + " result " + getTimestampString();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
 
         String shareBody = mAutoTextView.getText().toString();
@@ -234,6 +234,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                     log("All tests PASSED.");
                 }
                 log("== FINISHED at " + new Date());
+            } else {
+                log("== TEST MANUALLY STOPPED ==");
             }
             mActivity.runOnUiThread(new Runnable() {
                 @Override

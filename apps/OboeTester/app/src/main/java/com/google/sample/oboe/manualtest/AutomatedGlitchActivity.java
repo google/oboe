@@ -42,6 +42,11 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
         mDurationSpinner.setOnItemSelectedListener(new DurationSpinnerListener());
     }
 
+    @Override
+    public String getTestName() {
+        return "AutoGlitch";
+    }
+
     private void testConfiguration(int perfMode,
                                    int sharingMode,
                                    int sampleRate,
