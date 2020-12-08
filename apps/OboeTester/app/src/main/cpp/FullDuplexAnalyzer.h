@@ -27,7 +27,10 @@
 
 class FullDuplexAnalyzer : public FullDuplexStream {
 public:
-    FullDuplexAnalyzer() {}
+    FullDuplexAnalyzer(LoopbackProcessor *processor)
+            : mLoopbackProcessor(processor) {
+        setMNumInputBurstsCushion(1);
+    }
 
     /**
      * Called when data is available on both streams.
@@ -42,11 +45,9 @@ public:
 
     oboe::Result start() override;
 
-    bool isDone() {
-        return false;
+    LoopbackProcessor *getLoopbackProcessor() {
+        return mLoopbackProcessor;
     }
-
-    virtual LoopbackProcessor *getLoopbackProcessor() = 0;
 
     void setRecording(MultiChannelRecording *recording) {
         mRecording = recording;
@@ -55,6 +56,7 @@ public:
 private:
     MultiChannelRecording  *mRecording = nullptr;
 
+    LoopbackProcessor * const mLoopbackProcessor;
 };
 
 

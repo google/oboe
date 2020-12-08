@@ -31,4 +31,4 @@ include_directories(
 # link to oboe
 target_link_libraries(oboetester log oboe atomic)
 
-# bump 3 to resync CMake
+# bump 4 to resync CMake

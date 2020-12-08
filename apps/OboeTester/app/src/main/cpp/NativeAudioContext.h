@@ -40,11 +40,11 @@
 #include "flowunits/SawtoothOscillator.h"
 #include "flowunits/TriangleOscillator.h"
 
-#include "FullDuplexDataPath.h"
+#include "FullDuplexAnalyzer.h"
 #include "FullDuplexEcho.h"
-#include "FullDuplexGlitches.h"
-#include "FullDuplexLatency.h"
 #include "FullDuplexStream.h"
+#include "analyzer/GlitchAnalyzer.h"
+#include "analyzer/DataPathAnalyzer.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
 #include "OboeStreamCallbackProxy.h"
@@ -432,34 +432,58 @@ class ActivityRoundTripLatency : public ActivityFullDuplex {
 public:
 
     oboe::Result startStreams() override {
+        mAnalyzerLaunched = false;
         return mFullDuplexLatency->start();
     }
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     LatencyAnalyzer *getLatencyAnalyzer() {
-        return mFullDuplexLatency->getLatencyAnalyzer();
+        return &mEchoAnalyzer;
     }
 
     int32_t getState() override {
         return getLatencyAnalyzer()->getState();
     }
+
     int32_t getResult() override {
-        return getLatencyAnalyzer()->getState();
+        return getLatencyAnalyzer()->getState(); // TODO This does not look right.
     }
+
     bool isAnalyzerDone() override {
-        return mFullDuplexLatency->isDone();
+        if (!mAnalyzerLaunched) {
+            mAnalyzerLaunched = launchAnalysisIfReady();
+        }
+        return mEchoAnalyzer.isDone();
     }
 
     FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
         return (FullDuplexAnalyzer *) mFullDuplexLatency.get();
     }
 
+    static void analyzeData(PulseLatencyAnalyzer *analyzer) {
+        analyzer->analyze();
+    }
+
+    bool launchAnalysisIfReady() {
+        // Are we ready to do the analysis?
+        if (mEchoAnalyzer.hasEnoughData()) {
+            // Crunch the numbers on a separate thread.
+            std::thread t(analyzeData, &mEchoAnalyzer);
+            t.detach();
+            return true;
+        }
+        return false;
+    }
+
 protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
 private:
-    std::unique_ptr<FullDuplexLatency>   mFullDuplexLatency{};
+    std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexLatency{};
+
+    PulseLatencyAnalyzer  mEchoAnalyzer;
+    bool                  mAnalyzerLaunched = false;
 };
 
 /**
@@ -475,18 +499,19 @@ public:
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     GlitchAnalyzer *getGlitchAnalyzer() {
-        if (!mFullDuplexGlitches) return nullptr;
-        return mFullDuplexGlitches->getGlitchAnalyzer();
+        return &mGlitchAnalyzer;
     }
 
     int32_t getState() override {
         return getGlitchAnalyzer()->getState();
     }
+
     int32_t getResult() override {
         return getGlitchAnalyzer()->getResult();
     }
+
     bool isAnalyzerDone() override {
-        return mFullDuplexGlitches->isDone();
+        return mGlitchAnalyzer.isDone();
     }
 
     FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
@@ -497,7 +522,8 @@ protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
 private:
-    std::unique_ptr<FullDuplexGlitches>   mFullDuplexGlitches{};
+    std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexGlitches{};
+    GlitchAnalyzer  mGlitchAnalyzer;
 };
 
 /**
@@ -513,8 +539,7 @@ public:
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     DataPathAnalyzer *getDataPathAnalyzer() {
-        if (!mFullDuplexDataPath) return nullptr;
-        return mFullDuplexDataPath->getDataPathAnalyzer();
+        return &mDataPathAnalyzer;
     }
 
     FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
@@ -525,7 +550,9 @@ protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
 private:
-    std::unique_ptr<FullDuplexDataPath>   mFullDuplexDataPath{};
+    std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexDataPath{};
+
+    DataPathAnalyzer  mDataPathAnalyzer;
 };
 
 /**
