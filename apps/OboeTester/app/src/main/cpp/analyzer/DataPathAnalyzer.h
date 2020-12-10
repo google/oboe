@@ -21,6 +21,7 @@
 #include <cctype>
 #include <iomanip>
 #include <iostream>
+#include <math.h>
 
 #include "BaseSineAnalyzer.h"
 #include "InfiniteRecording.h"
@@ -51,6 +52,12 @@ public:
             resetAccumulator();
         }
 
+        // Update MaxMagnitude if we are locked.
+        double diff = abs(mPhaseOffset - mPreviousPhaseOffset);
+        if (diff < mPhaseTolerance) {
+            mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
+        }
+        mPreviousPhaseOffset = mPhaseOffset;
         return result;
     }
 
@@ -66,5 +73,19 @@ public:
         return report.str();
     }
 
+    void reset() override {
+        BaseSineAnalyzer::reset();
+        mPreviousPhaseOffset = 999.0; // Arbitrary high offset to prevent early lock.
+        mMaxMagnitude = 0.0;
+    }
+
+    double getMaxMagnitude() {
+        return mMaxMagnitude;
+    }
+
+private:
+    double  mPreviousPhaseOffset = 0.0;
+    double  mPhaseTolerance = 2 * M_PI  / 48;
+    double  mMaxMagnitude = 0.0;
 };
 #endif // ANALYZER_DATA_PATH_ANALYZER_H

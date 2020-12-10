@@ -149,13 +149,13 @@ public class StreamConfiguration {
     static String convertPerformanceModeToText(int performanceMode) {
         switch(performanceMode) {
             case PERFORMANCE_MODE_NONE:
-                return "NONE";
+                return "NO";
             case PERFORMANCE_MODE_POWER_SAVING:
-                return "PWRSAV";
+                return "PS";
             case PERFORMANCE_MODE_LOW_LATENCY:
-                return "LOWLAT";
+                return "LL";
             default:
-                return "INVALID";
+                return "??";
         }
     }
 
@@ -178,11 +178,11 @@ public class StreamConfiguration {
     static String convertSharingModeToText(int sharingMode) {
         switch(sharingMode) {
             case SHARING_MODE_SHARED:
-                return "SHRD";
+                return "SH";
             case SHARING_MODE_EXCLUSIVE:
-                return "EXCL";
+                return "EX";
             default:
-                return "NVAL";
+                return "??";
         }
     }
 

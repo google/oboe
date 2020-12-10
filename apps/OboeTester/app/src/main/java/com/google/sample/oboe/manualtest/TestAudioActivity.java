@@ -41,7 +41,7 @@ import java.util.Date;
  * Base class for other Activities.
  */
 abstract class TestAudioActivity extends Activity {
-    public static final String TAG = "TestOboe";
+    public static final String TAG = "OboeTester";
 
     protected static final int FADER_PROGRESS_MAX = 1000;
 

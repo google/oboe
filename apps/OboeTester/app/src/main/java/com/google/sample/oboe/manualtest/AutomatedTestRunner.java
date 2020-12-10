@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +36,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     private Thread           mAutoThread;
     private volatile boolean mThreadEnabled;
+    private CachedTextViewLog mCachedTextView;
 
     public AutomatedTestRunner(Context context) {
         super(context);
@@ -59,6 +61,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     public void setActivity(TestAudioActivity activity) {
         this.mActivity = activity;
+        mCachedTextView = new CachedTextViewLog(activity, mAutoTextView);
     }
 
     /**
@@ -134,24 +137,13 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     // Write to scrollable TextView
     public void log(final String text) {
         if (text == null) return;
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.append(text);
-                mAutoTextView.append("\n");
-            }
-        });
+        Log.d(TestAudioActivity.TAG, "LOG - " + text);
+        mCachedTextView.append(text + "\n");
     }
 
     private void logClear() {
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mAutoTextView.setText("");
-            }
-        });
+        mCachedTextView.clear();
     }
-
 
     private void startAutoThread() {
         mThreadEnabled = true;
@@ -162,6 +154,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private void stopAutoThread() {
         try {
             if (mAutoThread != null) {
+                log("Disable background test thread.");
+                new RuntimeException("Disable background test thread.").printStackTrace();
                 mThreadEnabled = false;
                 mAutoThread.interrupt();
                 mAutoThread.join(100);
@@ -198,7 +192,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
 
-        String subjectText = "OboeTester " + mActivity.getTestName() + " result " + getTimestampString();
+        String subjectText = "OboeTester-" + mActivity.getTestName()
+                + "-result-" + getTimestampString();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
 
         String shareBody = mAutoTextView.getText().toString();
@@ -213,6 +208,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         log("=== STARTED at " + new Date());
         log(Build.MANUFACTURER + " " + Build.PRODUCT);
         log(Build.DISPLAY);
+        log(MainActivity.getVersiontext());
         mFailedSummary = new StringBuffer();
         mSummary = new StringBuffer();
         appendFailedSummary("Summary\n");
@@ -221,22 +217,30 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mFailCount = 0;
         try {
             mActivity.runTest();
+            log("Tests finished without exception.");
+        } catch(Exception e) {
+            log("EXCEPTION: " + e.getMessage());
         } finally {
             mActivity.stopTest();
             if (mThreadEnabled) {
                 log("\n==== SUMMARY ========");
                 log(mSummary.toString());
                 if (mFailCount > 0) {
-                    log(mPassCount + " passed. " + mFailCount + " failed.");
+                    int skipped = mTestCount - (mPassCount + mFailCount);
                     log("These tests FAILED:");
                     log(mFailedSummary.toString());
+                    log("------------");
+                    log(mPassCount + " passed. "
+                            + mFailCount + " failed. "
+                            + skipped + " skipped. ");
                 } else {
                     log("All tests PASSED.");
                 }
                 log("== FINISHED at " + new Date());
             } else {
-                log("== TEST MANUALLY STOPPED ==");
+                log("== TEST STOPPED ==");
             }
+            mCachedTextView.flush();
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

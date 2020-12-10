@@ -24,11 +24,12 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
     protected static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
-    private static final int DEFAULT_GAP_MILLIS = 400; // Run time for each test.
+    private static final int DEFAULT_GAP_MILLIS = 200; // Idle time between each test.
     private static final String TEXT_SKIP = "SKIP";
     public static final String TEXT_PASS = "PASS";
     public static final String TEXT_FAIL = "FAIL !!!!";
 
+    protected int mOnlyRunTest = -1; // set to test index for single run, -1 for all
     protected int mDurationSeconds = DEFAULT_DURATION_SECONDS;
     private int mGapMillis = DEFAULT_GAP_MILLIS;
 
@@ -46,39 +47,46 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.log(text);
     }
 
-    private void appendFailedSummary(String text) {
+    protected void appendFailedSummary(String text) {
         mAutomatedTestRunner.appendFailedSummary(text);
     }
-    public void appendSummary(String text) {
+
+    protected void appendSummary(String text) {
         mAutomatedTestRunner.appendSummary(text);
     }
 
-
-    // This should only be called from UI events such as onStop or a button press.
     @Override
     public void onStopTest() {
         mAutomatedTestRunner.stopTest();
     }
 
-    @Override
-    public void stopAudioTest() {
-        super.stopAudioTest();
-        mAutomatedTestRunner.stopTest();
-    }
-
     protected String getConfigText(StreamConfiguration config) {
-        return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
-                + ", ID = " + config.getDeviceId()
-                + ", SR = " + config.getSampleRate()
+        int channel = (config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT)
+                ? getOutputChannel() : getInputChannel();
+        return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "INP")
+                + (config.isMMap() ? "-M" : "-L")
+                + ", ID = " + String.format("%2d", config.getDeviceId())
+                + ", SR = " + String.format("%5d", config.getSampleRate())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
-                + ", ch = " + config.getChannelCount();
+                + ", ch = " + config.getChannelCount() + "[" + channel + "]";
     }
 
+    public final static int TEST_RESULT_FAILED = -2;
+    public final static int TEST_RESULT_WARNING = -1;
+    public final static int TEST_RESULT_SKIPPED = 0;
+    public final static int TEST_RESULT_PASSED = 1;
+
     // Run test based on the requested input/output configurations.
-    protected void testConfigurations() throws InterruptedException {
+    protected int testConfigurations() throws InterruptedException {
+        int result = TEST_RESULT_SKIPPED;
         mAutomatedTestRunner.incrementTestCount();
+        log("========================== #" + mAutomatedTestRunner.getTestCount());
+        if ((mOnlyRunTest >= 0) && (mAutomatedTestRunner.getTestCount() != mOnlyRunTest)) {
+            log("mOnlyRunTest = " + mOnlyRunTest + "\n");
+            return result;
+        }
 
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -86,41 +94,43 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
 
-        log("========================== #" + mAutomatedTestRunner.getTestCount());
         log("Requested:");
-        log(getConfigText(requestedInConfig));
-        log(getConfigText(requestedOutConfig));
+        log("  " + getConfigText(requestedInConfig));
+        log("  " + getConfigText(requestedOutConfig));
 
-        // Give previous stream time to close and release resources. Avoid race conditions.
-        Thread.sleep(1000);
         boolean openFailed = false;
         try {
             super.startAudioTest(); // this will fill in actualConfig
             log("Actual:");
-            log(getConfigText(actualInConfig));
-            log(getConfigText(actualOutConfig));
+            log("  " + getConfigText(actualInConfig));
+            log("  " + getConfigText(actualOutConfig));
             // Set output size to a level that will avoid glitches.
             AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
             int sizeFrames = stream.getBufferCapacityInFrames() / 2;
             stream.setBufferSizeInFrames(sizeFrames);
-        } catch (IOException e) {
+        } catch (Exception e) {
             openFailed = true;
             log(e.getMessage());
         }
 
         // The test would only be worth running if we got the configuration we requested on input or output.
-        boolean valid = true;
-        // No point running the test if we don't get the sharing mode we requested.
-        if (!openFailed && actualInConfig.getSharingMode() != requestedInConfig.getSharingMode()
-                && actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
-            log("did not get requested sharing mode");
-            valid = false;
-        }
-        // We don't skip based on performance mode because if you request LOW_LATENCY you might
-        // get a smaller burst than if you request NONE.
-
-        if (!openFailed && valid) {
-            Thread.sleep(mDurationSeconds * 1000);
+        String skipReason = shouldTestBeSkipped();
+        boolean skipped = skipReason.length() > 0;
+        boolean valid = !openFailed && !skipped;
+        if (valid) {
+            // Check for early return until we reach full duration.
+            long now = System.currentTimeMillis();
+            long startedAt = now;
+            long endTime = System.currentTimeMillis() + (mDurationSeconds * 1000);
+            boolean finishedEarly = false;
+            while (now < endTime && !finishedEarly) {
+                Thread.sleep(100); // Let test run.
+                now = System.currentTimeMillis();
+                finishedEarly = isFinishedEarly();
+                if (finishedEarly) {
+                    log("Finished early after " + (now - startedAt) + " msec.");
+                }
+            }
         }
         int inXRuns = 0;
         int outXRuns = 0;
@@ -133,40 +143,64 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             super.stopAudioTest();
         }
 
-        if (valid) {
-            if (openFailed) {
-                appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                appendFailedSummary(getConfigText(requestedInConfig) + "\n");
-                appendFailedSummary(getConfigText(requestedOutConfig) + "\n");
-                appendFailedSummary("Open failed!\n");
-                mAutomatedTestRunner.incrementFailCount();
-            } else {
-                log("Result:");
-                String reason = didTestPass();
-                boolean passed = reason.length() == 0;
-
-                String resultText = getShortReport();
-                resultText += ", xruns = " + inXRuns + "/" + outXRuns;
-                resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
-                resultText += reason;
-                log(resultText);
-                if (!passed) {
-                    appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
-                    appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
-                    appendFailedSummary("    " + resultText + "\n");
-                    mAutomatedTestRunner.incrementFailCount();
-                } else {
-                    mAutomatedTestRunner.incrementPassCount();
-                }
-            }
+        if (openFailed) {
+            appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+            appendFailedSummary(getConfigText(requestedInConfig) + "\n");
+            appendFailedSummary(getConfigText(requestedOutConfig) + "\n");
+            appendFailedSummary("Open failed!\n");
+            mAutomatedTestRunner.incrementFailCount();
+        } else if (skipped) {
+            log(TEXT_SKIP + " - " + skipReason);
         } else {
-            log(TEXT_SKIP);
+            log("Result:");
+            String reason = didTestFail();
+            boolean passed = reason.length() == 0;
+
+            String resultText = getShortReport();
+            resultText += ", xruns = " + inXRuns + "/" + outXRuns;
+            resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+            resultText += reason;
+            log("  " + resultText);
+            if (!passed) {
+                appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
+                appendFailedSummary("  " + getConfigText(actualOutConfig) + "\n");
+                appendFailedSummary("    " + resultText + "\n");
+                mAutomatedTestRunner.incrementFailCount();
+                result = TEST_RESULT_FAILED;
+            } else {
+                mAutomatedTestRunner.incrementPassCount();
+                result = TEST_RESULT_PASSED;
+            }
         }
+
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
+        return result;
     }
 
-    public String didTestPass() {
+    protected boolean isFinishedEarly() {
+        return false;
+    }
+
+    protected String shouldTestBeSkipped() {
+        String why = "";
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
+        StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
+        // No point running the test if we don't get the sharing mode we requested.
+        if (actualInConfig.getSharingMode() != requestedInConfig.getSharingMode()
+                || actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
+            log("Did not get requested sharing mode.");
+            why += "share";
+        }
+        // We don't skip based on performance mode because if you request LOW_LATENCY you might
+        // get a smaller burst than if you request NONE.
+        return why;
+    }
+
+    public String didTestFail() {
         String why = "";
         if (getMaxSecondsWithNoGlitch() <= (mDurationSeconds - SETUP_TIME_SECONDS)) {
             why += ", glitch";
