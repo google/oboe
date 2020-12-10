@@ -177,17 +177,16 @@ public:
                 mFramesAccumulated++;
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
-                    double phaseOffset = 0.0;
-                    setMagnitude(calculateMagnitude(&phaseOffset));
+                    setMagnitude(calculateMagnitudePhase(&mPhaseOffset));
 //                    ALOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
-                        if (abs(phaseOffset) < kMaxPhaseError) {
+                        if (abs(mPhaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;
 //                            ALOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
                         }
                         // Adjust mInputPhase to match measured phase
-                        mInputPhase += phaseOffset;
+                        mInputPhase += mPhaseOffset;
                     }
                     resetAccumulator();
                 }
@@ -212,16 +211,15 @@ public:
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
                     // Must be a multiple of the period or the calculation will not be accurate.
-                    double phaseOffset = 0.0;
                     if (transformSample(sample, mInputPhase)) {
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         resetAccumulator();
 
-                        if (abs(phaseOffset) > kMaxPhaseError) {
+                        if (abs(mPhaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
-                            ALOGD("phase glitch detected, phaseOffset = %g", phaseOffset);
+                            ALOGD("phase glitch detected, phaseOffset = %g", mPhaseOffset);
                         } else if (mMagnitude < mThreshold) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();

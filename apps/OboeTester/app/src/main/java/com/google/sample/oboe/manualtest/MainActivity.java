@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     private Bundle mBundleFromIntent;
     private BroadcastReceiver mScoStateReceiver;
     private CheckBox mWorkaroundsCheckBox;
+    private static String mVersionText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +97,9 @@ public class MainActivity extends Activity {
             int oboeMajor = (oboeVersion >> 24) & 0xFF;
             int oboeMinor = (oboeVersion >> 16) & 0xFF;
             int oboePatch = oboeVersion & 0xFF;
-            mVersionTextView.setText("Test v (" + pinfo.versionCode + ") " + pinfo.versionName
-                    + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch);
+            mVersionText = "Test v (" + pinfo.versionCode + ") " + pinfo.versionName
+                    + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch;
+            mVersionTextView.setText(mVersionText);
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
         }
@@ -125,6 +127,10 @@ public class MainActivity extends Activity {
         };
 
         saveIntentBundleForLaterProcessing(getIntent());
+    }
+
+    public static String getVersiontext() {
+        return mVersionText;
     }
 
     private void registerScoStateReceiver() {

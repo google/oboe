@@ -101,7 +101,7 @@ public:
      * signal that matches that component.
      * The phase will be between -PI and +PI.
      */
-    double calculateMagnitude(double *phasePtr = nullptr) {
+    double calculateMagnitudePhase(double *phasePtr = nullptr) {
         if (mFramesAccumulated == 0) {
             return 0.0;
         }
@@ -125,7 +125,7 @@ public:
         // Must be a multiple of the period or the calculation will not be accurate.
         if (mFramesAccumulated == mSinePeriod) {
             const double coefficient = 0.1;
-            double magnitude = calculateMagnitude(&mPhaseOffset);
+            double magnitude = calculateMagnitudePhase(&mPhaseOffset);
             // One pole averaging filter.
             setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
             return true;

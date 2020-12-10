@@ -612,8 +612,14 @@ Java_com_google_sample_oboe_manualtest_GlitchActivity_getPeakAmplitude(JNIEnv *e
 
 JNIEXPORT jdouble JNICALL
 Java_com_google_sample_oboe_manualtest_TestDataPathsActivity_getMagnitude(JNIEnv *env,
-                                                                       jobject instance) {
+                                                                          jobject instance) {
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMagnitude();
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_google_sample_oboe_manualtest_TestDataPathsActivity_getMaxMagnitude(JNIEnv *env,
+                                                                          jobject instance) {
+    return engine.mActivityDataPath.getDataPathAnalyzer()->getMaxMagnitude();
 }
 
 JNIEXPORT jdouble JNICALL
