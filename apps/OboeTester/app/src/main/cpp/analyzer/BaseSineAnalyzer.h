@@ -58,12 +58,32 @@ public:
         mInputChannel = inputChannel;
     }
 
+    int getInputChannel() const {
+        return mInputChannel;
+    }
+
     void setOutputChannel(int outputChannel) {
         mOutputChannel = outputChannel;
     }
 
-    double getOutputChannel() const {
+    int getOutputChannel() const {
         return mOutputChannel;
+    }
+
+    void setNoiseAmplitude(double noiseAmplitude) {
+        mNoiseAmplitude = noiseAmplitude;
+    }
+
+    double getNoiseAmplitude() const {
+        return mNoiseAmplitude;
+    }
+
+    double getTolerance() {
+        return mTolerance;
+    }
+
+    void setTolerance(double tolerance) {
+        mTolerance = tolerance;
     }
 
     // advance and wrap phase
@@ -85,7 +105,7 @@ public:
             float sinOut = sinf(mOutputPhase);
             incrementOutputPhase();
             output = (sinOut * mOutputAmplitude)
-                     + (mWhiteNoise.nextRandomDouble() * kNoiseAmplitude);
+                     + (mWhiteNoise.nextRandomDouble() * mNoiseAmplitude);
             // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  mPhaseIncrement);
         }
         for (int i = 0; i < channelCount; i++) {
@@ -116,7 +136,6 @@ public:
     }
 
     bool transformSample(float sample, float referencePhase) {
-
         // Track incoming signal and slowly adjust magnitude to account
         // for drift in the DRC or AGC.
         mSinAccumulator += sample * sinf(referencePhase);
@@ -155,9 +174,9 @@ public:
     }
 
 protected:
-    static constexpr int kTargetGlitchFrequency = 607;
+    static constexpr int32_t kTargetGlitchFrequency = 1000;
 
-    int     mSinePeriod = 1; // this will be set before use
+    int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
     double  mPhaseIncrement = 0.0;
     double  mOutputPhase = 0.0;
@@ -168,15 +187,17 @@ protected:
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;
     double  mCosAccumulator = 0.0;
-    float   mTolerance = 0.10; // scaled from 0.0 to 1.0
     double  mScaledTolerance = 0.0;
-    int32_t mInputChannel = 0;
-    int32_t mOutputChannel = 0;
-
-    static constexpr float kNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
-    PseudoRandom  mWhiteNoise;
 
     InfiniteRecording<float> mInfiniteRecording;
+
+private:
+    int32_t mInputChannel = 0;
+    int32_t mOutputChannel = 0;
+    float   mTolerance = 0.10; // scaled from 0.0 to 1.0
+
+    float mNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
+    PseudoRandom  mWhiteNoise;
 };
 
 #endif //ANALYZER_BASE_SINE_ANALYZER_H
