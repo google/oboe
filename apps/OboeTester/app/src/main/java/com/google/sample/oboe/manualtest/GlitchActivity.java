@@ -326,6 +326,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
     // Called on UI thread
     public void onStartAudioTest(View view) throws IOException {
+        openAudio();
         startAudioTest();
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
@@ -334,7 +335,6 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public void startAudioTest() throws IOException {
-        openAudio();
         startAudio();
         mGlitchSniffer.startSniffer();
         onTestBegan();
