@@ -79,10 +79,10 @@ public:
 
     virtual ~ActivityContext() = default;
 
-    oboe::AudioStream *getStream(int32_t streamIndex) {
+    std::shared_ptr<oboe::AudioStream> getStream(int32_t streamIndex) {
         auto it = mOboeStreams.find(streamIndex);
         if (it != mOboeStreams.end()) {
-            return it->second.get();
+            return it->second;
         } else {
             return nullptr;
         }
@@ -173,7 +173,7 @@ public:
     }
 
     oboe::Result getLastErrorCallbackResult() {
-        oboe::AudioStream *stream = getOutputStream();
+        std::shared_ptr<oboe::AudioStream> stream = getOutputStream();
         if (stream == nullptr) {
             stream = getInputStream();
         }
@@ -196,8 +196,8 @@ public:
     static int    callbackSize;
 
 protected:
-    oboe::AudioStream *getInputStream();
-    oboe::AudioStream *getOutputStream();
+    std::shared_ptr<oboe::AudioStream> getInputStream();
+    std::shared_ptr<oboe::AudioStream> getOutputStream();
     int32_t allocateStreamIndex();
     void freeStreamIndex(int32_t streamIndex);
 
@@ -567,12 +567,12 @@ public:
     void close(int32_t streamIndex) override;
 
     oboe::Result startStreams() override {
-        oboe::AudioStream *outputStream = getOutputStream();
+        std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
         if (outputStream) {
             return outputStream->start();
         }
 
-        oboe::AudioStream *inputStream = getInputStream();
+        std::shared_ptr<oboe::AudioStream> inputStream = getInputStream();
         if (inputStream) {
             return inputStream->start();
         }
