@@ -158,7 +158,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
     }
 
     public void startAudioTest() throws IOException {
-        openAudio();
         startAudio();
     }
 
@@ -248,7 +247,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
         boolean openFailed = false;
         AudioStreamBase stream = null;
         try {
-            startAudioTest(); // this will fill in actualConfig
+            openAudio();
             log("Actual:");
             actualConfigText = getConfigText(actualConfig)
                     + ", " + (actualConfig.isMMap() ? "MMAP" : "Legacy");
@@ -276,6 +275,16 @@ public class TestDisconnectActivity extends TestAudioActivity {
             if (actualConfig.getNativeApi() == StreamConfiguration.NATIVE_API_OPENSLES) {
                 log("OpenSL ES does not support automatic disconnect");
                 valid = false;
+            }
+        }
+
+        if (!openFailed && valid) {
+            try {
+                startAudioTest();
+            } catch (IOException e) {
+                e.printStackTrace();
+                valid = false;
+                log(e.getMessage());
             }
         }
 

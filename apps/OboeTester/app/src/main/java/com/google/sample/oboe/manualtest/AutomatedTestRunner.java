@@ -141,6 +141,11 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mCachedTextView.append(text + "\n");
     }
 
+    // Flush any logs that are stuck in the cache.
+    public void flushLog() {
+        mCachedTextView.flush();
+    }
+
     private void logClear() {
         mCachedTextView.clear();
     }
@@ -240,7 +245,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             } else {
                 log("== TEST STOPPED ==");
             }
-            mCachedTextView.flush();
+            flushLog();
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

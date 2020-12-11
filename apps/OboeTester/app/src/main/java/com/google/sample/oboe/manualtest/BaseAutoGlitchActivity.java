@@ -100,7 +100,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
         boolean openFailed = false;
         try {
-            super.startAudioTest(); // this will fill in actualConfig
+            openAudio(); // this will fill in actualConfig
             log("Actual:");
             log("  " + getConfigText(actualInConfig));
             log("  " + getConfigText(actualOutConfig));
@@ -117,6 +117,17 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         String skipReason = shouldTestBeSkipped();
         boolean skipped = skipReason.length() > 0;
         boolean valid = !openFailed && !skipped;
+
+        if (valid) {
+            try {
+                startAudioTest();
+            } catch (IOException e) {
+                e.printStackTrace();
+                valid = false;
+                log(e.getMessage());
+            }
+        }
+
         if (valid) {
             // Check for early return until we reach full duration.
             long now = System.currentTimeMillis();
@@ -173,6 +184,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 result = TEST_RESULT_PASSED;
             }
         }
+        mAutomatedTestRunner.flushLog();
 
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
