@@ -36,7 +36,10 @@
 class DataPathAnalyzer : public BaseSineAnalyzer {
 public:
 
-    DataPathAnalyzer() : BaseSineAnalyzer() {}
+    DataPathAnalyzer() : BaseSineAnalyzer() {
+        // Add a little bit of noise to reduce blockage by speaker protection and DRC.
+        setNoiseAmplitude(0.05);
+    }
 
     /**
      * @param frameData contains microphone data with sine signal feedback
@@ -45,7 +48,7 @@ public:
     result_code processInputFrame(float *frameData, int /* channelCount */) override {
         result_code result = RESULT_OK;
 
-        float sample = frameData[mInputChannel];
+        float sample = frameData[getInputChannel()];
         mInfiniteRecording.write(sample);
 
         if (transformSample(sample, mOutputPhase)) {

@@ -46,14 +46,6 @@ public:
         return mPeakFollower.getLevel();
     }
 
-    double getTolerance() {
-        return mTolerance;
-    }
-
-    void setTolerance(double tolerance) {
-        mTolerance = tolerance;
-    }
-
     int32_t getGlitchCount() const {
         return mGlitchCount;
     }

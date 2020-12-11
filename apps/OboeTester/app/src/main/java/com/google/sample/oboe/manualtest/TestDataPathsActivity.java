@@ -45,7 +45,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private final static int TYPICAL_SAMPLE_RATE = 48000;
     private final static double FRAMES_PER_CYCLE = TYPICAL_SAMPLE_RATE / MAX_SINE_FREQUENCY;
     private final static double PHASE_PER_BIN = 2.0 * Math.PI / FRAMES_PER_CYCLE;
-    private final static double MAX_ALLOWED_JITTER = PHASE_PER_BIN;
+    private final static double MAX_ALLOWED_JITTER = 0.5 * PHASE_PER_BIN;
     // A coefficient of 0.0 is no filtering. 0.9999 is extreme low pass.
     private final static double JITTER_FILTER_COEFFICIENT = 0.8;
     private final static String MAGNITUDE_FORMAT = "%7.5f";
