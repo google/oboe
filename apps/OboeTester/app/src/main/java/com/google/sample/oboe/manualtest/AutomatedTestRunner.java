@@ -198,7 +198,9 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         sharingIntent.setType("text/plain");
 
         String subjectText = "OboeTester-" + mActivity.getTestName()
-                + "-result-" + getTimestampString();
+                + "-" + Build.MANUFACTURER
+                + "-" + Build.MODEL
+                + "-" + getTimestampString();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
 
         String shareBody = mAutoTextView.getText().toString();
@@ -211,7 +213,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     public void run() {
         logClear();
         log("=== STARTED at " + new Date());
-        log(Build.MANUFACTURER + " " + Build.PRODUCT);
+        log(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
         log(Build.DISPLAY);
         log(MainActivity.getVersiontext());
         mFailedSummary = new StringBuffer();

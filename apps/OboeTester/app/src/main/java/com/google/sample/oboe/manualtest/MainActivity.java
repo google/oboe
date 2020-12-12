@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
             int oboeMajor = (oboeVersion >> 24) & 0xFF;
             int oboeMinor = (oboeVersion >> 16) & 0xFF;
             int oboePatch = oboeVersion & 0xFF;
-            mVersionText = "Test v (" + pinfo.versionCode + ") " + pinfo.versionName
+            mVersionText = "OboeTester (" + pinfo.versionCode + ") v " + pinfo.versionName
                     + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch;
             mVersionTextView.setText(mVersionText);
         } catch (PackageManager.NameNotFoundException e) {
