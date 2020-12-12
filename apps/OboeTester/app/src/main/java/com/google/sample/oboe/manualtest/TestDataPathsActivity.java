@@ -62,6 +62,17 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     AudioManager   mAudioManager;
 
+    private static final int[] INPUT_PRESETS = {
+            // VOICE_RECOGNITION gets tested in testInputs()
+            // StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
+            StreamConfiguration.INPUT_PRESET_GENERIC,
+            StreamConfiguration.INPUT_PRESET_CAMCORDER,
+            // TODO Resolve issue with echo cancellation killing the signal.
+            // TODO StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+            StreamConfiguration.INPUT_PRESET_UNPROCESSED,
+            StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
+    };
+
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
 
@@ -157,15 +168,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         return String.format(MAGNITUDE_FORMAT, value);
     }
 
-    private static final int[] INPUT_PRESETS = {
-            StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-            StreamConfiguration.INPUT_PRESET_GENERIC,
-            StreamConfiguration.INPUT_PRESET_CAMCORDER,
-            StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-            StreamConfiguration.INPUT_PRESET_UNPROCESSED,
-            StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
-    };
-
     protected String getConfigText(StreamConfiguration config) {
         String text = super.getConfigText(config);
         if (config.getDirection() == StreamConfiguration.DIRECTION_INPUT) {
@@ -197,6 +199,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             why += ", outDev(" + requestedOutConfig.getDeviceId()
                     + "!=" + actualOutConfig.getDeviceId() + ")";
         }
+        if ((requestedInConfig.getInputPreset() != actualInConfig.getInputPreset())) {
+            why += ", inPre(" + requestedInConfig.getInputPreset()
+                    + "!=" + actualInConfig.getInputPreset() + ")";
+        }
         return why;
     }
 
@@ -220,12 +226,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         if (mPhaseJitter > MAX_ALLOWED_JITTER) {
             why += ", jitter";
         }
-//        if (requestedInConfig.getPerformanceMode() != actualInConfig.getPerformanceMode()) {
-//            why += ", inPerf";
-//        }
-//        if (requestedOutConfig.getPerformanceMode() != actualOutConfig.getPerformanceMode()) {
-//            why += ", outPerf";
-//        }
         return why;
     }
 
@@ -321,14 +321,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         for (int inputPreset : INPUT_PRESETS) {
             testPresetCombo(inputPreset);
         }
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-                1, 0, 2, 0);
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-                1, 0, 2, 1);
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-                2, 0, 2, 0);
-        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-                2, 0, 2, 1);
+// TODO Resolve issue with echo cancellation killing the signal.
+//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+//                1, 0, 2, 0);
+//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+//                1, 0, 2, 1);
+//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+//                2, 0, 2, 0);
+//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+//                2, 0, 2, 1);
     }
 
     void testInputDeviceCombo(int deviceId,
@@ -339,6 +340,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setupDeviceCombo(numInputChannels, inputChannel, numOutputChannels, 0);
 
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        requestedInConfig.setInputPreset(StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
         requestedInConfig.setDeviceId(deviceId);
         requestedInConfig.setMMap(mmapEnabled);
 
@@ -486,6 +488,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public void runTest() {
         try {
             mDurationSeconds = DURATION_SECONDS;
+
+            log("MIN_REQUIRED_MAGNITUDE = " + MIN_REQUIRED_MAGNITUDE);
+            log("MAX_ALLOWED_JITTER = " + MAX_ALLOWED_JITTER);
 
             testInputPresets();
             testInputDevices();
