@@ -61,6 +61,8 @@ void Game::stop(){
         delete mAudioStream;
         mAudioStream = nullptr;
     }
+
+    tearDownAudioSources();
 }
 
 void Game::tap(int64_t eventTimeAsUptime) {
@@ -149,6 +151,11 @@ DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, 
 
 void Game::onErrorAfterClose(AudioStream *oboeStream, Result error){
     LOGE("The audio stream was closed, please restart the game. Error: %s", convertToText(error));
+    if(error == oboe::Result::ErrorDisconnected){
+      stop();
+      load();
+    }
+    return;
 };
 
 /**
@@ -237,6 +244,14 @@ bool Game::setupAudioSources() {
     mMixer.addTrack(mClap.get());
     mMixer.addTrack(mBackingTrack.get());
 
+    return true;
+}
+
+bool Game::tearDownAudioSources() {
+
+    mClap.release();
+    mBackingTrack.release();
+    mMixer = Mixer();
     return true;
 }
 

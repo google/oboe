@@ -77,6 +77,7 @@ private:
     TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis);
     bool openStream();
     bool setupAudioSources();
+    bool tearDownAudioSources();
     void scheduleSongEvents();
 };
 
