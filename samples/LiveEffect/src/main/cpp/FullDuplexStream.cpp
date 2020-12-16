@@ -112,6 +112,8 @@ oboe::Result FullDuplexStream::stop() {
     if (mInputStream) {
         inputResult = mInputStream->requestStop();
     }
+    setOutputStream(nullptr);
+    setInputStream(nullptr);
     if (outputResult != oboe::Result::OK) {
         return outputResult;
     } else {
