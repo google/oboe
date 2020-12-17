@@ -285,14 +285,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         mMagnitude = -1.0;
         int result = testConfigurations();
-        String summary = getOneLineSummary()
-                + ", inPre = "
-                + StreamConfiguration.convertInputPresetToText(inputPreset)
-                + "\n";
-        appendSummary(summary);
-        if (result == TEST_RESULT_FAILED) {
-            if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
-                logFailed("Maybe sine wave blocked by Echo Cancellation!");
+        if (result != TEST_RESULT_SKIPPED) {
+            String summary = getOneLineSummary()
+                    + ", inPre = "
+                    + StreamConfiguration.convertInputPresetToText(inputPreset)
+                    + "\n";
+            appendSummary(summary);
+            if (result == TEST_RESULT_FAILED) {
+                if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
+                    logFailed("Maybe sine wave blocked by Echo Cancellation!");
+                }
             }
         }
     }
@@ -345,8 +347,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        testConfigurations();
-        appendSummary(getOneLineSummary() + "\n");
+        int result = testConfigurations();
+        if (result != TEST_RESULT_SKIPPED) {
+            appendSummary(getOneLineSummary() + "\n");
+        }
     }
 
     void testInputDeviceCombo(int deviceId,
@@ -410,17 +414,19 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         mMagnitude = -1.0;
         int result = testConfigurations();
-        appendSummary(getOneLineSummary() + "\n");
-        if (result == TEST_RESULT_FAILED) {
-            if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                    && numOutputChannels == 2
-                    && outputChannel == 1) {
-                logFailed("Maybe EARPIECE does not mix stereo to mono!");
-            }
-            if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
-                    && numOutputChannels == 2
-                    && outputChannel == 0) {
-                logFailed("Maybe SPEAKER_SAFE blocked channel 0!");
+        if (result != TEST_RESULT_SKIPPED) {
+            appendSummary(getOneLineSummary() + "\n");
+            if (result == TEST_RESULT_FAILED) {
+                if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                        && numOutputChannels == 2
+                        && outputChannel == 1) {
+                    logFailed("Maybe EARPIECE does not mix stereo to mono!");
+                }
+                if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
+                        && numOutputChannels == 2
+                        && outputChannel == 0) {
+                    logFailed("Maybe SPEAKER_SAFE blocked channel 0!");
+                }
             }
         }
     }
@@ -489,8 +495,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         try {
             mDurationSeconds = DURATION_SECONDS;
 
-            log("MIN_REQUIRED_MAGNITUDE = " + MIN_REQUIRED_MAGNITUDE);
-            log("MAX_ALLOWED_JITTER = " + MAX_ALLOWED_JITTER);
+            log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
+            log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
+            log("test.gap.msec = " + mGapMillis);
 
             testInputPresets();
             testInputDevices();

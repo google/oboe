@@ -80,6 +80,7 @@ abstract class TestAudioActivity extends Activity {
     private CheckBox mCallbackReturnStopBox;
     private int mSampleRate;
     private boolean mScoStarted;
+    private int mSingleTestIndex = -1;
 
     public String getTestName() {
         return "TestAudio";
@@ -172,6 +173,13 @@ abstract class TestAudioActivity extends Activity {
     }
 
     abstract int getActivityType();
+
+    public void setSingleTestIndex(int testIndex) {
+        mSingleTestIndex = testIndex;
+    }
+    public int getSingleTestIndex() {
+        return mSingleTestIndex;
+    }
 
     @Override
     protected void onStart() {
@@ -353,7 +361,11 @@ abstract class TestAudioActivity extends Activity {
 
     public void startAudio(View view) {
         Log.i(TAG, "startAudio() called =======================================");
-        startAudio();
+        try {
+            startAudio();
+        } catch (Exception e) {
+            showErrorToast(e.getMessage());
+        }
         keepScreenOn(true);
     }
 
@@ -459,10 +471,11 @@ abstract class TestAudioActivity extends Activity {
     protected native void setActivityType(int activityType);
     private native int getFramesPerCallback();
 
-    public void startAudio() {
+    public void startAudio() throws IOException {
         int result = startNative();
         if (result < 0) {
             showErrorToast("Start failed with " + result);
+            throw new IOException("startNative returned " + result);
         } else {
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
