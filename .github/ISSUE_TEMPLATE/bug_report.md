@@ -37,4 +37,4 @@ for p in \
 
 **Any additional context**
 
-If applicable, please attach a recording of the sound.
+If applicable, please attach a few seconds of an uncompressed recording of the sound in a WAV or AIFF file.
