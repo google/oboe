@@ -361,13 +361,24 @@ Your code can access the callback mechanism by implementing the virtual class
 `AudioStreamDataCallback`. The stream periodically executes `onAudioReady()` (the
 callback function) to acquire the data for its next burst.
 
+The total number of samples that you need to fill is numFrames * numChannels.
+
     class AudioEngine : AudioStreamDataCallback {
     public:
         DataCallbackResult AudioEngine::onAudioReady(
                 AudioStream *oboeStream,
                 void *audioData,
                 int32_t numFrames){
-            oscillator_->render(static_cast<float *>(audioData), numFrames);
+            // Fill the output buffer with random white noise.
+            const int numChannels = AAudioStream_getChannelCount(stream);
+            // This code assumes the format is AAUDIO_FORMAT_PCM_FLOAT.
+            float *output = (float *)audioData;
+            for (int frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                for (int channelIndex = 0; channelIndex < numChannels; channelIndex++) {
+                    float noise = (float)((drand48() - 0.5);
+                    *output++ = noise;
+                }
+            }
             return DataCallbackResult::Continue;
         }
 
@@ -377,14 +388,12 @@ callback function) to acquire the data for its next burst.
             streamBuilder.setDataCallback(this);
         }
     private:
-        // application data
-        Oscillator* oscillator_;
+        // application data goes here
     }
 
 
 Note that the callback must be registered on the stream with `setDataCallback`. Any
-application-specific data (such as `oscillator_` in this case)
-can be included within the class itself.
+application-specific data can be included within the class itself.
 
 The callback function should not perform a read or write on the stream that invoked it. If the callback belongs to an input stream, your code should process the data that is supplied in the audioData buffer (specified as the second argument). If the callback belongs to an output stream, your code should place data into the buffer.
 
