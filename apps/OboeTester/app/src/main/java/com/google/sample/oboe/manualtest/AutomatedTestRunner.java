@@ -28,12 +28,12 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private Button       mShareButton;
     private TextView     mAutoTextView;
     private TextView     mSingleTestIndex;
-    private TestAudioActivity  mActivity;
     private StringBuffer mFailedSummary;
     private StringBuffer mSummary;
     private int          mTestCount;
     private int          mPassCount;
     private int          mFailCount;
+    private TestAudioActivity  mActivity;
 
     private Thread            mAutoThread;
     private volatile boolean  mThreadEnabled;
@@ -256,18 +256,18 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                 log("\n==== SUMMARY ========");
                 log(mSummary.toString());
                 if (mFailCount > 0) {
-                    int skipped = mTestCount - (mPassCount + mFailCount);
                     log("These tests FAILED:");
                     log(mFailedSummary.toString());
                     log("------------");
-                    log(mPassCount + " passed. "
-                            + mFailCount + " failed. "
-                            + skipped + " skipped. ");
                 } else if (mPassCount > 0) {
                     log("All " + mPassCount + " tests PASSED.");
                 } else {
                     log("No tests were run!");
                 }
+                int skipped = mTestCount - (mPassCount + mFailCount);
+                log(mPassCount + " passed. "
+                        + mFailCount + " failed. "
+                        + skipped + " skipped. ");
                 log("== FINISHED at " + new Date());
             } else {
                 log("== TEST STOPPED ==");
