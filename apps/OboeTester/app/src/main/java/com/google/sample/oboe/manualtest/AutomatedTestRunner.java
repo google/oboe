@@ -27,6 +27,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private Button       mStopButton;
     private Button       mShareButton;
     private TextView     mAutoTextView;
+    private TextView     mSingleTestIndex;
     private TestAudioActivity  mActivity;
     private StringBuffer mFailedSummary;
     private StringBuffer mSummary;
@@ -34,8 +35,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private int          mPassCount;
     private int          mFailCount;
 
-    private Thread           mAutoThread;
-    private volatile boolean mThreadEnabled;
+    private Thread            mAutoThread;
+    private volatile boolean  mThreadEnabled;
     private CachedTextViewLog mCachedTextView;
 
     public AutomatedTestRunner(Context context) {
@@ -96,9 +97,12 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             @Override
             public void onClick(View v) {
                 shareResult();
+                mShareButton.setEnabled(true);
             }
         });
         mShareButton.setEnabled(false);
+
+        mSingleTestIndex = (TextView) findViewById(R.id.single_test_index);
 
         mAutoTextView = (TextView) findViewById(R.id.text_log);
         mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
@@ -171,7 +175,24 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         }
     }
 
+    private void updateTestIndex() {
+        CharSequence chars = mSingleTestIndex.getText();
+        String text = chars.toString();
+        int testIndex = -1;
+        String trimmed = chars.toString().trim();
+        if (trimmed.length() > 0) {
+            try {
+                testIndex = Integer.parseInt(text);
+            } catch (NumberFormatException e) {
+                mActivity.showErrorToast("Badly formated callback size: " + text);
+                mSingleTestIndex.setText("");
+            }
+        }
+        mActivity.setSingleTestIndex(testIndex);
+    }
+
     protected void startTest() {
+        updateTestIndex();
         updateStartStopButtons(true);
         startAutoThread();
     }
@@ -201,6 +222,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                 + "-" + Build.MANUFACTURER
                 + "-" + Build.MODEL
                 + "-" + getTimestampString();
+        subjectText = subjectText.replace(' ', '-');
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
 
         String shareBody = mAutoTextView.getText().toString();
@@ -213,9 +235,10 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     public void run() {
         logClear();
         log("=== STARTED at " + new Date());
+        log(mActivity.getTestName());
+        log(MainActivity.getVersiontext());
         log(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
         log(Build.DISPLAY);
-        log(MainActivity.getVersiontext());
         mFailedSummary = new StringBuffer();
         mSummary = new StringBuffer();
         appendFailedSummary("Summary\n");
@@ -240,8 +263,10 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                     log(mPassCount + " passed. "
                             + mFailCount + " failed. "
                             + skipped + " skipped. ");
+                } else if (mPassCount > 0) {
+                    log("All " + mPassCount + " tests PASSED.");
                 } else {
-                    log("All tests PASSED.");
+                    log("No tests were run!");
                 }
                 log("== FINISHED at " + new Date());
             } else {

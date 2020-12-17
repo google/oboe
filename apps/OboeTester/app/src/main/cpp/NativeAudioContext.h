@@ -538,6 +538,18 @@ public:
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
+    void configureForStart() override {
+        std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
+        int32_t capacityInFrames = outputStream->getBufferCapacityInFrames();
+        int32_t burstInFrames = outputStream->getFramesPerBurst();
+        int32_t capacityInBursts = capacityInFrames / burstInFrames;
+        int32_t sizeInBursts = std::max(2, capacityInBursts / 2);
+        // Set size of buffer to minimize underruns.
+        auto result = outputStream->setBufferSizeInFrames(sizeInBursts * burstInFrames);
+        LOGD("ActivityDataPath: %s() capacity = %d, burst = %d, size = %d",
+             __func__, capacityInFrames, burstInFrames, result.value());
+    }
+
     DataPathAnalyzer *getDataPathAnalyzer() {
         return &mDataPathAnalyzer;
     }

@@ -24,14 +24,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
     protected static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
-    private static final int DEFAULT_GAP_MILLIS = 200; // Idle time between each test.
+    private static final int DEFAULT_GAP_MILLIS = 100; // Idle time between each test.
     private static final String TEXT_SKIP = "SKIP";
     public static final String TEXT_PASS = "PASS";
     public static final String TEXT_FAIL = "FAIL !!!!";
 
-    protected int mOnlyRunTest = -1; // set to test index for single run, -1 for all
     protected int mDurationSeconds = DEFAULT_DURATION_SECONDS;
-    private int mGapMillis = DEFAULT_GAP_MILLIS;
+    protected int mGapMillis = DEFAULT_GAP_MILLIS;
 
     protected AutomatedTestRunner mAutomatedTestRunner;
 
@@ -82,11 +81,11 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected int testConfigurations() throws InterruptedException {
         int result = TEST_RESULT_SKIPPED;
         mAutomatedTestRunner.incrementTestCount();
-        log("========================== #" + mAutomatedTestRunner.getTestCount());
-        if ((mOnlyRunTest >= 0) && (mAutomatedTestRunner.getTestCount() != mOnlyRunTest)) {
-            log("mOnlyRunTest = " + mOnlyRunTest + "\n");
+        if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
             return result;
         }
+
+        log("========================== #" + mAutomatedTestRunner.getTestCount());
 
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -98,6 +97,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         log("  " + getConfigText(requestedInConfig));
         log("  " + getConfigText(requestedOutConfig));
 
+        String reason = "";
         boolean openFailed = false;
         try {
             openAudio(); // this will fill in actualConfig
@@ -111,22 +111,26 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         } catch (Exception e) {
             openFailed = true;
             log(e.getMessage());
+            reason = e.getMessage();
         }
 
         // The test would only be worth running if we got the configuration we requested on input or output.
         String skipReason = shouldTestBeSkipped();
         boolean skipped = skipReason.length() > 0;
         boolean valid = !openFailed && !skipped;
-
+        boolean startFailed = false;
         if (valid) {
             try {
                 startAudioTest();
             } catch (IOException e) {
                 e.printStackTrace();
                 valid = false;
+                startFailed = true;
                 log(e.getMessage());
+                reason = e.getMessage();
             }
         }
+        mAutomatedTestRunner.flushLog();
 
         if (valid) {
             // Check for early return until we reach full duration.
@@ -154,17 +158,17 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             super.stopAudioTest();
         }
 
-        if (openFailed) {
+        if (openFailed || startFailed) {
             appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
             appendFailedSummary(getConfigText(requestedInConfig) + "\n");
             appendFailedSummary(getConfigText(requestedOutConfig) + "\n");
-            appendFailedSummary("Open failed!\n");
+            appendFailedSummary(reason + "\n");
             mAutomatedTestRunner.incrementFailCount();
         } else if (skipped) {
             log(TEXT_SKIP + " - " + skipReason);
         } else {
             log("Result:");
-            String reason = didTestFail();
+            reason += didTestFail();
             boolean passed = reason.length() == 0;
 
             String resultText = getShortReport();

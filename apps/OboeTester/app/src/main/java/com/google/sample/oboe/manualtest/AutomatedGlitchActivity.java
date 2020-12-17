@@ -15,6 +15,9 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
             StreamConfiguration.PERFORMANCE_MODE_NONE
     };
     private static final int[] SAMPLE_RATES = { 48000, 44100, 16000 };
+    private static final int MONO = 1;
+    private static final int STEREO = 2;
+    private static final int UNSPECIFIED = 0;
 
     private class DurationSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -82,10 +85,10 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
                                    int sampleRate) throws InterruptedException {
         testConfiguration(performanceMode,
                 sharingMode,
-                sampleRate, 1, 2);
+                sampleRate, MONO, STEREO);
         testConfiguration(performanceMode,
                 sharingMode,
-                sampleRate, 2, 1);
+                sampleRate, STEREO, MONO);
     }
 
     @Override
@@ -93,7 +96,7 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
         try {
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                     StreamConfiguration.SHARING_MODE_EXCLUSIVE,
-                    0);
+                    UNSPECIFIED);
 
             for (int perfMode : PERFORMANCE_MODES) {
                 for (int sampleRate : SAMPLE_RATES) {

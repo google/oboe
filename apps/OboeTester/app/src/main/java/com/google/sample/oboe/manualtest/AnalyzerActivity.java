@@ -169,7 +169,7 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
-    public void startAudio() {
+    public void startAudio() throws IOException {
         if (mBufferSizeView != null && mBufferSizeView.isEnabled()) {
             mBufferSizeView.updateBufferSize();
         }

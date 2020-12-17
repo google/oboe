@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
 
 
     private Spinner mModeSpinner;
-    private TextView mCallbackSizeTextView;
+    private TextView mCallbackSizeEditor;
     protected TextView mDeviceView;
     private TextView mVersionTextView;
     private TextView mBuildTextView;
@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
         logScreenSize();
 
         mVersionTextView = (TextView) findViewById(R.id.versionText);
-        mCallbackSizeTextView = (TextView) findViewById(R.id.callbackSize);
+        mCallbackSizeEditor = (TextView) findViewById(R.id.callbackSize);
 
         mDeviceView = (TextView) findViewById(R.id.deviceView);
         updateNativeAudioUI();
@@ -272,14 +272,14 @@ public class MainActivity extends Activity {
     }
 
     private void updateCallbackSize() {
-        CharSequence chars = mCallbackSizeTextView.getText();
+        CharSequence chars = mCallbackSizeEditor.getText();
         String text = chars.toString();
         int callbackSize = 0;
         try {
             callbackSize = Integer.parseInt(text);
         } catch (NumberFormatException e) {
             showErrorToast("Badly formated callback size: " + text);
-            mCallbackSizeTextView.setText("0");
+            mCallbackSizeEditor.setText("0");
         }
         OboeAudioStream.setCallbackSize(callbackSize);
     }
