@@ -24,7 +24,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     private static final int SETUP_TIME_SECONDS = 4; // Time for the stream to settle.
     protected static final int DEFAULT_DURATION_SECONDS = 8; // Run time for each test.
-    private static final int DEFAULT_GAP_MILLIS = 100; // Idle time between each test.
+    private static final int DEFAULT_GAP_MILLIS = 400; // Idle time between each test.
     private static final String TEXT_SKIP = "SKIP";
     public static final String TEXT_PASS = "PASS";
     public static final String TEXT_FAIL = "FAIL !!!!";
