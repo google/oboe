@@ -375,7 +375,7 @@ The total number of samples that you need to fill is numFrames * numChannels.
             float *output = (float *)audioData;
             for (int frameIndex = 0; frameIndex < numFrames; frameIndex++) {
                 for (int channelIndex = 0; channelIndex < numChannels; channelIndex++) {
-                    float noise = (float)((drand48() - 0.5);
+                    float noise = (float)(drand48() - 0.5);
                     *output++ = noise;
                 }
             }
