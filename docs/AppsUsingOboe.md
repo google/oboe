@@ -6,6 +6,7 @@ your project name and Play Store URL.
 
 | Name | Description | Publisher | Notes |
 |:--|:--|:--|:--|
+| [4Beats](https://play.google.com/store/apps/details?id=com.fourbeats) | Easy song creation tool | Code sign | 44100 Hz so no MMAP |
 | [Audio Evolution Mobile Studio](https://play.google.com/store/apps/details?id=com.extreamsd.aemobile) | Digital Audio Workstation app | eXtream Software Development | Oboe implemented in version 4.9.8.1 |
 | [AudioLab - Audio Editor Recorder & Ringtone Maker](https://play.google.com/store/apps/details?id=com.hitrolab.audioeditor) | THE ONLY AUDIO EDITOR APP YOU WILL EVER NEED | HitroLab | Using Oboe in AudioLab Karaoke offline feature to record audio with the lowest latency |
 | BeatScratch [Free](https://play.google.com/store/apps/details?id=com.jonlatane.beatpad.free), [Pro](https://play.google.com/store/apps/details?id=com.jonlatane.beatpad) | 3-instrument MIDI controller, sequencer, and 5-part musical notepad | Jon Latané | Using FluidSynth's Oboe Driver |
