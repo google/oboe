@@ -52,10 +52,11 @@
         <Button
             android:id="@+id/button_measure"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:onClick="onMeasure"
-            android:text="@string/measure" />
+            android:text="@string/measure"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/button_average"
@@ -63,7 +64,8 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:onClick="onAverage"
-            android:text="@string/average" />
+            android:text="@string/average"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/button_cancel"
@@ -72,7 +74,8 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:onClick="onCancel"
-            android:text="@string/cancel" />
+            android:text="@string/cancel"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/button_share"
@@ -81,7 +84,7 @@
             android:layout_height="wrap_content"
             android:onClick="onShareFile"
             android:text="@string/share"
-            />
+            android:textSize="12sp" />
     </LinearLayout>
 
     <TextView
@@ -89,7 +92,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:lines="16"
-        android:text="@string/use_loopback"
+        android:text="@string/loopback_instructions_latency"
         android:textSize="18sp"
         android:textStyle="bold" />
 

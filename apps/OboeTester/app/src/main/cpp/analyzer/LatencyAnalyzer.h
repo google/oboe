@@ -49,8 +49,8 @@
 #define LOOPBACK_RESULT_TAG  "RESULT: "
 
 static constexpr int32_t kDefaultSampleRate = 48000;
-static constexpr int32_t kMillisPerSecond   = 1000;
-static constexpr int32_t kMaxLatencyMillis  = 700;  // arbitrary and generous
+static constexpr int32_t kMillisPerSecond   = 1000;  // by definition
+static constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
 static constexpr double  kMinimumConfidence = 0.2;
 
 struct LatencyReport {
