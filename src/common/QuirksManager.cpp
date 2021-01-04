@@ -20,10 +20,6 @@
 #include "OboeDebug.h"
 #include "QuirksManager.h"
 
-#ifndef __ANDROID_API_R__
-#define __ANDROID_API_R__ 30
-#endif
-
 using namespace oboe;
 
 int32_t QuirksManager::DeviceQuirks::clipBufferSize(AudioStream &stream,
