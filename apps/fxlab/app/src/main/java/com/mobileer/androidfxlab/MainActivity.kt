@@ -111,11 +111,11 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         // Shutdown Engine
         NativeInterface.destroyAudioEngine()
-
         super.onPause()
     }
 
     override fun onResume() {
+        super.onResume()
         // Startup Engine
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
@@ -123,7 +123,6 @@ class MainActivity : AppCompatActivity() {
             NativeInterface.createAudioEngine()
             NativeInterface.enable(isAudioEnabled)
         }
-        super.onResume()
     }
 
     override fun onRequestPermissionsResult(
