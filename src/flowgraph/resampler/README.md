@@ -1,11 +1,19 @@
 # Sample Rate Converter
 
 This folder contains a sample rate converter, or "resampler".
-It is part of [Oboe](https://github.com/google/oboe) but has no dependencies on Oboe.
-So the contents of this folder can be used outside of Oboe.
 
 The converter is based on a sinc function that has been windowed by a hyperbolic cosine.
 We found this had fewer artifacts than the more traditional Kaiser window.
+
+## Building the Resampler
+
+It is part of [Oboe](https://github.com/google/oboe) but has no dependencies on Oboe.
+So the contents of this folder can be used outside of Oboe.
+
+To build it for use outside of Oboe:
+
+1. Copy the "resampler" folder to a folder in your project that is in the include path.
+2. Add all of the \*.cpp files in the resampler folder to your project IDE or Makefile.
 
 ## Creating a Resampler
 
