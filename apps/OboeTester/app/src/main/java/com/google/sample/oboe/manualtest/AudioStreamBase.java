@@ -25,6 +25,7 @@ public abstract class AudioStreamBase {
 
     private StreamConfiguration mRequestedStreamConfiguration;
     private StreamConfiguration mActualStreamConfiguration;
+    AudioStreamBase.DoubleStatistics mLatencyStatistics;
 
     private int mBufferSizeInFrames;
 
@@ -36,9 +37,38 @@ public abstract class AudioStreamBase {
         status.framesWritten = getFramesWritten();
         status.callbackCount = getCallbackCount();
         status.latency = getLatency();
+        mLatencyStatistics.add(status.latency);
         status.cpuLoad = getCpuLoad();
         status.state = getState();
         return status;
+    }
+
+    public DoubleStatistics getLatencyStatistics() {
+        return mLatencyStatistics;
+    }
+
+    public static class DoubleStatistics {
+        private double sum;
+        private int count;
+        private double minimum = Double.MAX_VALUE;
+        private double maximum = Double.MIN_VALUE;
+
+        void add(double latency) {
+            if (latency <= 0.0) return;
+            sum += latency;
+            count++;
+            minimum = Math.min(latency, minimum);
+            maximum = Math.max(latency, maximum);
+        }
+
+        double getAverage() {
+            return sum / count;
+        }
+
+        public String dump() {
+            if (count == 0) return "?";
+            return String.format("%3.1f/%3.1f/%3.1f ms", minimum, getAverage(), maximum);
+        }
     }
 
     /**
@@ -65,15 +95,11 @@ public abstract class AudioStreamBase {
             buffer.append("frames written " + framesWritten + " - read " + framesRead
                     + " = " + (framesWritten - framesRead) + "\n");
 
-            String latencyText = (latency < 0.0)
-                    ? "?"
-                    : String.format("%6.1f ms", latency);
             String cpuLoadText = String.format("%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
                     convertStateToString(state)
                     + ", #cb=" + callbackCount
                     + ", f/cb=" + String.format("%3d", framesPerCallback)
-                    + ", latnc = " + latencyText
                     + ", " + cpuLoadText + " cpu"
                     + "\n");
 
@@ -116,6 +142,7 @@ public abstract class AudioStreamBase {
         mRequestedStreamConfiguration = requestedConfiguration;
         mActualStreamConfiguration = actualConfiguration;
         mBufferSizeInFrames = bufferSizeInFrames;
+        mLatencyStatistics = new AudioStreamBase.DoubleStatistics();
     }
 
     public abstract boolean isInput();
@@ -173,6 +200,5 @@ public abstract class AudioStreamBase {
     public void setWorkload(double workload) {}
 
     public abstract int getXRunCount();
-
 
 }

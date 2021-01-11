@@ -31,11 +31,7 @@ import android.widget.CheckBox;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Base class for other Activities.
@@ -110,11 +106,15 @@ abstract class TestAudioActivity extends Activity {
                 boolean gotViews = false;
                 for (StreamContext streamContext : mStreamContexts) {
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
+                    AudioStreamBase.DoubleStatistics latencyStatistics =
+                            streamContext.tester.getCurrentAudioStream().getLatencyStatistics();
                     if (streamContext.configurationView != null) {
                         // Handler runs this on the main UI thread.
                         int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
                         status.framesPerCallback = getFramesPerCallback();
-                        final String msg = status.dump(framesPerBurst);
+                        String msg = "";
+                        msg += "timestamp.latency = " + latencyStatistics.dump() + "\n";
+                        msg += status.dump(framesPerBurst);
                         streamContext.configurationView.setStatusText(msg);
                         updateStreamDisplay();
                         gotViews = true;

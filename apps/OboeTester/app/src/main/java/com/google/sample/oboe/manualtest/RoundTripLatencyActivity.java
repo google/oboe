@@ -21,19 +21,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Activity to measure latency on a full duplex stream.
  */
 public class RoundTripLatencyActivity extends AnalyzerActivity {
 
-    private static final int STATE_GOT_DATA = 2; // Defined in LatencyAnalyzer.h
+    // STATEs defined in LatencyAnalyzer.h
+    private static final int STATE_MEASURE_BACKGROUND = 0;
+    private static final int STATE_IN_PULSE = 1;
+    private static final int STATE_GOT_DATA = 2;
     private final static String LATENCY_FORMAT = "%4.2f";
+    // When I use 5.3g I only get one digit after the decimal point!
     private final static String CONFIDENCE_FORMAT = "%5.3f";
 
     private TextView mAnalyzerView;
@@ -51,12 +57,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     // Run the test several times and report the acverage latency.
     protected class LatencyAverager {
         private final static int AVERAGE_TEST_DELAY_MSEC = 1000; // arbitrary
-        private static final int GOOD_RUNS_REQUIRED = 10; // arbitrary
-        private static final int MAX_BAD_RUNS_ALLOWED = 10; // arbitrary
+        private static final int GOOD_RUNS_REQUIRED = 5; // arbitrary
+        private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
         private int mBadCount = 0; // number of bad measurements
         private int mGoodCount = 0; // number of good measurements
 
-        private double  mWeightedLatencySum;
+        ArrayList<Double> mLatencies = new ArrayList<Double>(GOOD_RUNS_REQUIRED);
+        ArrayList<Double> mConfidences = new ArrayList<Double>(GOOD_RUNS_REQUIRED);
         private double  mLatencyMin;
         private double  mLatencyMax;
         private double  mConfidenceSum;
@@ -84,7 +91,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 mGoodCount++;
                 double latency = getMeasuredLatencyMillis();
                 double confidence = getMeasuredConfidence();
-                mWeightedLatencySum += latency * confidence; // weighted average based on confidence
+                mLatencies.add(latency);
+                mConfidences.add(confidence);
                 mConfidenceSum += confidence;
                 mLatencyMin = Math.min(mLatencyMin, latency);
                 mLatencyMax = Math.max(mLatencyMax, latency);
@@ -112,11 +120,11 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             if (mGoodCount == 0 || mConfidenceSum == 0.0) {
                 message = "num.iterations = " + mGoodCount + "\n";
             } else {
-                // When I use 5.3g I only get one digit after the decimal point!
-                final double averageLatency = mWeightedLatencySum / mConfidenceSum;
                 final double mAverageConfidence = mConfidenceSum / mGoodCount;
-                message =
-                        "average.latency.msec = " + String.format(LATENCY_FORMAT, averageLatency) + "\n"
+                double meanLatency = calculateMeanLatency();
+                double meanAbsoluteDeviation = calculateMeanAbsoluteDeviation(meanLatency);
+                message = "average.latency.msec = " + String.format(LATENCY_FORMAT, meanLatency) + "\n"
+                        + "mean.absolute.deviation = " + String.format(LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
                         + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
                         + "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
                         + "max.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMax) + "\n"
@@ -127,9 +135,26 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             return message;
         }
 
+        private double calculateMeanAbsoluteDeviation(double meanLatency) {
+            double deviationSum = 0.0;
+            for (double latency : mLatencies) {
+                deviationSum += Math.abs(latency - meanLatency);
+            }
+            return deviationSum / mLatencies.size();
+        }
+
+        private double calculateMeanLatency() {
+            double latencySum = 0.0;
+            for (double latency : mLatencies) {
+                latencySum += latency;
+            }
+            return latencySum / mLatencies.size();
+        }
+
         // Called on UI thread.
         public void start() {
-            mWeightedLatencySum = 0.0;
+            mLatencies.clear();
+            mConfidences.clear();
             mConfidenceSum = 0.0;
             mLatencyMax = Double.MIN_VALUE;
             mLatencyMin = Double.MAX_VALUE;
@@ -165,7 +190,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
 
-
         // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
@@ -173,14 +197,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 String message;
 
                 if (isAnalyzerDone()) {
-                    message = onAnalyzerDone();
-                    message += mLatencyAverager.onAnalyserDone();
+                    message = mLatencyAverager.onAnalyserDone();
+                    message += onAnalyzerDone();
                 } else {
                     message = getProgressText();
                     message += "please wait... " + counter + "\n";
-                    if (getAnalyzerState() == STATE_GOT_DATA) {
-                        message += "ANALYZING\n";
-                    }
+                    message += convertStateToString(getAnalyzerState());
+
                     // Repeat this runnable code block again.
                     mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
                 }
@@ -202,11 +225,20 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
     }
 
+    static String convertStateToString(int state) {
+        switch (state) {
+            case STATE_MEASURE_BACKGROUND: return "BACKGROUND";
+            case STATE_IN_PULSE: return "RECORDING";
+            case STATE_GOT_DATA: return "ANALYZING";
+            default: return "DONE";
+        }
+    }
+
     private String getProgressText() {
         int progress = getAnalyzerProgress();
         int state = getAnalyzerState();
         int resetCount = getResetCount();
-        String message = String.format("progress = %d, state = %d, #resets = %d\n",
+        String message = String.format("progress = %d\nstate = %d\n#resets = %d\n",
                 progress, state, resetCount);
         message += mLatencyAverager.getLastReport();
         return message;
@@ -227,13 +259,12 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     @NonNull
     private String getResultString() {
-        String message = String.format("rms.signal = %7.5f\n", getSignalRMS());
-        message += String.format("rms.noise = %7.5f\n", getBackgroundRMS());
-        int resetCount = getResetCount();
-        message += String.format("reset.count = %d\n", resetCount);
-
         int result = getMeasuredResult();
-        message += String.format("result = %d\n", result);
+        int resetCount = getResetCount();
+        double confidence = getMeasuredConfidence();
+        String message = "";
+
+        message += String.format("confidence = " + CONFIDENCE_FORMAT + "\n", confidence);
         message += String.format("result.text = %s\n", resultCodeToString(result));
 
         // Only report valid latencies.
@@ -243,13 +274,17 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
             int latencyEmptyFrames = latencyFrames - bufferSize;
             double latencyEmptyMillis = latencyEmptyFrames * 1000.0 / getSampleRate();
-            message += String.format("latency.empty.frames = %d\n", latencyEmptyFrames);
-            message += String.format("latency.empty.msec = " + LATENCY_FORMAT + "\n", latencyEmptyMillis);
-            message += String.format("latency.frames = %d\n", latencyFrames);
             message += String.format("latency.msec = " + LATENCY_FORMAT + "\n", latencyMillis);
+            message += String.format("latency.frames = %d\n", latencyFrames);
+            message += String.format("latency.empty.msec = " + LATENCY_FORMAT + "\n", latencyEmptyMillis);
+            message += String.format("latency.empty.frames = %d\n", latencyEmptyFrames);
         }
-        double confidence = getMeasuredConfidence();
-        message += String.format("confidence = " + CONFIDENCE_FORMAT + "\n", confidence);
+
+        message += String.format("rms.signal = %7.5f\n", getSignalRMS());
+        message += String.format("rms.noise = %7.5f\n", getBackgroundRMS());
+        message += String.format("reset.count = %d\n", resetCount);
+        message += String.format("result = %d\n", result);
+
         return message;
     }
 
@@ -282,6 +317,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mShareButton = (Button) findViewById(R.id.button_share);
         mShareButton.setEnabled(false);
         mAnalyzerView = (TextView) findViewById(R.id.text_status);
+        mAnalyzerView.setMovementMethod(new ScrollingMovementMethod());
         updateEnabledWidgets();
 
         hideSettingsViews();

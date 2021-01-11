@@ -19,7 +19,21 @@
     <string name="auto_select">Auto select</string>
     <string name="hint_hide_settings">Hide Settings</string>
     <string name="hint_show_settings">Show Settings</string>
-    <string name="use_loopback">Click Show Settings to configure stream.\nRequires a loopback adapter!</string>
+    <string name="loopback_instructions_glitch">
+        Click Show Settings to configure.\n
+        This glitch measurement plays\n
+        and listens to a sine wave.\n
+        It works with best with a loopback dongle.\n
+        Set volume to medium-high.\n
+    </string>
+    <string name="loopback_instructions_latency">
+        Click Show Settings to configure.\n
+        This latency measurement uses a\n
+        short burst of encoded noise.\n
+        It works with speakers and mic\n
+        or a loopback dongle.\n
+        Set volume to medium-high.\n
+    </string>
 
     <string name="api_prompt">Choose an API</string>
     <string-array name="output_modes">
