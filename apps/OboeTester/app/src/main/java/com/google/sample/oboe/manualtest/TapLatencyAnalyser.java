@@ -50,7 +50,7 @@ public class TapLatencyAnalyser {
     private void highPassFilter(float[] buffer, int offset, int numSamples, float[] highPassBuffer) {
         float xn1 = 0.0f;
         float yn1 = 0.0f;
-        float alpha = 0.05f;
+        final float alpha = 0.05f;
         for (int i = 0; i < numSamples; i++) {
             float xn = buffer[i + offset];
             float yn = alpha * yn1 + ((1.0f - alpha) * (xn - xn1));
@@ -87,22 +87,14 @@ public class TapLatencyAnalyser {
 
     private void fillPeakBuffer(float[] buffer, int offset, int numSamples, float[] peakBuffer) {
         float previous = 0.0f;
-        float maxInput = 0.0f;
-        float maxOutput = 0.0f;
         for (int i = 0; i < numSamples; i++) {
             float input = buffer[i + offset];
-            if (input > maxInput) {
-                maxInput = input;
-            }
             float output = previous * mDroop;
             if (input > output) {
                 output = input;
             }
             previous = output;
             peakBuffer[i] = output;
-            if (output > maxOutput) {
-                maxOutput = output;
-            }
         }
     }
 }
