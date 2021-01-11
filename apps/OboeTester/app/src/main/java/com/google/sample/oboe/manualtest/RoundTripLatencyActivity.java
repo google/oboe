@@ -123,7 +123,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 final double mAverageConfidence = mConfidenceSum / mGoodCount;
                 double meanLatency = calculateMeanLatency();
                 double meanAbsoluteDeviation = calculateMeanAbsoluteDeviation(meanLatency);
-                message = "mean.latency.msec = " + String.format(LATENCY_FORMAT, meanLatency) + "\n"
+                message = "average.latency.msec = " + String.format(LATENCY_FORMAT, meanLatency) + "\n"
                         + "mean.absolute.deviation = " + String.format(LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
                         + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
                         + "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
