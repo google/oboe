@@ -24,10 +24,17 @@
 namespace oboe {
 
 AAudioLoader::~AAudioLoader() {
-    if (mLibHandle != nullptr) {
-        dlclose(mLibHandle);
-        mLibHandle = nullptr;
-    }
+    // Issue 360: thread_local variables with non-trivial destructors
+    // will cause segfaults if the containing library is dlclose()ed on
+    // devices running M or newer, or devices before M when using a static STL.
+    // The simple workaround is to not call dlclose.
+    // https://github.com/android/ndk/wiki/Changelog-r22#known-issues
+    //
+    // The libaaudio and libaaudioclient do not use thread_local.
+    // But, to be safe, we should avoid dlclose() if possible.
+    // Because AAudioLoader is a static Singleton, we can safely skip
+    // calling dlclose() without causing a resource leak.
+    LOGI("%s() dlclose(%s) not called, OK", __func__, LIB_AAUDIO_NAME);
 }
 
 AAudioLoader* AAudioLoader::getInstance() {
