@@ -230,6 +230,8 @@ protected:
             case AudioFormat::Unspecified:
             case AudioFormat::I16:
             case AudioFormat::Float:
+            case AudioFormat::I24:
+            case AudioFormat::I32:
                 break;
 
             default:

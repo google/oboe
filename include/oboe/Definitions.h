@@ -17,7 +17,6 @@
 #ifndef OBOE_DEFINITIONS_H
 #define OBOE_DEFINITIONS_H
 
-
 #include <cstdint>
 #include <type_traits>
 
@@ -111,6 +110,17 @@ namespace oboe {
          * Single precision floating points.
          */
         Float = 2, // AAUDIO_FORMAT_PCM_FLOAT,
+
+        /**
+         * Signed 24-bit integers, packed into 3 bytes.
+         */
+        I24 = 3, // AAUDIO_FORMAT_PCM_I24_PACKED
+
+        /**
+         * Signed 32-bit integers.
+         */
+        I32 = 4, // AAUDIO_FORMAT_PCM_I32
+
     };
 
     /**
