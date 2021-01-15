@@ -48,7 +48,6 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     @Override
     public AudioOutputTester addAudioOutputTester() {
         AudioOutputTester audioOutTester = super.addAudioOutputTester();
-        mBufferSizeView.setAudioOutTester(audioOutTester);
         mWorkloadView.setAudioStreamTester(audioOutTester);
         return audioOutTester;
     }
@@ -57,7 +56,7 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     public void openAudio() throws IOException {
         super.openAudio();
         if (mBufferSizeView != null) {
-            mBufferSizeView.updateBufferSize();
+            mBufferSizeView.onStreamOpened((OboeAudioStream) mAudioOutTester.getCurrentAudioStream());
         }
     }
 
