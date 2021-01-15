@@ -21,23 +21,33 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 
 
+import android.view.View;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 
 public class BufferSizeView extends LinearLayout {
+    private OboeAudioStream mStream;
 
-    AudioOutputTester mAudioOutTester;
-
-    protected static final int FADER_THRESHOLD_MAX = 1000; // must match layout
-    protected TextView mTextThreshold;
-    protected SeekBar mFaderThreshold;
-    protected ExponentialTaper mTaperThreshold;
+    private static final int FADER_THRESHOLD_MAX = 1000; // must match layout
+    private static final int USE_FADER = -1;
+    private static final int DEFAULT_NUM_BURSTS = 2;
+    private TextView mTextLabel;
+    private SeekBar mFader;
+    private ExponentialTaper mTaper;
+    private RadioButton mBufferSizeRadio1;
+    private RadioButton mBufferSizeRadio2;
+    private RadioButton mBufferSizeRadio3;
     private int mCachedCapacity;
+    private int mFramesPerBurst;
+    private int mNumBursts;
 
-    private SeekBar.OnSeekBarChangeListener mThresholdListener = new SeekBar.OnSeekBarChangeListener() {
+    private SeekBar.OnSeekBarChangeListener mFaderListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            mNumBursts = USE_FADER;
+            updateRadioButtons();
             setBufferSizeByPosition(progress);
         }
 
@@ -61,83 +71,145 @@ public class BufferSizeView extends LinearLayout {
     }
 
     public BufferSizeView(Context context,
-                                   AttributeSet attrs,
-                                   int defStyle) {
+                          AttributeSet attrs,
+                          int defStyle) {
         super(context, attrs, defStyle);
         initializeViews(context);
     }
 
-    public AudioOutputTester getAudioOutTester() {
-        return mAudioOutTester;
-    }
-
-    public void setAudioOutTester(AudioOutputTester audioOutTester) {
-        mAudioOutTester = audioOutTester;
-    }
-
     void setFaderNormalizedProgress(double fraction) {
-        mFaderThreshold.setProgress((int)(fraction * FADER_THRESHOLD_MAX));
+        mFader.setProgress((int) (fraction * FADER_THRESHOLD_MAX));
     }
 
     /**
      * Inflates the views in the layout.
      *
-     * @param context
-     *           the current context for the view.
+     * @param context the current context for the view.
      */
     private void initializeViews(Context context) {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.buffer_size_view, this);
 
-        mTextThreshold = (TextView) findViewById(R.id.textThreshold);
-        mFaderThreshold = (SeekBar) findViewById(R.id.faderThreshold);
-        mFaderThreshold.setOnSeekBarChangeListener(mThresholdListener);
-        mTaperThreshold = new ExponentialTaper(0.0, 1.0, 10.0);
-        mFaderThreshold.setProgress(0);
+        mTextLabel = (TextView) findViewById(R.id.textThreshold);
+        mFader = (SeekBar) findViewById(R.id.faderBufferSize);
+        mFader.setOnSeekBarChangeListener(mFaderListener);
+        mTaper = new ExponentialTaper(0.0, 1.0, 10.0);
+        mFader.setProgress(0);
+
+        mBufferSizeRadio1 = (RadioButton) findViewById(R.id.bufferSize1);
+        mBufferSizeRadio1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSizeRadioButtonClicked(view, 1);
+            }
+        });
+        mBufferSizeRadio2 = (RadioButton) findViewById(R.id.bufferSize2);
+        mBufferSizeRadio2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSizeRadioButtonClicked(view, 2);
+            }
+        });
+        mBufferSizeRadio3 = (RadioButton) findViewById(R.id.bufferSize3);
+        mBufferSizeRadio3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSizeRadioButtonClicked(view, 3);
+            }
+        });
+        mNumBursts = DEFAULT_NUM_BURSTS;
+        updateRadioButtons();
+        updateBufferSize();
+    }
+
+    public void updateRadioButtons() {
+        if (mBufferSizeRadio3 != null) {
+            mBufferSizeRadio1.setChecked(mNumBursts == 1);
+            mBufferSizeRadio2.setChecked(mNumBursts == 2);
+            mBufferSizeRadio3.setChecked(mNumBursts == 3);
+        }
+    }
+
+    private void onSizeRadioButtonClicked(View view, int numBursts) {
+        boolean checked = ((RadioButton) view).isChecked();
+        if (!checked) return;
+        mNumBursts = numBursts;
+        setBufferSizeByNumBursts(numBursts);
+    }
+
+    // sets mStream, mCachedCapacity and mFramesPerBurst
+    public void onStreamOpened(OboeAudioStream stream) {
+        mStream = stream;
+        if (mStream != null) {
+            int capacity = mStream.getBufferCapacityInFrames();
+            if (capacity > 0) mCachedCapacity = capacity;
+            int framesPerBurst = mStream.getFramesPerBurst();
+            if (framesPerBurst > 0) mFramesPerBurst = framesPerBurst;
+        }
+        updateBufferSize();
+    }
+
+    private void setBufferSizeByNumBursts(int numBursts) {
+        int sizeFrames = -1;
+        if (mStream != null) {
+            int framesPerBurst = mStream.getFramesPerBurst();
+            if (framesPerBurst > 0) {
+                sizeFrames = numBursts * framesPerBurst;
+            }
+        }
+        StringBuffer message = new StringBuffer();
+        message.append("bufferSize = #" + numBursts);
+
+        setBufferSize(message, sizeFrames);
     }
 
     private void setBufferSizeByPosition(int progress) {
+        int sizeFrames = -1;
+        double normalizedThreshold = 0.0;
+
         StringBuffer message = new StringBuffer();
-        double normalizedThreshold = mTaperThreshold.linearToExponential(
-                ((double)progress)/FADER_THRESHOLD_MAX);
+
+        normalizedThreshold = mTaper.linearToExponential(
+                ((double) progress) / FADER_THRESHOLD_MAX);
         if (normalizedThreshold < 0.0) normalizedThreshold = 0.0;
         else if (normalizedThreshold > 1.0) normalizedThreshold = 1.0;
-        int  percent = (int) (normalizedThreshold * 100);
+        int percent = (int) (normalizedThreshold * 100);
         message.append("bufferSize = " + percent + "%");
 
-        OboeAudioStream stream = null;
-        int sizeFrames = 0;
-        if (getAudioOutTester()  != null) {
-            stream = (OboeAudioStream) getAudioOutTester().getCurrentAudioStream();
-            if (stream != null) {
-                int capacity = stream.getBufferCapacityInFrames();
-                if (capacity > 0) mCachedCapacity = capacity;
-            }
-        }
         if (mCachedCapacity > 0) {
             sizeFrames = (int) (normalizedThreshold * mCachedCapacity);
-            message.append(" = " + sizeFrames);
-            if (stream != null) {
-                stream.setBufferSizeInFrames(sizeFrames);
+        }
+        setBufferSize(message, sizeFrames);
+    }
+
+    private void setBufferSize(StringBuffer message, int sizeFrames) {
+        if (mStream != null) {
+            message.append(", " + sizeFrames);
+            if (mStream != null && sizeFrames >= 0) {
+                mStream.setBufferSizeInFrames(sizeFrames);
             }
-            int bufferSize = getAudioOutTester().getCurrentAudioStream().getBufferSizeInFrames();
+            int bufferSize = mStream.getBufferSizeInFrames();
             if (bufferSize >= 0) {
                 message.append(" / " + bufferSize);
             }
             message.append(" / " + mCachedCapacity);
         }
-        mTextThreshold.setText(message.toString());
+        mTextLabel.setText(message.toString());
     }
 
-    public void updateBufferSize() {
-        int progress = mFaderThreshold.getProgress();
-        setBufferSizeByPosition(progress);
+    private void updateBufferSize() {
+        if (mNumBursts == USE_FADER) {
+            int progress = mFader.getProgress();
+            setBufferSizeByPosition(progress);
+        } else {
+            setBufferSizeByNumBursts(mNumBursts);
+        }
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        mFaderThreshold.setEnabled(enabled);
+        mFader.setEnabled(enabled);
     }
 }

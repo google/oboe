@@ -143,9 +143,6 @@ public class AnalyzerActivity extends TestInputActivity {
         super.onCreate(savedInstanceState);
         mAudioOutTester = addAudioOutputTester();
         mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
-        if (mBufferSizeView != null) {
-            mBufferSizeView.setAudioOutTester(mAudioOutTester);
-        }
     }
 
     @Override
@@ -169,11 +166,12 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
-    public void startAudio() throws IOException {
-        if (mBufferSizeView != null && mBufferSizeView.isEnabled()) {
-            mBufferSizeView.updateBufferSize();
+    @Override
+    public void openAudio() throws IOException {
+        super.openAudio();
+        if (mBufferSizeView != null) {
+            mBufferSizeView.onStreamOpened((OboeAudioStream) mAudioOutTester.getCurrentAudioStream());
         }
-        super.startAudio();
     }
 
     public void onStreamClosed() {

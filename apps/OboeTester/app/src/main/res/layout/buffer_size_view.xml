@@ -10,11 +10,44 @@
         android:layout_height="wrap_content"
         android:text="BufferSIZE" />
 
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/bufferSize1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            />
+
+        <RadioButton
+            android:id="@+id/bufferSize2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2"
+            />
+
+        <RadioButton
+            android:id="@+id/bufferSize3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3"
+            />
+    </RadioGroup>
     <SeekBar
-        android:id="@+id/faderThreshold"
+        android:id="@+id/faderBufferSize"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="1000"
         android:progress="1000" />
 
+    </LinearLayout>
 </LinearLayout>
