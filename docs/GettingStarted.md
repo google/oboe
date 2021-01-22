@@ -185,13 +185,13 @@ Supply this callback class to the builder:
 
     builder.setDataCallback(&myCallback);
     
-Declare a ManagedStream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
+Declare a shared pointer for the stream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
 ```
-oboe::ManagedStream managedStream;
+std::shared_ptr<oboe::AudioStream> mStream;
 ```
 Open the stream:
 
-    oboe::Result result = builder.openManagedStream(managedStream);
+    oboe::Result result = builder.openStream(mStream);
 
 Check the result to make sure the stream was opened successfully. Oboe has a convenience method for converting its types into human-readable strings called `oboe::convertToText`:
 
@@ -205,63 +205,46 @@ Note that this sample code uses the [logging macros from here](https://github.co
 Check the properties of the created stream. If you did not specify a channelCount, sampleRate, or format then you need to 
 query the stream to see what you got. The **format** property will dictate the `audioData` type in the `AudioStreamDataCallback::onAudioReady` callback. If you did specify any of those three properties then you will get what you requested.
 
-    oboe::AudioFormat format = stream->getFormat();
+    oboe::AudioFormat format = mStream->getFormat();
     LOGI("AudioStream format is %s", oboe::convertToText(format));
 
 Now start the stream.
 
-    managedStream->requestStart();
+    mStream->requestStart();
 
 At this point you should start receiving callbacks.
 
 To stop receiving callbacks call
     
-    managedStream->requestStop();
+    mStream->requestStop();
 
 ## Closing the stream
 It is important to close your stream when you're not using it to avoid hogging audio resources which other apps could use. This is particularly true when using `SharingMode::Exclusive` because you might prevent other apps from obtaining a low latency audio stream.
 
-Streams can be explicitly closed:
+Streams should be explicitly closed when the app is no longer playing audio.
 
-    stream->close();
+    mStream->close();
 
 `close()` is a blocking call which also stops the stream.
 
-Streams can also be automatically closed when going out of scope:
-
-	{
-		ManagedStream mStream;
-		AudioStreamBuilder().build(mStream);
-		mStream->requestStart();
-	} // Out of this scope the mStream has been automatically closed 
-	
-It is preferable to let the `ManagedStream` object go out of scope (or be explicitly deleted) when the app is no longer playing audio.
 For apps which only play or record audio when they are in the foreground this is usually done when [`Activity.onPause()`](https://developer.android.com/guide/components/activities/activity-lifecycle#onpause) is called.
 
 ## Reconfiguring streams
-In order to change the configuration of the stream, simply call `openManagedStream`
-again. The existing stream is closed, destroyed and a new stream is built and
-populates the `managedStream`.
+After closing, in order to change the configuration of the stream, simply call `openStream`
+again. The existing stream is deleted and a new stream is built and
+populates the `mStream` variable.
 ```
 // Modify the builder with some additional properties at runtime.
 builder.setDeviceId(MY_DEVICE_ID);
 // Re-open the stream with some additional config
-// The old ManagedStream is automatically closed and deleted
-builder.openManagedStream(managedStream);
+// The old AudioStream is automatically deleted
+builder.openStream(mStream);
 ```
-The `ManagedStream` takes care of its own closure and destruction. If used in an
-automatic allocation context (such as a member of a class), the stream does not
-need to be closed or deleted manually. Make sure that the object which is responsible for
-the `ManagedStream` (its enclosing class) goes out of scope whenever the app is no longer
-playing or recording audio, such as when `Activity.onPause()` is called.
-
 
 ## Example
 
-The following class is a complete implementation of a `ManagedStream`, which
-renders a sine wave. Creating the class (e.g. through the JNI bridge) creates
-and opens an Oboe stream which renders audio, and its destruction stops and
-closes the stream.
+The following class is a complete implementation of an audio player that
+renders a sine wave.
 ```
 #include <oboe/Oboe.h>
 #include <math.h>
@@ -269,19 +252,37 @@ closes the stream.
 class OboeSinePlayer: public oboe::AudioStreamDataCallback {
 public:
 
+    virtual ~OboeSinePlayer() = default;
 
-    OboeSinePlayer() {
+    // Call this from Activity onResume()
+    int32_t startAudio() {
+        std::lock_guard<std::mutex> lock(mLock);
         oboe::AudioStreamBuilder builder;
         // The builder set methods can be chained for convenience.
-        builder.setSharingMode(oboe::SharingMode::Exclusive)
-          ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-          ->setChannelCount(kChannelCount)
-          ->setSampleRate(kSampleRate)
-          ->setFormat(oboe::AudioFormat::Float)
-          ->setDataCallback(this)
-          ->openManagedStream(outStream);
+        Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
+                ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+                ->setChannelCount(kChannelCount)
+                ->setSampleRate(kSampleRate)
+		->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium);
+                ->setFormat(oboe::AudioFormat::Float)
+                ->setDataCallback(this)
+                ->openStream(mStream);
+	if (result != Result::OK) return (int32_t) result;
+	
         // Typically, start the stream after querying some stream information, as well as some input from the user
-        outStream->requestStart();
+        result = outStream->requestStart();
+	return (int32_t) result;
+    }
+   
+    // Call this from Activity onPause()
+    void stopAudio() {
+        // Stop, close and delete in case not already closed.
+        std::lock_guard<std::mutex> lock(mLock);
+        if (mStream) {
+            mStream->stop();
+            mStream->close();
+            mStream.reset();
+        }
     }
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
@@ -298,7 +299,9 @@ public:
     }
 
 private:
-    oboe::ManagedStream outStream;
+    std::mutex         mLock;
+    std::shared_ptr<oboe::AudioStream> mStream;
+
     // Stream params
     static int constexpr kChannelCount = 2;
     static int constexpr kSampleRate = 48000;
@@ -312,14 +315,12 @@ private:
     float mPhase = 0.0;
 };
 ```
-Note that this implementation computes  sine values at run-time for simplicity,
+Note that this implementation computes sine values at run-time for simplicity,
 rather than pre-computing them.
 Additionally, best practice is to implement a separate data callback class, rather
 than managing the stream and defining its data callback in the same class.
-This class also automatically starts the stream upon construction. Typically,
-the stream is queried for information prior to being started (e.g. burst size),
-and started upon user input.
-For more examples on how to use `ManagedStream` look in the [samples](https://github.com/google/oboe/tree/master/samples) folder.
+
+For more examples on how to use Oboe look in the [samples](https://github.com/google/oboe/tree/master/samples) folder.
 
 ## Obtaining optimal latency
 One of the goals of the Oboe library is to provide low latency audio streams on the widest range of hardware configurations.
