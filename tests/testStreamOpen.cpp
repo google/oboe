@@ -70,6 +70,11 @@ protected:
             usleep(50 * 1000);
             timeout--;
         }
+
+        // Catch Issue #1166
+        mStream->getTimestamp(CLOCK_MONOTONIC); // should not crash
+        mStream->getTimestamp(CLOCK_MONOTONIC, nullptr, nullptr); // should not crash
+
         ASSERT_GT(callback.callbackCount, 0);
         ASSERT_GT(callback.framesPerCallback, 0);
         ASSERT_EQ(mStream->requestStop(), Result::OK);
