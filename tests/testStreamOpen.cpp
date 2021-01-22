@@ -71,7 +71,7 @@ protected:
             timeout--;
         }
 
-		// Catch Issue #1166
+        // Catch Issue #1166
         mStream->getTimestamp(CLOCK_MONOTONIC); // should not crash
         mStream->getTimestamp(CLOCK_MONOTONIC, nullptr, nullptr); // should not crash
 
