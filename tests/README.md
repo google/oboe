@@ -31,9 +31,9 @@ Now we need to determine the latest installed version of the NDK. Enter:
     
     ls $ANDROID_HOME/ndk
     
-Make note of the folder name. Mine was "21.0.6113669" so I entered:
+Make note of the folder name. Mine was "21.3.6528147" so I entered:
 
-    export ANDROID_NDK=$ANDROID_HOME/ndk/21.0.6113669/
+    export ANDROID_NDK=$ANDROID_HOME/ndk/21.3.6528147/
 
 If you need to add `cmake` to your path then you can find it by entering:
 
