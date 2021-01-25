@@ -70,6 +70,9 @@ public:
 
         std::string chipname = getPropertyString("ro.hardware.chipname");
         isExynos9810 = (chipname == "exynos9810");
+        isExynos990 = (chipname == "exynos990");
+
+        mBuildChangelist = getPropertyInteger("ro.build.changelist", 0);
     }
 
     virtual ~SamsungDeviceQuirks() = default;
@@ -94,6 +97,17 @@ public:
                 && builder.getInputPreset() != oboe::InputPreset::Camcorder;
     }
 
+    bool isMMapSafe(const AudioStreamBuilder &builder) override {
+        const bool isInput = builder.getDirection() == Direction::Input;
+        // This detects b/159066712 , S20 LSI has corrupt low latency audio recording
+        // and turns off MMAP.
+        // See also https://github.com/google/oboe/issues/892
+        bool mRecordingCorrupted = isInput
+            && isExynos990
+            && mBuildChangelist < 19350896;
+        return !mRecordingCorrupted;
+    }
+
 private:
     // Stay farther away from DSP position on Exynos devices.
     static constexpr int32_t kBottomMarginExynos = 2;
@@ -101,6 +115,8 @@ private:
     static constexpr int32_t kTopMargin = 1;
     bool isExynos = false;
     bool isExynos9810 = false;
+    bool isExynos990 = false;
+    int mBuildChangelist = 0;
 };
 
 QuirksManager::QuirksManager() {
@@ -198,4 +214,9 @@ bool QuirksManager::isConversionNeeded(
     // phones and they have almost all been updated to 9.0.
 
     return conversionNeeded;
+}
+
+bool QuirksManager::isMMapSafe(AudioStreamBuilder &builder) {
+    if (!OboeGlobals::areWorkaroundsEnabled()) return true;
+    return mDeviceQuirks->isMMapSafe(builder);
 }

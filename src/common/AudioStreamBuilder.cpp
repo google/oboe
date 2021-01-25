@@ -16,6 +16,8 @@
 
 #include <sys/types.h>
 
+
+#include "aaudio/AAudioExtensions.h"
 #include "aaudio/AudioStreamAAudio.h"
 #include "FilterAudioStream.h"
 #include "OboeDebug.h"
@@ -109,7 +111,6 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     // Do we need to make a child stream and convert.
     if (conversionNeeded) {
         AudioStream *tempStream;
-
         result = childBuilder.openStream(&tempStream);
         if (result != Result::OK) {
             return result;
@@ -156,7 +157,15 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         }
     }
 
-    result = streamP->open(); // TODO review API
+    bool isMMapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
+    if (isMMapEnabled) {
+        bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(childBuilder);
+        if (!isMMapSafe) {
+            AAudioExtensions::getInstance().setMMapEnabled(false);
+        }
+    }
+    result = streamP->open();
+    AAudioExtensions::getInstance().setMMapEnabled(isMMapEnabled); // restore original setting
     if (result == Result::OK) {
 
         int32_t  optimalBufferSize = -1;

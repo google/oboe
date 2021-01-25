@@ -20,6 +20,15 @@
 #include <dlfcn.h>
 #include <stdint.h>
 
+#include <sys/system_properties.h>
+
+#include "common/OboeDebug.h"
+#include "oboe/Oboe.h"
+#include "AAudioLoader.h"
+
+
+namespace oboe {
+
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 #define FUNCTION_SET_MMAP_POLICY "AAudio_setMMapPolicy"
@@ -50,20 +59,24 @@ public:
     }
 
     bool isMMapUsed(oboe::AudioStream *oboeStream) {
-        if (!loadLibrary()) return false;
-        if (mAAudioStream_isMMap == nullptr) return false;
         AAudioStream *aaudioStream = (AAudioStream *) oboeStream->getUnderlyingStream();
+        return isMMapUsed(aaudioStream);
+    }
+
+    bool isMMapUsed(AAudioStream *aaudioStream) {
+        if (open()) return false;
+        if (mAAudioStream_isMMap == nullptr) return false;
         return mAAudioStream_isMMap(aaudioStream);
     }
 
-    bool setMMapEnabled(bool enabled) {
-        if (!loadLibrary()) return false;
+    int32_t setMMapEnabled(bool enabled) {
+        if (open()) return -1;
         if (mAAudio_setMMapPolicy == nullptr) return false;
         return mAAudio_setMMapPolicy(enabled ? AAUDIO_POLICY_AUTO : AAUDIO_POLICY_NEVER);
     }
 
     bool isMMapEnabled() {
-        if (!loadLibrary()) return false;
+        if (open()) return false;
         if (mAAudio_getMMapPolicy == nullptr) return false;
         int32_t policy = mAAudio_getMMapPolicy();
         return isPolicyEnabled(policy);
@@ -95,47 +108,56 @@ private:
         return result;
     }
 
-    // return true if it succeeds
-    bool loadLibrary() {
-        if (mFirstTime) {
-            mFirstTime = false;
-            mLibHandle = dlopen(LIB_AAUDIO_NAME, 0);
-            if (mLibHandle == nullptr) {
-                LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
-                return false;
-            }
-
-            mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
-                    dlsym(mLibHandle, FUNCTION_IS_MMAP);
-            if (mAAudioStream_isMMap == nullptr) {
-                LOGI("%s() could not find " FUNCTION_IS_MMAP, __func__);
-                return false;
-            }
-
-            mAAudio_setMMapPolicy = (int32_t (*)(aaudio_policy_t policy))
-                    dlsym(mLibHandle, FUNCTION_SET_MMAP_POLICY);
-            if (mAAudio_setMMapPolicy == nullptr) {
-                LOGI("%s() could not find " FUNCTION_SET_MMAP_POLICY, __func__);
-                return false;
-            }
-
-            mAAudio_getMMapPolicy = (aaudio_policy_t (*)())
-                    dlsym(mLibHandle, FUNCTION_GET_MMAP_POLICY);
-            if (mAAudio_getMMapPolicy == nullptr) {
-                LOGI("%s() could not find " FUNCTION_GET_MMAP_POLICY, __func__);
-                return false;
-            }
+    /**
+     * Load the function pointers.
+     * This can be called multiple times.
+     * It should only be called from one thread.
+     *
+     * @return 0 if successful or negative error.
+     */
+    int open() {
+        if (mAAudio_getMMapPolicy != nullptr) {
+            return 0;
         }
-        return (mLibHandle != nullptr);
+
+        void *libHandle = AAudioLoader::getInstance()->getLibHandle();
+        if (libHandle == nullptr) {
+            LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
+            return -1;
+        }
+
+        mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
+                dlsym(libHandle, FUNCTION_IS_MMAP);
+        if (mAAudioStream_isMMap == nullptr) {
+            LOGI("%s() could not find " FUNCTION_IS_MMAP, __func__);
+            return -1;
+        }
+
+        mAAudio_setMMapPolicy = (int32_t (*)(aaudio_policy_t policy))
+                dlsym(libHandle, FUNCTION_SET_MMAP_POLICY);
+        if (mAAudio_setMMapPolicy == nullptr) {
+            LOGI("%s() could not find " FUNCTION_SET_MMAP_POLICY, __func__);
+            return -1;
+        }
+
+        mAAudio_getMMapPolicy = (aaudio_policy_t (*)())
+                dlsym(libHandle, FUNCTION_GET_MMAP_POLICY);
+        if (mAAudio_getMMapPolicy == nullptr) {
+            LOGI("%s() could not find " FUNCTION_GET_MMAP_POLICY, __func__);
+            return -1;
+        }
+
+        return 0;
     }
 
-    bool      mFirstTime = true;
-    void     *mLibHandle = nullptr;
+    bool      mMMapSupported = false;
+    bool      mMMapExclusiveSupported = false;
+
     bool    (*mAAudioStream_isMMap)(AAudioStream *stream) = nullptr;
     int32_t (*mAAudio_setMMapPolicy)(aaudio_policy_t policy) = nullptr;
     aaudio_policy_t (*mAAudio_getMMapPolicy)() = nullptr;
-    bool      mMMapSupported = false;
-    bool      mMMapExclusiveSupported = false;
 };
+
+} // namespace oboe
 
 #endif //OBOETESTER_AAUDIO_EXTENSIONS_H
