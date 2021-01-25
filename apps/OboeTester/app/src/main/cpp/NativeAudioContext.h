@@ -26,7 +26,7 @@
 #include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 
-#include "AAudioExtensions.h"
+#include "aaudio/AAudioExtensions.h"
 #include "AudioStreamGateway.h"
 
 #include "flowunits/ImpulseOscillator.h"

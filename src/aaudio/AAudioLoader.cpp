@@ -97,8 +97,6 @@ int AAudioLoader::open() {
 
     stream_getTimestamp        = load_I_PSKPLPL("AAudioStream_getTimestamp");
 
-    stream_isMMapUsed          = load_B_PS("AAudioStream_isMMapUsed");
-
     stream_getChannelCount     = load_I_PS("AAudioStream_getChannelCount");
     if (stream_getChannelCount == nullptr) {
         // Use old alias if needed.

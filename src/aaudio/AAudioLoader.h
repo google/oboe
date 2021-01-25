@@ -69,7 +69,6 @@ typedef int32_t aaudio_session_id_t;
 
 namespace oboe {
 
-
 /**
  * The AAudio API was not available in early versions of Android.
  * To avoid linker errors, we dynamically link with the functions by name using dlsym().
@@ -139,6 +138,8 @@ class AAudioLoader {
      */
     int open();
 
+    void *getLibHandle() const { return mLibHandle; }
+
     // Function pointers into the AAudio shared library.
     signature_I_PPB   createStreamBuilder = nullptr;
 
@@ -172,8 +173,6 @@ class AAudioLoader {
     signature_I_PSTPTL  stream_waitForStateChange = nullptr;
 
     signature_I_PSKPLPL stream_getTimestamp = nullptr;
-
-    signature_B_PS      stream_isMMapUsed = nullptr;
 
     signature_I_PS   stream_close = nullptr;
 
