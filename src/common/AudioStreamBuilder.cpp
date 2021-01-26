@@ -157,15 +157,20 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
         }
     }
 
-    bool isMMapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
-    if (isMMapEnabled) {
+    // If MMAP has a problem in this case then disable it temporarily.
+    bool wasMMapOriginallyEnabled = AAudioExtensions::getInstance().isMMapEnabled();
+    bool wasMMapTemporarilyDisabled = false;
+    if (wasMMapOriginallyEnabled) {
         bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(childBuilder);
         if (!isMMapSafe) {
             AAudioExtensions::getInstance().setMMapEnabled(false);
+            wasMMapTemporarilyDisabled = true;
         }
     }
     result = streamP->open();
-    AAudioExtensions::getInstance().setMMapEnabled(isMMapEnabled); // restore original setting
+    if (wasMMapTemporarilyDisabled) {
+        AAudioExtensions::getInstance().setMMapEnabled(wasMMapOriginallyEnabled); // restore original
+    }
     if (result == Result::OK) {
 
         int32_t  optimalBufferSize = -1;
