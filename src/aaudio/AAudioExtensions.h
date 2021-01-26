@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_AAUDIO_EXTENSIONS_H
-#define OBOETESTER_AAUDIO_EXTENSIONS_H
+#ifndef OBOE_AAUDIO_EXTENSIONS_H
+#define OBOE_AAUDIO_EXTENSIONS_H
 
 #include <dlfcn.h>
 #include <stdint.h>
@@ -26,13 +26,14 @@
 #include "oboe/Oboe.h"
 #include "AAudioLoader.h"
 
-
 namespace oboe {
 
 #define LIB_AAUDIO_NAME          "libaaudio.so"
 #define FUNCTION_IS_MMAP         "AAudioStream_isMMapUsed"
 #define FUNCTION_SET_MMAP_POLICY "AAudio_setMMapPolicy"
 #define FUNCTION_GET_MMAP_POLICY "AAudio_getMMapPolicy"
+
+#define AAUDIO_ERROR_UNAVAILABLE  static_cast<aaudio_result_t>(Result::ErrorUnavailable)
 
 typedef struct AAudioStreamStruct         AAudioStream;
 
@@ -70,7 +71,7 @@ public:
     }
 
     int32_t setMMapEnabled(bool enabled) {
-        if (open()) return -1;
+        if (open()) return AAUDIO_ERROR_UNAVAILABLE;
         if (mAAudio_setMMapPolicy == nullptr) return false;
         return mAAudio_setMMapPolicy(enabled ? AAUDIO_POLICY_AUTO : AAUDIO_POLICY_NEVER);
     }
@@ -115,7 +116,7 @@ private:
      *
      * @return 0 if successful or negative error.
      */
-    int open() {
+    aaudio_result_t open() {
         if (mAAudio_getMMapPolicy != nullptr) {
             return 0;
         }
@@ -123,28 +124,28 @@ private:
         void *libHandle = AAudioLoader::getInstance()->getLibHandle();
         if (libHandle == nullptr) {
             LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
-            return -1;
+            return AAUDIO_ERROR_UNAVAILABLE;
         }
 
         mAAudioStream_isMMap = (bool (*)(AAudioStream *stream))
                 dlsym(libHandle, FUNCTION_IS_MMAP);
         if (mAAudioStream_isMMap == nullptr) {
             LOGI("%s() could not find " FUNCTION_IS_MMAP, __func__);
-            return -1;
+            return AAUDIO_ERROR_UNAVAILABLE;
         }
 
         mAAudio_setMMapPolicy = (int32_t (*)(aaudio_policy_t policy))
                 dlsym(libHandle, FUNCTION_SET_MMAP_POLICY);
         if (mAAudio_setMMapPolicy == nullptr) {
             LOGI("%s() could not find " FUNCTION_SET_MMAP_POLICY, __func__);
-            return -1;
+            return AAUDIO_ERROR_UNAVAILABLE;
         }
 
         mAAudio_getMMapPolicy = (aaudio_policy_t (*)())
                 dlsym(libHandle, FUNCTION_GET_MMAP_POLICY);
         if (mAAudio_getMMapPolicy == nullptr) {
             LOGI("%s() could not find " FUNCTION_GET_MMAP_POLICY, __func__);
-            return -1;
+            return AAUDIO_ERROR_UNAVAILABLE;
         }
 
         return 0;
@@ -160,4 +161,4 @@ private:
 
 } // namespace oboe
 
-#endif //OBOETESTER_AAUDIO_EXTENSIONS_H
+#endif //OBOE_AAUDIO_EXTENSIONS_H
