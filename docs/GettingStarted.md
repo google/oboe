@@ -1,14 +1,13 @@
 # Adding Oboe to your project
 There are two ways use Oboe in your Android Studio project: 
 
-1) **Use the Oboe pre-built library binaries and headers** *(Experimental)*. Use this approach if you just want to use a stable version of the Oboe library in your project.
+1) **Use the Oboe pre-built library binaries and headers**. Use this approach if you just want to use a stable version of the Oboe library in your project.
 
 or
 
 2) **Build Oboe from source.** Use this approach if you would like to debug or make changes to the Oboe source code and contribute back to the project.
 
 ## Option 1) Using pre-built binaries and headers
-*This approach is currently experimental as it uses a preview version of Android Studio.*
 
 Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio Preview 4.0 Canary 9](https://developer.android.com/studio/preview) so you'll need to be using this version of Android Studio or above. 
 
