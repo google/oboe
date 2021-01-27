@@ -65,19 +65,19 @@ public:
     }
 
     bool isMMapUsed(AAudioStream *aaudioStream) {
-        if (open()) return false;
+        if (loadSymbols()) return false;
         if (mAAudioStream_isMMap == nullptr) return false;
         return mAAudioStream_isMMap(aaudioStream);
     }
 
     int32_t setMMapEnabled(bool enabled) {
-        if (open()) return AAUDIO_ERROR_UNAVAILABLE;
+        if (loadSymbols()) return AAUDIO_ERROR_UNAVAILABLE;
         if (mAAudio_setMMapPolicy == nullptr) return false;
         return mAAudio_setMMapPolicy(enabled ? AAUDIO_POLICY_AUTO : AAUDIO_POLICY_NEVER);
     }
 
     bool isMMapEnabled() {
-        if (open()) return false;
+        if (loadSymbols()) return false;
         if (mAAudio_getMMapPolicy == nullptr) return false;
         int32_t policy = mAAudio_getMMapPolicy();
         return isPolicyEnabled(policy);
@@ -116,7 +116,7 @@ private:
      *
      * @return 0 if successful or negative error.
      */
-    aaudio_result_t open() {
+    aaudio_result_t loadSymbols() {
         if (mAAudio_getMMapPolicy != nullptr) {
             return 0;
         }
