@@ -70,6 +70,14 @@ public:
         return mAAudioStream_isMMap(aaudioStream);
     }
 
+    /**
+     * Controls whether the MMAP data path can be selected when opening a stream.
+     * It has no effect after the stream has been opened.
+     * It only affects the application that calls it. Other apps are not affected.
+     *
+     * @param enabled
+     * @return 0 or a negative error code
+     */
     int32_t setMMapEnabled(bool enabled) {
         if (loadSymbols()) return AAUDIO_ERROR_UNAVAILABLE;
         if (mAAudio_setMMapPolicy == nullptr) return false;
