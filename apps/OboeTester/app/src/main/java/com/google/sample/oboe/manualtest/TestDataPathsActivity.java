@@ -16,6 +16,7 @@
 
 package com.google.sample.oboe.manualtest;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -76,6 +77,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
 
+        public DataPathSniffer(Activity activity) {
+            super(activity);
+        }
+
         @Override
         public void startSniffer() {
             mMagnitude = -1.0;
@@ -128,15 +133,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             setAnalyzerText(mLastGlitchReport);
         }
 
-        @Override
-        public double getMaxSecondsWithNoGlitch() {
-            return -1.0;
-        }
     }
 
     @Override
     NativeSniffer createNativeSniffer() {
-        return new TestDataPathsActivity.DataPathSniffer();
+        return new TestDataPathsActivity.DataPathSniffer(this);
     }
 
     native double getMagnitude();

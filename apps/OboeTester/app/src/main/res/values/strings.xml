@@ -26,6 +26,10 @@
         It works with best with a loopback dongle.\n
         Set volume to medium-high.\n
     </string>
+    <string name="echo_instructions">
+        Be ready to turn down the volume\n
+        if you get feedback. \n
+    </string>
     <string name="loopback_instructions_latency">
         Click Show Settings to configure.\n
         This latency measurement uses a\n
