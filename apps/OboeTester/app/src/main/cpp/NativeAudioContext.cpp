@@ -17,6 +17,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <common/AudioClock.h>
 
 #include "util/WaveFileWriter.h"
 
@@ -197,6 +198,12 @@ int ActivityContext::open(jint nativeApi,
     bool oldMMapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
     AAudioExtensions::getInstance().setMMapEnabled(isMMap);
 
+    // Record time for opening.
+    if (isInput) {
+        mInputOpenedAt = oboe::AudioClock::getNanoseconds();
+    } else {
+        mOutputOpenedAt = oboe::AudioClock::getNanoseconds();
+    }
     // Open a stream based on the builder settings.
     std::shared_ptr<oboe::AudioStream> oboeStream;
     Result result = builder.openStream(oboeStream);
@@ -280,6 +287,15 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     }
 
     return outStream.length();
+}
+
+double ActivityContext::getTimestampLatency(int32_t streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        auto result = oboeStream->calculateLatencyMillis();
+        return (!result) ? -1.0 : result.value();
+    }
+    return -1.0;
 }
 
 // =================================================================== ActivityTestOutput

@@ -90,6 +90,25 @@ public:
 
     virtual void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder);
 
+    /**
+     * Open a stream with the given parameters.
+     * @param nativeApi
+     * @param sampleRate
+     * @param channelCount
+     * @param format
+     * @param sharingMode
+     * @param performanceMode
+     * @param inputPreset
+     * @param deviceId
+     * @param sessionId
+     * @param framesPerBurst
+     * @param channelConversionAllowed
+     * @param formatConversionAllowed
+     * @param rateConversionQuality
+     * @param isMMap
+     * @param isInput
+     * @return stream ID
+     */
     int open(jint nativeApi,
              jint sampleRate,
              jint channelCount,
@@ -105,7 +124,6 @@ public:
              jint rateConversionQuality,
              jboolean isMMap,
              jboolean isInput);
-
 
     virtual void close(int32_t streamIndex);
 
@@ -156,6 +174,60 @@ public:
         return 0.0;
     }
 
+    static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC) {
+        struct timespec time;
+        int result = clock_gettime(clockId, &time);
+        if (result < 0) {
+            return result;
+        }
+        return (time.tv_sec * NANOS_PER_SECOND) + time.tv_nsec;
+    }
+
+    // Calculate time between beginning and when frame[0] occurred.
+    int32_t calculateColdStartLatencyMillis(int32_t sampleRate,
+                                            int64_t beginTimeNanos,
+                                            int64_t timeStampPosition,
+                                            int64_t timestampNanos) const {
+        int64_t elapsedNanos = NANOS_PER_SECOND * (timeStampPosition / (double) sampleRate);
+        int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
+        int64_t coldStartLatencyNanos = timeOfFrameZero - beginTimeNanos;
+        return coldStartLatencyNanos / NANOS_PER_MILLISECOND;
+    }
+
+    int32_t getColdStartInputMillis() {
+        std::shared_ptr<oboe::AudioStream> oboeStream = getInputStream();
+        if (oboeStream != nullptr) {
+            int64_t framesRead = oboeStream->getFramesRead();
+            if (framesRead > 0) {
+                // Base latency on the time that frame[0] would have been received by the app.
+                int64_t nowNanos = getNanoseconds();
+                return calculateColdStartLatencyMillis(oboeStream->getSampleRate(),
+                                                       mInputOpenedAt,
+                                                       framesRead,
+                                                       nowNanos);
+            }
+        }
+        return -1;
+    }
+
+    int32_t getColdStartOutputMillis() {
+        std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
+        if (oboeStream != nullptr) {
+            auto result = oboeStream->getTimestamp(CLOCK_MONOTONIC);
+            if (result) {
+                auto frameTimestamp = result.value();
+                // Calculate the time that frame[0] would have been played by the speaker.
+                int64_t position = frameTimestamp.position;
+                int64_t timestampNanos = frameTimestamp.timestamp;
+                return calculateColdStartLatencyMillis(oboeStream->getSampleRate(),
+                                                       mOutputOpenedAt,
+                                                       position,
+                                                       timestampNanos);
+            }
+        }
+        return -1;
+    }
+
     /**
      * Trigger a sound or impulse.
      * @param enabled
@@ -195,6 +267,8 @@ public:
     static bool   mUseCallback;
     static int    callbackSize;
 
+    double getTimestampLatency(int32_t streamIndex);
+
 protected:
     std::shared_ptr<oboe::AudioStream> getInputStream();
     std::shared_ptr<oboe::AudioStream> getOutputStream();
@@ -227,6 +301,8 @@ protected:
     std::thread                 *dataThread = nullptr;
 
 private:
+    int64_t mInputOpenedAt = 0;
+    int64_t mOutputOpenedAt = 0;
 };
 
 /**
@@ -658,6 +734,7 @@ public:
     ActivityGlitches             mActivityGlitches;
     ActivityDataPath             mActivityDataPath;
     ActivityTestDisconnect       mActivityTestDisconnect;
+
 
 private:
 

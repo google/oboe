@@ -16,9 +16,8 @@
 
 package com.google.sample.oboe.manualtest;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -50,6 +49,16 @@ public class GlitchActivity extends AnalyzerActivity {
     native double getSignalToNoiseDB();
     native double getPeakAmplitude();
 
+    private GlitchSniffer mGlitchSniffer;
+    private NativeSniffer mNativeSniffer = createNativeSniffer();
+
+    synchronized NativeSniffer createNativeSniffer() {
+        if (mGlitchSniffer == null) {
+            mGlitchSniffer = new GlitchSniffer(this);
+        }
+        return mGlitchSniffer;
+    }
+
     // Note that these strings must match the enum result_code in LatencyAnalyzer.h
     String stateToString(int resultCode) {
         switch (resultCode) {
@@ -67,52 +76,6 @@ public class GlitchActivity extends AnalyzerActivity {
                 return "GLITCHING";
             default:
                 return "UNKNOWN";
-        }
-    }
-
-    protected abstract class NativeSniffer implements Runnable {
-        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 100;
-        public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
-        protected Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
-        protected volatile boolean mEnabled = true;
-
-        public void startSniffer() {
-            long now = System.currentTimeMillis();
-            // Start the initial runnable task by posting through the handler
-            mEnabled = true;
-            mHandler.postDelayed(this, SNIFFER_UPDATE_DELAY_MSEC);
-        }
-
-        public void stopSniffer() {
-            mEnabled = false;
-            if (mHandler != null) {
-                mHandler.removeCallbacks(this);
-            }
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateStatusText();
-                }
-            });
-        }
-
-        public void reschedule() {
-            updateStatusText();
-            // Reschedule so this task repeats
-            if (mEnabled) {
-                mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
-            }
-        }
-
-        public abstract void updateStatusText();
-
-        public String getShortReport() {
-            return "no-report";
-        }
-
-        public double getMaxSecondsWithNoGlitch() {
-            return 0.0;
         }
     }
 
@@ -134,6 +97,10 @@ public class GlitchActivity extends AnalyzerActivity {
 
         private double mSignalToNoiseDB;
         private double mPeakAmplitude;
+
+        public GlitchSniffer(Activity activity) {
+            super(activity);
+        }
 
 
         @Override
@@ -188,7 +155,7 @@ public class GlitchActivity extends AnalyzerActivity {
             reschedule();
         }
 
-        public String getCurrentStatusReport() {
+        private String getCurrentStatusReport() {
             long now = System.currentTimeMillis();
             double totalSeconds = (now - mTimeAtStart) / 1000.0;
 
@@ -228,7 +195,6 @@ public class GlitchActivity extends AnalyzerActivity {
             setAnalyzerText(mLastGlitchReport);
         }
 
-        @Override
         public double getMaxSecondsWithNoGlitch() {
             return mMaxSecondsWithoutGlitches;
         }
@@ -240,13 +206,6 @@ public class GlitchActivity extends AnalyzerActivity {
             return mLastResetCount;
         }
     }
-
-
-    NativeSniffer createNativeSniffer() {
-        return new GlitchSniffer();
-    }
-
-    private NativeSniffer mGlitchSniffer = createNativeSniffer();
 
     // Called on UI thread
     protected void onGlitchDetected() {
@@ -336,7 +295,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
     public void startAudioTest() throws IOException {
         startAudio();
-        mGlitchSniffer.startSniffer();
+        mNativeSniffer.startSniffer();
         onTestBegan();
     }
 
@@ -364,7 +323,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public void stopAudioTest() {
-        mGlitchSniffer.stopSniffer();
+        mNativeSniffer.stopSniffer();
         stopAudio();
         closeAudio();
     }
@@ -387,7 +346,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public String getShortReport() {
-        return mGlitchSniffer.getShortReport();
+        return mNativeSniffer.getShortReport();
     }
 
     @Override

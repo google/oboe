@@ -16,6 +16,7 @@
 
 package com.google.sample.oboe.manualtest;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -40,6 +41,9 @@ public class EchoActivity extends TestInputActivity {
     private double mDelayTime;
     private Button mStartButton;
     private Button mStopButton;
+    private TextView mStatusTextView;
+
+    private ColdStartSniffer mNativeSniffer = new ColdStartSniffer(this);
 
     protected static final int MAX_DELAY_TIME_PROGRESS = 1000;
 
@@ -58,6 +62,74 @@ public class EchoActivity extends TestInputActivity {
         }
     };
 
+    // Periodically query for cold start latency from the native code until it is ready.
+    protected class ColdStartSniffer extends NativeSniffer {
+
+        private int stableCallCount = 0;
+        private static final int STABLE_CALLS_NEEDED = 20;
+        private int mInputLatency;
+        private int mOutputLatency;
+
+        public ColdStartSniffer(Activity activity) {
+            super(activity);
+        }
+
+        @Override
+        public void startSniffer() {
+            stableCallCount = 0;
+            mInputLatency = -1;
+            mOutputLatency = -1;
+            super.startSniffer();
+        }
+
+        public void run() {
+            mInputLatency = getColdStartInputMillis();
+            mOutputLatency = getColdStartOutputMillis();
+            updateStatusText();
+            if (!isComplete()) {
+                reschedule();
+            }
+        }
+
+        private boolean isComplete() {
+            if (mInputLatency > 0 && mOutputLatency > 0) {
+                stableCallCount++;
+            }
+            return stableCallCount > STABLE_CALLS_NEEDED;
+        }
+
+        private String getCurrentStatusReport() {
+            StringBuffer message = new StringBuffer();
+            message.append("cold.start.input.msec = " +
+                    ((mInputLatency > 0)
+                            ? mInputLatency
+                            : "?")
+                    + "\n");
+            message.append("cold.start.output.msec = " +
+                    ((mOutputLatency > 0)
+                            ? mOutputLatency
+                            : "?")
+                    + "\n");
+            message.append("stable.call.count = " + stableCallCount +  "\n");
+            return message.toString();
+        }
+
+        @Override
+        public String getShortReport() {
+            return getCurrentStatusReport();
+        }
+
+        @Override
+        public void updateStatusText() {
+            String message = getCurrentStatusReport();
+            mStatusTextView.setText(message);
+        }
+
+    }
+
+    private native int getColdStartInputMillis();
+    private native int getColdStartOutputMillis();
+
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_echo);
@@ -74,6 +146,8 @@ public class EchoActivity extends TestInputActivity {
         mStartButton = (Button) findViewById(R.id.button_start_echo);
         mStopButton = (Button) findViewById(R.id.button_stop_echo);
         mStopButton.setEnabled(false);
+
+        mStatusTextView = (TextView) findViewById(R.id.text_status);
 
         mTextDelayTime = (TextView) findViewById(R.id.text_delay_time);
         mFaderDelayTime = (SeekBar) findViewById(R.id.fader_delay_time);
@@ -115,12 +189,14 @@ public class EchoActivity extends TestInputActivity {
             mStartButton.setEnabled(false);
             mStopButton.setEnabled(true);
             keepScreenOn(true);
+            mNativeSniffer.startSniffer();
         } catch (IOException e) {
             showErrorToast(e.getMessage());
         }
     }
 
     public void onStopEcho(View view) {
+        mNativeSniffer.stopSniffer();
         stopAudio();
         closeAudio();
         mStartButton.setEnabled(true);

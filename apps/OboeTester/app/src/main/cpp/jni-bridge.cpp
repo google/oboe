@@ -390,14 +390,10 @@ Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLastErrorCallbackResul
 }
 
 JNIEXPORT jdouble JNICALL
-Java_com_google_sample_oboe_manualtest_OboeAudioStream_getLatency(JNIEnv *env,
-        jobject instance, jint streamIndex) {
-    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
-    if (oboeStream != nullptr) {
-        auto result = oboeStream->calculateLatencyMillis();
-        return (!result) ? -1.0 : result.value();
-    }
-    return -1.0;
+Java_com_google_sample_oboe_manualtest_OboeAudioStream_getTimestampLatency(JNIEnv *env,
+        jobject instance,
+        jint streamIndex) {
+    return engine.getCurrentActivity()->getTimestampLatency(streamIndex);
 }
 
 JNIEXPORT jdouble JNICALL
@@ -526,6 +522,18 @@ Java_com_google_sample_oboe_manualtest_EchoActivity_setDelayTime(JNIEnv *env,
                                                                          jobject instance,
                                                                          jdouble delayTimeSeconds) {
     engine.setDelayTime(delayTimeSeconds);
+}
+
+JNIEXPORT int JNICALL
+Java_com_google_sample_oboe_manualtest_EchoActivity_getColdStartInputMillis(JNIEnv *env,
+        jobject instance) {
+    return engine.getCurrentActivity()->getColdStartInputMillis();
+}
+
+JNIEXPORT int JNICALL
+Java_com_google_sample_oboe_manualtest_EchoActivity_getColdStartOutputMillis(JNIEnv *env,
+                                                                            jobject instance) {
+    return engine.getCurrentActivity()->getColdStartOutputMillis();
 }
 
 // ==========================================================================
