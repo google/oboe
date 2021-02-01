@@ -546,6 +546,7 @@ public:
         int32_t sizeInBursts = std::max(2, capacityInBursts / 2);
         // Set size of buffer to minimize underruns.
         auto result = outputStream->setBufferSizeInFrames(sizeInBursts * burstInFrames);
+        static_cast<void>(result);  // Avoid unused variable.
         LOGD("ActivityDataPath: %s() capacity = %d, burst = %d, size = %d",
              __func__, capacityInFrames, burstInFrames, result.value());
     }
