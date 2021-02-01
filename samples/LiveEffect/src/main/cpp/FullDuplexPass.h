@@ -38,7 +38,7 @@ public:
         // It also assumes the channel count for each stream is the same.
         int32_t samplesPerFrame = outputStream->getChannelCount();
         int32_t numInputSamples = numInputFrames * samplesPerFrame;
-        int32_t numOutputSamples = numInputFrames * samplesPerFrame;
+        int32_t numOutputSamples = numOutputFrames * samplesPerFrame;
 
         // It is possible that there may be fewer input than output samples.
         int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
