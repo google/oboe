@@ -56,6 +56,7 @@ public:
         mBufferCapacityInFrames = mChildStream->getBufferCapacityInFrames();
         mPerformanceMode = mChildStream->getPerformanceMode();
         mInputPreset = mChildStream->getInputPreset();
+        mFramesPerBurst = mChildStream->getFramesPerBurst();
     }
 
     virtual ~FilterAudioStream() = default;
@@ -113,7 +114,7 @@ public:
             int32_t numFrames,
             int64_t timeoutNanoseconds) override;
 
-    StreamState getState() const override {
+    StreamState getState() override {
         return mChildStream->getState();
     }
 
@@ -126,10 +127,6 @@ public:
 
     bool isXRunCountSupported() const override {
         return mChildStream->isXRunCountSupported();
-    }
-
-    int32_t getFramesPerBurst() override {
-        return mChildStream->getFramesPerBurst();
     }
 
     AudioApi getAudioApi() const override {
@@ -159,7 +156,7 @@ public:
         return mBufferSizeInFrames;
     }
 
-    ResultWithValue<int32_t> getXRunCount() const override {
+    ResultWithValue<int32_t> getXRunCount() override {
         return mChildStream->getXRunCount();
     }
 
