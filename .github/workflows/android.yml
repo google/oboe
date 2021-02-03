@@ -1,4 +1,4 @@
-name: Android CI
+name: Build CI
 
 on:
   push:
@@ -22,5 +22,17 @@ jobs:
         pushd samples
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
+        popd
+    - name: build OboeTester
+      run: |
+        pushd apps/OboeTester
+        chmod +x gradlew
+        ./gradlew -q clean bundledDebug
+        popd
+    - name: build fxlab
+      run: |
+        pushd apps/fxlab
+        chmod +x gradlew
+        ./gradlew -q clean bundledDebug
         popd
         
