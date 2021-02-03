@@ -1,4 +1,4 @@
-# Oboe [![Build Status](https://travis-ci.org/google/oboe.svg?branch=master)](https://travis-ci.org/google/oboe)
+# Oboe [![Build](https://github.com/google/oboe/workflows/Build/badge.svg)](https://github.com/google/oboe/actions)
 
 [![Introduction to Oboe video](docs/images/getting-started-video.jpg)](https://www.youtube.com/watch?v=csfHAbr5ilI&list=PLWz5rJ2EKKc_duWv9IPNvx9YBudNMmLSa)
 
