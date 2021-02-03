@@ -27,12 +27,12 @@ jobs:
       run: |
         pushd apps/OboeTester
         chmod +x gradlew
-        ./gradlew -q clean bundledDebug
+        ./gradlew -q clean bundleDebug
         popd
     - name: build fxlab
       run: |
         pushd apps/fxlab
         chmod +x gradlew
-        ./gradlew -q clean bundledDebug
+        ./gradlew -q clean bundleDebug
         popd
         
