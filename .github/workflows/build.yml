@@ -28,4 +28,11 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundledDebug
         popd
+    - name: build fxlab
+      run: |
+        pushd apps/fxlab
+        chmod +x gradlew
+        ./gradlew -q clean bundledDebug
+        popd
+
 # add future apps here
