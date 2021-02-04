@@ -50,7 +50,9 @@ You can then examine the WAV file using a program like Audacity.
 This test copies input to output and adds up to 3 seconds of delay.
 This can be used to simulate high latency on a phone that supports low latency.
 Try putting the phone to your ear with the added delay at 0 and try talking.
-Then set it to about 1-200 msec and try talking on the phone. Notice how the echo can be very confusing.
+Then set it to about 700 msec and try talking on the phone. Notice how the echo can be very confusing.
+
+The test will also display estimated "cold start latency" for full duplex streams.
 
 ### Round Trip Latency
 
@@ -84,5 +86,15 @@ The Share button will let you email the report to yourself.
 ### Test Disconnect
 
 You can test whether the disconnect logic is working in Android by plugging or unplugging a headset.
-Just follow the instructions in red. You will get a report at the end that you can SHARE by GMail.
+Just follow the instructions in red. You will get a report at the end that you can SHARE by GMail or Drive.
 
+### Data Paths
+
+This checks for dead speaker and mic channels, dead Input Presets and other audio data path problems.
+
+1. Tap "DATA PATHS" button.
+1. Unplug or disconnect any headphones.
+1. Set volume to medium high.
+1. Place the phone on a table in a quiet room and hit START.
+1. Wait a few minutes, quietly, for the test to complete. You will hear some sine tones.
+1. You will get a report at the end that you can SHARE by GMail or Drive.
