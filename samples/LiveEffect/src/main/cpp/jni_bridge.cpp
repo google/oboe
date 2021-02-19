@@ -112,7 +112,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setAPI(JNIEnv *env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_isAAudioSupported(
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_isAAudioRecommended(
     JNIEnv *env, jclass type) {
     if (engine == nullptr) {
         LOGE(
@@ -120,7 +120,7 @@ Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_isAAudioSupported(
             "before calling this method");
         return JNI_FALSE;
     }
-    return engine->isAAudioSupported() ? JNI_TRUE : JNI_FALSE;
+    return engine->isAAudioRecommended() ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL

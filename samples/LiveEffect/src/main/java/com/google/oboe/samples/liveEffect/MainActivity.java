@@ -54,7 +54,7 @@ public class MainActivity extends Activity
     private boolean isPlaying = false;
 
     private int apiSelection = OBOE_API_AAUDIO;
-    private boolean aaudioSupported = true;
+    private boolean mAAudioRecommended = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,12 +125,12 @@ public class MainActivity extends Activity
     }
 
     private void EnableAudioApiUI(boolean enable) {
-        if(apiSelection == OBOE_API_AAUDIO && !aaudioSupported)
+        if(apiSelection == OBOE_API_AAUDIO && !mAAudioRecommended)
         {
             apiSelection = OBOE_API_OPENSL_ES;
         }
         findViewById(R.id.slesButton).setEnabled(enable);
-        if(!aaudioSupported) {
+        if(!mAAudioRecommended) {
             findViewById(R.id.aaudioButton).setEnabled(false);
         } else {
             findViewById(R.id.aaudioButton).setEnabled(enable);
@@ -150,7 +150,7 @@ public class MainActivity extends Activity
     protected void onResume() {
         super.onResume();
         LiveEffectEngine.create();
-        aaudioSupported = LiveEffectEngine.isAAudioSupported();
+        mAAudioRecommended = LiveEffectEngine.isAAudioRecommended();
         EnableAudioApiUI(true);
         LiveEffectEngine.setAPI(apiSelection);
     }

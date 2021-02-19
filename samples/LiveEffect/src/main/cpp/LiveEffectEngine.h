@@ -49,7 +49,7 @@ public:
     void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 
     bool setAudioApi(oboe::AudioApi);
-    bool isAAudioSupported(void);
+    bool isAAudioRecommended(void);
 
 private:
     FullDuplexPass    mFullDuplexPass;
