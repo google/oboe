@@ -31,14 +31,12 @@ void LiveEffectEngine::setPlaybackDeviceId(int32_t deviceId) {
     mPlaybackDeviceId = deviceId;
 }
 
-bool LiveEffectEngine::isAAudioSupported() {
-    oboe::AudioStreamBuilder builder;
-    return builder.isAAudioSupported();
+bool LiveEffectEngine::isAAudioRecommended() {
+    return oboe::AudioStreamBuilder::isAAudioRecommended();
 }
 
 bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
     if (mIsEffectOn) return false;
-
     mAudioApi = api;
     return true;
 }
