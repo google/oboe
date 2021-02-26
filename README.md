@@ -38,7 +38,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 ## Sample code and apps
 - Sample apps can be found in the [samples directory](samples). 
 - A complete "effects processor" app called FXLab can  be found in the [apps/fxlab folder](apps/fxlab). 
-- Also check out the [Rhythm Game codelab](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html#0).
+- Also check out the [Rhythm Game codelab](https://developer.android.com/codelabs/musicalgame-using-oboe?hl=en#0).
 
 ### Third party sample code
 - [Ableton Link integration demo](https://github.com/jbloit/AndroidLinkAudio) (author: jbloit)
