@@ -597,6 +597,8 @@ void AudioStreamAAudio::updateFramesRead() {
     AAudioStream *stream = mAAudioStream.load();
 // Set to 1 for debugging race condition #1180 with mAAudioStream.
 // See also DEBUG_CLOSE_RACE in OboeTester.
+// This was left in the code so that we could test the fix again easily in the future.
+// We could not trigger the race condition without adding these get calls and the sleeps.
 #define DEBUG_CLOSE_RACE 0
 #if DEBUG_CLOSE_RACE
     // This is used when testing race conditions with close().
