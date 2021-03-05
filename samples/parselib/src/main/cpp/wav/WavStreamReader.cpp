@@ -39,7 +39,7 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
 
     mAudioDataStartPos = -1;
 
-    mChunkMap = new std::map<RiffID, WavChunkHeader *>();
+    mChunkMap = new std::map<RiffID, std::shared_ptr<WavChunkHeader>>();
 }
 
 int WavStreamReader::getSampleEncoding() {
@@ -78,21 +78,21 @@ void WavStreamReader::parse() {
 //        __android_log_print(ANDROID_LOG_INFO, TAG, "[%c%c%c%c]",
 //                            tagStr[0], tagStr[1], tagStr[2], tagStr[3]);
 
-        WavChunkHeader *chunk = 0;
+        std::shared_ptr<WavChunkHeader> chunk = 0;
         if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
-            chunk = mWavChunk = new WavRIFFChunkHeader(tag);
+            chunk = mWavChunk = std::shared_ptr<WavRIFFChunkHeader>(new WavRIFFChunkHeader(tag));
             mWavChunk->read(mStream);
         } else if (tag == WavFmtChunkHeader::RIFFID_FMT) {
-            chunk = mFmtChunk = new WavFmtChunkHeader(tag);
+            chunk = mFmtChunk = std::shared_ptr<WavFmtChunkHeader>(new WavFmtChunkHeader(tag));
             mFmtChunk->read(mStream);
         } else if (tag == WavChunkHeader::RIFFID_DATA) {
-            chunk = mDataChunk = new WavChunkHeader(tag);
+            chunk = mDataChunk = std::shared_ptr<WavChunkHeader>(new WavChunkHeader(tag));
             mDataChunk->read(mStream);
             // We are now positioned at the start of the audio data.
             mAudioDataStartPos = mStream->getPos();
             mStream->advance(mDataChunk->mChunkSize);
         } else {
-            chunk = new WavChunkHeader(tag);
+            chunk = std::shared_ptr<WavChunkHeader>(new WavChunkHeader(tag));
             chunk->read(mStream);
             mStream->advance(chunk->mChunkSize); // skip the body
         }
