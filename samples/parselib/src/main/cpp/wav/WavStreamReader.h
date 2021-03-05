@@ -59,13 +59,13 @@ public:
 protected:
     InputStream *mStream;
 
-    WavRIFFChunkHeader *mWavChunk;
-    WavFmtChunkHeader *mFmtChunk;
-    WavChunkHeader *mDataChunk;
+    std::shared_ptr<WavRIFFChunkHeader> mWavChunk;
+    std::shared_ptr<WavFmtChunkHeader> mFmtChunk;
+    std::shared_ptr<WavChunkHeader> mDataChunk;
 
     long mAudioDataStartPos;
 
-    std::map<RiffID, WavChunkHeader *> *mChunkMap;
+    std::map<RiffID, std::shared_ptr<WavChunkHeader>> *mChunkMap;
 };
 
 } // namespace parselib
