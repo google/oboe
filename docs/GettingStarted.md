@@ -159,8 +159,9 @@ Define an `AudioStreamDataCallback` class to receive callbacks whenever the stre
         oboe::DataCallbackResult
         onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
             
-            // We requested AudioFormat::Float so we assume we got it.
-            // For production code always check what format
+            // We requested AudioFormat::Float. So if the stream opens
+	    // we know we got the Float format.
+            // If you do not specify a format then you should check what format
             // the stream has and cast to the appropriate type.
             auto *outputData = static_cast<float *>(audioData);
 	    
