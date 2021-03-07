@@ -65,7 +65,7 @@ protected:
 
     long mAudioDataStartPos;
 
-    std::map<RiffID, std::shared_ptr<WavChunkHeader>> *mChunkMap;
+    std::map<RiffID, std::shared_ptr<WavChunkHeader>> mChunkMap;
 };
 
 } // namespace parselib
