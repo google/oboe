@@ -39,7 +39,7 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
 
     mAudioDataStartPos = -1;
 
-    mChunkMap = new std::map<RiffID, std::shared_ptr<WavChunkHeader>>();
+//    mChunkMap = new std::map<RiffID, std::shared_ptr<WavChunkHeader>>();
 }
 
 int WavStreamReader::getSampleEncoding() {
@@ -97,7 +97,7 @@ void WavStreamReader::parse() {
             mStream->advance(chunk->mChunkSize); // skip the body
         }
 
-        (*mChunkMap)[tag] = chunk;
+        mChunkMap[tag] = chunk;
     }
 
     if (mDataChunk != 0) {
