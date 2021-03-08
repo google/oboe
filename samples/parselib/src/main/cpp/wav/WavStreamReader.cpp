@@ -38,8 +38,6 @@ WavStreamReader::WavStreamReader(InputStream *stream) {
     mDataChunk = 0;
 
     mAudioDataStartPos = -1;
-
-//    mChunkMap = new std::map<RiffID, std::shared_ptr<WavChunkHeader>>();
 }
 
 int WavStreamReader::getSampleEncoding() {
