@@ -34,9 +34,11 @@ Measure touch screen latency plus audio output latency.
 Open, Start, then tap on the screen with your fingertip.
 The app will listen for the sound of your fingernail tapping the screen
 and the resulting beep, and then measure the time between them.
+
 If you use headphones then you can eliminate the latency caused by speaker protection.
 If you use USB-MIDI input then you can eliminate the latency due to the touch screen, which is around 15-30 msec.
 MIDI latency is generally under 1 msec.
+This test works well for measuring the latency of Bluetooth headsets.
 
 ### Record and Play
 
@@ -59,11 +61,19 @@ The test will also display estimated "cold start latency" for full duplex stream
 This test works with either a [loopback adapter](https://source.android.com/devices/audio/latency/loopback) or through speakers.
 Latency through the speakers will probably be higher.
 It measures the input and output latency combined.
-Set the volume somewhere in the middle.
 
-The test works by sending a random series of bits encoded using smoothed Manchester Encoding.
-This signal has a very sharp peak when we correlate output and input.
-So it works at almost any volume. But the confidence will be higher at higher volumes.
+1. Set the Input or Output settings by tapping the green bar to expose the controls.
+2. Set the volume somewhere above the middle. The test works at almost any volume. But the confidence will be higher at higher volumes.
+3. Tap "MEASURE" to make a single measurement.
+4. Or tap "AVERAGE" to run the test several times and report an average and Mean Absolute Deviation.
+
+The test starts by setting up a stable full-duplex stream.
+Then it outputs a random series of bits encoded using smoothed Manchester Encoding.
+We record the Input and Output stream together for about a second.
+Then we correlate the two streams by sliding the portion of the output stream that contains the random bits over the input stream at different time offsets.
+The Manchaster Encoded signal provide a very sharp peak when the offset matches the combined input and output latency.
+
+Source code for the analyzer in [LatencyAnalyzer.h](https://github.com/google/oboe/blob/master/apps/OboeTester/app/src/main/cpp/analyzer/LatencyAnalyzer.h).
 
 ### Glitch Test
 
