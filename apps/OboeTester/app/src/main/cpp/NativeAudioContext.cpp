@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
+// Set to 1 for debugging race condition #1180 with mAAudioStream.
+// See also AudioStreamAAudio.cpp in Oboe.
+// This was left in the code so that we could test the fix again easily in the future.
+// We could not trigger the race condition without adding these get calls and the sleeps.
+#define DEBUG_CLOSE_RACE 0
+
 #include <fstream>
 #include <iostream>
+#if DEBUG_CLOSE_RACE
+#include <thread>
+#endif // DEBUG_CLOSE_RACE
 #include <vector>
-#include <common/AudioClock.h>
 
+#include <common/AudioClock.h>
 #include "util/WaveFileWriter.h"
 
 #include "NativeAudioContext.h"
@@ -250,6 +259,20 @@ oboe::Result ActivityContext::start() {
         threadEnabled.store(true);
         dataThread = new std::thread(threadCallback, this);
     }
+
+#ifdef DEBUG_CLOSE_RACE
+    // Also put a sleep for 400 msec in AudioStreamAAudio::updateFramesRead().
+    if (outputStream != nullptr) {
+        std::thread raceDebugger([outputStream]() {
+            while (outputStream->getState() != StreamState::Closed) {
+                int64_t framesRead = outputStream->getFramesRead();
+                LOGD("raceDebugger, framesRead = %d, state = %d",
+                     (int) framesRead, (int) outputStream->getState());
+            }
+        });
+        raceDebugger.detach();
+    }
+#endif // DEBUG_CLOSE_RACE
 
     return result;
 }

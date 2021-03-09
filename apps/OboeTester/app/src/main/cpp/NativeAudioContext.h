@@ -298,7 +298,7 @@ protected:
     int32_t                      mSampleRate = 0; // TODO per stream
 
     std::atomic<bool>            threadEnabled{false};
-    std::thread                 *dataThread = nullptr;
+    std::thread                 *dataThread = nullptr; // FIXME never gets deleted
 
 private:
     int64_t mInputOpenedAt = 0;

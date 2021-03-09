@@ -72,7 +72,7 @@ target_include_directories(oboe
 #     Enable -Ofast
 target_compile_options(oboe
         PRIVATE
-        -std=c++14
+        -std=c++17
         -Wall
         -Wextra-semi
         -Wshadow
