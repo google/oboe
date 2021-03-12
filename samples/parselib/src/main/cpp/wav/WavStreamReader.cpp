@@ -263,40 +263,47 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
         return 0;
     }
 
-    // TODO - Manage other input formats
+    int numFramesRead = 0;
     switch (mFmtChunk->mSampleSize) {
         case 8:
-            return getDataFloat_PCM8(buff, numFrames);
+            numFramesRead = getDataFloat_PCM8(buff, numFrames);
+            break;
 
         case 16:
-            return getDataFloat_PCM16(buff, numFrames);
+            numFramesRead = getDataFloat_PCM16(buff, numFrames);
+            break;
 
         case 24:
             if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
-                return getDataFloat_PCM24(buff, numFrames);
+                numFramesRead = getDataFloat_PCM24(buff, numFrames);
             } else {
                 __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
                                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
-                return 0;
             }
+            break;
 
         case 32:
             if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
-                return getDataFloat_PCM32(buff, numFrames);
+                numFramesRead = getDataFloat_PCM32(buff, numFrames);
             } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
-                return getDataFloat_Float32(buff, numFrames);
+                numFramesRead = getDataFloat_Float32(buff, numFrames);
             } else {
                 __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
                                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
-                return 0;
             }
-
+            break;
+            
         default:
             __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
     }
 
-    return 0;
+    // Zero out any unread frames
+    if (numFramesRead < numFrames) {
+        memset(buff + numFramesRead, 0, numFrames - numFramesRead);
+    }
+
+    return numFramesRead;
 }
 
 } // namespace parselib
