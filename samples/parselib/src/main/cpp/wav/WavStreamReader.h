@@ -66,6 +66,19 @@ protected:
     long mAudioDataStartPos;
 
     std::map<RiffID, std::shared_ptr<WavChunkHeader>> mChunkMap;
+
+private:
+    /*
+     * Individual Format Readers/Converters
+     */
+    int getDataFloat_PCM8(float *buff, int numFrames);
+
+    int getDataFloat_PCM16(float *buff, int numFrames);
+
+    int getDataFloat_PCM24(float *buff, int numFrames);
+
+    int getDataFloat_Float32(float *buff, int numFrames);
+    int getDataFloat_PCM32(float *buff, int numFrames);
 };
 
 } // namespace parselib

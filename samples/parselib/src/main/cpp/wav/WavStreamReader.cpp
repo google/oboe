@@ -33,9 +33,9 @@ namespace parselib {
 WavStreamReader::WavStreamReader(InputStream *stream) {
     mStream = stream;
 
-    mWavChunk = 0;
-    mFmtChunk = 0;
-    mDataChunk = 0;
+    mWavChunk = nullptr;
+    mFmtChunk = nullptr;
+    mDataChunk = nullptr;
 
     mAudioDataStartPos = -1;
 }
@@ -76,7 +76,7 @@ void WavStreamReader::parse() {
 //        __android_log_print(ANDROID_LOG_INFO, TAG, "[%c%c%c%c]",
 //                            tagStr[0], tagStr[1], tagStr[2], tagStr[3]);
 
-        std::shared_ptr<WavChunkHeader> chunk = 0;
+        std::shared_ptr<WavChunkHeader> chunk = nullptr;
         if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
             chunk = mWavChunk = std::shared_ptr<WavRIFFChunkHeader>(new WavRIFFChunkHeader(tag));
             mWavChunk->read(mStream);
@@ -110,45 +110,190 @@ void WavStreamReader::positionToAudio() {
     }
 }
 
+/**
+ * Read and convert samples in PCM8 format to float
+ */
+int WavStreamReader::getDataFloat_PCM8(float *buff, int numFrames) {
+    int numChans = mFmtChunk->mNumChannels;
+
+    int buffOffset = 0;
+    int totalFramesRead = 0;
+
+    const static int SAMPLE_SIZE = sizeof(u_int8_t);
+    const static float SAMPLE_FULLSCALE = (float)0x7F;
+    
+    u_int8_t *readBuff = new u_int8_t[128 * numChans];
+    int framesLeft = numFrames;
+    while (framesLeft > 0) {
+        int framesThisRead = std::min(framesLeft, 128);
+        //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
+        int numFramesRead =
+                mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE * numChans) /
+                (SAMPLE_SIZE * numChans);
+        totalFramesRead += numFramesRead;
+
+        // Convert & Scale
+        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
+            // PCM8 is unsigned, so we need to make it signed before scaling/converting
+            buff[buffOffset++] = ((float) readBuff[offset] - SAMPLE_FULLSCALE)
+                    / (float) SAMPLE_FULLSCALE;
+        }
+
+        if (numFramesRead < framesThisRead) {
+            break; // none left
+        }
+
+        framesLeft -= framesThisRead;
+    }
+    delete[] readBuff;
+
+    return totalFramesRead;
+}
+
+/**
+ * Read and convert samples in PCM16 format to float
+ */
+int WavStreamReader::getDataFloat_PCM16(float *buff, int numFrames) {
+    int numChans = mFmtChunk->mNumChannels;
+
+    int buffOffset = 0;
+    int totalFramesRead = 0;
+
+    const static int SAMPLE_SIZE = sizeof(int16_t);
+    const static float SAMPLE_FULLSCALE = (float) 0x7FFF;
+
+    int16_t *readBuff = new int16_t[128 * numChans];
+    int framesLeft = numFrames;
+    while (framesLeft > 0) {
+        int framesThisRead = std::min(framesLeft, 128);
+        //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
+        int numFramesRead =
+                mStream->read(readBuff, framesThisRead * SAMPLE_SIZE * numChans) /
+                (SAMPLE_SIZE * numChans);
+        totalFramesRead += numFramesRead;
+
+        // Convert & Scale
+        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
+            buff[buffOffset++] = (float) readBuff[offset] / SAMPLE_FULLSCALE;
+        }
+
+        if (numFramesRead < framesThisRead) {
+            break; // none left
+        }
+
+        framesLeft -= framesThisRead;
+    }
+    delete[] readBuff;
+
+    return totalFramesRead;
+}
+
+/**
+ * Read and convert samples in PCM24 format to float
+ */
+int WavStreamReader::getDataFloat_PCM24(float *buff, int numFrames) {
+    int numChans = mFmtChunk->mNumChannels;
+    int numSamples = numFrames * numChans;
+
+    const static float SAMPLE_FULLSCALE = (float) 0x7FFFFFFF;
+
+    uint8_t buffer[3];
+    for(int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
+        mStream->read(buffer, 3);
+        int32_t sample = (buffer[0] << 8) | (buffer[1] << 16) | (buffer[2] << 24);
+        buff[sampleIndex] = (float)sample / SAMPLE_FULLSCALE;
+    }
+
+    return numFrames;
+}
+
+/**
+ * Read and convert samples in Float32 format to float
+ */
+int WavStreamReader::getDataFloat_Float32(float *buff, int numFrames) {
+    // Turns out that WAV Float32 is just Android floats
+    int numChans = mFmtChunk->mNumChannels;
+
+    return mStream->read(buff, numFrames * sizeof(float) * numChans) /
+           (sizeof(float) * numChans);
+}
+
+/**
+ * Read and convert samples in PCM32 format to float
+ */
+int WavStreamReader::getDataFloat_PCM32(float *buff, int numFrames) {
+    int numChans = mFmtChunk->mNumChannels;
+
+    int buffOffset = 0;
+    int totalFramesRead = 0;
+
+    const static int SAMPLE_SIZE = sizeof(int32_t);
+    const static float SAMPLE_FULLSCALE = (float) 0x7FFFFFFF;
+
+    int32_t *readBuff = new int32_t[128 * numChans];
+    int framesLeft = numFrames;
+    while (framesLeft > 0) {
+        int framesThisRead = std::min(framesLeft, 128);
+        //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
+        int numFramesRead =
+                mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE* numChans) /
+                    (SAMPLE_SIZE * numChans);
+        totalFramesRead += numFramesRead;
+
+        // convert & Scale
+        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
+            buff[buffOffset++] = (float) readBuff[offset] / SAMPLE_FULLSCALE;
+        }
+
+        if (numFramesRead < framesThisRead) {
+            break; // none left
+        }
+
+        framesLeft -= framesThisRead;
+    }
+    delete[] readBuff;
+
+    return totalFramesRead;
+}
+
 int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     // __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
 
-    if (mDataChunk == 0 || mFmtChunk == 0) {
+    if (mDataChunk == nullptr || mFmtChunk == nullptr) {
         return 0;
     }
 
-    int totalFramesRead = 0;
-
-    int numChans = mFmtChunk->mNumChannels;
-    int buffOffset = 0;
-
     // TODO - Manage other input formats
-    if (mFmtChunk->mSampleSize == 16) {
-        short *readBuff = new short[128 * numChans];
-        int framesLeft = numFrames;
-        while (framesLeft > 0) {
-            int framesThisRead = std::min(framesLeft, 128);
-            //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
-            int numFramesRead =
-                    mStream->read(readBuff, framesThisRead * sizeof(short) * numChans) /
-                    (sizeof(short) * numChans);
-            totalFramesRead += numFramesRead;
+    switch (mFmtChunk->mSampleSize) {
+        case 8:
+            return getDataFloat_PCM8(buff, numFrames);
 
-            // convert
-            for (int offset = 0; offset < numFramesRead * numChans; offset++) {
-                buff[buffOffset++] = (float) readBuff[offset] / (float) 0x7FFF;
+        case 16:
+            return getDataFloat_PCM16(buff, numFrames);
+
+        case 24:
+            if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
+                return getDataFloat_PCM24(buff, numFrames);
+            } else {
+                __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
+                                    mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
+                return 0;
             }
 
-            if (numFramesRead < framesThisRead) {
-                break; // none left
+        case 32:
+            if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_PCM) {
+                return getDataFloat_PCM32(buff, numFrames);
+            } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
+                return getDataFloat_Float32(buff, numFrames);
+            } else {
+                __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
+                                    mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
+                return 0;
             }
 
-            framesLeft -= framesThisRead;
-        }
-        delete[] readBuff;
-
-        // __android_log_print(ANDROID_LOG_INFO, TAG, "  returns:%d", totalFramesRead);
-        return totalFramesRead;
+        default:
+            __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
+                    mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
     }
 
     return 0;
