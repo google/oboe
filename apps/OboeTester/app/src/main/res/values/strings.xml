@@ -90,6 +90,22 @@
         <item>Performance</item>
     </string-array>
 
+    <string name="usage_prompt">Usage:</string>
+    <string-array name="audio_usages">
+        <item>Media</item>
+        <item>VoiceComm</item>
+        <item>VoiceCommSig</item>
+        <item>Alarm</item>
+        <item>Notification</item>
+        <item>Ringtone</item>
+        <item>Event</item>
+        <item>Accessability</item>
+        <item>Navigation</item>
+        <item>Sonification</item>
+        <item>Game</item>
+        <item>Assistant</item>
+    </string-array>
+
     <string name="channel_count_prompt">Channels:</string>
     <string-array name="channel_counts">
         <item>0</item>

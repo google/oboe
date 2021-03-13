@@ -169,6 +169,29 @@
                     android:text="\?" />
 
             </TableRow>
+
+            <TableRow
+                android:id="@+id/rowUsage">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/usage_prompt"/>
+
+                <Spinner
+                    android:id="@+id/spinnerUsage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/audio_usages" />
+
+                <TextView
+                    android:id="@+id/actualUsage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
+
         </TableLayout>
 
         <LinearLayout

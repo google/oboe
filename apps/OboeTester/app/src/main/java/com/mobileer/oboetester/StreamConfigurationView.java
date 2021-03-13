@@ -56,9 +56,14 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualChannelCountView;
     private TextView mActualFormatView;
 
-    private TextView mActualInputPresetView;
-    private Spinner  mInputPresetSpinner;
     private TableRow mInputPresetTableRow;
+    private Spinner  mInputPresetSpinner;
+    private TextView mActualInputPresetView;
+
+    private TableRow mUsageTableRow;
+    private Spinner  mUsageSpinner;
+    private TextView mActualUsageView;
+
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private Spinner  mRateConversionQualitySpinner;
@@ -237,6 +242,12 @@ public class StreamConfigurationView extends LinearLayout {
         mInputPresetSpinner.setOnItemSelectedListener(new InputPresetSpinnerListener());
         mInputPresetSpinner.setSelection(2); // TODO need better way to select voice recording default
 
+        mUsageTableRow = (TableRow) findViewById(R.id.rowUsage);
+        mActualUsageView = (TextView) findViewById(R.id.actualUsage);
+        mUsageSpinner = (Spinner) findViewById(R.id.spinnerUsage);
+        mUsageSpinner.setOnItemSelectedListener(new UsageSpinnerListener());
+        mUsageSpinner.setSelection(0); // TODO need better way to select Media default
+
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
         mStreamStatusView = (TextView) findViewById(R.id.statusView);
@@ -273,6 +284,8 @@ public class StreamConfigurationView extends LinearLayout {
 
         // Don't show InputPresets for output streams.
         mInputPresetTableRow.setVisibility(output ? View.GONE : View.VISIBLE);
+        // Don't show Usage for input streams.
+        mUsageTableRow.setVisibility(output ? View.VISIBLE : View.GONE);
     }
 
     private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
@@ -353,6 +366,20 @@ public class StreamConfigurationView extends LinearLayout {
         }
     }
 
+    private class UsageSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            String text = parent.getItemAtPosition(pos).toString();
+            int usage = StreamConfiguration.convertTextToUsage(text);
+            mRequestedConfiguration.setUsage(usage);
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mRequestedConfiguration.setUsage(StreamConfiguration.INPUT_PRESET_GENERIC);
+        }
+    }
+
     private class RateConversionQualitySpinnerListener
             implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -401,6 +428,10 @@ public class StreamConfigurationView extends LinearLayout {
         value = mActualConfiguration.getInputPreset();
         mActualInputPresetView.setText(StreamConfiguration.convertInputPresetToText(value));
         mActualInputPresetView.requestLayout();
+
+        value = mActualConfiguration.getUsage();
+        mActualUsageView.setText(StreamConfiguration.convertUsageToText(value));
+        mActualUsageView.requestLayout();
 
         mActualChannelCountView.setText(mActualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(mActualConfiguration.getSampleRate() + "");

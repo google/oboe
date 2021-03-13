@@ -149,6 +149,7 @@ int ActivityContext::open(jint nativeApi,
                           jint sharingMode,
                           jint performanceMode,
                           jint inputPreset,
+                          jint usage,
                           jint deviceId,
                           jint sessionId,
                           jint framesPerBurst,
@@ -187,6 +188,7 @@ int ActivityContext::open(jint nativeApi,
             ->setSharingMode((oboe::SharingMode) sharingMode)
             ->setPerformanceMode((oboe::PerformanceMode) performanceMode)
             ->setInputPreset((oboe::InputPreset)inputPreset)
+            ->setUsage((oboe::Usage)usage)
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)
