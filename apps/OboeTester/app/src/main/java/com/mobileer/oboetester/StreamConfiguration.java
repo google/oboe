@@ -16,6 +16,10 @@
 
 package com.mobileer.oboetester;
 
+import android.content.res.Resources;
+
+import java.util.HashMap;
+
 /**
  * Container for the properties of a Stream.
  *
@@ -68,6 +72,33 @@ public class StreamConfiguration {
 
     public static final int ERROR_DISCONNECTED = -899; // must match Oboe
 
+    public static final int USAGE_MEDIA = 1;
+    public static final int USAGE_VOICE_COMMUNICATION = 2;
+    public static final int USAGE_VOICE_COMMUNICATION_SIGNALLING = 3;
+    public static final int USAGE_ALARM = 4;
+    public static final int USAGE_NOTIFICATION = 5;
+    public static final int USAGE_NOTIFICATION_RINGTONE = 6;
+    public static final int USAGE_NOTIFICATION_EVENT = 10;
+    public static final int USAGE_ASSISTANCE_ACCESSIBILITY = 11;
+    public static final int USAGE_ASSISTANCE_NAVIGATION_GUIDANCE = 12;
+    public static final int USAGE_ASSISTANCE_SONIFICATION = 13;
+    public static final int USAGE_GAME = 14;
+    public static final int USAGE_ASSISTANT = 16;
+
+    public static final int[] usages = {
+             USAGE_MEDIA,
+            USAGE_VOICE_COMMUNICATION,
+            USAGE_VOICE_COMMUNICATION_SIGNALLING,
+            USAGE_ALARM,
+            USAGE_NOTIFICATION,
+            USAGE_NOTIFICATION_RINGTONE,
+            USAGE_NOTIFICATION_EVENT,
+            USAGE_ASSISTANCE_ACCESSIBILITY,
+            USAGE_ASSISTANCE_NAVIGATION_GUIDANCE,
+            USAGE_ASSISTANCE_SONIFICATION,
+            USAGE_GAME,
+            USAGE_ASSISTANT};
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;
@@ -82,6 +113,8 @@ public class StreamConfiguration {
     private boolean mChannelConversionAllowed;
     private int mRateConversionQuality;
     private int mInputPreset;
+    private int mUsage;
+    private static HashMap<String,Integer> mUsageStringToIntegerMap;
 
     private int mFramesPerBurst = 0;
 
@@ -89,6 +122,14 @@ public class StreamConfiguration {
 
     public StreamConfiguration() {
         reset();
+    }
+
+    static {
+        // Build map for Usage string-to-int conversion.
+        mUsageStringToIntegerMap = new HashMap<String,Integer>();
+        for (int usage : usages) {
+            mUsageStringToIntegerMap.put(convertUsageToText(usage), usage);
+        }
     }
 
     public void reset() {
@@ -102,6 +143,7 @@ public class StreamConfiguration {
         mSharingMode = SHARING_MODE_EXCLUSIVE;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
         mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
+        mUsage = 0; // FIXME add USAGE_*
         mFormatConversionAllowed = false;
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
@@ -161,12 +203,49 @@ public class StreamConfiguration {
         }
     }
 
-    public int getInputPreset() {
-        return mInputPreset;
-    }
-
+    public int getInputPreset() { return mInputPreset; }
     public void setInputPreset(int inputPreset) {
         this.mInputPreset = inputPreset;
+    }
+
+    public int getUsage() { return mUsage; }
+    public void setUsage(int Usage) {
+        this.mUsage = Usage;
+    }
+
+    static String convertUsageToText(int usage) {
+        switch(usage) {
+            case USAGE_MEDIA:
+                return "Media";
+            case USAGE_VOICE_COMMUNICATION:
+                return "VoiceComm";
+            case USAGE_VOICE_COMMUNICATION_SIGNALLING:
+                return "VoiceCommSig";
+            case USAGE_ALARM:
+                return "Alarm";
+            case USAGE_NOTIFICATION:
+                return "Notification";
+            case USAGE_NOTIFICATION_RINGTONE:
+                return "Ringtone";
+            case USAGE_NOTIFICATION_EVENT:
+                return "Event";
+            case USAGE_ASSISTANCE_ACCESSIBILITY:
+                return "Accessability";
+            case USAGE_ASSISTANCE_NAVIGATION_GUIDANCE:
+                return "Navigation";
+            case USAGE_ASSISTANCE_SONIFICATION:
+                return "Sonification";
+            case USAGE_GAME:
+                return "Game";
+            case USAGE_ASSISTANT:
+                return "Assistant";
+            default:
+                return "?=" + usage;
+        }
+    }
+
+    public static int convertTextToUsage(String text) {
+        return mUsageStringToIntegerMap.get(text);
     }
 
     public int getSharingMode() {
@@ -228,6 +307,9 @@ public class StreamConfiguration {
         if (getDirection() == DIRECTION_INPUT) {
             message.append(String.format("%s.preset = %s\n", prefix,
                     convertInputPresetToText(mInputPreset).toLowerCase()));
+        } else {
+            message.append(String.format("%s.preset = %s\n", prefix,
+                    convertUsageToText(mUsage).toLowerCase()));
         }
         message.append(String.format("%s.sharing = %s\n", prefix,
                 convertSharingModeToText(mSharingMode).toLowerCase()));
