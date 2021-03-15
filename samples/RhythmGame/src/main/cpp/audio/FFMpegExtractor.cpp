@@ -254,8 +254,7 @@ int64_t FFMpegExtractor::decode(
             if (result == AVERROR(EAGAIN)) {
                 // The codec needs more data before it can decode
                 LOGI("avcodec_receive_frame returned EAGAIN");
-                avPacket.size = 0;
-                avPacket.data = nullptr;
+                av_packet_unref(&avPacket);
                 continue;
             } else if (result != 0) {
                 LOGE("avcodec_receive_frame error: %s", av_err2str(result));
@@ -289,8 +288,7 @@ int64_t FFMpegExtractor::decode(
             bytesWritten += bytesToWrite;
             av_freep(&buffer1);
 
-            avPacket.size = 0;
-            avPacket.data = nullptr;
+            av_packet_unref(&avPacket);
         }
     }
 
