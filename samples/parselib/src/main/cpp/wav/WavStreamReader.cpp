@@ -292,7 +292,7 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
                                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
             }
             break;
-            
+
         default:
             __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
