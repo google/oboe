@@ -78,19 +78,19 @@ void WavStreamReader::parse() {
 
         std::shared_ptr<WavChunkHeader> chunk = nullptr;
         if (tag == WavRIFFChunkHeader::RIFFID_RIFF) {
-            chunk = mWavChunk = std::shared_ptr<WavRIFFChunkHeader>(new WavRIFFChunkHeader(tag));
+            chunk = mWavChunk = std::make_shared<WavRIFFChunkHeader>(WavRIFFChunkHeader(tag));
             mWavChunk->read(mStream);
         } else if (tag == WavFmtChunkHeader::RIFFID_FMT) {
-            chunk = mFmtChunk = std::shared_ptr<WavFmtChunkHeader>(new WavFmtChunkHeader(tag));
+            chunk = mFmtChunk = std::make_shared<WavFmtChunkHeader>(WavFmtChunkHeader(tag));
             mFmtChunk->read(mStream);
         } else if (tag == WavChunkHeader::RIFFID_DATA) {
-            chunk = mDataChunk = std::shared_ptr<WavChunkHeader>(new WavChunkHeader(tag));
+            chunk = mDataChunk = std::make_shared<WavChunkHeader>(WavChunkHeader(tag));
             mDataChunk->read(mStream);
             // We are now positioned at the start of the audio data.
             mAudioDataStartPos = mStream->getPos();
             mStream->advance(mDataChunk->mChunkSize);
         } else {
-            chunk = std::shared_ptr<WavChunkHeader>(new WavChunkHeader(tag));
+            chunk = std::make_shared<WavChunkHeader>(WavChunkHeader(tag));
             chunk->read(mStream);
             mStream->advance(chunk->mChunkSize); // skip the body
         }
@@ -121,11 +121,12 @@ int WavStreamReader::getDataFloat_PCM8(float *buff, int numFrames) {
 
     const static int SAMPLE_SIZE = sizeof(u_int8_t);
     const static float SAMPLE_FULLSCALE = (float)0x7F;
-    
-    u_int8_t *readBuff = new u_int8_t[128 * numChans];
+    const static int CONVERT_BUFFER_FRAMES = 128;
+
+    u_int8_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
-        int framesThisRead = std::min(framesLeft, 128);
+        int framesThisRead = std::min(framesLeft, CONVERT_BUFFER_FRAMES);
         //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
         int numFramesRead =
                 mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE * numChans) /
@@ -145,7 +146,6 @@ int WavStreamReader::getDataFloat_PCM8(float *buff, int numFrames) {
 
         framesLeft -= framesThisRead;
     }
-    delete[] readBuff;
 
     return totalFramesRead;
 }
@@ -161,8 +161,9 @@ int WavStreamReader::getDataFloat_PCM16(float *buff, int numFrames) {
 
     const static int SAMPLE_SIZE = sizeof(int16_t);
     const static float SAMPLE_FULLSCALE = (float) 0x7FFF;
+    const static int CONVERT_BUFFER_FRAMES = 128;
 
-    int16_t *readBuff = new int16_t[128 * numChans];
+    int16_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
         int framesThisRead = std::min(framesLeft, 128);
@@ -183,7 +184,6 @@ int WavStreamReader::getDataFloat_PCM16(float *buff, int numFrames) {
 
         framesLeft -= framesThisRead;
     }
-    delete[] readBuff;
 
     return totalFramesRead;
 }
@@ -229,11 +229,12 @@ int WavStreamReader::getDataFloat_PCM32(float *buff, int numFrames) {
 
     const static int SAMPLE_SIZE = sizeof(int32_t);
     const static float SAMPLE_FULLSCALE = (float) 0x7FFFFFFF;
+    const static int CONVERT_BUFFER_FRAMES = 128; // arbitrary
 
-    int32_t *readBuff = new int32_t[128 * numChans];
+    int32_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
-        int framesThisRead = std::min(framesLeft, 128);
+        int framesThisRead = std::min(framesLeft, CONVERT_BUFFER_FRAMES);
         //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
         int numFramesRead =
                 mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE* numChans) /
@@ -251,7 +252,6 @@ int WavStreamReader::getDataFloat_PCM32(float *buff, int numFrames) {
 
         framesLeft -= framesThisRead;
     }
-    delete[] readBuff;
 
     return totalFramesRead;
 }
@@ -296,11 +296,14 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
         default:
             __android_log_print(ANDROID_LOG_INFO, TAG, "invalid encoding:%d mSampleSize:%d",
                     mFmtChunk->mEncodingId, mFmtChunk->mSampleSize);
+            return ERR_INVALID_FORMAT;
     }
 
     // Zero out any unread frames
     if (numFramesRead < numFrames) {
-        memset(buff + numFramesRead, 0, numFrames - numFramesRead);
+        int numChannels = getNumChannels();
+        memset(buff + (numFramesRead * numChannels), 0,
+                (numFrames - numFramesRead) * mFmtChunk->mSampleSize/8 * numChannels);
     }
 
     return numFramesRead;

@@ -52,6 +52,8 @@ public:
     // Data access
     void positionToAudio();
 
+    static constexpr int ERR_INVALID_FORMAT    = -1;
+
     int getDataFloat(float *buff, int numFrames);
 
     // int getData16(short *buff, int numFramees);
