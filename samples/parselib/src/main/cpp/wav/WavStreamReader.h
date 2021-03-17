@@ -53,6 +53,7 @@ public:
     void positionToAudio();
 
     static constexpr int ERR_INVALID_FORMAT    = -1;
+    static constexpr int ERR_INVALID_STATE    = -2;
 
     int getDataFloat(float *buff, int numFrames);
 

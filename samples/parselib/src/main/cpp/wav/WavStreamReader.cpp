@@ -28,6 +28,8 @@
 
 static const char *TAG = "WavStreamReader";
 
+static constexpr int kConversionBufferFrames = 16;
+
 namespace parselib {
 
 WavStreamReader::WavStreamReader(InputStream *stream) {
@@ -114,30 +116,30 @@ void WavStreamReader::positionToAudio() {
  * Read and convert samples in PCM8 format to float
  */
 int WavStreamReader::getDataFloat_PCM8(float *buff, int numFrames) {
-    int numChans = mFmtChunk->mNumChannels;
+    int numChannels = mFmtChunk->mNumChannels;
 
     int buffOffset = 0;
     int totalFramesRead = 0;
 
-    const static int SAMPLE_SIZE = sizeof(u_int8_t);
-    const static float SAMPLE_FULLSCALE = (float)0x7F;
-    const static int CONVERT_BUFFER_FRAMES = 128;
+    static constexpr int kSampleSize = sizeof(u_int8_t);
+    static constexpr float kSampleFullScale = (float)0x80;
+    static constexpr float kInverseScale = 1.0f / kSampleFullScale;
 
-    u_int8_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
+    u_int8_t readBuff[kConversionBufferFrames * numChannels];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
-        int framesThisRead = std::min(framesLeft, CONVERT_BUFFER_FRAMES);
+        int framesThisRead = std::min(framesLeft, kConversionBufferFrames);
         //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
         int numFramesRead =
-                mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE * numChans) /
-                (SAMPLE_SIZE * numChans);
+                mStream->read(readBuff, framesThisRead *  kSampleSize * numChannels) /
+                (kSampleSize * numChannels);
         totalFramesRead += numFramesRead;
 
         // Convert & Scale
-        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
+        for (int offset = 0; offset < numFramesRead * numChannels; offset++) {
             // PCM8 is unsigned, so we need to make it signed before scaling/converting
-            buff[buffOffset++] = ((float) readBuff[offset] - SAMPLE_FULLSCALE)
-                    / (float) SAMPLE_FULLSCALE;
+            buff[buffOffset++] = ((float) readBuff[offset] - kSampleFullScale)
+                    * kInverseScale;
         }
 
         if (numFramesRead < framesThisRead) {
@@ -154,28 +156,28 @@ int WavStreamReader::getDataFloat_PCM8(float *buff, int numFrames) {
  * Read and convert samples in PCM16 format to float
  */
 int WavStreamReader::getDataFloat_PCM16(float *buff, int numFrames) {
-    int numChans = mFmtChunk->mNumChannels;
+    int numChannels = mFmtChunk->mNumChannels;
 
     int buffOffset = 0;
     int totalFramesRead = 0;
 
-    const static int SAMPLE_SIZE = sizeof(int16_t);
-    const static float SAMPLE_FULLSCALE = (float) 0x7FFF;
-    const static int CONVERT_BUFFER_FRAMES = 128;
+    static constexpr int kSampleSize = sizeof(int16_t);
+    static constexpr float kSampleFullScale = (float) 0x8000;
+    static constexpr float kInverseScale = 1.0f / kSampleFullScale;
 
-    int16_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
+    int16_t readBuff[kConversionBufferFrames * numChannels];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
-        int framesThisRead = std::min(framesLeft, 128);
+        int framesThisRead = std::min(framesLeft, kConversionBufferFrames);
         //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
         int numFramesRead =
-                mStream->read(readBuff, framesThisRead * SAMPLE_SIZE * numChans) /
-                (SAMPLE_SIZE * numChans);
+                mStream->read(readBuff, framesThisRead * kSampleSize * numChannels) /
+                (kSampleSize * numChannels);
         totalFramesRead += numFramesRead;
 
         // Convert & Scale
-        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
-            buff[buffOffset++] = (float) readBuff[offset] / SAMPLE_FULLSCALE;
+        for (int offset = 0; offset < numFramesRead * numChannels; offset++) {
+            buff[buffOffset++] = (float) readBuff[offset] * kInverseScale;
         }
 
         if (numFramesRead < framesThisRead) {
@@ -192,16 +194,19 @@ int WavStreamReader::getDataFloat_PCM16(float *buff, int numFrames) {
  * Read and convert samples in PCM24 format to float
  */
 int WavStreamReader::getDataFloat_PCM24(float *buff, int numFrames) {
-    int numChans = mFmtChunk->mNumChannels;
-    int numSamples = numFrames * numChans;
+    int numChannels = mFmtChunk->mNumChannels;
+    int numSamples = numFrames * numChannels;
 
-    const static float SAMPLE_FULLSCALE = (float) 0x7FFFFFFF;
+    static constexpr float kSampleFullScale = (float) 0x80000000;
+    static constexpr float kInverseScale = 1.0f / kSampleFullScale;
 
     uint8_t buffer[3];
     for(int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
-        mStream->read(buffer, 3);
+        if (mStream->read(buffer, 3) < 3) {
+            break; // no more data
+        }
         int32_t sample = (buffer[0] << 8) | (buffer[1] << 16) | (buffer[2] << 24);
-        buff[sampleIndex] = (float)sample / SAMPLE_FULLSCALE;
+        buff[sampleIndex] = (float)sample * kInverseScale;
     }
 
     return numFrames;
@@ -212,38 +217,38 @@ int WavStreamReader::getDataFloat_PCM24(float *buff, int numFrames) {
  */
 int WavStreamReader::getDataFloat_Float32(float *buff, int numFrames) {
     // Turns out that WAV Float32 is just Android floats
-    int numChans = mFmtChunk->mNumChannels;
+    int numChannels = mFmtChunk->mNumChannels;
 
-    return mStream->read(buff, numFrames * sizeof(float) * numChans) /
-           (sizeof(float) * numChans);
+    return mStream->read(buff, numFrames * sizeof(float) * numChannels) /
+           (sizeof(float) * numChannels);
 }
 
 /**
  * Read and convert samples in PCM32 format to float
  */
 int WavStreamReader::getDataFloat_PCM32(float *buff, int numFrames) {
-    int numChans = mFmtChunk->mNumChannels;
+    int numChannels = mFmtChunk->mNumChannels;
 
     int buffOffset = 0;
     int totalFramesRead = 0;
 
-    const static int SAMPLE_SIZE = sizeof(int32_t);
-    const static float SAMPLE_FULLSCALE = (float) 0x7FFFFFFF;
-    const static int CONVERT_BUFFER_FRAMES = 128; // arbitrary
+    static constexpr int kSampleSize = sizeof(int32_t);
+    static constexpr float kSampleFullScale = (float) 0x80000000;
+    static constexpr float kInverseScale = 1.0f / kSampleFullScale;
 
-    int32_t readBuff[CONVERT_BUFFER_FRAMES * numChans];
+    int32_t readBuff[kConversionBufferFrames * numChannels];
     int framesLeft = numFrames;
     while (framesLeft > 0) {
-        int framesThisRead = std::min(framesLeft, CONVERT_BUFFER_FRAMES);
+        int framesThisRead = std::min(framesLeft, kConversionBufferFrames);
         //__android_log_print(ANDROID_LOG_INFO, TAG, "read(%d)", framesThisRead);
         int numFramesRead =
-                mStream->read(readBuff, framesThisRead *  SAMPLE_SIZE* numChans) /
-                    (SAMPLE_SIZE * numChans);
+                mStream->read(readBuff, framesThisRead *  kSampleSize* numChannels) /
+                    (kSampleSize * numChannels);
         totalFramesRead += numFramesRead;
 
         // convert & Scale
-        for (int offset = 0; offset < numFramesRead * numChans; offset++) {
-            buff[buffOffset++] = (float) readBuff[offset] / SAMPLE_FULLSCALE;
+        for (int offset = 0; offset < numFramesRead * numChannels; offset++) {
+            buff[buffOffset++] = (float) readBuff[offset] * kInverseScale;
         }
 
         if (numFramesRead < framesThisRead) {
@@ -260,7 +265,7 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     // __android_log_print(ANDROID_LOG_INFO, TAG, "getData(%d)", numFrames);
 
     if (mDataChunk == nullptr || mFmtChunk == nullptr) {
-        return 0;
+        return ERR_INVALID_STATE;
     }
 
     int numFramesRead = 0;
@@ -303,7 +308,7 @@ int WavStreamReader::getDataFloat(float *buff, int numFrames) {
     if (numFramesRead < numFrames) {
         int numChannels = getNumChannels();
         memset(buff + (numFramesRead * numChannels), 0,
-                (numFrames - numFramesRead) * mFmtChunk->mSampleSize/8 * numChannels);
+                (numFrames - numFramesRead) * sizeof(buff[0]) * numChannels);
     }
 
     return numFramesRead;
