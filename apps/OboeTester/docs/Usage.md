@@ -2,6 +2,13 @@
 
 # How to Use OboeTester
 
+## Loopback Adapter Needed for Some Tests
+
+Some of these tests require an [audio Loopback Adapter](https://source.android.com/devices/audio/latency/loopback) that plugs into a 3.5 mm jack.
+If the phone does not have a 3.5 mm jack then you can combine that with a USB to 3.5mm adapter.
+
+Loopback adapters can be purchased from [PassMark Software](https://www.passmark.com/products/audio-loopback-plug/). 
+
 ## Test Activities
 
 Launch OboeTester and then select one of the test Activities.
