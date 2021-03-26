@@ -260,7 +260,7 @@ oboe::Result ActivityContext::start() {
         dataThread = new std::thread(threadCallback, this);
     }
 
-#ifdef DEBUG_CLOSE_RACE
+#if DEBUG_CLOSE_RACE
     // Also put a sleep for 400 msec in AudioStreamAAudio::updateFramesRead().
     if (outputStream != nullptr) {
         std::thread raceDebugger([outputStream]() {
