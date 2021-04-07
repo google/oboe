@@ -185,10 +185,10 @@ Supply this callback class to the builder:
 
     builder.setDataCallback(&myCallback);
     
-Declare a shared pointer for the stream. Make sure it is declared in an appropriate scope (e.g.the member of a managing class). Avoid declaring it as a global.
-```
-std::shared_ptr<oboe::AudioStream> mStream;
-```
+Declare a shared pointer for the stream. Make sure it is declared with the appropriate scope. The best place is as a member variable in a managing class or as a global. Avoid declaring it as a local variable because the stream may get deleted when the function returns.
+
+    std::shared_ptr<oboe::AudioStream> mStream;
+
 Open the stream:
 
     oboe::Result result = builder.openStream(mStream);
