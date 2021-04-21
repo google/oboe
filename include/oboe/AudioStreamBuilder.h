@@ -391,11 +391,11 @@ public:
     }
 
     /**
-     * If true then  Oboe might convert data formats to achieve optimal results.
+     * If true then Oboe might convert data formats to achieve optimal results.
      * On some versions of Android, for example, a float stream could not get a
      * low latency data path. So an I16 stream might be opened and converted to float.
      *
-     * Default is true.
+     * Default is false.
      */
     AudioStreamBuilder *setFormatConversionAllowed(bool allowed) {
         mFormatConversionAllowed = allowed;
