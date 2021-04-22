@@ -302,9 +302,11 @@ Result AudioOutputStreamOpenSLES::requestStart() {
         setState(StreamState::Started);
         mLock.unlock();
         if (getBufferDepth(mSimpleBufferQueueInterface) == 0) {
-            // Enqueue the first buffer if needed to start the streaming.
+            // Enqueue the first `kBufferQueueLength` buffer if needed to start the streaming.
             // This might call requestStop() so try to avoid a recursive lock.
-            processBufferCallback(mSimpleBufferQueueInterface);
+            for (size_t i = 0; i < kBufferQueueLength; ++i) {
+                processBufferCallback(mSimpleBufferQueueInterface);
+            }
         }
     } else {
         setState(initialState);
