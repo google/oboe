@@ -138,10 +138,7 @@ oboe::Result ActivityContext::stopAllStreams() {
 void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
     if (mUseCallback) {
-        LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, callback size = %d",
-             callbackSize);
         builder.setDataCallback(&oboeCallbackProxy);
-        builder.setFramesPerCallback(callbackSize);
     }
 }
 
@@ -198,7 +195,9 @@ int ActivityContext::open(jint nativeApi,
             ->setFormatConversionAllowed(formatConversionAllowed)
             ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
             ;
-
+    if (mUseCallback) {
+        builder.setFramesPerCallback(callbackSize);
+    }
     configureBuilder(isInput, builder);
 
     builder.setAudioApi(audioApi);
@@ -571,7 +570,8 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     }
     // only output uses a callback, input is polled
     if (!isInput) {
-        builder.setCallback(mFullDuplexEcho.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexEcho.get());
     }
 }
 
@@ -592,7 +592,8 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexLatency.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexLatency.get());
     }
 }
 
@@ -614,7 +615,8 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexGlitches.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexGlitches.get());
     }
 }
 
@@ -636,7 +638,8 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexDataPath.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexDataPath.get());
     }
 }
 
