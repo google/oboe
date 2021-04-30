@@ -36,6 +36,8 @@ public class StreamConfiguration {
 
     public static final int AUDIO_FORMAT_PCM_16 = 1; // must match AAUDIO
     public static final int AUDIO_FORMAT_PCM_FLOAT = 2; // must match AAUDIO
+    public static final int AUDIO_FORMAT_PCM_24 = 3; // must match AAUDIO
+    public static final int AUDIO_FORMAT_PCM_32 = 4; // must match AAUDIO
 
     public static final int DIRECTION_OUTPUT = 0; // must match AAUDIO
     public static final int DIRECTION_INPUT = 1; // must match AAUDIO
@@ -192,6 +194,10 @@ public class StreamConfiguration {
                 return "Unspecified";
             case AUDIO_FORMAT_PCM_16:
                 return "I16";
+            case AUDIO_FORMAT_PCM_24:
+                return "I24";
+            case AUDIO_FORMAT_PCM_32:
+                return "I32";
             case AUDIO_FORMAT_PCM_FLOAT:
                 return "Float";
             default:

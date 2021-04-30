@@ -76,6 +76,8 @@
         <item>Unspecified</item>
         <item>PCM_I16</item>
         <item>PCM_FLOAT</item>
+        <item>PCM_I24</item>
+        <item>PCM_I32</item>
     </string-array>
 
     <string name="input_preset_prompt">InPreset:</string>

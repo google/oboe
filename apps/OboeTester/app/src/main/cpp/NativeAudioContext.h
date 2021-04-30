@@ -34,6 +34,8 @@
 #include "flowgraph/MonoToMultiConverter.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
+#include "flowgraph/SinkI24.h"
+#include "flowgraph/SinkI32.h"
 #include "flowunits/ExponentialShape.h"
 #include "flowunits/LinearShape.h"
 #include "flowunits/SineOscillator.h"
@@ -322,8 +324,6 @@ public:
 
     void runBlockingIO() override;
 
-    InputStreamCallbackAnalyzer  mInputAnalyzer;
-
     void setMinimumFramesBeforeRead(int32_t numFrames) override {
         mInputAnalyzer.setMinimumFramesBeforeRead(numFrames);
         mMinimumFramesBeforeRead = numFrames;
@@ -337,9 +337,13 @@ protected:
 
     oboe::Result startStreams() override {
         mInputAnalyzer.reset();
+        mInputAnalyzer.setup(getInputStream()->getFramesPerBurst(),
+                             getInputStream()->getChannelCount(),
+                             getInputStream()->getFormat());
         return getInputStream()->requestStart();
     }
 
+    InputStreamCallbackAnalyzer  mInputAnalyzer;
     int32_t mMinimumFramesBeforeRead = 0;
 };
 
@@ -423,6 +427,8 @@ protected:
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
     std::shared_ptr<oboe::flowgraph::SinkFloat>   mSinkFloat;
     std::shared_ptr<oboe::flowgraph::SinkI16>     mSinkI16;
+    std::shared_ptr<oboe::flowgraph::SinkI24>     mSinkI24;
+    std::shared_ptr<oboe::flowgraph::SinkI32>     mSinkI32;
 };
 
 /**

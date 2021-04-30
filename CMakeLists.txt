@@ -20,6 +20,8 @@ set (oboe_sources
     src/common/LatencyTuner.cpp
     src/common/SourceFloatCaller.cpp
     src/common/SourceI16Caller.cpp
+    src/common/SourceI24Caller.cpp
+    src/common/SourceI32Caller.cpp
     src/common/Utilities.cpp
     src/common/QuirksManager.cpp
     src/fifo/FifoBuffer.cpp
@@ -37,9 +39,11 @@ set (oboe_sources
     src/flowgraph/SinkFloat.cpp
     src/flowgraph/SinkI16.cpp
     src/flowgraph/SinkI24.cpp
+    src/flowgraph/SinkI32.cpp
     src/flowgraph/SourceFloat.cpp
     src/flowgraph/SourceI16.cpp
     src/flowgraph/SourceI24.cpp
+    src/flowgraph/SourceI32.cpp
     src/flowgraph/resampler/IntegerRatio.cpp
     src/flowgraph/resampler/LinearResampler.cpp
     src/flowgraph/resampler/MultiChannelResampler.cpp

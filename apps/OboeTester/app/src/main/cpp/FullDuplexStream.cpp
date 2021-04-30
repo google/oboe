@@ -17,6 +17,18 @@
 #include "common/OboeDebug.h"
 #include "FullDuplexStream.h"
 
+oboe::ResultWithValue<int32_t>  FullDuplexStream::readInput(int32_t numFrames) {
+    oboe::ResultWithValue<int32_t> result = getInputStream()->read(
+            mInputConverter->getInputBuffer(),
+            numFrames,
+            0 /* timeout */);
+    if (result == oboe::Result::OK) {
+        int32_t numSamples = result.value() * getInputStream()->getChannelCount();
+        mInputConverter->convertInternalBuffers(numSamples);
+    }
+    return result;
+}
+
 oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         oboe::AudioStream *outputStream,
         void *audioData,
@@ -32,9 +44,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         // Drain the input.
         int32_t totalFramesRead = 0;
         do {
-            oboe::ResultWithValue<int32_t> result = getInputStream()->read(mInputBuffer.get(),
-                                                                           numFrames,
-                                                                           0 /* timeout */);
+            oboe::ResultWithValue<int32_t> result = readInput(numFrames);
             if (!result) {
                 // Ignore errors because input stream may not be started yet.
                 break;
@@ -62,7 +72,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
         } else {
             int32_t framesAvailable = resultAvailable.value();
             if (framesAvailable >= mMinimumFramesBeforeRead) {
-                oboe::ResultWithValue<int32_t> resultRead = getInputStream()->read(mInputBuffer.get(), numFrames, 0 /* timeout */);
+                oboe::ResultWithValue<int32_t> resultRead = readInput(numFrames);
                 if (!resultRead) {
                     LOGE("%s() read() returned %s\n", __func__, convertToText(resultRead.error()));
                     callbackResult = oboe::DataCallbackResult::Stop;
@@ -79,7 +89,7 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
             int32_t framesAvailable = resultAvailable.value();
             if (framesAvailable >= mMinimumFramesBeforeRead) {
                 // Read data into input buffer.
-                oboe::ResultWithValue<int32_t> resultRead  = getInputStream()->read(mInputBuffer.get(), numFrames, 0 /* timeout */);
+                oboe::ResultWithValue<int32_t> resultRead = readInput(numFrames);
                 if (!resultRead) {
                     LOGE("%s() read() returned %s\n", __func__, convertToText(resultRead.error()));
                     callbackResult = oboe::DataCallbackResult::Stop;
@@ -91,9 +101,11 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
 
         if (callbackResult == oboe::DataCallbackResult::Continue) {
             callbackResult = onBothStreamsReady(
-                    mInputBuffer.get(), framesRead,
-                    audioData, numFrames);
-
+                    (const float *) mInputConverter->getOutputBuffer(),
+                    framesRead,
+                    (float *) mOutputConverter->getInputBuffer(), numFrames);
+            mOutputConverter->convertFromInternalInput( audioData,
+                                       numFrames * getOutputStream()->getChannelCount());
         }
     }
 
@@ -112,10 +124,13 @@ oboe::Result FullDuplexStream::start() {
     // Determine maximum size that could possibly be called.
     int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
             * getOutputStream()->getChannelCount();
-    if (bufferSize > mBufferSize) {
-        mInputBuffer = std::make_unique<float[]>(bufferSize);
-        mBufferSize = bufferSize;
-    }
+    mInputConverter = std::make_unique<FormatConverterBox>(bufferSize,
+            getInputStream()->getFormat(),
+            oboe::AudioFormat::Float);
+    mOutputConverter = std::make_unique<FormatConverterBox>(bufferSize,
+            oboe::AudioFormat::Float,
+            getOutputStream()->getFormat());
+
     oboe::Result result = getInputStream()->requestStart();
     if (result != oboe::Result::OK) {
         return result;

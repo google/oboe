@@ -327,6 +327,8 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     monoToMulti.reset(nullptr);
     mSinkFloat.reset();
     mSinkI16.reset();
+    mSinkI24.reset();
+    mSinkI32.reset();
 }
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
@@ -361,8 +363,10 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
 void ActivityTestOutput::configureForStart() {
     manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
 
-    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-    mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+    mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
+    mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
+    mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
+    mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
 
@@ -392,9 +396,13 @@ void ActivityTestOutput::configureForStart() {
 
     manyToMulti->output.connect(&(mSinkFloat.get()->input));
     manyToMulti->output.connect(&(mSinkI16.get()->input));
+    manyToMulti->output.connect(&(mSinkI24.get()->input));
+    manyToMulti->output.connect(&(mSinkI32.get()->input));
 
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
+    mSinkI24->pullReset();
+    mSinkI32->pullReset();
 
     configureStreamGateway();
 }
@@ -403,6 +411,10 @@ void ActivityTestOutput::configureStreamGateway() {
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     if (outputStream->getFormat() == oboe::AudioFormat::I16) {
         audioStreamGateway.setAudioSink(mSinkI16);
+    } else if (outputStream->getFormat() == oboe::AudioFormat::I24) {
+        audioStreamGateway.setAudioSink(mSinkI24);
+    } else if (outputStream->getFormat() == oboe::AudioFormat::I32) {
+        audioStreamGateway.setAudioSink(mSinkI32);
     } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
         audioStreamGateway.setAudioSink(mSinkFloat);
     }
@@ -530,8 +542,10 @@ oboe::Result ActivityRecording::startPlayback() {
 void ActivityTapToTone::configureForStart() {
     monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
 
-    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-    mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+    mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
+    mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
+    mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
+    mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     sawPingGenerator.setSampleRate(outputStream->getSampleRate());
@@ -541,9 +555,13 @@ void ActivityTapToTone::configureForStart() {
     sawPingGenerator.output.connect(&(monoToMulti->input));
     monoToMulti->output.connect(&(mSinkFloat.get()->input));
     monoToMulti->output.connect(&(mSinkI16.get()->input));
+    monoToMulti->output.connect(&(mSinkI24.get()->input));
+    monoToMulti->output.connect(&(mSinkI32.get()->input));
 
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
+    mSinkI24->pullReset();
+    mSinkI32->pullReset();
 
     configureStreamGateway();
 }
