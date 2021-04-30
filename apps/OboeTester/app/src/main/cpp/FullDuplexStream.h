@@ -22,6 +22,8 @@
 
 #include "oboe/Oboe.h"
 
+#include "FormatConverterBox.h"
+
 class FullDuplexStream : public oboe::AudioStreamCallback {
 public:
     FullDuplexStream() {}
@@ -45,6 +47,8 @@ public:
     virtual oboe::Result start();
 
     virtual oboe::Result stop();
+
+    oboe::ResultWithValue<int32_t>  readInput(int32_t numFrames);
 
     /**
      * Called when data is available on both streams.
@@ -107,8 +111,8 @@ private:
     oboe::AudioStream   *mInputStream = nullptr;
     oboe::AudioStream   *mOutputStream = nullptr;
 
-    int32_t              mBufferSize = 0;
-    std::unique_ptr<float[]> mInputBuffer;
+    std::unique_ptr<FormatConverterBox> mInputConverter;
+    std::unique_ptr<FormatConverterBox> mOutputConverter;
 };
 
 
