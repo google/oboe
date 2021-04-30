@@ -25,6 +25,7 @@
 #include "FixedBlockReader.h"
 
 namespace oboe {
+
 /**
  * AudioSource that uses callback to get more data.
  */
@@ -41,9 +42,9 @@ public:
     const char *getName() override {
         return "SourceI24Caller";
     }
+
 private:
     std::unique_ptr<uint8_t[]>  mConversionBuffer;
-
     static constexpr int kBytesPerI24Packed = 3;
 };
 

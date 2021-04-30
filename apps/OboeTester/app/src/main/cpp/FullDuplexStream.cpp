@@ -24,7 +24,7 @@ oboe::ResultWithValue<int32_t>  FullDuplexStream::readInput(int32_t numFrames) {
             0 /* timeout */);
     if (result == oboe::Result::OK) {
         int32_t numSamples = result.value() * getInputStream()->getChannelCount();
-        mInputConverter->convert(numSamples);
+        mInputConverter->convertInternalBuffers(numSamples);
     }
     return result;
 }
@@ -101,9 +101,10 @@ oboe::DataCallbackResult FullDuplexStream::onAudioReady(
 
         if (callbackResult == oboe::DataCallbackResult::Continue) {
             callbackResult = onBothStreamsReady(
-                    mInputConverter->getOutputBuffer(), framesRead,
-                    mOutputConverter->getInputBuffer(), numFrames);
-            mOutputConverter->convert( audioData,
+                    (const float *) mInputConverter->getOutputBuffer(),
+                    framesRead,
+                    (float *) mOutputConverter->getInputBuffer(), numFrames);
+            mOutputConverter->convertFromInternalInput( audioData,
                                        numFrames * getOutputStream()->getChannelCount());
         }
     }

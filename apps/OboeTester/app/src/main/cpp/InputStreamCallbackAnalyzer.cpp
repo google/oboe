@@ -23,18 +23,17 @@ oboe::DataCallbackResult InputStreamCallbackAnalyzer::onAudioReady(
         int numFrames) {
     int32_t channelCount = audioStream->getChannelCount();
     printScheduler();
-    mInputConverter->convert(numFrames * channelCount, audioData);
+    mInputConverter->convertToInternalOutput(numFrames * channelCount, audioData);
     float *floatData = (float *) mInputConverter->getOutputBuffer();
     if (mRecording != nullptr) {
         mRecording->write(floatData, numFrames);
     }
-    float *frameData = floatData;
+    int32_t sampleIndex = 0;
     for (int iFrame = 0; iFrame < numFrames; iFrame++) {
         for (int iChannel = 0; iChannel < channelCount; iChannel++) {
-            float sample = frameData[iChannel];
+            float sample = floatData[sampleIndex++];
             mPeakDetectors[iChannel].process(sample);
         }
-        frameData += channelCount;
     }
 
     audioStream->waitForAvailableFrames(mMinimumFramesBeforeRead, oboe::kNanosPerSecond);

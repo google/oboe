@@ -67,15 +67,15 @@ FormatConverterBox::FormatConverterBox(int32_t numSamples,
     }
 }
 
-int32_t FormatConverterBox::convert(int32_t numSamples) {
-    return convert(getOutputBuffer(), numSamples);
+int32_t FormatConverterBox::convertInternalBuffers(int32_t numSamples) {
+    return convert(getOutputBuffer(), numSamples, getInputBuffer());
 }
 
-int32_t FormatConverterBox::convert(int32_t numSamples, const void *inputBuffer) {
+int32_t FormatConverterBox::convertToInternalOutput(int32_t numSamples, const void *inputBuffer) {
     return convert(getOutputBuffer(), numSamples, inputBuffer);
 }
 
-int32_t FormatConverterBox::convert(void *outputBuffer, int32_t numSamples) {
+int32_t FormatConverterBox::convertFromInternalInput(void *outputBuffer, int32_t numSamples) {
     return convert(outputBuffer, numSamples, getInputBuffer());
 }
 

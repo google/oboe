@@ -55,9 +55,9 @@ public:
      * Caller should override this method.
      */
     virtual oboe::DataCallbackResult onBothStreamsReady(
-            const void *inputData,
+            const float *inputData,
             int   numInputFrames,
-            void *outputData,
+            float *outputData,
             int   numOutputFrames
             ) = 0;
 

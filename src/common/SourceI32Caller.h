@@ -26,6 +26,7 @@
 #include "FixedBlockReader.h"
 
 namespace oboe {
+
 /**
  * AudioSource that uses callback to get more data.
  */
@@ -41,6 +42,7 @@ public:
     const char *getName() override {
         return "SourceI32Caller";
     }
+
 private:
     std::unique_ptr<int32_t[]>  mConversionBuffer;
     static constexpr float kScale = 1.0 / (1UL << 31);
