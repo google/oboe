@@ -28,7 +28,7 @@ Also enable prefab by adding:
 Include and link to oboe by updating your `CMakeLists.txt`: 
 
     find_package (oboe REQUIRED CONFIG)
-    target_link_libraries(app oboe::oboe) # You may have other libraries here such as `log`.
+    target_link_libraries(native-lib oboe::oboe) # You may have other libraries here such as `log`.
 
 Here's a complete example `CMakeLists.txt` file:
 
@@ -41,7 +41,7 @@ Here's a complete example `CMakeLists.txt` file:
     find_package (oboe REQUIRED CONFIG)
 
     # Specify the libraries which our native library is dependent on, including Oboe
-    target_link_libraries(app log oboe::oboe)
+    target_link_libraries(native-lib log oboe::oboe)
 
 Configure your app to use the shared STL by updating your `app/build.gradle`: 
 
@@ -52,7 +52,7 @@ Configure your app to use the shared STL by updating your `app/build.gradle`:
                     arguments "-DANDROID_STL=c++_shared"
                 }
 	        }
-	    }
+        }
     }
 
 ## Option 2) Building from source
