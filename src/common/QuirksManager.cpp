@@ -184,6 +184,17 @@ bool QuirksManager::isConversionNeeded(
         LOGI("QuirksManager::%s() forcing internal format to I16 for low latency", __func__);
     }
 
+    // Add quirk for float output on API <21
+    if (isFloat
+            && !isInput
+            && getSdkVersion() < __ANDROID_API_L__ && builder.isFormatConversionAllowed()) {
+        childBuilder.setFormat(AudioFormat::I16);
+        conversionNeeded = true;
+        LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices, "
+             "creating an underlying I16 stream and using format conversion to provide a float "
+             "stream", __func__);
+    }
+
     // Channel Count conversions
     if (OboeGlobals::areWorkaroundsEnabled()
             && builder.isChannelConversionAllowed()
