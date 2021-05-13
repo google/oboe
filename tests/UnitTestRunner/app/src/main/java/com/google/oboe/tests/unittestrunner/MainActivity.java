@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isRecordPermissionGranted()){
             requestPermissions();
         } else {
-
+            Log.d(TAG, "Got RECORD_AUDIO permission");
             Thread commandThread = new Thread(new UnitTestCommand());
             commandThread.start();
         }
