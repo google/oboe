@@ -44,7 +44,7 @@ public:
     /**
      * Stop and close the stream.
      */
-    void stop();
+    oboe::Result stop();
 
     // From IRestartable
     void restart() override;
@@ -88,7 +88,7 @@ public:
 
 private:
     oboe::Result reopenStream();
-    oboe::Result createPlaybackStream();
+    oboe::Result openPlaybackStream();
 
     std::shared_ptr<oboe::AudioStream> mStream;
     std::unique_ptr<LatencyTuningCallback> mLatencyCallback;

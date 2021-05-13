@@ -29,6 +29,7 @@ import android.widget.ArrayAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.oboe.samples.audio_device.AudioDeviceListEntry;
 import com.google.oboe.samples.audio_device.AudioDeviceSpinner;
@@ -88,7 +89,6 @@ public class MainActivity extends Activity {
         setupPlaybackDeviceSpinner();
         setupChannelCountSpinner();
         setupBufferSizeSpinner();
-
     }
     /*
     * Creating engine in onResume() and destroying in onPause() so the stream retains exclusive
@@ -99,18 +99,28 @@ public class MainActivity extends Activity {
         super.onResume();
         PlaybackEngine.create(this);
         setupLatencyUpdater();
+
         // Return the spinner states to their default value
         mChannelCountSpinner.setSelection(CHANNEL_COUNT_DEFAULT_OPTION_INDEX);
         mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
         mBufferSizeSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
         mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+
+        int result = PlaybackEngine.start();
+        if (result != 0) {
+            showToast("Error opening stream = " + result);
+        }
     }
 
     @Override
     protected void onPause() {
-       if (mLatencyUpdater != null) mLatencyUpdater.cancel();
-       PlaybackEngine.delete();
-       super.onPause();
+        if (mLatencyUpdater != null) mLatencyUpdater.cancel();
+        int result = PlaybackEngine.stop();
+        if (result != 0) {
+            showToast("Error stopping stream = " + result);
+        }
+        PlaybackEngine.delete();
+        super.onPause();
     }
 
     private void setupChannelCountSpinner() {
@@ -128,7 +138,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
             }
         });
     }
@@ -151,7 +160,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
             }
         });
     }
@@ -169,7 +177,6 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void onNothingSelected(AdapterView<?> adapterView) {
-
                 }
             });
         }
@@ -193,7 +200,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
             }
         });
     }
@@ -280,5 +286,17 @@ public class MainActivity extends Activity {
             audioApiOptions.add(option);
         }
         return audioApiOptions;
+    }
+
+
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
