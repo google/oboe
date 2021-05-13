@@ -138,10 +138,7 @@ oboe::Result ActivityContext::stopAllStreams() {
 void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
     if (mUseCallback) {
-        LOGD("ActivityContext::open() set callback to use oboeCallbackProxy, callback size = %d",
-             callbackSize);
         builder.setDataCallback(&oboeCallbackProxy);
-        builder.setFramesPerCallback(callbackSize);
     }
 }
 
@@ -198,7 +195,9 @@ int ActivityContext::open(jint nativeApi,
             ->setFormatConversionAllowed(formatConversionAllowed)
             ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
             ;
-
+    if (mUseCallback) {
+        builder.setFramesPerCallback(callbackSize);
+    }
     configureBuilder(isInput, builder);
 
     builder.setAudioApi(audioApi);
@@ -260,7 +259,7 @@ oboe::Result ActivityContext::start() {
         dataThread = new std::thread(threadCallback, this);
     }
 
-#ifdef DEBUG_CLOSE_RACE
+#if DEBUG_CLOSE_RACE
     // Also put a sleep for 400 msec in AudioStreamAAudio::updateFramesRead().
     if (outputStream != nullptr) {
         std::thread raceDebugger([outputStream]() {
@@ -328,6 +327,8 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     monoToMulti.reset(nullptr);
     mSinkFloat.reset();
     mSinkI16.reset();
+    mSinkI24.reset();
+    mSinkI32.reset();
 }
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
@@ -362,8 +363,10 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
 void ActivityTestOutput::configureForStart() {
     manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
 
-    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-    mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+    mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
+    mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
+    mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
+    mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
 
@@ -393,9 +396,13 @@ void ActivityTestOutput::configureForStart() {
 
     manyToMulti->output.connect(&(mSinkFloat.get()->input));
     manyToMulti->output.connect(&(mSinkI16.get()->input));
+    manyToMulti->output.connect(&(mSinkI24.get()->input));
+    manyToMulti->output.connect(&(mSinkI32.get()->input));
 
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
+    mSinkI24->pullReset();
+    mSinkI32->pullReset();
 
     configureStreamGateway();
 }
@@ -404,6 +411,10 @@ void ActivityTestOutput::configureStreamGateway() {
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     if (outputStream->getFormat() == oboe::AudioFormat::I16) {
         audioStreamGateway.setAudioSink(mSinkI16);
+    } else if (outputStream->getFormat() == oboe::AudioFormat::I24) {
+        audioStreamGateway.setAudioSink(mSinkI24);
+    } else if (outputStream->getFormat() == oboe::AudioFormat::I32) {
+        audioStreamGateway.setAudioSink(mSinkI32);
     } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
         audioStreamGateway.setAudioSink(mSinkFloat);
     }
@@ -531,8 +542,10 @@ oboe::Result ActivityRecording::startPlayback() {
 void ActivityTapToTone::configureForStart() {
     monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
 
-    mSinkFloat = std::make_unique<SinkFloat>(mChannelCount);
-    mSinkI16 = std::make_unique<SinkI16>(mChannelCount);
+    mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
+    mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
+    mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
+    mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     sawPingGenerator.setSampleRate(outputStream->getSampleRate());
@@ -542,9 +555,13 @@ void ActivityTapToTone::configureForStart() {
     sawPingGenerator.output.connect(&(monoToMulti->input));
     monoToMulti->output.connect(&(mSinkFloat.get()->input));
     monoToMulti->output.connect(&(mSinkI16.get()->input));
+    monoToMulti->output.connect(&(mSinkI24.get()->input));
+    monoToMulti->output.connect(&(mSinkI32.get()->input));
 
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
+    mSinkI24->pullReset();
+    mSinkI32->pullReset();
 
     configureStreamGateway();
 }
@@ -571,7 +588,8 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     }
     // only output uses a callback, input is polled
     if (!isInput) {
-        builder.setCallback(mFullDuplexEcho.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexEcho.get());
     }
 }
 
@@ -592,7 +610,8 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexLatency.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexLatency.get());
     }
 }
 
@@ -614,7 +633,8 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexGlitches.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexGlitches.get());
     }
 }
 
@@ -636,7 +656,8 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
     if (!isInput) {
         // only output uses a callback, input is polled
-        builder.setCallback(mFullDuplexDataPath.get());
+        builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
+        oboeCallbackProxy.setCallback(mFullDuplexDataPath.get());
     }
 }
 

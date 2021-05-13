@@ -24,15 +24,15 @@ oboe::Result  FullDuplexAnalyzer::start() {
 }
 
 oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
-        const void *inputData,
+        const float *inputData,
         int   numInputFrames,
-        void *outputData,
+        float *outputData,
         int   numOutputFrames) {
 
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
-    float *inputFloat = (float *) inputData;
-    float *outputFloat = (float *) outputData;
+    const float *inputFloat = inputData;
+    float *outputFloat = outputData;
 
     (void) getLoopbackProcessor()->process(inputFloat, inputStride, numInputFrames,
                                    outputFloat, outputStride, numOutputFrames);

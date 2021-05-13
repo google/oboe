@@ -77,6 +77,7 @@ abstract class TestAudioActivity extends Activity {
     private int mSampleRate;
     private boolean mScoStarted;
     private int mSingleTestIndex = -1;
+    private static boolean mBackgroundEnabled;
 
     public String getTestName() {
         return "TestAudio";
@@ -149,6 +150,13 @@ abstract class TestAudioActivity extends Activity {
 
     }
 
+    public static void setBackgroundEnabled(boolean enabled) {
+        mBackgroundEnabled = enabled;
+    }
+    public static boolean isBackgroundEnabled() {
+        return mBackgroundEnabled;
+    }
+
     public void onStreamClosed() {
     }
 
@@ -193,13 +201,19 @@ abstract class TestAudioActivity extends Activity {
 
     @Override
     protected void onStop() {
-        Log.i(TAG, "onStop() called so stop the test =========================");
-        onStopTest();
+        if (!isBackgroundEnabled()) {
+            Log.i(TAG, "onStop() called so stop the test =========================");
+            onStopTest();
+        }
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
+        if (isBackgroundEnabled()) {
+            Log.i(TAG, "onDestroy() called so stop the test =========================");
+            onStopTest();
+        }
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
     }

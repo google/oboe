@@ -24,13 +24,10 @@ oboe::Result  FullDuplexEcho::start() {
 }
 
 oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
-        const void *inputData,
+        const float *inputData,
         int   numInputFrames,
-        void *outputData,
+        float *outputData,
         int   numOutputFrames) {
-    // FIXME only handles matching stream formats.
-    // TODO Add delay node
-    // TODO use flowgraph to handle format conversion
     int32_t framesToEcho = std::min(numInputFrames, numOutputFrames);
     float *inputFloat = (float *)inputData;
     float *outputFloat = (float *)outputData;
