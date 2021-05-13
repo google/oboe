@@ -272,15 +272,22 @@ public class GlitchActivity extends AnalyzerActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        mStartButton.setEnabled(true);
-        mStopButton.setEnabled(false);
-        mShareButton.setEnabled(false);
     }
 
     @Override
     protected void onStop() {
-        stopAudioTest();
+        if (!isBackgroundEnabled()) {
+            stopAudioTest();
+        }
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (isBackgroundEnabled()) {
+            stopAudioTest();
+        }
+        super.onDestroy();
     }
 
     // Called on UI thread
@@ -308,6 +315,9 @@ public class GlitchActivity extends AnalyzerActivity {
     public void onStopAudioTest(View view) {
         stopAudioTest();
         onTestFinished();
+        mStartButton.setEnabled(true);
+        mStopButton.setEnabled(false);
+        mShareButton.setEnabled(false);
         keepScreenOn(false);
     }
 

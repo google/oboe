@@ -108,7 +108,7 @@ public:
     }
 
     // Write SHORT data from the first channel.
-    int32_t write(int16_t *inputData, int32_t inputChannelCount, int32_t numFrames) {
+    int32_t write(const int16_t *inputData, int32_t inputChannelCount, int32_t numFrames) {
         // stop at end of buffer
         if ((mFrameCounter + numFrames) > mMaxFrames) {
             numFrames = mMaxFrames - mFrameCounter;
@@ -120,7 +120,7 @@ public:
     }
 
     // Write FLOAT data from the first channel.
-    int32_t write(float *inputData, int32_t inputChannelCount, int32_t numFrames) {
+    int32_t write(const float *inputData, int32_t inputChannelCount, int32_t numFrames) {
         // stop at end of buffer
         if ((mFrameCounter + numFrames) > mMaxFrames) {
             numFrames = mMaxFrames - mFrameCounter;
@@ -278,10 +278,10 @@ public:
         mResetCount++;
     }
 
-    virtual result_code processInputFrame(float *frameData, int channelCount) = 0;
+    virtual result_code processInputFrame(const float *frameData, int channelCount) = 0;
     virtual result_code processOutputFrame(float *frameData, int channelCount) = 0;
 
-    void process(float *inputData, int inputChannelCount, int numInputFrames,
+    void process(const float *inputData, int inputChannelCount, int numInputFrames,
                  float *outputData, int outputChannelCount, int numOutputFrames) {
         int numBoth = std::min(numInputFrames, numOutputFrames);
         // Process one frame at a time.
@@ -512,7 +512,7 @@ public:
         ALOGD("latency: st = %d = %s", mState, convertStateToText(mState));
     }
 
-    result_code processInputFrame(float *frameData, int channelCount) override {
+    result_code processInputFrame(const float *frameData, int channelCount) override {
         echo_state nextState = mState;
         mLoopCounter++;
 

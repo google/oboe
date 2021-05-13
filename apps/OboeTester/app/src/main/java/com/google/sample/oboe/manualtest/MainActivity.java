@@ -306,4 +306,10 @@ public class MainActivity extends Activity {
         boolean enabled = checkBox.isChecked();
         NativeEngine.setWorkaroundsEnabled(enabled);
     }
+
+    public void onEnableBackground(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        boolean enabled = checkBox.isChecked();
+        TestAudioActivity.setBackgroundEnabled(enabled);
+    }
 }

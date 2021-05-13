@@ -37,9 +37,9 @@ public:
      * Caller should override this method.
      */
     oboe::DataCallbackResult onBothStreamsReady(
-            const void *inputData,
+            const float *inputData,
             int   numInputFrames,
-            void *outputData,
+            float *outputData,
             int   numOutputFrames
     ) override;
 

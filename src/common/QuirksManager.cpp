@@ -71,6 +71,7 @@ public:
         std::string chipname = getPropertyString("ro.hardware.chipname");
         isExynos9810 = (chipname == "exynos9810");
         isExynos990 = (chipname == "exynos990");
+        isExynos850 = (chipname == "exynos850");
 
         mBuildChangelist = getPropertyInteger("ro.build.changelist", 0);
     }
@@ -86,9 +87,9 @@ public:
         return kTopMargin;
     }
 
-    // See Oboe issue #824 for more information.
+    // See Oboe issues #824 and #1247 for more information.
     bool isMonoMMapActuallyStereo() const override {
-        return isExynos9810; // TODO We can make this version specific if it gets fixed.
+        return isExynos9810 || isExynos850; // TODO We can make this version specific if it gets fixed.
     }
 
     bool isAAudioMMapPossible(const AudioStreamBuilder &builder) const override {
@@ -116,6 +117,7 @@ private:
     bool isExynos = false;
     bool isExynos9810 = false;
     bool isExynos990 = false;
+    bool isExynos850 = false;
     int mBuildChangelist = 0;
 };
 

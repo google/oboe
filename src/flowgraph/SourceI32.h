@@ -12,31 +12,33 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+#ifndef FLOWGRAPH_SOURCE_I32_H
+#define FLOWGRAPH_SOURCE_I32_H
 
+#include <stdint.h>
 
+#include "FlowGraphNode.h"
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
+namespace FLOWGRAPH_OUTER_NAMESPACE {
+namespace flowgraph {
 
-    repositories {
-        google()
-        jcenter()
+class SourceI32 : public FlowGraphSourceBuffered {
+public:
+    explicit SourceI32(int32_t channelCount);
+    ~SourceI32() override = default;
+
+    int32_t onProcess(int32_t numFrames) override;
+
+    const char *getName() override {
+        return "SourceI32";
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.2'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
+private:
+    static constexpr float kScale = 1.0 / (1UL << 31);
+};
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-    }
-}
+} /* namespace flowgraph */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
+
+#endif //FLOWGRAPH_SOURCE_I32_H
