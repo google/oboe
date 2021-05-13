@@ -38,7 +38,7 @@ class StreamOpen : public ::testing::Test {
 protected:
 
     bool openStream() {
-        mStream = nullptr;
+        EXPECT_EQ(mStream, nullptr);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         EXPECT_EQ(0, openCount) << "Should start with a fresh object every time.";
