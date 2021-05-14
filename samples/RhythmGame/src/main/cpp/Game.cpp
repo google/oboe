@@ -115,10 +115,7 @@ void Game::onSurfaceDestroyed() {
 
 DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
 
-    // If our audio stream is expecting 16-bit samples we need to render our floats into a separate
-    // buffer then convert them into 16-bit ints
-    bool is16Bit = (oboeStream->getFormat() == AudioFormat::I16);
-    float *outputBuffer = (is16Bit) ? mConversionBuffer.get() : static_cast<float *>(audioData);
+    auto *outputBuffer = static_cast<float *>(audioData);
 
     int64_t nextClapEventMs;
 
@@ -134,12 +131,6 @@ DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, 
         }
         mMixer.renderAudio(outputBuffer+(oboeStream->getChannelCount()*i), 1);
         mCurrentFrame++;
-    }
-
-    if (is16Bit){
-        oboe::convertFloatToPcm16(outputBuffer,
-                                  static_cast<int16_t*>(audioData),
-                                  numFrames * oboeStream->getChannelCount());
     }
 
     mLastUpdateTime = nowUptimeMillis();
@@ -177,26 +168,19 @@ bool Game::openStream() {
     AudioStreamBuilder builder;
     builder.setDataCallback(this);
     builder.setErrorCallback(this);
+    builder.setFormat(AudioFormat::Float);
+    builder.setFormatConversionAllowed(true);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
+    builder.setSampleRate(48000);
+    builder.setSampleRateConversionQuality(
+            SampleRateConversionQuality::Medium);
+    builder.setChannelCount(2);
 
     Result result = builder.openStream(mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
         return false;
-    }
-
-    if (mAudioStream->getFormat() == AudioFormat::I16){
-        mConversionBuffer = std::make_unique<float[]>(
-                (size_t)mAudioStream->getBufferCapacityInFrames() *
-                mAudioStream->getChannelCount());
-    }
-
-    // Reduce stream latency by setting the buffer size to a multiple of the burst size
-    auto setBufferSizeResult = mAudioStream->setBufferSizeInFrames(
-            mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    if (setBufferSizeResult != Result::OK){
-        LOGW("Failed to set buffer size. Error: %s", convertToText(setBufferSizeResult.error()));
     }
 
     mMixer.setChannelCount(mAudioStream->getChannelCount());
