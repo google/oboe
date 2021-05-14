@@ -35,7 +35,7 @@ if(${USE_FFMPEG})
 
     # Add the local path to FFmpeg, you can use the ${ANDROID_ABI} variable to specify the ABI name
     # e.g. /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI}
-    set(FFMPEG_DIR "/path/to/ffmpeg")
+    set(FFMPEG_DIR /Users/donturner/Code/ffmpeg/build/${ANDROID_ABI})
 
     include_directories(native-lib ${FFMPEG_DIR}/include)
 
