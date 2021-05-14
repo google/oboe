@@ -64,7 +64,6 @@ private:
     std::unique_ptr<Player> mClap;
     std::unique_ptr<Player> mBackingTrack;
     Mixer mMixer;
-    std::unique_ptr<float[]> mConversionBuffer { nullptr }; // For float->int16 conversion
 
     LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
     std::atomic<int64_t> mCurrentFrame { 0 };

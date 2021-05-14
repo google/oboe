@@ -26,11 +26,6 @@ android {
             path "CMakeLists.txt"
         }
     }
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['libs']
-        }
-    }
     flavorDimensions "extractorLibrary"
     productFlavors {
         ndkExtractor {

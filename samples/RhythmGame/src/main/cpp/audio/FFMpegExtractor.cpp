@@ -121,6 +121,8 @@ int64_t FFMpegExtractor::decode(
         uint8_t *targetData,
         AudioProperties targetProperties) {
 
+    LOGI("Decoder: FFMpeg");
+
     int returnValue = -1; // -1 indicates error
 
     // Create a buffer for FFmpeg to use for decoding (freed in the custom deleter below)
