@@ -3,7 +3,7 @@ Rhythm Game sample
 
 This sample demonstrates how to build a simple musical game. The objective of the game is to clap in time to a song by copying what you hear. You do this by listening to the clap sounds, then tapping on the screen to copy those claps.
 
-For a step-by-step guide on how this game works and how to build it check out this codelab: [Build a Musical Game using Oboe](https://codelabs.developers.google.com/codelabs/musicalgame-using-oboe/index.html). 
+For a step-by-step guide on how this game works and how to build it check out this codelab: [Build a Musical Game using Oboe](https://developer.android.com/codelabs/musicalgame-using-oboe). 
 
 
 Screenshots

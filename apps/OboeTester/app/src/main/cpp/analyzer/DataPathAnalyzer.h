@@ -45,7 +45,7 @@ public:
      * @param frameData contains microphone data with sine signal feedback
      * @param channelCount
      */
-    result_code processInputFrame(float *frameData, int /* channelCount */) override {
+    result_code processInputFrame(const float *frameData, int /* channelCount */) override {
         result_code result = RESULT_OK;
 
         float sample = frameData[getInputChannel()];

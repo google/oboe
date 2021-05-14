@@ -22,34 +22,17 @@ oboe::DataCallbackResult InputStreamCallbackAnalyzer::onAudioReady(
         void *audioData,
         int numFrames) {
     int32_t channelCount = audioStream->getChannelCount();
-
     printScheduler();
-
-    if (audioStream->getFormat() == oboe::AudioFormat::I16) {
-        int16_t *shortData = (int16_t *) audioData;
-        if (mRecording != nullptr) {
-            mRecording->write(shortData, numFrames);
-        }
-        int16_t *frameData = shortData;
-        for (int iFrame = 0; iFrame < numFrames; iFrame++) {
-            for (int iChannel = 0; iChannel < channelCount; iChannel++) {
-                float sample = frameData[iChannel] / 32768.0f;
-                mPeakDetectors[iChannel].process(sample);
-            }
-            frameData += channelCount;
-        }
-    } else if (audioStream->getFormat() == oboe::AudioFormat::Float) {
-        float *floatData = (float *) audioData;
-        if (mRecording != nullptr) {
-            mRecording->write(floatData, numFrames);
-        }
-        float *frameData = floatData;
-        for (int iFrame = 0; iFrame < numFrames; iFrame++) {
-            for (int iChannel = 0; iChannel < channelCount; iChannel++) {
-                float sample = frameData[iChannel];
-                mPeakDetectors[iChannel].process(sample);
-            }
-            frameData += channelCount;
+    mInputConverter->convertToInternalOutput(numFrames * channelCount, audioData);
+    float *floatData = (float *) mInputConverter->getOutputBuffer();
+    if (mRecording != nullptr) {
+        mRecording->write(floatData, numFrames);
+    }
+    int32_t sampleIndex = 0;
+    for (int iFrame = 0; iFrame < numFrames; iFrame++) {
+        for (int iChannel = 0; iChannel < channelCount; iChannel++) {
+            float sample = floatData[sampleIndex++];
+            mPeakDetectors[iChannel].process(sample);
         }
     }
 
