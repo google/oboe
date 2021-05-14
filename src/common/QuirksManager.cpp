@@ -187,7 +187,9 @@ bool QuirksManager::isConversionNeeded(
     // Add quirk for float output on API <21
     if (isFloat
             && !isInput
-            && getSdkVersion() < __ANDROID_API_L__ && builder.isFormatConversionAllowed()) {
+            && getSdkVersion() < __ANDROID_API_L__
+            && builder.isFormatConversionAllowed()
+            ) {
         childBuilder.setFormat(AudioFormat::I16);
         conversionNeeded = true;
         LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices, "
