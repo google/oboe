@@ -40,7 +40,7 @@ enum class GameState {
     FailedToLoad
 };
 
-class Game : public AudioStreamCallback {
+class Game : public AudioStreamDataCallback, AudioStreamErrorCallback {
 public:
     explicit Game(AAssetManager&);
     void start();

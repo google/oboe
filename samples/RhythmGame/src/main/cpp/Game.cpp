@@ -166,8 +166,6 @@ bool Game::openStream() {
 
     // Create an audio stream
     AudioStreamBuilder builder;
-    builder.setDataCallback(this);
-    builder.setErrorCallback(this);
     builder.setFormat(AudioFormat::Float);
     builder.setFormatConversionAllowed(true);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
@@ -176,7 +174,8 @@ bool Game::openStream() {
     builder.setSampleRateConversionQuality(
             SampleRateConversionQuality::Medium);
     builder.setChannelCount(2);
-
+    builder.setDataCallback(this);
+    builder.setErrorCallback(this);
     Result result = builder.openStream(mAudioStream);
     if (result != Result::OK){
         LOGE("Failed to open stream. Error: %s", convertToText(result));
