@@ -40,7 +40,7 @@ enum class GameState {
     FailedToLoad
 };
 
-class Game : public AudioStreamDataCallback, AudioStreamErrorCallback {
+class Game {
 public:
     explicit Game(AAssetManager&);
     void start();
@@ -51,34 +51,21 @@ public:
     void tick();
     void tap(int64_t eventTimeAsUptime);
 
-    // Inherited from oboe::AudioStreamDataCallback
-    DataCallbackResult
-    onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
-
-    // Inherited from oboe::AudioStreamErrorCallback
-    void onErrorAfterClose(AudioStream *oboeStream, Result error) override;
-
 private:
-    AAssetManager& mAssetManager;
-    std::shared_ptr<AudioStream> mAudioStream;
-    std::unique_ptr<Player> mClap;
-    std::unique_ptr<Player> mBackingTrack;
-    Mixer mMixer;
 
-    LockFreeQueue<int64_t, kMaxQueueItems> mClapEvents;
-    std::atomic<int64_t> mCurrentFrame { 0 };
-    std::atomic<int64_t> mSongPositionMs { 0 };
-    LockFreeQueue<int64_t, kMaxQueueItems> mClapWindows;
-    LockFreeQueue<TapResult, kMaxQueueItems> mUiEvents;
-    std::atomic<int64_t> mLastUpdateTime { 0 };
+// At the start of the codelab the `mAssetManager` field isn't used. Unused private fields cause the
+// build to fail so we need to disable this check. The #pragma lines can be safely removed once
+// `mAssetManager` is used.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+    AAssetManager& mAssetManager;
+#pragma clang diagnostic pop
+
     std::atomic<GameState> mGameState { GameState::Loading };
     std::future<void> mLoadingResult;
 
     void load();
     TapResult getTapResult(int64_t tapTimeInMillis, int64_t tapWindowInMillis);
-    bool openStream();
-    bool setupAudioSources();
-    void scheduleSongEvents();
 };
 
 
