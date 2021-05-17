@@ -29,7 +29,6 @@ public class PlaybackEngine {
     }
 
     static boolean create(Context context){
-
         if (mEngineHandle == 0){
             setDefaultStreamValues(context);
             mEngineHandle = native_createEngine();
@@ -46,6 +45,22 @@ public class PlaybackEngine {
             int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
 
             native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
+        }
+    }
+
+    static int start() {
+        if (mEngineHandle != 0) {
+            return native_startEngine(mEngineHandle);
+        } else {
+            return -1;
+        }
+    }
+
+    static int stop() {
+        if (mEngineHandle != 0) {
+            return native_stopEngine(mEngineHandle);
+        } else {
+            return -1;
         }
     }
 
@@ -87,6 +102,8 @@ public class PlaybackEngine {
 
     // Native methods
     private static native long native_createEngine();
+    private static native int native_startEngine(long engineHandle);
+    private static native int native_stopEngine(long engineHandle);
     private static native void native_deleteEngine(long engineHandle);
     private static native void native_setToneOn(long engineHandle, boolean isToneOn);
     private static native void native_setAudioApi(long engineHandle, int audioApi);

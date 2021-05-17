@@ -30,20 +30,34 @@ JNIEXPORT jlong JNICALL
 Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1createEngine(
         JNIEnv *env,
         jclass /*unused*/) {
+
     // We use std::nothrow so `new` returns a nullptr if the engine creation fails
     HelloOboeEngine *engine = new(std::nothrow) HelloOboeEngine();
     if (engine == nullptr) {
         LOGE("Could not instantiate HelloOboeEngine");
         return 0;
     }
-    auto result = engine->start();
-    if (result != oboe::Result::OK) {
-        LOGE("Opening and starting stream failed. Returned %d", result);
-        engine->stop();
-        delete engine;
-        return 0;
-    }
     return reinterpret_cast<jlong>(engine);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1startEngine(
+        JNIEnv *env,
+        jclass,
+        jlong engineHandle) {
+
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine *>(engineHandle);
+    return static_cast<jint>(engine->start());
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1stopEngine(
+        JNIEnv *env,
+        jclass,
+        jlong engineHandle) {
+
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine *>(engineHandle);
+    return static_cast<jint>(engine->stop());
 }
 
 JNIEXPORT void JNICALL
