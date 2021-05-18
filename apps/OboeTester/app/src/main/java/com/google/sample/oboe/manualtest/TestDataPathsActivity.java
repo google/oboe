@@ -236,10 +236,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         return "#" + mAutomatedTestRunner.getTestCount()
                 + ", IN" + (actualInConfig.isMMap() ? "-M" : "-L")
                 + " D=" + actualInConfig.getDeviceId()
-                + ", ch=" + actualInConfig.getChannelCount() + "[" + getInputChannel() + "]"
+                + ", ch=" + channelText(getInputChannel(), actualInConfig.getChannelCount())
                 + ", OUT" + (actualOutConfig.isMMap() ? "-M" : "-L")
-                + " D=" + (actualOutConfig.isMMap() ? "-M" : "-L")
-                + ", ch=" + actualOutConfig.getChannelCount() + "[" + getOutputChannel() + "]"
+                + " D=" + actualOutConfig.getDeviceId()
+                + ", ch=" + channelText(getOutputChannel(), actualOutConfig.getChannelCount())
                 + ", mag = " + getMagnitudeText(mMaxMagnitude);
     }
 
@@ -491,10 +491,21 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    void logExtraInfo() {
+        log("\n############################");
+        log("\nDevice Info:");
+        log(AudioQueryTools.getAudioManagerReport(mAudioManager));
+        log(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
+        log(AudioQueryTools.getAudioPropertyReport());
+        log("\n############################");
+    }
+
     @Override
     public void runTest() {
         try {
             mDurationSeconds = DURATION_SECONDS;
+
+            logExtraInfo();
 
             log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
             log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
@@ -503,6 +514,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             testInputPresets();
             testInputDevices();
             testOutputDevices();
+
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
