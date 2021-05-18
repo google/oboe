@@ -11,10 +11,10 @@ or
 
 Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio Preview 4.0 Canary 9](https://developer.android.com/studio/preview) so you'll need to be using this version of Android Studio or above. 
 
-Add the oboe dependency to your app's `build.gradle` file. Replace "1.4.3" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe:
+Add the oboe dependency to your app's `build.gradle` file. Replace "1.6.0" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe:
 
     dependencies {
-        implementation 'com.google.oboe:oboe:1.4.3'
+        implementation 'com.google.oboe:oboe:1.6.0'
     }
 
 Also enable prefab by adding:
@@ -60,7 +60,7 @@ Configure your app to use the shared STL by updating your `app/build.gradle`:
 ### 1. Clone the github repository
 Start by cloning the [latest stable release](https://github.com/google/oboe/releases/) of the Oboe repository, for example:
 
-    git clone -b 1.4-stable https://github.com/google/oboe
+    git clone -b 1.6-stable https://github.com/google/oboe
 
 **Make a note of the path which you cloned oboe into - you will need it shortly**
 
