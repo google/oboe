@@ -28,28 +28,28 @@ public:
     }
 };
 
-using StreamFramesWrittenParams = std::tuple<Direction, int32_t>;
+using StreamFramesProcessedParams = std::tuple<Direction, int32_t>;
 
-class StreamFramesWritten : public ::testing::Test,
-                            public ::testing::WithParamInterface<StreamFramesWrittenParams> {
+class StreamFramesProcessed : public ::testing::Test,
+                              public ::testing::WithParamInterface<StreamFramesProcessedParams> {
 
 protected:
     void TearDown() override;
 
-    static constexpr int PROCESS_TIME_SECOND = 5;
+    static constexpr int PROCESS_TIME_SECONDS = 5;
 
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
 };
 
-void StreamFramesWritten::TearDown() {
+void StreamFramesProcessed::TearDown() {
     if (mStream != nullptr) {
         mStream->close();
         mStream = nullptr;
     }
 }
 
-TEST_P(StreamFramesWritten, VerifyFramesWritten) {
+TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
     const Direction direction = std::get<0>(GetParam());
     const int32_t sampleRate = std::get<1>(GetParam());
 
@@ -67,22 +67,24 @@ TEST_P(StreamFramesWritten, VerifyFramesWritten) {
 
     r = mStream->start();
     ASSERT_EQ(r, Result::OK) << "Failed to start stream." << convertToText(r);
-    sleep(PROCESS_TIME_SECOND);
+    sleep(PROCESS_TIME_SECONDS);
 
     // The frames written should be close to sampleRate * PROCESS_TIME_SECONDS
     const int64_t framesWritten = mStream->getFramesWritten();
-    EXPECT_NEAR(framesWritten, sampleRate * PROCESS_TIME_SECOND, sampleRate / 2);
+    const int64_t framesRead = mStream->getFramesRead();
+    EXPECT_NEAR(framesWritten, sampleRate * PROCESS_TIME_SECONDS, sampleRate / 2);
+    EXPECT_NEAR(framesRead, sampleRate * PROCESS_TIME_SECONDS, sampleRate / 2);
 }
 
 INSTANTIATE_TEST_CASE_P(
-        StreamsFramesWrittenTest,
-        StreamFramesWritten,
+        StreamFramesProcessedTest,
+        StreamFramesProcessed,
         ::testing::Values(
-                StreamFramesWrittenParams({Direction::Output, 8000}),
-                StreamFramesWrittenParams({Direction::Output, 16000}),
-                StreamFramesWrittenParams({Direction::Output, 44100}),
-                StreamFramesWrittenParams({Direction::Input, 8000}),
-                StreamFramesWrittenParams({Direction::Input, 16000}),
-                StreamFramesWrittenParams({Direction::Input, 44100})
+                StreamFramesProcessedParams({Direction::Output, 8000}),
+                StreamFramesProcessedParams({Direction::Output, 44100}),
+                StreamFramesProcessedParams({Direction::Output, 96000}),
+                StreamFramesProcessedParams({Direction::Input, 8000}),
+                StreamFramesProcessedParams({Direction::Input, 44100}),
+                StreamFramesProcessedParams({Direction::Input, 96000})
                 )
         );

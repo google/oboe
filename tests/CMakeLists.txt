@@ -34,7 +34,7 @@ add_executable(
         testXRunBehaviour.cpp
         testStreamOpen.cpp
         testStreamStates.cpp
-        testStreamFramesWritten.cpp
+        testStreamFramesProcessed.cpp
         )
 
 target_link_libraries(testOboe gtest oboe)
