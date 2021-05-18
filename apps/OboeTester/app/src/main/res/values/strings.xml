@@ -145,7 +145,7 @@
     <string name="title_activity_glitches">Test Glitches</string>
     <string name="title_activity_auto_glitches">Auto Glitches</string>
     <string name="title_test_disconnect">Test Disconnect</string>
-    <string name="title_report_devices">Report Devices</string>
+    <string name="title_report_devices">Device Report</string>
     <string name="title_data_paths">Data Paths</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>

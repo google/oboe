@@ -59,6 +59,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.stopTest();
     }
 
+    String channelText(int index, int count) {
+        return index + "/" + count;
+    }
+
     protected String getConfigText(StreamConfiguration config) {
         int channel = (config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT)
                 ? getOutputChannel() : getInputChannel();
@@ -69,7 +73,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
-                + ", ch = " + config.getChannelCount() + "[" + channel + "]";
+                + ", ch = " + channelText(channel, config.getChannelCount());
     }
 
     public final static int TEST_RESULT_FAILED = -2;
