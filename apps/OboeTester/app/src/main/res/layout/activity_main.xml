@@ -26,15 +26,15 @@
         android:columnCount="2"
         app:layout_constraintTop_toBottomOf="@+id/versionText">
 
-    <Button
-        android:id="@+id/buttonTestOutput"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:onClick="onLaunchTestOutput"
-        android:text="Test Output"
-        />
+        <Button
+            android:id="@+id/buttonTestOutput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTestOutput"
+            android:text="Test Output" />
 
     <Button
         android:id="@+id/buttonTestInput"
@@ -42,18 +42,19 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchTestInput"
         android:text="Test Input" />
 
-    <Button
-        android:id="@+id/buttonTapToTone"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:onClick="onLaunchTapToTone"
-        android:text="Tap to Tone Latency"
-        />
+        <Button
+            android:id="@+id/buttonTapToTone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTapToTone"
+            android:text="Tap to Tone Latency" />
 
     <Button
         android:id="@+id/button_rt_latency"
@@ -61,6 +62,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchRoundTripLatency"
         android:text="Round Trip Latency" />
 
@@ -70,6 +72,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchEcho"
         android:text="Echo Input to Output" />
 
@@ -79,6 +82,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchRecorder"
         android:text="Record and Play"
         />
@@ -89,6 +93,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchManualGlitchTest"
         android:text="Glitch Test" />
 
@@ -98,6 +103,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchAutoGlitchTest"
         android:text="Auto Glitch Test" />
 
@@ -107,6 +113,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchTestDisconnect"
         android:text="Test Disconnect" />
 
@@ -116,6 +123,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchTestDeviceReport"
         android:text="@string/title_report_devices" />
 
@@ -125,6 +133,7 @@
         android:layout_width="0dp"
         android:layout_columnWeight="1"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchTestDataPaths"
         android:text="Data Paths" />
 

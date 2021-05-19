@@ -19,4 +19,5 @@
     <color name="waveform_background">#ffc0f0c0</color>
     <color name="version_draft">#ffffb0b0</color>
     <color name="version_release">#fff0f0f0</color>
+    <color name="button_tint">#ffe0f0e0</color>
 </resources>
