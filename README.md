@@ -10,7 +10,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 - Automatic latency tuning
 - Modern C++ allowing you to write clean, elegant code
 - Workarounds for some known issues
-- [Used by popular apps and frameworks](docs/AppsUsingOboe.md)
+- [Used by popular apps and frameworks](wiki/AppsUsingOboe)
 
 ## Documentation
 - [Getting Started Guide](docs/GettingStarted.md)
