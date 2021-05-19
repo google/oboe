@@ -112,22 +112,10 @@ pushd ${BUILD_DIR}
 	
 popd
 
-# Copy the binary into the unit test runner app
-mkdir ${TEST_RUNNER_ASSET_DIR}/${ABI}
-DESTINATION_DIR=${TEST_RUNNER_ASSET_DIR}/${ABI}/${TEST_BINARY_FILENAME}
-echo "Copying binary to ${DESTINATION_DIR}"
-cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
+# Copy the test executable and shared lib onto the device or emulator
+DESTINATION_DIR=/data/local
+adb push ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
+adb push ../build/${ABI}/liboboe.so ${DESTINATION_DIR}
 
-# Build and install the unit test runner app
-pushd ${TEST_RUNNER_DIR}
-    echo "Building test runner app" 
-	./gradlew assembleDebug
-	echo "Installing to device"
-	./gradlew installDebug
-popd
-
-echo "Starting app - Check your device for test results"
-adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
-
-sleep 1
-adb logcat ${TEST_RUNNER_PACKAGE_NAME}
+# Execute the test binary
+adb shell "export LD_LIBRARY_PATH=${DESTINATION_DIR} && exec ${DESTINATION_DIR}/${TEST_BINARY_FILENAME}"
