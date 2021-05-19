@@ -6,6 +6,8 @@
 /build/
 .idea/
 /app/build/
+/app/release/
+/app/debug/
 /app/app.iml
 *.iml
 /app/externalNativeBuild/
