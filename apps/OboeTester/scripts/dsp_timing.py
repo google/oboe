@@ -42,7 +42,7 @@ gOutputFile = kOutputFileBase + "now.txt"
 
 def launchLatencyTest():
     command = ["adb", "shell", "am", \
-               "start", "-n", "com.mobileer.oboetester.MainActivity", \
+               "start", "-n", "com.mobileer.oboetester/.MainActivity", \
                "--es", "test", "latency", \
                "--es", "file", gOutputFile, \
                "--ei", "buffer_bursts", "1"]
@@ -50,7 +50,7 @@ def launchLatencyTest():
 
 def launchGlitchTest():
     command = ["adb", "shell", "am", \
-               "start", "-n", "com.mobileer.oboetester.MainActivity", \
+               "start", "-n", "com.mobileer.oboetester/.MainActivity", \
                "--es", "test", "glitch", \
                "--es", "file", gOutputFile, \
                "--es", "in_perf", "lowlat", \
