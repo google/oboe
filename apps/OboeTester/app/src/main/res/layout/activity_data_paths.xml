@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.google.sample.oboe.manualtest.TestDataPathsActivity">
+    tools:context="com.mobileer.oboetester.TestDataPathsActivity">
 
     <TextView
         android:id="@+id/text_instructions"
@@ -20,7 +20,7 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <com.google.sample.oboe.manualtest.AutomatedTestRunner
+    <com.mobileer.oboetester.AutomatedTestRunner
         android:id="@+id/auto_test_runner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

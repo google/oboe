@@ -1,9 +1,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.google.sample.oboe.manualtest"
+    xmlns:app="http://schemas.android.com/apk/res/com.mobileer.oboetester"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.sample.oboe.manualtest.FastButton
+    <com.mobileer.oboetester.FastButton
         android:layout_width="300dp"
         android:layout_height="300dp"
         android:background="#ccc"

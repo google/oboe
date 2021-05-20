@@ -2,21 +2,21 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <com.google.sample.oboe.manualtest.StreamConfigurationView
+    <com.mobileer.oboetester.StreamConfigurationView
         android:id="@+id/streamConfiguration"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal" />
 
-    <com.google.sample.oboe.manualtest.BufferSizeView
+    <com.mobileer.oboetester.BufferSizeView
         android:id="@+id/buffer_size_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal" />
 
-    <com.google.sample.oboe.manualtest.WorkloadView
+    <com.mobileer.oboetester.WorkloadView
         android:id="@+id/workload_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
