@@ -11,3 +11,5 @@ It can also be run as part of an [automated test using Intents](AutomatedTesting
 ## [How to Use OboeTester Interactively](Usage.md)
 
 ## [Automated Testing with OboeTester](AutomatedTesting.md)
+
+-- [Privacy Policy](PrivacyPolicy.md) --
