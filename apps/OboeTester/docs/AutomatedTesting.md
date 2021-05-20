@@ -2,7 +2,7 @@
 
 # Automated Testing
 
-OboeTester can be used to measure the round trip latency and glitches. 
+OboeTester can be used to measure the round trip latency and glitches.
 It can be launched from a shell script by using an Android Intent.
 
 Before running the app from an Intent, it should be launched manually and a Round Trip Latency test run. Then you can give permission for using the microphone to record the looped back sound, and give permission to write to external storage for saving the test result.
@@ -21,8 +21,8 @@ Before running the app from an Intent, it should be launched manually and a Roun
 The app can be started by sending a Start comment to the OboeTester class.
 The app will run and the results will be written to a file.
 
-    adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity {parameters}
-    
+    adb shell am start -n com.mobileer.manualtest/.MainActivity {parameters}
+
 String parameters are sent using:
 
     --es {parameterName} {parameterValue}
@@ -34,7 +34,7 @@ For example:
 Integer parameters are sent using:
 
     --ei {parameterName} {parameterValue}
-    
+
 For example:
 
     --ei buffer_bursts 8
@@ -48,7 +48,7 @@ There are two required parameters:
             It will request EXCLUSIVE mode for minimal latency.
             The "glitch" test will perform a single Glitch test.
     --es file {full path for resulting file}
-    
+
 There are several optional parameter in common for all tests:
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
@@ -61,7 +61,7 @@ There are several optional parameter in common for all tests:
     --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
     --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
     --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
-    
+
 There are several optional parameters for just the "glitch" test:
 
     --ef tolerance          {tolerance}  // amount of deviation from expected that is considered a glitch
@@ -72,15 +72,15 @@ There are several optional parameters for just the "glitch" test:
 
 For example, a complete command for a "latency" test might be:
 
-    adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity \
+    adb shell am start -n com.mobileer.manualtest/.MainActivity \
         --es test latency \
         --es file /sdcard/latency20190903.txt \
         --ei buffer_bursts 2 \
         --ei out_channels 1
-        
+
 or for a "glitch" test:
 
-    adb shell am start -n com.google.sample.oboe.manualtest/.MainActivity \
+    adb shell am start -n com.mobileer.manualtest/.MainActivity \
         --es test glitch \
         --es file /sdcard/glitch20190903.txt \
         --es in_perf lowlat \
@@ -98,7 +98,7 @@ Test results are simple files with "name = value" pairs.
 The test results can be obtained using adb pull.
 
     adb pull /sdcard/test20190611.txt .
-    
+
 The beginning of the report is common to all tests:
 
     build.fingerprint = google/bonito/bonito:10/QP1A.190711.017/5771233:userdebug/dev-keys
@@ -151,7 +151,7 @@ Here is a report from a test that failed because the output was muted. Note the 
     result = -96
     result.text = ERROR_CONFIDENCE
     confidence =  0.009
-        
+
 ### Glitch Report
 
 Here is a report from a good test. The '#' comments were added for this document and are not in the report.
@@ -165,10 +165,10 @@ Here is a report from a good test. The '#' comments were added for this document
     peak.amplitude = 0.057714  # peak amplitude of the input signal, between 0.0 and 1.0
     signal.noise.ratio.db =  96.3
     time.total =     9.96 seconds  # close to your specified duration
-    time.no.glitches =     9.96    # time we have been running with no glitches 
+    time.no.glitches =     9.96    # time we have been running with no glitches
     max.time.no.glitches =     9.96 # max time with no glitches
     glitch.count = 0               # number of glitch events, actual number may be higher if close together
-    
+
 Here is a report from a test that failed because the output was muted. Note the glitch.count is missing because it could not be measured.
 
     state = WAITING_FOR_SIGNAL

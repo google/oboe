@@ -8,16 +8,16 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.google.sample.oboe.manualtest.RecorderActivity">
+    tools:context="com.mobileer.oboetester.RecorderActivity">
 
-    <com.google.sample.oboe.manualtest.StreamConfigurationView
+    <com.mobileer.oboetester.StreamConfigurationView
         android:id="@+id/streamConfiguration"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal" />
 
-    <com.google.sample.oboe.manualtest.InputMarginView
+    <com.mobileer.oboetester.InputMarginView
         android:id="@+id/input_margin_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -71,25 +71,25 @@
         android:lines="3"
         android:text="@string/init_status" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar0"
         android:layout_width="fill_parent"
         android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar1"
         android:layout_width="fill_parent"
         android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar2"
         android:layout_width="fill_parent"
         android:layout_marginBottom="4dp"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar3"
         android:layout_width="fill_parent"
         android:layout_marginBottom="4dp"

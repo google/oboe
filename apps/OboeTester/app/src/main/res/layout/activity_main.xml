@@ -8,7 +8,7 @@
     android:layout_marginLeft="4dp"
     android:layout_marginRight="4dp"
     android:background="@color/version_release"
-    tools:context="com.google.sample.oboe.manualtest.MainActivity">
+    tools:context="com.mobileer.oboetester.MainActivity">
 
     <TextView
         android:id="@+id/versionText"

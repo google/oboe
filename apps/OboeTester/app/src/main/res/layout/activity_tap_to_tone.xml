@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.google.sample.oboe.manualtest.TapToToneActivity">
+    tools:context="com.mobileer.oboetester.TapToToneActivity">
 
     <include layout="@layout/merge_audio_common"/>
 
@@ -38,7 +38,7 @@
         android:textStyle="bold"
         android:text="@string/init_result" />
 
-    <com.google.sample.oboe.manualtest.WaveformView
+    <com.mobileer.oboetester.WaveformView
         android:id="@+id/waveview_audio"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />

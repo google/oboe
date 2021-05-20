@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:text="Device: " />
 
-                <com.google.sample.audio_device.AudioDeviceSpinner
+                <com.mobileer.audio_device.AudioDeviceSpinner
                     android:id="@+id/devices_spinner"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>

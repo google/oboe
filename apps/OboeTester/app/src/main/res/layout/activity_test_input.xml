@@ -8,29 +8,29 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.google.sample.oboe.manualtest.TestInputActivity">
+    tools:context="com.mobileer.oboetester.TestInputActivity">
 
     <include layout="@layout/merge_audio_common"/>
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar0"
         android:layout_marginBottom="4dp"
         android:layout_width="fill_parent"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar1"
         android:layout_marginBottom="4dp"
         android:layout_width="fill_parent"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar2"
         android:layout_marginBottom="4dp"
         android:layout_width="fill_parent"
         android:layout_height="20dp" />
 
-    <com.google.sample.oboe.manualtest.VolumeBarView
+    <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar3"
         android:layout_marginBottom="4dp"
         android:layout_width="fill_parent"
