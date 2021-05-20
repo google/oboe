@@ -21,7 +21,7 @@ Before running the app from an Intent, it should be launched manually and a Roun
 The app can be started by sending a Start comment to the OboeTester class.
 The app will run and the results will be written to a file.
 
-    adb shell am start -n com.mobileer.oboetester.MainActivity {parameters}
+    adb shell am start -n com.mobileer.oboetester/.MainActivity {parameters}
 
 String parameters are sent using:
 
@@ -72,7 +72,7 @@ There are several optional parameters for just the "glitch" test:
 
 For example, a complete command for a "latency" test might be:
 
-    adb shell am start -n com.mobileer.oboetester.MainActivity \
+    adb shell am start -n com.mobileer.oboetester/.MainActivity \
         --es test latency \
         --es file /sdcard/latency20190903.txt \
         --ei buffer_bursts 2 \
@@ -80,7 +80,7 @@ For example, a complete command for a "latency" test might be:
 
 or for a "glitch" test:
 
-    adb shell am start -n com.mobileer.oboetester.MainActivity \
+    adb shell am start -n com.mobileer.oboetester/.MainActivity \
         --es test glitch \
         --es file /sdcard/glitch20190903.txt \
         --es in_perf lowlat \
