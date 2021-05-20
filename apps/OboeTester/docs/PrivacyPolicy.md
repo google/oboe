@@ -1,8 +1,10 @@
+[Home](README.md)
+
 # OboeTester Privacy Policy
 
 ## Recorded Audio
 
-OboeTester can record audio.
+[OboeTester](README.md) can record audio.
 The data is only used to test the audio recording capability of your device.
 These tests include:
 
