@@ -2,6 +2,9 @@
 
 # How to Build OboeTester
 
+Note that you can now [download OboeTester from the Play Store](https://play.google.com/store/apps/details?id=com.mobileer.oboetester).
+
+But if you want the latest version, or if you want to debug OboeTester, then you can build it using Android Studio.
 Download the top level oboe repository from GitHub.
 Then use Android Studio (3.3 or above) to build the app in this "apps/OboeTester".
 
