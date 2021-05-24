@@ -22,7 +22,7 @@
 
 #include "oboe/Oboe.h"
 
-class OboeStreamCallbackProxy : public oboe::AudioStreamDataCallback {
+class OboeStreamCallbackProxy : public oboe::AudioStreamCallback {
 public:
 
     void setCallback(oboe::AudioStreamCallback *callback) {
