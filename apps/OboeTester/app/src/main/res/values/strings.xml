@@ -2,7 +2,7 @@
     <string name="app_name">Oboe Tester</string>
     <string name="init_device">Device:</string>
     <string name="init_status">Status:</string>
-    <string name="init_result">Result:</string>
+    <string name="tap_help">Click START button!</string>
     <string name="action_settings">Settings</string>
     <string name="openAudio">Open</string>
     <string name="startAudio">Start</string>
@@ -19,6 +19,10 @@
     <string name="auto_select">Auto select</string>
     <string name="hint_hide_settings">Hide Settings</string>
     <string name="hint_show_settings">Show Settings</string>
+    <string name="tap_to_tone_instructions">
+        Tap in green box!\n
+        No tap-to-tone results yet.
+    </string>
     <string name="loopback_instructions_glitch">
         Click Show Settings to configure.\n
         This glitch measurement plays\n
