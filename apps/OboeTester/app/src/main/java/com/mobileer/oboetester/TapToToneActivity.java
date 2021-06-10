@@ -176,7 +176,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
         String text;
         int previous = 0;
         if (result == null) {
-            text = "";
+            text = getResources().getString(R.string.tap_to_tone_instructions);
             mWaveformView.clearSampleData();
         } else {
             if (result.events.length < 2) {
@@ -201,7 +201,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                     mLatencyMax = latencyMillis;
                 }
 
-                text = String.format("latency = %3d msec\n", latencyMillis);
+                text = String.format("tap-to-tone latency = %3d msec\n", latencyMillis);
                 mWaveformView.setCursorData(cursors);
             }
             mWaveformView.setSampleData(result.filtered);
@@ -331,8 +331,8 @@ public class TapToToneActivity extends TestOutputActivityBase {
         // TODO
     }
 
-    @Override
-    public void startAudio() throws IOException {
+    public void startTest(View view) throws IOException {
+        openAudio();
         if (hasRecordAudioPermission()) {
             startAudioPermitted();
         } else {
@@ -346,22 +346,10 @@ public class TapToToneActivity extends TestOutputActivityBase {
         mAudioMidiTester.start();
     }
 
-    @Override
-    public void stopAudio() {
+    public void stopTest(View view) {
         mAudioMidiTester.stop();
-        super.stopAudio();
-    }
-
-    @Override
-    public void pauseAudio() {
-        mAudioMidiTester.stop();
-        super.pauseAudio();
-    }
-
-    @Override
-    public void closeAudio() {
-        mAudioMidiTester.stop();
-        super.closeAudio();
+        stopAudio();
+        closeAudio();
     }
 
     private void resetLatency() {

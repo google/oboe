@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.mobileer.oboetester.TapToToneActivity">
 
-    <include layout="@layout/merge_audio_common"/>
+    <include layout="@layout/merge_audio_simple"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
         android:lines="2"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:text="@string/init_result" />
+        android:text="@string/tap_help" />
 
     <com.mobileer.oboetester.WaveformView
         android:id="@+id/waveview_audio"
