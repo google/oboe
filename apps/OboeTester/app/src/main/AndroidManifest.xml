@@ -49,54 +49,59 @@
         <activity
             android:name=".TestOutputActivity"
             android:label="@string/title_activity_test_output"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestInputActivity"
             android:label="@string/title_activity_test_input"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TapToToneActivity"
             android:label="@string/title_activity_output_latency"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RecorderActivity"
             android:label="@string/title_activity_recorder"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".EchoActivity"
             android:label="@string/title_activity_echo"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RoundTripLatencyActivity"
             android:label="@string/title_activity_rt_latency"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ManualGlitchActivity"
             android:label="@string/title_activity_glitches"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AutomatedGlitchActivity"
             android:label="@string/title_activity_auto_glitches"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestDisconnectActivity"
             android:label="@string/title_test_disconnect"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".DeviceReportActivity"
             android:label="@string/title_report_devices"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestDataPathsActivity"
             android:label="@string/title_data_paths"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ExtraTestsActivity"
-            android:label="@string/title_extra_tests"
+            android:exported="true"
+            android:label="@string/title_extra_tests" />
+
+        <activity
+            android:name=".ExternalTapToToneActivity"
+            android:label="@string/title_external_tap"
             android:exported="true" />
 
         <service
-            android:name=".AudioMidiTester"
+            android:name=".MidiTapTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">
             <intent-filter>
                 <action android:name="android.media.midi.MidiDeviceService" />
