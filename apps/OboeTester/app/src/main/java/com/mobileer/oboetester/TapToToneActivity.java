@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.media.midi.MidiDevice;
 import android.media.midi.MidiDeviceInfo;
@@ -39,8 +40,8 @@ import com.mobileer.miditools.MidiTools;
 
 import java.io.IOException;
 
-import static com.mobileer.oboetester.MidiTapTester.TestListener;
-import static com.mobileer.oboetester.MidiTapTester.TestResult;
+import static com.mobileer.oboetester.MidiTapTester.NoteListener;
+import static com.mobileer.oboetester.TapToToneTester.TestResult;
 
 public class TapToToneActivity extends TestOutputActivityBase {
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1234;
@@ -49,9 +50,10 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private MidiInputPort mInputPort;
 
     protected MidiTapTester mMidiTapTester;
+    protected TapToToneTester mTapToToneTester;
 
     private MidiOutputPortConnectionSelector mPortSelector;
-    private MyTestListener mTestListener = new MyTestListener();
+    private MyNoteListener mTestListener = new MyNoteListener();
     private WaveformView mWaveformView;
     // Stats for latency
     private int mMeasurementCount;
@@ -70,6 +72,8 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
         mAudioOutTester = addAudioOutputTester();
 
+        mTapToToneTester = new TapToToneTester();
+
         mResultView = (TextView) findViewById(R.id.resultView);
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
@@ -84,13 +88,14 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
         // Start a blip test when the waveform view is tapped.
         mWaveformView.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View view, MotionEvent event) {
                 int action = event.getActionMasked();
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        mMidiTapTester.trigger();
+                        trigger();
                         break;
                     case MotionEvent.ACTION_MOVE:
                         break;
@@ -105,6 +110,27 @@ public class TapToToneActivity extends TestOutputActivityBase {
         });
 
         updateEnabledWidgets();
+    }
+
+    void trigger() {
+        mAudioOutTester.trigger();
+        Runnable task = new Runnable() {
+            public void run() {
+                analyseAndShowResults();
+            }
+        };
+        mTapToToneTester.scheduleTaskWhenDone(task);
+    }
+
+    private void analyseAndShowResults() {
+        new Thread() {
+            public void run() {
+                TestResult result = mTapToToneTester.analyzeCapturedAudio();
+                if (result != null) {
+                    showTestResults(result);
+                }
+            }
+        }.start();
     }
 
     @Override
@@ -151,20 +177,12 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
     }
 
-    private class MyTestListener implements TestListener {
-        @Override
-        public void onTestFinished(final TestResult result) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    showTestResults(result);
-                }
-            });
-        }
-
+    private class MyNoteListener implements NoteListener {
         @Override
         public void onNoteOn(final int pitch) {
             runOnUiThread(new Runnable() {
                 public void run() {
+                    trigger();
                     mStreamContexts.get(0).configurationView.setStatusText("MIDI pitch = " + pitch);
                 }
             });
@@ -325,9 +343,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
         requestPermissions(new String[]{requiredPermission},
                 MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           String permissions[],
+                                           int[] grantResults) {
         // TODO
     }
 
@@ -349,11 +369,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private void startAudioPermitted() throws IOException {
         super.startAudio();
         resetLatency();
-        mMidiTapTester.start();
+        mTapToToneTester.start();
     }
 
     public void stopTest(View view) {
-        mMidiTapTester.stop();
+        mTapToToneTester.stop();
         stopAudio();
         closeAudio();
     }

@@ -17,6 +17,9 @@ package com.mobileer.oboetester;
 
 import java.util.ArrayList;
 
+/**
+ * Analyze a recording and extract edges for latency analysis.
+ */
 public class TapLatencyAnalyser {
     public static final int TYPE_TAP = 0;
     float[] mHighPassBuffer;

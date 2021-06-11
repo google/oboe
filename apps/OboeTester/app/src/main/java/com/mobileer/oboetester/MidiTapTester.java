@@ -38,36 +38,14 @@ public class MidiTapTester extends MidiDeviceService {
         System.loadLibrary("oboetester");
     }
 
-    private static final float MAX_TOUCH_LATENCY = 0.200f;
-    private static final float MAX_OUTPUT_LATENCY = 0.600f;
-    private static final float ANALYSIS_TIME_MARGIN = 0.250f;
-
-    private static final float ANALYSIS_TIME_DELAY = MAX_OUTPUT_LATENCY;
-    private static final float ANALYSIS_TIME_TOTAL = MAX_TOUCH_LATENCY + MAX_OUTPUT_LATENCY;
-    private static final float ANALYSIS_TIME_MAX = ANALYSIS_TIME_TOTAL + ANALYSIS_TIME_MARGIN;
-    private static final int ANALYSIS_SAMPLE_RATE = 48000; // need not match output rate
-
-    private ArrayList<TestListener> mListeners = new ArrayList<TestListener>();
+    private ArrayList<NoteListener> mListeners = new ArrayList<NoteListener>();
     private MyMidiReceiver mReceiver = new MyMidiReceiver();
     private MidiFramer mMidiFramer = new MidiFramer(mReceiver);
-    private boolean mRecordEnabled = true;
 
     private static MidiTapTester mInstance;
-    private AudioRecordThread mRecorder;
-    private TapLatencyAnalyser mTapLatencyAnalyser;
 
-    private AudioOutputTester mAudioOutputTester;
 
-    public static class TestResult {
-        public float[] samples;
-        public float[] filtered;
-        public int frameRate;
-        public TapLatencyAnalyser.TapLatencyEvent[] events;
-    }
-
-    public static interface TestListener {
-        public void onTestFinished(TestResult result);
-
+    public static interface NoteListener {
         public void onNoteOn(int pitch);
     }
 
@@ -78,26 +56,17 @@ public class MidiTapTester extends MidiDeviceService {
         mInstance = this;
     }
 
-    public void addTestListener(TestListener listener) {
+    public void addTestListener(NoteListener listener) {
         mListeners.add(listener);
     }
 
-    public void removeTestListener(TestListener listener) {
+    public void removeTestListener(NoteListener listener) {
         mListeners.remove(listener);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        if (mRecordEnabled) {
-            mRecorder = new AudioRecordThread(ANALYSIS_SAMPLE_RATE,
-                    1,
-                    (int) (ANALYSIS_TIME_MAX * ANALYSIS_SAMPLE_RATE));
-        }
-
-        mAudioOutputTester = AudioOutputTester.getInstance();
-
-        mTapLatencyAnalyser = new TapLatencyAnalyser();
     }
 
     @Override
@@ -129,12 +98,11 @@ public class MidiTapTester extends MidiDeviceService {
     }
 
     private void noteOn(byte b) {
-        trigger();
         fireNoteOn(b);
     }
 
     private void fireNoteOn(byte pitch) {
-        for (TestListener listener : mListeners) {
+        for (NoteListener listener : mListeners) {
             listener.onNoteOn(pitch);
         }
     }
@@ -144,58 +112,6 @@ public class MidiTapTester extends MidiDeviceService {
     @Override
     public MidiReceiver[] onGetInputPortReceivers() {
         return new MidiReceiver[]{mMidiFramer};
-    }
-
-
-    public void start() throws IOException {
-        if (mRecordEnabled) {
-            mRecorder.startAudio();
-        }
-    }
-
-    public void trigger() {
-        mAudioOutputTester.trigger();
-        if (mRecordEnabled) {
-            // schedule an analysis to start in the near future
-            int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
-            Runnable task = new Runnable() {
-                public void run() {
-                    new Thread() {
-                        public void run() {
-                            analyzeCapturedAudio();
-                        }
-                    }.start();
-                }
-            };
-
-            mRecorder.scheduleTask(numSamples, task);
-        }
-    }
-
-    private void analyzeCapturedAudio() {
-        if (!mRecordEnabled) return;
-        int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_TOTAL);
-        float[] buffer = new float[numSamples];
-        mRecorder.setCaptureEnabled(false); // TODO wait for it to settle
-        int numRead = mRecorder.readMostRecent(buffer);
-
-        TestResult result = new TestResult();
-        result.samples = buffer;
-        result.frameRate = mRecorder.getSampleRate();
-        result.events = mTapLatencyAnalyser.analyze(buffer, 0, numRead);
-        result.filtered = mTapLatencyAnalyser.getFilteredBuffer();
-        mRecorder.setCaptureEnabled(true);
-        // notify listeners
-        for (TestListener listener : mListeners) {
-            listener.onTestFinished(result);
-        }
-    }
-
-
-    public void stop() {
-        if (mRecordEnabled) {
-            mRecorder.stopAudio();
-        }
     }
 
 }
