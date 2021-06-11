@@ -139,7 +139,7 @@
         <item>LOW_LATENCY</item>
     </string-array>
 
-<!--Must match SignalType in NativeAudioContext.h-->
+    <!--Must match SignalType in NativeAudioContext.h-->
     <string name="output_signal_prompt">choose a signal</string>
     <string-array name="output_signals">
         <item>Sine</item>
@@ -167,6 +167,7 @@
     <string name="title_test_disconnect">Test Disconnect</string>
     <string name="title_report_devices">Device Report</string>
     <string name="title_data_paths">Data Paths</string>
+    <string name="title_extra_tests">Extra Tests</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
