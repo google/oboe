@@ -245,6 +245,10 @@ public class MainActivity extends Activity {
         onLaunchTest(DeviceReportActivity.class);
     }
 
+    public void onLaunchExtratests(View view) {
+        onLaunchTest(ExtraTestsActivity.class);
+    }
+
     private void onLaunchTest(Class clazz) {
         updateCallbackSize();
         Intent intent = new Intent(this, clazz);
@@ -312,4 +316,5 @@ public class MainActivity extends Activity {
         boolean enabled = checkBox.isChecked();
         TestAudioActivity.setBackgroundEnabled(enabled);
     }
+
 }

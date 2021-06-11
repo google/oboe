@@ -36,15 +36,15 @@
             android:onClick="onLaunchTestOutput"
             android:text="Test Output" />
 
-    <Button
-        android:id="@+id/buttonTestInput"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchTestInput"
-        android:text="Test Input" />
+        <Button
+            android:id="@+id/buttonTestInput"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTestInput"
+            android:text="Test Input" />
 
         <Button
             android:id="@+id/buttonTapToTone"
@@ -56,86 +56,96 @@
             android:onClick="onLaunchTapToTone"
             android:text="Tap to Tone Latency" />
 
-    <Button
-        android:id="@+id/button_rt_latency"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchRoundTripLatency"
-        android:text="Round Trip Latency" />
+        <Button
+            android:id="@+id/button_rt_latency"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchRoundTripLatency"
+            android:text="Round Trip Latency" />
 
-    <Button
-        android:id="@+id/buttonEcho"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchEcho"
-        android:text="Echo Input to Output" />
+        <Button
+            android:id="@+id/buttonEcho"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchEcho"
+            android:text="Echo Input to Output" />
 
-    <Button
-        android:id="@+id/buttonRecorder"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchRecorder"
-        android:text="Record and Play"
-        />
+        <Button
+            android:id="@+id/buttonRecorder"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchRecorder"
+            android:text="Record and Play"
+            />
 
-    <Button
-        android:id="@+id/button_manual_glitches"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchManualGlitchTest"
-        android:text="Glitch Test" />
+        <Button
+            android:id="@+id/button_manual_glitches"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchManualGlitchTest"
+            android:text="Glitch Test" />
 
-    <Button
-        android:id="@+id/button_auto_glitches"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchAutoGlitchTest"
-        android:text="Auto Glitch Test" />
+        <Button
+            android:id="@+id/button_auto_glitches"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchAutoGlitchTest"
+            android:text="Auto Glitch Test" />
 
-    <Button
-        android:id="@+id/button_test_disconnect"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchTestDisconnect"
-        android:text="Test Disconnect" />
+        <Button
+            android:id="@+id/button_test_disconnect"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTestDisconnect"
+            android:text="Test Disconnect" />
 
-    <Button
-        android:id="@+id/button_test_device_report"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchTestDeviceReport"
-        android:text="@string/title_report_devices" />
+        <Button
+            android:id="@+id/button_test_device_report"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTestDeviceReport"
+            android:text="@string/title_report_devices" />
 
-    <Button
-        android:id="@+id/button_test_data_paths"
-        android:layout_gravity="fill"
-        android:layout_width="0dp"
-        android:layout_columnWeight="1"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/button_tint"
-        android:onClick="onLaunchTestDataPaths"
-        android:text="Data Paths" />
+        <Button
+            android:id="@+id/button_test_data_paths"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchTestDataPaths"
+            android:text="Data Paths" />
+
+        <Button
+            android:id="@+id/button_extra_tests"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchExtratests"
+            android:text="Extras..." />
 
     </GridLayout>
 
