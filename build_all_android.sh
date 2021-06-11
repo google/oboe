@@ -30,7 +30,7 @@ BUILD_DIR=build
 
 CMAKE_ARGS="-H. \
   -DBUILD_SHARED_LIBS=true \
-  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DANDROID_TOOLCHAIN=clang \
   -DANDROID_STL=c++_shared \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
