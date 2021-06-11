@@ -39,8 +39,8 @@ import com.mobileer.miditools.MidiTools;
 
 import java.io.IOException;
 
-import static com.mobileer.oboetester.AudioMidiTester.TestListener;
-import static com.mobileer.oboetester.AudioMidiTester.TestResult;
+import static com.mobileer.oboetester.MidiTapTester.TestListener;
+import static com.mobileer.oboetester.MidiTapTester.TestResult;
 
 public class TapToToneActivity extends TestOutputActivityBase {
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1234;
@@ -48,7 +48,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private MidiManager mMidiManager;
     private MidiInputPort mInputPort;
 
-    protected AudioMidiTester mAudioMidiTester;
+    protected MidiTapTester mMidiTapTester;
 
     private MidiOutputPortConnectionSelector mPortSelector;
     private MyTestListener mTestListener = new MyTestListener();
@@ -90,7 +90,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        mAudioMidiTester.trigger();
+                        mMidiTapTester.trigger();
                         break;
                     case MotionEvent.ACTION_MOVE:
                         break;
@@ -114,7 +114,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
     @Override
     protected void onDestroy() {
-        mAudioMidiTester.removeTestListener(mTestListener);
+        mMidiTapTester.removeTestListener(mTestListener);
         closeMidiResources();
         super.onDestroy();
     }
@@ -232,9 +232,9 @@ public class TapToToneActivity extends TestOutputActivityBase {
                         } else {
                             mInputPort = device.openInputPort(0);
                             Log.i(TAG, "opened MIDI port = " + mInputPort + " on " + info);
-                            mAudioMidiTester = AudioMidiTester.getInstance();
+                            mMidiTapTester = MidiTapTester.getInstance();
 
-                            Log.i(TAG, "openPort() mAudioMidiTester = " + mAudioMidiTester);
+                            Log.i(TAG, "openPort() mAudioMidiTester = " + mMidiTapTester);
                             // Now that we have created the AudioMidiTester, close the port so we can
                             // open it later.
                             try {
@@ -242,7 +242,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            mAudioMidiTester.addTestListener(mTestListener);
+                            mMidiTapTester.addTestListener(mTestListener);
 
                             setSpinnerListeners();
                         }
@@ -349,11 +349,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private void startAudioPermitted() throws IOException {
         super.startAudio();
         resetLatency();
-        mAudioMidiTester.start();
+        mMidiTapTester.start();
     }
 
     public void stopTest(View view) {
-        mAudioMidiTester.stop();
+        mMidiTapTester.stop();
         stopAudio();
         closeAudio();
     }

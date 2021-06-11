@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * Measure the latency of various output paths by playing a blip.
  * Report the results back to the TestListeners.
  */
-public class AudioMidiTester extends MidiDeviceService {
+public class MidiTapTester extends MidiDeviceService {
 
     // Sometimes the service can be run without the MainActivity being run!
     static {
@@ -52,7 +52,7 @@ public class AudioMidiTester extends MidiDeviceService {
     private MidiFramer mMidiFramer = new MidiFramer(mReceiver);
     private boolean mRecordEnabled = true;
 
-    private static AudioMidiTester mInstance;
+    private static MidiTapTester mInstance;
     private AudioRecordThread mRecorder;
     private TapLatencyAnalyser mTapLatencyAnalyser;
 
@@ -74,7 +74,7 @@ public class AudioMidiTester extends MidiDeviceService {
     /**
      * This is a Service so it is only created when a client requests the service.
      */
-    public AudioMidiTester() {
+    public MidiTapTester() {
         mInstance = this;
     }
 
@@ -106,7 +106,7 @@ public class AudioMidiTester extends MidiDeviceService {
         super.onDestroy();
     }
 
-    public static AudioMidiTester getInstance() {
+    public static MidiTapTester getInstance() {
         return mInstance;
     }
 

@@ -183,6 +183,7 @@
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
     <string name="test_disconnect_instructions">Unplug headsets, volume up, [START]</string>
+    <string name="title_external_tap">External Tap To Tone</string>
 
     <string-array name="conversion_qualities">
         <item>None</item>
