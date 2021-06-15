@@ -403,6 +403,7 @@ public class StreamConfigurationView extends LinearLayout {
         mFormatConversionBox.setEnabled(enabled);
         mChannelCountSpinner.setEnabled(enabled);
         mInputPresetSpinner.setEnabled(enabled);
+        mUsageSpinner.setEnabled(enabled);
         mFormatSpinner.setEnabled(enabled);
         mSampleRateSpinner.setEnabled(enabled);
         mRateConversionQualitySpinner.setEnabled(enabled);
