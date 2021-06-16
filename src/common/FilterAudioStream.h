@@ -57,6 +57,7 @@ public:
         mPerformanceMode = mChildStream->getPerformanceMode();
         mInputPreset = mChildStream->getInputPreset();
         mFramesPerBurst = mChildStream->getFramesPerBurst();
+        mDeviceId = mChildStream->getDeviceId();
     }
 
     virtual ~FilterAudioStream() = default;
