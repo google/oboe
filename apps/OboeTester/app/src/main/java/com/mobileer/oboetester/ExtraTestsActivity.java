@@ -18,6 +18,7 @@ public class ExtraTestsActivity extends Activity {
     }
 
     public void onLaunchExternalTapTest(View view) {
+        onLaunchTest(ExternalTapToToneActivity.class);
     }
 
     private void onLaunchTest(Class clazz) {

@@ -140,6 +140,12 @@ class AudioRecordThread implements Runnable {
         }
     }
 
+    /**
+     * Schedule task to be run on its own thread when numSamples more samples have been recorded.
+     *
+     * @param numSamples
+     * @param task
+     */
     public void scheduleTask(int numSamples, Runnable task) {
         mTask = task;
         mTaskCountdown = numSamples;
