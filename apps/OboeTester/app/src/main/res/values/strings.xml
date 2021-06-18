@@ -20,8 +20,10 @@
     <string name="hint_hide_settings">Hide Settings</string>
     <string name="hint_show_settings">Show Settings</string>
     <string name="tap_to_tone_instructions">
-        Tap in green box!\n
-        No tap-to-tone results yet.
+        Tap in green box!\nNo tap-to-tone results yet.
+    </string>
+    <string name="external_tap_instructions">
+        Trigger sound on other device.\nThen quickly tap ANALYZE.
     </string>
     <string name="loopback_instructions_glitch">
         Click Show Settings to configure.\n
@@ -184,6 +186,7 @@
     <string name="skipTest">Skip</string>
     <string name="test_disconnect_instructions">Unplug headsets, volume up, [START]</string>
     <string name="title_external_tap">External Tap To Tone</string>
+    <string name="analyze">Analyze</string>
 
     <string-array name="conversion_qualities">
         <item>None</item>
