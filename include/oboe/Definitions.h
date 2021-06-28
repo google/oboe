@@ -184,7 +184,7 @@ namespace oboe {
         Reserved8,
         Reserved9,
         Reserved10,
-        ErrorClosed,
+        ErrorClosed = -869,
     };
 
     /**
