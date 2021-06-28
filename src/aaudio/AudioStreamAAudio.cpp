@@ -645,6 +645,15 @@ Result AudioStreamAAudio::getTimestamp(clockid_t clockId,
 }
 
 ResultWithValue<double> AudioStreamAAudio::calculateLatencyMillis() {
+    // Check that the stream is still open before continuing
+    {
+        std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+        AAudioStream *stream = mAAudioStream.load();
+        if (stream == nullptr) {
+            return ResultWithValue<double>(Result::ErrorClosed);
+        }
+    }
+
     // Get the time that a known audio frame was presented.
     int64_t hardwareFrameIndex;
     int64_t hardwareFrameHardwareTime;
