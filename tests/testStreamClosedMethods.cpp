@@ -317,7 +317,7 @@ TEST_F(StreamClosedReturnValues, CalculateLatencyInMillisReturnsClosedIfSupporte
 
     if (mStream->getAudioApi() == AudioApi::AAudio){
         auto r = mStream->calculateLatencyMillis();
-        ASSERT_EQ(r.error(), Result::ErrorClosed);
+        ASSERT_EQ(r.error(), Result::ErrorInvalidState);
     }
 }
 
