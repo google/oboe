@@ -33,7 +33,7 @@ void RampLinear::setLengthInFrames(int32_t frames) {
 void RampLinear::setTarget(float target) {
     mTarget.store(target);
     // If the ramp has not been used then start immediately at this level.
-    if (mLastCallCount < 0) {
+    if (mLastCallCount == kInitialCallCount) {
         forceCurrent(target);
     }
 }
