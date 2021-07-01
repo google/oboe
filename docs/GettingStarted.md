@@ -9,7 +9,7 @@ or
 
 ## Option 1) Using pre-built binaries and headers
 
-Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio Preview 4](https://developer.android.com/studio) so you'll need to be using this version of Android Studio or above. 
+Oboe is distributed as a [prefab](https://github.com/google/prefab) package via [Google Maven](https://maven.google.com/web/index.html) (search for "oboe"). [Prefab support was added](https://android-developers.googleblog.com/2020/02/native-dependencies-in-android-studio-40.html) to [Android Studio 4.0](https://developer.android.com/studio) so you'll need to be using this version of Android Studio or above. 
 
 Add the oboe dependency to your app's `build.gradle` file. Replace "1.6.0" with the [latest stable version](https://github.com/google/oboe/releases/) of Oboe:
 
