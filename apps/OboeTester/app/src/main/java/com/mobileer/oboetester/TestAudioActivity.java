@@ -462,7 +462,6 @@ abstract class TestAudioActivity extends Activity {
         // Start Bluetooth SCO if needed.
         if (isScoDevice(requestedConfig.getDeviceId()) && !mScoStarted) {
             startBluetoothSco();
-            mScoStarted = true;
         }
 
         streamContext.tester.open(); // OPEN the stream
@@ -568,7 +567,6 @@ abstract class TestAudioActivity extends Activity {
 
         if (mScoStarted) {
             stopBluetoothSco();
-            mScoStarted = false;
         }
 
         mAudioState = AUDIO_STATE_CLOSED;
@@ -578,11 +576,13 @@ abstract class TestAudioActivity extends Activity {
     void startBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.startBluetoothSco();
+        mScoStarted = true;
     }
 
     void stopBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.stopBluetoothSco();
+        mScoStarted = false;
     }
 
 }
