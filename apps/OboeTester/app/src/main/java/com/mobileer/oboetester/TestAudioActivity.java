@@ -75,7 +75,6 @@ abstract class TestAudioActivity extends Activity {
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
     private int mSampleRate;
-    private boolean mScoStarted;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
 
@@ -460,7 +459,7 @@ abstract class TestAudioActivity extends Activity {
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
 
         // Start Bluetooth SCO if needed.
-        if (isScoDevice(requestedConfig.getDeviceId()) && !mScoStarted) {
+        if (isScoDevice(requestedConfig.getDeviceId())) {
             startBluetoothSco();
         }
 
@@ -565,9 +564,7 @@ abstract class TestAudioActivity extends Activity {
             }
         }
 
-        if (mScoStarted) {
-            stopBluetoothSco();
-        }
+        stopBluetoothSco();
 
         mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
@@ -576,13 +573,11 @@ abstract class TestAudioActivity extends Activity {
     void startBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.startBluetoothSco();
-        mScoStarted = true;
     }
 
     void stopBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.stopBluetoothSco();
-        mScoStarted = false;
     }
 
 }
