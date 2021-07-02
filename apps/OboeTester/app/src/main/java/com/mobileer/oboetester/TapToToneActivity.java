@@ -332,7 +332,13 @@ public class TapToToneActivity extends TestOutputActivityBase {
     }
 
     public void startTest(View view) throws IOException {
-        openAudio();
+        try {
+            openAudio();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorToast("Open audio failed!");
+            return;
+        }
         if (hasRecordAudioPermission()) {
             startAudioPermitted();
         } else {
