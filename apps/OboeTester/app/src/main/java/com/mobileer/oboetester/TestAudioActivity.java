@@ -458,11 +458,6 @@ abstract class TestAudioActivity extends Activity {
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
 
-        // Start Bluetooth SCO if needed.
-        if (isScoDevice(requestedConfig.getDeviceId())) {
-            startBluetoothSco();
-        }
-
         streamContext.tester.open(); // OPEN the stream
 
         mSampleRate = actualConfig.getSampleRate();
@@ -563,8 +558,6 @@ abstract class TestAudioActivity extends Activity {
                 streamContext.tester.close();
             }
         }
-
-        stopBluetoothSco();
 
         mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
