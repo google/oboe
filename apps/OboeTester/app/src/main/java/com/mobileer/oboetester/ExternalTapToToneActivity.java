@@ -7,6 +7,9 @@ import android.widget.Button;
 
 import java.io.IOException;
 
+/**
+ * Measure the tap-to-tone latency for other apps or devices.
+ */
 public class ExternalTapToToneActivity extends Activity {
     protected TapToToneTester mTapToToneTester;
     private Button mStopButton;
