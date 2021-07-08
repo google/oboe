@@ -182,20 +182,20 @@ public:
             void *audioData,
             int32_t numFrames) override;
 
-    bool onError(AudioStream * audioStream, Result error) override {
+    bool onError(AudioStream * /*audioStream*/, Result error) override {
         if (mErrorCallback != nullptr) {
             return mErrorCallback->onError(this, error);
         }
         return false;
     }
 
-    void onErrorBeforeClose(AudioStream *oboeStream, Result error) override {
+    void onErrorBeforeClose(AudioStream * /*oboeStream*/, Result error) override {
         if (mErrorCallback != nullptr) {
             mErrorCallback->onErrorBeforeClose(this, error);
         }
     }
 
-    void onErrorAfterClose(AudioStream *oboeStream, Result error) override {
+    void onErrorAfterClose(AudioStream * /*oboeStream*/, Result error) override {
         // Close this parent stream because the callback will only close the child.
         AudioStream::close();
         if (mErrorCallback != nullptr) {
