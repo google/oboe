@@ -309,7 +309,7 @@ Result AudioStreamAAudio::open() {
         mSessionId = SessionId::None;
     }
 
-    // These were added in P so we have to check for the function pointer.
+    // These were added in S so we have to check for the function pointer.
     //if (mLibLoader->stream_getPackageName != nullptr) {
     //    mPackageName = mLibLoader->stream_getPackageName(mAAudioStream);
     //}

@@ -22,7 +22,7 @@
 
 // If the NDK is before O then define this in your build
 // so that AAudio.h will not be included.
-/*
+
 #ifdef OBOE_NO_INCLUDE_AAUDIO
 
 // Define missing types from AAudio.h
@@ -60,10 +60,10 @@ typedef int32_t aaudio_session_id_t;
 #define AAUDIO_STREAM_STATE_STARTING   static_cast<aaudio_stream_state_t>(StreamState::Starting)
 #define AAUDIO_STREAM_STATE_STARTED    static_cast<aaudio_stream_state_t>(StreamState::Started)
 #else
-*/
+
 #include <aaudio/AAudio.h>
 #include <android/ndk-version.h>
-//#endif
+#endif
 
 #ifndef __NDK_MAJOR__
 #define __NDK_MAJOR__ 0

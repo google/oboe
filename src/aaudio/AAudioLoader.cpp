@@ -170,6 +170,12 @@ AAudioLoader::signature_V_PBI AAudioLoader::load_V_PBI(const char *functionName)
     return reinterpret_cast<signature_V_PBI>(proc);
 }
 
+AAudioLoader::signature_V_PBCPH AAudioLoader::load_V_PBCPH(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBCPH>(proc);
+}
+
 AAudioLoader::signature_V_PBPDPV AAudioLoader::load_V_PBPDPV(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
@@ -210,6 +216,12 @@ AAudioLoader::signature_B_PS AAudioLoader::load_B_PS(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_B_PS>(proc);
+}
+
+AAudioLoader::signature_CPH_PS AAudioLoader::load_CPH_PS(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_CPH_PS>(proc);
 }
 
 AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
