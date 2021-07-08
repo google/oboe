@@ -83,6 +83,11 @@ int AAudioLoader::open() {
         builder_setSessionId   = load_V_PBI("AAudioStreamBuilder_setSessionId");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        builder_setPackageName       = load_V_PBCPH("AAudioStreamBuilder_setPackageName");
+        builder_setAttributionTag    = load_V_PBCPH("AAudioStreamBuilder_setAttributionTag");
+    }
+
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
 
@@ -133,6 +138,11 @@ int AAudioLoader::open() {
         stream_getInputPreset  = load_I_PS("AAudioStream_getInputPreset");
         stream_getSessionId    = load_I_PS("AAudioStream_getSessionId");
     }
+    //if (getSdkVersion() >= __ANDROID_API_S__){
+    //    stream_getPackageName     = load_CPH_PS("AAudioStream_getPackageName");
+    //    stream_getAttributionTag  = load_CPH_PS("AAudioStream_getAttributionTag");
+    //}
+
     return 0;
 }
 

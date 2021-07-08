@@ -18,6 +18,7 @@
 #define OBOE_STREAM_BASE_H_
 
 #include <memory>
+#include <string>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
 
@@ -157,6 +158,16 @@ public:
     SessionId getSessionId() const { return mSessionId; }
 
     /**
+     * @return the package name for this stream.
+     */
+    std::string getPackageName() const { return mPackageName; }
+
+    /**
+     * @return the attribution tag for this stream.
+     */
+    std::string getAttributionTag() const { return mAttributionTag; }
+
+    /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
     bool isChannelConversionAllowed() const {
@@ -216,6 +227,11 @@ protected:
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
+
+    /** Control the name of the package creating the stream. Only active on Android 31+ */
+    std::string                     mPackageName;
+    /** Control the attribution tag of the context creating the stream. Only active on Android 31+ */
+    std::string                     mAttributionTag;
 
     // Control whether Oboe can convert channel counts to achieve optimal results.
     bool                            mChannelConversionAllowed = false;

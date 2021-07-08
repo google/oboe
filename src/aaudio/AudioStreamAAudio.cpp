@@ -241,7 +241,16 @@ Result AudioStreamAAudio::open() {
                                          static_cast<aaudio_session_id_t>(mSessionId));
     }
 
-    // TODO get more parameters from the builder?
+    // These were added in S so we have to check for the function pointer.
+    if (mLibLoader->builder_setPackageName != nullptr) {
+        mLibLoader->builder_setPackageName(aaudioBuilder,
+                                           mPackageName.c_str());
+    }
+
+    if (mLibLoader->builder_setAttributionTag != nullptr) {
+        mLibLoader->builder_setAttributionTag(aaudioBuilder,
+                                           mAttributionTag.c_str());
+    }
 
     if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
@@ -299,6 +308,14 @@ Result AudioStreamAAudio::open() {
     } else {
         mSessionId = SessionId::None;
     }
+
+    // These were added in P so we have to check for the function pointer.
+    //if (mLibLoader->stream_getPackageName != nullptr) {
+    //    mPackageName = mLibLoader->stream_getPackageName(mAAudioStream);
+    //}
+    //if (mLibLoader->stream_getAttributionTag != nullptr) {
+    //    mAttributionTag = mLibLoader->stream_getAttributionTag(mAAudioStream);
+    //}
 
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
