@@ -124,6 +124,7 @@ oboe::Result HelloOboeEngine::openPlaybackStream() {
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
         ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
         ->setFormat(oboe::AudioFormat::Float)
+        ->setFormatConversionAllowed(true)
         ->setDataCallback(mLatencyCallback.get())
         ->setErrorCallback(mErrorCallback.get())
         ->setAudioApi(mAudioApi)
