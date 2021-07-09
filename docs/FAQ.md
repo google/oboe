@@ -1,11 +1,10 @@
 # Frequently Asked Questions (FAQ)
 
-## Can I write audio data from Java to Oboe?
+## Can I write audio data from Java/Kotlin to Oboe?
 
 Oboe is a native library written in C++ which uses the Android NDK. To move data from Java to C++ you can use [JNI](https://developer.android.com/training/articles/perf-jni). 
 
-That said, if you are generating your audio in Java you'll get better computational performance using the [Java AudioTrack class](https://developer.android.com/reference/android/media/AudioTrack). This can be 
-created with low latency using the AudioTrack.Builder method [`setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)`](https://developer.android.com/reference/android/media/AudioTrack#PERFORMANCE_MODE_LOW_LATENCY). Note that this will give you slightly higher latency (roughly 20ms) than if you were to use Oboe. 
+If you're generating audio data in Java or Kotlin you should consider whether the reduced latency which Oboe gives you (particularly on high-end devices) is worth the extra complexity of passing data via JNI. An alternative is to use [Java AudioTrack](https://developer.android.com/reference/android/media/AudioTrack). This can be created with low latency using the AudioTrack.Builder method [`setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)`](https://developer.android.com/reference/android/media/AudioTrack#PERFORMANCE_MODE_LOW_LATENCY).
 
 You can dynamically tune the latency of the stream just like in Oboe using [`setBufferSizeInFrames(int)`](https://developer.android.com/reference/android/media/AudioTrack.html#setBufferSizeInFrames(int))
 Also you can use blocking writes with the Java AudioTrack and still get a low latency stream.
