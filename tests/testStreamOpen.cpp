@@ -331,15 +331,13 @@ TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsErrorBeforeLollipop){
     }
 }
 
-TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsFloatBeforeLollipopWithFormatConversionAllowed){
-    if (getSdkVersion() < __ANDROID_API_L__){
-        mBuilder.setDirection(Direction::Output);
-        mBuilder.setFormat(AudioFormat::Float);
-        mBuilder.setFormatConversionAllowed(true);
-        ASSERT_TRUE(openStream());
-        ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
-        ASSERT_TRUE(closeStream());
-    }
+TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsFloatWithFormatConversionAllowed){
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setFormat(AudioFormat::Float);
+    mBuilder.setFormatConversionAllowed(true);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
+    ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsFloatOnLollipopAndLater){
