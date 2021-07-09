@@ -242,12 +242,12 @@ Result AudioStreamAAudio::open() {
     }
 
     // These were added in S so we have to check for the function pointer.
-    if (mLibLoader->builder_setPackageName != nullptr) {
+    if (mLibLoader->builder_setPackageName != nullptr && !mPackageName.empty()) {
         mLibLoader->builder_setPackageName(aaudioBuilder,
                                            mPackageName.c_str());
     }
 
-    if (mLibLoader->builder_setAttributionTag != nullptr) {
+    if (mLibLoader->builder_setAttributionTag != nullptr && !mAttributionTag.empty()) {
         mLibLoader->builder_setAttributionTag(aaudioBuilder,
                                            mAttributionTag.c_str());
     }
