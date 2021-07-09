@@ -84,6 +84,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     setupPlaybackStreamParameters(&outBuilder);
     oboe::Result result = outBuilder.openStream(mPlayStream);
     if (result != oboe::Result::OK) {
+        LOGE("Failed to open output stream. Error %s", oboe::convertToText(result));
         mSampleRate = oboe::kUnspecified;
         return result;
     } else {
@@ -95,6 +96,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     setupRecordingStreamParameters(&inBuilder, mSampleRate);
     result = inBuilder.openStream(mRecordingStream);
     if (result != oboe::Result::OK) {
+        LOGE("Failed to open input stream. Error %s", oboe::convertToText(result));
         closeStream(mPlayStream);
         return result;
     }
