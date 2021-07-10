@@ -41,7 +41,7 @@ import java.io.IOException;
 public class TestInputActivity  extends TestAudioActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
 
-    private static final int AUDIO_ECHO_REQUEST = 0;
+    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 9371;
     protected AudioInputTester mAudioInputTester;
     private static final int NUM_VOLUME_BARS = 4;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
@@ -152,14 +152,14 @@ public class TestInputActivity  extends TestAudioActivity
         ActivityCompat.requestPermissions(
                 this,
                 new String[]{Manifest.permission.RECORD_AUDIO},
-                AUDIO_ECHO_REQUEST);
+                MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
 
-        if (AUDIO_ECHO_REQUEST != requestCode) {
+        if (MY_PERMISSIONS_REQUEST_RECORD_AUDIO != requestCode) {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
         }

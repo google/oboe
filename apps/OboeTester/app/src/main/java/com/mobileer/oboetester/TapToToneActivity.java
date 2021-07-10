@@ -107,7 +107,6 @@ public class TapToToneActivity extends TestOutputActivityBase {
         updateEnabledWidgets();
     }
 
-
     private void updateButtons(boolean running) {
         mStartButton.setEnabled(!running);
         mStopButton.setEnabled(running);
@@ -115,15 +114,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
     void trigger() {
         mAudioOutTester.trigger();
-        Runnable task = this::analyseAndShowResults;
-        mTapToToneTester.scheduleTaskWhenDone(task);
-    }
-
-    private void analyseAndShowResults() {
-        TestResult result = mTapToToneTester.analyzeCapturedAudio();
-        if (result != null) {
-            mTapToToneTester.showTestResults(result);
-        }
+        mTapToToneTester.analyzeLater(getString(R.string.please_wait));
     }
 
     @Override
@@ -282,10 +273,23 @@ public class TapToToneActivity extends TestOutputActivityBase {
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions,
                                            int[] grantResults) {
-        // TODO
+        if (MY_PERMISSIONS_REQUEST_RECORD_AUDIO != requestCode) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+
+        if (grantResults.length != 1 ||
+                grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.need_record_audio_permission),
+                    Toast.LENGTH_SHORT)
+                    .show();
+        } else {
+            startAudioPermitted();
+        }
     }
 
-    public void startTest(View view) throws IOException {
+    public void startTest(View view) {
         try {
             openAudio();
         } catch (IOException e) {
@@ -293,19 +297,24 @@ public class TapToToneActivity extends TestOutputActivityBase {
             showErrorToast("Open audio failed!");
             return;
         }
-        updateButtons(true);
         if (hasRecordAudioPermission()) {
             startAudioPermitted();
         } else {
             requestRecordAudioPermission();
-            updateButtons(false);
         }
     }
 
-    private void startAudioPermitted() throws IOException {
-        super.startAudio();
-        mTapToToneTester.resetLatency();
-        mTapToToneTester.start();
+    private void startAudioPermitted() {
+        try {
+            super.startAudio();
+            mTapToToneTester.resetLatency();
+            mTapToToneTester.start();
+            updateButtons(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorToast("Start audio failed! " + e.getMessage());
+            return;
+        }
     }
 
     public void stopTest(View view) {

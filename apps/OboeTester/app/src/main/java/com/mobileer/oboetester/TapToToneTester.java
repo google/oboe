@@ -70,11 +70,32 @@ public class TapToToneTester {
         }
     }
 
+    public void analyzeLater(String message) {
+        showPendingStatus(message);
+        Runnable task = this::analyseAndShowResults;
+        scheduleTaskWhenDone(task);
+    }
+
+    private void showPendingStatus(final String message) {
+        mWaveformView.post(() -> {
+            mWaveformView.setMessage(message);
+            mWaveformView.clearSampleData();
+            mWaveformView.postInvalidate();
+        });
+    }
+
     public void scheduleTaskWhenDone(Runnable task) {
         if (mRecordEnabled) {
             // schedule an analysis to start in the near future
             int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
             mRecorder.scheduleTask(numSamples, task);
+        }
+    }
+
+    private void analyseAndShowResults() {
+        TestResult result = analyzeCapturedAudio();
+        if (result != null) {
+            showTestResults(result);
         }
     }
 
@@ -105,7 +126,7 @@ public class TapToToneTester {
     // Runs on UI thread.
     public void showTestResults(TestResult result) {
         String text;
-        int previous = 0;
+        mWaveformView.setMessage(null);
         if (result == null) {
             text = mTapInstructions;
             mWaveformView.clearSampleData();
@@ -121,7 +142,7 @@ public class TapToToneTester {
                 }
                 mWaveformView.setCursorData(cursors);
             }
-            // Did we get a goog measurement?
+            // Did we get a good measurement?
             if (result.events.length < 2) {
                 text = "Not enough edges. Use fingernail.\n";
             } else if (result.events.length > 2) {
