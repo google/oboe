@@ -113,8 +113,12 @@ public class TapToToneActivity extends TestOutputActivityBase {
     }
 
     void trigger() {
-        mAudioOutTester.trigger();
-        mTapToToneTester.analyzeLater(getString(R.string.please_wait));
+        if (mTapToToneTester.isArmed()) {
+            mAudioOutTester.trigger();
+            mTapToToneTester.analyzeLater(getString(R.string.please_wait));
+        } else {
+            showToast(getString(R.string.no_double_tap));
+        }
     }
 
     @Override
