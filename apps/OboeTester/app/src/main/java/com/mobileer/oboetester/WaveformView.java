@@ -29,16 +29,19 @@ import android.view.View;
  * Display an audio waveform in a custom View.
  */
 public class WaveformView extends View {
+    private static final float MESSAGE_TEXT_SIZE = 80;
     private Paint mWavePaint;
+    private Paint mBackgroundPaint;
+    private Paint mMessagePaint;
     private int mCurrentWidth;
     private int mCurrentHeight;
-    private Paint mBackgroundPaint;
     private float[] mData;
     private int mSampleCount;
     private int mSampleOffset;
     private float mOffsetY;
     private float mScaleY;
     private int[] mCursors;
+    private String mMessage;
     private Paint mCursorPaint;
 
     public WaveformView(Context context, AttributeSet attrs) {
@@ -63,6 +66,10 @@ public class WaveformView extends View {
         mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBackgroundPaint.setColor(res.getColor(R.color.waveform_background));
         mBackgroundPaint.setStyle(Paint.Style.FILL);
+
+        mMessagePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mMessagePaint.setColor(res.getColor(R.color.waveform_line));
+        mMessagePaint.setTextSize(MESSAGE_TEXT_SIZE);
     }
 
     @Override
@@ -73,12 +80,23 @@ public class WaveformView extends View {
         mScaleY = 0.0f - mOffsetY;
     }
 
+    public String getMessage() {
+        return mMessage;
+    }
+
+    public void setMessage(String mMessage) {
+        this.mMessage = mMessage;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float [] localData = mData;
         canvas.drawRect(0.0f, 0.0f, mCurrentWidth,
                 mCurrentHeight, mBackgroundPaint);
+        if (mMessage != null) {
+            canvas.drawText(mMessage, 20, mCurrentHeight - 20, mMessagePaint);
+        }
         if (localData == null || mSampleCount == 0) {
             return;
         }
