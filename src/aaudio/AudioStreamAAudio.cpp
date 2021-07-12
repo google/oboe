@@ -344,7 +344,7 @@ Result AudioStreamAAudio::close() {
     }
 }
 
-DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream *stream,
+DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
     DataCallbackResult result = fireDataCallback(audioData, numFrames);
