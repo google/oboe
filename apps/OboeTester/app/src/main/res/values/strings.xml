@@ -26,6 +26,7 @@
     <string name="external_tap_instructions">
         Trigger sound on other device.\nThen quickly tap ANALYZE.
     </string>
+    <string name="no_double_tap">Please do not tap while measuring.</string>
     <string name="loopback_instructions_glitch">
         Click Show Settings to configure.\n
         This glitch measurement plays\n

@@ -1,7 +1,6 @@
 package com.mobileer.oboetester;
 
 import android.app.Activity;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -29,6 +28,8 @@ public class TapToToneTester {
 
     private final String mTapInstructions;
     private float mAnalysisTimeMargin = ANALYSIS_TIME_MARGIN;
+
+    private boolean mArmed = true;
 
     // Stats for latency
     private int mMeasurementCount;
@@ -70,10 +71,22 @@ public class TapToToneTester {
         }
     }
 
+    /**
+     * @return true if ready to process a tap, false if already triggered
+     */
+    public boolean isArmed() {
+        return mArmed;
+    }
+
+    public void setArmed(boolean armed) {
+        this.mArmed = armed;
+    }
+
     public void analyzeLater(String message) {
         showPendingStatus(message);
         Runnable task = this::analyseAndShowResults;
         scheduleTaskWhenDone(task);
+        mArmed = false;
     }
 
     private void showPendingStatus(final String message) {
@@ -84,7 +97,7 @@ public class TapToToneTester {
         });
     }
 
-    public void scheduleTaskWhenDone(Runnable task) {
+    private void scheduleTaskWhenDone(Runnable task) {
         if (mRecordEnabled) {
             // schedule an analysis to start in the near future
             int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
@@ -179,5 +192,7 @@ public class TapToToneTester {
                 mWaveformView.postInvalidate();
             }
         });
+
+        mArmed = true;
     }
 }
