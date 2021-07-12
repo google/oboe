@@ -103,10 +103,24 @@ public:
         // This detects b/159066712 , S20 LSI has corrupt low latency audio recording
         // and turns off MMAP.
         // See also https://github.com/google/oboe/issues/892
-        bool mRecordingCorrupted = isInput
+        bool isRecordingCorrupted = isInput
             && isExynos990
             && mBuildChangelist < 19350896;
-        return !mRecordingCorrupted;
+
+        // Certain S9+ builds record silence when using MMAP and not using the VoiceCommunication
+        // preset.
+        // See https://github.com/google/oboe/issues/1110
+        bool wouldRecordSilence = isInput
+            && isExynos9810
+            && mBuildChangelist <= 18847185
+            && (builder.getInputPreset() != InputPreset::VoiceCommunication);
+
+        if (wouldRecordSilence){
+            LOGI("QuirksManager::%s() Requested stream configuration would result in silence on "
+                 "this device. Switching off MMAP.", __func__);
+        }
+
+        return !isRecordingCorrupted && !wouldRecordSilence;
     }
 
 private:
