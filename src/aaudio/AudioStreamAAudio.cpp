@@ -309,14 +309,6 @@ Result AudioStreamAAudio::open() {
         mSessionId = SessionId::None;
     }
 
-    // These were added in S so we have to check for the function pointer.
-    //if (mLibLoader->stream_getPackageName != nullptr) {
-    //    mPackageName = mLibLoader->stream_getPackageName(mAAudioStream);
-    //}
-    //if (mLibLoader->stream_getAttributionTag != nullptr) {
-    //    mAttributionTag = mLibLoader->stream_getAttributionTag(mAAudioStream);
-    //}
-
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
             static_cast<int>(mBufferCapacityInFrames));

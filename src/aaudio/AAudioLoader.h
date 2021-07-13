@@ -22,7 +22,6 @@
 
 // If the NDK is before O then define this in your build
 // so that AAudio.h will not be included.
-
 #ifdef OBOE_NO_INCLUDE_AAUDIO
 
 // Define missing types from AAudio.h
@@ -60,7 +59,6 @@ typedef int32_t aaudio_session_id_t;
 #define AAUDIO_STREAM_STATE_STARTING   static_cast<aaudio_stream_state_t>(StreamState::Starting)
 #define AAUDIO_STREAM_STATE_STARTED    static_cast<aaudio_stream_state_t>(StreamState::Started)
 #else
-
 #include <aaudio/AAudio.h>
 #include <android/ndk-version.h>
 #endif
@@ -108,7 +106,6 @@ class AAudioLoader {
 
     typedef int32_t (*signature_I_PS)(AAudioStream *);  // AAudioStream_getSampleRate()
     typedef int64_t (*signature_L_PS)(AAudioStream *);  // AAudioStream_getFramesRead()
-    typedef const char * (*signature_CPH_PS)(AAudioStream *);
     // AAudioStream_setBufferSizeInFrames()
     typedef int32_t (*signature_I_PSI)(AAudioStream *, int32_t);
 
@@ -216,9 +213,6 @@ class AAudioLoader {
     signature_I_PS   stream_getInputPreset = nullptr;
     signature_I_PS   stream_getSessionId = nullptr;
 
-    //signature_CPH_PS   stream_getPackageName = nullptr;
-    //signature_CPH_PS   stream_getAttributionTag = nullptr;
-
   private:
     AAudioLoader() {}
     ~AAudioLoader();
@@ -236,7 +230,6 @@ class AAudioLoader {
     signature_L_PS      load_L_PS(const char *name);
     signature_F_PS      load_F_PS(const char *name);
     signature_B_PS      load_B_PS(const char *name);
-    signature_CPH_PS    load_CPH_PS(const char *name);
     signature_I_PSI     load_I_PSI(const char *name);
     signature_I_PSPVIL  load_I_PSPVIL(const char *name);
     signature_I_PSCPVIL load_I_PSCPVIL(const char *name);

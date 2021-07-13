@@ -158,16 +158,6 @@ public:
     SessionId getSessionId() const { return mSessionId; }
 
     /**
-     * @return the package name for this stream.
-     */
-    std::string getPackageName() const { return mPackageName; }
-
-    /**
-     * @return the attribution tag for this stream.
-     */
-    std::string getAttributionTag() const { return mAttributionTag; }
-
-    /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
     bool isChannelConversionAllowed() const {

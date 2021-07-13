@@ -138,11 +138,6 @@ int AAudioLoader::open() {
         stream_getInputPreset  = load_I_PS("AAudioStream_getInputPreset");
         stream_getSessionId    = load_I_PS("AAudioStream_getSessionId");
     }
-    //if (getSdkVersion() >= __ANDROID_API_S__){
-    //    stream_getPackageName     = load_CPH_PS("AAudioStream_getPackageName");
-    //    stream_getAttributionTag  = load_CPH_PS("AAudioStream_getAttributionTag");
-    //}
-
     return 0;
 }
 
@@ -216,12 +211,6 @@ AAudioLoader::signature_B_PS AAudioLoader::load_B_PS(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_B_PS>(proc);
-}
-
-AAudioLoader::signature_CPH_PS AAudioLoader::load_CPH_PS(const char *functionName) {
-    void *proc = dlsym(mLibHandle, functionName);
-    AAudioLoader_check(proc, functionName);
-    return reinterpret_cast<signature_CPH_PS>(proc);
 }
 
 AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
