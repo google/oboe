@@ -419,6 +419,38 @@ public:
     }
 
     /**
+     * Declare the name of the package creating the stream.
+     *
+     * This is usually Context#getPackageName()
+     *
+     * The default, if you do not call this function, is a random package in the calling uid.
+     *
+     * Added in API level 31.
+     *
+     * @param packageName packageName of the calling app.
+     */
+    AudioStreamBuilder *setPackageName(std::string packageName) {
+        mPackageName = packageName;
+        return this;
+    }
+
+    /**
+     * Declare the attribution tag of the context creating the stream.
+     *
+     * This is usually Context#getAttributionTag()
+     *
+     * The default, if you do not call this function, is the default attribution tag.
+     *
+     * Added in API level 31.
+     *
+     * @param attributionTag attributionTag of the calling context.
+     */
+    AudioStreamBuilder *setAttributionTag(std::string attributionTag) {
+        mAttributionTag = attributionTag;
+        return this;
+    }
+
+    /**
      * @return true if AAudio will be used based on the current settings.
      */
     bool willUseAAudio() const {

@@ -390,3 +390,21 @@ TEST_F(StreamOpenOutput, AAudioOutputSampleRate44100) {
 TEST_F(StreamOpenInput, AAudioInputSampleRate44100) {
     checkSampleRateConversionAdvancing(Direction::Input);
 }
+
+TEST_F(StreamOpenOutput, AAudioSetPackageName){
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setPackageName("TestSetPackageName");
+        ASSERT_TRUE(openStream());
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioSetAttributionTag){
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAttributionTag("TestSetAttributionTag");
+        ASSERT_TRUE(openStream());
+        ASSERT_TRUE(closeStream());
+    }
+}

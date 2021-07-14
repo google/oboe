@@ -241,7 +241,16 @@ Result AudioStreamAAudio::open() {
                                          static_cast<aaudio_session_id_t>(mSessionId));
     }
 
-    // TODO get more parameters from the builder?
+    // These were added in S so we have to check for the function pointer.
+    if (mLibLoader->builder_setPackageName != nullptr && !mPackageName.empty()) {
+        mLibLoader->builder_setPackageName(aaudioBuilder,
+                                           mPackageName.c_str());
+    }
+
+    if (mLibLoader->builder_setAttributionTag != nullptr && !mAttributionTag.empty()) {
+        mLibLoader->builder_setAttributionTag(aaudioBuilder,
+                                           mAttributionTag.c_str());
+    }
 
     if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
