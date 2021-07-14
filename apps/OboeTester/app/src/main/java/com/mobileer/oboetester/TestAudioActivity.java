@@ -235,6 +235,13 @@ abstract class TestAudioActivity extends Activity {
             }
         }
     }
+    private void applyConfigurationViewsToModels() {
+        for (StreamContext streamContext : mStreamContexts) {
+            if (streamContext.configurationView != null) {
+                streamContext.configurationView.applyToModel(streamContext.tester.requestedConfiguration);
+            }
+        }
+    }
 
     abstract boolean isOutput();
 
@@ -253,13 +260,10 @@ abstract class TestAudioActivity extends Activity {
         }
         if (streamContext.configurationView != null) {
             streamContext.configurationView.setOutput(true);
-            streamContext.configurationView.setRequestedConfiguration(streamContext.tester.requestedConfiguration);
-            streamContext.configurationView.setActualConfiguration(streamContext.tester.actualConfiguration);
         }
         mStreamContexts.add(streamContext);
         return streamContext;
     }
-
 
     public AudioOutputTester addAudioOutputTester() {
         StreamContext streamContext = addOutputStreamContext();
@@ -277,8 +281,6 @@ abstract class TestAudioActivity extends Activity {
         }
         if (streamContext.configurationView != null) {
             streamContext.configurationView.setOutput(false);
-            streamContext.configurationView.setRequestedConfiguration(streamContext.tester.requestedConfiguration);
-            streamContext.configurationView.setActualConfiguration(streamContext.tester.actualConfiguration);
         }
         streamContext.tester = AudioInputTester.getInstance();
         mStreamContexts.add(streamContext);
@@ -293,7 +295,7 @@ abstract class TestAudioActivity extends Activity {
     void updateStreamConfigurationViews() {
         for (StreamContext streamContext : mStreamContexts) {
             if (streamContext.configurationView != null) {
-                streamContext.configurationView.updateDisplay();
+                streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
             }
         }
     }
@@ -408,8 +410,16 @@ abstract class TestAudioActivity extends Activity {
         return mSampleRate;
     }
 
+    public boolean isTestConfiguredUsingBundle() {
+        return false;
+    }
+
     public void openAudio() throws IOException {
         closeAudio();
+
+        if (!isTestConfiguredUsingBundle()) {
+            applyConfigurationViewsToModels();
+        }
 
         int sampleRate = 0;
 
@@ -467,7 +477,7 @@ abstract class TestAudioActivity extends Activity {
             setupEffects(sessionId);
         }
         if (streamContext.configurationView != null) {
-            streamContext.configurationView.updateDisplay();
+            streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
         }
     }
 
@@ -487,7 +497,7 @@ abstract class TestAudioActivity extends Activity {
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
                 if (configView != null) {
-                    configView.updateDisplay();
+                    configView.updateDisplay(streamContext.tester.actualConfiguration);
                 }
             }
             mAudioState = AUDIO_STATE_STARTED;

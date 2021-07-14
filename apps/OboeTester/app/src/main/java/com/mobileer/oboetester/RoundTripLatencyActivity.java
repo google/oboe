@@ -371,10 +371,18 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
     }
 
+    @Override
+    public boolean isTestConfiguredUsingBundle() {
+        return mBundleFromIntent != null;
+    }
+
     void startAutomaticTest() {
-        configureStreamsFromBundle(mBundleFromIntent);
-        onMeasure(null);
-        mBundleFromIntent = null;
+        try {
+            configureStreamsFromBundle(mBundleFromIntent);
+            onMeasure(null);
+        } finally {
+            mBundleFromIntent = null;
+        }
     }
 
     @Override

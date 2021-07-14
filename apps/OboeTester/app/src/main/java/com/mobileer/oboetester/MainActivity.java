@@ -51,7 +51,6 @@ public class MainActivity extends Activity {
         System.loadLibrary("oboetester");
     }
 
-
     private Spinner mModeSpinner;
     private TextView mCallbackSizeEditor;
     protected TextView mDeviceView;
@@ -61,6 +60,7 @@ public class MainActivity extends Activity {
     private Bundle mBundleFromIntent;
     private BroadcastReceiver mScoStateReceiver;
     private CheckBox mWorkaroundsCheckBox;
+    private CheckBox mBackgroundCheckBox;
     private static String mVersionText;
 
     @Override
@@ -78,6 +78,7 @@ public class MainActivity extends Activity {
 
         // Set mode, eg. MODE_IN_COMMUNICATION
         mModeSpinner = (Spinner) findViewById(R.id.spinnerAudioMode);
+        // Update AudioManager now in case user is trying to affect a different app.
         mModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -106,7 +107,10 @@ public class MainActivity extends Activity {
 
         mWorkaroundsCheckBox = (CheckBox) findViewById(R.id.boxEnableWorkarounds);
         // Turn off workarounds so we can test the underlying API bugs.
+        mWorkaroundsCheckBox.setChecked(false);
         NativeEngine.setWorkaroundsEnabled(false);
+
+        mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
@@ -249,8 +253,19 @@ public class MainActivity extends Activity {
         onLaunchTest(ExtraTestsActivity.class);
     }
 
-    private void onLaunchTest(Class clazz) {
+    private void applyUserOptions() {
         updateCallbackSize();
+
+        long mode = mModeSpinner.getSelectedItemId();
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        myAudioMgr.setMode((int) mode);
+
+        NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
+        TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
+    }
+
+    private void onLaunchTest(Class clazz) {
+        applyUserOptions();
         Intent intent = new Intent(this, clazz);
         startActivity(intent);
     }
@@ -304,17 +319,4 @@ public class MainActivity extends Activity {
             myAudioMgr.stopBluetoothSco();
         }
     }
-
-    public void onEnableWorkarounds(View view) {
-        CheckBox checkBox = (CheckBox) view;
-        boolean enabled = checkBox.isChecked();
-        NativeEngine.setWorkaroundsEnabled(enabled);
-    }
-
-    public void onEnableBackground(View view) {
-        CheckBox checkBox = (CheckBox) view;
-        boolean enabled = checkBox.isChecked();
-        TestAudioActivity.setBackgroundEnabled(enabled);
-    }
-
 }

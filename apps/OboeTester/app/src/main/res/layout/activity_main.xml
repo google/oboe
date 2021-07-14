@@ -227,7 +227,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:checked="false"
-        android:onClick="onEnableWorkarounds"
         android:text="enable Oboe workarounds"
         app:layout_constraintStart_toStartOf="@+id/layoutBluetoothSco"
         app:layout_constraintTop_toBottomOf="@+id/layoutBluetoothSco" />
@@ -238,7 +237,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:checked="false"
-        android:onClick="onEnableBackground"
         android:text="enable background operation"
         app:layout_constraintStart_toStartOf="@+id/boxEnableWorkarounds"
         app:layout_constraintTop_toBottomOf="@+id/boxEnableWorkarounds" />
