@@ -131,6 +131,11 @@ public class ManualGlitchActivity extends GlitchActivity {
         }
     }
 
+    @Override
+    public boolean isTestConfiguredUsingBundle() {
+        return mBundleFromIntent != null;
+    }
+
     void configureStreamsFromBundle(Bundle bundle) {
         // Extract common parameters
         super.configureStreamsFromBundle(bundle);
@@ -161,7 +166,6 @@ public class ManualGlitchActivity extends GlitchActivity {
 
         int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
         int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
-        mBundleFromIntent = null;
 
         try {
             onStartAudioTest(null);
@@ -180,6 +184,8 @@ public class ManualGlitchActivity extends GlitchActivity {
             String report = "Open failed: " + e.getMessage();
             maybeWriteTestResult(report);
             mTestRunningByIntent = false;
+        } finally {
+            mBundleFromIntent = null;
         }
 
     }

@@ -37,10 +37,6 @@ import com.mobileer.audio_device.AudioDeviceSpinner;
  */
 
 public class StreamConfigurationView extends LinearLayout {
-
-    private StreamConfiguration  mRequestedConfiguration;
-    private StreamConfiguration  mActualConfiguration;
-
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
 
@@ -156,49 +152,22 @@ public class StreamConfigurationView extends LinearLayout {
         mOptionExpander.setOnClickListener(mToggleListener);
 
         mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerNativeApi);
-        mNativeApiSpinner.setOnItemSelectedListener(new NativeApiSpinnerListener());
         mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
 
         mActualNativeApiView = (TextView) findViewById(R.id.actualNativeApi);
 
         mChannelConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
-        mChannelConversionBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRequestedConfiguration.setChannelConversionAllowed(mChannelConversionBox.isChecked());
-            }
-        });
 
         mFormatConversionBox = (CheckBox) findViewById(R.id.checkFormatConversion);
-        mFormatConversionBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRequestedConfiguration.setFormatConversionAllowed(mFormatConversionBox.isChecked());
-            }
-        });
 
         mActualMMapView = (TextView) findViewById(R.id.actualMMap);
         mRequestedMMapView = (CheckBox) findViewById(R.id.requestedMMapEnable);
-        mRequestedMMapView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRequestedConfiguration.setMMap(mRequestedMMapView.isChecked());
-            }
-        });
         boolean mmapSupported = NativeEngine.isMMapSupported();
         mRequestedMMapView.setEnabled(mmapSupported);
         mRequestedMMapView.setChecked(mmapSupported);
 
         mActualExclusiveView = (TextView) findViewById(R.id.actualExclusiveMode);
         mRequestedExclusiveView = (CheckBox) findViewById(R.id.requestedExclusiveMode);
-        mRequestedExclusiveView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRequestedConfiguration.setSharingMode(mRequestedExclusiveView.isChecked()
-                        ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
-                        : StreamConfiguration.SHARING_MODE_SHARED);
-            }
-        });
 
         boolean mmapExclusiveSupported = NativeEngine.isMMapExclusiveSupported();
         mRequestedExclusiveView.setEnabled(mmapExclusiveSupported);
@@ -206,46 +175,28 @@ public class StreamConfigurationView extends LinearLayout {
 
         mActualSessionIdView = (TextView) findViewById(R.id.sessionId);
         mRequestAudioEffect = (CheckBox) findViewById(R.id.requestAudioEffect);
-        mRequestAudioEffect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mRequestedConfiguration.setSessionId(mRequestAudioEffect.isChecked()
-                        ? StreamConfiguration.SESSION_ID_ALLOCATE
-                        : StreamConfiguration.SESSION_ID_NONE);
-            }
-        });
 
         mActualSampleRateView = (TextView) findViewById(R.id.actualSampleRate);
         mSampleRateSpinner = (Spinner) findViewById(R.id.spinnerSampleRate);
-        mSampleRateSpinner.setOnItemSelectedListener(new SampleRateSpinnerListener());
-
         mActualChannelCountView = (TextView) findViewById(R.id.actualChannelCount);
         mChannelCountSpinner = (Spinner) findViewById(R.id.spinnerChannelCount);
-        mChannelCountSpinner.setOnItemSelectedListener(new ChannelCountSpinnerListener());
-
         mActualFormatView = (TextView) findViewById(R.id.actualAudioFormat);
         mFormatSpinner = (Spinner) findViewById(R.id.spinnerFormat);
-        mFormatSpinner.setOnItemSelectedListener(new FormatSpinnerListener());
-
         mRateConversionQualitySpinner = (Spinner) findViewById(R.id.spinnerSRCQuality);
-        mRateConversionQualitySpinner.setOnItemSelectedListener(new RateConversionQualitySpinnerListener());
 
         mActualPerformanceView = (TextView) findViewById(R.id.actualPerformanceMode);
         mPerformanceSpinner = (Spinner) findViewById(R.id.spinnerPerformanceMode);
-        mPerformanceSpinner.setOnItemSelectedListener(new PerformanceModeSpinnerListener());
         mPerformanceSpinner.setSelection(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY
                 - StreamConfiguration.PERFORMANCE_MODE_NONE);
 
         mInputPresetTableRow = (TableRow) findViewById(R.id.rowInputPreset);
         mActualInputPresetView = (TextView) findViewById(R.id.actualInputPreset);
         mInputPresetSpinner = (Spinner) findViewById(R.id.spinnerInputPreset);
-        mInputPresetSpinner.setOnItemSelectedListener(new InputPresetSpinnerListener());
         mInputPresetSpinner.setSelection(2); // TODO need better way to select voice recording default
 
         mUsageTableRow = (TableRow) findViewById(R.id.rowUsage);
         mActualUsageView = (TextView) findViewById(R.id.actualUsage);
         mUsageSpinner = (Spinner) findViewById(R.id.spinnerUsage);
-        mUsageSpinner.setOnItemSelectedListener(new UsageSpinnerListener());
         mUsageSpinner.setSelection(0); // TODO need better way to select Media default
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
@@ -253,18 +204,6 @@ public class StreamConfigurationView extends LinearLayout {
         mStreamStatusView = (TextView) findViewById(R.id.statusView);
 
         mDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.devices_spinner);
-        mDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                int id =  ((AudioDeviceListEntry) mDeviceSpinner.getSelectedItem()).getId();
-                mRequestedConfiguration.setDeviceId(id);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                mRequestedConfiguration.setDeviceId(StreamConfiguration.UNSPECIFIED);
-            }
-        });
 
         showSettingsView();
     }
@@ -288,110 +227,40 @@ public class StreamConfigurationView extends LinearLayout {
         mUsageTableRow.setVisibility(output ? View.VISIBLE : View.GONE);
     }
 
-    private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            mRequestedConfiguration.setNativeApi(pos);
-        }
+    public void applyToModel(StreamConfiguration config) {
+        // Menu position matches actual enum value for these properties.
+        config.setNativeApi(mNativeApiSpinner.getSelectedItemPosition());
+        config.setChannelCount(mChannelCountSpinner.getSelectedItemPosition());
+        config.setFormat(mFormatSpinner.getSelectedItemPosition());
+        config.setRateConversionQuality(mRateConversionQualitySpinner.getSelectedItemPosition());
 
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setNativeApi(StreamConfiguration.NATIVE_API_UNSPECIFIED);
-        }
-    }
+        int id =  ((AudioDeviceListEntry) mDeviceSpinner.getSelectedItem()).getId();
+        config.setDeviceId(id);
 
-    private class PerformanceModeSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int performanceMode, long id) {
-            mRequestedConfiguration.setPerformanceMode(performanceMode
-                    + StreamConfiguration.PERFORMANCE_MODE_NONE);
-        }
+        String text = mSampleRateSpinner.getSelectedItem().toString();
+        int sampleRate = Integer.parseInt(text);
+        config.setSampleRate(sampleRate);
 
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
-        }
-    }
+        text = mInputPresetSpinner.getSelectedItem().toString();
+        int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
+        config.setInputPreset(inputPreset);
 
-    private class ChannelCountSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            mRequestedConfiguration.setChannelCount(pos);
-        }
+        text = mUsageSpinner.getSelectedItem().toString();
+        int usage = StreamConfiguration.convertTextToUsage(text);
+        config.setUsage(usage);
 
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setChannelCount(StreamConfiguration.UNSPECIFIED);
-        }
-    }
+        config.setMMap(mRequestedMMapView.isChecked());
+        config.setChannelConversionAllowed(mChannelConversionBox.isChecked());
+        config.setFormatConversionAllowed(mFormatConversionBox.isChecked());
+        config.setSharingMode(mRequestedExclusiveView.isChecked()
+                ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
+                : StreamConfiguration.SHARING_MODE_SHARED);
+        config.setSessionId(mRequestAudioEffect.isChecked()
+                ? StreamConfiguration.SESSION_ID_ALLOCATE
+                : StreamConfiguration.SESSION_ID_NONE);
 
-    private class SampleRateSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String text = parent.getItemAtPosition(pos).toString();
-            int sampleRate = Integer.parseInt(text);
-            mRequestedConfiguration.setSampleRate(sampleRate);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setSampleRate(StreamConfiguration.UNSPECIFIED);
-        }
-    }
-
-    private class FormatSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            // Menu position matches actual enum value!
-            mRequestedConfiguration.setFormat(pos);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setFormat(StreamConfiguration.UNSPECIFIED);
-        }
-    }
-
-    private class InputPresetSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String text = parent.getItemAtPosition(pos).toString();
-            int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
-            mRequestedConfiguration.setInputPreset(inputPreset);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setInputPreset(StreamConfiguration.INPUT_PRESET_GENERIC);
-        }
-    }
-
-    private class UsageSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String text = parent.getItemAtPosition(pos).toString();
-            int usage = StreamConfiguration.convertTextToUsage(text);
-            mRequestedConfiguration.setUsage(usage);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setUsage(StreamConfiguration.INPUT_PRESET_GENERIC);
-        }
-    }
-
-    private class RateConversionQualitySpinnerListener
-            implements android.widget.AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            // Menu position matches actual enum value!
-            mRequestedConfiguration.setRateConversionQuality(pos);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mRequestedConfiguration.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_HIGH);
-        }
+        config.setPerformanceMode(mPerformanceSpinner.getSelectedItemPosition()
+                + StreamConfiguration.PERFORMANCE_MODE_NONE);
     }
 
     public void setChildrenEnabled(boolean enabled) {
@@ -412,42 +281,42 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     // This must be called on the UI thread.
-    void updateDisplay() {
+    void updateDisplay(StreamConfiguration actualConfiguration) {
         int value;
 
-        value = mActualConfiguration.getNativeApi();
+        value = actualConfiguration.getNativeApi();
         mActualNativeApiView.setText(StreamConfiguration.convertNativeApiToText(value));
 
-        mActualMMapView.setText(yesOrNo(mActualConfiguration.isMMap()));
-        int sharingMode = mActualConfiguration.getSharingMode();
+        mActualMMapView.setText(yesOrNo(actualConfiguration.isMMap()));
+        int sharingMode = actualConfiguration.getSharingMode();
         boolean isExclusive = (sharingMode == StreamConfiguration.SHARING_MODE_EXCLUSIVE);
         mActualExclusiveView.setText(yesOrNo(isExclusive));
 
-        value = mActualConfiguration.getPerformanceMode();
+        value = actualConfiguration.getPerformanceMode();
         mActualPerformanceView.setText(StreamConfiguration.convertPerformanceModeToText(value));
         mActualPerformanceView.requestLayout();
 
-        value = mActualConfiguration.getFormat();
+        value = actualConfiguration.getFormat();
         mActualFormatView.setText(StreamConfiguration.convertFormatToText(value));
         mActualFormatView.requestLayout();
 
-        value = mActualConfiguration.getInputPreset();
+        value = actualConfiguration.getInputPreset();
         mActualInputPresetView.setText(StreamConfiguration.convertInputPresetToText(value));
         mActualInputPresetView.requestLayout();
 
-        value = mActualConfiguration.getUsage();
+        value = actualConfiguration.getUsage();
         mActualUsageView.setText(StreamConfiguration.convertUsageToText(value));
         mActualUsageView.requestLayout();
 
-        mActualChannelCountView.setText(mActualConfiguration.getChannelCount() + "");
-        mActualSampleRateView.setText(mActualConfiguration.getSampleRate() + "");
-        mActualSessionIdView.setText("S#: " + mActualConfiguration.getSessionId());
+        mActualChannelCountView.setText(actualConfiguration.getChannelCount() + "");
+        mActualSampleRateView.setText(actualConfiguration.getSampleRate() + "");
+        mActualSessionIdView.setText("S#: " + actualConfiguration.getSessionId());
 
-        boolean isMMap = mActualConfiguration.isMMap();
-        mStreamInfoView.setText("burst = " + mActualConfiguration.getFramesPerBurst()
-                + ", capacity = " + mActualConfiguration.getBufferCapacityInFrames()
-                + ", devID = " + mActualConfiguration.getDeviceId()
-                + ", " + (mActualConfiguration.isMMap() ? "MMAP" : "Legacy")
+        boolean isMMap = actualConfiguration.isMMap();
+        mStreamInfoView.setText("burst = " + actualConfiguration.getFramesPerBurst()
+                + ", capacity = " + actualConfiguration.getBufferCapacityInFrames()
+                + ", devID = " + actualConfiguration.getDeviceId()
+                + ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy")
                 + (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "")
         );
 
@@ -459,40 +328,16 @@ public class StreamConfigurationView extends LinearLayout {
         mStreamStatusView.setText(msg);
     }
 
-    protected StreamConfiguration getRequestedConfiguration() {
-        return mRequestedConfiguration;
-    }
-
-    public void setRequestedConfiguration(StreamConfiguration configuration) {
-        mRequestedConfiguration = configuration;
-        if (configuration != null) {
-            mRateConversionQualitySpinner.setSelection(configuration.getRateConversionQuality());
-            mChannelConversionBox.setChecked(configuration.getChannelConversionAllowed());
-            mFormatConversionBox.setChecked(configuration.getFormatConversionAllowed());
-        }
-    }
-
-    protected StreamConfiguration getActualConfiguration() {
-        return mActualConfiguration;
-    }
-    public void setActualConfiguration(StreamConfiguration configuration) {
-        mActualConfiguration = configuration;
-    }
-
     public void setExclusiveMode(boolean b) {
         mRequestedExclusiveView.setChecked(b);
-        mRequestedConfiguration.setSharingMode(b
-                ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
-                : StreamConfiguration.SHARING_MODE_SHARED);
     }
 
     public void setFormat(int format) {
         mFormatSpinner.setSelection(format); // position matches format
-        mRequestedConfiguration.setFormat(format);
     }
 
     public void setFormatConversionAllowed(boolean allowed) {
         mFormatConversionBox.setChecked(allowed);
-        mRequestedConfiguration.setFormatConversionAllowed(allowed);
     }
+
 }
