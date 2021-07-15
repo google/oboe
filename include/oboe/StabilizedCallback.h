@@ -40,6 +40,7 @@ private:
 
     AudioStreamDataCallback *mCallback = nullptr;
     int64_t mFrameCount = 0;
+    int64_t mCallbackIndex = 0;
     int64_t mEpochTimeNanos = 0;
     double  mOpsPerNano = 1;
 

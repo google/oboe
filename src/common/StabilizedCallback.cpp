@@ -20,6 +20,7 @@
 
 constexpr int32_t kLoadGenerationStepSizeNanos = 20000;
 constexpr float kPercentageOfCallbackToUse = 0.8;
+constexpr int32_t kInitialCallbacksToSkipCount = 100;
 
 using namespace oboe;
 
@@ -53,9 +54,10 @@ StabilizedCallback::onAudioReady(AudioStream *oboeStream, void *audioData, int32
     int64_t idealStartTimeNanos = (mFrameCount * kNanosPerSecond) / oboeStream->getSampleRate();
     int64_t lateStartNanos = durationSinceEpochNanos - idealStartTimeNanos;
 
-    if (lateStartNanos < 0){
-        // This was an early start which indicates that our previous epoch was a late callback.
-        // Update our epoch to this more accurate time.
+    if (lateStartNanos < 0 || mCallbackIndex++ < kInitialCallbacksToSkipCount) {
+        // We always update the epoch during the first N callbacks to allow the callback times to
+        // stabilize. After that, only update the epoch if we have an early start (where
+        // lateStartNanos < 0).
         mEpochTimeNanos = startTimeNanos;
         mFrameCount = 0;
     }
