@@ -391,20 +391,44 @@ TEST_F(StreamOpenInput, AAudioInputSampleRate44100) {
     checkSampleRateConversionAdvancing(Direction::Input);
 }
 
-TEST_F(StreamOpenOutput, AAudioSetPackageName){
+TEST_F(StreamOpenOutput, AAudioOutputSetPackageName){
     if (getSdkVersion() >= __ANDROID_API_S__){
         mBuilder.setAudioApi(AudioApi::AAudio);
-        mBuilder.setPackageName("TestSetPackageName");
+        mBuilder.setPackageName("com.google.oboe.tests.unittestrunner");
         ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
         ASSERT_TRUE(closeStream());
     }
 }
 
-TEST_F(StreamOpenOutput, AAudioSetAttributionTag){
+TEST_F(StreamOpenInput, AAudioInputSetPackageName){
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setPackageName("com.google.oboe.tests.unittestrunner");
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetAttributionTag){
     if (getSdkVersion() >= __ANDROID_API_S__){
         mBuilder.setAudioApi(AudioApi::AAudio);
-        mBuilder.setAttributionTag("TestSetAttributionTag");
+        mBuilder.setAttributionTag("TestSetOutputAttributionTag");
         ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, AAudioInputSetAttributionTag){
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAttributionTag("TestSetInputAttributionTag");
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
         ASSERT_TRUE(closeStream());
     }
 }
