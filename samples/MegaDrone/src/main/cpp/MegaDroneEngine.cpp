@@ -56,7 +56,7 @@ oboe::Result MegaDroneEngine::createPlaybackStream() {
     return builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
-            ->setDataCallback(mDataCallback.get())
+            ->setDataCallback(mStabilizedCallback.get())
             ->setErrorCallback(mErrorCallback.get())
             ->openStream(mStream);
 }
@@ -65,6 +65,11 @@ oboe::Result MegaDroneEngine::createPlaybackStream() {
 void MegaDroneEngine::createCallback(std::vector<int> cpuIds){
 
     mDataCallback = std::make_unique<DefaultDataCallback>();
+
+    // StabilizedCallback wraps our data callback. It will attempt to generate a stable CPU load,
+    // regardless of how much load our data callback is generating. This can help to avoid underruns
+    // caused by CPU frequency scaling.
+    mStabilizedCallback = std::make_unique<StabilizedCallback>(mDataCallback.get());
 
     // Create the error callback, we supply ourselves as the parent so that we can restart the stream
     // when it's disconnected
@@ -97,6 +102,7 @@ bool MegaDroneEngine::stop() {
         mStream->close();
     }
     mStream.reset();
+    mStabilizedCallback->resetTimingModel();
     return true;
 }
 

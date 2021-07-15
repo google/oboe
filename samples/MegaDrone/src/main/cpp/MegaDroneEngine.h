@@ -48,6 +48,7 @@ private:
     std::shared_ptr<AudioStream> mStream;
     std::shared_ptr<TappableAudioSource> mAudioSource;
     std::unique_ptr<DefaultDataCallback> mDataCallback;
+    std::unique_ptr<StabilizedCallback> mStabilizedCallback;
     std::unique_ptr<DefaultErrorCallback> mErrorCallback;
 
     oboe::Result createPlaybackStream();
