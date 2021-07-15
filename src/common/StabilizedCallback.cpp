@@ -23,7 +23,7 @@ constexpr float kPercentageOfCallbackToUse = 0.8;
 
 using namespace oboe;
 
-StabilizedCallback::StabilizedCallback(AudioStreamCallback *callback) : mCallback(callback){
+StabilizedCallback::StabilizedCallback(AudioStreamDataCallback *callback) : mCallback(callback){
     Trace::initialize();
 }
 
