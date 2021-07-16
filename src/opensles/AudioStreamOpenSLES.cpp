@@ -130,7 +130,9 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
         return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
     }
 
-    mCallbackBuffer = std::make_unique<uint8_t[]>(mBytesPerCallback);
+    for (int i = 0; i < kBufferQueueLength; ++i) {
+        mCallbackBuffer[i] = std::make_unique<uint8_t[]>(mBytesPerCallback);
+    }
 
     if (!usingFIFO()) {
         mBufferCapacityInFrames = mFramesPerBurst * kBufferQueueLength;
@@ -292,7 +294,10 @@ Result AudioStreamOpenSLES::close_l() {
 }
 
 SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
-    return (*bq)->Enqueue(bq, mCallbackBuffer.get(), mBytesPerCallback);
+    SLresult result = (*bq)->Enqueue(
+            bq, mCallbackBuffer[mCallbackBufferIndex].get(), mBytesPerCallback);
+    mCallbackBufferIndex = (mCallbackBufferIndex + 1) % kBufferQueueLength;
+    return result;
 }
 
 int32_t AudioStreamOpenSLES::getBufferDepth(SLAndroidSimpleBufferQueueItf bq) {
@@ -304,7 +309,8 @@ int32_t AudioStreamOpenSLES::getBufferDepth(SLAndroidSimpleBufferQueueItf bq) {
 void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
     bool stopStream = false;
     // Ask the app callback to process the buffer.
-    DataCallbackResult result = fireDataCallback(mCallbackBuffer.get(), mFramesPerCallback);
+    DataCallbackResult result =
+            fireDataCallback(mCallbackBuffer[mCallbackBufferIndex].get(), mFramesPerCallback);
     if (result == DataCallbackResult::Continue) {
         // Pass the buffer to OpenSLES.
         SLresult enqueueResult = enqueueCallbackBuffer(bq);
@@ -327,6 +333,7 @@ void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
     }
     if (stopStream) {
         requestStop();
+        mCallbackBufferIndex = 0;
     }
 }
 

@@ -121,7 +121,8 @@ protected:
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
-    std::unique_ptr<uint8_t[]>    mCallbackBuffer;
+    std::unique_ptr<uint8_t[]>    mCallbackBuffer[kBufferQueueLength];
+    int                           mCallbackBufferIndex = 0;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};
 
 };

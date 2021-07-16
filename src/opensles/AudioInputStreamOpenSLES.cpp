@@ -273,9 +273,11 @@ Result AudioInputStreamOpenSLES::requestStart() {
     Result result = setRecordState_l(SL_RECORDSTATE_RECORDING);
     if (result == Result::OK) {
         setState(StreamState::Started);
-        // Enqueue the first buffer to start the streaming.
+        // Enqueue the first `kBufferQueueLength` buffer to start the streaming.
         // This does not call the callback function.
-        enqueueCallbackBuffer(mSimpleBufferQueueInterface);
+        for (size_t i = 0; i < kBufferQueueLength; ++i) {
+            enqueueCallbackBuffer(mSimpleBufferQueueInterface);
+        }
     } else {
         setState(initialState);
     }
