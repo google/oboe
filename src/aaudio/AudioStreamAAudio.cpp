@@ -366,16 +366,12 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/
             LOGE("Oboe callback returned unexpected value = %d", result);
         }
 
-        if (getSdkVersion() <= __ANDROID_API_P__) {
+        // Returning Stop caused various problems before S. See #1230
+        if (OboeGlobals::areWorkaroundsEnabled() && getSdkVersion() <= __ANDROID_API_R__) {
             launchStopThread();
-            if (isMMapUsed()) {
-                return DataCallbackResult::Stop;
-            } else {
-                // Legacy stream <= API_P cannot be restarted after returning Stop.
-                return DataCallbackResult::Continue;
-            }
+            return DataCallbackResult::Continue;
         } else {
-            return DataCallbackResult::Stop; // OK >= API_Q
+            return DataCallbackResult::Stop; // OK >= API_S
         }
     }
 }

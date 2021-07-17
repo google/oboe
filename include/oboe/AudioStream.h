@@ -553,7 +553,7 @@ private:
 
     std::atomic<bool>    mDataCallbackEnabled{false};
     std::atomic<bool>    mErrorCallbackCalled{false};
-
+    std::atomic<bool>    mStopThreadAllowed{false};
 };
 
 /**
