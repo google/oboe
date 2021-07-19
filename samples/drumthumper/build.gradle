@@ -9,13 +9,13 @@ android {
         // Usually the applicationId follows the same scheme as the application package name,
         // however, this sample will be published on the Google Play Store which will not allow an
         // applicationId starting with "com.google" as this is reserved for official Google
-        // products. The current owner of Oboe sample apps on Google Play is Phil Burk, who
-        // publishes using the application Id prefix of "com.plausiblesoftware".
+        // products. The current owner of the DrumThumper sample apps on Google Play is Paul McLean,
+        // who publishes using the application Id prefix of "com.plausiblesoftware".
         applicationId "com.plausiblesoftware.drumthumper"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
