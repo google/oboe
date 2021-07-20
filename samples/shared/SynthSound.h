@@ -84,6 +84,16 @@ public:
             }
         } else {
             memset(audioData, 0, sizeof(float) * numFrames);
+            // Remove some noise by letting the current sine wave complete.
+            // Since all the frequencies are multiples of mPhases[0], if the first wave complete,
+            // so should the others.
+            for (int i = 0; mPhases[0] != 0.0f && mPhases[0] < kTwoPi && i < numFrames; ++i) {
+                for (int j = 0; j < kNumSineWaves; ++j) {
+                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j];
+
+                    mPhases[j] += mPhaseIncrements[j];
+                }
+            }
         }
     };
 
