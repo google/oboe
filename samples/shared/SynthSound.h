@@ -31,7 +31,9 @@ constexpr double kPi = M_PI;
 constexpr double kTwoPi = kPi * 2;
 constexpr int32_t kNumSineWaves = 5;
 constexpr int32_t kNumExtraReleasePeriods = 5;
-constexpr int32_t kAttackPeriods = 40;
+constexpr int32_t kAttackPeriods = 10;
+constexpr int32_t kDecayPeriods = 8;
+constexpr float kMaxAttackMultiplier = 5.0f;
 
 class SynthSound : public IRenderableAudio {
 
@@ -47,7 +49,7 @@ public:
 
     void setWaveOn(bool isWaveOn) {
         if (!mIsWaveOn && isWaveOn) {
-            mAttackCount.store(0);
+            mAttackDecayCount.store(0);
         }
         mIsWaveOn.store(isWaveOn);
     };
@@ -80,15 +82,19 @@ public:
             for (int i = 0; i < numFrames; ++i) {
                 audioData[i] = 0;
                 for (int j = 0; j < kNumSineWaves; ++j) {
-                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * mAttackCount / kAttackPeriods;
+                    float multiplier = 1.0f;
+                    if (mAttackDecayCount < kAttackPeriods) {
+                        multiplier = kMaxAttackMultiplier * (mAttackDecayCount + 1) / kAttackPeriods;
+                    } else if (mAttackDecayCount < kAttackPeriods + kDecayPeriods) {
+                        multiplier = kMaxAttackMultiplier - (kMaxAttackMultiplier - 1.0f)
+                                * (mAttackDecayCount + 1 - kAttackPeriods) / kDecayPeriods;
+                    }
+                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * multiplier;
 
                     mPhases[j] += mPhaseIncrements[j];
                     if (mPhases[j] > kTwoPi) {
                         mPhases[j] -= kTwoPi;
-                        if (mAttackCount < kAttackPeriods)
-                        {
-                            mAttackCount++;
-                        }
+                        mAttackDecayCount++;
                     }
                 }
             }
@@ -116,7 +122,7 @@ public:
 
 private:
     std::atomic<bool> mIsWaveOn { false };
-    std::atomic<int> mAttackCount { 0 };
+    std::atomic<int> mAttackDecayCount { 0 };
     std::array<float, kNumSineWaves> mAmplitudes;
     std::array<float, kNumSineWaves> mPhases;
     std::array<double, kNumSineWaves> mPhaseIncrements;
