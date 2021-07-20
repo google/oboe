@@ -26,7 +26,8 @@
 
 constexpr float kOscBaseFrequency = 110.0; // Start at A2
 constexpr float kOscFrequencyMultiplier = 1.05946309436;
-constexpr float kOscAmplitude = 0.1;
+constexpr float kOscBaseAmplitude = 0.4;
+constexpr float kOscAmplitudeMultiplier = 0.95;
 
 class Synth : public IRenderableAudio, public ITappable {
 public:
@@ -36,11 +37,13 @@ public:
 
     Synth(const int32_t sampleRate, const int32_t channelCount, const int32_t numSignals) {
         float curFrequency = kOscBaseFrequency;
+        float curAmplitude = kOscBaseAmplitude;
         for (int i = 0; i < numSignals; ++i) {
             mOscs[i].setSampleRate(sampleRate);
             mOscs[i].setFrequency(curFrequency);
             curFrequency *= kOscFrequencyMultiplier;
-            mOscs[i].setAmplitude(kOscAmplitude);
+            mOscs[i].setAmplitude(curAmplitude);
+            curAmplitude *= kOscAmplitudeMultiplier;
             mMixer.addTrack(&mOscs[i]);
         }
         if (channelCount == oboe::ChannelCount::Stereo) {

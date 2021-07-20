@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setDefaultStreamValues(this);
     }
 
     @Override
     protected void onResume(){
-        setDefaultStreamValues(this);
         mEngineHandle = startEngine(getExclusiveCores(), NUM_ROWS * NUM_COLUMNS);
         createMusicTiles(this);
         super.onResume();
