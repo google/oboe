@@ -33,8 +33,7 @@ public class MusicTileView extends View {
         mEngineHandle = engineHandle;
     }
 
-    private int getIndexFromLocation(PointF pointF)
-    {
+    private int getIndexFromLocation(PointF pointF) {
         for (int i = 0; i < mRectangles.size(); i++) {
             if (pointF.x > mRectangles.get(i).left &&
                     pointF.x < mRectangles.get(i).right &&

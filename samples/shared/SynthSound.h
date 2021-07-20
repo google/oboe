@@ -35,8 +35,7 @@ class SynthSound : public IRenderableAudio {
 
 public:
 
-    SynthSound()
-    {
+    SynthSound() {
         for (int i = 0; i < kNumSineWaves; i++) {
             mFrequencies[i] = kDefaultFrequency * (i + 1);
         }

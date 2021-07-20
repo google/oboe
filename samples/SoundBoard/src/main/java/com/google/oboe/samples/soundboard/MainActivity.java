@@ -99,8 +99,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void createMusicTiles(Context context)
-    {
+    void createMusicTiles(Context context) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
