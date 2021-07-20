@@ -29,10 +29,18 @@ constexpr double kDefaultFrequency = 440.0;
 constexpr int32_t kDefaultSampleRate = 48000;
 constexpr double kPi = M_PI;
 constexpr double kTwoPi = kPi * 2;
+constexpr int32_t kNumSineWaves = 5;
 
 class SynthSound : public IRenderableAudio {
 
 public:
+
+    SynthSound()
+    {
+        for (int i = 0; i < kNumSineWaves; i++) {
+            mFrequencies[i] = kDefaultFrequency * (i + 1);
+        }
+    }
 
     ~SynthSound() = default;
 
@@ -46,22 +54,20 @@ public:
     };
 
     void setFrequency(double frequency) {
-        mFrequency1 = frequency;
-        mFrequency2 = frequency * 2;
-        mFrequency3 = frequency * 3;
-        mFrequency4 = frequency * 4;
-        mFrequency5 = frequency * 5;
+        for (int i = 0; i < kNumSineWaves; i++) {
+            mFrequencies[i] = frequency * (i + 1);
+        }
 
         updatePhaseIncrement();
     };
 
     // Amplitudes from https://epubs.siam.org/doi/pdf/10.1137/S00361445003822
     inline void setAmplitude(float amplitude) {
-        mAmplitude1 = amplitude * .2f;
-        mAmplitude2 = amplitude;
-        mAmplitude3 = amplitude * .1f;
-        mAmplitude4 = amplitude * .02f;
-        mAmplitude5 = amplitude * .15f;
+        mAmplitudes[0] = amplitude * .2f;
+        mAmplitudes[1] = amplitude;
+        mAmplitudes[2] = amplitude * .1f;
+        mAmplitudes[3] = amplitude * .02f;
+        mAmplitudes[4] = amplitude * .15f;
     };
 
     // From IRenderableAudio
@@ -69,22 +75,13 @@ public:
 
         if (mIsWaveOn){
             for (int i = 0; i < numFrames; ++i) {
-                audioData[i] = sinf(mPhase1) * mAmplitude1;
-                audioData[i] += sinf(mPhase2) * mAmplitude2;
-                audioData[i] += sinf(mPhase3) * mAmplitude3;
-                audioData[i] += sinf(mPhase4) * mAmplitude4;
-                audioData[i] += sinf(mPhase5) * mAmplitude5;
+                audioData[i] = 0;
+                for (int j = 0; j < kNumSineWaves; ++j) {
+                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j];
 
-                mPhase1 += mPhaseIncrement1;
-                if (mPhase1 > kTwoPi) mPhase1 -= kTwoPi;
-                mPhase2 += mPhaseIncrement2;
-                if (mPhase2 > kTwoPi) mPhase2 -= kTwoPi;
-                mPhase3 += mPhaseIncrement3;
-                if (mPhase3 > kTwoPi) mPhase3 -= kTwoPi;
-                mPhase4 += mPhaseIncrement4;
-                if (mPhase4 > kTwoPi) mPhase4 -= kTwoPi;
-                mPhase5 += mPhaseIncrement5;
-                if (mPhase5 > kTwoPi) mPhase5 -= kTwoPi;
+                    mPhases[j] += mPhaseIncrements[j];
+                    if (mPhases[j] > kTwoPi) mPhases[j] -= kTwoPi;
+                }
             }
         } else {
             memset(audioData, 0, sizeof(float) * numFrames);
@@ -93,34 +90,16 @@ public:
 
 private:
     std::atomic<bool> mIsWaveOn { false };
-    float mPhase1 = 0.0;
-    float mPhase2 = 0.0;
-    float mPhase3 = 0.0;
-    float mPhase4 = 0.0;
-    float mPhase5 = 0.0;
-    std::atomic<float> mAmplitude1 { 0 };
-    std::atomic<float> mAmplitude2 { 0 };
-    std::atomic<float> mAmplitude3 { 0 };
-    std::atomic<float> mAmplitude4 { 0 };
-    std::atomic<float> mAmplitude5 { 0 };
-    std::atomic<double> mPhaseIncrement1 { 0.0 };
-    std::atomic<double> mPhaseIncrement2 { 0.0 };
-    std::atomic<double> mPhaseIncrement3 { 0.0 };
-    std::atomic<double> mPhaseIncrement4 { 0.0 };
-    std::atomic<double> mPhaseIncrement5 { 0.0 };
-    double mFrequency1 = kDefaultFrequency;
-    double mFrequency2 = kDefaultFrequency * 2;
-    double mFrequency3 = kDefaultFrequency * 3;
-    double mFrequency4 = kDefaultFrequency * 4;
-    double mFrequency5 = kDefaultFrequency * 5;
+    std::array<float, kNumSineWaves> mAmplitudes;
+    std::array<float, kNumSineWaves> mPhases;
+    std::array<double, kNumSineWaves> mPhaseIncrements;
+    std::array<double, kNumSineWaves> mFrequencies;
     int32_t mSampleRate = kDefaultSampleRate;
 
     void updatePhaseIncrement(){
-        mPhaseIncrement1.store((kTwoPi * mFrequency1) / static_cast<double>(mSampleRate));
-        mPhaseIncrement2.store((kTwoPi * mFrequency2) / static_cast<double>(mSampleRate));
-        mPhaseIncrement3.store((kTwoPi * mFrequency3) / static_cast<double>(mSampleRate));
-        mPhaseIncrement4.store((kTwoPi * mFrequency4) / static_cast<double>(mSampleRate));
-        mPhaseIncrement5.store((kTwoPi * mFrequency5) / static_cast<double>(mSampleRate));
+        for (int i = 0; i < kNumSineWaves; i++) {
+            mPhaseIncrements[i] = (kTwoPi * mFrequencies[i]) / static_cast<double>(mSampleRate);
+        }
     };
 };
 
