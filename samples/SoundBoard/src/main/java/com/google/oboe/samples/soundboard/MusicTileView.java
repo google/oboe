@@ -50,7 +50,7 @@ public class MusicTileView extends View {
         for (int i = 0; i < mRectangles.size(); i++) {
             mPaint.setStyle(Paint.Style.FILL);
             if (mIsPressedPerRectangle[i]) {
-                mPaint.setColor(Color.MAGENTA);
+                mPaint.setColor(Color.rgb(128, 0, 0));
             } else {
                 mPaint.setColor(Color.BLACK);
             }
