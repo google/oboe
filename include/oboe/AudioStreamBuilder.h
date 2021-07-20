@@ -419,32 +419,37 @@ public:
     }
 
     /**
-     * Declare the name of the package creating the stream.
-     *
-     * This is usually Context#getPackageName()
-     *
-     * The default, if you do not call this function, is a random package in the calling uid.
-     *
-     * Added in API level 31.
-     *
-     * @param packageName packageName of the calling app.
-     */
+    * Declare the name of the package creating the stream.
+    *
+    * This is usually {@code Context#getPackageName()}.
+    *
+    * The default, if you do not call this function, is a random package in the calling uid.
+    * The vast majority of apps have only one package per calling UID.
+    * If an invalid package name is set, input streams may not be given permission to
+    * record when started.
+    *
+    * The package name is usually the applicationId in your app's build.gradle file.
+    *
+    * Available since API level 31.
+    *
+    * @param packageName packageName of the calling app.
+    */
     AudioStreamBuilder *setPackageName(std::string packageName) {
         mPackageName = packageName;
         return this;
     }
 
     /**
-     * Declare the attribution tag of the context creating the stream.
-     *
-     * This is usually Context#getAttributionTag()
-     *
-     * The default, if you do not call this function, is the default attribution tag.
-     *
-     * Added in API level 31.
-     *
-     * @param attributionTag attributionTag of the calling context.
-     */
+    * Declare the attribution tag of the context creating the stream.
+    *
+    * This is usually {@code Context#getAttributionTag()}.
+    *
+    * The default, if you do not call this function, is null.
+    *
+    * Available since API level 31.
+    *
+    * @param attributionTag attributionTag of the calling context.
+    */
     AudioStreamBuilder *setAttributionTag(std::string attributionTag) {
         mAttributionTag = attributionTag;
         return this;
