@@ -61,7 +61,7 @@ public:
             for (int i = 0; i < numFrames; ++i) {
 
                 // Sine wave (sinf)
-                //data[i*kChannelCount] = sinf(mPhase) * mAmplitude;
+                //audioData[i] = sinf(mPhase) * mAmplitude;
 
                 // Square wave
                 if (mPhase <= kPi){
