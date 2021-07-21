@@ -353,6 +353,21 @@ Result AudioStreamAAudio::close() {
     }
 }
 
+static void oboe_stop_thread_proc(AudioStream *oboeStream) {
+    if (oboeStream != nullptr) {
+        oboeStream->requestStop();
+    }
+}
+
+void AudioStreamAAudio::launchStopThread() {
+    // Prevent multiple stop threads from being launched.
+    if (mStopThreadAllowed.exchange(false)) {
+        // Stop this stream on a separate thread
+        std::thread t(oboe_stop_thread_proc, this);
+        t.detach();
+    }
+}
+
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
@@ -366,16 +381,12 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/
             LOGE("Oboe callback returned unexpected value = %d", result);
         }
 
-        if (getSdkVersion() <= __ANDROID_API_P__) {
+        // Returning Stop caused various problems before S. See #1230
+        if (OboeGlobals::areWorkaroundsEnabled() && getSdkVersion() <= __ANDROID_API_R__) {
             launchStopThread();
-            if (isMMapUsed()) {
-                return DataCallbackResult::Stop;
-            } else {
-                // Legacy stream <= API_P cannot be restarted after returning Stop.
-                return DataCallbackResult::Continue;
-            }
+            return DataCallbackResult::Continue;
         } else {
-            return DataCallbackResult::Stop; // OK >= API_Q
+            return DataCallbackResult::Stop; // OK >= API_S
         }
     }
 }
@@ -395,6 +406,7 @@ Result AudioStreamAAudio::requestStart() {
         if (isDataCallbackSpecified()) {
             setDataCallbackEnabled(true);
         }
+        mStopThreadAllowed = true;
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
         return Result::ErrorClosed;

@@ -112,11 +112,17 @@ private:
     // Must call under mLock. And stream must NOT be nullptr.
     Result requestStop_l(AAudioStream *stream);
 
+    /**
+     * Launch a thread that will stop the stream.
+     */
+    void launchStopThread();
+
     // Time to sleep in order to prevent a race condition with a callback after a close().
     // Two milliseconds may be enough but 10 msec is even safer.
     static constexpr int kDelayBeforeCloseMillis = 10;
 
     std::atomic<bool>    mCallbackThreadEnabled;
+    std::atomic<bool>    mStopThreadAllowed{false};
 
     // pointer to the underlying 'C' AAudio stream, valid if open, null if closed
     std::atomic<AAudioStream *> mAAudioStream{nullptr};

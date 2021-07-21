@@ -375,11 +375,6 @@ public:
     }
 
     /**
-     * Launch a thread that will stop the stream.
-     */
-    void launchStopThread();
-
-    /**
      * Update mFramesWritten.
      * For internal use only.
      */
@@ -553,7 +548,6 @@ private:
 
     std::atomic<bool>    mDataCallbackEnabled{false};
     std::atomic<bool>    mErrorCallbackCalled{false};
-
 };
 
 /**
