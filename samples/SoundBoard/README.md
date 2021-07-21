@@ -43,5 +43,3 @@ The compiler optimization flag `-Ofast` can be found in [CMakeLists.txt](CMakeLi
 Images
 -----------
 ![soundboard_image](soundboard_image.png)
-
-![soundboard_usage](soundboard_usage.JPG)
