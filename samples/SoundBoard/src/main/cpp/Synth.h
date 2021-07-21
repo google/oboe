@@ -26,7 +26,7 @@
 
 constexpr float kOscBaseFrequency = 196.00; // Start at G3
 constexpr float kOscFrequencyMultiplier = 1.05946309436;
-constexpr float kOscBaseAmplitude = 0.07;
+constexpr float kOscBaseAmplitude = 0.20;
 constexpr float kOscAmplitudeMultiplier = 0.96;
 
 class Synth : public IRenderableAudio, public ITappable {
