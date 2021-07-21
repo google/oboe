@@ -69,6 +69,9 @@ public:
     };
 
     virtual ~Synth() {
+        for (int i = 0; i < mNumSignals; i++) {
+            mOscs[i].setWaveOn(0);
+        }
     }
 private:
     // Rendering objects
