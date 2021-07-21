@@ -70,9 +70,9 @@ public:
                 for (int j = 0; j < kNumSineWaves; ++j) {
                     audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * mAttackCount / kAttackPeriods;
 
-                    mPhases[j] += mPhaseIncrements[j];
+                    mPhases[j].store(mPhases[j] + mPhaseIncrements[j]);
                     if (mPhases[j] > kTwoPi) {
-                        mPhases[j] -= kTwoPi;
+                        mPhases[j].store(mPhases[j] - kTwoPi);
                         if (mAttackCount < kAttackPeriods)
                         {
                             mAttackCount++;
@@ -95,7 +95,7 @@ public:
                         releaseScalar -= currentPeriod / (kNumExtraReleasePeriods + 1);
                     }
                     audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * releaseScalar;
-                    mPhases[j] += mPhaseIncrements[j];
+                    mPhases[j].store(mPhases[j] + mPhaseIncrements[j]);
                 }
             }
         }
@@ -104,11 +104,11 @@ public:
 private:
     std::atomic<bool> mIsWaveOn { false };
     std::atomic<int> mAttackCount { 0 };
-    std::array<float, kNumSineWaves> mAmplitudes;
-    std::array<float, kNumSineWaves> mPhases;
-    std::array<double, kNumSineWaves> mPhaseIncrements;
-    std::array<double, kNumSineWaves> mFrequencies;
-    int32_t mSampleRate = kDefaultSampleRate;
+    std::array<std::atomic<float>, kNumSineWaves> mAmplitudes;
+    std::array<std::atomic<float>, kNumSineWaves> mPhases;
+    std::array<std::atomic<double>, kNumSineWaves> mPhaseIncrements;
+    std::array<std::atomic<double>, kNumSineWaves> mFrequencies;
+    std::atomic<int32_t> mSampleRate { kDefaultSampleRate };
     void updatePhaseIncrement(){
         for (int i = 0; i < kNumSineWaves; i++) {
             mPhaseIncrements[i] = (kTwoPi * mFrequencies[i]) / static_cast<double>(mSampleRate);

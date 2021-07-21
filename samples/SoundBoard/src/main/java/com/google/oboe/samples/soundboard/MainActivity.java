@@ -28,6 +28,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.min;
 
@@ -65,6 +66,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         stopEngine(mEngineHandle);
+
+        // Add a minor delay to allow c++ code to garbage collect
+        try {
+            TimeUnit.MILLISECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         super.onPause();
     }
 
