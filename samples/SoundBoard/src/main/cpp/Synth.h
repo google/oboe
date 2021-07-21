@@ -24,7 +24,7 @@
 #include <Mixer.h>
 #include <MonoToStereo.h>
 
-constexpr float kOscBaseFrequency = 110.0; // Start at A2
+constexpr float kOscBaseFrequency = 130.81; // Start at C3
 constexpr float kOscFrequencyMultiplier = 1.05946309436;
 constexpr float kOscBaseAmplitude = 0.4;
 constexpr float kOscAmplitudeMultiplier = 0.95;
