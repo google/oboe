@@ -35,6 +35,7 @@ add_executable(
         testStreamOpen.cpp
         testStreamStates.cpp
         testStreamFramesProcessed.cpp
+        testReturnStop.cpp
         )
 
 target_link_libraries(testOboe gtest oboe)

@@ -122,10 +122,21 @@ cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
 pushd ${TEST_RUNNER_DIR}
     echo "Building test runner app" 
 	./gradlew assembleDebug
+	if [ $? -ne 0 ]; then
+		echo "Building test app FAILED"
+		exit 1
+	fi
+	
 	echo "Installing to device"
 	./gradlew installDebug
+	if [ $? -ne 0 ]; then
+		echo "Installing tests FAILED"
+		exit 1
+	fi
 popd
 
+echo "Clear logcat from before the test."
+adb logcat -c
 echo "Starting app - Check your device for test results"
 adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
 
