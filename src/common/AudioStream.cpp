@@ -104,7 +104,6 @@ Result AudioStream::waitForStateTransition(StreamState startingState,
 
 Result AudioStream::start(int64_t timeoutNanoseconds)
 {
-    mStopThreadAllowed = true;
     Result result = requestStart();
     if (result != Result::OK) return result;
     if (timeoutNanoseconds <= 0) return result;
@@ -194,21 +193,6 @@ ResultWithValue<FrameTimestamp> AudioStream::getTimestamp(clockid_t clockId) {
         return ResultWithValue<FrameTimestamp>(frame);
     } else {
         return ResultWithValue<FrameTimestamp>(static_cast<Result>(result));
-    }
-}
-
-static void oboe_stop_thread_proc(AudioStream *oboeStream) {
-    if (oboeStream != nullptr) {
-        oboeStream->requestStop();
-    }
-}
-
-void AudioStream::launchStopThread() {
-    // Prevent multiple stop threads from being launched.
-    if (mStopThreadAllowed.exchange(false)) {
-        // Stop this stream on a separate thread
-        std::thread t(oboe_stop_thread_proc, this);
-        t.detach();
     }
 }
 

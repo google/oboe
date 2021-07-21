@@ -353,6 +353,21 @@ Result AudioStreamAAudio::close() {
     }
 }
 
+static void oboe_stop_thread_proc(AudioStream *oboeStream) {
+    if (oboeStream != nullptr) {
+        oboeStream->requestStop();
+    }
+}
+
+void AudioStreamAAudio::launchStopThread() {
+    // Prevent multiple stop threads from being launched.
+    if (mStopThreadAllowed.exchange(false)) {
+        // Stop this stream on a separate thread
+        std::thread t(oboe_stop_thread_proc, this);
+        t.detach();
+    }
+}
+
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/,
                                                                  void *audioData,
                                                                  int32_t numFrames) {
@@ -391,6 +406,7 @@ Result AudioStreamAAudio::requestStart() {
         if (isDataCallbackSpecified()) {
             setDataCallbackEnabled(true);
         }
+        mStopThreadAllowed = true;
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
         return Result::ErrorClosed;
