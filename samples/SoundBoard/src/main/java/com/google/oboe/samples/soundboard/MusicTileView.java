@@ -22,7 +22,6 @@ public class MusicTileView extends View {
 
     private long mEngineHandle = 0;
     private native void tap(long engineHandle, boolean isDown, int audioSource);
-    private boolean isInitialOnDrawCall = true;
 
     public MusicTileView(Context context, ArrayList<Rect> rectangles, long engineHandle) {
         super(context);
@@ -62,13 +61,6 @@ public class MusicTileView extends View {
             mPaint.setStrokeWidth(10);
             mPaint.setColor(Color.WHITE);
             canvas.drawRect(mRectangles.get(i), mPaint);
-        }
-
-        if (!isInitialOnDrawCall) {
-            // Call c++ native code to set each index add/remove sound
-            for (int i = 0; i < mRectangles.size(); i++) {
-                tap(mEngineHandle, mIsPressedPerRectangle[i], i);
-            }
         }
     }
 
@@ -134,7 +126,10 @@ public class MusicTileView extends View {
 
         // Calling invalidate() will force onDraw() to be called
         if (didImageChange) {
-            isInitialOnDrawCall = false;
+            // Call c++ native code to set each index add/remove sound
+            for (int i = 0; i < mRectangles.size(); i++) {
+                tap(mEngineHandle, mIsPressedPerRectangle[i], i);
+            }
             invalidate();
         }
 
