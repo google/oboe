@@ -53,11 +53,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setDefaultStreamValues(this);
     }
 
     @Override
     protected void onResume(){
+        setDefaultStreamValues(this);
         mEngineHandle = startEngine(getExclusiveCores(), NUM_ROWS * NUM_COLUMNS);
         createMusicTiles(this);
         super.onResume();
@@ -66,13 +66,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         stopEngine(mEngineHandle);
-
-        // Add a minor delay to allow c++ code to garbage collect
-        try {
-            TimeUnit.MILLISECONDS.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         super.onPause();
     }
 

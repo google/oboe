@@ -22,6 +22,7 @@ public class MusicTileView extends View {
 
     private long mEngineHandle = 0;
     private native void tap(long engineHandle, boolean isDown, int audioSource);
+    private boolean isInitialOnDrawCall = true;
 
     public MusicTileView(Context context, ArrayList<Rect> rectangles, long engineHandle) {
         super(context);
@@ -61,9 +62,13 @@ public class MusicTileView extends View {
             mPaint.setStrokeWidth(10);
             mPaint.setColor(Color.WHITE);
             canvas.drawRect(mRectangles.get(i), mPaint);
+        }
 
+        if (!isInitialOnDrawCall) {
             // Call c++ native code to set each index add/remove sound
-            tap(mEngineHandle, mIsPressedPerRectangle[i], i);
+            for (int i = 0; i < mRectangles.size(); i++) {
+                tap(mEngineHandle, mIsPressedPerRectangle[i], i);
+            }
         }
     }
 
@@ -73,22 +78,27 @@ public class MusicTileView extends View {
         int pointerId = event.getPointerId(pointerIndex);
         int maskedAction = event.getActionMasked();
 
+        boolean didImageChange = false;
         switch (maskedAction) {
             // Move each point from it's current point to the new point.
             case MotionEvent.ACTION_MOVE: {
                 for (int size = event.getPointerCount(), i = 0; i < size; i++) {
                     PointF point = mLocationsOfFingers.get(event.getPointerId(i));
                     if (point != null) {
-                        int curIndex = getIndexFromLocation(point);
-                        if (curIndex != -1) {
-                            mIsPressedPerRectangle[curIndex] = false;
+                        int prevIndex = getIndexFromLocation(point);
+                        if (prevIndex != -1) {
+                            mIsPressedPerRectangle[prevIndex] = false;
                         }
                         point.x = event.getX(i);
                         point.y = event.getY(i);
 
-                        curIndex = getIndexFromLocation(point);
-                        if (curIndex != -1) {
-                            mIsPressedPerRectangle[curIndex] = true;
+                        int newIndex = getIndexFromLocation(point);
+                        if (newIndex != -1) {
+                            mIsPressedPerRectangle[newIndex] = true;
+                        }
+
+                        if (newIndex != prevIndex) {
+                            didImageChange = true;
                         }
                     }
                 }
@@ -104,6 +114,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(f);
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = true;
+                    didImageChange = true;
                 }
                 break;
             }
@@ -114,6 +125,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(mLocationsOfFingers.get(event.getPointerId(pointerIndex)));
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = false;
+                    didImageChange = true;
                 }
                 mLocationsOfFingers.remove(pointerId);
                 break;
@@ -121,7 +133,10 @@ public class MusicTileView extends View {
         }
 
         // Calling invalidate() will force onDraw() to be called
-        invalidate();
+        if (didImageChange) {
+            isInitialOnDrawCall = false;
+            invalidate();
+        }
 
         return true;
     }
