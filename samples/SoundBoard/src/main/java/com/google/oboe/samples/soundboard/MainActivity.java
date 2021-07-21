@@ -115,13 +115,12 @@ public class MainActivity extends AppCompatActivity {
         final int yStartLocation = (height - tileLength * numRows) / 2 / 2;
 
         ArrayList<Rect> rectangles = new ArrayList<Rect>();
-        for (int i = 0; i < numColumns; i++) {
-            for (int j = 0; j < numRows; j++) {
-
-                Rect rectangle = new Rect(xStartLocation + i * tileLength,
-                        yStartLocation + j * tileLength,
-                        xStartLocation + i * tileLength + tileLength,
-                        yStartLocation + j * tileLength + tileLength);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                Rect rectangle = new Rect(xStartLocation + j * tileLength,
+                        yStartLocation + i * tileLength,
+                        xStartLocation + j * tileLength + tileLength,
+                        yStartLocation + i * tileLength + tileLength);
                 rectangles.add(rectangle);
             }
         }
