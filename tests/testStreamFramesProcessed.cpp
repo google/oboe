@@ -21,7 +21,7 @@
 
 using namespace oboe;
 
-class MyCallback : public AudioStreamDataCallback {
+class FramesProcessedCallback : public AudioStreamDataCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
         return DataCallbackResult::Continue;
@@ -53,7 +53,7 @@ TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
     const Direction direction = std::get<0>(GetParam());
     const int32_t sampleRate = std::get<1>(GetParam());
 
-    AudioStreamDataCallback *callback = new MyCallback();
+    AudioStreamDataCallback *callback = new FramesProcessedCallback();
     mBuilder.setDirection(direction)
             ->setFormat(AudioFormat::Float)
             ->setSampleRate(sampleRate)
