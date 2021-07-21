@@ -25,22 +25,21 @@ constexpr int32_t kDefaultSampleRate = 48000;
 constexpr double kPi = M_PI;
 constexpr double kTwoPi = kPi * 2;
 constexpr int32_t kNumSineWaves = 5;
-constexpr int32_t kNumExtraReleasePeriods = 5;
-constexpr int32_t kAttackPeriods = 40;
+constexpr double kSustainMultiplier = 0.99999;
+constexpr double kReleaseMultiplier = 0.999;
+// Stop playing music below this cutoff
+constexpr double kMasterAmplitudeCutOff = 0.01;
 
 class SynthSound : public IRenderableAudio {
 
 public:
     SynthSound() {
-        for (int i = 0; i < kNumSineWaves; i++) {
-            mFrequencies[i] = kDefaultFrequency * (i + 1);
-        }
     }
     ~SynthSound() = default;
 
     void setWaveOn(bool isWaveOn) {
         if (!mIsWaveOn && isWaveOn) {
-            mAttackCount.store(0);
+            mMasterAmplitude = 1.0f;
         }
         mIsWaveOn.store(isWaveOn);
     };
@@ -49,9 +48,7 @@ public:
         updatePhaseIncrement();
     };
     void setFrequency(double frequency) {
-        for (int i = 0; i < kNumSineWaves; i++) {
-            mFrequencies[i] = frequency * (i + 1);
-        }
+        mFrequency = frequency;
         updatePhaseIncrement();
     };
     // Amplitudes from https://epubs.siam.org/doi/pdf/10.1137/S00361445003822
@@ -65,19 +62,15 @@ public:
     // From IRenderableAudio
     void renderAudio(float *audioData, int32_t numFrames) override {
         if (mIsWaveOn){
-            for (int i = 0; i < numFrames; ++i) {
+            for (int i = 0; (i < numFrames) && (mMasterAmplitude > kMasterAmplitudeCutOff); ++i) {
+                mMasterAmplitude.store(mMasterAmplitude * kSustainMultiplier);
                 audioData[i] = 0;
                 for (int j = 0; j < kNumSineWaves; ++j) {
-                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * mAttackCount / kAttackPeriods;
-
-                    mPhases[j].store(mPhases[j] + mPhaseIncrements[j]);
-                    if (mPhases[j] > kTwoPi) {
-                        mPhases[j].store(mPhases[j] - kTwoPi);
-                        if (mAttackCount < kAttackPeriods)
-                        {
-                            mAttackCount++;
-                        }
-                    }
+                    audioData[i] += sinf(mPhase * (j + 1)) * mAmplitudes[j] * mMasterAmplitude;
+                }
+                mPhase.store(mPhase + mPhaseIncrement);
+                if (mPhase > kTwoPi) {
+                    mPhase.store(mPhase - kTwoPi);
                 }
             }
         } else {
@@ -85,34 +78,26 @@ public:
             // Remove some noise by letting the current sine wave complete.
             // Since all the frequencies are multiples of mPhases[0], if the first wave complete,
             // so should the others. Use an extra release period to reduce even more noise.
-            for (int i = 0; mPhases[0] != 0.0f
-                            && mPhases[0] < kTwoPi * (kNumExtraReleasePeriods + 1)
-                            && i < numFrames; ++i) {
+            for (int i = 0; (i < numFrames) && (mMasterAmplitude > kMasterAmplitudeCutOff); ++i) {
+                mMasterAmplitude.store(mMasterAmplitude * kReleaseMultiplier);
                 for (int j = 0; j < kNumSineWaves; ++j) {
-                    float releaseScalar = 1.0f;
-                    if (mPhases[0] > kTwoPi) {
-                        float currentPeriod = floor((mPhases[0] - kTwoPi) / kTwoPi + 1);
-                        releaseScalar -= currentPeriod / (kNumExtraReleasePeriods + 1);
-                    }
-                    audioData[i] += sinf(mPhases[j]) * mAmplitudes[j] * releaseScalar;
-                    mPhases[j].store(mPhases[j] + mPhaseIncrements[j]);
+                    audioData[i] += sinf(mPhase * (j + 1)) * mAmplitudes[j] * mMasterAmplitude;
                 }
+                mPhase.store(mPhase + mPhaseIncrement);
             }
         }
     };
 
 private:
+    std::atomic<double> mMasterAmplitude;
     std::atomic<bool> mIsWaveOn { false };
-    std::atomic<int> mAttackCount { 0 };
     std::array<std::atomic<float>, kNumSineWaves> mAmplitudes;
-    std::array<std::atomic<float>, kNumSineWaves> mPhases;
-    std::array<std::atomic<double>, kNumSineWaves> mPhaseIncrements;
-    std::array<std::atomic<double>, kNumSineWaves> mFrequencies;
+    std::atomic<float> mPhase;
+    std::atomic<double> mPhaseIncrement;
+    std::atomic<double> mFrequency { kDefaultFrequency };
     std::atomic<int32_t> mSampleRate { kDefaultSampleRate };
     void updatePhaseIncrement(){
-        for (int i = 0; i < kNumSineWaves; i++) {
-            mPhaseIncrements[i] = (kTwoPi * mFrequencies[i]) / static_cast<double>(mSampleRate);
-        }
+        mPhaseIncrement = kTwoPi * mFrequency / static_cast<double>(mSampleRate);
     };
 };
 #endif //SHARED_SYNTH_SOUND_H
