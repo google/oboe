@@ -81,13 +81,22 @@ Java_com_google_oboe_samples_soundboard_MainActivity_native_1setDefaultStreamVal
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_soundboard_MusicTileView_tap(JNIEnv *env, jobject thiz,
-                                                         jlong engine_handle, jboolean is_down,
-                                                         jint audioSource) {
+Java_com_google_oboe_samples_soundboard_MusicTileView_setNoteOff(JNIEnv *env, jobject thiz,
+                                                         jlong engine_handle, jint noteIndex) {
     auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
     if (engine) {
-        engine->tapSource(is_down, audioSource);
-        //engine->tap(is_down);
+        engine->setNoteOff(noteIndex);
+    } else {
+        LOGE("Engine handle is invalid, call createEngine() to create a new one");
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_soundboard_MusicTileView_setNoteOn(JNIEnv *env, jobject thiz,
+                                                         jlong engine_handle, jint noteIndex) {
+    auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
+    if (engine) {
+        engine->setNoteOn(noteIndex);
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }

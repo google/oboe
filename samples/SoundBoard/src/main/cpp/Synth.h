@@ -54,9 +54,13 @@ public:
         }
     }
 
-    void tapSource(bool isOn, int32_t source) {
-        mOscs[source].setWaveOn(isOn);
-    };
+    void setNoteOff(int32_t noteIndex) {
+        mOscs[noteIndex].setWaveOn(false);
+    }
+
+    void setNoteOn(int32_t noteIndex) {
+        mOscs[noteIndex].setWaveOn(true);
+    }
 
     void tap(bool isOn) override {
         for (int i = 0; i < mNumSignals; i++) {

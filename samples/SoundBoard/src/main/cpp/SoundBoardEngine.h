@@ -36,7 +36,9 @@ public:
 
     virtual ~SoundBoardEngine();
 
-    void tapSource(bool isDown, int32_t audioSource);
+    void setNoteOff(int32_t noteIndex);
+
+    void setNoteOn(int32_t noteIndex);
 
     void tap(bool isDown);
 

@@ -21,7 +21,8 @@ public class MusicTileView extends View {
     private SparseArray<PointF> mLocationsOfFingers;
 
     private long mEngineHandle = 0;
-    private native void tap(long engineHandle, boolean isDown, int audioSource);
+    private native void setNoteOn(long engineHandle, int noteIndex);
+    private native void setNoteOff(long engineHandle, int noteIndex);
 
     public MusicTileView(Context context, ArrayList<Rect> rectangles, long engineHandle) {
         super(context);
@@ -128,7 +129,11 @@ public class MusicTileView extends View {
         if (didImageChange) {
             // Call c++ native code to set each index add/remove sound
             for (int i = 0; i < mRectangles.size(); i++) {
-                tap(mEngineHandle, mIsPressedPerRectangle[i], i);
+                if (mIsPressedPerRectangle[i]) {
+                    setNoteOn(mEngineHandle, i);
+                } else {
+                    setNoteOff(mEngineHandle, i);
+                }
             }
             invalidate();
         }

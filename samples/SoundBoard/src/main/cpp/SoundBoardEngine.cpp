@@ -42,8 +42,12 @@ SoundBoardEngine::~SoundBoardEngine() {
     }
 }
 
-void SoundBoardEngine::tapSource(bool isDown, int32_t audioSource) {
-    mSynth->tapSource(isDown, audioSource);
+void SoundBoardEngine::setNoteOff(int32_t noteIndex) {
+    mSynth->setNoteOff(noteIndex);
+}
+
+void SoundBoardEngine::setNoteOn(int32_t noteIndex) {
+    mSynth->setNoteOn(noteIndex);
 }
 
 void SoundBoardEngine::tap(bool isDown) {
