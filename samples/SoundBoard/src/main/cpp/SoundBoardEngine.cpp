@@ -22,16 +22,15 @@
  * Main audio engine for the SoundBoard sample. It is responsible for:
  *
  * - Creating the callback object which will be supplied when constructing the audio stream
- * - Setting the CPU core IDs to which the callback thread should bind to
  * - Creating the playback stream, including setting the callback object
  * - Creating `Synth` which will render the audio inside the callback
  * - Starting the playback stream
  * - Restarting the playback stream when `restart()` is called by the callback object
  *
- * @param cpuIds
+ * @param numSignals
  */
-SoundBoardEngine::SoundBoardEngine(std::vector<int> cpuIds, int32_t numSignals) {
-    createCallback(cpuIds, numSignals);
+SoundBoardEngine::SoundBoardEngine(int32_t numSignals) {
+    createCallback(numSignals);
 }
 
 SoundBoardEngine::~SoundBoardEngine() {
@@ -42,12 +41,12 @@ SoundBoardEngine::~SoundBoardEngine() {
     }
 }
 
-void SoundBoardEngine::setNoteOff(int32_t noteIndex) {
-    mSynth->setNoteOff(noteIndex);
+void SoundBoardEngine::noteOff(int32_t noteIndex) {
+    mSynth->noteOff(noteIndex);
 }
 
-void SoundBoardEngine::setNoteOn(int32_t noteIndex) {
-    mSynth->setNoteOn(noteIndex);
+void SoundBoardEngine::noteOn(int32_t noteIndex) {
+    mSynth->noteOn(noteIndex);
 }
 
 void SoundBoardEngine::tap(bool isDown) {
@@ -70,18 +69,13 @@ oboe::Result SoundBoardEngine::createPlaybackStream() {
 }
 
 // Create the callback and set its thread affinity to the supplied CPU core IDs
-void SoundBoardEngine::createCallback(std::vector<int> cpuIds, int32_t numSignals){
+void SoundBoardEngine::createCallback(int32_t numSignals){
 
     mDataCallback = std::make_unique<DefaultDataCallback>();
 
     // Create the error callback, we supply ourselves as the parent so that we can restart the stream
     // when it's disconnected
     mErrorCallback = std::make_unique<DefaultErrorCallback>(*this);
-
-    // Bind the audio callback to specific CPU cores as this can help avoid underruns caused by
-    // core migrations
-    mDataCallback->setCpuIds(cpuIds);
-    mDataCallback->setThreadAffinityEnabled(true);
 
     mNumSignals = numSignals;
 }

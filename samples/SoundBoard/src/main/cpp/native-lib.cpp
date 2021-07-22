@@ -20,19 +20,6 @@
 
 #include "SoundBoardEngine.h"
 
-
-std::vector<int> convertJavaArrayToVector(JNIEnv *env, jintArray intArray) {
-    std::vector<int> v;
-    jsize length = env->GetArrayLength(intArray);
-    if (length > 0) {
-        jint *elements = env->GetIntArrayElements(intArray, nullptr);
-        v.insert(v.end(), &elements[0], &elements[length]);
-        // Unpin the memory for the array, or free the copy.
-        env->ReleaseIntArrayElements(intArray, elements, 0);
-    }
-    return v;
-}
-
 extern "C" {
 /**
  * Start the audio engine
@@ -44,10 +31,9 @@ extern "C" {
  */
 JNIEXPORT jlong JNICALL
 Java_com_google_oboe_samples_soundboard_MainActivity_startEngine(JNIEnv *env, jobject /*unused*/,
-         jintArray jCpuIds, jint jNumSignals) {
-    std::vector<int> cpuIds = convertJavaArrayToVector(env, jCpuIds);
-    LOGD("cpu ids size: %d", static_cast<int>(cpuIds.size()));
-    SoundBoardEngine  *engine = new SoundBoardEngine(std::move(cpuIds), jNumSignals);
+         jint jNumSignals) {
+    LOGD("numSignals : %d", static_cast<int>(jNumSignals));
+    SoundBoardEngine  *engine = new SoundBoardEngine(jNumSignals);
 
     if (!engine->start()) {
         LOGE("Failed to start SoundBoard Engine");
@@ -81,22 +67,22 @@ Java_com_google_oboe_samples_soundboard_MainActivity_native_1setDefaultStreamVal
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_soundboard_MusicTileView_setNoteOff(JNIEnv *env, jobject thiz,
+Java_com_google_oboe_samples_soundboard_NoteListener_noteOff(JNIEnv *env, jobject thiz,
                                                          jlong engine_handle, jint noteIndex) {
     auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
     if (engine) {
-        engine->setNoteOff(noteIndex);
+        engine->noteOff(noteIndex);
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_soundboard_MusicTileView_setNoteOn(JNIEnv *env, jobject thiz,
+Java_com_google_oboe_samples_soundboard_NoteListener_noteOn(JNIEnv *env, jobject thiz,
                                                          jlong engine_handle, jint noteIndex) {
     auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
     if (engine) {
-        engine->setNoteOn(noteIndex);
+        engine->noteOn(noteIndex);
     } else {
         LOGE("Engine handle is invalid, call createEngine() to create a new one");
     }

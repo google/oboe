@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.provider.ContactsContract;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,19 +20,16 @@ public class MusicTileView extends View {
     private boolean[] mIsPressedPerRectangle;
     private Paint mPaint;
     private SparseArray<PointF> mLocationsOfFingers;
+    private NoteListener mNoteListener;
 
-    private long mEngineHandle = 0;
-    private native void setNoteOn(long engineHandle, int noteIndex);
-    private native void setNoteOff(long engineHandle, int noteIndex);
-
-    public MusicTileView(Context context, ArrayList<Rect> rectangles, long engineHandle) {
+    public MusicTileView(Context context, ArrayList<Rect> rectangles, NoteListener noteListener) {
         super(context);
 
         mRectangles = rectangles;
         mIsPressedPerRectangle = new boolean[rectangles.size()];
         mPaint = new Paint();
         mLocationsOfFingers = new SparseArray<PointF>();
-        mEngineHandle = engineHandle;
+        mNoteListener = noteListener;
     }
 
     private int getIndexFromLocation(PointF pointF) {
@@ -75,24 +73,36 @@ public class MusicTileView extends View {
         switch (maskedAction) {
             // Move each point from it's current point to the new point.
             case MotionEvent.ACTION_MOVE: {
+                int[] notesChangedBy = new int[mRectangles.size()];
                 for (int size = event.getPointerCount(), i = 0; i < size; i++) {
                     PointF point = mLocationsOfFingers.get(event.getPointerId(i));
                     if (point != null) {
                         int prevIndex = getIndexFromLocation(point);
-                        if (prevIndex != -1) {
-                            mIsPressedPerRectangle[prevIndex] = false;
-                        }
                         point.x = event.getX(i);
                         point.y = event.getY(i);
-
                         int newIndex = getIndexFromLocation(point);
-                        if (newIndex != -1) {
-                            mIsPressedPerRectangle[newIndex] = true;
-                        }
 
                         if (newIndex != prevIndex) {
-                            didImageChange = true;
+                            if (prevIndex != -1) {
+                                notesChangedBy[prevIndex]--;
+                            }
+                            if (newIndex != -1) {
+                                notesChangedBy[newIndex]++;
+                            }
                         }
+                    }
+                }
+
+                // Now go through the rectangles to see if they have changed
+                for (int i = 0; i < mRectangles.size(); i++) {
+                    if (notesChangedBy[i] > 0) {
+                        mIsPressedPerRectangle[i] = true;
+                        mNoteListener.onTileOn(i);
+                        didImageChange = true;
+                    } else if (notesChangedBy[i] < 0) {
+                        mIsPressedPerRectangle[i] = false;
+                        mNoteListener.onTileOff(i);
+                        didImageChange = true;
                     }
                 }
                 break;
@@ -107,6 +117,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(f);
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = true;
+                    mNoteListener.onTileOn(curIndex);
                     didImageChange = true;
                 }
                 break;
@@ -118,6 +129,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(mLocationsOfFingers.get(event.getPointerId(pointerIndex)));
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = false;
+                    mNoteListener.onTileOff(curIndex);
                     didImageChange = true;
                 }
                 mLocationsOfFingers.remove(pointerId);
@@ -127,14 +139,6 @@ public class MusicTileView extends View {
 
         // Calling invalidate() will force onDraw() to be called
         if (didImageChange) {
-            // Call c++ native code to set each index add/remove sound
-            for (int i = 0; i < mRectangles.size(); i++) {
-                if (mIsPressedPerRectangle[i]) {
-                    setNoteOn(mEngineHandle, i);
-                } else {
-                    setNoteOff(mEngineHandle, i);
-                }
-            }
             invalidate();
         }
 

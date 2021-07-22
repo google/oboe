@@ -20,34 +20,41 @@
 #include <math.h>
 #include <memory>
 #include "IRenderableAudio.h"
-constexpr double kDefaultFrequency = 440.0;
+constexpr float kDefaultFrequency = 440.0;
 constexpr int32_t kDefaultSampleRate = 48000;
-constexpr double kPi = M_PI;
-constexpr double kTwoPi = kPi * 2;
+constexpr float kPi = M_PI;
+constexpr float kTwoPi = kPi * 2;
 constexpr int32_t kNumSineWaves = 5;
-constexpr double kSustainMultiplier = 0.99999;
-constexpr double kReleaseMultiplier = 0.999;
+constexpr float kSustainMultiplier = 0.99999;
+constexpr float kReleaseMultiplier = 0.999;
 // Stop playing music below this cutoff
-constexpr double kMasterAmplitudeCutOff = 0.01;
+constexpr float kMasterAmplitudeCutOff = 0.01;
 
 class SynthSound : public IRenderableAudio {
 
 public:
     SynthSound() {
-    }
-    ~SynthSound() = default;
 
-    void setWaveOn(bool isWaveOn) {
-        if (!mIsWaveOn && isWaveOn) {
-            mMasterAmplitude = 1.0f;
-        }
-        mIsWaveOn.store(isWaveOn);
+    }
+
+    ~SynthSound() {
+
     };
+
+    void noteOn() {
+        mTrigger = true; // start a note envelope
+        mAmplitudeScaler = kSustainMultiplier;
+    }
+
+    void noteOff() {
+        mAmplitudeScaler = kReleaseMultiplier;
+    }
+    
     void setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
         updatePhaseIncrement();
     };
-    void setFrequency(double frequency) {
+    void setFrequency(float frequency) {
         mFrequency = frequency;
         updatePhaseIncrement();
     };
@@ -61,43 +68,39 @@ public:
     };
     // From IRenderableAudio
     void renderAudio(float *audioData, int32_t numFrames) override {
-        if (mIsWaveOn){
-            for (int i = 0; (i < numFrames) && (mMasterAmplitude > kMasterAmplitudeCutOff); ++i) {
-                mMasterAmplitude.store(mMasterAmplitude * kSustainMultiplier);
-                audioData[i] = 0;
-                for (int j = 0; j < kNumSineWaves; ++j) {
-                    audioData[i] += sinf(mPhase * (j + 1)) * mAmplitudes[j] * mMasterAmplitude;
-                }
-                mPhase.store(mPhase + mPhaseIncrement);
-                if (mPhase > kTwoPi) {
-                    mPhase.store(mPhase - kTwoPi);
-                }
+        for (int i = 0; i < numFrames; ++i) {
+            if (mTrigger.exchange(false)) {
+                mMasterAmplitude = 1.0;
+                mPhase = 0.0f;
+            } else {
+                mMasterAmplitude *= mAmplitudeScaler;
             }
-        } else {
-            memset(audioData, 0, sizeof(float) * numFrames);
-            // Remove some noise by letting the current sine wave complete.
-            // Since all the frequencies are multiples of mPhases[0], if the first wave complete,
-            // so should the others. Use an extra release period to reduce even more noise.
-            for (int i = 0; (i < numFrames) && (mMasterAmplitude > kMasterAmplitudeCutOff); ++i) {
-                mMasterAmplitude.store(mMasterAmplitude * kReleaseMultiplier);
-                for (int j = 0; j < kNumSineWaves; ++j) {
-                    audioData[i] += sinf(mPhase * (j + 1)) * mAmplitudes[j] * mMasterAmplitude;
-                }
-                mPhase.store(mPhase + mPhaseIncrement);
+
+            audioData[i] = 0;
+            if (mMasterAmplitude < kMasterAmplitudeCutOff) {
+                continue;
+            }
+            for (int j = 0; j < kNumSineWaves; ++j) {
+                audioData[i] += sinf(mPhase * (j + 1)) * mAmplitudes[j] * mMasterAmplitude;
+            }
+            mPhase += mPhaseIncrement;
+            if (mPhase > kTwoPi) {
+                mPhase -=  kTwoPi;
             }
         }
     };
 
 private:
-    std::atomic<double> mMasterAmplitude;
-    std::atomic<bool> mIsWaveOn { false };
+    std::atomic<bool> mTrigger;
+    float mMasterAmplitude = 0.0f;
+    std::atomic<float> mAmplitudeScaler;
     std::array<std::atomic<float>, kNumSineWaves> mAmplitudes;
-    std::atomic<float> mPhase;
-    std::atomic<double> mPhaseIncrement;
-    std::atomic<double> mFrequency { kDefaultFrequency };
+    float mPhase = 0.0f;
+    std::atomic<float> mPhaseIncrement;
+    std::atomic<float> mFrequency { kDefaultFrequency };
     std::atomic<int32_t> mSampleRate { kDefaultSampleRate };
     void updatePhaseIncrement(){
-        mPhaseIncrement = kTwoPi * mFrequency / static_cast<double>(mSampleRate);
+        mPhaseIncrement = kTwoPi * mFrequency / static_cast<float>(mSampleRate);
     };
 };
 #endif //SHARED_SYNTH_SOUND_H

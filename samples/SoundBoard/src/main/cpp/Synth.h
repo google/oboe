@@ -54,17 +54,21 @@ public:
         }
     }
 
-    void setNoteOff(int32_t noteIndex) {
-        mOscs[noteIndex].setWaveOn(false);
+    void noteOff(int32_t noteIndex) {
+        mOscs[noteIndex].noteOff();
     }
 
-    void setNoteOn(int32_t noteIndex) {
-        mOscs[noteIndex].setWaveOn(true);
+    void noteOn(int32_t noteIndex) {
+        mOscs[noteIndex].noteOn();
     }
 
     void tap(bool isOn) override {
         for (int i = 0; i < mNumSignals; i++) {
-            mOscs[i].setWaveOn(isOn);
+            if (isOn) {
+                mOscs[i].noteOn();
+            } else {
+                mOscs[i].noteOff();
+            }
         }
     };
 
@@ -74,9 +78,6 @@ public:
     };
 
     virtual ~Synth() {
-        for (int i = 0; i < mNumSignals; i++) {
-            mOscs[i].setWaveOn(0);
-        }
     }
 private:
     // Rendering objects

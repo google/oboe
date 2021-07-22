@@ -32,13 +32,13 @@ using namespace oboe;
 class SoundBoardEngine : public IRestartable {
 
 public:
-    SoundBoardEngine(std::vector<int> cpuIds, int32_t numSignals);
+    SoundBoardEngine(int32_t numSignals);
 
     virtual ~SoundBoardEngine();
 
-    void setNoteOff(int32_t noteIndex);
+    void noteOff(int32_t noteIndex);
 
-    void setNoteOn(int32_t noteIndex);
+    void noteOn(int32_t noteIndex);
 
     void tap(bool isDown);
 
@@ -57,7 +57,7 @@ private:
     std::unique_ptr<DefaultErrorCallback> mErrorCallback;
 
     oboe::Result createPlaybackStream();
-    void createCallback(std::vector<int> cpuIds, int32_t numSignals);
+    void createCallback(int32_t numSignals);
 };
 
 

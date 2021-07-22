@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private final int NUM_COLUMNS = 5;
     private static long mEngineHandle = 0;
 
-    private native long startEngine(int[] cpuIds, int numSignals);
+    private NoteListener mNoteListener;
+
+    private native long startEngine(int numSignals);
     private native void stopEngine(long engineHandle);
 
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
@@ -58,34 +60,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         setDefaultStreamValues(this);
-        mEngineHandle = startEngine(getExclusiveCores(), NUM_ROWS * NUM_COLUMNS);
+        mEngineHandle = startEngine(NUM_ROWS * NUM_COLUMNS);
         createMusicTiles(this);
         super.onResume();
     }
 
     @Override
     protected void onPause(){
+        /*for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
+            mNoteListener.onTileOff(i);
+        }*/
         stopEngine(mEngineHandle);
         super.onPause();
-    }
-
-    // Obtain CPU cores which are reserved for the foreground app. The audio thread can be
-    // bound to these cores to avoids the risk of it being migrated to slower or more contended
-    // core(s).
-    private int[] getExclusiveCores(){
-        int[] exclusiveCores = {};
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Log.w(TAG, "getExclusiveCores() not supported. Only available on API " +
-                    Build.VERSION_CODES.N + "+");
-        } else {
-            try {
-                exclusiveCores = android.os.Process.getExclusiveCores();
-            } catch (RuntimeException e){
-                Log.w(TAG, "getExclusiveCores() is not supported on this device.");
-            }
-        }
-        return exclusiveCores;
     }
 
     static void setDefaultStreamValues(Context context) {
@@ -125,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        setContentView(new MusicTileView(this, rectangles, mEngineHandle));
+        mNoteListener = new NoteListener(mEngineHandle);
+        setContentView(new MusicTileView(this, rectangles, mNoteListener));
     }
 }
 
