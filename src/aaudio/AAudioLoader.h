@@ -60,7 +60,6 @@ typedef int32_t aaudio_session_id_t;
 #define AAUDIO_STREAM_STATE_STARTED    static_cast<aaudio_stream_state_t>(StreamState::Started)
 #else
 #include <aaudio/AAudio.h>
-#include <android/ndk-version.h>
 #endif
 
 #ifndef __NDK_MAJOR__
