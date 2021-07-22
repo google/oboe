@@ -49,7 +49,7 @@ public:
     void noteOff() {
         mAmplitudeScaler = kReleaseMultiplier;
     }
-    
+
     void setSampleRate(int32_t sampleRate) {
         mSampleRate = sampleRate;
         updatePhaseIncrement();

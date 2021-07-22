@@ -67,9 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause(){
-        /*for (int i = 0; i < NUM_ROWS * NUM_COLUMNS; i++) {
-            mNoteListener.onTileOff(i);
-        }*/
         stopEngine(mEngineHandle);
         super.onPause();
     }
