@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private final int NUM_COLUMNS = 5;
     private static long mEngineHandle = 0;
 
-    private NoteListener mNoteListener;
-
     private native long startEngine(int numSignals);
     private native void stopEngine(long engineHandle);
 
@@ -107,9 +105,8 @@ public class MainActivity extends AppCompatActivity {
                 rectangles.add(rectangle);
             }
         }
-
-        mNoteListener = new NoteListener(mEngineHandle);
-        setContentView(new MusicTileView(this, rectangles, mNoteListener));
+        
+        setContentView(new MusicTileView(this, rectangles, mEngineHandle));
     }
 }
 

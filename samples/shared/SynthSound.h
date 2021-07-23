@@ -100,6 +100,9 @@ private:
     std::atomic<float> mFrequency { kDefaultFrequency };
     std::atomic<int32_t> mSampleRate { kDefaultSampleRate };
     void updatePhaseIncrement(){
+        // Note how there is a division here. If this file is changed so that updatePhaseIncrement
+        // is called more frequently, please cache 1/mSampleRate. This allows this operation to not
+        // need divisions.
         mPhaseIncrement = kTwoPi * mFrequency / static_cast<float>(mSampleRate);
     };
 };

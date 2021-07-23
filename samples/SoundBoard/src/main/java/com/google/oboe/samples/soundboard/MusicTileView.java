@@ -1,5 +1,21 @@
 package com.google.oboe.samples.soundboard;
 
+/*
+ * Copyright 2021 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,16 +36,41 @@ public class MusicTileView extends View {
     private boolean[] mIsPressedPerRectangle;
     private Paint mPaint;
     private SparseArray<PointF> mLocationsOfFingers;
-    private NoteListener mNoteListener;
+    private TileListener mNoteListener;
 
-    public MusicTileView(Context context, ArrayList<Rect> rectangles, NoteListener noteListener) {
+    public interface TileListener {
+        public void onTileOn(int index);
+        public void onTileOff(int index);
+    }
+
+    public class NoteListener implements TileListener {
+        private native void noteOn(long engineHandle, int noteIndex);
+        private native void noteOff(long engineHandle, int noteIndex);
+
+        long mEngineHandle;
+
+        public NoteListener(long engineHandle) {
+            mEngineHandle = engineHandle;
+        }
+
+        public void onTileOn(int index) {
+            noteOn(mEngineHandle, index);
+        }
+
+        public void onTileOff(int index) {
+            noteOff(mEngineHandle, index);
+        }
+    }
+
+    public MusicTileView(Context context, ArrayList<Rect> rectangles, long mEngineHandle) {
         super(context);
 
         mRectangles = rectangles;
         mIsPressedPerRectangle = new boolean[rectangles.size()];
         mPaint = new Paint();
         mLocationsOfFingers = new SparseArray<PointF>();
-        mNoteListener = noteListener;
+
+        mNoteListener = new NoteListener(mEngineHandle);
     }
 
     private int getIndexFromLocation(PointF pointF) {
@@ -73,6 +114,9 @@ public class MusicTileView extends View {
         switch (maskedAction) {
             // Move each point from it's current point to the new point.
             case MotionEvent.ACTION_MOVE: {
+                // Create an array to check for finger changes as multiple fingers may be on the
+                // same tile. This two-pass algorithm records the difference before changing the
+                // figuring out what has changed.
                 int[] notesChangedBy = new int[mRectangles.size()];
                 for (int size = event.getPointerCount(), i = 0; i < size; i++) {
                     PointF point = mLocationsOfFingers.get(event.getPointerId(i));
