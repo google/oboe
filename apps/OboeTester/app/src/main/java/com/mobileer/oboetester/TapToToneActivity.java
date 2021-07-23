@@ -40,9 +40,12 @@ import com.mobileer.miditools.MidiTools;
 import java.io.IOException;
 
 import static com.mobileer.oboetester.MidiTapTester.NoteListener;
-import static com.mobileer.oboetester.TapToToneTester.TestResult;
 
 public class TapToToneActivity extends TestOutputActivityBase {
+    // Names from obsolete version of Oboetester.
+    public static final String OLD_PRODUCT_NAME = "AudioLatencyTester";
+    public static final String OLD_MANUFACTURER_NAME = "AndroidTest";
+
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1234;
     private MidiManager mMidiManager;
     private MidiInputPort mInputPort;
@@ -138,25 +141,40 @@ public class TapToToneActivity extends TestOutputActivityBase {
         mMidiManager = (MidiManager) getSystemService(MIDI_SERVICE);
         MidiDeviceInfo[] infos = mMidiManager.getDevices();
 
-        // Open the port now so that the AudioMidiTester gets created.
+        // Warn if old version of OboeTester found.
         for (MidiDeviceInfo info : infos) {
+            Log.i(TAG, "MIDI info = " + info);
             Bundle properties = info.getProperties();
             String product = properties
                     .getString(MidiDeviceInfo.PROPERTY_PRODUCT);
-
-            Log.i(TAG, "product = " + product);
-            if ("AudioLatencyTester".equals(product)) {
-                openPort(info);
+            String manufacturer = properties
+                    .getString(MidiDeviceInfo.PROPERTY_MANUFACTURER);
+            if (OLD_PRODUCT_NAME.equals(product) && OLD_MANUFACTURER_NAME.equals(manufacturer)) {
+                showErrorToast("Please uninstall old version of OboeTester.");
                 break;
             }
         }
 
+        // Open the port now so that the MidiTapTester gets created.
+        for (MidiDeviceInfo info : infos) {
+            Bundle properties = info.getProperties();
+            String product = properties
+                    .getString(MidiDeviceInfo.PROPERTY_PRODUCT);
+            if (MidiTapTester.PRODUCT_NAME.equals(product)) {
+                String manufacturer = properties
+                        .getString(MidiDeviceInfo.PROPERTY_MANUFACTURER);
+                if (MidiTapTester.MANUFACTURER_NAME.equals(manufacturer)) {
+                    openPortTemporarily(info);
+                    break;
+                }
+            }
+        }
     }
 
     // These should only be set after mAudioMidiTester is set.
     private void setSpinnerListeners() {
-        MidiDeviceInfo synthInfo = MidiTools.findDevice(mMidiManager, "AndroidTest",
-                "AudioLatencyTester");
+        MidiDeviceInfo synthInfo = MidiTools.findDevice(mMidiManager, MidiTapTester.MANUFACTURER_NAME,
+                MidiTapTester.PRODUCT_NAME);
         Log.i(TAG, "found tester virtual device info: " + synthInfo);
         int portIndex = 0;
         mPortSelector = new MidiOutputPortConnectionSelector(mMidiManager, this,
@@ -175,27 +193,30 @@ public class TapToToneActivity extends TestOutputActivityBase {
         }
     }
 
-
-    private void openPort(final MidiDeviceInfo info) {
+    private void openPortTemporarily(final MidiDeviceInfo info) {
+        Log.i(TAG, "MIDI openPort() info = " + info);
         mMidiManager.openDevice(info, device -> {
             if (device == null) {
                 Log.e(TAG, "could not open device " + info);
             } else {
                 mInputPort = device.openInputPort(0);
                 Log.i(TAG, "opened MIDI port = " + mInputPort + " on " + info);
-                mMidiTapTester = MidiTapTester.getInstance();
-
-                Log.i(TAG, "openPort() mAudioMidiTester = " + mMidiTapTester);
-                // Now that we have created the AudioMidiTester, close the port so we can
-                // open it later.
-                try {
-                    mInputPort.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                mMidiTapTester = MidiTapTester.getInstanceOrNull();
+                if (mMidiTapTester == null) {
+                    Log.e(TAG, "MidiTapTester Service was not created! info = " + info);
+                    showErrorToast("MidiTapTester Service was not created!");
+                } else {
+                    Log.i(TAG, "openPort() mMidiTapTester = " + mMidiTapTester);
+                    // Now that we have created the MidiTapTester, close the port so we can
+                    // open it later.
+                    try {
+                        mInputPort.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    mMidiTapTester.addTestListener(mTestListener);
+                    setSpinnerListeners();
                 }
-                mMidiTapTester.addTestListener(mTestListener);
-
-                setSpinnerListeners();
             }
         }, new Handler(Looper.getMainLooper())
         );

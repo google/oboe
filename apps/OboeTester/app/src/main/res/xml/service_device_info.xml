@@ -12,7 +12,8 @@
 -->
 
 <devices>
-    <device manufacturer="AndroidTest" product="AudioLatencyTester">
+    <!-- These must match the values in MidiTaptester.java -->
+    <device manufacturer="Mobileer" product="MidiTapLatencyTester">
         <input-port name="input" />
     </device>
 </devices>
