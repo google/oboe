@@ -31,6 +31,9 @@ import java.util.ArrayList;
  * Report the results back to the TestListeners.
  */
 public class MidiTapTester extends MidiDeviceService {
+    // These must match the values in service_device_info.xml
+    public static final String PRODUCT_NAME = "MidiTapLatencyTester";
+    public static final String MANUFACTURER_NAME = "Mobileer";
 
     // Sometimes the service can be run without the MainActivity being run!
     static {
@@ -43,7 +46,6 @@ public class MidiTapTester extends MidiDeviceService {
     private MidiFramer mMidiFramer = new MidiFramer(mReceiver);
 
     private static MidiTapTester mInstance;
-
 
     public static interface NoteListener {
         public void onNoteOn(int pitch);
@@ -75,7 +77,7 @@ public class MidiTapTester extends MidiDeviceService {
         super.onDestroy();
     }
 
-    public static MidiTapTester getInstance() {
+    public static MidiTapTester getInstanceOrNull() {
         return mInstance;
     }
 
