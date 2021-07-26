@@ -36,33 +36,14 @@ public class MusicTileView extends View {
     private boolean[] mIsPressedPerRectangle;
     private Paint mPaint;
     private SparseArray<PointF> mLocationsOfFingers;
-    private TileListener mNoteListener;
+    private TileListener mTileListener;
 
     public interface TileListener {
         public void onTileOn(int index);
         public void onTileOff(int index);
     }
 
-    public class NoteListener implements TileListener {
-        private native void noteOn(long engineHandle, int noteIndex);
-        private native void noteOff(long engineHandle, int noteIndex);
-
-        long mEngineHandle;
-
-        public NoteListener(long engineHandle) {
-            mEngineHandle = engineHandle;
-        }
-
-        public void onTileOn(int index) {
-            noteOn(mEngineHandle, index);
-        }
-
-        public void onTileOff(int index) {
-            noteOff(mEngineHandle, index);
-        }
-    }
-
-    public MusicTileView(Context context, ArrayList<Rect> rectangles, long mEngineHandle) {
+    public MusicTileView(Context context, ArrayList<Rect> rectangles, TileListener tileListener) {
         super(context);
 
         mRectangles = rectangles;
@@ -70,7 +51,7 @@ public class MusicTileView extends View {
         mPaint = new Paint();
         mLocationsOfFingers = new SparseArray<PointF>();
 
-        mNoteListener = new NoteListener(mEngineHandle);
+        mTileListener = tileListener;
     }
 
     private int getIndexFromLocation(PointF pointF) {
@@ -115,8 +96,8 @@ public class MusicTileView extends View {
             // Move each point from it's current point to the new point.
             case MotionEvent.ACTION_MOVE: {
                 // Create an array to check for finger changes as multiple fingers may be on the
-                // same tile. This two-pass algorithm records the difference before changing the
-                // figuring out what has changed.
+                // same tile. This two-pass algorithm records the overall difference before changing
+                // the actual tiles.
                 int[] notesChangedBy = new int[mRectangles.size()];
                 for (int size = event.getPointerCount(), i = 0; i < size; i++) {
                     PointF point = mLocationsOfFingers.get(event.getPointerId(i));
@@ -141,11 +122,11 @@ public class MusicTileView extends View {
                 for (int i = 0; i < mRectangles.size(); i++) {
                     if (notesChangedBy[i] > 0) {
                         mIsPressedPerRectangle[i] = true;
-                        mNoteListener.onTileOn(i);
+                        mTileListener.onTileOn(i);
                         didImageChange = true;
                     } else if (notesChangedBy[i] < 0) {
                         mIsPressedPerRectangle[i] = false;
-                        mNoteListener.onTileOff(i);
+                        mTileListener.onTileOff(i);
                         didImageChange = true;
                     }
                 }
@@ -161,7 +142,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(f);
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = true;
-                    mNoteListener.onTileOn(curIndex);
+                    mTileListener.onTileOn(curIndex);
                     didImageChange = true;
                 }
                 break;
@@ -173,7 +154,7 @@ public class MusicTileView extends View {
                 int curIndex = getIndexFromLocation(mLocationsOfFingers.get(event.getPointerId(pointerIndex)));
                 if (curIndex != -1) {
                     mIsPressedPerRectangle[curIndex] = false;
-                    mNoteListener.onTileOff(curIndex);
+                    mTileListener.onTileOff(curIndex);
                     didImageChange = true;
                 }
                 mLocationsOfFingers.remove(pointerId);

@@ -67,7 +67,7 @@ Java_com_google_oboe_samples_soundboard_MainActivity_native_1setDefaultStreamVal
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_soundboard_MusicTileView_00024NoteListener_noteOff(JNIEnv *env, jobject thiz,
+Java_com_google_oboe_samples_soundboard_NoteListener_noteOff(JNIEnv *env, jobject thiz,
                                                          jlong engine_handle, jint noteIndex) {
     auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
     if (engine) {
@@ -78,7 +78,7 @@ Java_com_google_oboe_samples_soundboard_MusicTileView_00024NoteListener_noteOff(
 }
 
 JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_soundboard_MusicTileView_00024NoteListener_noteOn(JNIEnv *env, jobject thiz,
+Java_com_google_oboe_samples_soundboard_NoteListener_noteOn(JNIEnv *env, jobject thiz,
                                                          jlong engine_handle, jint noteIndex) {
     auto *engine = reinterpret_cast<SoundBoardEngine*>(engine_handle);
     if (engine) {
