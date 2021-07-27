@@ -22,14 +22,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.provider.ContactsContract;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
-
-import static android.os.Process.getExclusiveCores;
 
 public class MusicTileView extends View {
     private ArrayList<Rect> mRectangles;

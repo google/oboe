@@ -9,11 +9,7 @@ This sample demonstrates how to obtain the lowest latency and optimal computatio
 3) Setting sharing mode to Exclusive
 4) Setting the buffer size to 2 bursts
 5) Using the `-Ofast` compiler optimization flag, even when building the `Debug` variant
-6) Using [`getExclusiveCores`](https://developer.android.com/reference/android/os/Process#getExclusiveCores()) (API 24+) and thread affinity to bind the audio thread to the best available CPU core(s)
 7) Using a `StabilizedCallback` which aims to spend a fixed percentage of the callback time to avoid CPU frequency scaling ([video explanation](https://www.youtube.com/watch?v=C0BPXZIvG-Q&feature=youtu.be&t=1158))
-
-
-This code was presented at [AES Milan](http://www.aes.org/events/144/) and [Droidcon Berlin](https://www.de.droidcon.com/) as part of a talk on Oboe.
 
 The [following article explaining how to debug CPU performance problems](https://medium.com/@donturner/debugging-audio-glitches-on-android-ed10782f9c64) may also be useful when looking at this code.
 
@@ -32,13 +28,19 @@ Four different formats are supported:
 
 The signal chain for mono streams is: 
 
-    Oscillators->Mixer
+    SynthSound->Mixer
 
 For stereo chains a mono to stereo converter is added to the end of the chain: 
 
-    Oscillators->Mixer->MonoToStereo
+    SynthSound->Mixer->MonoToStereo
  
 The compiler optimization flag `-Ofast` can be found in [CMakeLists.txt](CMakeLists.txt). 
+
+Each SynthSound is a series of 5 Oscillators, creating a pleasant sounding note when combined.
+
+There are 30 notes, corresponding to G3 to C6, moving left to right, top to bottom.
+
+In order to determine whether a note should be played, MusicTileView demonstrates how to keep track of where each finger is.
 
 Images
 -----------

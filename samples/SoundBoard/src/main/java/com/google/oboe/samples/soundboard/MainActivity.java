@@ -25,10 +25,8 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.min;
 
