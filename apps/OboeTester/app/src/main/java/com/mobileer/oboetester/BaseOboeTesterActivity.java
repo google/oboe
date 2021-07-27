@@ -84,17 +84,14 @@ public abstract class BaseOboeTesterActivity extends Activity
     }
 
     /**
-     * Check whether the app has RECORD_AUDIO permission.
-     * If so then call beginTestThatRequiresRecording().
-     * If not then requestpermision and and call beginTestThatRequiresRecording()
-     * when granted.
+     * If needed, request recording permission before running test.
      */
     protected void launchTestThatDoesRecording(Class clazz) {
         mTestClass = clazz;
-        if (!isRecordPermissionGranted()) {
-            requestRecordPermission();
-        } else {
+        if (isRecordPermissionGranted()) {
             beginTestThatRequiresRecording();
+        } else {
+            requestRecordPermission();
         }
     }
 
