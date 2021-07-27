@@ -38,10 +38,8 @@ import java.io.IOException;
  * Test Oboe Capture
  */
 
-public class TestInputActivity  extends TestAudioActivity
-        implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class TestInputActivity  extends TestAudioActivity {
 
-    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 9371;
     protected AudioInputTester mAudioInputTester;
     private static final int NUM_VOLUME_BARS = 4;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
@@ -122,11 +120,16 @@ public class TestInputActivity  extends TestAudioActivity
     }
 
     @Override
-    public void openAudio() throws IOException {
-        if (!isRecordPermissionGranted()){
-            requestRecordPermission();
-            return;
+    public void openAudio(View view) {
+        try {
+            openAudio();
+        } catch (Exception e) {
+            showErrorToast(e.getMessage());
         }
+    }
+
+    @Override
+    public void openAudio() throws IOException {
         super.openAudio();
         setMinimumBurstsBeforeRead(mInputMarginBursts);
         resetVolumeBars();
@@ -143,43 +146,6 @@ public class TestInputActivity  extends TestAudioActivity
         showToast("Pause not implemented. Returned " + result);
     }
 
-    private boolean isRecordPermissionGranted() {
-        return (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
-    }
-
-    private void requestRecordPermission(){
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.RECORD_AUDIO},
-                MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-
-        if (MY_PERMISSIONS_REQUEST_RECORD_AUDIO != requestCode) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            return;
-        }
-
-        if (grantResults.length != 1 ||
-                grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.need_record_audio_permission),
-                    Toast.LENGTH_SHORT)
-                    .show();
-        } else {
-            // Permission was granted
-            try {
-                super.openAudio();
-            } catch (IOException e) {
-                showErrorToast(e.getMessage());
-            }
-        }
-    }
 
     public void setupAGC(int sessionId) {
         AutomaticGainControl effect =  AutomaticGainControl.create(sessionId);

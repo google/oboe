@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,13 +33,12 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Select various Audio tests.
  */
 
-public class MainActivity extends Activity {
+public class MainActivity extends BaseOboeTesterActivity {
 
     private static final String KEY_TEST_NAME = "test";
     public static final String VALUE_TEST_NAME_LATENCY = "latency";
@@ -208,49 +206,49 @@ public class MainActivity extends Activity {
     }
 
     public void onLaunchTestOutput(View view) {
-        onLaunchTest(TestOutputActivity.class);
+        launchTestActivity(TestOutputActivity.class);
     }
 
     public void onLaunchTestInput(View view) {
-        onLaunchTest(TestInputActivity.class);
+        launchTestThatDoesRecording(TestInputActivity.class);
     }
 
     public void onLaunchTapToTone(View view) {
-        onLaunchTest(TapToToneActivity.class);
+        launchTestThatDoesRecording(TapToToneActivity.class);
     }
 
     public void onLaunchRecorder(View view) {
-        onLaunchTest(RecorderActivity.class);
+        launchTestThatDoesRecording(RecorderActivity.class);
     }
 
     public void onLaunchEcho(View view) {
-        onLaunchTest(EchoActivity.class);
+        launchTestThatDoesRecording(EchoActivity.class);
     }
 
     public void onLaunchRoundTripLatency(View view) {
-        onLaunchTest(RoundTripLatencyActivity.class);
+        launchTestThatDoesRecording(RoundTripLatencyActivity.class);
     }
 
     public void onLaunchManualGlitchTest(View view) {
-        onLaunchTest(ManualGlitchActivity.class);
+        launchTestThatDoesRecording(ManualGlitchActivity.class);
     }
 
-    public void onLaunchAutoGlitchTest(View view) { onLaunchTest(AutomatedGlitchActivity.class); }
+    public void onLaunchAutoGlitchTest(View view) { launchTestThatDoesRecording(AutomatedGlitchActivity.class); }
 
     public void onLaunchTestDisconnect(View view) {
-        onLaunchTest(TestDisconnectActivity.class);
+        launchTestThatDoesRecording(TestDisconnectActivity.class);
     }
 
     public void onLaunchTestDataPaths(View view) {
-        onLaunchTest(TestDataPathsActivity.class);
+        launchTestThatDoesRecording(TestDataPathsActivity.class);
     }
 
     public void onLaunchTestDeviceReport(View view)  {
-        onLaunchTest(DeviceReportActivity.class);
+        launchTestActivity(DeviceReportActivity.class);
     }
 
     public void onLaunchExtratests(View view) {
-        onLaunchTest(ExtraTestsActivity.class);
+        launchTestActivity(ExtraTestsActivity.class);
     }
 
     private void applyUserOptions() {
@@ -264,30 +262,15 @@ public class MainActivity extends Activity {
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
     }
 
-    private void onLaunchTest(Class clazz) {
+    @Override
+    protected void launchTestActivity(Class clazz) {
         applyUserOptions();
-        Intent intent = new Intent(this, clazz);
-        startActivity(intent);
+        super.launchTestActivity(clazz);
     }
 
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());
-    }
-
-    protected void showErrorToast(String message) {
-        showToast("Error: " + message);
-    }
-
-    protected void showToast(final String message) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this,
-                        message,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void updateCallbackSize() {

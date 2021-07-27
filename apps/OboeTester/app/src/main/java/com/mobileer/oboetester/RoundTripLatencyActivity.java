@@ -53,6 +53,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private Bundle  mBundleFromIntent;
     private int     mBufferBursts = -1;
     private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
+    private boolean mMeasureAverage;
 
     // Run the test several times and report the acverage latency.
     protected class LatencyAverager {
