@@ -46,7 +46,6 @@ public class TapToToneActivity extends TestOutputActivityBase {
     public static final String OLD_PRODUCT_NAME = "AudioLatencyTester";
     public static final String OLD_MANUFACTURER_NAME = "AndroidTest";
 
-    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1234;
     private MidiManager mMidiManager;
     private MidiInputPort mInputPort;
 
@@ -272,48 +271,6 @@ public class TapToToneActivity extends TestOutputActivityBase {
         return super.onOptionsItemSelected(item);
     }
 
-    private boolean hasRecordAudioPermission(){
-        boolean hasPermission = (checkSelfPermission(
-                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED);
-        Log.i(TAG, "Has RECORD_AUDIO permission? " + hasPermission);
-        return hasPermission;
-    }
-
-    private void requestRecordAudioPermission(){
-
-        String requiredPermission = Manifest.permission.RECORD_AUDIO;
-
-        // If the user previously denied this permission then show a message explaining why
-        // this permission is needed
-        if (shouldShowRequestPermissionRationale(requiredPermission)) {
-            showErrorToast("This app needs to record audio through the microphone....");
-        }
-
-        // request the permission.
-        requestPermissions(new String[]{requiredPermission},
-                MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions,
-                                           int[] grantResults) {
-        if (MY_PERMISSIONS_REQUEST_RECORD_AUDIO != requestCode) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            return;
-        }
-
-        if (grantResults.length != 1 ||
-                grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.need_record_audio_permission),
-                    Toast.LENGTH_SHORT)
-                    .show();
-        } else {
-            startAudioPermitted();
-        }
-    }
-
     public void startTest(View view) {
         try {
             openAudio();
@@ -322,14 +279,6 @@ public class TapToToneActivity extends TestOutputActivityBase {
             showErrorToast("Open audio failed!");
             return;
         }
-        if (hasRecordAudioPermission()) {
-            startAudioPermitted();
-        } else {
-            requestRecordAudioPermission();
-        }
-    }
-
-    private void startAudioPermitted() {
         try {
             super.startAudio();
             mTapToToneTester.resetLatency();
