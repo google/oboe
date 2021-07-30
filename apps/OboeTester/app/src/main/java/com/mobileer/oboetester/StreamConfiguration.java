@@ -99,6 +99,8 @@ public class StreamConfiguration {
             USAGE_GAME,
             USAGE_ASSISTANT};
 
+    private static HashMap<String,Integer> mUsageStringToIntegerMap;
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;
@@ -114,11 +116,8 @@ public class StreamConfiguration {
     private int mRateConversionQuality;
     private int mInputPreset;
     private int mUsage;
-    private static HashMap<String,Integer> mUsageStringToIntegerMap;
-
-    private int mFramesPerBurst = 0;
-
-    private boolean mMMap = false;
+    private int mFramesPerBurst;
+    private boolean mMMap;
 
     public StreamConfiguration() {
         reset();

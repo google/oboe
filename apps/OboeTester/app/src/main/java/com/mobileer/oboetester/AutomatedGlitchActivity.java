@@ -94,6 +94,10 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
     @Override
     public void runTest() {
         try {
+            logExtraInfo();
+
+            mTestResults.clear();
+
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                     StreamConfiguration.SHARING_MODE_EXCLUSIVE,
                     UNSPECIFIED);
@@ -105,7 +109,13 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
                             sampleRate);
                 }
             }
+
+            analyzeTestResults();
+
         } catch (InterruptedException e) {
+            analyzeTestResults();
+
+        } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
         }

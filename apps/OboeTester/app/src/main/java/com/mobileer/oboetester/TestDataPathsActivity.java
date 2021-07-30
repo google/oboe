@@ -21,8 +21,11 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
+
+import java.lang.reflect.Field;
 
 /**
  * Play a recognizable tone on each channel of each speaker device
@@ -73,6 +76,21 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             StreamConfiguration.INPUT_PRESET_UNPROCESSED,
             StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
     };
+
+    @NonNull
+    public static String comparePassedField(String prefix, Object failed, Object passed, String name) {
+        try {
+            Field field = failed.getClass().getField(name);
+            int failedValue = field.getInt(failed);
+            int passedValue = field.getInt(passed);
+            return (failedValue == passedValue) ? ""
+                :  (prefix + " " + name + ": passed = " + passedValue + ", failed = " + failedValue + "\n");
+        } catch (NoSuchFieldException e) {
+            return "ERROR - no such field  " + name;
+        } catch (IllegalAccessException e) {
+            return "ERROR - cannot access  " + name;
+        }
+    }
 
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
@@ -132,7 +150,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mLastGlitchReport = getCurrentStatusReport();
             setAnalyzerText(mLastGlitchReport);
         }
-
     }
 
     @Override
@@ -165,7 +182,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         return ACTIVITY_DATA_PATHS;
     }
 
-    String getMagnitudeText(double value) {
+    static String getMagnitudeText(double value) {
         return String.format(MAGNITUDE_FORMAT, value);
     }
 
@@ -270,6 +287,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setOutputChannel(outputChannel);
     }
 
+    private TestResult testConfigurationsAddMagJitter() throws InterruptedException {
+        TestResult testResult = testConfigurations();
+        if (testResult != null) {
+            testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
+                    + ", jitter = " + TestDataPathsActivity.getMagnitudeText(mPhaseJitter));
+        }
+        return testResult;
+    }
+
     void testPresetCombo(int inputPreset,
                          int numInputChannels,
                          int inputChannel,
@@ -285,8 +311,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
+            int result = testResult.result;
             String summary = getOneLineSummary()
                     + ", inPre = "
                     + StreamConfiguration.convertInputPresetToText(inputPreset)
@@ -294,7 +321,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             appendSummary(summary);
             if (result == TEST_RESULT_FAILED) {
                 if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
-                    logFailed("Maybe sine wave blocked by Echo Cancellation!");
+                    testResult.addComment("Maybe sine wave blocked by Echo Cancellation!");
                 }
             }
         }
@@ -348,8 +375,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
             appendSummary(getOneLineSummary() + "\n");
         }
     }
@@ -414,19 +441,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedOutConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
+            int result = testResult.result;
             appendSummary(getOneLineSummary() + "\n");
             if (result == TEST_RESULT_FAILED) {
                 if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
                         && numOutputChannels == 2
                         && outputChannel == 1) {
-                    logFailed("Maybe EARPIECE does not mix stereo to mono!");
+                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
                 }
                 if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
                         && numOutputChannels == 2
                         && outputChannel == 0) {
-                    logFailed("Maybe SPEAKER_SAFE blocked channel 0!");
+                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
                 }
             }
         }
@@ -446,9 +474,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         log(text);
         appendSummary(text + "\n");
     }
+
     void logFailed(String text) {
         log(text);
-        appendFailedSummary(text + "\n");
+        logAnalysis(text + "\n");
     }
 
     void testOutputDevices() throws InterruptedException {
@@ -491,34 +520,31 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
-    void logExtraInfo() {
-        log("\n############################");
-        log("\nDevice Info:");
-        log(AudioQueryTools.getAudioManagerReport(mAudioManager));
-        log(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
-        log(AudioQueryTools.getAudioPropertyReport());
-        log("\n############################");
-    }
-
     @Override
     public void runTest() {
         try {
-            mDurationSeconds = DURATION_SECONDS;
-
             logExtraInfo();
-
             log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
             log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
             log("test.gap.msec = " + mGapMillis);
 
+            mTestResults.clear();
+            mDurationSeconds = DURATION_SECONDS;
+
             testInputPresets();
             testInputDevices();
             testOutputDevices();
+
+            analyzeTestResults();
+
+        } catch (InterruptedException e) {
+            analyzeTestResults();
 
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
         }
     }
+
 
 }

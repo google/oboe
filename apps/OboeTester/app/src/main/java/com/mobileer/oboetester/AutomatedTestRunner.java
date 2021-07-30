@@ -252,27 +252,28 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             log("EXCEPTION: " + e.getMessage());
         } finally {
             mActivity.stopTest();
-            if (mThreadEnabled) {
-                log("\n==== SUMMARY ========");
-                log(mSummary.toString());
-                if (mFailCount > 0) {
-                    log("These tests FAILED:");
-                    log(mFailedSummary.toString());
-                    log("------------");
-                } else if (mPassCount > 0) {
-                    log("All " + mPassCount + " tests PASSED.");
-                } else {
-                    log("No tests were run!");
-                }
-                int skipped = mTestCount - (mPassCount + mFailCount);
-                log(mPassCount + " passed. "
-                        + mFailCount + " failed. "
-                        + skipped + " skipped. ");
-                log("== FINISHED at " + new Date());
-            } else {
+            if (!mThreadEnabled) {
                 log("== TEST STOPPED ==");
             }
+            log("\n==== SUMMARY ========");
+            log(mSummary.toString());
+            if (mFailCount > 0) {
+                log("These tests FAILED:");
+                log(mFailedSummary.toString());
+                log("------------");
+            } else if (mPassCount > 0) {
+                log("All " + mPassCount + " tests PASSED.");
+            } else {
+                log("No tests were run!");
+            }
+            int skipped = mTestCount - (mPassCount + mFailCount);
+            log(mPassCount + " passed. "
+                    + mFailCount + " failed. "
+                    + skipped + " skipped. ");
+            log("== FINISHED at " + new Date());
+
             flushLog();
+
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

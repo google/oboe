@@ -16,9 +16,13 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class BaseAutoGlitchActivity extends GlitchActivity {
 
@@ -33,6 +37,130 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected int mGapMillis = DEFAULT_GAP_MILLIS;
 
     protected AutomatedTestRunner mAutomatedTestRunner;
+    protected ArrayList<TestResult> mTestResults = new ArrayList<TestResult>();
+
+    void logExtraInfo() {
+        log("\n############################");
+        log("\nDevice Info:");
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        log(AudioQueryTools.getAudioManagerReport(audioManager));
+        log(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
+        log(AudioQueryTools.getAudioPropertyReport());
+        log("\n############################");
+    }
+
+    private static class TestDirection {
+        public final int channelUsed;
+        public final int channelCount;
+        public final int deviceId;
+        public final int mmapUsed;
+        public final int performanceMode;
+        public final int sharingMode;
+
+        public TestDirection(StreamConfiguration configuration, int channelUsed) {
+            this.channelUsed = channelUsed;
+            channelCount = configuration.getChannelCount();
+            deviceId = configuration.getDeviceId();
+            mmapUsed = configuration.isMMap() ? 1 : 0;
+            performanceMode = configuration.getPerformanceMode();
+            sharingMode = configuration.getSharingMode();
+        }
+
+        int countDifferences(TestDirection other) {
+            int count = 0;
+            count += (channelUsed != other.channelUsed) ? 1 : 0;
+            count += (channelCount != other.channelCount) ? 1 : 0;
+            count += (deviceId != other.deviceId) ? 1 : 0;
+            count += (mmapUsed != other.mmapUsed) ? 1 : 0;
+            count += (performanceMode != other.performanceMode) ? 1 : 0;
+            count += (sharingMode != other.sharingMode) ? 1 : 0;
+            return count;
+        }
+
+        public String comparePassedDirection(String prefix, TestDirection passed) {
+            StringBuffer text = new StringBuffer();
+            text.append(TestDataPathsActivity.comparePassedField(prefix, this, passed, "channelUsed"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "channelCount"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "deviceId"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "mmapUsed"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "performanceMode"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "sharingMode"));
+            return text.toString();
+        }
+        @Override
+        public String toString() {
+            return "D=" + deviceId
+                    + ", " + ((mmapUsed > 0) ? "MMAP" : "Lgcy")
+                    + ", ch=" + channelText(channelUsed, channelCount)
+                    + "," + StreamConfiguration.convertPerformanceModeToText(performanceMode)
+                    + "," + StreamConfiguration.convertSharingModeToText(sharingMode);
+        }
+    }
+
+    protected static class TestResult {
+        final int testIndex;
+        final TestDirection input;
+        final TestDirection output;
+        public final int inputPreset;
+        public final int sampleRate;
+
+        final int result; // TEST_RESULT_FAILED, etc
+        private String mComments = ""; // additional info, ideas for why it failed
+
+        public TestResult(int testIndex,
+                          StreamConfiguration inputConfiguration,
+                          int inputChannel,
+                          StreamConfiguration outputConfiguration,
+                          int outputChannel,
+                          int result) {
+            this.testIndex = testIndex;
+            input = new TestDirection(inputConfiguration, inputChannel);
+            output = new TestDirection(outputConfiguration, outputChannel);
+            sampleRate = outputConfiguration.getSampleRate();
+            this.inputPreset = inputConfiguration.getInputPreset();
+            this.result = result;
+        }
+
+        int countDifferences(TestResult other) {
+            int count = 0;
+            count += input.countDifferences((other.input));
+            count += output.countDifferences((other.output));
+            count += (sampleRate != other.sampleRate) ? 1 : 0;
+            count += (inputPreset != other.inputPreset) ? 1 : 0;
+            return count;
+        }
+
+        public boolean failed() {
+            return result == TEST_RESULT_FAILED;
+        }
+
+        public boolean passed() {
+            return result == TEST_RESULT_PASSED;
+        }
+
+        public String comparePassed(TestResult passed) {
+            StringBuffer text = new StringBuffer();
+            text.append("compare with passed test #" + passed.testIndex + "\n");
+            text.append(input.comparePassedDirection("IN", passed.input));
+            text.append(TestDataPathsActivity.comparePassedField("IN", this, passed, "inputPreset"));
+            text.append(output.comparePassedDirection("OUT", passed.output));
+            text.append(TestDataPathsActivity.comparePassedField("I/O",this, passed, "sampleRate"));
+
+            return text.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "IN:  " + input + ", ip=" + inputPreset + "\n"
+                    + "OUT: " + output + ", sr=" + sampleRate
+                    + mComments;
+        }
+
+        public void addComment(String comment) {
+            mComments += "\n";
+            mComments += comment;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +187,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.stopTest();
     }
 
-    String channelText(int index, int count) {
+    static String channelText(int index, int count) {
         return index + "/" + count;
     }
 
@@ -82,11 +210,12 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     public final static int TEST_RESULT_PASSED = 1;
 
     // Run test based on the requested input/output configurations.
-    protected int testConfigurations() throws InterruptedException {
+    @Nullable
+    protected TestResult testConfigurations() throws InterruptedException {
         int result = TEST_RESULT_SKIPPED;
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
-            return result;
+            return null;
         }
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
@@ -196,7 +325,18 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
-        return result;
+
+        TestResult testResult = new TestResult(
+                mAutomatedTestRunner.getTestCount(),
+                mAudioInputTester.actualConfiguration,
+                getInputChannel(),
+                mAudioOutTester.actualConfiguration,
+                getOutputChannel(),
+                result
+        );
+        mTestResults.add(testResult);
+
+        return testResult;
     }
 
     protected boolean isFinishedEarly() {
@@ -226,6 +366,41 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             why += ", glitch";
         }
         return why;
+    }
+
+    void logAnalysis(String text) {
+        appendFailedSummary(text + "\n");
+    }
+
+    protected void analyzeTestResults() {
+        logAnalysis("\n==== ANALYSIS ===========");
+        logAnalysis("Compare failed configuration with closest one that passed.");
+        // Analyze each failed test.
+        for (TestResult testResult : mTestResults) {
+            if (testResult.failed()) {
+                logAnalysis("-------------------- #" + testResult.testIndex + " FAILED");
+                TestResult closest = findClosestPassingTestResult(testResult);
+                if (closest != null) {
+                    logAnalysis(testResult.comparePassed(closest));
+                }
+                logAnalysis(testResult.toString());
+            }
+        }
+    }
+
+    @Nullable
+    private TestResult findClosestPassingTestResult(TestResult testResult) {
+        TestResult closest = null;
+        int minDifferences = Integer.MAX_VALUE;
+        for (TestResult other : mTestResults) {
+            if (other.passed()) {
+                int differences = testResult.countDifferences(other);
+                if (differences < minDifferences) {
+                    closest = other;
+                }
+            }
+        }
+        return closest;
     }
 
 }
