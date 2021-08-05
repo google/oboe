@@ -88,7 +88,7 @@ public class AudioDeviceInfoConverter {
      *             e.g. AudioDeviceInfo.TYPE_BUILT_IN_SPEAKER
      * @return string which describes the type of audio device
      */
-    static String typeToString(int type){
+    public static String typeToString(int type){
         switch (type) {
             case AudioDeviceInfo.TYPE_AUX_LINE:
                 return "auxiliary line-level connectors";

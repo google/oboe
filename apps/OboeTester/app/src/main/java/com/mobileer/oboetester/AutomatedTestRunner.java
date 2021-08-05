@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -27,6 +28,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private Button       mStopButton;
     private Button       mShareButton;
     private TextView     mAutoTextView;
+    private ScrollView   mAutoTextScroller;
     private TextView     mSingleTestIndex;
     private StringBuffer mFailedSummary;
     private StringBuffer mSummary;
@@ -104,8 +106,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
         mSingleTestIndex = (TextView) findViewById(R.id.single_test_index);
 
-        mAutoTextView = (TextView) findViewById(R.id.text_log);
-        mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
+        mAutoTextScroller = (ScrollView) findViewById(R.id.text_log_auto_scroller);
+        mAutoTextView = (TextView) findViewById(R.id.text_log_auto);
     }
 
     private void updateStartStopButtons(boolean running) {
@@ -124,6 +126,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     public void appendFailedSummary(String text) {
         mFailedSummary.append(text);
     }
+
     public void appendSummary(String text) {
         mSummary.append(text);
     }
@@ -143,11 +146,17 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         if (text == null) return;
         Log.d(TestAudioActivity.TAG, "LOG - " + text);
         mCachedTextView.append(text + "\n");
+        scrollToBottom();
+    }
+
+    public void scrollToBottom() {
+        mAutoTextScroller.fullScroll(View.FOCUS_DOWN);
     }
 
     // Flush any logs that are stuck in the cache.
     public void flushLog() {
         mCachedTextView.flush();
+        scrollToBottom();
     }
 
     private void logClear() {
@@ -278,6 +287,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                 @Override
                 public void run() {
                     onTestFinished();
+                    scrollToBottom();
                 }
             });
         }

@@ -10,12 +10,39 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.mobileer.oboetester.TestDataPathsActivity">
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_input_presets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="InPre" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_input_devices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="InDev" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_output_devices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="OutDev" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/text_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="1"
-        android:text="@string/test_disconnect_instructions"
+        android:lines="2"
+        android:text="@string/test_datapath_instructions"
         android:textColor="#F44336"
         android:textSize="18sp"
         android:textStyle="bold" />
