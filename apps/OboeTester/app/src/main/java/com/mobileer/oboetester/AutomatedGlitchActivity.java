@@ -94,7 +94,7 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
     @Override
     public void runTest() {
         try {
-            logExtraInfo();
+            logDeviceInfo();
 
             mTestResults.clear();
 

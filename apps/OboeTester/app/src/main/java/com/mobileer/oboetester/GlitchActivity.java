@@ -272,6 +272,8 @@ public class GlitchActivity extends AnalyzerActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        setInputChannel(0);
+        setOutputChannel(0);
     }
 
     @Override
