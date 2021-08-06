@@ -16,20 +16,16 @@
 
 package com.mobileer.oboetester;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.AutomaticGainControl;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,14 +97,14 @@ public class TestInputActivity  extends TestAudioActivity {
         for (int i = 0; i < numChannels; i++) {
             if (mVolumeBars[i] == null) break;
             double level = mAudioInputTester.getPeakLevel(i);
-            mVolumeBars[i].setVolume((float) level);
+            mVolumeBars[i].setAmplitude((float) level);
         }
     }
 
     void resetVolumeBars() {
         for (int i = 0; i < mVolumeBars.length; i++) {
             if (mVolumeBars[i] == null) break;
-            mVolumeBars[i].setVolume((float) 0.0);
+            mVolumeBars[i].setAmplitude((float) 0.0);
         }
     }
 
