@@ -145,6 +145,7 @@ public:
                     mDownCounter = IMMUNE_FRAME_COUNT;
                     mInputPhase = 0.0; // prevent spike at start
                     mOutputPhase = 0.0;
+                    resetAccumulator();
                 }
                 break;
 

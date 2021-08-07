@@ -217,6 +217,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", ch = " + channelText(channel, config.getChannelCount());
     }
 
+    protected String getStreamText(AudioStreamBase stream) {
+        return ("burst=" + stream.getFramesPerBurst()
+                + ", size=" + stream.getBufferSizeInFrames()
+                + ", cap=" + stream.getBufferCapacityInFrames()
+        );
+    }
+
     public final static int TEST_RESULT_FAILED = -2;
     public final static int TEST_RESULT_WARNING = -1;
     public final static int TEST_RESULT_SKIPPED = 0;
@@ -248,12 +255,15 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         try {
             openAudio(); // this will fill in actualConfig
             log("Actual:");
-            log("  " + getConfigText(actualInConfig));
-            log("  " + getConfigText(actualOutConfig));
             // Set output size to a level that will avoid glitches.
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            int sizeFrames = stream.getBufferCapacityInFrames() / 2;
-            stream.setBufferSizeInFrames(sizeFrames);
+            AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
+            int sizeFrames = outStream.getBufferCapacityInFrames() / 2;
+            outStream.setBufferSizeInFrames(sizeFrames);
+            AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
+            log("  " + getConfigText(actualInConfig));
+            log("      " + getStreamText(inStream));
+            log("  " + getConfigText(actualOutConfig));
+            log("      " + getStreamText(outStream));
         } catch (Exception e) {
             openFailed = true;
             log(e.getMessage());

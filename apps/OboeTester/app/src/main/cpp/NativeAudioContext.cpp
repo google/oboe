@@ -568,15 +568,15 @@ void ActivityTapToTone::configureForStart() {
     configureStreamGateway();
 }
 
-// ======================================================================= ActivityRoundTripLatency
+// ======================================================================= ActivityFullDuplex
 void ActivityFullDuplex::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     if (isInput) {
         // Ideally the output streams should be opened first.
         std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
         if (outputStream != nullptr) {
-            // Make sure the capacity is bigger than two bursts.
-            int32_t burst = outputStream->getFramesPerBurst();
-            builder.setBufferCapacityInFrames(2 * burst);
+            // The input and output buffers will run in sync with input empty
+            // and output full. So set the input capacity to match the output.
+            builder.setBufferCapacityInFrames(outputStream->getBufferCapacityInFrames());
         }
     }
 }

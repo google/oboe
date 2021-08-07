@@ -140,6 +140,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     + ", max = " + getMagnitudeText(mMaxMagnitude)
                     + "\nphase = " + getMagnitudeText(mPhase)
                     + ", jitter = " + getMagnitudeText(mPhaseJitter)
+                    + ", #" + mPhaseCount
                     + "\n");
             return message.toString();
         }
@@ -209,12 +210,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        // No point running the test if we don't get the sharing mode we requested.
-        if (actualInConfig.isMMap() != requestedInConfig.isMMap()
-                || actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
-            log("Did not get requested MMap stream");
+        // No point running the test if we don't get the data path we requested.
+        if (actualInConfig.isMMap() != requestedInConfig.isMMap()) {
+            log("Did not get requested MMap input stream");
             why += "mmap";
-        }        // Did we request a device and not get that device?
+        }
+        if (actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
+            log("Did not get requested MMap output stream");
+            why += "mmap";
+        }
+        // Did we request a device and not get that device?
         if (requestedInConfig.getDeviceId() != 0
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
             why += ", inDev(" + requestedInConfig.getDeviceId()
@@ -328,12 +333,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     + "\n";
             appendSummary(summary);
             if (result == TEST_RESULT_FAILED) {
-                if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
-                    if (getMagnitude() < 0.000001) {
-                        testResult.addComment("Maybe VoiceComm path is dead!");
-                    } else {
-                        testResult.addComment("Maybe sine wave blocked by Echo Cancellation!");
-                    }
+                if (getMagnitude() < 0.000001) {
+                    testResult.addComment("The input is completely SILENT!");
+                } else if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
+                    testResult.addComment("Maybe sine wave blocked by Echo Cancellation!");
                 }
             }
         }

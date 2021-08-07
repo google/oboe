@@ -287,7 +287,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
                 @Override
                 public void run() {
                     onTestFinished();
-                    scrollToBottom();
+                    flushLog();
                 }
             });
         }

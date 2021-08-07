@@ -129,9 +129,16 @@ private:
             return 0;
         }
 
+        AAudioLoader *libLoader = AAudioLoader::getInstance();
+        int openResult = libLoader->open();
+        if (openResult != 0) {
+            LOGD("%s() could not open " LIB_AAUDIO_NAME, __func__);
+            return AAUDIO_ERROR_UNAVAILABLE;
+        }
+
         void *libHandle = AAudioLoader::getInstance()->getLibHandle();
         if (libHandle == nullptr) {
-            LOGI("%s() could not find " LIB_AAUDIO_NAME, __func__);
+            LOGE("%s() could not find " LIB_AAUDIO_NAME, __func__);
             return AAUDIO_ERROR_UNAVAILABLE;
         }
 

@@ -38,7 +38,7 @@ public:
 
     DataPathAnalyzer() : BaseSineAnalyzer() {
         // Add a little bit of noise to reduce blockage by speaker protection and DRC.
-        setNoiseAmplitude(0.05);
+        setNoiseAmplitude(0.02);
     }
 
     /**
@@ -53,14 +53,13 @@ public:
 
         if (transformSample(sample, mOutputPhase)) {
             resetAccumulator();
+            // Analyze magnitude and phase on every period.
+            double diff = abs(mPhaseOffset - mPreviousPhaseOffset);
+            if (diff < mPhaseTolerance) {
+                mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
+            }
+            mPreviousPhaseOffset = mPhaseOffset;
         }
-
-        // Update MaxMagnitude if we are locked.
-        double diff = abs(mPhaseOffset - mPreviousPhaseOffset);
-        if (diff < mPhaseTolerance) {
-            mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
-        }
-        mPreviousPhaseOffset = mPhaseOffset;
         return result;
     }
 
