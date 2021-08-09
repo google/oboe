@@ -59,7 +59,6 @@ public:
         if (mState != STATE_LOCKED
                 || mMeanSquareSignal < threshold
                 || mMeanSquareNoise < threshold) {
-            setResult(ERROR_VOLUME_TOO_LOW);
             return 0.0;
         } else {
             double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio

@@ -124,7 +124,7 @@ public class GlitchActivity extends AnalyzerActivity {
             int glitchCount = getGlitchCount();
             if (state != mPreviousState) {
                 if ((state == STATE_WAITING_FOR_SIGNAL || state == STATE_WAITING_FOR_LOCK)
-                        && glitchCount < 2) {
+                        && glitchCount == 0) { // did not previously lock
                     GlitchActivity.this.giveAdvice("Try raising volume!");
                 } else {
                     GlitchActivity.this.giveAdvice(null);
