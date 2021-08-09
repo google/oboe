@@ -49,6 +49,7 @@ public class TapToToneTester {
         mTapInstructions = tapInstructions;
         mResultView = (TextView) activity.findViewById(R.id.resultView);
         mWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio);
+        mWaveformView.setEnabled(false);
 
         if (mRecordEnabled) {
             float analysisTimeMax = ANALYSIS_TIME_TOTAL + mAnalysisTimeMargin;
@@ -62,12 +63,14 @@ public class TapToToneTester {
     public void start() throws IOException {
         if (mRecordEnabled) {
             mRecorder.startAudio();
+            mWaveformView.setEnabled(true);
         }
     }
 
     public void stop() {
         if (mRecordEnabled) {
             mRecorder.stopAudio();
+            mWaveformView.setEnabled(false);
         }
     }
 
