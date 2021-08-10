@@ -56,14 +56,14 @@ public:
 
     double getSignalToNoiseDB() {
         static const double threshold = 1.0e-14;
-        if (mMeanSquareSignal < threshold || mMeanSquareNoise < threshold) {
+        if (mState != STATE_LOCKED
+                || mMeanSquareSignal < threshold
+                || mMeanSquareNoise < threshold) {
             return 0.0;
         } else {
             double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio
             double signalToNoiseDB = 10.0 * log(signalToNoise);
             if (signalToNoiseDB < MIN_SNR_DB) {
-                ALOGD("ERROR - signal to noise ratio is too low! < %d dB. Adjust volume.",
-                     MIN_SNR_DB);
                 setResult(ERROR_VOLUME_TOO_LOW);
             }
             return signalToNoiseDB;
@@ -316,11 +316,11 @@ private:
     // These must match the values in GlitchActivity.java
     enum sine_state_t {
         STATE_IDLE,               // beginning
-        STATE_IMMUNE,             // ignoring input, waiting fo HW to settle
+        STATE_IMMUNE,             // ignoring input, waiting for HW to settle
         STATE_WAITING_FOR_SIGNAL, // looking for a loud signal
         STATE_WAITING_FOR_LOCK,   // trying to lock onto the phase of the sine
         STATE_LOCKED,             // locked on the sine wave, looking for glitches
-        STATE_GLITCHING,           // locked on the sine wave but glitching
+        STATE_GLITCHING,          // locked on the sine wave but glitching
         NUM_STATES
     };
 

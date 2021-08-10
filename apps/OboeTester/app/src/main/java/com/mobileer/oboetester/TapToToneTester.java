@@ -96,7 +96,7 @@ public class TapToToneTester {
         mWaveformView.post(() -> {
             mWaveformView.setMessage(message);
             mWaveformView.clearSampleData();
-            mWaveformView.postInvalidate();
+            mWaveformView.invalidate();
         });
     }
 

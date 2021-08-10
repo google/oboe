@@ -102,7 +102,6 @@ public class GlitchActivity extends AnalyzerActivity {
             super(activity);
         }
 
-
         @Override
         public void startSniffer() {
             long now = System.currentTimeMillis();
@@ -122,10 +121,18 @@ public class GlitchActivity extends AnalyzerActivity {
             int state = getAnalyzerState();
             mSignalToNoiseDB = getSignalToNoiseDB();
             mPeakAmplitude = getPeakAmplitude();
+            int glitchCount = getGlitchCount();
+            if (state != mPreviousState) {
+                if ((state == STATE_WAITING_FOR_SIGNAL || state == STATE_WAITING_FOR_LOCK)
+                        && glitchCount == 0) { // did not previously lock
+                    GlitchActivity.this.giveAdvice("Try raising volume!");
+                } else {
+                    GlitchActivity.this.giveAdvice(null);
+                }
+            }
             mPreviousState = state;
 
             long now = System.currentTimeMillis();
-            int glitchCount = getGlitchCount();
             int resetCount = getResetCount();
             mLastUnlockedFrames = getStateFrameCount(STATE_WAITING_FOR_LOCK);
             int lockedFrames = getStateFrameCount(STATE_LOCKED);
@@ -134,7 +141,9 @@ public class GlitchActivity extends AnalyzerActivity {
             if (glitchFrames > mLastGlitchFrames || glitchCount > mLastGlitchCount) {
                 mTimeOfLastGlitch = now;
                 mSecondsWithoutGlitches = 0.0;
-                onGlitchDetected();
+                if (glitchCount > mLastGlitchCount) {
+                    onGlitchDetected();
+                }
             } else if (lockedFrames > mLastLockedFrames) {
                 mSecondsWithoutGlitches = (now - mTimeOfLastGlitch) / 1000.0;
             }
@@ -205,6 +214,9 @@ public class GlitchActivity extends AnalyzerActivity {
         public int getLastResetCount() {
             return mLastResetCount;
         }
+    }
+
+    public void giveAdvice(String s) {
     }
 
     // Called on UI thread
