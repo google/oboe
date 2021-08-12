@@ -62,6 +62,10 @@ bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder 
             && builder.getChannelCount() <= kChannelCountStereo;
 }
 
+/**
+ * This is mostly for Exynos quirks. Samsung Mobile uses Qualcomm chips so
+ * the QualcommDeviceQuirks would apply.
+ */
 class SamsungDeviceQuirks : public  QuirksManager::DeviceQuirks {
 public:
     SamsungDeviceQuirks() {
@@ -135,12 +139,42 @@ private:
     int mBuildChangelist = 0;
 };
 
+class QualcommDeviceQuirks : public  QuirksManager::DeviceQuirks {
+public:
+    QualcommDeviceQuirks() {
+        std::string modelName = getPropertyString("ro.soc.model");
+        isSM8150 = (modelName == "SDM8150");
+    }
+
+    virtual ~QualcommDeviceQuirks() = default;
+
+    bool isMMapSafe(const AudioStreamBuilder &builder) override {
+        // See https://github.com/google/oboe/issues/1121#issuecomment-897957749
+        bool mmapBroken = false;
+        if (isSM8150 && (getSdkVersion() <= __ANDROID_API_P__)) {
+            LOGI("QuirksManager::%s() MMAP not actually supported on this chip."
+                 " Switching off MMAP.", __func__);
+            mmapBroken = true;
+        }
+
+        return !mmapBroken;
+    }
+
+private:
+    bool isSM8150 = false;
+};
+
 QuirksManager::QuirksManager() {
-    std::string manufacturer = getPropertyString("ro.product.manufacturer");
-    if (manufacturer == "samsung") {
+    std::string productManufacturer = getPropertyString("ro.product.manufacturer");
+    if (productManufacturer == "samsung") {
         mDeviceQuirks = std::make_unique<SamsungDeviceQuirks>();
     } else {
-        mDeviceQuirks = std::make_unique<DeviceQuirks>();
+        std::string socManufacturer = getPropertyString("ro.soc.manufacturer");
+        if (socManufacturer == "Qualcomm") {
+            mDeviceQuirks = std::make_unique<QualcommDeviceQuirks>();
+        } else {
+            mDeviceQuirks = std::make_unique<DeviceQuirks>();
+        }
     }
 }
 
