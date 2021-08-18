@@ -19,12 +19,14 @@ An app may choose to reopen a stream in the onErrorAfterClose() method.
 The app should then stop() and close() the stream.
 An app may then choose to reopen a stream.
 
-## Workaround for not Disconnecting Properly
+## Bug in P and Q
 
-On some versions of Android P, and some early versions of Q, the disconnect message does not reach AAudio and the app will not
+On some versions of Android P (9), and some early versions of Q (10), the disconnect message does not reach AAudio and the app will not
 know that the device has changed. There is a "TEST DISCONNECT" option in
 [OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
 that can be used to diagnose this problem.
+
+## Workaround for not Disconnecting Properly
 
 As a workaround you can listen for a Java [Intent.ACTION_HEADSET_PLUG](https://developer.android.com/reference/android/content/Intent#ACTION_HEADSET_PLUG),
 which is fired when a head set is plugged in or out. If your min SDK is LOLLIPOP or later then you can use [AudioManager.ACTION_HEADSET_PLUG](https://developer.android.com/reference/android/media/AudioManager#ACTION_HEADSET_PLUG) instead.
