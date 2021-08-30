@@ -172,12 +172,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mFailedSummary.delete(0, mFailedSummary.length());
     }
 
-    public String getFullLogs() {
+    protected String getFullLogs() {
         return mFullSummary.toString();
-    }
-
-    public void clickStartButton() {
-        mStartButton.callOnClick();
     }
 
     private void startAutoThread() {
@@ -198,6 +194,14 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void setTestIndexText(int newTestIndex) {
+        if (newTestIndex >= 0) {
+            mSingleTestIndex.setText(String.valueOf(newTestIndex));
+        } else {
+            mSingleTestIndex.setText("");
         }
     }
 

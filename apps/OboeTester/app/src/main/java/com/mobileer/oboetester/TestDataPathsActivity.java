@@ -59,6 +59,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final String KEY_USE_OUTPUT_DEVICES = "use_output_devices";
     public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
 
+    public static final String KEY_SINGLE_TEST_INDEX = "single_test_index";
+    public static final int VALUE_DEFAULT_SINGLE_TEST_INDEX = -1;
+
     public static final int DURATION_SECONDS = 3;
     private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
     private final static double MAX_SINE_FREQUENCY = 1000.0;
@@ -665,11 +668,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 VALUE_DEFAULT_USE_INPUT_DEVICES);
         boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
                 VALUE_DEFAULT_USE_OUTPUT_DEVICES);
+        int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
+                VALUE_DEFAULT_SINGLE_TEST_INDEX);
 
         runOnUiThread(() -> {
             mCheckBoxInputPresets.setChecked(shouldUseInputPresets);
             mCheckBoxInputDevices.setChecked(shouldUseInputDevices);
             mCheckBoxOutputDevices.setChecked(shouldUseOutputDevices);
+            mAutomatedTestRunner.setTestIndexText(singleTestIndex);
         });
 
         mAutomatedTestRunner.startTest();
