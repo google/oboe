@@ -609,23 +609,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
             log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
             log("test.gap.msec = " + mGapMillis);
-
-            runOnUiThread(() -> {
-                mCheckBoxInputPresets.setEnabled(false);
-                mCheckBoxInputDevices.setEnabled(false);
-                mCheckBoxOutputDevices.setEnabled(false);
-            });
-
+            
             mTestResults.clear();
             mDurationSeconds = DURATION_SECONDS;
 
             if (mCheckBoxInputPresets.isChecked()) {
+                runOnUiThread(() -> mCheckBoxInputPresets.setEnabled(false));
                 testInputPresets();
             }
             if (mCheckBoxInputDevices.isChecked()) {
+                runOnUiThread(() -> mCheckBoxInputDevices.setEnabled(false));
                 testInputDevices();
             }
             if (mCheckBoxOutputDevices.isChecked()) {
+                runOnUiThread(() -> mCheckBoxOutputDevices.setEnabled(false));
                 testOutputDevices();
             }
 
