@@ -71,12 +71,18 @@ public:
         return mCpuLoad;
     }
 
+    double getCallbackTimeMs() const {
+        return mCallbackTimeMs;
+    }
+
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
 
 private:
     static constexpr int32_t   kWorkloadScaler = 500;
     double                     mWorkload = 0.0;
     std::atomic<double>        mCpuLoad{0};
+    std::atomic<double>        mCallbackTimeMs{0};
+    std::atomic<int64_t>       previousCallbackTimeNs{0};
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;

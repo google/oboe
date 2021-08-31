@@ -77,5 +77,12 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     double currentCpuLoad = calculationTime * inverseRealTime; // avoid a divide
     mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
 
+    int64_t currentTimeNs = getNanoseconds();
+    if (previousCallbackTimeNs != 0) {
+        mCallbackTimeMs = (currentTimeNs - previousCallbackTimeNs)
+                * .000001;
+    }
+    previousCallbackTimeNs = currentTimeNs;
+
     return callbackResult;
 }

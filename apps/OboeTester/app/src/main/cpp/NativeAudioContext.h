@@ -146,6 +146,10 @@ public:
         return oboeCallbackProxy.getCpuLoad();
     }
 
+    double getCallbackTimeMs() {
+        return oboeCallbackProxy.getCallbackTimeMs();
+    }
+
     void setWorkload(double workload) {
         oboeCallbackProxy.setWorkload(workload);
     }
