@@ -38,6 +38,7 @@ import com.mobileer.miditools.MidiPortConnector;
 import com.mobileer.miditools.MidiTools;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 
 import static com.mobileer.oboetester.MidiTapTester.NoteListener;
 
@@ -118,6 +119,8 @@ public class TapToToneActivity extends TestOutputActivityBase {
         if (mTapToToneTester.isArmed()) {
             mAudioOutTester.trigger();
             mTapToToneTester.analyzeLater(getString(R.string.please_wait));
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            Log.d(TAG, "Tap to Tone Triggered. Timestamp: " + timestamp);
         } else {
             showToast(getString(R.string.no_double_tap));
         }
