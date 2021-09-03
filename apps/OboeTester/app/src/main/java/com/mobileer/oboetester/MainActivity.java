@@ -43,6 +43,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private static final String KEY_TEST_NAME = "test";
     public static final String VALUE_TEST_NAME_LATENCY = "latency";
     public static final String VALUE_TEST_NAME_GLITCH = "glitch";
+    public static final String VALUE_TEST_NAME_DATA_PATHS = "data_paths";
 
     static {
         // Must match name in CMakeLists.txt
@@ -176,6 +177,10 @@ public class MainActivity extends BaseOboeTesterActivity {
                 startActivity(intent);
             } else if (VALUE_TEST_NAME_GLITCH.equals(testName)) {
                 Intent intent = new Intent(this, ManualGlitchActivity.class);
+                intent.putExtras(mBundleFromIntent);
+                startActivity(intent);
+            } else if (VALUE_TEST_NAME_DATA_PATHS.equals(testName)) {
+                Intent intent = new Intent(this, TestDataPathsActivity.class);
                 intent.putExtras(mBundleFromIntent);
                 startActivity(intent);
             }

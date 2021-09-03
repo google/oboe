@@ -32,6 +32,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private TextView     mSingleTestIndex;
     private StringBuffer mFailedSummary;
     private StringBuffer mSummary;
+    private StringBuffer mFullSummary;
     private int          mTestCount;
     private int          mPassCount;
     private int          mFailCount;
@@ -108,6 +109,10 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
         mAutoTextScroller = (ScrollView) findViewById(R.id.text_log_auto_scroller);
         mAutoTextView = (TextView) findViewById(R.id.text_log_auto);
+
+        mFailedSummary = new StringBuffer();
+        mSummary = new StringBuffer();
+        mFullSummary = new StringBuffer();
     }
 
     private void updateStartStopButtons(boolean running) {
@@ -146,6 +151,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         if (text == null) return;
         Log.d(TestAudioActivity.TAG, "LOG - " + text);
         mCachedTextView.append(text + "\n");
+        mFullSummary.append(text + "\n");
         scrollToBottom();
     }
 
@@ -161,6 +167,13 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     private void logClear() {
         mCachedTextView.clear();
+        mFullSummary.delete(0, mFullSummary.length());
+        mSummary.delete(0, mSummary.length());
+        mFailedSummary.delete(0, mFailedSummary.length());
+    }
+
+    protected String getFullLogs() {
+        return mFullSummary.toString();
     }
 
     private void startAutoThread() {
@@ -181,6 +194,14 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void setTestIndexText(int newTestIndex) {
+        if (newTestIndex >= 0) {
+            mSingleTestIndex.setText(String.valueOf(newTestIndex));
+        } else {
+            mSingleTestIndex.setText("");
         }
     }
 
@@ -248,8 +269,6 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         log(MainActivity.getVersiontext());
         log(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
         log(Build.DISPLAY);
-        mFailedSummary = new StringBuffer();
-        mSummary = new StringBuffer();
         appendFailedSummary("Summary\n");
         mTestCount = 0;
         mPassCount = 0;

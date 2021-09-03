@@ -16,17 +16,22 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Intent;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 /**
@@ -44,6 +49,18 @@ import java.lang.reflect.Field;
  * This test requires a quiet room but no other hardware.
  */
 public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
+
+    public static final String KEY_USE_INPUT_PRESETS = "use_input_presets";
+    public static final boolean VALUE_DEFAULT_USE_INPUT_PRESETS = true;
+
+    public static final String KEY_USE_INPUT_DEVICES = "use_input_devices";
+    public static final boolean VALUE_DEFAULT_USE_INPUT_DEVICES = true;
+
+    public static final String KEY_USE_OUTPUT_DEVICES = "use_output_devices";
+    public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
+
+    public static final String KEY_SINGLE_TEST_INDEX = "single_test_index";
+    public static final int VALUE_DEFAULT_SINGLE_TEST_INDEX = -1;
 
     public static final int DURATION_SECONDS = 3;
     private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
@@ -70,6 +87,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxInputDevices;
     private CheckBox mCheckBoxOutputDevices;
+
+    private boolean mTestRunningByIntent;
+    private Bundle mBundleFromIntent;
 
     private static final int[] INPUT_PRESETS = {
             // VOICE_RECOGNITION gets tested in testInputs()
@@ -154,7 +174,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         @Override
         public void updateStatusText() {
             mLastGlitchReport = getCurrentStatusReport();
-            setAnalyzerText(mLastGlitchReport);
+            runOnUiThread(() -> {
+                setAnalyzerText(mLastGlitchReport);
+            });
         }
     }
 
@@ -175,12 +197,48 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mBundleFromIntent = getIntent().getExtras();
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mCheckBoxInputPresets = (CheckBox)findViewById(R.id.checkbox_paths_input_presets);
         mCheckBoxInputDevices = (CheckBox)findViewById(R.id.checkbox_paths_input_devices);
         mCheckBoxOutputDevices = (CheckBox)findViewById(R.id.checkbox_paths_output_devices);
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        processBundleFromIntent();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        mBundleFromIntent = intent.getExtras();
+    }
+
+    private void processBundleFromIntent() {
+        if (mBundleFromIntent == null) {
+            return;
+        }
+        if (mTestRunningByIntent) {
+            return;
+        }
+
+        mResultFileName = null;
+        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
+            mTestRunningByIntent = true;
+            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
+
+            // Delay the test start to avoid race conditions.
+            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startAutomaticTest();
+                }
+            }, 500); // TODO where is the race, close->open?
+
+        }
+    }
     @Override
     public String getTestName() {
         return "DataPaths";
@@ -316,7 +374,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                          int outputChannel,
                          boolean mmapEnabled
                    ) throws InterruptedException {
-
         setupDeviceCombo(numInputChannels, inputChannel, numOutputChannels, outputChannel);
 
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
@@ -552,7 +609,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
             log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
             log("test.gap.msec = " + mGapMillis);
-
+            
             mTestResults.clear();
             mDurationSeconds = DURATION_SECONDS;
 
@@ -571,9 +628,22 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             analyzeTestResults();
 
+            if (mTestRunningByIntent) {
+                String report = mAutomatedTestRunner.getFullLogs();
+                maybeWriteTestResult(report);
+                mTestRunningByIntent = false;
+                mBundleFromIntent = null;
+            }
+
         } catch (InterruptedException e) {
             analyzeTestResults();
 
+            if (mTestRunningByIntent) {
+                String report = mAutomatedTestRunner.getFullLogs();
+                maybeWriteTestResult(report);
+                mTestRunningByIntent = false;
+                mBundleFromIntent = null;
+            }
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
@@ -586,5 +656,25 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    void startAutomaticTest() {
+        configureStreamsFromBundle(mBundleFromIntent);
 
+        boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
+                VALUE_DEFAULT_USE_INPUT_PRESETS);
+        boolean shouldUseInputDevices = mBundleFromIntent.getBoolean(KEY_USE_INPUT_DEVICES,
+                VALUE_DEFAULT_USE_INPUT_DEVICES);
+        boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
+                VALUE_DEFAULT_USE_OUTPUT_DEVICES);
+        int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
+                VALUE_DEFAULT_SINGLE_TEST_INDEX);
+
+        runOnUiThread(() -> {
+            mCheckBoxInputPresets.setChecked(shouldUseInputPresets);
+            mCheckBoxInputDevices.setChecked(shouldUseInputDevices);
+            mCheckBoxOutputDevices.setChecked(shouldUseOutputDevices);
+            mAutomatedTestRunner.setTestIndexText(singleTestIndex);
+        });
+
+        mAutomatedTestRunner.startTest();
+    }
 }
