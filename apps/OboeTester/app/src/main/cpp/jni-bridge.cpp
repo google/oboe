@@ -414,9 +414,9 @@ Java_com_mobileer_oboetester_OboeAudioStream_getCpuLoad(JNIEnv *env, jobject ins
     return engine.getCurrentActivity()->getCpuLoad();
 }
 
-JNIEXPORT jdouble JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeMs(JNIEnv *env, jobject instance) {
-    return engine.getCurrentActivity()->getCallbackTimeMs();
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeString(JNIEnv *env, jobject instance) {
+    return env->NewStringUTF(engine.getCurrentActivity()->getCallbackTimeString().c_str());
 }
 
 JNIEXPORT void JNICALL

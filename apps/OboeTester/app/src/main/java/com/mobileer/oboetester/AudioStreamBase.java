@@ -26,7 +26,6 @@ public abstract class AudioStreamBase {
     private StreamConfiguration mRequestedStreamConfiguration;
     private StreamConfiguration mActualStreamConfiguration;
     AudioStreamBase.DoubleStatistics mLatencyStatistics;
-    AudioStreamBase.DoubleStatistics mTimeBetweenCallbacksStatistics;
 
     private int mBufferSizeInFrames;
 
@@ -39,8 +38,7 @@ public abstract class AudioStreamBase {
         status.callbackCount = getCallbackCount();
         status.latency = getLatency();
         mLatencyStatistics.add(status.latency);
-        status.timeBetweenCallbacks = getTimeBetweenCallbacks();
-        mTimeBetweenCallbacksStatistics.add(status.timeBetweenCallbacks);
+        status.callbackTimeStr = getCallbackTimeStr();
         status.cpuLoad = getCpuLoad();
         status.state = getState();
         return status;
@@ -48,10 +46,6 @@ public abstract class AudioStreamBase {
 
     public DoubleStatistics getLatencyStatistics() {
         return mLatencyStatistics;
-    }
-
-    public DoubleStatistics getTimeBetweenCallbacksStatistics() {
-        return mTimeBetweenCallbacksStatistics;
     }
 
     public static class DoubleStatistics {
@@ -91,7 +85,7 @@ public abstract class AudioStreamBase {
         public long callbackCount;
         public int framesPerCallback;
         public double cpuLoad;
-        public double timeBetweenCallbacks; //msec
+        public String callbackTimeStr;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -99,6 +93,8 @@ public abstract class AudioStreamBase {
                 return "idle";
             }
             StringBuffer buffer = new StringBuffer();
+
+            buffer.append("time between callbacks = " + callbackTimeStr + "\n");
 
             buffer.append("frames written " + framesWritten + " - read " + framesRead
                     + " = " + (framesWritten - framesRead) + "\n");
@@ -151,7 +147,6 @@ public abstract class AudioStreamBase {
         mActualStreamConfiguration = actualConfiguration;
         mBufferSizeInFrames = bufferSizeInFrames;
         mLatencyStatistics = new AudioStreamBase.DoubleStatistics();
-        mTimeBetweenCallbacksStatistics = new AudioStreamBase.DoubleStatistics();
     }
 
     public abstract boolean isInput();
@@ -200,7 +195,7 @@ public abstract class AudioStreamBase {
 
     public double getCpuLoad() { return 0.0; }
 
-    public double getTimeBetweenCallbacks() { return 0.0; }
+    public String getCallbackTimeStr() { return "?"; };
 
     public int getState() { return -1; }
 

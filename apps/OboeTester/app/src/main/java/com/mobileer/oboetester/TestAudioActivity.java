@@ -108,15 +108,12 @@ abstract class TestAudioActivity extends Activity {
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
                     AudioStreamBase.DoubleStatistics latencyStatistics =
                             streamContext.tester.getCurrentAudioStream().getLatencyStatistics();
-                    AudioStreamBase.DoubleStatistics timeBetweenCallbacksStatistics =
-                            streamContext.tester.getCurrentAudioStream().getTimeBetweenCallbacksStatistics();
                     if (streamContext.configurationView != null) {
                         // Handler runs this on the main UI thread.
                         int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
                         status.framesPerCallback = getFramesPerCallback();
                         String msg = "";
                         msg += "timestamp.latency = " + latencyStatistics.dump() + "\n";
-                        msg += "time between callbacks = " + timeBetweenCallbacksStatistics.dump() + "\n";
                         msg += status.dump(framesPerBurst);
                         streamContext.configurationView.setStatusText(msg);
                         updateStreamDisplay();

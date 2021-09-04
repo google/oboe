@@ -78,11 +78,11 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
 
     int64_t currentTimeNs = getNanoseconds();
-    if (previousCallbackTimeNs != 0) {
-        mCallbackTimeMs = (currentTimeNs - previousCallbackTimeNs)
-                * .000001;
+
+    if (mPreviousCallbackTimeNs != 0) {
+        mStatistics.add((currentTimeNs - mPreviousCallbackTimeNs) * kNsToMsScaler);
     }
-    previousCallbackTimeNs = currentTimeNs;
+    mPreviousCallbackTimeNs = currentTimeNs;
 
     return callbackResult;
 }

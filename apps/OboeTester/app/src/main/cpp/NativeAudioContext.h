@@ -146,8 +146,8 @@ public:
         return oboeCallbackProxy.getCpuLoad();
     }
 
-    double getCallbackTimeMs() {
-        return oboeCallbackProxy.getCallbackTimeMs();
+    std::string getCallbackTimeString() {
+        return oboeCallbackProxy.getCallbackTimeString();
     }
 
     void setWorkload(double workload) {

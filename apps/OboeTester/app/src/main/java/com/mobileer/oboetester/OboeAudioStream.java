@@ -248,10 +248,10 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native double getCpuLoad(int streamIndex);
 
     @Override
-    public double getTimeBetweenCallbacks() {
-        return getCallbackTimeMs();
+    public String getCallbackTimeStr() {
+        return getCallbackTimeString();
     }
-    public native double getCallbackTimeMs();
+    public native String getCallbackTimeString();
 
     @Override
     public native void setWorkload(double workload);
