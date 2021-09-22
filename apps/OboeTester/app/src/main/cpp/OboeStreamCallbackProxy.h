@@ -22,12 +22,55 @@
 
 #include "oboe/Oboe.h"
 
+class DoubleStatistics {
+public:
+    void add(double statistic) {
+        if (skipCount < kNumberStatisticsToSkip) {
+            skipCount++;
+        } else {
+            if (statistic <= 0.0) return;
+            sum = statistic + sum;
+            count++;
+            minimum = std::min(statistic, minimum.load());
+            maximum = std::max(statistic, maximum.load());
+        }
+    }
+
+    double getAverage() const {
+        return sum / count;
+    }
+
+    std::string dump() const {
+        if (count == 0) return "?";
+        char buff[100];
+        snprintf(buff, sizeof(buff), "%3.1f/%3.1f/%3.1f ms", minimum.load(), getAverage(), maximum.load());
+        std::string buffAsStr = buff;
+        return buffAsStr;
+    }
+
+    void clear() {
+        skipCount = 0;
+        sum = 0;
+        count = 0;
+        minimum = DBL_MAX;
+        maximum = 0;
+    }
+
+private:
+    static constexpr double kNumberStatisticsToSkip = 5; // Skip the first 5 frames
+    std::atomic<int> skipCount { 0 };
+    std::atomic<double> sum { 0 };
+    std::atomic<int> count { 0 };
+    std::atomic<double> minimum { DBL_MAX };
+    std::atomic<double> maximum { 0 };
+};
+
 class OboeStreamCallbackProxy : public oboe::AudioStreamCallback {
 public:
-
     void setCallback(oboe::AudioStreamCallback *callback) {
         mCallback = callback;
         setCallbackCount(0);
+        mStatistics.clear();
     }
 
     static void setCallbackReturnStop(bool b) {
@@ -71,12 +114,19 @@ public:
         return mCpuLoad;
     }
 
+    std::string getCallbackTimeString() const {
+        return mStatistics.dump();
+    }
+
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
 
 private:
     static constexpr int32_t   kWorkloadScaler = 500;
+    static constexpr double    kNsToMsScaler = 0.000001;
     double                     mWorkload = 0.0;
     std::atomic<double>        mCpuLoad{0};
+    int64_t                    mPreviousCallbackTimeNs = 0;
+    DoubleStatistics           mStatistics;
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;

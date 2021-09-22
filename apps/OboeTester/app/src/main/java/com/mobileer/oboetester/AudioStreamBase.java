@@ -38,6 +38,7 @@ public abstract class AudioStreamBase {
         status.callbackCount = getCallbackCount();
         status.latency = getLatency();
         mLatencyStatistics.add(status.latency);
+        status.callbackTimeStr = getCallbackTimeStr();
         status.cpuLoad = getCpuLoad();
         status.state = getState();
         return status;
@@ -53,12 +54,12 @@ public abstract class AudioStreamBase {
         private double minimum = Double.MAX_VALUE;
         private double maximum = Double.MIN_VALUE;
 
-        void add(double latency) {
-            if (latency <= 0.0) return;
-            sum += latency;
+        void add(double statistic) {
+            if (statistic <= 0.0) return;
+            sum += statistic;
             count++;
-            minimum = Math.min(latency, minimum);
-            maximum = Math.max(latency, maximum);
+            minimum = Math.min(statistic, minimum);
+            maximum = Math.max(statistic, maximum);
         }
 
         double getAverage() {
@@ -84,6 +85,7 @@ public abstract class AudioStreamBase {
         public long callbackCount;
         public int framesPerCallback;
         public double cpuLoad;
+        public String callbackTimeStr;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -91,6 +93,8 @@ public abstract class AudioStreamBase {
                 return "idle";
             }
             StringBuffer buffer = new StringBuffer();
+
+            buffer.append("time between callbacks = " + callbackTimeStr + "\n");
 
             buffer.append("frames written " + framesWritten + " - read " + framesRead
                     + " = " + (framesWritten - framesRead) + "\n");
@@ -190,6 +194,8 @@ public abstract class AudioStreamBase {
     public double getLatency() { return -1.0; }
 
     public double getCpuLoad() { return 0.0; }
+
+    public String getCallbackTimeStr() { return "?"; };
 
     public int getState() { return -1; }
 
