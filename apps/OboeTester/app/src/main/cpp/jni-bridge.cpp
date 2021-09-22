@@ -20,6 +20,7 @@
 #include <cstring>
 #include <jni.h>
 #include <stdint.h>
+#include <sys/sysinfo.h>
 #include <thread>
 
 #include "common/OboeDebug.h"
@@ -29,7 +30,7 @@
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 
-NativeAudioContext engine;
+static NativeAudioContext engine;
 
 /*********************************************************************************/
 /**********************  JNI  Prototypes *****************************************/
@@ -111,6 +112,18 @@ JNIEXPORT jboolean JNICALL
 Java_com_mobileer_oboetester_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
         jclass type) {
     return oboe::OboeGlobals::areWorkaroundsEnabled();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) {
+    return get_nprocs();
+}
+
+JNIEXPORT void JNICALL
+        Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
+                                                                     jclass type,
+                                                                     jint mask) {
+    engine.getCurrentActivity()->setCpuAffinityMask(mask);
 }
 
 JNIEXPORT jint JNICALL

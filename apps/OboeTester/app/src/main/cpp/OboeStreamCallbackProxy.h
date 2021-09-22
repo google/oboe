@@ -19,6 +19,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/sysinfo.h>
 
 #include "oboe/Oboe.h"
 
@@ -120,6 +121,35 @@ public:
 
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
 
+    /**
+     * @param cpuIndex
+     * @return 0 on success or a negative errno
+     */
+    int setCpuAffinity(int cpuIndex) {
+        cpu_set_t cpu_set;
+        CPU_ZERO(&cpu_set);
+        CPU_SET(cpuIndex, &cpu_set);
+        int err = sched_setaffinity((pid_t) 0, sizeof(cpu_set_t), &cpu_set);
+        return err == 0 ? 0 : -errno;
+    }
+
+    int applyCpuAffinityMask(uint32_t mask) {
+        cpu_set_t cpu_set;
+        CPU_ZERO(&cpu_set);
+        int cpuCount = get_nprocs();
+        for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
+            if (mask & (1 << cpuIndex)) {
+                CPU_SET(cpuIndex, &cpu_set);
+            }
+        }
+        int err = sched_setaffinity((pid_t) 0, sizeof(cpu_set_t), &cpu_set);
+        return err == 0 ? 0 : -errno;
+    }
+
+    void setCpuAffinityMask(uint32_t mask) {
+        mCpuAffinityMask = mask;
+    }
+
 private:
     static constexpr int32_t   kWorkloadScaler = 500;
     static constexpr double    kNsToMsScaler = 0.000001;
@@ -132,6 +162,9 @@ private:
     static bool                mCallbackReturnStop;
     int64_t                    mCallbackCount = 0;
     std::atomic<int32_t>       mFramesPerCallback{0};
+
+    std::atomic<uint32_t>      mCpuAffinityMask{0};
+    std::atomic<uint32_t>      mPreviousMask{0};
 };
 
 

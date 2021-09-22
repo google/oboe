@@ -113,6 +113,11 @@
             android:label="@string/title_route_during_callback"
             android:exported="true" />
 
+        <activity
+            android:name=".DynamicWorkloadActivity"
+            android:label="@string/title_external_tap"
+            android:exported="true" />
+
         <service
             android:name=".MidiTapTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE"

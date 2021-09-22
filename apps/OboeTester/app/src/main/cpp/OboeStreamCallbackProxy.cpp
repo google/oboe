@@ -58,6 +58,12 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
 
+    if (mCpuAffinityMask != mPreviousMask) {
+        uint32_t mask = mCpuAffinityMask;
+        applyCpuAffinityMask(mask);
+        mPreviousMask = mask;
+    }
+
     mCallbackCount++;
     mFramesPerCallback = numFrames;
 
