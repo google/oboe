@@ -31,5 +31,15 @@
         android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchExternalTapTest"
         android:text="External Tap" />
+
+    <Button
+        android:id="@+id/buttonPlugLatency"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
+        android:onClick="onLaunchPlugLatencyTest"
+        android:text="Plug Latency" />
     </GridLayout>
 </android.support.constraint.ConstraintLayout>
