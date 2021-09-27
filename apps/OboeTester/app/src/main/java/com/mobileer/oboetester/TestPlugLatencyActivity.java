@@ -49,19 +49,29 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
 
     private volatile int mPlugCount = 0;
 
+    private AudioOutputTester   mAudioOutTester;
+
     class MyAudioDeviceCallback extends AudioDeviceCallback {
         private HashMap<Integer, AudioDeviceInfo> mDevices
                 = new HashMap<Integer, AudioDeviceInfo>();
 
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+            boolean isBootingUp = mDevices.isEmpty();
             for (AudioDeviceInfo info : addedDevices) {
                 mDevices.put(info.getId(), info);
-                log("Device Added");
-                log(adiToString(info));
+                if (!isBootingUp)
+                {
+                    log("Device Added");
+                    log(adiToString(info));
+                }
+
             }
 
-            updateLatency();
+            if (isBootingUp) {
+                log("Starting stream with existing audio devices");
+            }
+            updateLatency(false /* wasDeviceRemoved */);
         }
 
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
@@ -71,7 +81,7 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
                 log(adiToString(info));
             }
 
-            updateLatency();
+            updateLatency(true /* wasDeviceRemoved */);
         }
     }
 
@@ -147,24 +157,35 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
         startAudio();
     }
 
-    private long getLatencyMs() {
+    private long calculateLatencyMs(boolean wasDeviceRemoved) {
 
         long startMillis = System.currentTimeMillis();
 
-        AudioOutputTester   mAudioOutTester = null;
-
-        clearStreamContexts();
-
-        mAudioOutTester = addAudioOutputTester();
-
-        AudioStreamBase stream = null;
         try {
+            if (wasDeviceRemoved && (mAudioOutTester != null)) {
+                // Keep querying as long as error is ok
+                while (mAudioOutTester.getLastErrorCallbackResult() == 0) {
+                    Thread.sleep(POLL_DURATION_MILLIS);
+                }
+                log("Error callback received. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            }
+            closeAudio();
+            log("Audio closed. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            clearStreamContexts();
+            mAudioOutTester = addAudioOutputTester();
             openAudio();
-            stream = mAudioOutTester.getCurrentAudioStream();
+            log("Audio opened. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
             startAudioTest();
+            log("Audio starting. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
             while (stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
+            log("Audio started. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            while (mAudioOutTester.getFramesRead() == 0) {
+                Thread.sleep(POLL_DURATION_MILLIS);
+            }
+            log("First frame read. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             return -1;
@@ -199,10 +220,11 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
         });
     }
 
-    private void updateLatency() {
+    private void updateLatency(boolean wasDeviceRemoved) {
         mPlugCount++;
-        long latencyMs = getLatencyMs();
-        String message = "Operation #" + mPlugCount + ". Latency: "+ latencyMs + " ms";
+        log("Operation #" + mPlugCount + " starting");
+        long latencyMs = calculateLatencyMs(wasDeviceRemoved);
+        String message = "Operation #" + mPlugCount + " completed. Latency: "+ latencyMs + " ms";
         log(message);
         runOnUiThread(new Runnable() {
             @Override
