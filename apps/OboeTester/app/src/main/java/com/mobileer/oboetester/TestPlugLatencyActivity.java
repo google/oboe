@@ -167,25 +167,25 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
                 while (mAudioOutTester.getLastErrorCallbackResult() == 0) {
                     Thread.sleep(POLL_DURATION_MILLIS);
                 }
-                log("Error callback received. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+                log("Error callback at " + (System.currentTimeMillis() - startMillis) + " ms");
             }
             closeAudio();
-            log("Audio closed. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            log("Audio closed at " + (System.currentTimeMillis() - startMillis) + " ms");
             clearStreamContexts();
             mAudioOutTester = addAudioOutputTester();
             openAudio();
-            log("Audio opened. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            log("Audio opened at " + (System.currentTimeMillis() - startMillis) + " ms");
             AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
             startAudioTest();
-            log("Audio starting. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            log("Audio starting at " + (System.currentTimeMillis() - startMillis) + " ms");
             while (stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
-            log("Audio started. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            log("Audio started at " + (System.currentTimeMillis() - startMillis) + " ms");
             while (mAudioOutTester.getFramesRead() == 0) {
                 Thread.sleep(POLL_DURATION_MILLIS);
             }
-            log("First frame read. Total time so far: " + (System.currentTimeMillis() - startMillis) + " ms");
+            log("First frame read at " + (System.currentTimeMillis() - startMillis) + " ms");
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             return -1;
@@ -222,9 +222,9 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
 
     private void updateLatency(boolean wasDeviceRemoved) {
         mPlugCount++;
-        log("Operation #" + mPlugCount + " starting");
+        log("\nOperation #" + mPlugCount + " starting");
         long latencyMs = calculateLatencyMs(wasDeviceRemoved);
-        String message = "Operation #" + mPlugCount + " completed. Latency: "+ latencyMs + " ms";
+        String message = "Operation #" + mPlugCount + " latency: "+ latencyMs + " ms\n";
         log(message);
         runOnUiThread(new Runnable() {
             @Override
