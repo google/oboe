@@ -100,6 +100,7 @@
 
     <string name="usage_prompt">Usage:</string>
     <string-array name="audio_usages">
+        <item>Unspecified</item>
         <item>Media</item>
         <item>VoiceComm</item>
         <item>VoiceCommSig</item>
@@ -112,6 +113,14 @@
         <item>Sonification</item>
         <item>Game</item>
         <item>Assistant</item>
+    </string-array>
+
+    <string-array name="audio_content_types">
+        <item>Unspecified</item>
+        <item>Speech</item>
+        <item>Music</item>
+        <item>Movie</item>
+        <item>Sonification</item>
     </string-array>
 
     <string name="channel_count_prompt">Channels:</string>

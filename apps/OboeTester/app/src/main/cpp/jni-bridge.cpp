@@ -44,6 +44,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint performanceMode,
                                                        jint inputPreset,
                                                        jint usage,
+                                                       jint contentType,
                                                        jint deviceId,
                                                        jint sessionId,
                                                        jint framesPerBurst,
@@ -121,6 +122,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jint performanceMode,
         jint inputPreset,
         jint usage,
+        jint contentType,
         jint deviceId,
         jint sessionId,
         jint framesPerBurst,
@@ -139,6 +141,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
                                                     performanceMode,
                                                     inputPreset,
                                                     usage,
+                                                    contentType,
                                                     deviceId,
                                                     sessionId,
                                                     framesPerBurst,
@@ -322,6 +325,16 @@ Java_com_mobileer_oboetester_OboeAudioStream_getUsage(JNIEnv *env, jobject insta
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = (jint) oboeStream->getUsage();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getContentType(JNIEnv *env, jobject instance, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getContentType();
     }
     return result;
 }

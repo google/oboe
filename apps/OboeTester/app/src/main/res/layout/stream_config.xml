@@ -192,6 +192,28 @@
 
             </TableRow>
 
+            <TableRow
+                android:id="@+id/rowContentType">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Content Type:"/>
+
+                <Spinner
+                    android:id="@+id/spinnerContentType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/audio_content_types" />
+
+                <TextView
+                    android:id="@+id/actualContentType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
+
         </TableLayout>
 
         <LinearLayout

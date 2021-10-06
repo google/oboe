@@ -85,8 +85,13 @@ public class StreamConfiguration {
     public static final int USAGE_GAME = 14;
     public static final int USAGE_ASSISTANT = 16;
 
+    public static final int CONTENT_TYPE_SPEECH = 1;
+    public static final int CONTENT_TYPE_MUSIC = 2;
+    public static final int CONTENT_TYPE_MOVIE = 3;
+    public static final int CONTENT_TYPE_SONIFICATION = 4;
+
     public static final int[] usages = {
-             USAGE_MEDIA,
+            USAGE_MEDIA,
             USAGE_VOICE_COMMUNICATION,
             USAGE_VOICE_COMMUNICATION_SIGNALLING,
             USAGE_ALARM,
@@ -99,7 +104,14 @@ public class StreamConfiguration {
             USAGE_GAME,
             USAGE_ASSISTANT};
 
+    public static final int[] contentTypes = {
+            CONTENT_TYPE_SPEECH,
+            CONTENT_TYPE_MUSIC,
+            CONTENT_TYPE_MOVIE,
+            CONTENT_TYPE_SONIFICATION};
+
     private static HashMap<String,Integer> mUsageStringToIntegerMap;
+    private static HashMap<String,Integer> mContentTypeStringToIntegerMap;
 
     private int mNativeApi;
     private int mBufferCapacityInFrames;
@@ -116,6 +128,7 @@ public class StreamConfiguration {
     private int mRateConversionQuality;
     private int mInputPreset;
     private int mUsage;
+    private int mContentType;
     private int mFramesPerBurst;
     private boolean mMMap;
 
@@ -126,8 +139,16 @@ public class StreamConfiguration {
     static {
         // Build map for Usage string-to-int conversion.
         mUsageStringToIntegerMap = new HashMap<String,Integer>();
+        mUsageStringToIntegerMap.put(convertUsageToText(UNSPECIFIED), UNSPECIFIED);
         for (int usage : usages) {
             mUsageStringToIntegerMap.put(convertUsageToText(usage), usage);
+        }
+
+        // Build map for Content Type string-to-int conversion.
+        mContentTypeStringToIntegerMap = new HashMap<String,Integer>();
+        mContentTypeStringToIntegerMap.put(convertContentTypeToText(UNSPECIFIED), UNSPECIFIED);
+        for (int contentType : contentTypes) {
+            mContentTypeStringToIntegerMap.put(convertContentTypeToText(contentType), contentType);
         }
     }
 
@@ -142,7 +163,8 @@ public class StreamConfiguration {
         mSharingMode = SHARING_MODE_EXCLUSIVE;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
         mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
-        mUsage = 0; // FIXME add USAGE_*
+        mUsage = UNSPECIFIED;
+        mContentType = UNSPECIFIED;
         mFormatConversionAllowed = false;
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
@@ -208,12 +230,19 @@ public class StreamConfiguration {
     }
 
     public int getUsage() { return mUsage; }
-    public void setUsage(int Usage) {
-        this.mUsage = Usage;
+    public void setUsage(int usage) {
+        this.mUsage = usage;
+    }
+
+    public int getContentType() { return mContentType; }
+    public void setContentType(int contentType) {
+        this.mContentType = contentType;
     }
 
     static String convertUsageToText(int usage) {
         switch(usage) {
+            case UNSPECIFIED:
+                return "Unspecified";
             case USAGE_MEDIA:
                 return "Media";
             case USAGE_VOICE_COMMUNICATION:
@@ -245,6 +274,27 @@ public class StreamConfiguration {
 
     public static int convertTextToUsage(String text) {
         return mUsageStringToIntegerMap.get(text);
+    }
+
+    static String convertContentTypeToText(int contentType) {
+        switch(contentType) {
+            case UNSPECIFIED:
+                return "Unspecified";
+            case CONTENT_TYPE_SPEECH:
+                return "Speech";
+            case CONTENT_TYPE_MUSIC:
+                return "Music";
+            case CONTENT_TYPE_MOVIE:
+                return "Movie";
+            case CONTENT_TYPE_SONIFICATION:
+                return "Sonification";
+            default:
+                return "?=" + contentType;
+        }
+    }
+
+    public static int convertTextToContentType(String text) {
+        return mContentTypeStringToIntegerMap.get(text);
     }
 
     public int getSharingMode() {
@@ -309,6 +359,8 @@ public class StreamConfiguration {
         } else {
             message.append(String.format("%s.preset = %s\n", prefix,
                     convertUsageToText(mUsage).toLowerCase()));
+            message.append(String.format("%s.contentType = %s\n", prefix,
+                    convertContentTypeToText(mContentType).toLowerCase()));
         }
         message.append(String.format("%s.sharing = %s\n", prefix,
                 convertSharingModeToText(mSharingMode).toLowerCase()));

@@ -60,6 +60,10 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mUsageSpinner;
     private TextView mActualUsageView;
 
+    private TableRow mContentTypeTableRow;
+    private Spinner  mContentTypeSpinner;
+    private TextView mActualContentTypeView;
+
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private Spinner  mRateConversionQualitySpinner;
@@ -197,7 +201,10 @@ public class StreamConfigurationView extends LinearLayout {
         mUsageTableRow = (TableRow) findViewById(R.id.rowUsage);
         mActualUsageView = (TextView) findViewById(R.id.actualUsage);
         mUsageSpinner = (Spinner) findViewById(R.id.spinnerUsage);
-        mUsageSpinner.setSelection(0); // TODO need better way to select Media default
+
+        mContentTypeTableRow = (TableRow) findViewById(R.id.rowContentType);
+        mActualContentTypeView = (TextView) findViewById(R.id.actualContentType);
+        mContentTypeSpinner = (Spinner) findViewById(R.id.spinnerContentType);
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
@@ -223,8 +230,9 @@ public class StreamConfigurationView extends LinearLayout {
 
         // Don't show InputPresets for output streams.
         mInputPresetTableRow.setVisibility(output ? View.GONE : View.VISIBLE);
-        // Don't show Usage for input streams.
+        // Don't show Usage and Content Type for input streams.
         mUsageTableRow.setVisibility(output ? View.VISIBLE : View.GONE);
+        mContentTypeTableRow.setVisibility(output ? View.VISIBLE : View.GONE);
     }
 
     public void applyToModel(StreamConfiguration config) {
@@ -248,6 +256,10 @@ public class StreamConfigurationView extends LinearLayout {
         text = mUsageSpinner.getSelectedItem().toString();
         int usage = StreamConfiguration.convertTextToUsage(text);
         config.setUsage(usage);
+
+        text = mContentTypeSpinner.getSelectedItem().toString();
+        int contentType = StreamConfiguration.convertTextToContentType(text);
+        config.setContentType(contentType);
 
         config.setMMap(mRequestedMMapView.isChecked());
         config.setChannelConversionAllowed(mChannelConversionBox.isChecked());
@@ -273,6 +285,7 @@ public class StreamConfigurationView extends LinearLayout {
         mChannelCountSpinner.setEnabled(enabled);
         mInputPresetSpinner.setEnabled(enabled);
         mUsageSpinner.setEnabled(enabled);
+        mContentTypeSpinner.setEnabled(enabled);
         mFormatSpinner.setEnabled(enabled);
         mSampleRateSpinner.setEnabled(enabled);
         mRateConversionQualitySpinner.setEnabled(enabled);
@@ -307,6 +320,10 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getUsage();
         mActualUsageView.setText(StreamConfiguration.convertUsageToText(value));
         mActualUsageView.requestLayout();
+
+        value = actualConfiguration.getContentType();
+        mActualContentTypeView.setText(StreamConfiguration.convertContentTypeToText(value));
+        mActualContentTypeView.requestLayout();
 
         mActualChannelCountView.setText(actualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(actualConfiguration.getSampleRate() + "");
