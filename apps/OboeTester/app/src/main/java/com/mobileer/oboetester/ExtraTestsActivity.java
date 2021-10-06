@@ -21,4 +21,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
         launchTestThatDoesRecording(ExternalTapToToneActivity.class);
     }
 
+    public void onLaunchPlugLatencyTest(View view) {
+        launchTestActivity(TestPlugLatencyActivity.class);
+    }
+
 }

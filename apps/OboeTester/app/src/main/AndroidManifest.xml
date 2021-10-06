@@ -101,6 +101,10 @@
             android:name=".ExternalTapToToneActivity"
             android:label="@string/title_external_tap"
             android:exported="true" />
+        <activity
+            android:name=".TestPlugLatencyActivity"
+            android:label="@string/title_plug_latency"
+            android:exported="true" />
 
         <service
             android:name=".MidiTapTester"
