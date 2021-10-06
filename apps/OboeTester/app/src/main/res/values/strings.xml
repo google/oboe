@@ -100,7 +100,7 @@
 
     <string name="usage_prompt">Usage:</string>
     <string-array name="audio_usages">
-        <item>Unknown</item>
+        <item>Unspecified</item>
         <item>Media</item>
         <item>VoiceComm</item>
         <item>VoiceCommSig</item>
@@ -116,7 +116,7 @@
     </string-array>
 
     <string-array name="audio_content_types">
-        <item>Unknown</item>
+        <item>Unspecified</item>
         <item>Speech</item>
         <item>Music</item>
         <item>Movie</item>

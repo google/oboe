@@ -201,12 +201,10 @@ public class StreamConfigurationView extends LinearLayout {
         mUsageTableRow = (TableRow) findViewById(R.id.rowUsage);
         mActualUsageView = (TextView) findViewById(R.id.actualUsage);
         mUsageSpinner = (Spinner) findViewById(R.id.spinnerUsage);
-        mUsageSpinner.setSelection(StreamConfiguration.USAGE_UNKNOWN);
 
         mContentTypeTableRow = (TableRow) findViewById(R.id.rowContentType);
         mActualContentTypeView = (TextView) findViewById(R.id.actualContentType);
         mContentTypeSpinner = (Spinner) findViewById(R.id.spinnerContentType);
-        mContentTypeSpinner.setSelection(StreamConfiguration.CONTENT_TYPE_UNKNOWN);
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 

@@ -72,7 +72,6 @@ public class StreamConfiguration {
 
     public static final int ERROR_DISCONNECTED = -899; // must match Oboe
 
-    public static final int USAGE_UNKNOWN = 0;
     public static final int USAGE_MEDIA = 1;
     public static final int USAGE_VOICE_COMMUNICATION = 2;
     public static final int USAGE_VOICE_COMMUNICATION_SIGNALLING = 3;
@@ -86,14 +85,12 @@ public class StreamConfiguration {
     public static final int USAGE_GAME = 14;
     public static final int USAGE_ASSISTANT = 16;
 
-    public static final int CONTENT_TYPE_UNKNOWN = 0;
     public static final int CONTENT_TYPE_SPEECH = 1;
     public static final int CONTENT_TYPE_MUSIC = 2;
     public static final int CONTENT_TYPE_MOVIE = 3;
     public static final int CONTENT_TYPE_SONIFICATION = 4;
 
     public static final int[] usages = {
-            USAGE_UNKNOWN,
             USAGE_MEDIA,
             USAGE_VOICE_COMMUNICATION,
             USAGE_VOICE_COMMUNICATION_SIGNALLING,
@@ -108,7 +105,6 @@ public class StreamConfiguration {
             USAGE_ASSISTANT};
 
     public static final int[] contentTypes = {
-            CONTENT_TYPE_UNKNOWN,
             CONTENT_TYPE_SPEECH,
             CONTENT_TYPE_MUSIC,
             CONTENT_TYPE_MOVIE,
@@ -143,12 +139,14 @@ public class StreamConfiguration {
     static {
         // Build map for Usage string-to-int conversion.
         mUsageStringToIntegerMap = new HashMap<String,Integer>();
+        mUsageStringToIntegerMap.put(convertUsageToText(UNSPECIFIED), UNSPECIFIED);
         for (int usage : usages) {
             mUsageStringToIntegerMap.put(convertUsageToText(usage), usage);
         }
 
         // Build map for Content Type string-to-int conversion.
         mContentTypeStringToIntegerMap = new HashMap<String,Integer>();
+        mContentTypeStringToIntegerMap.put(convertContentTypeToText(UNSPECIFIED), UNSPECIFIED);
         for (int contentType : contentTypes) {
             mContentTypeStringToIntegerMap.put(convertContentTypeToText(contentType), contentType);
         }
@@ -165,8 +163,8 @@ public class StreamConfiguration {
         mSharingMode = SHARING_MODE_EXCLUSIVE;
         mPerformanceMode = PERFORMANCE_MODE_LOW_LATENCY;
         mInputPreset = INPUT_PRESET_VOICE_RECOGNITION;
-        mUsage = USAGE_UNKNOWN;
-        mContentType = CONTENT_TYPE_UNKNOWN;
+        mUsage = UNSPECIFIED;
+        mContentType = UNSPECIFIED;
         mFormatConversionAllowed = false;
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
@@ -243,8 +241,8 @@ public class StreamConfiguration {
 
     static String convertUsageToText(int usage) {
         switch(usage) {
-            case USAGE_UNKNOWN:
-                return "Unknown";
+            case UNSPECIFIED:
+                return "Unspecified";
             case USAGE_MEDIA:
                 return "Media";
             case USAGE_VOICE_COMMUNICATION:
@@ -280,8 +278,8 @@ public class StreamConfiguration {
 
     static String convertContentTypeToText(int contentType) {
         switch(contentType) {
-            case CONTENT_TYPE_UNKNOWN:
-                return "Unknown";
+            case UNSPECIFIED:
+                return "Unspecified";
             case CONTENT_TYPE_SPEECH:
                 return "Speech";
             case CONTENT_TYPE_MUSIC:
