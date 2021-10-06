@@ -273,17 +273,17 @@ public class AnalyzerActivity extends TestInputActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions,
                                            int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    writeTestResult(mTestResults);
-                } else {
-                    showToast("Writing external storage needed for test results.");
-                }
-                return;
-            }
+
+        if (MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE != requestCode) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+        // If request is cancelled, the result arrays are empty.
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            writeTestResult(mTestResults);
+        } else {
+            showToast("Writing external storage needed for test results.");
         }
     }
 

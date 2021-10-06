@@ -16,9 +16,13 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class BaseAutoGlitchActivity extends GlitchActivity {
 
@@ -31,8 +35,145 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     protected int mDurationSeconds = DEFAULT_DURATION_SECONDS;
     protected int mGapMillis = DEFAULT_GAP_MILLIS;
+    private String mTestName = "";
 
     protected AutomatedTestRunner mAutomatedTestRunner;
+    protected ArrayList<TestResult> mTestResults = new ArrayList<TestResult>();
+
+    void logDeviceInfo() {
+        log("\n############################");
+        log("\nDevice Info:");
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        log(AudioQueryTools.getAudioManagerReport(audioManager));
+        log(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
+        log(AudioQueryTools.getAudioPropertyReport());
+        log("\n############################");
+    }
+
+    void setTestName(String name) {
+        mTestName = name;
+    }
+
+    private static class TestDirection {
+        public final int channelUsed;
+        public final int channelCount;
+        public final int deviceId;
+        public final int mmapUsed;
+        public final int performanceMode;
+        public final int sharingMode;
+
+        public TestDirection(StreamConfiguration configuration, int channelUsed) {
+            this.channelUsed = channelUsed;
+            channelCount = configuration.getChannelCount();
+            deviceId = configuration.getDeviceId();
+            mmapUsed = configuration.isMMap() ? 1 : 0;
+            performanceMode = configuration.getPerformanceMode();
+            sharingMode = configuration.getSharingMode();
+        }
+
+        int countDifferences(TestDirection other) {
+            int count = 0;
+            count += (channelUsed != other.channelUsed) ? 1 : 0;
+            count += (channelCount != other.channelCount) ? 1 : 0;
+            count += (deviceId != other.deviceId) ? 1 : 0;
+            count += (mmapUsed != other.mmapUsed) ? 1 : 0;
+            count += (performanceMode != other.performanceMode) ? 1 : 0;
+            count += (sharingMode != other.sharingMode) ? 1 : 0;
+            return count;
+        }
+
+        public String comparePassedDirection(String prefix, TestDirection passed) {
+            StringBuffer text = new StringBuffer();
+            text.append(TestDataPathsActivity.comparePassedField(prefix, this, passed, "channelUsed"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "channelCount"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "deviceId"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "mmapUsed"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "performanceMode"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "sharingMode"));
+            return text.toString();
+        }
+        @Override
+        public String toString() {
+            return "D=" + deviceId
+                    + ", " + ((mmapUsed > 0) ? "MMAP" : "Lgcy")
+                    + ", ch=" + channelText(channelUsed, channelCount)
+                    + "," + StreamConfiguration.convertPerformanceModeToText(performanceMode)
+                    + "," + StreamConfiguration.convertSharingModeToText(sharingMode);
+        }
+    }
+
+    protected static class TestResult {
+        final int testIndex;
+        final TestDirection input;
+        final TestDirection output;
+        public final int inputPreset;
+        public final int sampleRate;
+        final String testName; // name or purpose of test
+
+        int result = TEST_RESULT_SKIPPED; // TEST_RESULT_FAILED, etc
+        private String mComments = ""; // additional info, ideas for why it failed
+
+        public TestResult(int testIndex,
+                          String testName,
+                          StreamConfiguration inputConfiguration,
+                          int inputChannel,
+                          StreamConfiguration outputConfiguration,
+                          int outputChannel) {
+            this.testIndex = testIndex;
+            this.testName = testName;
+            input = new TestDirection(inputConfiguration, inputChannel);
+            output = new TestDirection(outputConfiguration, outputChannel);
+            sampleRate = outputConfiguration.getSampleRate();
+            this.inputPreset = inputConfiguration.getInputPreset();
+        }
+
+        int countDifferences(TestResult other) {
+            int count = 0;
+            count += input.countDifferences((other.input));
+            count += output.countDifferences((other.output));
+            count += (sampleRate != other.sampleRate) ? 1 : 0;
+            count += (inputPreset != other.inputPreset) ? 1 : 0;
+            return count;
+        }
+
+        public boolean failed() {
+            return result == TEST_RESULT_FAILED;
+        }
+
+        public boolean passed() {
+            return result == TEST_RESULT_PASSED;
+        }
+
+        public String comparePassed(TestResult passed) {
+            StringBuffer text = new StringBuffer();
+            text.append("Compare with passed test #" + passed.testIndex + "\n");
+            text.append(input.comparePassedDirection("IN", passed.input));
+            text.append(TestDataPathsActivity.comparePassedField("IN", this, passed, "inputPreset"));
+            text.append(output.comparePassedDirection("OUT", passed.output));
+            text.append(TestDataPathsActivity.comparePassedField("I/O",this, passed, "sampleRate"));
+
+            return text.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "IN:  " + input + ", ip=" + inputPreset + "\n"
+                    + "OUT: " + output + ", sr=" + sampleRate
+                    + mComments;
+        }
+
+        public void addComment(String comment) {
+            mComments += "\n";
+            mComments += comment;
+        }
+
+        public void setResult(int result) {
+            this.result = result;
+        }
+        public int getResult(int result) {
+            return result;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +200,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mAutomatedTestRunner.stopTest();
     }
 
-    String channelText(int index, int count) {
+    static String channelText(int index, int count) {
         return index + "/" + count;
     }
 
@@ -76,17 +217,25 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", ch = " + channelText(channel, config.getChannelCount());
     }
 
+    protected String getStreamText(AudioStreamBase stream) {
+        return ("burst=" + stream.getFramesPerBurst()
+                + ", size=" + stream.getBufferSizeInFrames()
+                + ", cap=" + stream.getBufferCapacityInFrames()
+        );
+    }
+
     public final static int TEST_RESULT_FAILED = -2;
     public final static int TEST_RESULT_WARNING = -1;
     public final static int TEST_RESULT_SKIPPED = 0;
     public final static int TEST_RESULT_PASSED = 1;
 
-    // Run test based on the requested input/output configurations.
-    protected int testConfigurations() throws InterruptedException {
+    // Run one test based on the requested input/output configurations.
+    @Nullable
+    protected TestResult testConfigurations() throws InterruptedException {
         int result = TEST_RESULT_SKIPPED;
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
-            return result;
+            return null;
         }
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
@@ -106,17 +255,29 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         try {
             openAudio(); // this will fill in actualConfig
             log("Actual:");
-            log("  " + getConfigText(actualInConfig));
-            log("  " + getConfigText(actualOutConfig));
             // Set output size to a level that will avoid glitches.
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            int sizeFrames = stream.getBufferCapacityInFrames() / 2;
-            stream.setBufferSizeInFrames(sizeFrames);
+            AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
+            int sizeFrames = outStream.getBufferCapacityInFrames() / 2;
+            outStream.setBufferSizeInFrames(sizeFrames);
+            AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
+            log("  " + getConfigText(actualInConfig));
+            log("      " + getStreamText(inStream));
+            log("  " + getConfigText(actualOutConfig));
+            log("      " + getStreamText(outStream));
         } catch (Exception e) {
             openFailed = true;
             log(e.getMessage());
             reason = e.getMessage();
         }
+
+        TestResult testResult = new TestResult(
+                mAutomatedTestRunner.getTestCount(),
+                mTestName,
+                mAudioInputTester.actualConfiguration,
+                getInputChannel(),
+                mAudioOutTester.actualConfiguration,
+                getOutputChannel()
+        );
 
         // The test would only be worth running if we got the configuration we requested on input or output.
         String skipReason = shouldTestBeSkipped();
@@ -196,7 +357,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
         // Give hardware time to settle between tests.
         Thread.sleep(mGapMillis);
-        return result;
+
+        if (valid) {
+            testResult.setResult(result);
+            mTestResults.add(testResult);
+        }
+
+        return testResult;
     }
 
     protected boolean isFinishedEarly() {
@@ -226,6 +393,54 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             why += ", glitch";
         }
         return why;
+    }
+
+    void logAnalysis(String text) {
+        appendFailedSummary(text + "\n");
+    }
+
+    protected void analyzeTestResults() {
+        logAnalysis("\n==== ANALYSIS ===========");
+        logAnalysis("Compare failed configuration with closest one that passed.");
+        // Analyze each failed test.
+        for (TestResult testResult : mTestResults) {
+            if (testResult.failed()) {
+                logAnalysis("-------------------- #" + testResult.testIndex + " FAILED");
+                String name = testResult.testName;
+                if (name.length() > 0) {
+                    logAnalysis(name);
+                }
+                TestResult[] closest = findClosestPassingTestResults(testResult);
+                for (TestResult other : closest) {
+                    logAnalysis(testResult.comparePassed(other));
+                }
+                logAnalysis(testResult.toString());
+            }
+        }
+    }
+
+    @Nullable
+    private TestResult[] findClosestPassingTestResults(TestResult testResult) {
+        int minDifferences = Integer.MAX_VALUE;
+        for (TestResult other : mTestResults) {
+            if (other.passed()) {
+                int numDifferences = testResult.countDifferences(other);
+                if (numDifferences < minDifferences) {
+                    minDifferences = numDifferences;
+                }
+            }
+        }
+        // Now find all the tests that are just as close as the closest.
+        ArrayList<TestResult> list = new ArrayList<TestResult>();
+        for (TestResult other : mTestResults) {
+            if (other.passed()) {
+                int numDifferences = testResult.countDifferences(other);
+                if (numDifferences == minDifferences) {
+                    list.add(other);
+                }
+            }
+        }
+        return list.toArray(new TestResult[0]);
     }
 
 }

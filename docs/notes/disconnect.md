@@ -19,12 +19,14 @@ An app may choose to reopen a stream in the onErrorAfterClose() method.
 The app should then stop() and close() the stream.
 An app may then choose to reopen a stream.
 
-## Workaround for not Disconnecting Properly
+## Bug in P and Q
 
-On some versions of Android P the disconnect message does not reach AAudio and the app will not
-know that the device has changed. There is a "Test Disconnects" option in
+On some versions of Android P (9), and some early versions of Q (10), the disconnect message does not reach AAudio and the app will not
+know that the device has changed. There is a "TEST DISCONNECT" option in
 [OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
 that can be used to diagnose this problem.
+
+## Workaround for not Disconnecting Properly
 
 As a workaround you can listen for a Java [Intent.ACTION_HEADSET_PLUG](https://developer.android.com/reference/android/content/Intent#ACTION_HEADSET_PLUG),
 which is fired when a head set is plugged in or out. If your min SDK is LOLLIPOP or later then you can use [AudioManager.ACTION_HEADSET_PLUG](https://developer.android.com/reference/android/media/AudioManager#ACTION_HEADSET_PLUG) instead.
@@ -60,6 +62,7 @@ You can register for the Intent when your app resumes and unregister when it pau
   * [#381](https://github.com/google/oboe/issues/381) Connecting headphones does not trigger any event. S9
   * [#893](https://github.com/google/oboe/issues/893) onErrorBeforeClose and onErrorAfterClose not called, S10
   * [#908](https://github.com/google/oboe/issues/908) Huawei MAR-LX3A
+  * [#1350](https://github.com/google/oboe/issues/1350) SM-G977B fails "Test Disconnects"
 * This issue is tracked internally as b/111711159.
 * A fix in AOSP is [here](https://android-review.googlesource.com/c/platform/frameworks/av/+/836184)
 * A fix was also merged into pi-dev on July 30, 2018.

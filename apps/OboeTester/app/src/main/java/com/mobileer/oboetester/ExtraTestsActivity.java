@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 
-public class ExtraTestsActivity extends Activity {
+public class ExtraTestsActivity extends BaseOboeTesterActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,15 +14,15 @@ public class ExtraTestsActivity extends Activity {
     }
 
     public void onLaunchMainActivity(View view) {
-        onLaunchTest(MainActivity.class);
+        launchTestActivity(MainActivity.class);
     }
 
     public void onLaunchExternalTapTest(View view) {
-        onLaunchTest(ExternalTapToToneActivity.class);
+        launchTestThatDoesRecording(ExternalTapToToneActivity.class);
     }
 
-    private void onLaunchTest(Class clazz) {
-        Intent intent = new Intent(this, clazz);
-        startActivity(intent);
+    public void onLaunchPlugLatencyTest(View view) {
+        launchTestActivity(TestPlugLatencyActivity.class);
     }
+
 }

@@ -62,12 +62,13 @@ bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder 
             && builder.getChannelCount() <= kChannelCountStereo;
 }
 
-class SamsungDeviceQuirks : public  QuirksManager::DeviceQuirks {
+/**
+ * This is for Samsung Exynos quirks. Samsung Mobile uses Qualcomm chips so
+ * the QualcommDeviceQuirks would apply.
+ */
+class SamsungExynosDeviceQuirks : public  QuirksManager::DeviceQuirks {
 public:
-    SamsungDeviceQuirks() {
-        std::string arch = getPropertyString("ro.arch");
-        isExynos = (arch.rfind("exynos", 0) == 0); // starts with?
-
+    SamsungExynosDeviceQuirks() {
         std::string chipname = getPropertyString("ro.hardware.chipname");
         isExynos9810 = (chipname == "exynos9810");
         isExynos990 = (chipname == "exynos990");
@@ -76,11 +77,10 @@ public:
         mBuildChangelist = getPropertyInteger("ro.build.changelist", 0);
     }
 
-    virtual ~SamsungDeviceQuirks() = default;
+    virtual ~SamsungExynosDeviceQuirks() = default;
 
     int32_t getExclusiveBottomMarginInBursts() const override {
-        // TODO Make this conditional on build version when MMAP timing improves.
-        return isExynos ? kBottomMarginExynos : kBottomMarginOther;
+        return kBottomMargin;
     }
 
     int32_t getExclusiveTopMarginInBursts() const override {
@@ -125,22 +125,61 @@ public:
 
 private:
     // Stay farther away from DSP position on Exynos devices.
-    static constexpr int32_t kBottomMarginExynos = 2;
-    static constexpr int32_t kBottomMarginOther = 1;
+    static constexpr int32_t kBottomMargin = 2;
     static constexpr int32_t kTopMargin = 1;
-    bool isExynos = false;
     bool isExynos9810 = false;
     bool isExynos990 = false;
     bool isExynos850 = false;
     int mBuildChangelist = 0;
 };
 
+class QualcommDeviceQuirks : public  QuirksManager::DeviceQuirks {
+public:
+    QualcommDeviceQuirks() {
+        std::string modelName = getPropertyString("ro.soc.model");
+        isSM8150 = (modelName == "SDM8150");
+    }
+
+    virtual ~QualcommDeviceQuirks() = default;
+
+    int32_t getExclusiveBottomMarginInBursts() const override {
+        return kBottomMargin;
+    }
+
+    bool isMMapSafe(const AudioStreamBuilder &builder) override {
+        // See https://github.com/google/oboe/issues/1121#issuecomment-897957749
+        bool isMMapBroken = false;
+        if (isSM8150 && (getSdkVersion() <= __ANDROID_API_P__)) {
+            LOGI("QuirksManager::%s() MMAP not actually supported on this chip."
+                 " Switching off MMAP.", __func__);
+            isMMapBroken = true;
+        }
+
+        return !isMMapBroken;
+    }
+
+private:
+    bool isSM8150 = false;
+    static constexpr int32_t kBottomMargin = 1;
+};
+
 QuirksManager::QuirksManager() {
-    std::string manufacturer = getPropertyString("ro.product.manufacturer");
-    if (manufacturer == "samsung") {
-        mDeviceQuirks = std::make_unique<SamsungDeviceQuirks>();
-    } else {
-        mDeviceQuirks = std::make_unique<DeviceQuirks>();
+    std::string productManufacturer = getPropertyString("ro.product.manufacturer");
+    if (productManufacturer == "samsung") {
+        std::string arch = getPropertyString("ro.arch");
+        bool isExynos = (arch.rfind("exynos", 0) == 0); // starts with?
+        if (isExynos) {
+            mDeviceQuirks = std::make_unique<SamsungExynosDeviceQuirks>();
+        }
+    }
+    if (!mDeviceQuirks) {
+        std::string socManufacturer = getPropertyString("ro.soc.manufacturer");
+        if (socManufacturer == "Qualcomm") {
+            // This may include Samsung Mobile devices.
+            mDeviceQuirks = std::make_unique<QualcommDeviceQuirks>();
+        } else {
+            mDeviceQuirks = std::make_unique<DeviceQuirks>();
+        }
     }
 }
 

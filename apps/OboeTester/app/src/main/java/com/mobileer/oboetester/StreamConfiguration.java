@@ -114,6 +114,9 @@ public class StreamConfiguration {
             CONTENT_TYPE_MOVIE,
             CONTENT_TYPE_SONIFICATION};
 
+    private static HashMap<String,Integer> mUsageStringToIntegerMap;
+    private static HashMap<String,Integer> mContentTypeStringToIntegerMap;
+
     private int mNativeApi;
     private int mBufferCapacityInFrames;
     private int mChannelCount;
@@ -130,12 +133,8 @@ public class StreamConfiguration {
     private int mInputPreset;
     private int mUsage;
     private int mContentType;
-    private static HashMap<String,Integer> mUsageStringToIntegerMap;
-    private static HashMap<String,Integer> mContentTypeStringToIntegerMap;
-
-    private int mFramesPerBurst = 0;
-
-    private boolean mMMap = false;
+    private int mFramesPerBurst;
+    private boolean mMMap;
 
     public StreamConfiguration() {
         reset();

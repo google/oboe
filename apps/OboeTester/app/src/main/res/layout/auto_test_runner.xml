@@ -63,14 +63,18 @@
         android:textSize="18sp"
         android:textStyle="bold"
         />
-
+    <ScrollView
+        android:id="@+id/text_log_auto_scroller"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
     <TextView
-        android:id="@+id/text_log"
+        android:id="@+id/text_log_auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars = "vertical"
         android:gravity="bottom"
         android:text="@string/log_of_test_results"
         />
+    </ScrollView>
 
 </LinearLayout>

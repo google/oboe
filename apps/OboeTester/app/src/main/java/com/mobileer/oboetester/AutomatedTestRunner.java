@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -27,9 +28,11 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private Button       mStopButton;
     private Button       mShareButton;
     private TextView     mAutoTextView;
+    private ScrollView   mAutoTextScroller;
     private TextView     mSingleTestIndex;
     private StringBuffer mFailedSummary;
     private StringBuffer mSummary;
+    private StringBuffer mFullSummary;
     private int          mTestCount;
     private int          mPassCount;
     private int          mFailCount;
@@ -104,8 +107,12 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
         mSingleTestIndex = (TextView) findViewById(R.id.single_test_index);
 
-        mAutoTextView = (TextView) findViewById(R.id.text_log);
-        mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
+        mAutoTextScroller = (ScrollView) findViewById(R.id.text_log_auto_scroller);
+        mAutoTextView = (TextView) findViewById(R.id.text_log_auto);
+
+        mFailedSummary = new StringBuffer();
+        mSummary = new StringBuffer();
+        mFullSummary = new StringBuffer();
     }
 
     private void updateStartStopButtons(boolean running) {
@@ -124,6 +131,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     public void appendFailedSummary(String text) {
         mFailedSummary.append(text);
     }
+
     public void appendSummary(String text) {
         mSummary.append(text);
     }
@@ -143,15 +151,29 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         if (text == null) return;
         Log.d(TestAudioActivity.TAG, "LOG - " + text);
         mCachedTextView.append(text + "\n");
+        mFullSummary.append(text + "\n");
+        scrollToBottom();
+    }
+
+    public void scrollToBottom() {
+        mAutoTextScroller.fullScroll(View.FOCUS_DOWN);
     }
 
     // Flush any logs that are stuck in the cache.
     public void flushLog() {
         mCachedTextView.flush();
+        scrollToBottom();
     }
 
     private void logClear() {
         mCachedTextView.clear();
+        mFullSummary.delete(0, mFullSummary.length());
+        mSummary.delete(0, mSummary.length());
+        mFailedSummary.delete(0, mFailedSummary.length());
+    }
+
+    protected String getFullLogs() {
+        return mFullSummary.toString();
     }
 
     private void startAutoThread() {
@@ -172,6 +194,14 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void setTestIndexText(int newTestIndex) {
+        if (newTestIndex >= 0) {
+            mSingleTestIndex.setText(String.valueOf(newTestIndex));
+        } else {
+            mSingleTestIndex.setText("");
         }
     }
 
@@ -239,8 +269,6 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         log(MainActivity.getVersiontext());
         log(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
         log(Build.DISPLAY);
-        mFailedSummary = new StringBuffer();
-        mSummary = new StringBuffer();
         appendFailedSummary("Summary\n");
         mTestCount = 0;
         mPassCount = 0;
@@ -252,31 +280,33 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
             log("EXCEPTION: " + e.getMessage());
         } finally {
             mActivity.stopTest();
-            if (mThreadEnabled) {
-                log("\n==== SUMMARY ========");
-                log(mSummary.toString());
-                if (mFailCount > 0) {
-                    log("These tests FAILED:");
-                    log(mFailedSummary.toString());
-                    log("------------");
-                } else if (mPassCount > 0) {
-                    log("All " + mPassCount + " tests PASSED.");
-                } else {
-                    log("No tests were run!");
-                }
-                int skipped = mTestCount - (mPassCount + mFailCount);
-                log(mPassCount + " passed. "
-                        + mFailCount + " failed. "
-                        + skipped + " skipped. ");
-                log("== FINISHED at " + new Date());
-            } else {
+            if (!mThreadEnabled) {
                 log("== TEST STOPPED ==");
             }
+            log("\n==== SUMMARY ========");
+            log(mSummary.toString());
+            if (mFailCount > 0) {
+                log("These tests FAILED:");
+                log(mFailedSummary.toString());
+                log("------------");
+            } else if (mPassCount > 0) {
+                log("All " + mPassCount + " tests PASSED.");
+            } else {
+                log("No tests were run!");
+            }
+            int skipped = mTestCount - (mPassCount + mFailCount);
+            log(mPassCount + " passed. "
+                    + mFailCount + " failed. "
+                    + skipped + " skipped. ");
+            log("== FINISHED at " + new Date());
+
             flushLog();
+
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     onTestFinished();
+                    flushLog();
                 }
             });
         }

@@ -26,6 +26,8 @@ import android.media.MicrophoneInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.view.View;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
@@ -69,9 +71,7 @@ public class DeviceReportActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_report);
-        mAutoTextView = (TextView) findViewById(R.id.text_log);
-        mAutoTextView.setMovementMethod(new ScrollingMovementMethod());
-
+        mAutoTextView = (TextView) findViewById(R.id.text_log_device_report);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     }
 

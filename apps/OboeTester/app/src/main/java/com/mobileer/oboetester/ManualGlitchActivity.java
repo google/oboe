@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -38,6 +39,8 @@ public class ManualGlitchActivity extends GlitchActivity {
     public static final String KEY_TOLERANCE = "tolerance";
     private static final float DEFAULT_TOLERANCE = 0.1f;
 
+    private static final long MIN_DISPLAY_PERIOD_MILLIS = 500;
+
     private TextView mTextTolerance;
     private SeekBar mFaderTolerance;
     protected ExponentialTaper mTaperTolerance;
@@ -45,6 +48,7 @@ public class ManualGlitchActivity extends GlitchActivity {
     private float[] mWaveform = new float[256];
     private boolean mTestRunningByIntent;
     private Bundle mBundleFromIntent;
+    private long mLastDisplayTime;
 
     private float   mTolerance = DEFAULT_TOLERANCE;
 
@@ -156,6 +160,14 @@ public class ManualGlitchActivity extends GlitchActivity {
         requestedInConfig.setInputPreset(inputPreset);
     }
 
+    @Override
+    public void giveAdvice(String s) {
+        mWaveformView.post(() -> {
+            mWaveformView.setMessage(s);
+            mWaveformView.invalidate();
+        });
+    }
+
     public void startAudioTest() throws IOException {
         super.startAudioTest();
         setToleranceProgress(mFaderTolerance.getProgress());
@@ -215,9 +227,13 @@ public class ManualGlitchActivity extends GlitchActivity {
     // Called on UI thread
     @Override
     protected void onGlitchDetected() {
-        int numSamples = getGlitch(mWaveform);
-        mWaveformView.setSampleData(mWaveform, 0, numSamples);
-        mWaveformView.postInvalidate();
+        long now = System.currentTimeMillis();
+        if ((now - mLastDisplayTime) > MIN_DISPLAY_PERIOD_MILLIS) {
+            mLastDisplayTime = now;
+            int numSamples = getGlitch(mWaveform);
+            mWaveformView.setSampleData(mWaveform, 0, numSamples);
+            mWaveformView.postInvalidate();
+        }
     }
 
     private float[] getGlitchWaveform() {

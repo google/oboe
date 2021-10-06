@@ -84,8 +84,13 @@ public class WaveformView extends View {
         return mMessage;
     }
 
-    public void setMessage(String mMessage) {
-        this.mMessage = mMessage;
+    /**
+     * Set message to be displayed over the waveform.
+     * Set null for no message.
+     * @param message text or null
+     */
+    public void setMessage(String message) {
+        this.mMessage = message;
     }
 
     @Override

@@ -14,7 +14,7 @@
         android:id="@+id/text_instructions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="1"
+        android:lines="2"
         android:text="@string/test_disconnect_instructions"
         android:textColor="#F44336"
         android:textSize="18sp"

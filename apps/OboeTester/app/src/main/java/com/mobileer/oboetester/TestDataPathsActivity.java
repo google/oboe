@@ -16,13 +16,23 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Intent;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
 
 /**
  * Play a recognizable tone on each channel of each speaker device
@@ -39,6 +49,18 @@ import com.mobileer.audio_device.AudioDeviceInfoConverter;
  * This test requires a quiet room but no other hardware.
  */
 public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
+
+    public static final String KEY_USE_INPUT_PRESETS = "use_input_presets";
+    public static final boolean VALUE_DEFAULT_USE_INPUT_PRESETS = true;
+
+    public static final String KEY_USE_INPUT_DEVICES = "use_input_devices";
+    public static final boolean VALUE_DEFAULT_USE_INPUT_DEVICES = true;
+
+    public static final String KEY_USE_OUTPUT_DEVICES = "use_output_devices";
+    public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
+
+    public static final String KEY_SINGLE_TEST_INDEX = "single_test_index";
+    public static final int VALUE_DEFAULT_SINGLE_TEST_INDEX = -1;
 
     public static final int DURATION_SECONDS = 3;
     private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
@@ -62,6 +84,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mPhaseJitter;
 
     AudioManager   mAudioManager;
+    private CheckBox mCheckBoxInputPresets;
+    private CheckBox mCheckBoxInputDevices;
+    private CheckBox mCheckBoxOutputDevices;
+
+    private boolean mTestRunningByIntent;
+    private Bundle mBundleFromIntent;
 
     private static final int[] INPUT_PRESETS = {
             // VOICE_RECOGNITION gets tested in testInputs()
@@ -69,10 +97,25 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             StreamConfiguration.INPUT_PRESET_GENERIC,
             StreamConfiguration.INPUT_PRESET_CAMCORDER,
             // TODO Resolve issue with echo cancellation killing the signal.
-            // TODO StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
+            StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
             StreamConfiguration.INPUT_PRESET_UNPROCESSED,
             StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
     };
+
+    @NonNull
+    public static String comparePassedField(String prefix, Object failed, Object passed, String name) {
+        try {
+            Field field = failed.getClass().getField(name);
+            int failedValue = field.getInt(failed);
+            int passedValue = field.getInt(passed);
+            return (failedValue == passedValue) ? ""
+                :  (prefix + " " + name + ": passed = " + passedValue + ", failed = " + failedValue + "\n");
+        } catch (NoSuchFieldException e) {
+            return "ERROR - no such field  " + name;
+        } catch (IllegalAccessException e) {
+            return "ERROR - cannot access  " + name;
+        }
+    }
 
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
@@ -117,6 +160,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     + ", max = " + getMagnitudeText(mMaxMagnitude)
                     + "\nphase = " + getMagnitudeText(mPhase)
                     + ", jitter = " + getMagnitudeText(mPhaseJitter)
+                    + ", #" + mPhaseCount
                     + "\n");
             return message.toString();
         }
@@ -130,9 +174,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         @Override
         public void updateStatusText() {
             mLastGlitchReport = getCurrentStatusReport();
-            setAnalyzerText(mLastGlitchReport);
+            runOnUiThread(() -> {
+                setAnalyzerText(mLastGlitchReport);
+            });
         }
-
     }
 
     @Override
@@ -152,9 +197,48 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mBundleFromIntent = getIntent().getExtras();
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mCheckBoxInputPresets = (CheckBox)findViewById(R.id.checkbox_paths_input_presets);
+        mCheckBoxInputDevices = (CheckBox)findViewById(R.id.checkbox_paths_input_devices);
+        mCheckBoxOutputDevices = (CheckBox)findViewById(R.id.checkbox_paths_output_devices);
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        processBundleFromIntent();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        mBundleFromIntent = intent.getExtras();
+    }
+
+    private void processBundleFromIntent() {
+        if (mBundleFromIntent == null) {
+            return;
+        }
+        if (mTestRunningByIntent) {
+            return;
+        }
+
+        mResultFileName = null;
+        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
+            mTestRunningByIntent = true;
+            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
+
+            // Delay the test start to avoid race conditions.
+            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startAutomaticTest();
+                }
+            }, 500); // TODO where is the race, close->open?
+
+        }
+    }
     @Override
     public String getTestName() {
         return "DataPaths";
@@ -165,7 +249,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         return ACTIVITY_DATA_PATHS;
     }
 
-    String getMagnitudeText(double value) {
+    static String getMagnitudeText(double value) {
         return String.format(MAGNITUDE_FORMAT, value);
     }
 
@@ -184,12 +268,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        // No point running the test if we don't get the sharing mode we requested.
-        if (actualInConfig.isMMap() != requestedInConfig.isMMap()
-                || actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
-            log("Did not get requested MMap stream");
+        // No point running the test if we don't get the data path we requested.
+        if (actualInConfig.isMMap() != requestedInConfig.isMMap()) {
+            log("Did not get requested MMap input stream");
             why += "mmap";
-        }        // Did we request a device and not get that device?
+        }
+        if (actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
+            log("Did not get requested MMap output stream");
+            why += "mmap";
+        }
+        // Did we request a device and not get that device?
         if (requestedInConfig.getDeviceId() != 0
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
             why += ", inDev(" + requestedInConfig.getDeviceId()
@@ -270,6 +358,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setOutputChannel(outputChannel);
     }
 
+    private TestResult testConfigurationsAddMagJitter() throws InterruptedException {
+        TestResult testResult = testConfigurations();
+        if (testResult != null) {
+            testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
+                    + ", jitter = " + TestDataPathsActivity.getMagnitudeText(mPhaseJitter));
+        }
+        return testResult;
+    }
+
     void testPresetCombo(int inputPreset,
                          int numInputChannels,
                          int inputChannel,
@@ -277,7 +374,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                          int outputChannel,
                          boolean mmapEnabled
                    ) throws InterruptedException {
-
         setupDeviceCombo(numInputChannels, inputChannel, numOutputChannels, outputChannel);
 
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
@@ -285,16 +381,19 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
+            int result = testResult.result;
             String summary = getOneLineSummary()
                     + ", inPre = "
                     + StreamConfiguration.convertInputPresetToText(inputPreset)
                     + "\n";
             appendSummary(summary);
             if (result == TEST_RESULT_FAILED) {
-                if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
-                    logFailed("Maybe sine wave blocked by Echo Cancellation!");
+                if (getMagnitude() < 0.000001) {
+                    testResult.addComment("The input is completely SILENT!");
+                } else if (inputPreset == StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION) {
+                    testResult.addComment("Maybe sine wave blocked by Echo Cancellation!");
                 }
             }
         }
@@ -315,6 +414,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     void testPresetCombo(int inputPreset) throws InterruptedException {
+        setTestName("Test InPreset = " + StreamConfiguration.convertInputPresetToText(inputPreset));
         testPresetCombo(inputPreset, 1, 0, 1, 0);
     }
 
@@ -348,15 +448,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
             appendSummary(getOneLineSummary() + "\n");
         }
     }
 
     void testInputDeviceCombo(int deviceId,
+                              int deviceType,
                               int numInputChannels,
                               int inputChannel) throws InterruptedException {
+
+        String typeString = AudioDeviceInfoConverter.typeToString(deviceType);
+        setTestName("Test InDev: #" + deviceId + " " + typeString
+                + "_" + inputChannel + "/" + numInputChannels);
         if (NativeEngine.isMMapSupported()) {
             testInputDeviceCombo(deviceId, numInputChannels, inputChannel, true);
         }
@@ -372,21 +477,22 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             log("----\n"
                     + AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
             if (!deviceInfo.isSource()) continue; // FIXME log as error?!
-            if (deviceInfo.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
+            int deviceType = deviceInfo.getType();
+            if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
                 int id = deviceInfo.getId();
                 int[] channelCounts = deviceInfo.getChannelCounts();
                 numTested++;
                 // Always test mono and stereo.
-                testInputDeviceCombo(id, 1, 0);
-                testInputDeviceCombo(id, 2, 0);
-                testInputDeviceCombo(id, 2, 1);
+                testInputDeviceCombo(id, deviceType, 1, 0);
+                testInputDeviceCombo(id, deviceType, 2, 0);
+                testInputDeviceCombo(id, deviceType, 2, 1);
                 if (channelCounts.length > 0) {
                     for (int numChannels : channelCounts) {
                         // Test higher channel counts.
                         if (numChannels > 2) {
                             log("numChannels = " + numChannels + "\n");
                             for (int channel = 0; channel < numChannels; channel++) {
-                                testInputDeviceCombo(id, numChannels, channel);
+                                testInputDeviceCombo(id, deviceType, numChannels, channel);
                             }
                         }
                     }
@@ -414,19 +520,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedOutConfig.setMMap(mmapEnabled);
 
         mMagnitude = -1.0;
-        int result = testConfigurations();
-        if (result != TEST_RESULT_SKIPPED) {
+        TestResult testResult = testConfigurationsAddMagJitter();
+        if (testResult != null) {
+            int result = testResult.result;
             appendSummary(getOneLineSummary() + "\n");
             if (result == TEST_RESULT_FAILED) {
                 if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
                         && numOutputChannels == 2
                         && outputChannel == 1) {
-                    logFailed("Maybe EARPIECE does not mix stereo to mono!");
+                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
                 }
                 if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
                         && numOutputChannels == 2
                         && outputChannel == 0) {
-                    logFailed("Maybe SPEAKER_SAFE blocked channel 0!");
+                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
                 }
             }
         }
@@ -436,6 +543,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                                int deviceType,
                                int numOutputChannels,
                                int outputChannel) throws InterruptedException {
+        String typeString = AudioDeviceInfoConverter.typeToString(deviceType);
+        setTestName("Test OutDev: #" + deviceId + " " + typeString
+                + "_" + outputChannel + "/" + numOutputChannels);
         if (NativeEngine.isMMapSupported()) {
             testOutputDeviceCombo(deviceId, deviceType, numOutputChannels, outputChannel, true);
         }
@@ -446,9 +556,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         log(text);
         appendSummary(text + "\n");
     }
+
     void logFailed(String text) {
         log(text);
-        appendFailedSummary(text + "\n");
+        logAnalysis(text + "\n");
     }
 
     void testOutputDevices() throws InterruptedException {
@@ -491,34 +602,79 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
-    void logExtraInfo() {
-        log("\n############################");
-        log("\nDevice Info:");
-        log(AudioQueryTools.getAudioManagerReport(mAudioManager));
-        log(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
-        log(AudioQueryTools.getAudioPropertyReport());
-        log("\n############################");
-    }
-
     @Override
     public void runTest() {
         try {
-            mDurationSeconds = DURATION_SECONDS;
-
-            logExtraInfo();
-
+            logDeviceInfo();
             log("min.required.magnitude = " + MIN_REQUIRED_MAGNITUDE);
             log("max.allowed.jitter = " + MAX_ALLOWED_JITTER);
             log("test.gap.msec = " + mGapMillis);
+            
+            mTestResults.clear();
+            mDurationSeconds = DURATION_SECONDS;
 
-            testInputPresets();
-            testInputDevices();
-            testOutputDevices();
+            if (mCheckBoxInputPresets.isChecked()) {
+                runOnUiThread(() -> mCheckBoxInputPresets.setEnabled(false));
+                testInputPresets();
+            }
+            if (mCheckBoxInputDevices.isChecked()) {
+                runOnUiThread(() -> mCheckBoxInputDevices.setEnabled(false));
+                testInputDevices();
+            }
+            if (mCheckBoxOutputDevices.isChecked()) {
+                runOnUiThread(() -> mCheckBoxOutputDevices.setEnabled(false));
+                testOutputDevices();
+            }
 
+            analyzeTestResults();
+
+            if (mTestRunningByIntent) {
+                String report = mAutomatedTestRunner.getFullLogs();
+                maybeWriteTestResult(report);
+                mTestRunningByIntent = false;
+                mBundleFromIntent = null;
+            }
+
+        } catch (InterruptedException e) {
+            analyzeTestResults();
+
+            if (mTestRunningByIntent) {
+                String report = mAutomatedTestRunner.getFullLogs();
+                maybeWriteTestResult(report);
+                mTestRunningByIntent = false;
+                mBundleFromIntent = null;
+            }
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
+        } finally {
+            runOnUiThread(() -> {
+                mCheckBoxInputPresets.setEnabled(true);
+                mCheckBoxInputDevices.setEnabled(true);
+                mCheckBoxOutputDevices.setEnabled(true);
+            });
         }
     }
 
+    void startAutomaticTest() {
+        configureStreamsFromBundle(mBundleFromIntent);
+
+        boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
+                VALUE_DEFAULT_USE_INPUT_PRESETS);
+        boolean shouldUseInputDevices = mBundleFromIntent.getBoolean(KEY_USE_INPUT_DEVICES,
+                VALUE_DEFAULT_USE_INPUT_DEVICES);
+        boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
+                VALUE_DEFAULT_USE_OUTPUT_DEVICES);
+        int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
+                VALUE_DEFAULT_SINGLE_TEST_INDEX);
+
+        runOnUiThread(() -> {
+            mCheckBoxInputPresets.setChecked(shouldUseInputPresets);
+            mCheckBoxInputDevices.setChecked(shouldUseInputDevices);
+            mCheckBoxOutputDevices.setChecked(shouldUseOutputDevices);
+            mAutomatedTestRunner.setTestIndexText(singleTestIndex);
+        });
+
+        mAutomatedTestRunner.startTest();
+    }
 }
