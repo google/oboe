@@ -22,7 +22,7 @@
 
 #include "oboe/Definitions.h"
 
-#include "FifoControllerBase.h"
+#include "fifo/FifoControllerBase.h"
 
 namespace oboe {
 
