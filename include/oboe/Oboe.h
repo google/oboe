@@ -33,5 +33,6 @@
 #include "oboe/Utilities.h"
 #include "oboe/Version.h"
 #include "oboe/StabilizedCallback.h"
+#include "oboe/FifoBuffer.h"
 
 #endif //OBOE_OBOE_H
