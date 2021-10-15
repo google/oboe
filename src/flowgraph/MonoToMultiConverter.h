@@ -33,7 +33,7 @@ class MonoToMultiConverter : public FlowGraphNode {
 public:
     explicit MonoToMultiConverter(int32_t outputChannelCount);
 
-    virtual ~MonoToMultiConverter();
+    virtual ~MonoToMultiConverter() = default;
 
     int32_t onProcess(int32_t numFrames) override;
 
