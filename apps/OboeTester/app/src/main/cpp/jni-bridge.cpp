@@ -650,6 +650,12 @@ Java_com_mobileer_oboetester_GlitchActivity_getPeakAmplitude(JNIEnv *env,
 }
 
 JNIEXPORT jdouble JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_getSineAmplitude(JNIEnv *env,
+                                                             jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getSineAmplitude();
+}
+
+JNIEXPORT jdouble JNICALL
 Java_com_mobileer_oboetester_TestDataPathsActivity_getMagnitude(JNIEnv *env,
                                                                           jobject instance) {
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMagnitude();

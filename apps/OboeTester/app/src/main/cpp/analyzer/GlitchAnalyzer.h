@@ -46,6 +46,10 @@ public:
         return mPeakFollower.getLevel();
     }
 
+    double getSineAmplitude() const {
+        return mMagnitude;
+    }
+
     int32_t getGlitchCount() const {
         return mGlitchCount;
     }
@@ -76,7 +80,7 @@ public:
         report << LOOPBACK_RESULT_TAG "peak.amplitude     = " << std::setw(8)
                << getPeakAmplitude() << "\n";
         report << LOOPBACK_RESULT_TAG "sine.magnitude     = " << std::setw(8)
-               << mMagnitude << "\n";
+               << getSineAmplitude() << "\n";
         report << LOOPBACK_RESULT_TAG "rms.noise          = " << std::setw(8)
                << mMeanSquareNoise << "\n";
         report << LOOPBACK_RESULT_TAG "signal.to.noise.db = " << std::setw(8)
