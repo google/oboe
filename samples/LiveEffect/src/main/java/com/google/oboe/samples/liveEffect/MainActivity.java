@@ -109,6 +109,7 @@ public class MainActivity extends Activity
             public void onClick(View v) {
                 if (((RadioButton)v).isChecked()) {
                     apiSelection = OBOE_API_AAUDIO;
+                    setSpinnersEnabled(true);
                 }
             }
         });
@@ -117,6 +118,11 @@ public class MainActivity extends Activity
             public void onClick(View v) {
                 if (((RadioButton)v).isChecked()) {
                     apiSelection = OBOE_API_OPENSL_ES;
+
+                    // OpenSL ES does not allow us to select a specific device
+                    playbackDeviceSpinner.setSelection(0);
+                    recordingDeviceSpinner.setSelection(0);
+                    setSpinnersEnabled(false);
                 }
             }
         });

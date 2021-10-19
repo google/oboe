@@ -21,6 +21,8 @@ If you want to customize the effects processing then modify the
 onBothStreamsReady() method in "src/main/cpp/FullDuplexPass.h"
 
 ### Caveats
+OpenES SL does not allow setting the recording or playback device.
+
 Synchronizing input and output streams for full-duplex operation is tricky.  
 
 Input and output have different startup times. The input side may have to charge up the microphone circuit.

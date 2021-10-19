@@ -22,6 +22,40 @@
     tools:context="com.google.oboe.samples.liveEffect.MainActivity"
     tools:layout_editor_absoluteY="81dp">
 
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/apiSelectionGroup"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/apiTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/apiSelection" />
+
+        <RadioButton
+            android:id="@+id/aaudioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:text="@string/aaudio" />
+
+        <RadioButton
+            android:id="@+id/slesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:text="@string/sles" />
+    </RadioGroup>
+
     <TextView
         android:id="@+id/recDeviceLabel"
         android:layout_width="wrap_content"
@@ -31,7 +65,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/recording_device"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/apiSelectionGroup"/>
 
     <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/recording_devices_spinner"
@@ -64,41 +98,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/playDeviceLabel" />
 
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/apiSelectionGroup"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/playback_devices_spinner"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/apiTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/apiSelection" />
-
-        <RadioButton
-            android:id="@+id/aaudioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:text="@string/aaudio" />
-
-        <RadioButton
-            android:id="@+id/slesButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:text="@string/sles" />
-    </RadioGroup>
-
     <Button
         android:id="@+id/button_toggle_effect"
         android:layout_width="wrap_content"
@@ -108,8 +107,7 @@
         android:textAllCaps="false"
         android:text="@string/start_effect"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/apiSelectionGroup" />
+        app:layout_constraintTop_toBottomOf="@+id/playback_devices_spinner" />
 
     <TextView
         android:id="@+id/status_view_text"
