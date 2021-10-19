@@ -45,30 +45,13 @@ double HelloOboeEngine::getCurrentOutputLatencyMillis() {
     std::lock_guard<std::mutex> lock(mLock);
     if (!mStream) return -1.0;
 
-    // Get the time that a known audio frame was presented for playing
-    auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
-    double outputLatencyMillis = -1;
-    const int64_t kNanosPerMillisecond = 1000000;
-    if (result == oboe::Result::OK) {
-        oboe::FrameTimestamp playedFrame = result.value();
-        // Get the write index for the next audio frame
-        int64_t writeIndex = mStream->getFramesWritten();
-        // Calculate the number of frames between our known frame and the write index
-        int64_t frameIndexDelta = writeIndex - playedFrame.position;
-        // Calculate the time which the next frame will be presented
-        int64_t frameTimeDelta = (frameIndexDelta * oboe::kNanosPerSecond) /  (mStream->getSampleRate());
-        int64_t nextFramePresentationTime = playedFrame.timestamp + frameTimeDelta;
-        // Assume that the next frame will be written at the current time
-        using namespace std::chrono;
-        int64_t nextFrameWriteTime =
-                duration_cast<nanoseconds>(steady_clock::now().time_since_epoch()).count();
-        // Calculate the latency
-        outputLatencyMillis = static_cast<double>(nextFramePresentationTime - nextFrameWriteTime)
-                         / kNanosPerMillisecond;
+    oboe::ResultWithValue<double> latencyResult = mStream->calculateLatencyMillis();
+    if (latencyResult) {
+        return latencyResult.value();
     } else {
-        LOGE("Error calculating latency: %s", oboe::convertToText(result.error()));
+        LOGE("Error calculating latency: %s", oboe::convertToText(latencyResult.error()));
+        return -1.0;
     }
-    return outputLatencyMillis;
 }
 
 void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
