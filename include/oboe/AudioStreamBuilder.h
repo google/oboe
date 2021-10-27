@@ -96,6 +96,10 @@ public:
      * This just collects the data into a the number of frames that you app requires.
      * We encourage leaving this unspecified in most cases.
      *
+     * If this number is larger than the burst size, some bursts will not receive a callback.
+     * If this number is smaller than the burst size, there may be multiple callbacks in a single
+     * burst.
+     *
      * @param framesPerCallback
      * @return pointer to the builder so calls can be chained
      */
