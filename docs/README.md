@@ -10,6 +10,4 @@ Oboe documentation
 - [Tech Notes](notes/)
   - [Using Audio Effects with Oboe](notes/effects.md)
   - [Disconnected Streams](notes/disconnect.md)
-
-
-
+- [Privacy Policy](PrivacyPolicy.md)
