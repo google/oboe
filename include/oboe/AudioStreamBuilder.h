@@ -92,6 +92,14 @@ public:
      * the callbacks. But if your application is, for example, doing FFTs or other block
      * oriented operations, then call this function to get the sizes you need.
      *
+     * Calling setFramesPerDataCallback() does not guarantee anything about timing.
+     * This just collects the data into a the number of frames that your app requires.
+     * We encourage leaving this unspecified in most cases.
+     *
+     * If this number is larger than the burst size, some bursts will not receive a callback.
+     * If this number is smaller than the burst size, there may be multiple callbacks in a single
+     * burst.
+     *
      * @param framesPerCallback
      * @return pointer to the builder so calls can be chained
      */
