@@ -48,6 +48,7 @@ public class GlitchActivity extends AnalyzerActivity {
     native int getGlitchCount();
     native double getSignalToNoiseDB();
     native double getPeakAmplitude();
+    native double getSineAmplitude();
 
     private GlitchSniffer mGlitchSniffer;
     private NativeSniffer mNativeSniffer = createNativeSniffer();
@@ -97,6 +98,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
         private double mSignalToNoiseDB;
         private double mPeakAmplitude;
+        private double mSineAmplitude;
 
         public GlitchSniffer(Activity activity) {
             super(activity);
@@ -121,6 +123,7 @@ public class GlitchActivity extends AnalyzerActivity {
             int state = getAnalyzerState();
             mSignalToNoiseDB = getSignalToNoiseDB();
             mPeakAmplitude = getPeakAmplitude();
+            mSineAmplitude = getSineAmplitude();
             int glitchCount = getGlitchCount();
             if (state != mPreviousState) {
                 if ((state == STATE_WAITING_FOR_SIGNAL || state == STATE_WAITING_FOR_LOCK)
@@ -175,6 +178,7 @@ public class GlitchActivity extends AnalyzerActivity {
             message.append(String.format("glitch.frames = %d\n", mLastGlitchFrames));
             message.append(String.format("reset.count = %d\n", mLastResetCount - mStartResetCount));
             message.append(String.format("peak.amplitude = %8.6f\n", mPeakAmplitude));
+            message.append(String.format("sine.amplitude = %8.6f\n", mSineAmplitude));
             if (mLastLockedFrames > 0) {
                 message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             }
