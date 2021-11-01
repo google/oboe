@@ -137,10 +137,10 @@ public class MainActivity extends Activity
         } else {
             findViewById(R.id.aaudioButton).setEnabled(enable);
         }
-        setSpinnersEnabled(enable);
 
         ((RadioGroup)findViewById(R.id.apiSelectionGroup))
           .check(apiSelection == OBOE_API_AAUDIO ? R.id.aaudioButton : R.id.slesButton);
+        setSpinnersEnabled(enable);
     }
 
     @Override
