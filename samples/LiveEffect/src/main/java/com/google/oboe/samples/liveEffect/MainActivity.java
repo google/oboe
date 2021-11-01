@@ -118,10 +118,6 @@ public class MainActivity extends Activity
             public void onClick(View v) {
                 if (((RadioButton)v).isChecked()) {
                     apiSelection = OBOE_API_OPENSL_ES;
-
-                    // OpenSL ES does not allow us to select a specific device
-                    playbackDeviceSpinner.setSelection(0);
-                    recordingDeviceSpinner.setSelection(0);
                     setSpinnersEnabled(false);
                 }
             }
@@ -141,6 +137,7 @@ public class MainActivity extends Activity
         } else {
             findViewById(R.id.aaudioButton).setEnabled(enable);
         }
+        setSpinnersEnabled(enable);
 
         ((RadioGroup)findViewById(R.id.apiSelectionGroup))
           .check(apiSelection == OBOE_API_AAUDIO ? R.id.aaudioButton : R.id.slesButton);
@@ -186,7 +183,6 @@ public class MainActivity extends Activity
 
         boolean success = LiveEffectEngine.setEffectOn(true);
         if (success) {
-            setSpinnersEnabled(false);
             statusText.setText(R.string.status_playing);
             toggleEffectButton.setText(R.string.stop_effect);
             isPlaying = true;
@@ -203,11 +199,16 @@ public class MainActivity extends Activity
         resetStatusView();
         toggleEffectButton.setText(R.string.start_effect);
         isPlaying = false;
-        setSpinnersEnabled(true);
         EnableAudioApiUI(true);
     }
 
     private void setSpinnersEnabled(boolean isEnabled){
+        if (((RadioButton)findViewById(R.id.slesButton)).isChecked())
+        {
+            isEnabled = false;
+            playbackDeviceSpinner.setSelection(0);
+            recordingDeviceSpinner.setSelection(0);
+        }
         recordingDeviceSpinner.setEnabled(isEnabled);
         playbackDeviceSpinner.setEnabled(isEnabled);
     }
