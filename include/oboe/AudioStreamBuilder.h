@@ -93,7 +93,7 @@ public:
      * oriented operations, then call this function to get the sizes you need.
      *
      * Calling setFramesPerDataCallback() does not guarantee anything about timing.
-     * This just collects the data into a the number of frames that you app requires.
+     * This just collects the data into a the number of frames that your app requires.
      * We encourage leaving this unspecified in most cases.
      *
      * If this number is larger than the burst size, some bursts will not receive a callback.
