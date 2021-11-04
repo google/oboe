@@ -48,7 +48,7 @@ class DrumThumperActivity : AppCompatActivity(),
 
     private var mDeviceListener: DeviceListener = DeviceListener()
 
-    private var mMixControlsShowing = false;
+    private var mMixControlsShowing = false
 
     init {
         // Load the library containing the a native code including the JNI  functions
@@ -84,7 +84,7 @@ class DrumThumperActivity : AppCompatActivity(),
         }
 
         private fun resetOutput() {
-            Log.i(TAG, "resetOutput() time:" + LocalDateTime.now() + " native reset:" + mDrumPlayer.getOutputReset());
+            Log.i(TAG, "resetOutput() time:" + LocalDateTime.now() + " native reset:" + mDrumPlayer.getOutputReset())
             if (mDrumPlayer.getOutputReset()) {
                 // the (native) stream has been reset by the onErrorAfterClose() callback
                 mDrumPlayer.clearOutputReset()
@@ -107,8 +107,8 @@ class DrumThumperActivity : AppCompatActivity(),
     //
     // UI Helpers
     //
-    val GAIN_FACTOR = 100.0f;
-    val MAX_PAN_POSITION = 200.0f;
+    val GAIN_FACTOR = 100.0f
+    val MAX_PAN_POSITION = 200.0f
     val HALF_PAN_POSITION = MAX_PAN_POSITION / 2.0f
 
     private fun gainPosToGainVal(pos: Int) : Float {
@@ -131,8 +131,8 @@ class DrumThumperActivity : AppCompatActivity(),
     }
 
     private fun showMixControls(show : Boolean) {
-        mMixControlsShowing = show;
-        val showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE;
+        mMixControlsShowing = show
+        val showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE
         findViewById<LinearLayout>(R.id.kickMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.snareMixControls).setVisibility(showFlag)
         findViewById<LinearLayout>(R.id.hihatOpenMixControls).setVisibility(showFlag)
@@ -223,7 +223,7 @@ class DrumThumperActivity : AppCompatActivity(),
         connectMixSliders(R.id.crashPan, R.id.crashGain, DrumPlayer.CRASHCYMBAL)
 
         findViewById<Button>(R.id.mixCtrlBtn).setOnClickListener(this)
-        showMixControls(false);
+        showMixControls(false)
     }
 
     override fun onStop() {

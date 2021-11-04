@@ -170,12 +170,12 @@ class TriggerPad: View {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.actionMasked == MotionEvent.ACTION_DOWN ||
                 event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
-            mIsDown = true;
+            mIsDown = true
             triggerDown()
             invalidate()
             return true
         } else if (event.actionMasked == MotionEvent.ACTION_UP) {
-            mIsDown = false;
+            mIsDown = false
             triggerUp()
             invalidate()
             return true
