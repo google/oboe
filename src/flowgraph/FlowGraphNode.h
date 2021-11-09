@@ -403,7 +403,7 @@ public:
     FlowGraphPortFloatInput input;
 
     /**
-     * Dummy processor. The work happens in the read() method.
+     * Do nothing. The work happens in the read() method.
      *
      * @param numFrames
      * @return number of frames actually processed
