@@ -36,8 +36,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     // STATEs defined in LatencyAnalyzer.h
     private static final int STATE_MEASURE_BACKGROUND = 0;
-    private static final int STATE_IN_PULSE = 1;
-    private static final int STATE_GOT_DATA = 2;
+    private static final int STATE_WRITE_SINE_WAVE = 1;
+    private static final int STATE_IN_PULSE = 2;
+    private static final int STATE_GOT_DATA = 3;
     private final static String LATENCY_FORMAT = "%4.2f";
     // When I use 5.3g I only get one digit after the decimal point!
     private final static String CONFIDENCE_FORMAT = "%5.3f";
@@ -229,6 +230,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     static String convertStateToString(int state) {
         switch (state) {
             case STATE_MEASURE_BACKGROUND: return "BACKGROUND";
+            case STATE_WRITE_SINE_WAVE: return "SINE";
             case STATE_IN_PULSE: return "RECORDING";
             case STATE_GOT_DATA: return "ANALYZING";
             default: return "DONE";

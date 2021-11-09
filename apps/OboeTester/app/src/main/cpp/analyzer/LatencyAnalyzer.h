@@ -419,6 +419,7 @@ public:
         LoopbackProcessor::reset();
         mState = STATE_MEASURE_BACKGROUND;
         mDownCounter = (int32_t) (getSampleRate() * kBackgroundMeasurementLengthSeconds);
+        mPhaseIncrement = 2 * M_PI * kSineWaveFrequency / getSampleRate();
         mLoopCounter = 0;
 
         mPulseCursor = 0;
@@ -524,6 +525,14 @@ public:
                 mDownCounter--;
                 if (mDownCounter <= 0) {
                     mBackgroundRMS = sqrtf(mBackgroundSumSquare / mBackgroundSumCount);
+                    nextState = STATE_WRITE_SINE_WAVE;
+                    mDownCounter = (int32_t) (getSampleRate() * kSineWaveLengthSeconds);
+                    mPulseCursor = 0;
+                }
+                break;
+            case STATE_WRITE_SINE_WAVE:
+                mDownCounter--;
+                if (mDownCounter <= 0) {
                     nextState = STATE_IN_PULSE;
                     mPulseCursor = 0;
                 }
@@ -561,6 +570,12 @@ public:
                     }
                 }
                 break;
+            case STATE_WRITE_SINE_WAVE:
+                for (int i = 0; i < channelCount; i++) {
+                    frameData[i] = sinf(mPhase);
+                }
+                mPhase += mPhaseIncrement;
+                break;
 
             case STATE_MEASURE_BACKGROUND:
             case STATE_GOT_DATA:
@@ -579,6 +594,7 @@ private:
 
     enum echo_state {
         STATE_MEASURE_BACKGROUND,
+        STATE_WRITE_SINE_WAVE,
         STATE_IN_PULSE,
         STATE_GOT_DATA, // must match RoundTripLatencyActivity.java
         STATE_DONE,
@@ -588,6 +604,8 @@ private:
         switch (state) {
             case STATE_MEASURE_BACKGROUND:
                 return "INIT";
+            case STATE_WRITE_SINE_WAVE:
+                return "SINE_WAVE";
             case STATE_IN_PULSE:
                 return "PULSE";
             case STATE_GOT_DATA:
@@ -605,6 +623,8 @@ private:
     static constexpr int32_t kFramesPerEncodedBit = 8; // multiple of 2
     static constexpr int32_t kPulseLengthMillis = 500;
     static constexpr double  kBackgroundMeasurementLengthSeconds = 0.5;
+    static constexpr double  kSineWaveLengthSeconds = 2.0;
+    static constexpr double  kSineWaveFrequency = 440; // A4
 
     AudioRecording     mPulse;
     int32_t            mPulseCursor = 0;
@@ -614,6 +634,9 @@ private:
     double             mBackgroundRMS = 0.0;
     double             mSignalRMS = 0.0;
     int32_t            mFramesToRecord = 0;
+
+    double mPhaseIncrement = 0;
+    double mPhase = 0;
 
     AudioRecording     mAudioRecording; // contains only the input after starting the pulse
     LatencyReport      mLatencyReport;
