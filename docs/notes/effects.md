@@ -33,7 +33,7 @@ In Java:
     
 Pass the audioSessionId to your C++ code using JNI. Then use it when opening your Oboe streams:
 
-    builder->setSessionId(sessionId);
+    builder->setSessionId((oboe::SessionId) audioSessionId);
 
 Note that these streams will probably not have low latency. So you may want to do your own effects processing.
 
