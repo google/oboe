@@ -25,7 +25,6 @@ SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
         , mSingleFrame2(builder.getChannelCount()) {
     assert((getNumTaps() % 4) == 0); // Required for loop unrolling.
     mNumRows = kMaxCoefficients / getNumTaps(); // no guard row needed
-//    printf("SincResampler: numRows = %d\n", mNumRows);
     mPhaseScaler = (double) mNumRows / mDenominator;
     double phaseIncrement = 1.0 / mNumRows;
     generateCoefficients(builder.getInputRate(),
