@@ -108,7 +108,7 @@ public:
     virtual void reset();
 
     void addInputPort(FlowGraphPort &port) {
-        mInputPorts.push_back(port);
+        mInputPorts.emplace_back(port);
     }
 
     bool isDataPulledAutomatically() const {
@@ -164,7 +164,7 @@ public:
             : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
-    
+
     virtual ~FlowGraphPort() = default;
 
     // Ports are often declared public. So let's make them non-copyable.
