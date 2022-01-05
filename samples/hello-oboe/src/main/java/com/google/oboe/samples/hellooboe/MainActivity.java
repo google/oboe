@@ -17,9 +17,13 @@
 package com.google.oboe.samples.hellooboe;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.RequiresApi;
 import androidx.core.view.MotionEventCompat;
 
 import android.view.MotionEvent;
@@ -59,6 +63,7 @@ public class MainActivity extends Activity {
     private Spinner mBufferSizeSpinner;
     private TextView mLatencyText;
     private Timer mLatencyUpdater;
+    private boolean mScoStarted = false;
 
     /*
      * Hook to user control to start / stop audio playback:
@@ -119,6 +124,12 @@ public class MainActivity extends Activity {
         if (result != 0) {
             showToast("Error stopping stream = " + result);
         }
+
+        if (mScoStarted) {
+            stopBluetoothSco();
+            mScoStarted = false;
+        }
+
         PlaybackEngine.delete();
         super.onPause();
     }
@@ -172,6 +183,14 @@ public class MainActivity extends Activity {
             mPlaybackDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    // Start Bluetooth SCO if needed.
+                    if (isScoDevice(getPlaybackDeviceId()) && !mScoStarted) {
+                        startBluetoothSco();
+                        mScoStarted = true;
+                    } else if (!isScoDevice(getPlaybackDeviceId()) && mScoStarted) {
+                        stopBluetoothSco();
+                        mScoStarted = false;
+                    }
                     PlaybackEngine.setAudioDeviceId(getPlaybackDeviceId());
                 }
 
@@ -288,7 +307,6 @@ public class MainActivity extends Activity {
         return audioApiOptions;
     }
 
-
     protected void showToast(final String message) {
         runOnUiThread(new Runnable() {
             @Override
@@ -298,5 +316,33 @@ public class MainActivity extends Activity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * @param deviceId
+     * @return true if the device is TYPE_BLUETOOTH_SCO
+     */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private boolean isScoDevice(int deviceId) {
+        if (deviceId == 0) return false; // Unspecified
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        final AudioDeviceInfo[] devices;
+        devices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        for (AudioDeviceInfo device : devices) {
+            if (device.getId() == deviceId) {
+                return device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO;
+            }
+        }
+        return false;
+    }
+
+    private void startBluetoothSco() {
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        myAudioMgr.startBluetoothSco();
+    }
+
+    private void stopBluetoothSco() {
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        myAudioMgr.stopBluetoothSco();
     }
 }
