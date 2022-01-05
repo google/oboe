@@ -111,11 +111,6 @@ public class MainActivity extends Activity {
         mBufferSizeSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
         mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
 
-        if (mScoStarted) {
-            stopBluetoothSco();
-            mScoStarted = false;
-        }
-
         int result = PlaybackEngine.start();
         if (result != 0) {
             showToast("Error opening stream = " + result);
