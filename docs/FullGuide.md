@@ -92,9 +92,13 @@ To be safe, check the state of the audio stream after you create it, as explaine
 
 ### Open the Stream
 
+Declare a **shared pointer** for the stream. Make sure it is declared with the appropriate scope. The best place is as a member variable in a managing class or as a global. Avoid declaring it as a local variable because the stream may get deleted when the function returns.
+
+    std::shared_ptr<oboe::AudioStream> mStream;
+
 After you've configured the `AudioStreamBuilder`, call `openStream()` to open the stream:
 
-    Result result = streamBuilder.openStream(&stream_);
+    Result result = streamBuilder.openStream(mStream);
     if (result != OK){
         __android_log_print(ANDROID_LOG_ERROR,
                             "AudioEngine",
@@ -296,19 +300,19 @@ frames was read. If not, the buffer might contain unknown data that could cause 
 audio glitch. You can pad the buffer with zeros to create a
 silent dropout:
 
-    Result result = stream.read(audioData, numFrames, timeout);
+    Result result = mStream->read(audioData, numFrames, timeout);
     if (result < 0) {
         // Error!
     }
     if (result != numFrames) {
         // pad the buffer with zeros
         memset(static_cast<sample_type*>(audioData) + result * samplesPerFrame, 0,
-               (numFrames - result) * stream.getBytesPerFrame());
+               (numFrames - result) * mStream->getBytesPerFrame());
     }
 
 You can prime the stream's buffer before starting the stream by writing data or silence into it. This must be done in a non-blocking call with timeoutNanos set to zero.
 
-The data in the buffer must match the data format returned by `stream.getDataFormat()`.
+The data in the buffer must match the data format returned by `mStream->getDataFormat()`.
 
 ### Closing an audio stream
 
@@ -484,10 +488,6 @@ MyOboeStreamCallback myCallback;
 AudioStreamBuilder builder;
 builder.setDataCallback(myCallback);
 builder.setPerformanceMode(PerformanceMode::LowLatency);
-
-// Use it to create the stream
-AudioStream *stream;
-builder.openStream(&stream);
 ```
 
 ## Thread safety
