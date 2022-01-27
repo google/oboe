@@ -96,10 +96,10 @@ public abstract class AudioStreamBase {
 
             buffer.append("time between callbacks = " + callbackTimeStr + "\n");
 
-            buffer.append("frames written "
-                    + String.format("%08Xh", framesWritten)
-                    + " - read " + String.format("%08Xh", framesRead)
-                    + " = " + (framesWritten - framesRead) + "\n");
+            buffer.append("written "
+                    + String.format("0x%08X", framesWritten)
+                    + " - read " + String.format("0x%08X", framesRead)
+                    + " = " + (framesWritten - framesRead) + " frames\n");
 
             String cpuLoadText = String.format("%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
