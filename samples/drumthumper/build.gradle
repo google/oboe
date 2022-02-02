@@ -2,8 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 android {
-    compileSdkVersion 28
-    buildToolsVersion '29.0.2'
+    compileSdkVersion 31
 
     defaultConfig {
         // Usually the applicationId follows the same scheme as the application package name,
@@ -13,7 +12,7 @@ android {
         // publishes using the application Id prefix of "com.plausiblesoftware".
         applicationId "com.plausiblesoftware.drumthumper"
         minSdkVersion 23
-        targetSdkVersion 29
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 

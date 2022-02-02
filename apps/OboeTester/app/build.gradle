@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 31
     defaultConfig {
         applicationId = "com.mobileer.oboetester"
         minSdkVersion 23
-        targetSdkVersion 29
+        targetSdkVersion 31
         // Also update the versions in the AndroidManifest.xml file.
         versionCode 57
         versionName "2.2.2"
