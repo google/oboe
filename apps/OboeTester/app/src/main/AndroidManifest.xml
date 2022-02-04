@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mobileer.oboetester"
-    android:versionCode="57"
-    android:versionName="2.2.2">
+    package="com.mobileer.oboetester">
     <!-- versionCode and versionName also have to be updated in build.gradle -->
     <uses-feature
         android:name="android.hardware.microphone"
@@ -35,12 +33,14 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:banner="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -108,7 +108,8 @@
 
         <service
             android:name=".MidiTapTester"
-            android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE">
+            android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.media.midi.MidiDeviceService" />
             </intent-filter>
