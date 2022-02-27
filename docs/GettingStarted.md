@@ -248,6 +248,7 @@ renders a sine wave.
 ```
 #include <oboe/Oboe.h>
 #include <math.h>
+using namespace oboe;
 
 class OboeSinePlayer: public oboe::AudioStreamDataCallback {
 public:
@@ -263,7 +264,7 @@ public:
                 ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
                 ->setChannelCount(kChannelCount)
                 ->setSampleRate(kSampleRate)
-		->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium);
+		->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Medium)
                 ->setFormat(oboe::AudioFormat::Float)
                 ->setDataCallback(this)
                 ->openStream(mStream);
