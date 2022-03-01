@@ -472,6 +472,7 @@ Result AudioStreamAAudio::requestStop_l(AAudioStream *stream) {
 ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
                                      int32_t numFrames,
                                      int64_t timeoutNanoseconds) {
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         int32_t result = mLibLoader->stream_write(mAAudioStream, buffer,
@@ -485,6 +486,7 @@ ResultWithValue<int32_t>   AudioStreamAAudio::write(const void *buffer,
 ResultWithValue<int32_t>   AudioStreamAAudio::read(void *buffer,
                                  int32_t numFrames,
                                  int64_t timeoutNanoseconds) {
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
         int32_t result = mLibLoader->stream_read(mAAudioStream, buffer,
