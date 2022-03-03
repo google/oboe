@@ -22,7 +22,10 @@
 
 using namespace oboe;
 
-class TestStreamStop : public ::testing::Test {
+using TestStreamStopParams = std::tuple<Direction, AudioApi, PerformanceMode>;
+
+class TestStreamStop : public ::testing::Test,
+                         public ::testing::WithParamInterface<TestStreamStopParams> {
 
 protected:
 
@@ -31,8 +34,9 @@ protected:
         mBuilder.setDirection(Direction::Output);
     }
 
-    bool openStream(Direction direction, PerformanceMode perfMode) {
+    bool openStream(Direction direction, AudioApi audioApi, PerformanceMode perfMode) {
         mBuilder.setDirection(direction);
+        mBuilder.setAudioApi(audioApi);
         mBuilder.setPerformanceMode(perfMode);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
@@ -48,13 +52,6 @@ protected:
         Result r = builder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         return (r == Result::OK);
-    }
-
-    bool closeStream() {
-        Result r = mStream->close();
-        EXPECT_TRUE(r == Result::OK || r == Result::ErrorClosed) <<
-            "Failed to close stream. " << convertToText(r);
-        return (r == Result::OK || r == Result::ErrorClosed);
     }
 
     void stopWhileUsingLargeBuffer(bool shouldWrite) {
@@ -98,32 +95,30 @@ protected:
 
 };
 
-TEST_F(TestStreamStop, OutputLowLatency) {
-    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
-    stopWhileUsingLargeBuffer(true /* write */);
+TEST_P(TestStreamStop, VerifyTestStreamStop) {
+    const Direction direction = std::get<0>(GetParam());
+    const AudioApi audioApi = std::get<1>(GetParam());
+    const PerformanceMode performanceMode = std::get<2>(GetParam());
+
+    ASSERT_TRUE(openStream(direction, audioApi, performanceMode));
+    stopWhileUsingLargeBuffer(direction == Direction::Output);
 }
 
-TEST_F(TestStreamStop, OutputPowerSavings) {
-    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::PowerSaving));
-    stopWhileUsingLargeBuffer(true /* write */);
-}
-
-TEST_F(TestStreamStop, OutputNone) {
-    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::None));
-    stopWhileUsingLargeBuffer(true /* write */);
-}
-
-TEST_F(TestStreamStop, InputLowLatency) {
-    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::LowLatency));
-    stopWhileUsingLargeBuffer(false /* read */);
-}
-
-TEST_F(TestStreamStop, InputPowerSavings) {
-    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::PowerSaving));
-    stopWhileUsingLargeBuffer(false /* read */);
-}
-
-TEST_F(TestStreamStop, InputNone) {
-    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::None));
-    stopWhileUsingLargeBuffer(false /* read */);
-}
+INSTANTIATE_TEST_SUITE_P(
+        TestStreamStopTest,
+        TestStreamStop,
+        ::testing::Values(
+                TestStreamStopParams({Direction::Output, AudioApi::AAudio, PerformanceMode::LowLatency}),
+                TestStreamStopParams({Direction::Output, AudioApi::AAudio, PerformanceMode::None}),
+                TestStreamStopParams({Direction::Output, AudioApi::AAudio, PerformanceMode::PowerSaving}),
+                TestStreamStopParams({Direction::Output, AudioApi::OpenSLES, PerformanceMode::LowLatency}),
+                TestStreamStopParams({Direction::Output, AudioApi::OpenSLES, PerformanceMode::None}),
+                TestStreamStopParams({Direction::Output, AudioApi::OpenSLES, PerformanceMode::PowerSaving}),
+                TestStreamStopParams({Direction::Input, AudioApi::AAudio, PerformanceMode::LowLatency}),
+                TestStreamStopParams({Direction::Input, AudioApi::AAudio, PerformanceMode::None}),
+                TestStreamStopParams({Direction::Input, AudioApi::AAudio, PerformanceMode::PowerSaving}),
+                TestStreamStopParams({Direction::Input, AudioApi::OpenSLES, PerformanceMode::LowLatency}),
+                TestStreamStopParams({Direction::Input, AudioApi::OpenSLES, PerformanceMode::None}),
+                TestStreamStopParams({Direction::Input, AudioApi::OpenSLES, PerformanceMode::PowerSaving})
+        )
+);
