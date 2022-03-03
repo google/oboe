@@ -18,6 +18,10 @@
 #include <oboe/Oboe.h>
 #include <android/api-level.h>
 
+#ifndef __ANDROID_API_S__
+#define __ANDROID_API_S__ 31
+#endif
+
 using namespace oboe;
 
 class CallbackSizeMonitor : public AudioStreamCallback {

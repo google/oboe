@@ -22,7 +22,7 @@
 
 using namespace oboe;
 
-class TestStreamStopWrite : public ::testing::Test {
+class TestStreamStop : public ::testing::Test {
 
 protected:
 
@@ -57,7 +57,7 @@ protected:
         return (r == Result::OK || r == Result::ErrorClosed);
     }
 
-    void stopWhileWritingLargeBuffer() {
+    void stopWhileUsingLargeBuffer(bool shouldWrite) {
         StreamState next = StreamState::Unknown;
         auto r = mStream->requestStart();
         EXPECT_EQ(r, Result::OK);
@@ -66,50 +66,64 @@ protected:
         EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
         AudioStream *str = mStream;
+
+        int16_t buffer[kFramesToWrite * 4] = {};
+
         std::thread stopper([str] {
-            usleep(2 * 1000);
-            str->requestStop();
+            usleep(3 * 1000); // 3 ms
+            str->close();
         });
 
-        int16_t buffer[100000] = {};
-        r = mStream->write(&buffer, 100000, kTimeoutInNanos);
+        if (shouldWrite) {
+            r = mStream->write(&buffer, kFramesToWrite, kTimeoutInNanos);
+        } else {
+            r = mStream->read(&buffer, kFramesToWrite, kTimeoutInNanos);
+        }
         if (r != Result::OK) {
-            FAIL() << "Could not write to audio stream";
+            FAIL() << "Could not write to audio stream: " << static_cast<int>(r);
         }
 
+        stopper.join();
         r = mStream->waitForStateChange(StreamState::Started, &next,
                                         1000 * kNanosPerMillisecond);
-        stopper.join();
-        EXPECT_EQ(r, Result::OK);
-        // May have caught in stopping transition. Wait for full stop.
-        if (next == StreamState::Stopping) {
-            r = mStream->waitForStateChange(StreamState::Stopping, &next,
-                                            1000 * kNanosPerMillisecond);
-            EXPECT_EQ(r, Result::OK);
+        if ((r != Result::ErrorClosed) && (r != Result::OK)) {
+            FAIL() << "Wrong closed result type: " << static_cast<int>(r);
         }
-        ASSERT_EQ(next, StreamState::Stopped) << "next = " << convertToText(next);
     }
 
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
     static constexpr int kTimeoutInNanos = 1000 * kNanosPerMillisecond;
+    static constexpr int kFramesToWrite = 10000;
 
 };
 
-TEST_F(TestStreamStopWrite, OutputLowLatency) {
+TEST_F(TestStreamStop, OutputLowLatency) {
     ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::LowLatency));
-    stopWhileWritingLargeBuffer();
-    ASSERT_TRUE(closeStream());
+    stopWhileUsingLargeBuffer(true /* write */);
 }
 
-TEST_F(TestStreamStopWrite, OutputNone) {
-    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::None));
-    stopWhileWritingLargeBuffer();
-    ASSERT_TRUE(closeStream());
-}
-
-TEST_F(TestStreamStopWrite, OutputPowerSavings) {
+TEST_F(TestStreamStop, OutputPowerSavings) {
     ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::PowerSaving));
-    stopWhileWritingLargeBuffer();
-    ASSERT_TRUE(closeStream());
+    stopWhileUsingLargeBuffer(true /* write */);
+}
+
+TEST_F(TestStreamStop, OutputNone) {
+    ASSERT_TRUE(openStream(Direction::Output, PerformanceMode::None));
+    stopWhileUsingLargeBuffer(true /* write */);
+}
+
+TEST_F(TestStreamStop, InputLowLatency) {
+    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::LowLatency));
+    stopWhileUsingLargeBuffer(false /* read */);
+}
+
+TEST_F(TestStreamStop, InputPowerSavings) {
+    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::PowerSaving));
+    stopWhileUsingLargeBuffer(false /* read */);
+}
+
+TEST_F(TestStreamStop, InputNone) {
+    ASSERT_TRUE(openStream(Direction::Input, PerformanceMode::None));
+    stopWhileUsingLargeBuffer(false /* read */);
 }
