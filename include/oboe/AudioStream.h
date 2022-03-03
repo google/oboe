@@ -262,6 +262,10 @@ public:
      * The latency of an OUTPUT stream is generally higher than the INPUT latency
      * because an app generally tries to keep the OUTPUT buffer full and the INPUT buffer empty.
      *
+     * Note that due to issues in Android before R, we recommend NOT calling
+     * this method from a data callback. See this tech note for more details.
+     * https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md
+     *
      * @return a ResultWithValue which has a result of Result::OK and a value containing the latency
      * in milliseconds, or a result of Result::Error*.
      */
@@ -279,6 +283,10 @@ public:
      *
      * The time is based on the implementation's best effort, using whatever knowledge is available
      * to the system, but cannot account for any delay unknown to the implementation.
+     *
+     * Note that due to issues in Android before R, we recommend NOT calling
+     * this method from a data callback. See this tech note for more details.
+     * https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md
      *
      * @deprecated since 1.0, use AudioStream::getTimestamp(clockid_t clockId) instead, which
      * returns ResultWithValue
@@ -303,6 +311,11 @@ public:
      * The time is based on the implementation's best effort, using whatever knowledge is available
      * to the system, but cannot account for any delay unknown to the implementation.
      *
+     * Note that due to issues in Android before R, we recommend NOT calling
+     * this method from a data callback. See this tech note for more details.
+     * https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md
+     *
+     * See 
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
      * @return a FrameTimestamp containing the position and time at which a particular audio frame
      * entered or left the audio processing pipeline, or an error if the operation failed.
