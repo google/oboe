@@ -28,6 +28,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:ems="10"
+        android:focusable="false"
         android:gravity="start|top"
         android:inputType="textMultiLine"
         android:text="See https://github.com/google/oboe/blob/main/samples/RhythmGame/README.md for instructions. There is a link to a codelab to follow along with."
