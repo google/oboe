@@ -248,8 +248,18 @@ class DrumThumperActivity : AppCompatActivity(),
             R.id.snarePad -> mDrumPlayer.trigger(DrumPlayer.SNAREDRUM)
             R.id.midTomPad -> mDrumPlayer.trigger(DrumPlayer.MIDTOM)
             R.id.lowTomPad -> mDrumPlayer.trigger(DrumPlayer.LOWTOM)
-            R.id.hihatOpenPad -> mDrumPlayer.trigger(DrumPlayer.HIHATOPEN)
-            R.id.hihatClosedPad -> mDrumPlayer.trigger(DrumPlayer.HIHATCLOSED)
+            R.id.hihatOpenPad -> {
+                mDrumPlayer.trigger(DrumPlayer.HIHATOPEN)
+                // For a real drum set, hi-hat can play either the open or the closed sound at any
+                // given time.
+                mDrumPlayer.stopTrigger(DrumPlayer.HIHATCLOSED)
+            }
+            R.id.hihatClosedPad -> {
+                mDrumPlayer.trigger(DrumPlayer.HIHATCLOSED)
+                // For a real drum set, hi-hat can play either the open or the closed sound at any
+                // given time.
+                mDrumPlayer.stopTrigger(DrumPlayer.HIHATOPEN)
+            }
             R.id.ridePad -> mDrumPlayer.trigger(DrumPlayer.RIDECYMBAL)
             R.id.crashPad -> mDrumPlayer.trigger(DrumPlayer.CRASHCYMBAL)
         }

@@ -109,6 +109,7 @@ class DrumPlayer {
     private external fun unloadWavAssetsNative()
 
     external fun trigger(drumIndex: Int)
+    external fun stopTrigger(drumIndex: Int)
 
     external fun setPan(index: Int, pan: Float)
     external fun getPan(index: Int): Float
