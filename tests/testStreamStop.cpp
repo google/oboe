@@ -38,6 +38,8 @@ protected:
         mBuilder.setDirection(direction);
         mBuilder.setAudioApi(audioApi);
         mBuilder.setPerformanceMode(perfMode);
+        mBuilder.setChannelCount(1);
+        mBuilder.setFormat(AudioFormat::I16);
         Result r = mBuilder.openStream(&mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         if (r != Result::OK)
@@ -64,20 +66,21 @@ protected:
 
         AudioStream *str = mStream;
 
-        int16_t buffer[kFramesToWrite * 4] = {};
+        int16_t buffer[kFramesToWrite] = {};
 
         std::thread stopper([str] {
-            usleep(3 * 1000); // 3 ms
+            int64_t estimatedCompletionTimeUs = kSecondsPerMicroSecond * kFramesToWrite / str->getSampleRate();
+            usleep(estimatedCompletionTimeUs / 2); // Stop halfway during the read/write
             str->close();
         });
 
-        if (shouldWrite) {
+        if (mBuilder.getDirection() == Direction::Output) {
             r = mStream->write(&buffer, kFramesToWrite, kTimeoutInNanos);
         } else {
             r = mStream->read(&buffer, kFramesToWrite, kTimeoutInNanos);
         }
         if (r != Result::OK) {
-            FAIL() << "Could not write to audio stream: " << static_cast<int>(r);
+            FAIL() << "Could not read/write to audio stream: " << static_cast<int>(r);
         }
 
         stopper.join();
@@ -91,6 +94,7 @@ protected:
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
     static constexpr int kTimeoutInNanos = 1000 * kNanosPerMillisecond;
+    static constexpr int64_t kSecondsPerMicroSecond = 1000000;
     static constexpr int kFramesToWrite = 10000;
 
 };
