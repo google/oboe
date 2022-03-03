@@ -56,7 +56,7 @@ protected:
         return (r == Result::OK);
     }
 
-    void stopWhileUsingLargeBuffer(bool shouldWrite) {
+    void stopWhileUsingLargeBuffer() {
         StreamState next = StreamState::Unknown;
         auto r = mStream->requestStart();
         EXPECT_EQ(r, Result::OK);
@@ -105,7 +105,7 @@ TEST_P(TestStreamStop, VerifyTestStreamStop) {
     const PerformanceMode performanceMode = std::get<2>(GetParam());
 
     ASSERT_TRUE(openStream(direction, audioApi, performanceMode));
-    stopWhileUsingLargeBuffer(direction == Direction::Output);
+    stopWhileUsingLargeBuffer();
 }
 
 INSTANTIATE_TEST_SUITE_P(
