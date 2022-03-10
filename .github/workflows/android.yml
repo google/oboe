@@ -38,7 +38,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        languages: cpp, java
+        languages: cpp
     - run: |
         pushd samples
         chmod +x gradlew
