@@ -44,6 +44,10 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
+        pushd apps/OboeTester
+        chmod +x gradlew
+        ./gradlew -q clean bundleDebug
+        popd
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
