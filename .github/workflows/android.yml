@@ -39,11 +39,11 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: cpp, java
-
-    # Here is where you build your code
     - run: |
-        make bootstrap
-        make release
+        pushd samples
+        chmod +x gradlew
+        ./gradlew -q clean bundleDebug
+        popd
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
