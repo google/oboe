@@ -54,8 +54,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private int     mBufferBursts = -1;
     private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
     private boolean mMeasureAverage;
+    private int     mTimestampLatencyCount;
+    private double  mTimestampLatencySum;
 
-    // Run the test several times and report the acverage latency.
+    // Run the test several times and report the average latency.
     protected class LatencyAverager {
         private final static int AVERAGE_TEST_DELAY_MSEC = 1000; // arbitrary
         private static final int GOOD_RUNS_REQUIRED = 5; // arbitrary
@@ -68,6 +70,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private double  mLatencyMin;
         private double  mLatencyMax;
         private double  mConfidenceSum;
+        private Double  mTimestampLatencySum;
+        private int     mTimestampLatencyCount;
         private boolean mActive;
         private String  mLastReport = "";
 
@@ -92,6 +96,11 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 mGoodCount++;
                 double latency = getMeasuredLatencyMillis();
                 double confidence = getMeasuredConfidence();
+                double timestampLatency = getTimestampLatencyMillis();
+                if (timestampLatency > 0.0) {
+                    mTimestampLatencySum += timestampLatency;
+                    mTimestampLatencyCount++;
+                }
                 mLatencies.add(latency);
                 mConfidences.add(confidence);
                 mConfidenceSum += confidence;
@@ -124,14 +133,24 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 final double mAverageConfidence = mConfidenceSum / mGoodCount;
                 double meanLatency = calculateMeanLatency();
                 double meanAbsoluteDeviation = calculateMeanAbsoluteDeviation(meanLatency);
-                message = "average.latency.msec = " + String.format(LATENCY_FORMAT, meanLatency) + "\n"
-                        + "mean.absolute.deviation = " + String.format(LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
-                        + "average.confidence = " + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
+                double averageTimestampLatency = -1;
+                if (mTimestampLatencyCount > 0) {
+                    averageTimestampLatency = mTimestampLatencySum / mTimestampLatencyCount;
+                }
+                message = "average.latency.msec = "
+                        + String.format(LATENCY_FORMAT, meanLatency) + "\n"
+                        + "mean.absolute.deviation = "
+                        + String.format(LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
+                        + "average.confidence = "
+                        + String.format(CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
                         + "min.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMin) + "\n"
                         + "max.latency.msec = " + String.format(LATENCY_FORMAT, mLatencyMax) + "\n"
-                        + "num.iterations = " + mGoodCount + "\n";
+                        + "num.iterations = " + mGoodCount + "\n"
+                        + "timestamp.latency.msec = "
+                        + String.format(LATENCY_FORMAT, averageTimestampLatency) + "\n";
             }
             message += "num.failed = " + mBadCount + "\n";
+            message += "\n"; // mark end of average report
             mLastReport = message;
             return message;
         }
@@ -159,6 +178,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             mConfidenceSum = 0.0;
             mLatencyMax = Double.MIN_VALUE;
             mLatencyMin = Double.MAX_VALUE;
+            mTimestampLatencySum = 0.0;
+            mTimestampLatencyCount = 0;
             mBadCount = 0;
             mGoodCount = 0;
             mActive = true;
@@ -195,15 +216,28 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                String message;
+                double timestampLatency = -1.0;
+                int state = getAnalyzerState();
+                if (state == STATE_MEASURE_BACKGROUND || state == STATE_IN_PULSE) {
+                    timestampLatency = measureTimestampLatency();
+                    if (timestampLatency > 0) {
+                        mTimestampLatencySum += timestampLatency;
+                        mTimestampLatencyCount++;
+                    }
+                }
 
+                String message;
                 if (isAnalyzerDone()) {
-                    message = mLatencyAverager.onAnalyserDone();
-                    message += onAnalyzerDone();
+                    if (mLatencyAverager.isActive()) {
+                        message = mLatencyAverager.onAnalyserDone();
+                    } else {
+                        message = getResultString();
+                    }
+                    onAnalyzerDone();
                 } else {
                     message = getProgressText();
                     message += "please wait... " + counter + "\n";
-                    message += convertStateToString(getAnalyzerState());
+                    message += convertStateToString(getAnalyzerState()) + "\n";
 
                     // Repeat this runnable code block again.
                     mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
@@ -215,6 +249,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
         private void startSniffer() {
             counter = 0;
+            mTimestampLatencyCount = 0;
+            mTimestampLatencySum = 0.0;
             // Start the initial runnable task by posting through the handler
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
         }
@@ -245,17 +281,15 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         return message;
     }
 
-    private String onAnalyzerDone() {
-        String message = getResultString();
+    private void onAnalyzerDone() {
         if (mTestRunningByIntent) {
             String report = getCommonTestReport();
-            report += message;
+            report += getResultString();
             maybeWriteTestResult(report);
         }
         mTestRunningByIntent = false;
         mHasRecording = true;
         stopAudioTest();
-        return message;
     }
 
     @NonNull
@@ -283,6 +317,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
         message += String.format("rms.signal = %7.5f\n", getSignalRMS());
         message += String.format("rms.noise = %7.5f\n", getBackgroundRMS());
+        message += String.format("timestamp.latency.msec = " + LATENCY_FORMAT + "\n",
+                getTimestampLatencyMillis());
         message += String.format("reset.count = %d\n", resetCount);
         message += String.format("result = %d\n", result);
 
@@ -291,11 +327,19 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     private LatencySniffer mLatencySniffer = new LatencySniffer();
 
-    native int getAnalyzerProgress();
-    native int getMeasuredLatency();
     double getMeasuredLatencyMillis() {
         return getMeasuredLatency() * 1000.0 / getSampleRate();
     }
+
+    double getTimestampLatencyMillis() {
+        if (mTimestampLatencyCount <= 0) return -1.0;
+        if (mTimestampLatencyCount <= 0) return -1.0;
+        else return mTimestampLatencySum / mTimestampLatencyCount;
+    }
+
+    native int getAnalyzerProgress();
+    native int getMeasuredLatency();
+    native double measureTimestampLatency();
     native double getMeasuredConfidence();
     native double getBackgroundRMS();
     native double getSignalRMS();
