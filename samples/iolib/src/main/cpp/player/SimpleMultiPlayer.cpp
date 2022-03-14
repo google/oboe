@@ -48,7 +48,8 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
         __android_log_print(ANDROID_LOG_ERROR, TAG, "  streamState::Disconnected");
     }
 
-    memset(audioData, 0, numFrames * mChannelCount * sizeof(float));
+    memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>(mChannelCount)
+            * sizeof(float));
 
     // OneShotSampleSource* sources = mSampleSources.get();
     for(int32_t index = 0; index < mNumSampleBuffers; index++) {

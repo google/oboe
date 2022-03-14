@@ -73,8 +73,8 @@ static double calculateNormalizedCorrelation(const float *a,
 
     // Correlate a against b.
     for (int i = 0; i < windowSize; i++) {
-        float s1 = a[i];
-        float s2 = b[i];
+        double s1 = a[i];
+        double s2 = b[i];
         // Use a normalized cross-correlation.
         sumProducts += s1 * s2;
         sumSquares += ((s1 * s1) + (s2 * s2));
@@ -89,7 +89,7 @@ static double calculateNormalizedCorrelation(const float *a,
 static double calculateRootMeanSquare(float *data, int32_t numSamples) {
     double sum = 0.0;
     for (int32_t i = 0; i < numSamples; i++) {
-        float sample = data[i];
+        double sample = data[i];
         sum += sample * sample;
     }
     return sqrt(sum / numSamples);
@@ -519,7 +519,8 @@ public:
         switch (mState) {
             case STATE_MEASURE_BACKGROUND:
                 // Measure background RMS on channel 0
-                mBackgroundSumSquare += frameData[0] * frameData[0];
+                mBackgroundSumSquare += static_cast<double>(frameData[0])
+                        * static_cast<double>(frameData[0]);
                 mBackgroundSumCount++;
                 mDownCounter--;
                 if (mDownCounter <= 0) {

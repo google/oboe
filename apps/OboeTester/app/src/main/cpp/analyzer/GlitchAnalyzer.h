@@ -169,8 +169,10 @@ public:
                 break;
 
             case STATE_WAITING_FOR_LOCK:
-                mSinAccumulator += sample * sinf(mInputPhase);
-                mCosAccumulator += sample * cosf(mInputPhase);
+                mSinAccumulator += static_cast<double>(sample)
+                        * static_cast<double>(sinf(mInputPhase));
+                mCosAccumulator += static_cast<double>(sample)
+                        * static_cast<double>(cosf(mInputPhase));
                 mFramesAccumulated++;
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
