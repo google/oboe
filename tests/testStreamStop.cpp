@@ -69,7 +69,7 @@ protected:
         int16_t buffer[kFramesToWrite] = {};
 
         std::thread stopper([str] {
-            int64_t estimatedCompletionTimeUs = kSecondsPerMicroSecond * kFramesToWrite / str->getSampleRate();
+            int64_t estimatedCompletionTimeUs = kMicroSecondsPerSecond * kFramesToWrite / str->getSampleRate();
             usleep(estimatedCompletionTimeUs / 2); // Stop halfway during the read/write
             str->close();
         });
@@ -94,7 +94,7 @@ protected:
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;
     static constexpr int kTimeoutInNanos = 1000 * kNanosPerMillisecond;
-    static constexpr int64_t kSecondsPerMicroSecond = 1000000;
+    static constexpr int64_t kMicroSecondsPerSecond = 1000000;
     static constexpr int kFramesToWrite = 10000;
 
 };
