@@ -21,4 +21,20 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_height="match_parent" />
 
+    <TextView
+        android:id="@+id/instructionsBlock"
+        android:layout_width="294dp"
+        android:layout_height="159dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:clickable="false"
+        android:ems="10"
+        android:focusable="false"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        android:text="See https://github.com/google/oboe/blob/main/samples/RhythmGame/README.md for instructions. There is a link to a codelab to follow along with."
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

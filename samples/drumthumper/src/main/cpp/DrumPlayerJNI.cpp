@@ -114,6 +114,13 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_trigger
 }
 
 /**
+ * Native (JNI) implementation of DrumPlayer.trigger()
+ */
+JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_stopTrigger(JNIEnv* env, jobject, jint index) {
+    sDTPlayer.triggerUp(index);
+}
+
+/**
  * Native (JNI) implementation of DrumPlayer.getOutputReset()
  */
 JNIEXPORT jboolean JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_getOutputReset(JNIEnv*, jobject) {
