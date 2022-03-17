@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: build samples
+    - name: build samples and apps
       uses: github/codeql-action/init@v1
       with:
         languages: cpp
@@ -25,22 +25,13 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
-    - name: Perform CodeQL Analysis on samples
-      uses: github/codeql-action/analyze@v1
-    - name: build OboeTester
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-    - run: |
         pushd apps/OboeTester
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
-    - name: Perform CodeQL Analysis on OboeTester
-      uses: github/codeql-action/analyze@v1
-    - name: build fxlab
-      run: |
         pushd apps/fxlab
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
