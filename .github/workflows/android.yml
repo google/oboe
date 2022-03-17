@@ -39,7 +39,7 @@ jobs:
     - name: Perform CodeQL Analysis on OboeTester
       uses: github/codeql-action/analyze@v1
     - name: build fxlab
-    run: |
+      run: |
         pushd apps/fxlab
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
