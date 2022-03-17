@@ -151,8 +151,7 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
 #if MCR_USE_KAISER
             float window = mKaiserWindow(tapPhase * numTapsHalfInverse);
 #else
-            float window = mCoshWindow(static_cast<double>(tapPhase)
-                    * static_cast<double>(numTapsHalfInverse));
+            float window = mCoshWindow(static_cast<double>(tapPhase) * numTapsHalfInverse);
 #endif
             float coefficient = sinc(radians * cutoffScaler) * window;
             mCoefficients.at(coefficientIndex++) = coefficient;
