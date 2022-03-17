@@ -25,6 +25,8 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
+    - name: Perform CodeQL Analysis on samples
+      uses: github/codeql-action/analyze@v1
     - name: build OboeTester
       uses: github/codeql-action/init@v1
       with:
@@ -34,14 +36,11 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
+    - name: Perform CodeQL Analysis on OboeTester
+      uses: github/codeql-action/analyze@v1
     - name: build fxlab
-      uses: github/codeql-action/init@v1
-      with:
-        languages: cpp
-    - run: |
+    run: |
         pushd apps/fxlab
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
