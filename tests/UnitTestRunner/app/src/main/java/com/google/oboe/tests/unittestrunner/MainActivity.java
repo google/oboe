@@ -60,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
 
         StringBuffer output = new StringBuffer();
         String abi = Build.CPU_ABI;
+        String extraStringForDebugBuilds = "-hwasan";
+        if (abi.endsWith(extraStringForDebugBuilds)) {
+            abi = abi.substring(0, abi.length() - extraStringForDebugBuilds.length());
+        }
         String filesDir = getFilesDir().getPath();
         String testBinaryPath = abi + "/" + TEST_BINARY_FILEANAME;
 
