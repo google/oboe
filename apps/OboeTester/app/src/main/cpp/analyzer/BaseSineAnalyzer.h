@@ -145,8 +145,8 @@ public:
     bool transformSample(float sample, float referencePhase) {
         // Track incoming signal and slowly adjust magnitude to account
         // for drift in the DRC or AGC.
-        mSinAccumulator += sample * sinf(referencePhase);
-        mCosAccumulator += sample * cosf(referencePhase);
+        mSinAccumulator += static_cast<double>(sample) * sinf(referencePhase);
+        mCosAccumulator += static_cast<double>(sample) * cosf(referencePhase);
         mFramesAccumulated++;
         // Must be a multiple of the period or the calculation will not be accurate.
         if (mFramesAccumulated == mSinePeriod) {

@@ -64,12 +64,12 @@ struct LatencyReport {
 };
 
 // Calculate a normalized cross correlation.
-static double calculateNormalizedCorrelation(const float *a,
+static float calculateNormalizedCorrelation(const float *a,
                                              const float *b,
                                              int windowSize) {
-    double correlation = 0.0;
-    double sumProducts = 0.0;
-    double sumSquares = 0.0;
+    float correlation = 0.0;
+    float sumProducts = 0.0;
+    float sumSquares = 0.0;
 
     // Correlate a against b.
     for (int i = 0; i < windowSize; i++) {
@@ -89,7 +89,7 @@ static double calculateNormalizedCorrelation(const float *a,
 static double calculateRootMeanSquare(float *data, int32_t numSamples) {
     double sum = 0.0;
     for (int32_t i = 0; i < numSamples; i++) {
-        float sample = data[i];
+        double sample = data[i];
         sum += sample * sample;
     }
     return sqrt(sum / numSamples);
@@ -215,9 +215,9 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
 
     // Correlate pulse against the recorded data.
     for (int i = 0; i < numCorrelations; i++) {
-        float correlation = (float) calculateNormalizedCorrelation(&recorded.getData()[i],
-                                                                   &pulse.getData()[0],
-                                                                   pulse.size());
+        float correlation = calculateNormalizedCorrelation(&recorded.getData()[i],
+                                                           &pulse.getData()[0],
+                                                           pulse.size());
         correlations[i] = correlation;
     }
 
@@ -519,7 +519,7 @@ public:
         switch (mState) {
             case STATE_MEASURE_BACKGROUND:
                 // Measure background RMS on channel 0
-                mBackgroundSumSquare += frameData[0] * frameData[0];
+                mBackgroundSumSquare += static_cast<double>(frameData[0]) * frameData[0];
                 mBackgroundSumCount++;
                 mDownCounter--;
                 if (mDownCounter <= 0) {

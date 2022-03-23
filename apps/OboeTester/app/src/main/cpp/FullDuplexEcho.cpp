@@ -32,7 +32,8 @@ oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
     float *inputFloat = (float *)inputData;
     float *outputFloat = (float *)outputData;
     // zero out entire output array
-    memset(outputFloat, 0, numOutputFrames * getOutputStream()->getBytesPerFrame());
+    memset(outputFloat, 0, static_cast<size_t>(numOutputFrames)
+            * static_cast<size_t>(getOutputStream()->getBytesPerFrame()));
 
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
