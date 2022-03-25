@@ -659,14 +659,6 @@ jdouble ActivityRoundTripLatency::measureTimestampLatency() {
     int32_t sampleRate = mFullDuplexLatency->getOutputStream()->getSampleRate();
     int64_t mappedTimeNanos = outputTimeNanos + ((mappedPosition - ouputPosition) * 1e9) / sampleRate;
 
-//    LOGD("ActivityRoundTripLatency::%s() writeReadDelta = %ld ", __func__, writeReadDelta);
-//    LOGD("ActivityRoundTripLatency::%s() inputPosition = %ld ", __func__, inputPosition);
-//    LOGD("ActivityRoundTripLatency::%s() inputTimeNanos = %ld ", __func__, inputTimeNanos);
-//    LOGD("ActivityRoundTripLatency::%s() ouputPosition = %ld ", __func__, ouputPosition);
-//    LOGD("ActivityRoundTripLatency::%s() outputTimeNanos = %ld ", __func__, outputTimeNanos);
-//    LOGD("ActivityRoundTripLatency::%s() mappedPosition = %ld ", __func__, mappedPosition);
-//    LOGD("ActivityRoundTripLatency::%s() mappedTimeNanos = %ld ", __func__, mappedTimeNanos);
-
     // Latency is the difference in time between when a frame was recorded and
     // when its corresponding echo was played.
     return (mappedTimeNanos - inputTimeNanos) * 1.0e-6; // convert nanos to millis
