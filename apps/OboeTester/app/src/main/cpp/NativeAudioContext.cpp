@@ -632,6 +632,38 @@ void ActivityRoundTripLatency::finishOpen(bool isInput, AudioStream *oboeStream)
     }
 }
 
+// The timestamp latency is the difference between the input
+// and output times for a specific frame.
+// Start with the position and time from an input timestamp.
+// Map the input position to the corresponding position in output
+// and calculate its time.
+// Use the difference between framesWritten and framesRead to
+// convert input positions to output positions.
+jdouble ActivityRoundTripLatency::measureTimestampLatency() {
+    if (!mFullDuplexLatency->isWriteReadDeltaValid()) return -1.0;
+
+    int64_t writeReadDelta = mFullDuplexLatency->getWriteReadDelta();
+    auto inputTimestampResult = mFullDuplexLatency->getInputStream()->getTimestamp(CLOCK_MONOTONIC);
+    if (!inputTimestampResult) return -1.0;
+    auto outputTimestampResult = mFullDuplexLatency->getOutputStream()->getTimestamp(CLOCK_MONOTONIC);
+    if (!outputTimestampResult) return -1.0;
+
+    int64_t inputPosition = inputTimestampResult.value().position;
+    int64_t inputTimeNanos = inputTimestampResult.value().timestamp;
+    int64_t ouputPosition = outputTimestampResult.value().position;
+    int64_t outputTimeNanos = outputTimestampResult.value().timestamp;
+
+    // Map input frame position to the corresponding output frame.
+    int64_t mappedPosition = inputPosition + writeReadDelta;
+    // Calculate when that frame will play.
+    int32_t sampleRate = mFullDuplexLatency->getOutputStream()->getSampleRate();
+    int64_t mappedTimeNanos = outputTimeNanos + ((mappedPosition - ouputPosition) * 1e9) / sampleRate;
+
+    // Latency is the difference in time between when a frame was recorded and
+    // when its corresponding echo was played.
+    return (mappedTimeNanos - inputTimeNanos) * 1.0e-6; // convert nanos to millis
+}
+
 // ======================================================================= ActivityGlitches
 void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     ActivityFullDuplex::configureBuilder(isInput, builder);

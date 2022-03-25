@@ -564,6 +564,8 @@ public:
         return false;
     }
 
+    jdouble measureTimestampLatency();
+
 protected:
     void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
 
