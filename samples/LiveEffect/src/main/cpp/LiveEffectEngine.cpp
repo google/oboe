@@ -121,7 +121,8 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupRecordingStreamParameters(
     builder->setDeviceId(mRecordingDeviceId)
         ->setDirection(oboe::Direction::Input)
         ->setSampleRate(sampleRate)
-        ->setChannelCount(mInputChannelCount);
+        ->setChannelCount(mInputChannelCount)
+        ->setInputPreset(oboe::InputPreset::VoicePerformance);
     return setupCommonStreamParameters(builder);
 }
 
