@@ -16,6 +16,7 @@
 
 #include <cassert>
 #include <math.h>
+#include <algorithm>
 #include "IntegerRatio.h"
 #include "PolyphaseResampler.h"
 
