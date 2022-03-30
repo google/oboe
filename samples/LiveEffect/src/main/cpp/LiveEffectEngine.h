@@ -30,11 +30,12 @@ public:
     void setRecordingDeviceId(int32_t deviceId);
     void setPlaybackDeviceId(int32_t deviceId);
 
-    /**
-     * @param isOn
-     * @return true if it succeeds
-     */
-    bool setEffectOn(bool isOn);
+    bool openStreams();
+    int getRecordSessionId();
+    int getPlaybackSessionId();
+    bool startDuplexEffects();
+    void closeStreams();
+    bool hasEffectStarted();
 
     /*
      * oboe::AudioStreamDataCallback interface implementation
@@ -56,6 +57,8 @@ private:
     bool              mIsEffectOn = false;
     int32_t           mRecordingDeviceId = oboe::kUnspecified;
     int32_t           mPlaybackDeviceId = oboe::kUnspecified;
+    int32_t           mRecordSessionId = -1;
+    int32_t           mPlaybackSessionId = -1;
     const oboe::AudioFormat mFormat = oboe::AudioFormat::Float; // for easier processing
     oboe::AudioApi    mAudioApi = oboe::AudioApi::AAudio;
     int32_t           mSampleRate = oboe::kUnspecified;
@@ -64,10 +67,6 @@ private:
 
     std::shared_ptr<oboe::AudioStream> mRecordingStream;
     std::shared_ptr<oboe::AudioStream> mPlayStream;
-
-    oboe::Result openStreams();
-
-    void closeStreams();
 
     void closeStream(std::shared_ptr<oboe::AudioStream> &stream);
 

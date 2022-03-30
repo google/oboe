@@ -80,7 +80,8 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
 
     @Override
     public void setupEffects(int sessionId) {
-        // setupEqualizer(sessionId);
-        // setupReverb(sessionId);
+        Log.e(TAG, "TestA1");
+        //setupEqualizer(sessionId);
+        setupReverb(sessionId);
     }
 }

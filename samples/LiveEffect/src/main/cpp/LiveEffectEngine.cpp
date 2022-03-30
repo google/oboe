@@ -31,6 +31,14 @@ void LiveEffectEngine::setPlaybackDeviceId(int32_t deviceId) {
     mPlaybackDeviceId = deviceId;
 }
 
+int LiveEffectEngine::getRecordSessionId() {
+    return mRecordSessionId;
+}
+
+int LiveEffectEngine::getPlaybackSessionId() {
+    return mPlaybackSessionId;
+}
+
 bool LiveEffectEngine::isAAudioRecommended() {
     return oboe::AudioStreamBuilder::isAAudioRecommended();
 }
@@ -41,25 +49,24 @@ bool LiveEffectEngine::setAudioApi(oboe::AudioApi api) {
     return true;
 }
 
-bool LiveEffectEngine::setEffectOn(bool isOn) {
-    bool success = true;
-    if (isOn != mIsEffectOn) {
-        if (isOn) {
-            success = openStreams() == oboe::Result::OK;
-            if (success) {
-                mFullDuplexPass.start();
-                mIsEffectOn = isOn;
-            }
-        } else {
-            mFullDuplexPass.stop();
-            closeStreams();
-            mIsEffectOn = isOn;
-       }
+bool LiveEffectEngine::startDuplexEffects() {
+    // stream has not properly started yet
+    if (!mPlayStream || !mRecordingStream) {
+        return false;
     }
-    return success;
+
+    mFullDuplexPass.start();
+    mIsEffectOn = true;
+    return true;
+}
+
+bool LiveEffectEngine::hasEffectStarted() {
+    return mIsEffectOn;
 }
 
 void LiveEffectEngine::closeStreams() {
+    mFullDuplexPass.stop();
+
     /*
     * Note: The order of events is important here.
     * The playback stream must be closed before the recording stream. If the
@@ -73,9 +80,13 @@ void LiveEffectEngine::closeStreams() {
 
     closeStream(mRecordingStream);
     mFullDuplexPass.setInputStream(nullptr);
+
+    mIsEffectOn = false;
+    mPlaybackSessionId = -1;
+    mRecordSessionId = -1;
 }
 
-oboe::Result  LiveEffectEngine::openStreams() {
+bool LiveEffectEngine::openStreams() {
     // Note: The order of stream creation is important. We create the playback
     // stream first, then use properties from the playback stream
     // (e.g. sample rate) to create the recording stream. By matching the
@@ -86,7 +97,7 @@ oboe::Result  LiveEffectEngine::openStreams() {
     if (result != oboe::Result::OK) {
         LOGE("Failed to open output stream. Error %s", oboe::convertToText(result));
         mSampleRate = oboe::kUnspecified;
-        return result;
+        return false;
     } else {
         // The input stream needs to run at the same sample rate as the output.
         mSampleRate = mPlayStream->getSampleRate();
@@ -98,13 +109,16 @@ oboe::Result  LiveEffectEngine::openStreams() {
     if (result != oboe::Result::OK) {
         LOGE("Failed to open input stream. Error %s", oboe::convertToText(result));
         closeStream(mPlayStream);
-        return result;
+        return false;
     }
     warnIfNotLowLatency(mRecordingStream);
 
+    mPlaybackSessionId = mPlayStream->getSessionId();
+    mRecordSessionId = mRecordingStream->getSessionId();
+
     mFullDuplexPass.setInputStream(mRecordingStream);
     mFullDuplexPass.setOutputStream(mPlayStream);
-    return result;
+    return true;
 }
 
 /**
@@ -121,8 +135,7 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupRecordingStreamParameters(
     builder->setDeviceId(mRecordingDeviceId)
         ->setDirection(oboe::Direction::Input)
         ->setSampleRate(sampleRate)
-        ->setChannelCount(mInputChannelCount)
-        ->setInputPreset(oboe::InputPreset::VoicePerformance);
+        ->setChannelCount(mInputChannelCount);
     return setupCommonStreamParameters(builder);
 }
 
@@ -138,7 +151,8 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupPlaybackStreamParameters(
         ->setErrorCallback(this)
         ->setDeviceId(mPlaybackDeviceId)
         ->setDirection(oboe::Direction::Output)
-        ->setChannelCount(mOutputChannelCount);
+        ->setChannelCount(mOutputChannelCount)
+        ->setSampleRate(44100);
 
     return setupCommonStreamParameters(builder);
 }
@@ -158,7 +172,8 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
         ->setFormat(mFormat)
         ->setFormatConversionAllowed(true)
         ->setSharingMode(oboe::SharingMode::Exclusive)
-        ->setPerformanceMode(oboe::PerformanceMode::LowLatency);
+        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+        ->setSessionId(oboe::SessionId::Allocate);
     return builder;
 }
 

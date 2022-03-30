@@ -39,23 +39,88 @@ JNIEXPORT void JNICALL
 Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_delete(JNIEnv *env,
                                                                jclass) {
     if (engine) {
-        engine->setEffectOn(false);
+        engine->closeStreams();
         delete engine;
         engine = nullptr;
     }
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_setEffectOn(
-    JNIEnv *env, jclass, jboolean isEffectOn) {
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_openStreams(
+        JNIEnv *env, jclass) {
     if (engine == nullptr) {
         LOGE(
-            "Engine is null, you must call createEngine before calling this "
-            "method");
+                "Engine is null, you must call createEngine before calling this "
+                "method");
         return JNI_FALSE;
     }
 
-    return engine->setEffectOn(isEffectOn) ? JNI_TRUE : JNI_FALSE;
+    return engine->openStreams();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_getRecordSessionId(
+        JNIEnv *env, jclass) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return JNI_FALSE;
+    }
+
+    return engine->getRecordSessionId();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_getPlaybackSessionId(
+        JNIEnv *env, jclass) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return JNI_FALSE;
+    }
+
+    return engine->getPlaybackSessionId();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_startDuplexEffects(
+        JNIEnv *env, jclass) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return JNI_FALSE;
+    }
+
+    return engine->startDuplexEffects();
+}
+
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_closeStreams(
+        JNIEnv *env, jclass) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return;
+    }
+
+    engine->closeStreams();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_hasEffectStarted(
+        JNIEnv *env, jclass) {
+    if (engine == nullptr) {
+        LOGE(
+                "Engine is null, you must call createEngine before calling this "
+                "method");
+        return JNI_FALSE;
+    }
+
+    return engine->hasEffectStarted();
 }
 
 JNIEXPORT void JNICALL

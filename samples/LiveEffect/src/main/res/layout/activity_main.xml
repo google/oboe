@@ -56,6 +56,31 @@
             android:text="@string/sles" />
     </RadioGroup>
 
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/prebuiltEffects"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/apiSelectionGroup">
+        <TextView
+            android:id="@+id/effectsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/java_effects" />
+        <CheckBox android:id="@+id/checkbox_aec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/aec"/>
+        <CheckBox android:id="@+id/checkbox_reverb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reverb"/>
+    </RadioGroup>
+
     <TextView
         android:id="@+id/recDeviceLabel"
         android:layout_width="wrap_content"
@@ -65,7 +90,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/recording_device"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/apiSelectionGroup"/>
+        app:layout_constraintTop_toBottomOf="@+id/prebuiltEffects"/>
 
     <com.google.oboe.samples.audio_device.AudioDeviceSpinner
         android:id="@+id/recording_devices_spinner"

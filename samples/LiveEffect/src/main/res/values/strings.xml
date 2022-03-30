@@ -16,4 +16,8 @@
     <string name="apiSelection">APIs</string>
     <string name="aaudio">AAudio</string>
     <string name="sles">OpenSL ES</string>
+
+    <string name="java_effects">Effects</string>
+    <string name="aec">Acoustic Echo Canceler</string>
+    <string name="reverb">Preset Reverb</string>
 </resources>

@@ -467,14 +467,19 @@ abstract class TestAudioActivity extends Activity {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
         requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
+        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        int audioSessionId = myAudioMgr.generateAudioSessionId();
+        requestedConfig.setSessionId(audioSessionId);
 
         streamContext.tester.open(); // OPEN the stream
 
         mSampleRate = actualConfig.getSampleRate();
         mAudioState = AUDIO_STATE_OPEN;
         int sessionId = actualConfig.getSessionId();
+        Log.e(TAG, "TestA2: " + audioSessionId + " " + sessionId);
         if (sessionId > 0) {
-            setupEffects(sessionId);
+            Log.e(TAG, "TestA3");
+            setupEffects(audioSessionId);
         }
         if (streamContext.configurationView != null) {
             streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);

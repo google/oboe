@@ -16,11 +16,16 @@ package com.google.oboe.samples.liveEffect;
  */
 
 import android.content.Context;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.BassBoost;
+import android.media.audiofx.LoudnessEnhancer;
+import android.media.audiofx.PresetReverb;
 import android.media.AudioManager;
+import android.media.metrics.PlaybackSession;
 import android.os.Build;
+import android.util.Log;
 
 public enum LiveEffectEngine {
-
     INSTANCE;
 
     // Load native library
@@ -28,15 +33,58 @@ public enum LiveEffectEngine {
         System.loadLibrary("liveEffect");
     }
 
+    private static final String TAG = LiveEffectEngine.class.getName();
+
     // Native methods
     static native boolean create();
     static native boolean isAAudioRecommended();
     static native boolean setAPI(int apiType);
-    static native boolean setEffectOn(boolean isEffectOn);
+    static native boolean openStreams();
+    static native int getRecordSessionId();
+    static native int getPlaybackSessionId();
+    static native boolean startDuplexEffects();
+    static native void closeStreams();
+    static native boolean hasEffectStarted();
     static native void setRecordingDeviceId(int deviceId);
     static native void setPlaybackDeviceId(int deviceId);
     static native void delete();
     static native void native_setDefaultStreamValues(int defaultSampleRate, int defaultFramesPerBurst);
+
+    static boolean startEffects(boolean useAcousticEchoCanceler, boolean usePresetReverb) {
+        boolean success = false;
+        if (!hasEffectStarted()) {
+            success = openStreams();
+            if (success) {
+                if (useAcousticEchoCanceler) {
+                    int recordSessionId = getRecordSessionId();
+                    Log.d(TAG, "Record Session Id: " + recordSessionId);
+                    AcousticEchoCanceler effect =  AcousticEchoCanceler.create(recordSessionId);
+                    if (effect == null) {
+                        Log.e(TAG, "Could not create AcousticEchoCanceler");
+                    }
+                }
+                if (usePresetReverb) {
+                    int playbackSessionId = getPlaybackSessionId();
+                    Log.d(TAG, "Playback Session Id: " + playbackSessionId);
+                    PresetReverb effect = new PresetReverb(0, playbackSessionId);
+                    if (effect == null) {
+                        Log.e(TAG, "Could not create LoudnessEnhancer");
+                    }
+                }
+                return startDuplexEffects();
+            }
+        }
+        return success;
+    }
+
+    static boolean stopEffects() {
+        boolean success = false;
+        if (hasEffectStarted()) {
+            closeStreams();
+            success = true;
+        }
+        return success;
+    }
 
     static void setDefaultStreamValues(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){

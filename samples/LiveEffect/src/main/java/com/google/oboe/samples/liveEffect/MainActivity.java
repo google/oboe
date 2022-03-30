@@ -18,6 +18,7 @@ package com.google.oboe.samples.liveEffect;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
@@ -28,6 +29,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -51,6 +53,9 @@ public class MainActivity extends Activity
     private Button toggleEffectButton;
     private AudioDeviceSpinner recordingDeviceSpinner;
     private AudioDeviceSpinner playbackDeviceSpinner;
+    private CheckBox acousticEchoCancelerCheckBox;
+    private CheckBox presetReverbCheckBox;
+
     private boolean isPlaying = false;
 
     private int apiSelection = OBOE_API_AAUDIO;
@@ -109,7 +114,7 @@ public class MainActivity extends Activity
             public void onClick(View v) {
                 if (((RadioButton)v).isChecked()) {
                     apiSelection = OBOE_API_AAUDIO;
-                    setSpinnersEnabled(true);
+                    setSpinnersAndCheckboxesEnabled(true);
                 }
             }
         });
@@ -118,10 +123,13 @@ public class MainActivity extends Activity
             public void onClick(View v) {
                 if (((RadioButton)v).isChecked()) {
                     apiSelection = OBOE_API_OPENSL_ES;
-                    setSpinnersEnabled(false);
+                    setSpinnersAndCheckboxesEnabled(false);
                 }
             }
         });
+
+        acousticEchoCancelerCheckBox = findViewById(R.id.checkbox_aec);
+        presetReverbCheckBox = findViewById(R.id.checkbox_reverb);
 
         LiveEffectEngine.setDefaultStreamValues(this);
     }
@@ -140,7 +148,7 @@ public class MainActivity extends Activity
 
         ((RadioGroup)findViewById(R.id.apiSelectionGroup))
           .check(apiSelection == OBOE_API_AAUDIO ? R.id.aaudioButton : R.id.slesButton);
-        setSpinnersEnabled(enable);
+        setSpinnersAndCheckboxesEnabled(enable);
     }
 
     @Override
@@ -181,7 +189,9 @@ public class MainActivity extends Activity
             return;
         }
 
-        boolean success = LiveEffectEngine.setEffectOn(true);
+        boolean success = LiveEffectEngine.startEffects(
+                acousticEchoCancelerCheckBox.isChecked(),
+                presetReverbCheckBox.isChecked());
         if (success) {
             statusText.setText(R.string.status_playing);
             toggleEffectButton.setText(R.string.stop_effect);
@@ -195,14 +205,14 @@ public class MainActivity extends Activity
 
     private void stopEffect() {
         Log.d(TAG, "Playing, attempting to stop");
-        LiveEffectEngine.setEffectOn(false);
+        LiveEffectEngine.stopEffects();
         resetStatusView();
         toggleEffectButton.setText(R.string.start_effect);
         isPlaying = false;
         EnableAudioApiUI(true);
     }
 
-    private void setSpinnersEnabled(boolean isEnabled){
+    private void setSpinnersAndCheckboxesEnabled(boolean isEnabled){
         if (((RadioButton)findViewById(R.id.slesButton)).isChecked())
         {
             isEnabled = false;
@@ -211,6 +221,8 @@ public class MainActivity extends Activity
         }
         recordingDeviceSpinner.setEnabled(isEnabled);
         playbackDeviceSpinner.setEnabled(isEnabled);
+        acousticEchoCancelerCheckBox.setEnabled(isEnabled);
+        presetReverbCheckBox.setEnabled(isEnabled);
     }
 
     private int getRecordingDeviceId(){
