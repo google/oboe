@@ -303,11 +303,14 @@ public:
      * In most cases, the primary device will be the appropriate device to use, and the
      * deviceId can be left kUnspecified.
      *
-     * On Android, for example, the ID could be obtained from the Java AudioManager.
-     * AudioManager.getDevices() returns an array of AudioDeviceInfo[], which contains
-     * a getId() method (as well as other type information), that should be passed
-     * to this method.
+     * The ID could be obtained from the Java AudioManager.
+     * AudioManager.getDevices() returns an array of AudioDeviceInfo,
+     * which contains a getId() method. That ID can be passed to this function.
      *
+     * It is possible that you may not get the device that you requested.
+     * So if it is important to you, you should call
+     * stream->getDeviceId() after the stream is opened to
+     * verify the actual ID.
      *
      * Note that when using OpenSL ES, this will be ignored and the created
      * stream will have deviceId kUnspecified.
