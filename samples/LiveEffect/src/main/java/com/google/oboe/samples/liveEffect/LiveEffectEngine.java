@@ -55,23 +55,24 @@ public enum LiveEffectEngine {
         if (!hasEffectStarted()) {
             success = openStreams();
             if (success) {
-                if (useAcousticEchoCanceler) {
-                    int recordSessionId = getRecordSessionId();
-                    Log.d(TAG, "Record Session Id: " + recordSessionId);
-                    AcousticEchoCanceler effect =  AcousticEchoCanceler.create(recordSessionId);
-                    if (effect == null) {
-                        Log.e(TAG, "Could not create AcousticEchoCanceler");
+                if (startDuplexEffects()) {
+                    if (useAcousticEchoCanceler) {
+                        int recordSessionId = getRecordSessionId();
+                        Log.d(TAG, "Record Session Id: " + recordSessionId);
+                        AcousticEchoCanceler effect = AcousticEchoCanceler.create(recordSessionId);
+                        if (effect == null) {
+                            Log.e(TAG, "Could not create AcousticEchoCanceler");
+                        }
+                    }
+                    if (usePresetReverb) {
+                        int playbackSessionId = getPlaybackSessionId();
+                        Log.d(TAG, "Playback Session Id: " + playbackSessionId);
+                        PresetReverb effect = new PresetReverb(0, playbackSessionId);
+                        if (effect == null) {
+                            Log.e(TAG, "Could not create LoudnessEnhancer");
+                        }
                     }
                 }
-                if (usePresetReverb) {
-                    int playbackSessionId = getPlaybackSessionId();
-                    Log.d(TAG, "Playback Session Id: " + playbackSessionId);
-                    PresetReverb effect = new PresetReverb(0, playbackSessionId);
-                    if (effect == null) {
-                        Log.e(TAG, "Could not create LoudnessEnhancer");
-                    }
-                }
-                return startDuplexEffects();
             }
         }
         return success;

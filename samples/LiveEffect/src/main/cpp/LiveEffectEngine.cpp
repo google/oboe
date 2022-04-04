@@ -151,8 +151,7 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupPlaybackStreamParameters(
         ->setErrorCallback(this)
         ->setDeviceId(mPlaybackDeviceId)
         ->setDirection(oboe::Direction::Output)
-        ->setChannelCount(mOutputChannelCount)
-        ->setSampleRate(44100);
+        ->setChannelCount(mOutputChannelCount);
 
     return setupCommonStreamParameters(builder);
 }
@@ -171,8 +170,8 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
     builder->setAudioApi(mAudioApi)
         ->setFormat(mFormat)
         ->setFormatConversionAllowed(true)
-        ->setSharingMode(oboe::SharingMode::Exclusive)
-        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+        //->setSharingMode(oboe::SharingMode::Exclusive)
+        ->setPerformanceMode(oboe::PerformanceMode::None)
         ->setSessionId(oboe::SessionId::Allocate);
     return builder;
 }

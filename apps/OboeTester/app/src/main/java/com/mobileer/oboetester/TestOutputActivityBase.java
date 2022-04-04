@@ -82,6 +82,6 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     public void setupEffects(int sessionId) {
         Log.e(TAG, "TestA1");
         //setupEqualizer(sessionId);
-        setupReverb(sessionId);
+        //setupReverb(sessionId);
     }
 }
