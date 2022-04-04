@@ -19,6 +19,9 @@
 
 #include <math.h>
 
+#include "ResamplerDefinitions.h"
+
+namespace RESAMPLER_OUTER_NAMESPACE {
 namespace resampler {
 
 /**
@@ -83,5 +86,7 @@ private:
     double mInverseBesselBeta = 1.0;
 };
 
-} // namespace resampler
+} /* namespace resampler */
+} /* namespace RESAMPLER_OUTER_NAMESPACE */
+
 #endif //RESAMPLER_KAISER_WINDOW_H

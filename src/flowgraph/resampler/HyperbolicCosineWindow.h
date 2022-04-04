@@ -19,6 +19,9 @@
 
 #include <math.h>
 
+#include "ResamplerDefinitions.h"
+
+namespace RESAMPLER_OUTER_NAMESPACE {
 namespace resampler {
 
 /**
@@ -64,5 +67,7 @@ private:
     double mInverseCoshAlpha = 1.0;
 };
 
-} // namespace resampler
+} /* namespace resampler */
+} /* namespace RESAMPLER_OUTER_NAMESPACE */
+
 #endif //RESAMPLER_HYPERBOLIC_COSINE_WINDOW_H

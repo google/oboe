@@ -38,20 +38,25 @@
 // TODO Review use of raw pointers for connect(). Maybe use smart pointers but need to avoid
 //      run-time deallocation in audio thread.
 
-// Set this to 1 if using it inside the Android framework.
-// This code is kept here so that it can be moved easily between Oboe and AAudio.
-#ifndef FLOWGRAPH_ANDROID_INTERNAL
-#define FLOWGRAPH_ANDROID_INTERNAL 0
-#endif
+// Set flags FLOWGRAPH_ANDROID_INTERNAL and FLOWGRAPH_OUTER_NAMESPACE based on whether compiler
+// flag USE_FLOWGRAPH_ANDROID_INTERNAL is defined. USE_FLOWGRAPH_ANDROID_INTERNAL should be defined
+// in aaudio but not in oboe.
 
-// Set this to a name that will prevent AAudio from calling into Oboe.
-// AAudio and Oboe both use a version of this flowgraph package.
-// There was a problem in the unit tests where AAudio would call a constructor
-// in AAudio and then call a destructor in Oboe! That caused memory corruption.
-// For more details, see Issue #930.
+#ifndef FLOWGRAPH_ANDROID_INTERNAL
+#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
+#define FLOWGRAPH_ANDROID_INTERNAL 1
+#else
+#define FLOWGRAPH_ANDROID_INTERNAL 0
+#endif // USE_FLOWGRAPH_ANDROID_INTERNAL
+#endif // FLOWGRAPH_ANDROID_INTERNAL
+
 #ifndef FLOWGRAPH_OUTER_NAMESPACE
+#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
+#define FLOWGRAPH_OUTER_NAMESPACE aaudio
+#else
 #define FLOWGRAPH_OUTER_NAMESPACE oboe
-#endif
+#endif // USE_FLOWGRAPH_ANDROID_INTERNAL
+#endif // FLOWGRAPH_OUTER_NAMESPACE
 
 namespace FLOWGRAPH_OUTER_NAMESPACE {
 namespace flowgraph {

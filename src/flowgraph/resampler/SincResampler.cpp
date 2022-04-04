@@ -16,10 +16,9 @@
 
 #include <cassert>
 #include <math.h>
-#include <algorithm>
 #include "SincResampler.h"
 
-using namespace resampler;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
         : MultiChannelResampler(builder)

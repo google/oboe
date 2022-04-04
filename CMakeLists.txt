@@ -32,7 +32,9 @@ set (oboe_sources
     src/flowgraph/ChannelCountConverter.cpp
     src/flowgraph/ClipToRange.cpp
     src/flowgraph/ManyToMultiConverter.cpp
+    src/flowgraph/MonoBlend.cpp
     src/flowgraph/MonoToMultiConverter.cpp
+    src/flowgraph/MultiToManyConverter.cpp
     src/flowgraph/MultiToMonoConverter.cpp
     src/flowgraph/RampLinear.cpp
     src/flowgraph/SampleRateConverter.cpp

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_SAMPLE_RATE_CONVERTER_H
-#define OBOE_SAMPLE_RATE_CONVERTER_H
+#ifndef FLOWGRAPH_SAMPLE_RATE_CONVERTER_H
+#define FLOWGRAPH_SAMPLE_RATE_CONVERTER_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -61,4 +61,4 @@ private:
 } /* namespace flowgraph */
 } /* namespace FLOWGRAPH_OUTER_NAMESPACE */
 
-#endif //OBOE_SAMPLE_RATE_CONVERTER_H
+#endif //FLOWGRAPH_SAMPLE_RATE_CONVERTER_H

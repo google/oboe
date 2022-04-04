@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOE_MULTICHANNEL_RESAMPLER_H
-#define OBOE_MULTICHANNEL_RESAMPLER_H
+#ifndef RESAMPLER_MULTICHANNEL_RESAMPLER_H
+#define RESAMPLER_MULTICHANNEL_RESAMPLER_H
 
 #include <memory>
 #include <vector>
@@ -34,6 +34,9 @@
 #include "HyperbolicCosineWindow.h"
 #endif
 
+#include "ResamplerDefinitions.h"
+
+namespace RESAMPLER_OUTER_NAMESPACE {
 namespace resampler {
 
 class MultiChannelResampler {
@@ -267,5 +270,7 @@ private:
     const int              mChannelCount;
 };
 
-}
-#endif //OBOE_MULTICHANNEL_RESAMPLER_H
+} /* namespace resampler */
+} /* namespace RESAMPLER_OUTER_NAMESPACE */
+
+#endif //RESAMPLER_MULTICHANNEL_RESAMPLER_H

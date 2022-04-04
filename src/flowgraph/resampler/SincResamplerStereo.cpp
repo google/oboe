@@ -16,11 +16,10 @@
 
 #include <cassert>
 #include <math.h>
-#include <algorithm>
 
 #include "SincResamplerStereo.h"
 
-using namespace resampler;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 #define STEREO  2
 
