@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-// Set flags RESAMPLER_ANDROID_INTERNAL and RESAMPLER_OUTER_NAMESPACE based on whether compiler
-// flag USE_FLOWGRAPH_ANDROID_INTERNAL is defined. USE_FLOWGRAPH_ANDROID_INTERNAL should be defined
-// in aaudio but not in oboe.
-
-#ifndef RESAMPLER_ANDROID_INTERNAL
-#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
-#define RESAMPLER_ANDROID_INTERNAL 1
-#else
-#define RESAMPLER_ANDROID_INTERNAL 0
-#endif // USE_FLOWGRAPH_ANDROID_INTERNAL
-#endif // RESAMPLER_ANDROID_INTERNAL
+// Set flag RESAMPLER_OUTER_NAMESPACE based on whether compiler flag
+// USE_FLOWGRAPH_ANDROID_INTERNAL is defined. USE_FLOWGRAPH_ANDROID_INTERNAL
+// should be defined in aaudio but not in oboe.
 
 #ifndef RESAMPLER_OUTER_NAMESPACE
 #ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
