@@ -27,7 +27,8 @@ namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
 
 class SampleRateConverter : public FlowGraphFilter {
 public:
-    explicit SampleRateConverter(int32_t channelCount, resampler::MultiChannelResampler &mResampler);
+    explicit SampleRateConverter(int32_t channelCount,
+                                 resampler::MultiChannelResampler &mResampler);
 
     virtual ~SampleRateConverter() = default;
 

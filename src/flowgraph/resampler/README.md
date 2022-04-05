@@ -53,7 +53,7 @@ Assume you start with these variables and a method that returns the next input f
 
     float *outputBuffer;     // multi-channel buffer to be filled
     int    numOutputFrames;  // number of frames of output
-    
+
 The resampler has a method isWriteNeeded() that tells you whether to write to or read from the resampler.
 
     int outputFramesLeft = numOutputFrames;
@@ -98,4 +98,3 @@ Assume you start with these variables:
 When you are done, you should delete the Resampler to avoid a memory leak.
 
     delete resampler;
-    
