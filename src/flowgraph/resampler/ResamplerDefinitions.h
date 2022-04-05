@@ -15,11 +15,11 @@
  */
 
 // Set flag RESAMPLER_OUTER_NAMESPACE based on whether compiler flag
-// IS_OBOE_FLOWGRAPH is defined. IS_OBOE_FLOWGRAPH should be defined
-// in aaudio but not in oboe.
+// __ANDROID_NDK__ is defined. __ANDROID_NDK__ should be defined in oboe
+// but not in android.
 
 #ifndef RESAMPLER_OUTER_NAMESPACE
-#ifdef IS_OBOE_FLOWGRAPH
+#ifdef __ANDROID_NDK__
 #define RESAMPLER_OUTER_NAMESPACE oboe
 #else
 #define RESAMPLER_OUTER_NAMESPACE aaudio

@@ -39,10 +39,10 @@
 //      run-time deallocation in audio thread.
 
 // Set flags FLOWGRAPH_ANDROID_INTERNAL and FLOWGRAPH_OUTER_NAMESPACE based on whether compiler
-// flag IS_OBOE_FLOWGRAPH is defined. IS_OBOE_FLOWGRAPH should be defined in oboe and not aaudio.
+// flag __ANDROID_NDK__ is defined. __ANDROID_NDK__ should be defined in oboe and not aaudio.
 
 #ifndef FLOWGRAPH_ANDROID_INTERNAL
-#ifdef IS_OBOE_FLOWGRAPH
+#ifdef __ANDROID_NDK__
 #define FLOWGRAPH_ANDROID_INTERNAL 0
 #else
 #define FLOWGRAPH_ANDROID_INTERNAL 1
@@ -50,7 +50,7 @@
 #endif // FLOWGRAPH_ANDROID_INTERNAL
 
 #ifndef FLOWGRAPH_OUTER_NAMESPACE
-#ifdef IS_OBOE_FLOWGRAPH
+#ifdef __ANDROID_NDK__
 #define FLOWGRAPH_OUTER_NAMESPACE oboe
 #else
 #define FLOWGRAPH_OUTER_NAMESPACE aaudio

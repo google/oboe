@@ -25,9 +25,6 @@ set (PARSELIB_DIR ../../../../parselib)
 # -mhard-float -D_NDK_MATH_NO_SOFTFP=1
 #SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mhard-float -D_NDK_MATH_NO_SOFTFP=1" )
 
-# Needed to use resampler
-add_definitions(-DIS_OBOE_FLOWGRAPH)
-
 # include folders
 include_directories(
         ${PARSELIB_DIR}/src/main/cpp
