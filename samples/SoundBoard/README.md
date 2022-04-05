@@ -24,7 +24,7 @@ Four different formats are supported:
 |1 - Mono|16-bit int|
 |2 - Stereo|16-bit int|
 |1 - Mono|Float|
-|1 - Stereo|Float|
+|2 - Stereo|Float|
 
 The signal chain for mono streams is: 
 
