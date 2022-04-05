@@ -20,7 +20,7 @@
 #include "FilterAudioStream.h"
 
 using namespace oboe;
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 // Output callback uses FixedBlockReader::read()
 //                <= SourceFloatCaller::onProcess()

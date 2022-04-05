@@ -38,8 +38,8 @@
 #include <flowgraph/SampleRateConverter.h>
 
 using namespace oboe;
-using namespace flowgraph;
-using namespace resampler;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 void DataConversionFlowGraph::setSource(const void *buffer, int32_t numFrames) {
     mSource->setData(buffer, numFrames);

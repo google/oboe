@@ -24,7 +24,7 @@
 #endif
 
 using namespace oboe;
-using namespace flowgraph;
+using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
 
 int32_t SourceI16Caller::onProcess(int32_t numFrames) {
     int32_t numBytes = mStream->getBytesPerFrame() * numFrames;
