@@ -39,27 +39,25 @@
 //      run-time deallocation in audio thread.
 
 // Set flags FLOWGRAPH_ANDROID_INTERNAL and FLOWGRAPH_OUTER_NAMESPACE based on whether compiler
-// flag USE_FLOWGRAPH_ANDROID_INTERNAL is defined. USE_FLOWGRAPH_ANDROID_INTERNAL should be defined
-// in aaudio but not in oboe.
+// flag IS_OBOE_FLOWGRAPH is defined. IS_OBOE_FLOWGRAPH should be defined in oboe and not aaudio.
 
 #ifndef FLOWGRAPH_ANDROID_INTERNAL
-#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
-#define FLOWGRAPH_ANDROID_INTERNAL 1
-#else
+#ifdef IS_OBOE_FLOWGRAPH
 #define FLOWGRAPH_ANDROID_INTERNAL 0
+#else
+#define FLOWGRAPH_ANDROID_INTERNAL 1
 #endif // USE_FLOWGRAPH_ANDROID_INTERNAL
 #endif // FLOWGRAPH_ANDROID_INTERNAL
 
 #ifndef FLOWGRAPH_OUTER_NAMESPACE
-#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
-#define FLOWGRAPH_OUTER_NAMESPACE aaudio
-#else
+#ifdef IS_OBOE_FLOWGRAPH
 #define FLOWGRAPH_OUTER_NAMESPACE oboe
+#else
+#define FLOWGRAPH_OUTER_NAMESPACE aaudio
 #endif // USE_FLOWGRAPH_ANDROID_INTERNAL
 #endif // FLOWGRAPH_OUTER_NAMESPACE
 
-namespace FLOWGRAPH_OUTER_NAMESPACE {
-namespace flowgraph {
+namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
 
 // Default block size that can be overridden when the FlowGraphPortFloat is created.
 // If it is too small then we will have too much overhead from switching between nodes.
@@ -75,7 +73,7 @@ class FlowGraphPortFloatInput;
  */
 class FlowGraphNode {
 public:
-    FlowGraphNode() {}
+    FlowGraphNode() = default;
     virtual ~FlowGraphNode() = default;
 
     /**
@@ -447,7 +445,6 @@ public:
     FlowGraphPortFloatOutput output;
 };
 
-} /* namespace flowgraph */
-} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
 
 #endif /* FLOWGRAPH_FLOW_GRAPH_NODE_H */

@@ -84,6 +84,7 @@ target_compile_options(oboe
         -Wshadow
         -Wshadow-field
         -Ofast
+        -DIS_OBOE_FLOWGRAPH
         "$<$<CONFIG:DEBUG>:-Werror>")
 
 # Enable logging of D,V for debug builds

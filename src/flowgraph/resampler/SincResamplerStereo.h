@@ -23,8 +23,7 @@
 #include "SincResampler.h"
 #include "ResamplerDefinitions.h"
 
-namespace RESAMPLER_OUTER_NAMESPACE {
-namespace resampler {
+namespace RESAMPLER_OUTER_NAMESPACE::resampler {
 
 class SincResamplerStereo : public SincResampler {
 public:
@@ -38,7 +37,6 @@ public:
 
 };
 
-} /* namespace resampler */
-} /* namespace RESAMPLER_OUTER_NAMESPACE */
+} /* namespace RESAMPLER_OUTER_NAMESPACE::resampler */
 
 #endif //RESAMPLER_SINC_RESAMPLER_STEREO_H

@@ -23,8 +23,7 @@
 #include "PolyphaseResampler.h"
 #include "ResamplerDefinitions.h"
 
-namespace RESAMPLER_OUTER_NAMESPACE {
-namespace resampler {
+namespace RESAMPLER_OUTER_NAMESPACE::resampler {
 
 class PolyphaseResamplerStereo : public PolyphaseResampler {
 public:
@@ -37,7 +36,6 @@ public:
     void readFrame(float *frame) override;
 };
 
-} /* namespace resampler */
-} /* namespace RESAMPLER_OUTER_NAMESPACE */
+} /* namespace RESAMPLER_OUTER_NAMESPACE::resampler */
 
 #endif //RESAMPLER_POLYPHASE_RESAMPLER_STEREO_H

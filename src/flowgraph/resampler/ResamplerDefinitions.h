@@ -15,13 +15,13 @@
  */
 
 // Set flag RESAMPLER_OUTER_NAMESPACE based on whether compiler flag
-// USE_FLOWGRAPH_ANDROID_INTERNAL is defined. USE_FLOWGRAPH_ANDROID_INTERNAL
-// should be defined in aaudio but not in oboe.
+// IS_OBOE_FLOWGRAPH is defined. IS_OBOE_FLOWGRAPH should be defined
+// in aaudio but not in oboe.
 
 #ifndef RESAMPLER_OUTER_NAMESPACE
-#ifdef USE_FLOWGRAPH_ANDROID_INTERNAL
-#define RESAMPLER_OUTER_NAMESPACE aaudio
-#else
+#ifdef IS_OBOE_FLOWGRAPH
 #define RESAMPLER_OUTER_NAMESPACE oboe
+#else
+#define RESAMPLER_OUTER_NAMESPACE aaudio
 #endif // USE_FLOWGRAPH_ANDROID_INTERNAL
 #endif // RESAMPLER_OUTER_NAMESPACE
