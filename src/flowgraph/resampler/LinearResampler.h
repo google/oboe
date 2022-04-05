@@ -31,7 +31,7 @@ namespace RESAMPLER_OUTER_NAMESPACE::resampler {
  */
 class LinearResampler : public MultiChannelResampler {
 public:
-    LinearResampler(const MultiChannelResampler::Builder &builder);
+    explicit LinearResampler(const MultiChannelResampler::Builder &builder);
 
     void writeFrame(const float *frame) override;
 
