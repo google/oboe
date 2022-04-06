@@ -17,7 +17,7 @@
 #include "AudioSourceCaller.h"
 
 using namespace oboe;
-using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
+using namespace flowgraph;
 
 int32_t AudioSourceCaller::onProcessFixedBlock(uint8_t *buffer, int32_t numBytes) {
     AudioStreamDataCallback *callback = mStream->getDataCallback();
