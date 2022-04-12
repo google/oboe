@@ -14,6 +14,7 @@ To build it for use outside of Oboe:
 
 1. Copy the "resampler" folder to a folder in your project that is in the include path.
 2. Add all of the \*.cpp files in the resampler folder to your project IDE or Makefile.
+3. In ResamplerDefinitions.h, define RESAMPLER_OUTER_NAMESPACE with your own project name.
 
 ## Creating a Resampler
 
