@@ -16,11 +16,10 @@
 
 #include <cassert>
 #include <math.h>
-#include <algorithm>
 #include "IntegerRatio.h"
 #include "PolyphaseResampler.h"
 
-using namespace resampler;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 PolyphaseResampler::PolyphaseResampler(const MultiChannelResampler::Builder &builder)
         : MultiChannelResampler(builder)

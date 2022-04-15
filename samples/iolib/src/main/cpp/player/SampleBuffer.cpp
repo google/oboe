@@ -21,7 +21,7 @@
 
 #include "wav/WavStreamReader.h"
 
-using namespace resampler;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 namespace iolib {
 

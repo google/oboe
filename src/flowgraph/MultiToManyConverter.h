@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-
-#ifndef FLOWGRAPH_SINK_FLOAT_H
-#define FLOWGRAPH_SINK_FLOAT_H
+#ifndef FLOWGRAPH_MULTI_TO_MANY_CONVERTER_H
+#define FLOWGRAPH_MULTI_TO_MANY_CONVERTER_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,20 +25,25 @@
 namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
 
 /**
- * AudioSink that lets you read data as 32-bit floats.
+ * Convert a multi-channel interleaved stream to multiple mono-channel
+ * outputs
  */
-class SinkFloat : public FlowGraphSink {
-public:
-    explicit SinkFloat(int32_t channelCount);
-    ~SinkFloat() override = default;
+    class MultiToManyConverter : public FlowGraphNode {
+    public:
+        explicit MultiToManyConverter(int32_t channelCount);
 
-    int32_t read(void *data, int32_t numFrames) override;
+        virtual ~MultiToManyConverter();
 
-    const char *getName() override {
-        return "SinkFloat";
-    }
-};
+        int32_t onProcess(int32_t numFrames) override;
+
+        const char *getName() override {
+            return "MultiToManyConverter";
+        }
+
+        std::vector<std::unique_ptr<flowgraph::FlowGraphPortFloatOutput>> outputs;
+        flowgraph::FlowGraphPortFloatInput input;
+    };
 
 } /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
 
-#endif //FLOWGRAPH_SINK_FLOAT_H
+#endif //FLOWGRAPH_MULTI_TO_MANY_CONVERTER_H

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_SINK_I32_H
-#define FLOWGRAPH_SINK_I32_H
+// Set flag RESAMPLER_OUTER_NAMESPACE based on whether compiler flag
+// __ANDROID_NDK__ is defined. __ANDROID_NDK__ should be defined in oboe
+// but not in android.
 
-#include <stdint.h>
-
-#include "FlowGraphNode.h"
-
-namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
-
-class SinkI32 : public FlowGraphSink {
-public:
-    explicit SinkI32(int32_t channelCount);
-    ~SinkI32() override = default;
-
-    int32_t read(void *data, int32_t numFrames) override;
-
-    const char *getName() override {
-        return "SinkI32";
-    }
-};
-
-} /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
-
-#endif //FLOWGRAPH_SINK_I32_H
+#ifndef RESAMPLER_OUTER_NAMESPACE
+#ifdef __ANDROID_NDK__
+#define RESAMPLER_OUTER_NAMESPACE oboe
+#else
+#define RESAMPLER_OUTER_NAMESPACE aaudio
+#endif // __ANDROID_NDK__
+#endif // RESAMPLER_OUTER_NAMESPACE

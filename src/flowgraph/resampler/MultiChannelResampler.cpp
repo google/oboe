@@ -25,7 +25,7 @@
 #include "SincResampler.h"
 #include "SincResamplerStereo.h"
 
-using namespace resampler;
+using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 MultiChannelResampler::MultiChannelResampler(const MultiChannelResampler::Builder &builder)
         : mNumTaps(builder.getNumTaps())

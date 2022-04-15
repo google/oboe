@@ -14,6 +14,7 @@ To build it for use outside of Oboe:
 
 1. Copy the "resampler" folder to a folder in your project that is in the include path.
 2. Add all of the \*.cpp files in the resampler folder to your project IDE or Makefile.
+3. In ResamplerDefinitions.h, define RESAMPLER_OUTER_NAMESPACE with your own project name. Alternatively, use -DRESAMPLER_OUTER_NAMESPACE=mynamespace when compiling to avoid modifying the resampler code.
 
 ## Creating a Resampler
 
@@ -53,7 +54,7 @@ Assume you start with these variables and a method that returns the next input f
 
     float *outputBuffer;     // multi-channel buffer to be filled
     int    numOutputFrames;  // number of frames of output
-    
+
 The resampler has a method isWriteNeeded() that tells you whether to write to or read from the resampler.
 
     int outputFramesLeft = numOutputFrames;
@@ -98,4 +99,3 @@ Assume you start with these variables:
 When you are done, you should delete the Resampler to avoid a memory leak.
 
     delete resampler;
-    

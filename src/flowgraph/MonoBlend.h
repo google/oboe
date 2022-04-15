@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Android Open Source Project
+ * Copyright 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,35 @@
  * limitations under the License.
  */
 
-#ifndef FLOWGRAPH_SINK_I32_H
-#define FLOWGRAPH_SINK_I32_H
+#ifndef FLOWGRAPH_MONO_BLEND_H
+#define FLOWGRAPH_MONO_BLEND_H
 
-#include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "FlowGraphNode.h"
 
 namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
 
-class SinkI32 : public FlowGraphSink {
+/**
+ * Combine data between multiple channels so each channel is an average
+ * of all channels.
+ */
+class MonoBlend : public FlowGraphFilter {
 public:
-    explicit SinkI32(int32_t channelCount);
-    ~SinkI32() override = default;
+    explicit MonoBlend(int32_t channelCount);
 
-    int32_t read(void *data, int32_t numFrames) override;
+    virtual ~MonoBlend() = default;
+
+    int32_t onProcess(int32_t numFrames) override;
 
     const char *getName() override {
-        return "SinkI32";
+        return "MonoBlend";
     }
+private:
+    const float mInvChannelCount;
 };
 
 } /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
 
-#endif //FLOWGRAPH_SINK_I32_H
+#endif //FLOWGRAPH_MONO_BLEND
