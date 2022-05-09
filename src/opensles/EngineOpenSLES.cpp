@@ -57,7 +57,6 @@ EngineOpenSLES &EngineOpenSLES::getInstance() {
     return sInstance;
 }
 
-
 SLresult EngineOpenSLES::open() {
     std::lock_guard<std::mutex> lock(mLock);
 
