@@ -328,6 +328,8 @@ Result AudioStreamAAudio::open() {
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
             static_cast<int>(mBufferCapacityInFrames));
 
+    calculateDefaultDelayBeforeCloseMillis();
+
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
     LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s",
@@ -355,12 +357,7 @@ Result AudioStreamAAudio::close() {
             // Make sure we are really stopped. Do it under mLock
             // so another thread cannot call requestStart() right before the close.
             requestStop_l(stream);
-            // Sometimes a callback can occur shortly after a stream has been stopped and
-            // even after a close! If the stream has been closed then the callback
-            // can access memory that has been freed. That causes a crash.
-            // This seems to be more likely in Android P or earlier.
-            // But it can also occur in later versions.
-            usleep(kDelayBeforeCloseMillis * 1000);
+            sleepBeforeClose();
         }
         return static_cast<Result>(mLibLoader->stream_close(stream));
     } else {

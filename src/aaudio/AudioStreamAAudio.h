@@ -117,9 +117,12 @@ private:
      */
     void launchStopThread();
 
-    // Time to sleep in order to prevent a race condition with a callback after a close().
-    // Two milliseconds may be enough but 10 msec is even safer.
-    static constexpr int kDelayBeforeCloseMillis = 10;
+public:
+    int32_t getMDelayBeforeCloseMillis() const;
+
+    void setDelayBeforeCloseMillis(int32_t mDelayBeforeCloseMillis);
+
+private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
     std::atomic<bool>    mStopThreadAllowed{false};

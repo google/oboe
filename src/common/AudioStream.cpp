@@ -196,4 +196,13 @@ ResultWithValue<FrameTimestamp> AudioStream::getTimestamp(clockid_t clockId) {
     }
 }
 
+void AudioStream::calculateDefaultDelayBeforeCloseMillis() {
+    // Calculate delay time before close based on burst duration.
+    // Start with a burst duration then add 1 msec as a safety margin.
+    mDelayBeforeCloseMillis = std::max(kMinDelayBeforeCloseMillis,
+                                       1 + ((mFramesPerBurst * 1000) / getSampleRate()));
+    LOGD("calculateDefaultDelayBeforeCloseMillis() default = %d",
+         static_cast<int>(mDelayBeforeCloseMillis));
+}
+
 } // namespace oboe
