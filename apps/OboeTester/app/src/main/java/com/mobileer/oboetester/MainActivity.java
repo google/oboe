@@ -192,8 +192,8 @@ public class MainActivity extends BaseOboeTesterActivity {
     public void onResume(){
         super.onResume();
         mWorkaroundsCheckBox.setChecked(NativeEngine.areWorkaroundsEnabled());
-        processBundleFromIntent();
         registerScoStateReceiver();
+        processBundleFromIntent();
     }
 
     @Override

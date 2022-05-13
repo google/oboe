@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,8 +44,6 @@ public class ManualGlitchActivity extends GlitchActivity {
     protected ExponentialTaper mTaperTolerance;
     private WaveformView mWaveformView;
     private float[] mWaveform = new float[256];
-    private boolean mTestRunningByIntent;
-    private Bundle mBundleFromIntent;
     private long mLastDisplayTime;
 
     private float   mTolerance = DEFAULT_TOLERANCE;
@@ -76,7 +73,6 @@ public class ManualGlitchActivity extends GlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBundleFromIntent = getIntent().getExtras();
 
         mTextTolerance = (TextView) findViewById(R.id.textTolerance);
         mFaderTolerance = (SeekBar) findViewById(R.id.faderTolerance);
@@ -98,50 +94,7 @@ public class ManualGlitchActivity extends GlitchActivity {
         setContentView(R.layout.activity_manual_glitches);
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        processBundleFromIntent();
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        mBundleFromIntent = intent.getExtras();
-    }
-
-    private void processBundleFromIntent() {
-        if (mBundleFromIntent == null) {
-            return;
-        }
-        if (mTestRunningByIntent) {
-            return;
-        }
-
-        mResultFileName = null;
-        if (mBundleFromIntent.containsKey(IntentBasedTestSupport.KEY_FILE_NAME)) {
-            mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
-
-            // Delay the test start to avoid race conditions.
-            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startAutomaticTest();
-                }
-            }, 500); // TODO where is the race, close->open?
-
-        }
-    }
-
-    @Override
-    public boolean isTestConfiguredUsingBundle() {
-        return mBundleFromIntent != null;
-    }
-
     void configureStreamsFromBundle(Bundle bundle) {
-        // Extract common parameters
-
         // Configure settings
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -173,7 +126,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         setToleranceProgress(mFaderTolerance.getProgress());
     }
 
-    void startAutomaticTest() {
+    @Override
+    public void startTestUsingBundle() {
         configureStreamsFromBundle(mBundleFromIntent);
 
         int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);

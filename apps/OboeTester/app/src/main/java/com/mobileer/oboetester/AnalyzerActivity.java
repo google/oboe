@@ -41,8 +41,8 @@ public class AnalyzerActivity extends TestInputActivity {
 
     AudioOutputTester mAudioOutTester;
     protected BufferSizeView mBufferSizeView;
-    protected String mResultFileName;
     private String mTestResults;
+    protected AutomatedTestRunner mAutomatedTestRunner;
 
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
     String resultCodeToString(int resultCode) {
@@ -168,8 +168,19 @@ public class AnalyzerActivity extends TestInputActivity {
     }
 
     void maybeWriteTestResult(String resultString) {
-        if (mResultFileName == null) return;
-        writeTestResultIfPermitted(resultString);
+        if (mResultFileName != null) {
+            writeTestResultIfPermitted(resultString);
+        };
+    }
+
+    @Override
+    public void saveIntentLog() {
+        if (mTestRunningByIntent) {
+            String report = mAutomatedTestRunner.getFullLogs();
+            maybeWriteTestResult(report);
+            mTestRunningByIntent = false;
+            mBundleFromIntent = null;
+        }
     }
 
     @Override

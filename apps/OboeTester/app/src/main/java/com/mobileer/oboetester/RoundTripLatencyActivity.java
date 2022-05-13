@@ -18,7 +18,6 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,8 +49,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private Button   mShareButton;
     private boolean  mHasRecording = false;
 
-    private boolean mTestRunningByIntent;
-    private Bundle  mBundleFromIntent;
     private int     mBufferBursts = -1;
     private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
 
@@ -350,13 +347,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         hideSettingsViews();
 
         mBufferSizeView.setFaderNormalizedProgress(0.0); // for lowest latency
-
-        mBundleFromIntent = getIntent().getExtras();
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        mBundleFromIntent = intent.getExtras();
     }
 
     @Override
@@ -371,53 +361,19 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         updateButtons(false);
     }
 
-    private void processBundleFromIntent() {
-        if (mBundleFromIntent == null) {
-            return;
-        }
-        if (mTestRunningByIntent) {
-            return;
-        }
-
-        mResultFileName = null;
-        if (mBundleFromIntent.containsKey(IntentBasedTestSupport.KEY_FILE_NAME)) {
-            mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
-            getFirstInputStreamContext().configurationView.setExclusiveMode(true);
-            getFirstOutputStreamContext().configurationView.setExclusiveMode(true);
-            mBufferBursts = mBundleFromIntent.getInt(IntentBasedTestSupport.KEY_BUFFER_BURSTS, mBufferBursts);
-
-            // Delay the test start to avoid race conditions.
-            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startAutomaticTest();
-                }
-            }, 500); // TODO where is the race, close->open?
-        }
-    }
-
     @Override
-    public boolean isTestConfiguredUsingBundle() {
-        return mBundleFromIntent != null;
-    }
-
-    void startAutomaticTest() {
+    public void startTestUsingBundle() {
         try {
             StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
             StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
             configureStreamsFromBundle(mBundleFromIntent, requestedInConfig, requestedOutConfig);
+
+            mBufferBursts = mBundleFromIntent.getInt(IntentBasedTestSupport.KEY_BUFFER_BURSTS, mBufferBursts);
+
             onMeasure(null);
         } finally {
             mBundleFromIntent = null;
         }
-    }
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        processBundleFromIntent();
     }
 
     @Override

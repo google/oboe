@@ -18,6 +18,7 @@ package com.mobileer.oboetester;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ abstract class TestAudioActivity extends Activity {
     public static final String TAG = "OboeTester";
 
     protected static final int FADER_PROGRESS_MAX = 1000;
+    private static final int INTENT_TEST_DELAY_MILLIS = 1100;
 
     public static final int AUDIO_STATE_OPEN = 0;
     public static final int AUDIO_STATE_STARTED = 1;
@@ -63,6 +65,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
 
+
     private int mAudioState = AUDIO_STATE_CLOSED;
     protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
@@ -77,6 +80,10 @@ abstract class TestAudioActivity extends Activity {
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
+
+    protected Bundle mBundleFromIntent;
+    protected boolean mTestRunningByIntent;
+    protected String mResultFileName;
 
     public String getTestName() {
         return "TestAudio";
@@ -152,6 +159,7 @@ abstract class TestAudioActivity extends Activity {
     public static void setBackgroundEnabled(boolean enabled) {
         mBackgroundEnabled = enabled;
     }
+
     public static boolean isBackgroundEnabled() {
         return mBackgroundEnabled;
     }
@@ -169,6 +177,17 @@ abstract class TestAudioActivity extends Activity {
         super.onCreate(savedInstanceState);
         inflateActivity();
         findAudioCommon();
+
+        mBundleFromIntent = getIntent().getExtras();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        mBundleFromIntent = intent.getExtras();
+    }
+
+    public boolean isTestConfiguredUsingBundle() {
+        return mBundleFromIntent != null;
     }
 
     public void hideSettingsViews() {
@@ -184,6 +203,7 @@ abstract class TestAudioActivity extends Activity {
     public void setSingleTestIndex(int testIndex) {
         mSingleTestIndex = testIndex;
     }
+
     public int getSingleTestIndex() {
         return mSingleTestIndex;
     }
@@ -196,6 +216,42 @@ abstract class TestAudioActivity extends Activity {
     }
 
     protected void resetConfiguration() {
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mBundleFromIntent != null) {
+            processBundleFromIntent();
+        }
+    }
+
+    private void processBundleFromIntent() {
+        if (mTestRunningByIntent) {
+            return;
+        }
+
+        mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
+
+        // Delay the test start to avoid race conditions. See Oboe Issue #1533
+        mTestRunningByIntent = true;
+        Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startTestUsingBundle();
+            }
+        }, INTENT_TEST_DELAY_MILLIS); // Delay long enough to get past the onStop() call!
+
+    }
+
+    // Override this for specific tests.
+    public void startTestUsingBundle() {
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override
@@ -235,6 +291,7 @@ abstract class TestAudioActivity extends Activity {
             }
         }
     }
+
     private void applyConfigurationViewsToModels() {
         for (StreamContext streamContext : mStreamContexts) {
             if (streamContext.configurationView != null) {
@@ -410,10 +467,6 @@ abstract class TestAudioActivity extends Activity {
         return mSampleRate;
     }
 
-    public boolean isTestConfiguredUsingBundle() {
-        return false;
-    }
-
     public void openAudio() throws IOException {
         closeAudio();
 
@@ -483,12 +536,17 @@ abstract class TestAudioActivity extends Activity {
 
     // Native methods
     private native int startNative();
+
     private native int pauseNative();
+
     private native int stopNative();
+
     protected native void setActivityType(int activityType);
+
     private native int getFramesPerCallback();
 
     public void startAudio() throws IOException {
+        Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
         if (result < 0) {
             showErrorToast("Start failed with " + result);
@@ -529,7 +587,11 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
-    public void runTest() {}
+    public void runTest() {
+    }
+
+    public void saveIntentLog() {
+    }
 
     // This should only be called from UI events such as onStop or a button press.
     public void onStopTest() {

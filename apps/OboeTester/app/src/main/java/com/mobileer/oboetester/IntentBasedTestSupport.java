@@ -31,10 +31,8 @@ public class IntentBasedTestSupport {
     public static final String KEY_IN_CHANNELS = "in_channels";
     public static final String KEY_OUT_CHANNELS = "out_channels";
     public static final int VALUE_DEFAULT_CHANNELS = 2;
-    public static final String KEY_IN_MMAP = "in_mmap";
-    public static final String KEY_OUT_MMAP = "out_mmap";
-    public static final String VALUE_ON = "on";
-    public static final String VALUE_OFF = "off";
+    public static final String KEY_IN_USE_MMAP = "in_use_mmap";
+    public static final String KEY_OUT_USE_MMAP = "out_use_mmap";
     public static final String KEY_SAMPLE_RATE = "sample_rate";
     public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
     public static final String VALUE_UNSPECIFIED = "unspecified";
@@ -55,13 +53,6 @@ public class IntentBasedTestSupport {
         } else {
             return StreamConfiguration.NATIVE_API_UNSPECIFIED;
         }
-    }
-
-    public static boolean getOnOff(Bundle bundle, String key, String defaultValue) {
-        String text = bundle.getString(key, defaultValue).toLowerCase();
-        if (VALUE_ON.equals(text)) return true;
-        if (VALUE_OFF.equals(text)) return false;
-        throw new IllegalArgumentException("Bad bundle property not on/off " + key + " = " + text);
     }
 
     public static int getPerfFromText(String text) {
@@ -106,7 +97,7 @@ public class IntentBasedTestSupport {
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedOutConfig.setChannelCount(outChannels);
 
-        boolean outMMAP = getOnOff(bundle, KEY_OUT_MMAP, VALUE_ON);
+        boolean outMMAP = bundle.getBoolean(KEY_OUT_USE_MMAP, true);
         requestedOutConfig.setMMap(outMMAP);
 
         text = bundle.getString(KEY_OUT_PERF, VALUE_PERF_LOW_LATENCY);
@@ -136,7 +127,7 @@ public class IntentBasedTestSupport {
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         requestedInConfig.setChannelCount(inChannels);
 
-        boolean inMMAP = getOnOff(bundle, KEY_IN_MMAP, VALUE_ON);
+        boolean inMMAP = bundle.getBoolean(KEY_IN_USE_MMAP, true);
         requestedInConfig.setMMap(inMMAP);
 
         text = bundle.getString(KEY_IN_PERF, VALUE_PERF_LOW_LATENCY);
