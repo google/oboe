@@ -244,11 +244,14 @@ namespace oboe {
 
         /**
          * Use OpenSL ES.
+         * Note that OpenSL ES is deprecated in Android 13, API 30 and above.
          */
         OpenSLES,
 
         /**
          * Try to use AAudio. Fail if unavailable.
+         * AAudio was first supported in Android 8, API 26 and above.
+         * It is only recommended for API 27 and above.
          */
         AAudio
     };
