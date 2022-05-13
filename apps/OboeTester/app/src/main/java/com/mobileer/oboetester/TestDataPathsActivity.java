@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+
 import android.content.Intent;
 import android.app.Activity;
 import android.content.Context;
@@ -25,13 +27,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.CheckBox;
-import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 
 /**
@@ -224,9 +223,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
 
         mResultFileName = null;
-        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
+        if (mBundleFromIntent.containsKey(IntentBasedTestSupport.KEY_FILE_NAME)) {
             mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
+            mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
 
             // Delay the test start to avoid race conditions.
             Handler handler = new Handler(Looper.getMainLooper()); // UI thread
@@ -657,7 +656,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     void startAutomaticTest() {
-        configureStreamsFromBundle(mBundleFromIntent);
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        configureStreamsFromBundle(mBundleFromIntent, requestedInConfig, requestedOutConfig);
 
         boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
                 VALUE_DEFAULT_USE_INPUT_PRESETS);

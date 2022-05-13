@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -119,9 +118,9 @@ public class ManualGlitchActivity extends GlitchActivity {
         }
 
         mResultFileName = null;
-        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
+        if (mBundleFromIntent.containsKey(IntentBasedTestSupport.KEY_FILE_NAME)) {
             mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
+            mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
 
             // Delay the test start to avoid race conditions.
             Handler handler = new Handler(Looper.getMainLooper()); // UI thread
@@ -142,10 +141,11 @@ public class ManualGlitchActivity extends GlitchActivity {
 
     void configureStreamsFromBundle(Bundle bundle) {
         // Extract common parameters
-        super.configureStreamsFromBundle(bundle);
 
+        // Configure settings
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        IntentBasedTestSupport.configureStreamsFromBundle(bundle, requestedInConfig, requestedOutConfig);
 
         // Extract custom parameters from the bundle.
         float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);

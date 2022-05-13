@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -378,12 +380,12 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
 
         mResultFileName = null;
-        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
+        if (mBundleFromIntent.containsKey(IntentBasedTestSupport.KEY_FILE_NAME)) {
             mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
+            mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
             getFirstInputStreamContext().configurationView.setExclusiveMode(true);
             getFirstOutputStreamContext().configurationView.setExclusiveMode(true);
-            mBufferBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, mBufferBursts);
+            mBufferBursts = mBundleFromIntent.getInt(IntentBasedTestSupport.KEY_BUFFER_BURSTS, mBufferBursts);
 
             // Delay the test start to avoid race conditions.
             Handler handler = new Handler(Looper.getMainLooper()); // UI thread
@@ -403,7 +405,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     void startAutomaticTest() {
         try {
-            configureStreamsFromBundle(mBundleFromIntent);
+            StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+            StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+            configureStreamsFromBundle(mBundleFromIntent, requestedInConfig, requestedOutConfig);
             onMeasure(null);
         } finally {
             mBundleFromIntent = null;
