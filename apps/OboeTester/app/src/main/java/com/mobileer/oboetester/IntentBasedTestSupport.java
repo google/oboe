@@ -16,9 +16,11 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 public class IntentBasedTestSupport {
+
     public static final String KEY_IN_SHARING = "in_sharing";
     public static final String KEY_OUT_SHARING = "out_sharing";
     public static final String VALUE_SHARING_EXCLUSIVE = "exclusive";
@@ -33,6 +35,7 @@ public class IntentBasedTestSupport {
     public static final int VALUE_DEFAULT_CHANNELS = 2;
     public static final String KEY_IN_USE_MMAP = "in_use_mmap";
     public static final String KEY_OUT_USE_MMAP = "out_use_mmap";
+    public static final String KEY_IN_PRESET = "in_preset";
     public static final String KEY_SAMPLE_RATE = "sample_rate";
     public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
     public static final String VALUE_UNSPECIFIED = "unspecified";
@@ -80,7 +83,11 @@ public class IntentBasedTestSupport {
         configureOutputStreamFromBundle(bundle, requestedOutConfig);
     }
 
-    private static void configureOutputStreamFromBundle(Bundle bundle,
+    public static float getNormalizedVolumeFromBundle(Bundle bundle) {
+        return bundle.getFloat(KEY_VOLUME, -1.0f);
+    }
+
+    public static void configureOutputStreamFromBundle(Bundle bundle,
                                                         StreamConfiguration requestedOutConfig) {
         int audioApi;
         String text;
@@ -110,7 +117,7 @@ public class IntentBasedTestSupport {
 
     }
 
-    private static void configureInputStreamFromBundle(Bundle bundle,
+    public static void configureInputStreamFromBundle(Bundle bundle,
                                                        StreamConfiguration requestedInConfig) {
         int audioApi;
         String text;
@@ -137,6 +144,12 @@ public class IntentBasedTestSupport {
         text = bundle.getString(KEY_IN_SHARING, VALUE_SHARING_EXCLUSIVE);
         int sharingMode = getSharingFromText(text);
         requestedInConfig.setSharingMode(sharingMode);
+
+        String defaultText = StreamConfiguration.convertInputPresetToText(
+                StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
+        text = bundle.getString(KEY_IN_PRESET, defaultText);
+        int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
+        requestedInConfig.setInputPreset(inputPreset);
     }
 
 }

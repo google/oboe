@@ -226,6 +226,16 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    private void setVolumeFromIntent() {
+        float normalizedVolume = IntentBasedTestSupport.getNormalizedVolumeFromBundle(mBundleFromIntent);
+        if (normalizedVolume >= 0.0) {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            int requestedVolume = (int)(maxVolume * normalizedVolume);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, requestedVolume, 0);
+        }
+    }
+
     private void processBundleFromIntent() {
         if (mTestRunningByIntent) {
             return;
@@ -239,6 +249,7 @@ abstract class TestAudioActivity extends Activity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                setVolumeFromIntent();
                 startTestUsingBundle();
             }
         }, INTENT_TEST_DELAY_MILLIS); // Delay long enough to get past the onStop() call!

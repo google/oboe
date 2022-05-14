@@ -26,8 +26,6 @@ import java.io.IOException;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
-    public static final String KEY_IN_PRESET = "in_preset";
-
     public static final String KEY_DURATION = "duration";
     public static final int VALUE_DEFAULT_DURATION = 10;
 
@@ -105,12 +103,6 @@ public class ManualGlitchActivity extends GlitchActivity {
         setToleranceFader(tolerance);
         setTolerance(tolerance);
         mTolerance = tolerance;
-
-        String defaultText = StreamConfiguration.convertInputPresetToText(
-                StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
-        String text = bundle.getString(KEY_IN_PRESET, defaultText);
-        int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
-        requestedInConfig.setInputPreset(inputPreset);
     }
 
     @Override
