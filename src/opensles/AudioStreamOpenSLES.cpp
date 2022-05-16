@@ -87,6 +87,12 @@ Result AudioStreamOpenSLES::open() {
     if (mChannelCount == kUnspecified) {
         mChannelCount = DefaultStreamValues::ChannelCount;
     }
+    if (mContentType == kUnspecified) {
+        mContentType = ContentType::Music;
+    }
+    if (static_cast<const int32_t>(mUsage) == kUnspecified) {
+        mUsage = Usage::Media;
+    }
 
     mSharingMode = SharingMode::Shared;
 
