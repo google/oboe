@@ -21,7 +21,9 @@ The latency, glitch and data_paths tests also need:
 * a 3.5 mm jack on the phone*
 
 \* If you don't have a 3.5 mm jack then you can use a USB-C to 3.5mm adapter.
-You will also need a USB switching device such as [TigerTail](https://go/tigertail).
+In order to use ADB at the same time you will also need a USB switching device
+or  use ADB/Wifi.
+Internally at Google, the [TigerTail](https://go/tigertail) device can be used for USB.
 
 ## Start App from Intent
 
@@ -56,7 +58,7 @@ For example:
 
 ## Parameters
 
-There is one required parameter:
+There is one required parameter for all tests:
 
     --es test {latency, glitch, data_paths, input, output}
             The "latency" test will perform a Round Trip Latency test.
@@ -66,13 +68,15 @@ There is one required parameter:
             The "input" test will open and start an input stream.
             The "output" test will open and start an output stream.
 
-The latency, glitch, data_paths tests have a required parameter:
+The latency, glitch, data_paths tests have an additional required parameter:
 
     --es file {full path for resulting file} // We recommend using the "/sdcard/Download" folder
 
 There are some optional parameter in common for all tests:
 
     --ef volume             {volume} // normalized volume in the range of 0.0 to 1.0
+    --es volume_type        {"accessibility", "alarm", "dtmf", "music", "notification", "ring", "system", "voice_call"}
+                            Stream type for the setStreamVolume() call. Default is "music".
     --ez background         {"true", 1, "false", 0} // if true then Oboetester will continue to run in the background
 
 There are several optional parameter in common for glitch, latency, input and output tests:
@@ -103,13 +107,16 @@ There are several optional parameters for just the "data_paths" test:
     --ez use_input_presets  {"true", 1, "false", 0}  // Whether to test various input presets. Note use of "-ez"
     --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices. Note use of "-ez"
     --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices. Note use of "-ez"
-    --ei single_test_index  {"true", 1, "false", 0}  // Index for testing one specific test
+    --ei single_test_index  {testId}  // Index for testing one specific test
 
 For example, a complete command for a "latency" test might be:
 
     adb shell am start -n com.mobileer.oboetester/.MainActivity \
         --es test latency \
         --es file /sdcard/Download/latency20190903.txt \
+        --ei buffer_bursts 2 \
+        --ef volume 0.8 \
+        --es volume_type music \
         --ei buffer_bursts 2 \
         --ei out_channels 1
 

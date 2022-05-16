@@ -229,10 +229,11 @@ abstract class TestAudioActivity extends Activity {
     private void setVolumeFromIntent() {
         float normalizedVolume = IntentBasedTestSupport.getNormalizedVolumeFromBundle(mBundleFromIntent);
         if (normalizedVolume >= 0.0) {
+            int streamType = IntentBasedTestSupport.getVolumeStreamTypeFromBundle(mBundleFromIntent);
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            int requestedVolume = (int)(maxVolume * normalizedVolume);
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, requestedVolume, 0);
+            int maxVolume = audioManager.getStreamMaxVolume(streamType);
+            int requestedVolume = (int) (maxVolume * normalizedVolume);
+            audioManager.setStreamVolume(streamType, requestedVolume, 0);
         }
     }
 
@@ -241,22 +242,28 @@ abstract class TestAudioActivity extends Activity {
             return;
         }
 
-        mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
 
         // Delay the test start to avoid race conditions. See Oboe Issue #1533
         mTestRunningByIntent = true;
         Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setVolumeFromIntent();
-                startTestUsingBundle();
-            }
-        }, INTENT_TEST_DELAY_MILLIS); // Delay long enough to get past the onStop() call!
+        handler.postDelayed(new DelayedTestByIntentRunnable(),
+                INTENT_TEST_DELAY_MILLIS); // Delay long enough to get past the onStop() call!
 
     }
 
-    // Override this for specific tests.
+    private class DelayedTestByIntentRunnable implements Runnable {
+        @Override
+        public void run() {
+            try {
+                mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
+                setVolumeFromIntent();
+                startTestUsingBundle();
+            } catch( Exception e) {
+                showErrorToast(e.getMessage());
+            }
+        }
+    }
+
     public void startTestUsingBundle() {
     }
 
@@ -420,7 +427,9 @@ abstract class TestAudioActivity extends Activity {
     abstract public void setupEffects(int sessionId);
 
     protected void showErrorToast(String message) {
-        showToast("Error: " + message);
+        String text = "Error: " + message;
+        Log.e(TAG, text);
+        showToast(text);
     }
 
     protected void showToast(final String message) {
