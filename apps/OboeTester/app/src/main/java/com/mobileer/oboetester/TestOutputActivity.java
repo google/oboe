@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -103,5 +105,20 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         String text = (String) checkBox.getText();
         int channelIndex = Integer.parseInt(text);
         mAudioOutTester.setChannelEnabled(channelIndex, checkBox.isChecked());
+    }
+
+    @Override
+    public void startTestUsingBundle() {
+        try {
+            StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+            IntentBasedTestSupport.configureOutputStreamFromBundle(mBundleFromIntent, requestedOutConfig);
+
+            openAudio();
+            startAudio();
+        } catch (Exception e) {
+            showErrorToast(e.getMessage());
+        } finally {
+            mBundleFromIntent = null;
+        }
     }
 }

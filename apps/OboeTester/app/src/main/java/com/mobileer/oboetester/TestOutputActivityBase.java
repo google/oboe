@@ -22,7 +22,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-
 abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
 

@@ -16,7 +16,8 @@
 
 package com.mobileer.oboetester;
 
-import android.content.Intent;
+import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
@@ -25,13 +26,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.CheckBox;
-import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 
 /**
@@ -87,9 +85,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxInputDevices;
     private CheckBox mCheckBoxOutputDevices;
-
-    private boolean mTestRunningByIntent;
-    private Bundle mBundleFromIntent;
 
     private static final int[] INPUT_PRESETS = {
             // VOICE_RECOGNITION gets tested in testInputs()
@@ -197,48 +192,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBundleFromIntent = getIntent().getExtras();
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mCheckBoxInputPresets = (CheckBox)findViewById(R.id.checkbox_paths_input_presets);
         mCheckBoxInputDevices = (CheckBox)findViewById(R.id.checkbox_paths_input_devices);
         mCheckBoxOutputDevices = (CheckBox)findViewById(R.id.checkbox_paths_output_devices);
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        processBundleFromIntent();
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        mBundleFromIntent = intent.getExtras();
-    }
-
-    private void processBundleFromIntent() {
-        if (mBundleFromIntent == null) {
-            return;
-        }
-        if (mTestRunningByIntent) {
-            return;
-        }
-
-        mResultFileName = null;
-        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
-            mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
-
-            // Delay the test start to avoid race conditions.
-            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startAutomaticTest();
-                }
-            }, 500); // TODO where is the race, close->open?
-
-        }
-    }
     @Override
     public String getTestName() {
         return "DataPaths";
@@ -628,22 +587,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             analyzeTestResults();
 
-            if (mTestRunningByIntent) {
-                String report = mAutomatedTestRunner.getFullLogs();
-                maybeWriteTestResult(report);
-                mTestRunningByIntent = false;
-                mBundleFromIntent = null;
-            }
-
         } catch (InterruptedException e) {
             analyzeTestResults();
-
-            if (mTestRunningByIntent) {
-                String report = mAutomatedTestRunner.getFullLogs();
-                maybeWriteTestResult(report);
-                mTestRunningByIntent = false;
-                mBundleFromIntent = null;
-            }
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());
@@ -656,8 +601,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
-    void startAutomaticTest() {
-        configureStreamsFromBundle(mBundleFromIntent);
+    @Override
+    public void startTestUsingBundle() {
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        configureStreamsFromBundle(mBundleFromIntent, requestedInConfig, requestedOutConfig);
 
         boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
                 VALUE_DEFAULT_USE_INPUT_PRESETS);

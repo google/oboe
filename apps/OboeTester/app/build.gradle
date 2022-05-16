@@ -6,9 +6,8 @@ android {
         applicationId = "com.mobileer.oboetester"
         minSdkVersion 23
         targetSdkVersion 31
-        // Also update the versions in the AndroidManifest.xml file.
-        versionCode 57
-        versionName "2.2.3"
+        versionCode 58
+        versionName "2.2.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {

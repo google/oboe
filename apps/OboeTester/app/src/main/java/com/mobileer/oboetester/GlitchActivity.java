@@ -182,10 +182,10 @@ public class GlitchActivity extends AnalyzerActivity {
             if (mLastLockedFrames > 0) {
                 message.append(String.format("signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             }
-            message.append(String.format("time.total = %8.2f seconds\n", totalSeconds));
+            message.append(String.format("time.total = %4.2f seconds\n", totalSeconds));
             if (mLastLockedFrames > 0) {
-                message.append(String.format("time.no.glitches = %8.2f\n", mSecondsWithoutGlitches));
-                message.append(String.format("max.time.no.glitches = %8.2f\n",
+                message.append(String.format("time.no.glitches = %4.2f\n", mSecondsWithoutGlitches));
+                message.append(String.format("max.time.no.glitches = %4.2f\n",
                         mMaxSecondsWithoutGlitches));
                 message.append(String.format("glitch.count = %d\n", mLastGlitchCount));
             }

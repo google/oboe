@@ -302,6 +302,8 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
             flushLog();
 
+            mActivity.saveIntentLog();
+
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

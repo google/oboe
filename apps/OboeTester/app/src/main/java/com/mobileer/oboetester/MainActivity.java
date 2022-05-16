@@ -44,6 +44,8 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_LATENCY = "latency";
     public static final String VALUE_TEST_NAME_GLITCH = "glitch";
     public static final String VALUE_TEST_NAME_DATA_PATHS = "data_paths";
+    public static final String VALUE_TEST_NAME_OUTPUT = "output";
+    public static final String VALUE_TEST_NAME_INPUT = "input";
 
     static {
         // Must match name in CMakeLists.txt
@@ -168,32 +170,50 @@ public class MainActivity extends BaseOboeTesterActivity {
         if (mBundleFromIntent == null) {
             return;
         }
-
-        if (mBundleFromIntent.containsKey(KEY_TEST_NAME)) {
-            String testName = mBundleFromIntent.getString(KEY_TEST_NAME);
-            if (VALUE_TEST_NAME_LATENCY.equals(testName)) {
-                Intent intent = new Intent(this, RoundTripLatencyActivity.class);
-                intent.putExtras(mBundleFromIntent);
-                startActivity(intent);
-            } else if (VALUE_TEST_NAME_GLITCH.equals(testName)) {
-                Intent intent = new Intent(this, ManualGlitchActivity.class);
-                intent.putExtras(mBundleFromIntent);
-                startActivity(intent);
-            } else if (VALUE_TEST_NAME_DATA_PATHS.equals(testName)) {
-                Intent intent = new Intent(this, TestDataPathsActivity.class);
-                intent.putExtras(mBundleFromIntent);
-                startActivity(intent);
-            }
+        Intent intent = getTestIntent(mBundleFromIntent);
+        if (intent != null) {
+            setBackgroundFromIntent();
+            startActivity(intent);
         }
         mBundleFromIntent = null;
+    }
+
+    private void setBackgroundFromIntent() {
+        boolean backgroundEnabled = mBundleFromIntent.getBoolean(
+                IntentBasedTestSupport.KEY_BACKGROUND, false);
+        TestAudioActivity.setBackgroundEnabled(backgroundEnabled);
+    }
+
+    private Intent getTestIntent(Bundle bundle) {
+        Intent intent = null;
+        if (bundle.containsKey(KEY_TEST_NAME)) {
+            String testName = bundle.getString(KEY_TEST_NAME);
+            if (VALUE_TEST_NAME_LATENCY.equals(testName)) {
+                intent = new Intent(this, RoundTripLatencyActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_GLITCH.equals(testName)) {
+                intent = new Intent(this, ManualGlitchActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_DATA_PATHS.equals(testName)) {
+                intent = new Intent(this, TestDataPathsActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_INPUT.equals(testName)) {
+                intent = new Intent(this, TestInputActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_OUTPUT.equals(testName)) {
+                intent = new Intent(this, TestOutputActivity.class);
+                intent.putExtras(bundle);
+            }
+        }
+        return intent;
     }
 
     @Override
     public void onResume(){
         super.onResume();
         mWorkaroundsCheckBox.setChecked(NativeEngine.areWorkaroundsEnabled());
-        processBundleFromIntent();
         registerScoStateReceiver();
+        processBundleFromIntent();
     }
 
     @Override

@@ -206,4 +206,19 @@ public class TestInputActivity  extends TestAudioActivity {
         mInputMarginBursts = Integer.parseInt(text);
         setMinimumBurstsBeforeRead(mInputMarginBursts);
     }
+
+    @Override
+    public void startTestUsingBundle() {
+        try {
+            StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+            IntentBasedTestSupport.configureInputStreamFromBundle(mBundleFromIntent, requestedInConfig);
+
+            openAudio();
+            startAudio();
+        } catch (Exception e) {
+            showErrorToast(e.getMessage());
+        } finally {
+            mBundleFromIntent = null;
+        }
+    }
 }

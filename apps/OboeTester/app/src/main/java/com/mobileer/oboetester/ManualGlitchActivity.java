@@ -16,19 +16,15 @@
 
 package com.mobileer.oboetester;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
 
 public class ManualGlitchActivity extends GlitchActivity {
-
-    public static final String KEY_IN_PRESET = "in_preset";
 
     public static final String KEY_DURATION = "duration";
     public static final int VALUE_DEFAULT_DURATION = 10;
@@ -46,8 +42,6 @@ public class ManualGlitchActivity extends GlitchActivity {
     protected ExponentialTaper mTaperTolerance;
     private WaveformView mWaveformView;
     private float[] mWaveform = new float[256];
-    private boolean mTestRunningByIntent;
-    private Bundle mBundleFromIntent;
     private long mLastDisplayTime;
 
     private float   mTolerance = DEFAULT_TOLERANCE;
@@ -77,7 +71,6 @@ public class ManualGlitchActivity extends GlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBundleFromIntent = getIntent().getExtras();
 
         mTextTolerance = (TextView) findViewById(R.id.textTolerance);
         mFaderTolerance = (SeekBar) findViewById(R.id.faderTolerance);
@@ -99,65 +92,17 @@ public class ManualGlitchActivity extends GlitchActivity {
         setContentView(R.layout.activity_manual_glitches);
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        processBundleFromIntent();
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        mBundleFromIntent = intent.getExtras();
-    }
-
-    private void processBundleFromIntent() {
-        if (mBundleFromIntent == null) {
-            return;
-        }
-        if (mTestRunningByIntent) {
-            return;
-        }
-
-        mResultFileName = null;
-        if (mBundleFromIntent.containsKey(KEY_FILE_NAME)) {
-            mTestRunningByIntent = true;
-            mResultFileName = mBundleFromIntent.getString(KEY_FILE_NAME);
-
-            // Delay the test start to avoid race conditions.
-            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startAutomaticTest();
-                }
-            }, 500); // TODO where is the race, close->open?
-
-        }
-    }
-
-    @Override
-    public boolean isTestConfiguredUsingBundle() {
-        return mBundleFromIntent != null;
-    }
-
     void configureStreamsFromBundle(Bundle bundle) {
-        // Extract common parameters
-        super.configureStreamsFromBundle(bundle);
-
+        // Configure settings
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+        IntentBasedTestSupport.configureStreamsFromBundle(bundle, requestedInConfig, requestedOutConfig);
 
         // Extract custom parameters from the bundle.
         float tolerance = bundle.getFloat(KEY_TOLERANCE, DEFAULT_TOLERANCE);
         setToleranceFader(tolerance);
         setTolerance(tolerance);
         mTolerance = tolerance;
-
-        String defaultText = StreamConfiguration.convertInputPresetToText(
-                StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION);
-        String text = bundle.getString(KEY_IN_PRESET, defaultText);
-        int inputPreset = StreamConfiguration.convertTextToInputPreset(text);
-        requestedInConfig.setInputPreset(inputPreset);
     }
 
     @Override
@@ -173,7 +118,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         setToleranceProgress(mFaderTolerance.getProgress());
     }
 
-    void startAutomaticTest() {
+    @Override
+    public void startTestUsingBundle() {
         configureStreamsFromBundle(mBundleFromIntent);
 
         int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);

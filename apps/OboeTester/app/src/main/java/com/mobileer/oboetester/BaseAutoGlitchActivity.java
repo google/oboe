@@ -37,7 +37,6 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected int mGapMillis = DEFAULT_GAP_MILLIS;
     private String mTestName = "";
 
-    protected AutomatedTestRunner mAutomatedTestRunner;
     protected ArrayList<TestResult> mTestResults = new ArrayList<TestResult>();
 
     void logDeviceInfo() {
