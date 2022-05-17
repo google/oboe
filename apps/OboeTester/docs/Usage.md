@@ -50,6 +50,8 @@ If you use USB-MIDI input then you can eliminate the latency due to the touch sc
 MIDI latency is generally under 1 msec.
 This test works well for measuring the latency of Bluetooth headsets.
 
+More instructions in the [Wiki/OboeTester_TapToTone](https://github.com/google/oboe/wiki/OboeTester_TapToTone).
+
 ### Record and Play
 
 * Tap RECORD to record several seconds of audio. You should see the red VU meters move.
