@@ -39,9 +39,9 @@ static int32_t clamp32FromFloat(float f)
     static const float limneg = -1.;
 
     if (f <= limneg) {
-        return INT_MIN;
+        return INT32_MIN;
     } else if (f >= limpos) {
-        return INT_MAX;
+        return INT32_MAX;
     }
     f *= scale;
     /* integer conversion is through truncation (though int to float is not).
