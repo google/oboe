@@ -39,7 +39,7 @@
 #include "PseudoRandom.h"
 #include "RandomPulseGenerator.h"
 
-// This is used when the code is in Oboe.
+// This is used when the code is in non in Android.
 #ifndef ALOGD
 #define ALOGD LOGD
 #define ALOGE LOGE
@@ -97,6 +97,7 @@ static double calculateRootMeanSquare(float *data, int32_t numSamples) {
 
 /**
  * Monophonic recording with processing.
+ * Samples are stored as floats internally.
  */
 class AudioRecording
 {
@@ -131,7 +132,7 @@ public:
         return numFrames;
     }
 
-    // Write FLOAT data from the first channel.
+    // Write single FLOAT value.
     int32_t write(float sample) {
         // stop at end of buffer
         if (mFrameCounter < mMaxFrames) {
@@ -144,6 +145,7 @@ public:
     void clear() {
         mFrameCounter = 0;
     }
+
     int32_t size() const {
         return mFrameCounter;
     }
@@ -402,7 +404,7 @@ public:
         mPulse.allocate(pulseLength);
         RandomPulseGenerator pulser(kFramesPerEncodedBit);
         for (int i = 0; i < pulseLength; i++) {
-            mPulse.write(pulser.nextFloat());
+            mPulse.write(pulser.nextFloat() * mPulseAmplitude);
         }
     }
 
@@ -531,7 +533,7 @@ public:
 
             case STATE_IN_PULSE:
                 // Record input until the mAudioRecording is full.
-                mAudioRecording.write(frameData, channelCount, 1);
+                mAudioRecording.write(frameData[0]);
                 if (hasEnoughData()) {
                     nextState = STATE_GOT_DATA;
                 }
@@ -608,6 +610,7 @@ private:
 
     AudioRecording     mPulse;
     int32_t            mPulseCursor = 0;
+    float              mPulseAmplitude = 0.5f;
 
     double             mBackgroundSumSquare = 0.0;
     int32_t            mBackgroundSumCount = 0;
