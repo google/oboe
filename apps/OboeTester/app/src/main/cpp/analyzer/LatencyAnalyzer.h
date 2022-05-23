@@ -66,7 +66,8 @@ struct LatencyReport {
 // Calculate a normalized cross correlation.
 static float calculateNormalizedCorrelation(const float *a,
                                              const float *b,
-                                             int windowSize) {
+                                             int windowSize,
+                                             float scalar) {
     float correlation = 0.0;
     float sumProducts = 0.0;
     float sumSquares = 0.0;
@@ -74,7 +75,7 @@ static float calculateNormalizedCorrelation(const float *a,
     // Correlate a against b.
     for (int i = 0; i < windowSize; i++) {
         float s1 = a[i];
-        float s2 = b[i];
+        float s2 = b[i] * scalar;
         // Use a normalized cross-correlation.
         sumProducts += s1 * s2;
         sumSquares += ((s1 * s1) + (s2 * s2));
@@ -211,14 +212,30 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
         ALOGE("%s() recording too small = %d frames\n", __func__, recorded.size());
         return -1;
     }
+
+    // Add a scalar for recordedAbsSum / pulseAbsSum.
+    float pulseAbsSum = 0.0f;
+    float recordedAbsSum = 0.0f;
+    for (int i = 0; i < pulse.size(); i++) {
+        pulseAbsSum += abs(pulse.getData()[i]);
+        recordedAbsSum += abs(recorded.getData()[i]);
+    }
+    // Use inverse value to limit the number of divisions needed.
+    float inversePulseAbsSum = 1.0f / pulseAbsSum;
+
     std::unique_ptr<float[]> correlations= std::make_unique<float[]>(numCorrelations);
 
     // Correlate pulse against the recorded data.
     for (int i = 0; i < numCorrelations; i++) {
         float correlation = calculateNormalizedCorrelation(&recorded.getData()[i],
                                                            &pulse.getData()[0],
-                                                           pulse.size());
+                                                           pulse.size(),
+                                                           recordedAbsSum * inversePulseAbsSum);
         correlations[i] = correlation;
+        if (i < numCorrelations){
+            // Update the sliding window recordedAbsSum.
+            recordedAbsSum += recorded.getData()[i + pulse.size()] - recorded.getData()[i];
+        }
     }
 
     // Find highest peak in correlation array.
