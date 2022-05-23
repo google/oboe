@@ -176,14 +176,8 @@ TEST(test_flowgraph, module_sinki32) {
         1.0f, 0.5f, -0.25f, -1.0f,
         0.0f, 53.9f, -87.2f, -1.02f};
     static const int32_t expected[] = {
-        INT32_MAX,
-        (int32_t)(((int64_t)INT32_MAX+1)/2),
-        INT32_MIN/4,
-        INT32_MIN,
-        0,
-        INT32_MAX,
-        INT32_MIN,
-        INT32_MIN};
+        INT32_MAX, 1 << 30, INT32_MIN / 4, INT32_MIN,
+        0, INT32_MAX, INT32_MIN, INT32_MIN};
     int32_t output[kNumSamples + 10]; // larger than input
 
     SourceFloat sourceFloat{1};
