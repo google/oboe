@@ -518,6 +518,18 @@ private:
  */
 class ActivityRoundTripLatency : public ActivityFullDuplex {
 public:
+    ActivityRoundTripLatency() {
+#define USE_WHITE_NOISE_ANALYZER 1
+#if USE_WHITE_NOISE_ANALYZER
+        // New analyzer that uses a short pattern of white noise bursts.
+        mLatencyAnalyzer = std::make_unique<WhiteNoiseLatencyAnalyzer>();
+#else
+        // Old analyzer based on encoded random bits.
+        mLatencyAnalyzer = std::make_unique<EncodedRandomLatencyAnalyzer>();
+#endif
+        mLatencyAnalyzer->setup();
+    }
+    virtual ~ActivityRoundTripLatency() = default;
 
     oboe::Result startStreams() override {
         mAnalyzerLaunched = false;
@@ -527,7 +539,7 @@ public:
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
     LatencyAnalyzer *getLatencyAnalyzer() {
-        return &mEchoAnalyzer;
+        return mLatencyAnalyzer.get();
     }
 
     int32_t getState() override {
@@ -542,22 +554,22 @@ public:
         if (!mAnalyzerLaunched) {
             mAnalyzerLaunched = launchAnalysisIfReady();
         }
-        return mEchoAnalyzer.isDone();
+        return mLatencyAnalyzer->isDone();
     }
 
     FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
         return (FullDuplexAnalyzer *) mFullDuplexLatency.get();
     }
 
-    static void analyzeData(PulseLatencyAnalyzer *analyzer) {
+    static void analyzeData(LatencyAnalyzer *analyzer) {
         analyzer->analyze();
     }
 
     bool launchAnalysisIfReady() {
         // Are we ready to do the analysis?
-        if (mEchoAnalyzer.hasEnoughData()) {
+        if (mLatencyAnalyzer->hasEnoughData()) {
             // Crunch the numbers on a separate thread.
-            std::thread t(analyzeData, &mEchoAnalyzer);
+            std::thread t(analyzeData, mLatencyAnalyzer.get());
             t.detach();
             return true;
         }
@@ -572,8 +584,8 @@ protected:
 private:
     std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexLatency{};
 
-    PulseLatencyAnalyzer  mEchoAnalyzer;
-    bool                  mAnalyzerLaunched = false;
+    std::unique_ptr<LatencyAnalyzer>  mLatencyAnalyzer;
+    bool                              mAnalyzerLaunched = false;
 };
 
 /**
