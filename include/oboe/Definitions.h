@@ -486,6 +486,162 @@ namespace oboe {
     };
 
     /**
+     * The channel mask of the audio stream. The underlying type is `uint32_t`.
+     * Use of this enum is convenient
+     */
+    enum class ChannelMask : uint32_t { // aaudio_channel_mask_t
+        /**
+         * Audio channel mask is not specified.
+         */
+        Unspecified = kUnspecified,
+
+        /**
+         * Channel position masks. Use the combinations of the channel position masks.
+         */
+        FRONT_LEFT = 1 << 0,
+        FRONT_RIGHT = 1 << 1,
+        FRONT_CENTER = 1 << 2,
+        LOW_FREQUENCY = 1 << 3,
+        BACK_LEFT = 1 << 4,
+        BACK_RIGHT = 1 << 5,
+        FRONT_LEFT_OF_CENTER = 1 << 6,
+        FRONT_RIGHT_OF_CENTER = 1 << 7,
+        BACK_CENTER = 1 << 8,
+        SIDE_LEFT = 1 << 9,
+        SIDE_RIGHT = 1 << 10,
+        TOP_CENTER = 1 << 11,
+        TOP_FRONT_LEFT = 1 << 12,
+        TOP_FRONT_CENTER = 1 << 13,
+        TOP_FRONT_RIGHT = 1 << 14,
+        TOP_BACK_LEFT = 1 << 15,
+        TOP_BACK_CENTER = 1 << 16,
+        TOP_BACK_RIGHT = 1 << 17,
+        TOP_SIDE_LEFT = 1 << 18,
+        TOP_SIDE_RIGHT = 1 << 19,
+        BOTTOM_FRONT_LEFT = 1 << 20,
+        BOTTOM_FRONT_CENTER = 1 << 21,
+        BOTTOM_FRONT_RIGHT = 1 << 22,
+        LOW_FREQUENCY_2 = 1 << 23,
+        FRONT_WIDE_LEFT = 1 << 24,
+        FRONT_WIDE_RIGHT = 1 << 25,
+
+        Mono = FRONT_LEFT,
+
+        Stereo = FRONT_LEFT |
+                 FRONT_RIGHT,
+
+        CM2Point1 = FRONT_LEFT |
+                    FRONT_RIGHT |
+                    LOW_FREQUENCY,
+
+        Tri = FRONT_LEFT |
+              FRONT_RIGHT |
+              FRONT_CENTER,
+
+        Tri_back = FRONT_LEFT |
+                   FRONT_RIGHT |
+                   BACK_CENTER,
+
+        CM3Point1 = FRONT_LEFT |
+                    FRONT_RIGHT |
+                    FRONT_CENTER |
+                    LOW_FREQUENCY,
+
+        CM2Point0Point2 = FRONT_LEFT |
+                          FRONT_RIGHT |
+                          TOP_SIDE_LEFT |
+                          TOP_SIDE_RIGHT,
+
+        CM2Point1Point2 = CM2Point0Point2 |
+                          LOW_FREQUENCY,
+
+        CM3Point0Point2 = FRONT_LEFT |
+                          FRONT_RIGHT |
+                          FRONT_CENTER |
+                          TOP_SIDE_LEFT |
+                          TOP_SIDE_RIGHT,
+
+        CM3Point1Point2 = CM3Point0Point2 |
+                          LOW_FREQUENCY,
+
+        Quad = FRONT_LEFT |
+               FRONT_RIGHT |
+               BACK_LEFT |
+               BACK_RIGHT,
+
+        QuadSide = FRONT_LEFT |
+                   FRONT_RIGHT |
+                   SIDE_LEFT |
+                   SIDE_RIGHT,
+
+        Surround = FRONT_LEFT |
+                   FRONT_RIGHT |
+                   FRONT_CENTER |
+                   BACK_CENTER,
+
+        Penta = Quad |
+                FRONT_CENTER,
+
+        // aka 5POINT1_BACK
+        CM5Point1 = FRONT_LEFT |
+                    FRONT_RIGHT |
+                    FRONT_CENTER |
+                    LOW_FREQUENCY |
+                    BACK_LEFT |
+                    BACK_RIGHT,
+
+        CM5Point1Side = FRONT_LEFT |
+                        FRONT_RIGHT |
+                        FRONT_CENTER |
+                        LOW_FREQUENCY |
+                        SIDE_LEFT |
+                        SIDE_RIGHT,
+
+        CM6Point1 = FRONT_LEFT |
+                    FRONT_RIGHT |
+                    FRONT_CENTER |
+                    LOW_FREQUENCY |
+                    BACK_LEFT |
+                    BACK_RIGHT |
+                    BACK_CENTER,
+
+        CM7Point1 = CM5Point1 |
+                    SIDE_LEFT |
+                    SIDE_RIGHT,
+
+        CM5Point1Point2 = CM5Point1 |
+                          TOP_SIDE_LEFT |
+                          TOP_SIDE_RIGHT,
+
+        CM5Point1Point4 = CM5Point1 |
+                          TOP_FRONT_LEFT |
+                          TOP_FRONT_RIGHT |
+                          TOP_BACK_LEFT |
+                          TOP_BACK_RIGHT,
+
+        CM7Point1Point2 = CM7Point1 |
+                          TOP_SIDE_LEFT |
+                          TOP_SIDE_RIGHT,
+
+        CM7Point1Point4 = CM7Point1 |
+                          TOP_FRONT_LEFT |
+                          TOP_FRONT_RIGHT |
+                          TOP_BACK_LEFT |
+                          TOP_BACK_RIGHT,
+
+        CM9Point1Point4 = CM7Point1Point4 |
+                          FRONT_WIDE_LEFT |
+                          FRONT_WIDE_RIGHT,
+
+        CM9Point1Point6 = CM9Point1Point4 |
+                          TOP_SIDE_LEFT |
+                          TOP_SIDE_RIGHT,
+
+        FrontBack = FRONT_CENTER |
+                    BACK_CENTER,
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:

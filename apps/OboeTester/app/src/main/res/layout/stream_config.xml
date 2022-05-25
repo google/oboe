@@ -109,6 +109,27 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/channel_mask_prompt" />
+
+                <Spinner
+                    android:id="@+id/spinnerChannelMask"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:prompt="@string/channel_mask_prompt" />
+
+                <TextView
+                    android:id="@+id/actualChannelMask"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/format_prompt"/>
 
                 <Spinner

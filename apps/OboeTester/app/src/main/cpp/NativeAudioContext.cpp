@@ -145,6 +145,7 @@ void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &b
 int ActivityContext::open(jint nativeApi,
                           jint sampleRate,
                           jint channelCount,
+                          jint channelMask,
                           jint format,
                           jint sharingMode,
                           jint performanceMode,
@@ -199,6 +200,10 @@ int ActivityContext::open(jint nativeApi,
             ->setFormatConversionAllowed(formatConversionAllowed)
             ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
             ;
+    if (channelMask != (jint) oboe::ChannelMask::Unspecified) {
+        // Set channel mask when it is specified.
+        builder.setChannelMask((oboe::ChannelMask) channelMask);
+    }
     if (mUseCallback) {
         builder.setFramesPerCallback(callbackSize);
     }

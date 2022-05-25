@@ -310,4 +310,8 @@ int getSdkVersion() {
     return sCachedSdkVersion;
 }
 
+int getChannelCountFromChannelMask(ChannelMask channelMask) {
+    return __builtin_popcount(static_cast<uint32_t>(channelMask));
+}
+
 }// namespace oboe

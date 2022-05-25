@@ -97,6 +97,7 @@ public:
      * @param nativeApi
      * @param sampleRate
      * @param channelCount
+     * @param channelMask
      * @param format
      * @param sharingMode
      * @param performanceMode
@@ -114,6 +115,7 @@ public:
     int open(jint nativeApi,
              jint sampleRate,
              jint channelCount,
+             jint channelMask,
              jint format,
              jint sharingMode,
              jint performanceMode,

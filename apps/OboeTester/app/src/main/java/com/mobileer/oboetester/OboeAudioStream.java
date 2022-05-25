@@ -59,6 +59,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
         int result = openNative(requestedConfiguration.getNativeApi(),
                 requestedConfiguration.getSampleRate(),
                 requestedConfiguration.getChannelCount(),
+                requestedConfiguration.getChannelMask(),
                 requestedConfiguration.getFormat(),
                 requestedConfiguration.getSharingMode(),
                 requestedConfiguration.getPerformanceMode(),
@@ -90,6 +91,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setFramesPerBurst(getFramesPerBurst());
         actualConfiguration.setBufferCapacityInFrames(getBufferCapacityInFrames());
         actualConfiguration.setChannelCount(getChannelCount());
+        actualConfiguration.setChannelMask(getChannelMask());
         actualConfiguration.setDeviceId(getDeviceId());
         actualConfiguration.setSessionId(getSessionId());
         actualConfiguration.setFormat(getFormat());
@@ -103,6 +105,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int nativeApi,
             int sampleRate,
             int channelCount,
+            int channelMask,
             int format,
             int sharingMode,
             int performanceMode,
@@ -200,6 +203,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getChannelCount(streamIndex);
     }
     public native int getChannelCount(int streamIndex);
+
+    public int getChannelMask() {
+        return getChannelMask(streamIndex);
+    }
+    public native int getChannelMask(int streamIndex);
 
     public int getDeviceId() {
         return getDeviceId(streamIndex);
