@@ -33,6 +33,7 @@
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
 #include "flowgraph/SinkI24.h"
+#include "flowgraph/SinkI32.h"
 #include "flowgraph/SourceI16.h"
 #include "flowgraph/SourceI24.h"
 
@@ -169,3 +170,26 @@ TEST(test_flowgraph, module_clip_to_range) {
     }
 }
 
+TEST(test_flowgraph, module_sinki32) {
+    static constexpr int kNumSamples = 8;
+    static const float input[] = {
+        1.0f, 0.5f, -0.25f, -1.0f,
+        0.0f, 53.9f, -87.2f, -1.02f};
+    static const int32_t expected[] = {
+        INT32_MAX, 1 << 30, INT32_MIN / 4, INT32_MIN,
+        0, INT32_MAX, INT32_MIN, INT32_MIN};
+    int32_t output[kNumSamples + 10]; // larger than input
+
+    SourceFloat sourceFloat{1};
+    SinkI32 sinkI32{1};
+
+    sourceFloat.setData(input, kNumSamples);
+    sourceFloat.output.connect(&sinkI32.input);
+
+    int numOutputFrames = sizeof(output) / sizeof(int32_t);
+    int32_t numRead = sinkI32.read(output, numOutputFrames);
+    ASSERT_EQ(kNumSamples, numRead);
+    for (int i = 0; i < numRead; i++) {
+        EXPECT_EQ(expected[i], output[i]) << ", i = " << i;
+    }
+}
