@@ -587,6 +587,12 @@ Java_com_mobileer_oboetester_RoundTripLatencyActivity_getMeasuredConfidence(JNIE
 }
 
 JNIEXPORT jdouble JNICALL
+Java_com_mobileer_oboetester_RoundTripLatencyActivity_getMeasuredCorrelation(JNIEnv *env,
+                                                                            jobject instance) {
+    return engine.mActivityRoundTripLatency.getLatencyAnalyzer()->getMeasuredCorrelation();
+}
+
+JNIEXPORT jdouble JNICALL
 Java_com_mobileer_oboetester_RoundTripLatencyActivity_measureTimestampLatency(JNIEnv *env,
                                                                             jobject instance) {
     return engine.mActivityRoundTripLatency.measureTimestampLatency();

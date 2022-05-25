@@ -291,6 +291,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
         message += String.format("rms.signal = %7.5f\n", getSignalRMS());
         message += String.format("rms.noise = %7.5f\n", getBackgroundRMS());
+        message += String.format("correlation = " + CONFIDENCE_FORMAT + "\n",
+                getMeasuredCorrelation());
         double timestampLatency = getTimestampLatencyMillis();
         message += String.format("timestamp.latency.msec = " + LATENCY_FORMAT + "\n",
                 timestampLatency);
@@ -320,6 +322,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     native int getMeasuredLatency();
     native double measureTimestampLatency();
     native double getMeasuredConfidence();
+    native double getMeasuredCorrelation();
     native double getBackgroundRMS();
     native double getSignalRMS();
 

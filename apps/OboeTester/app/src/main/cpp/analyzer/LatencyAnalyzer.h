@@ -54,17 +54,17 @@ static constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
 
 struct LatencyReport {
     int32_t latencyInFrames = 0.0;
-    double confidence = 0.0;
+    double correlation = 0.0;
 
     void reset() {
         latencyInFrames = 0;
-        confidence = 0.0;
+        correlation = 0.0;
     }
 };
 
 /**
  * Calculate a normalized cross correlation.
- * @return value between 0.0 and 1.0
+ * @return value between -1.0 and 1.0
  */
 
 static float calculateNormalizedCorrelation(const float *a,
@@ -224,8 +224,7 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
                                    AudioRecording &pulse,
                                    LatencyReport *report) {
 
-    report->latencyInFrames = 0;
-    report->confidence = 0.0;
+    report->reset();
 
     int numCorrelations = recorded.size() - pulse.size();
     if (numCorrelations < 10) {
@@ -269,7 +268,7 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
 #endif
 
     report->latencyInFrames = peakIndex;
-    report->confidence = peakCorrelation;
+    report->correlation = peakCorrelation;
 
     return 0;
 }
@@ -389,16 +388,35 @@ public:
 
     virtual int32_t getProgress() const = 0;
 
-    virtual int getState() = 0;
+    virtual int getState() const = 0;
 
     // @return latency in frames
-    virtual int32_t getMeasuredLatency() = 0;
+    virtual int32_t getMeasuredLatency() const = 0;
 
-    virtual double getMeasuredConfidence() = 0;
+    /**
+     * This is an overall confidence in the latency result based on correlation, SNR, etc.
+     * @return probability value between 0.0 and 1.0
+     */
+    double getMeasuredConfidence() const {
+        // Limit the ratio and prevent divide-by-zero.
+        double noiseSignalRatio = getSignalRMS() <= getBackgroundRMS()
+                                  ? 1.0 : getBackgroundRMS() / getSignalRMS();
+        // Prevent high background noise and low signals from generating false matches.
+        double adjustedConfidence = getMeasuredCorrelation() - noiseSignalRatio;
+        return std::max(0.0, adjustedConfidence);
+    }
 
-    virtual double getBackgroundRMS() = 0;
+    /**
+     * Cross correlation value for the noise pulse against
+     * the corresponding position in the normalized recording.
+     *
+     * @return value between -1.0 and 1.0
+     */
+    virtual double getMeasuredCorrelation() const = 0;
 
-    virtual double getSignalRMS() = 0;
+    virtual double getBackgroundRMS() const = 0;
+
+    virtual double getSignalRMS() const = 0;
 
     virtual bool hasEnoughData() const = 0;
 };
@@ -422,17 +440,7 @@ public:
         mAudioRecording.setSampleRate(getSampleRate());
     }
 
-    virtual int32_t calculatePulseLength() const = 0;
-
-    virtual void generatePulseRecording(int32_t pulseLength) = 0;
-
-    virtual void measureLatency() = 0;
-
-    virtual double getMinimumConfidence() const {
-        return 0.5;
-    }
-
-    int getState() override {
+    int getState() const override {
         return mState;
     }
 
@@ -505,7 +513,9 @@ public:
             report << LOOPBACK_RESULT_TAG "latency.msec           = " << std::setw(8)
                    << latencyMillis << "\n";
             report << LOOPBACK_RESULT_TAG "latency.confidence     = " << std::setw(8)
-                   << mLatencyReport.confidence << "\n";
+                   << getMeasuredConfidence() << "\n";
+            report << LOOPBACK_RESULT_TAG "latency.correlation     = " << std::setw(8)
+                   << getMeasuredCorrelation() << "\n";
         }
         mState = STATE_DONE;
         if (getResult() == RESULT_OK) {
@@ -515,19 +525,19 @@ public:
         return report.str();
     }
 
-    int32_t getMeasuredLatency() override {
+    int32_t getMeasuredLatency() const override {
         return mLatencyReport.latencyInFrames;
     }
 
-    double getMeasuredConfidence() override {
-        return mLatencyReport.confidence;
+    double getMeasuredCorrelation() const override {
+        return mLatencyReport.correlation;
     }
 
-    double getBackgroundRMS() override {
+    double getBackgroundRMS() const override {
         return mBackgroundRMS;
     }
 
-    double getSignalRMS() override {
+    double getSignalRMS() const override {
         return mSignalRMS;
     }
 
@@ -605,6 +615,16 @@ public:
 
 protected:
 
+    virtual int32_t calculatePulseLength() const = 0;
+
+    virtual void generatePulseRecording(int32_t pulseLength) = 0;
+
+    virtual void measureLatency() = 0;
+
+    virtual double getMinimumConfidence() const {
+        return 0.5;
+    }
+
     AudioRecording     mPulse;
     AudioRecording     mAudioRecording; // contains only the input after starting the pulse
     LatencyReport      mLatencyReport;
@@ -614,7 +634,6 @@ protected:
     double             mBackgroundRMS = 0.0;
     double             mSignalRMS = 0.0;
 
-    PseudoRandom       mRandom;
 private:
 
     enum echo_state {
@@ -659,6 +678,8 @@ private:
  */
 class EncodedRandomLatencyAnalyzer : public PulseLatencyAnalyzer {
 
+protected:
+
     int32_t calculatePulseLength() const override {
         // Calculate integer number of bits.
         int32_t numPulseBits = getSampleRate() * kPulseLengthMillis
@@ -696,6 +717,8 @@ private:
  */
 class WhiteNoiseLatencyAnalyzer : public PulseLatencyAnalyzer {
 
+protected:
+
     int32_t calculatePulseLength() const override {
         return getSampleRate() * kPulseLengthMillis / kMillisPerSecond;
     }
@@ -703,7 +726,7 @@ class WhiteNoiseLatencyAnalyzer : public PulseLatencyAnalyzer {
     void generatePulseRecording(int32_t pulseLength) override {
         mPulse.allocate(pulseLength);
         // Turn the noise on and off to sharpen the correlation peak.
-        // Use more zeros than ones so that the confidence will be less than 0.5 even when there
+        // Use more zeros than ones so that the correlation will be less than 0.5 even when there
         // is a strong background noise.
         int8_t pattern[] = {1, 0, 0,
                             1, 1, 0, 0, 0,
@@ -729,15 +752,6 @@ class WhiteNoiseLatencyAnalyzer : public PulseLatencyAnalyzer {
         for (int i = framesWritten; i < pulseLength; i++) {
             mPulse.write(0.0f);
         }
-    }
-
-    double getMeasuredConfidence() override {
-        // Clip the ratio and prevent divide-by-zero.
-        double noiseSignalRatio = mSignalRMS < mBackgroundRMS
-                ? 1.0 : mBackgroundRMS / mSignalRMS;
-        // Prevent high background noise and low signals from generating false matches.
-        double adjustedConfidence = mLatencyReport.confidence - noiseSignalRatio;
-        return std::max(0.0, adjustedConfidence);
     }
 
     void measureLatency() override {
