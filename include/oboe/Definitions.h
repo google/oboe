@@ -496,149 +496,150 @@ namespace oboe {
         Unspecified = kUnspecified,
 
         /**
-         * Channel position masks. Use the combinations of the channel position masks.
+         * Channel position masks. Use the combinations of the channel position masks
+         * defined below instead of using those values directly.
          */
-        FRONT_LEFT = 1 << 0,
-        FRONT_RIGHT = 1 << 1,
-        FRONT_CENTER = 1 << 2,
-        LOW_FREQUENCY = 1 << 3,
-        BACK_LEFT = 1 << 4,
-        BACK_RIGHT = 1 << 5,
-        FRONT_LEFT_OF_CENTER = 1 << 6,
-        FRONT_RIGHT_OF_CENTER = 1 << 7,
-        BACK_CENTER = 1 << 8,
-        SIDE_LEFT = 1 << 9,
-        SIDE_RIGHT = 1 << 10,
-        TOP_CENTER = 1 << 11,
-        TOP_FRONT_LEFT = 1 << 12,
-        TOP_FRONT_CENTER = 1 << 13,
-        TOP_FRONT_RIGHT = 1 << 14,
-        TOP_BACK_LEFT = 1 << 15,
-        TOP_BACK_CENTER = 1 << 16,
-        TOP_BACK_RIGHT = 1 << 17,
-        TOP_SIDE_LEFT = 1 << 18,
-        TOP_SIDE_RIGHT = 1 << 19,
-        BOTTOM_FRONT_LEFT = 1 << 20,
-        BOTTOM_FRONT_CENTER = 1 << 21,
-        BOTTOM_FRONT_RIGHT = 1 << 22,
-        LOW_FREQUENCY_2 = 1 << 23,
-        FRONT_WIDE_LEFT = 1 << 24,
-        FRONT_WIDE_RIGHT = 1 << 25,
+        FrontLeft = 1 << 0,
+        FrontRight = 1 << 1,
+        FrontCenter = 1 << 2,
+        LowFrequency = 1 << 3,
+        BackLeft = 1 << 4,
+        BackRight = 1 << 5,
+        FrontLeftOfCenter = 1 << 6,
+        FrontRightOfCenter = 1 << 7,
+        BackCenter = 1 << 8,
+        SideLeft = 1 << 9,
+        SideRight = 1 << 10,
+        TopCenter = 1 << 11,
+        TopFrontLeft = 1 << 12,
+        TopFrontCenter = 1 << 13,
+        TopFrontRight = 1 << 14,
+        TopBackLeft = 1 << 15,
+        TopBackCenter = 1 << 16,
+        TopBackRight = 1 << 17,
+        TopSideLeft = 1 << 18,
+        TopSideRight = 1 << 19,
+        BottomFrontLeft = 1 << 20,
+        BottomFrontCenter = 1 << 21,
+        BottomFrontRight = 1 << 22,
+        LowFrequency2 = 1 << 23,
+        FrontWideLeft = 1 << 24,
+        FrontWideRight = 1 << 25,
 
-        Mono = FRONT_LEFT,
+        Mono = FrontLeft,
 
-        Stereo = FRONT_LEFT |
-                 FRONT_RIGHT,
+        Stereo = FrontLeft |
+                 FrontRight,
 
-        CM2Point1 = FRONT_LEFT |
-                    FRONT_RIGHT |
-                    LOW_FREQUENCY,
+        CM2Point1 = FrontLeft |
+                    FrontRight |
+                    LowFrequency,
 
-        Tri = FRONT_LEFT |
-              FRONT_RIGHT |
-              FRONT_CENTER,
+        Tri = FrontLeft |
+              FrontRight |
+              FrontCenter,
 
-        Tri_back = FRONT_LEFT |
-                   FRONT_RIGHT |
-                   BACK_CENTER,
+        Tri_back = FrontLeft |
+                   FrontRight |
+                   BackCenter,
 
-        CM3Point1 = FRONT_LEFT |
-                    FRONT_RIGHT |
-                    FRONT_CENTER |
-                    LOW_FREQUENCY,
+        CM3Point1 = FrontLeft |
+                    FrontRight |
+                    FrontCenter |
+                    LowFrequency,
 
-        CM2Point0Point2 = FRONT_LEFT |
-                          FRONT_RIGHT |
-                          TOP_SIDE_LEFT |
-                          TOP_SIDE_RIGHT,
+        CM2Point0Point2 = FrontLeft |
+                          FrontRight |
+                          TopSideLeft |
+                          TopSideRight,
 
         CM2Point1Point2 = CM2Point0Point2 |
-                          LOW_FREQUENCY,
+                          LowFrequency,
 
-        CM3Point0Point2 = FRONT_LEFT |
-                          FRONT_RIGHT |
-                          FRONT_CENTER |
-                          TOP_SIDE_LEFT |
-                          TOP_SIDE_RIGHT,
+        CM3Point0Point2 = FrontLeft |
+                          FrontRight |
+                          FrontCenter |
+                          TopSideLeft |
+                          TopSideRight,
 
         CM3Point1Point2 = CM3Point0Point2 |
-                          LOW_FREQUENCY,
+                          LowFrequency,
 
-        Quad = FRONT_LEFT |
-               FRONT_RIGHT |
-               BACK_LEFT |
-               BACK_RIGHT,
+        Quad = FrontLeft |
+               FrontRight |
+               BackLeft |
+               BackRight,
 
-        QuadSide = FRONT_LEFT |
-                   FRONT_RIGHT |
-                   SIDE_LEFT |
-                   SIDE_RIGHT,
+        QuadSide = FrontLeft |
+                   FrontRight |
+                   SideLeft |
+                   SideRight,
 
-        Surround = FRONT_LEFT |
-                   FRONT_RIGHT |
-                   FRONT_CENTER |
-                   BACK_CENTER,
+        Surround = FrontLeft |
+                   FrontRight |
+                   FrontCenter |
+                   BackCenter,
 
         Penta = Quad |
-                FRONT_CENTER,
+                FrontCenter,
 
-        // aka 5POINT1_BACK
-        CM5Point1 = FRONT_LEFT |
-                    FRONT_RIGHT |
-                    FRONT_CENTER |
-                    LOW_FREQUENCY |
-                    BACK_LEFT |
-                    BACK_RIGHT,
+        // aka 5Point1Back
+        CM5Point1 = FrontLeft |
+                    FrontRight |
+                    FrontCenter |
+                    LowFrequency |
+                    BackLeft |
+                    BackRight,
 
-        CM5Point1Side = FRONT_LEFT |
-                        FRONT_RIGHT |
-                        FRONT_CENTER |
-                        LOW_FREQUENCY |
-                        SIDE_LEFT |
-                        SIDE_RIGHT,
+        CM5Point1Side = FrontLeft |
+                        FrontRight |
+                        FrontCenter |
+                        LowFrequency |
+                        SideLeft |
+                        SideRight,
 
-        CM6Point1 = FRONT_LEFT |
-                    FRONT_RIGHT |
-                    FRONT_CENTER |
-                    LOW_FREQUENCY |
-                    BACK_LEFT |
-                    BACK_RIGHT |
-                    BACK_CENTER,
+        CM6Point1 = FrontLeft |
+                    FrontRight |
+                    FrontCenter |
+                    LowFrequency |
+                    BackLeft |
+                    BackRight |
+                    BackCenter,
 
         CM7Point1 = CM5Point1 |
-                    SIDE_LEFT |
-                    SIDE_RIGHT,
+                    SideLeft |
+                    SideRight,
 
         CM5Point1Point2 = CM5Point1 |
-                          TOP_SIDE_LEFT |
-                          TOP_SIDE_RIGHT,
+                          TopSideLeft |
+                          TopSideRight,
 
         CM5Point1Point4 = CM5Point1 |
-                          TOP_FRONT_LEFT |
-                          TOP_FRONT_RIGHT |
-                          TOP_BACK_LEFT |
-                          TOP_BACK_RIGHT,
+                          TopFrontLeft |
+                          TopFrontRight |
+                          TopBackLeft |
+                          TopBackRight,
 
         CM7Point1Point2 = CM7Point1 |
-                          TOP_SIDE_LEFT |
-                          TOP_SIDE_RIGHT,
+                          TopSideLeft |
+                          TopSideRight,
 
         CM7Point1Point4 = CM7Point1 |
-                          TOP_FRONT_LEFT |
-                          TOP_FRONT_RIGHT |
-                          TOP_BACK_LEFT |
-                          TOP_BACK_RIGHT,
+                          TopFrontLeft |
+                          TopFrontRight |
+                          TopBackLeft |
+                          TopBackRight,
 
         CM9Point1Point4 = CM7Point1Point4 |
-                          FRONT_WIDE_LEFT |
-                          FRONT_WIDE_RIGHT,
+                          FrontWideLeft |
+                          FrontWideRight,
 
         CM9Point1Point6 = CM9Point1Point4 |
-                          TOP_SIDE_LEFT |
-                          TOP_SIDE_RIGHT,
+                          TopSideLeft |
+                          TopSideRight,
 
-        FrontBack = FRONT_CENTER |
-                    BACK_CENTER,
+        FrontBack = FrontCenter |
+                    BackCenter,
     };
 
     /**

@@ -205,7 +205,11 @@ Result AudioStreamAAudio::open() {
     }
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, capacity);
 
-    // Channel mask was added in SC_V2. In that case, only set channel mask when the API
+    // Channel mask was added in SC_V2. Given the corresponding channel count of selected channel
+    // mask may be different from selected channel count, the last set value will be respected.
+    // If channel count is set after channel mask, the previously set channel mask will be cleared.
+    // If channel mask is set after channel count, the channel count will be automatically
+    // calculated from selected channel mask. In that case, only set channel mask when the API
     // is available and the channel mask is specified.
     if (mLibLoader->builder_setChannelMask != nullptr && mChannelMask != ChannelMask::Unspecified) {
         mLibLoader->builder_setChannelMask(aaudioBuilder,

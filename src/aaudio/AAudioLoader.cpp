@@ -391,6 +391,32 @@ AAudioLoader::signature_U_PS AAudioLoader::load_U_PS(const char *functionName) {
 
     ASSERT_UINT32(aaudio_channel_mask_t);
 
+    static_assert((uint32_t)ChannelMask::FrontLeft == AAUDIO_CHANNEL_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontRight == AAUDIO_CHANNEL_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontCenter == AAUDIO_CHANNEL_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::LowFrequency == AAUDIO_CHANNEL_LOW_FREQUENCY, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackLeft == AAUDIO_CHANNEL_BACK_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackRight == AAUDIO_CHANNEL_BACK_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontLeftOfCenter == AAUDIO_CHANNEL_FRONT_LEFT_OF_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontRightOfCenter == AAUDIO_CHANNEL_FRONT_RIGHT_OF_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackCenter == AAUDIO_CHANNEL_BACK_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::SideLeft == AAUDIO_CHANNEL_SIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::SideRight == AAUDIO_CHANNEL_SIDE_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopCenter == AAUDIO_CHANNEL_TOP_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontLeft == AAUDIO_CHANNEL_TOP_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontCenter == AAUDIO_CHANNEL_TOP_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontRight == AAUDIO_CHANNEL_TOP_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackLeft == AAUDIO_CHANNEL_TOP_BACK_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackCenter == AAUDIO_CHANNEL_TOP_BACK_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackRight == AAUDIO_CHANNEL_TOP_BACK_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopSideLeft == AAUDIO_CHANNEL_TOP_SIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopSideRight == AAUDIO_CHANNEL_TOP_SIDE_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontLeft == AAUDIO_CHANNEL_BOTTOM_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontCenter == AAUDIO_CHANNEL_BOTTOM_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontRight == AAUDIO_CHANNEL_BOTTOM_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::LowFrequency2 == AAUDIO_CHANNEL_LOW_FREQUENCY_2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontWideLeft == AAUDIO_CHANNEL_FRONT_WIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontWideRight == AAUDIO_CHANNEL_FRONT_WIDE_RIGHT, ERRMSG);
     static_assert((uint32_t)ChannelMask::Mono == AAUDIO_CHANNEL_MONO, ERRMSG);
     static_assert((uint32_t)ChannelMask::Stereo == AAUDIO_CHANNEL_STEREO, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM2Point1 == AAUDIO_CHANNEL_2POINT1, ERRMSG);
