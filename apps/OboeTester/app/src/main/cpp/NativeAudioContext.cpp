@@ -614,7 +614,7 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     ActivityFullDuplex::configureBuilder(isInput, builder);
 
     if (mFullDuplexLatency.get() == nullptr) {
-        mFullDuplexLatency = std::make_unique<FullDuplexAnalyzer>(&mEchoAnalyzer);
+        mFullDuplexLatency = std::make_unique<FullDuplexAnalyzer>(mLatencyAnalyzer.get());
     }
     if (!isInput) {
         // only output uses a callback, input is polled
