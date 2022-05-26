@@ -200,7 +200,6 @@ TEST_F(StreamOpenOutput, OpenSLESFramesPerCallback) {
     ASSERT_TRUE(closeStream());
 }
 
-/* TODO - This is hanging!
 // Make sure the LowLatency callback has the requested FramesPerCallback.
 TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
     const int kRequestedFramesPerCallback = 192;
@@ -222,9 +221,7 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackLowLatency) {
     ASSERT_EQ(mStream->requestStop(), Result::OK);
     ASSERT_TRUE(closeStream());
 }
-*/
 
-/* TODO - This is hanging!
 // Make sure the regular callback has the requested FramesPerCallback.
 TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     const int kRequestedFramesPerCallback = 1024;
@@ -247,7 +244,6 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     ASSERT_EQ(mStream->requestStop(), Result::OK);
     ASSERT_TRUE(closeStream());
 }
-*/
 
 TEST_F(StreamOpenInput, RecordingFormatUnspecifiedReturnsI16BeforeMarshmallow){
 
