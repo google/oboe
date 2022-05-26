@@ -234,6 +234,7 @@ Result AudioOutputStreamOpenSLES::open() {
     return Result::OK;
 
 error:
+    close();  // Clean up various OpenSL objects and prevent resource leaks.
     return Result::ErrorInternal; // TODO convert error from SLES to OBOE
 }
 
@@ -249,7 +250,7 @@ Result AudioOutputStreamOpenSLES::close() {
     if (getState() == StreamState::Closed){
         result = Result::ErrorClosed;
     } else {
-        requestPause_l();
+        (void) requestPause_l();
         // invalidate any interfaces
         mPlayInterface = nullptr;
         result = AudioStreamOpenSLES::close_l();
@@ -326,6 +327,7 @@ Result AudioOutputStreamOpenSLES::requestPause_l() {
         case StreamState::Pausing:
         case StreamState::Paused:
             return Result::OK;
+        case StreamState::Uninitialized:
         case StreamState::Closed:
             return Result::ErrorClosed;
         default:
@@ -383,6 +385,7 @@ Result AudioOutputStreamOpenSLES::requestStop() {
         case StreamState::Stopping:
         case StreamState::Stopped:
             return Result::OK;
+        case StreamState::Uninitialized:
         case StreamState::Closed:
             return Result::ErrorClosed;
         default:

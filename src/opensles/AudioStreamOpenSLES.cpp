@@ -78,6 +78,7 @@ Result AudioStreamOpenSLES::open() {
 
     Result oboeResult = AudioStreamBuffered::open();
     if (oboeResult != Result::OK) {
+        EngineOpenSLES::getInstance().close();
         return oboeResult;
     }
     // Convert to defaults if UNSPECIFIED
