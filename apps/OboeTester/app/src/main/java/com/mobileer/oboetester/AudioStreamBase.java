@@ -117,7 +117,7 @@ public abstract class AudioStreamBase {
                 int remainder = bufferSize - (numBuffers * framesPerBurst);
                 buffer.append(bufferSize + " = (" + numBuffers + " * " + framesPerBurst + ") + " + remainder);
             }
-            buffer.append(",   xRun# = " + ((xRunCount < 0) ? "?" : xRunCount) + "\n");
+            buffer.append(",   xRun# = " + ((xRunCount < 0) ? "?" : xRunCount));
 
             return buffer.toString();
         }
