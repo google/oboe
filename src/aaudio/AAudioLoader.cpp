@@ -421,7 +421,7 @@ AAudioLoader::signature_U_PS AAudioLoader::load_U_PS(const char *functionName) {
     static_assert((uint32_t)ChannelMask::Stereo == AAUDIO_CHANNEL_STEREO, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM2Point1 == AAUDIO_CHANNEL_2POINT1, ERRMSG);
     static_assert((uint32_t)ChannelMask::Tri == AAUDIO_CHANNEL_TRI, ERRMSG);
-    static_assert((uint32_t)ChannelMask::Tri_back == AAUDIO_CHANNEL_TRI_BACK, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TriBack == AAUDIO_CHANNEL_TRI_BACK, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM3Point1 == AAUDIO_CHANNEL_3POINT1, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM2Point0Point2 == AAUDIO_CHANNEL_2POINT0POINT2, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM2Point1Point2 == AAUDIO_CHANNEL_2POINT1POINT2, ERRMSG);

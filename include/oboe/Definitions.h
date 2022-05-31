@@ -539,9 +539,9 @@ namespace oboe {
               FrontRight |
               FrontCenter,
 
-        Tri_back = FrontLeft |
-                   FrontRight |
-                   BackCenter,
+        TriBack = FrontLeft |
+                  FrontRight |
+                  BackCenter,
 
         CM3Point1 = FrontLeft |
                     FrontRight |
