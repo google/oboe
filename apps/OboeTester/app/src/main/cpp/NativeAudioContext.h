@@ -41,6 +41,7 @@
 #include "flowunits/SineOscillator.h"
 #include "flowunits/SawtoothOscillator.h"
 #include "flowunits/TriangleOscillator.h"
+#include "flowunits/WhiteNoise.h"
 
 #include "FullDuplexAnalyzer.h"
 #include "FullDuplexEcho.h"
@@ -424,10 +425,11 @@ protected:
     std::vector<SawtoothOscillator>  sawtoothOscillators;
     static constexpr float           kSweepPeriod = 10.0; // for triangle up and down
 
-    // A triangle LFO is shaped into either a linear or an exponential range.
+    // A triangle LFO is shaped into either a linear or an exponential range for sweep.
     TriangleOscillator               mTriangleOscillator;
     LinearShape                      mLinearShape;
     ExponentialShape                 mExponentialShape;
+    class WhiteNoise                 mWhiteNoise;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;

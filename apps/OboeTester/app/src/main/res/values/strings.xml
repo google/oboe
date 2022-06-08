@@ -159,6 +159,7 @@
         <item>Sawtooth</item>
         <item>Freq Sweep</item>
         <item>Pitch Sweep</item>
+        <item>White Noise</item>
     </string-array>
 
     <string name="synth_sender_text">Select Sender for Synth</string>

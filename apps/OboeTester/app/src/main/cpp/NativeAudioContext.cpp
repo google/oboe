@@ -356,6 +356,9 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
                 mExponentialShape.output.connect(&sineOscillators[channelIndex].frequency);
                 sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
                 break;
+            case SignalType::WhiteNoise:
+                mWhiteNoise.output.connect(manyToMulti->inputs[channelIndex].get());
+                break;
             default:
                 break;
         }
@@ -401,6 +404,8 @@ void ActivityTestOutput::configureForStart() {
             setChannelEnabled(i, true);
         }
     }
+
+    mWhiteNoise.amplitude.setValue(0.5);
 
     manyToMulti->output.connect(&(mSinkFloat.get()->input));
     manyToMulti->output.connect(&(mSinkI16.get()->input));
