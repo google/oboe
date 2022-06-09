@@ -58,7 +58,7 @@
 #define NATIVE_MODE_OPENSLES     1
 #define NATIVE_MODE_AAUDIO       2
 
-#define MAX_SINE_OSCILLATORS     8
+#define MAX_SINE_OSCILLATORS     16
 #define AMPLITUDE_SINE           1.0
 #define AMPLITUDE_SAWTOOTH       0.5
 #define FREQUENCY_SAW_PING       800.0
