@@ -39,6 +39,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint nativeApi,
                                                        jint sampleRate,
                                                        jint channelCount,
+                                                       jint channelMask,
                                                        jint format,
                                                        jint sharingMode,
                                                        jint performanceMode,
@@ -117,6 +118,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jint nativeApi,
         jint sampleRate,
         jint channelCount,
+        jint channelMask,
         jint format,
         jint sharingMode,
         jint performanceMode,
@@ -136,6 +138,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
     return (jint) engine.getCurrentActivity()->open(nativeApi,
                                                     sampleRate,
                                                     channelCount,
+                                                    channelMask,
                                                     format,
                                                     sharingMode,
                                                     performanceMode,
@@ -305,6 +308,17 @@ Java_com_mobileer_oboetester_OboeAudioStream_getChannelCount(
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = oboeStream->getChannelCount();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getChannelMask(
+        JNIEnv *env, jobject, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getChannelMask();
     }
     return result;
 }

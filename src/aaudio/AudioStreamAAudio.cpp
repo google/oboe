@@ -205,7 +205,18 @@ Result AudioStreamAAudio::open() {
     }
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, capacity);
 
-    mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
+    // Channel mask was added in SC_V2. Given the corresponding channel count of selected channel
+    // mask may be different from selected channel count, the last set value will be respected.
+    // If channel count is set after channel mask, the previously set channel mask will be cleared.
+    // If channel mask is set after channel count, the channel count will be automatically
+    // calculated from selected channel mask. In that case, only set channel mask when the API
+    // is available and the channel mask is specified.
+    if (mLibLoader->builder_setChannelMask != nullptr && mChannelMask != ChannelMask::Unspecified) {
+        mLibLoader->builder_setChannelMask(aaudioBuilder,
+                                           static_cast<aaudio_channel_mask_t>(mChannelMask));
+    } else {
+        mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
+    }
     mLibLoader->builder_setDeviceId(aaudioBuilder, mDeviceId);
     mLibLoader->builder_setDirection(aaudioBuilder, static_cast<aaudio_direction_t>(mDirection));
     mLibLoader->builder_setFormat(aaudioBuilder, static_cast<aaudio_format_t>(mFormat));
@@ -307,6 +318,10 @@ Result AudioStreamAAudio::open() {
         mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
     } else {
         mSessionId = SessionId::None;
+    }
+
+    if (mLibLoader->stream_getChannelMask != nullptr) {
+        mChannelMask = static_cast<ChannelMask>(mLibLoader->stream_getChannelMask(mAAudioStream));
     }
 
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",

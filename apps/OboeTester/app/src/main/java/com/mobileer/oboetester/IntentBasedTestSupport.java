@@ -67,6 +67,33 @@ public class IntentBasedTestSupport {
     public static final String VALUE_VOLUME_TYPE_SYSTEM = "system";
     public static final String VALUE_VOLUME_TYPE_VOICE_CALL = "voice_call";
 
+    public static final String KEY_CHANNEL_MASK = "channel_mask";
+    public static final String VALUE_CHANNEL_MONO = "mono";
+    public static final String VALUE_CHANNEL_STEREO = "stereo";
+    public static final String VALUE_CHANNEL_2POINT1 = "2.1";
+    public static final String VALUE_CHANNEL_TRI = "tri";
+    public static final String VALUE_CHANNEL_TRI_BACK = "triBack";
+    public static final String VALUE_CHANNEL_3POINT1 = "3.1";
+    public static final String VALUE_CHANNEL_2POINT0POINT2 = "2.0.2";
+    public static final String VALUE_CHANNEL_2POINT1POINT2 = "2.1.2";
+    public static final String VALUE_CHANNEL_3POINT0POINT2 = "3.0.2";
+    public static final String VALUE_CHANNEL_3POINT1POINT2 = "3.1.2";
+    public static final String VALUE_CHANNEL_QUAD = "quad";
+    public static final String VALUE_CHANNEL_QUAD_SIDE = "quadside";
+    public static final String VALUE_CHANNEL_SURROUND = "surround";
+    public static final String VALUE_CHANNEL_PENTA = "penta";
+    public static final String VALUE_CHANNEL_5POINT1 = "5.1";
+    public static final String VALUE_CHANNEL_5POINT1_SIDE = "5.1side";
+    public static final String VALUE_CHANNEL_6POINT1 = "6.1";
+    public static final String VALUE_CHANNEL_7POINT1 = "7.1";
+    public static final String VALUE_CHANNEL_5POINT1POINT2 = "5.1.2";
+    public static final String VALUE_CHANNEL_5POINT1POINT4 = "5.1.4";
+    public static final String VALUE_CHANNEL_7POINT1POINT2 = "7.1.2";
+    public static final String VALUE_CHANNEL_7POINT1POINT4 = "7.1.4";
+    public static final String VALUE_CHANNEL_9POINT1POINT4 = "9.1.4";
+    public static final String VALUE_CHANNEL_9POINT1POINT6 = "9.1.6";
+    public static final String VALUE_CHANNEL_FRONT_BACK = "frontBack";
+
     public static int getApiFromText(String text) {
         if (VALUE_API_AAUDIO.equals(text)) {
             return StreamConfiguration.NATIVE_API_AAUDIO;
@@ -136,6 +163,68 @@ public class IntentBasedTestSupport {
         }
     }
 
+    public static int getChannelMaskFromBundle(Bundle bundle) {
+        String channelMaskText = bundle.getString(KEY_CHANNEL_MASK);
+        if (channelMaskText == null) {
+            return StreamConfiguration.UNSPECIFIED;
+        }
+        switch (channelMaskText) {
+            case VALUE_CHANNEL_MONO:
+                return StreamConfiguration.CHANNEL_MONO;
+            case VALUE_CHANNEL_STEREO:
+                return StreamConfiguration.CHANNEL_STEREO;
+            case VALUE_CHANNEL_2POINT1:
+                return StreamConfiguration.CHANNEL_2POINT1;
+            case VALUE_CHANNEL_TRI:
+                return StreamConfiguration.CHANNEL_TRI;
+            case VALUE_CHANNEL_TRI_BACK:
+                return StreamConfiguration.CHANNEL_TRI_BACK;
+            case VALUE_CHANNEL_3POINT1:
+                return StreamConfiguration.CHANNEL_3POINT1;
+            case VALUE_CHANNEL_2POINT0POINT2:
+                return StreamConfiguration.CHANNEL_2POINT0POINT2;
+            case VALUE_CHANNEL_2POINT1POINT2:
+                return StreamConfiguration.CHANNEL_2POINT1POINT2;
+            case VALUE_CHANNEL_3POINT0POINT2:
+                return StreamConfiguration.CHANNEL_3POINT0POINT2;
+            case VALUE_CHANNEL_3POINT1POINT2:
+                return StreamConfiguration.CHANNEL_3POINT1POINT2;
+            case VALUE_CHANNEL_QUAD:
+                return StreamConfiguration.CHANNEL_QUAD;
+            case VALUE_CHANNEL_QUAD_SIDE:
+                return StreamConfiguration.CHANNEL_QUAD_SIDE;
+            case VALUE_CHANNEL_SURROUND:
+                return StreamConfiguration.CHANNEL_SURROUND;
+            case VALUE_CHANNEL_PENTA:
+                return StreamConfiguration.CHANNEL_PENTA;
+            case VALUE_CHANNEL_5POINT1:
+                return StreamConfiguration.CHANNEL_5POINT1;
+            case VALUE_CHANNEL_5POINT1_SIDE:
+                return StreamConfiguration.CHANNEL_5POINT1_SIDE;
+            case VALUE_CHANNEL_6POINT1:
+                return StreamConfiguration.CHANNEL_6POINT1;
+            case VALUE_CHANNEL_7POINT1:
+                return StreamConfiguration.CHANNEL_7POINT1;
+            case VALUE_CHANNEL_5POINT1POINT2:
+                return StreamConfiguration.CHANNEL_5POINT1POINT2;
+            case VALUE_CHANNEL_5POINT1POINT4:
+                return StreamConfiguration.CHANNEL_5POINT1POINT4;
+            case VALUE_CHANNEL_7POINT1POINT2:
+                return StreamConfiguration.CHANNEL_7POINT1POINT2;
+            case VALUE_CHANNEL_7POINT1POINT4:
+                return StreamConfiguration.CHANNEL_7POINT1POINT4;
+            case VALUE_CHANNEL_9POINT1POINT4:
+                return StreamConfiguration.CHANNEL_9POINT1POINT4;
+            case VALUE_CHANNEL_9POINT1POINT6:
+                return StreamConfiguration.CHANNEL_9POINT1POINT6;
+            case VALUE_CHANNEL_FRONT_BACK:
+                return StreamConfiguration.CHANNEL_FRONT_BACK;
+            default:
+                throw new IllegalArgumentException(
+                        KEY_CHANNEL_MASK + " invalid: " + channelMaskText);
+        }
+    }
+
     public static void configureOutputStreamFromBundle(Bundle bundle,
                                                         StreamConfiguration requestedOutConfig) {
         int audioApi;
@@ -151,7 +240,13 @@ public class IntentBasedTestSupport {
         requestedOutConfig.setNativeApi(audioApi);
 
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
-        requestedOutConfig.setChannelCount(outChannels);
+        int channelMask = getChannelMaskFromBundle(bundle);
+        // Respect channel mask when it is specified.
+        if (channelMask != StreamConfiguration.UNSPECIFIED) {
+            requestedOutConfig.setChannelMask(channelMask);
+        } else {
+            requestedOutConfig.setChannelCount(outChannels);
+        }
 
         boolean outMMAP = bundle.getBoolean(KEY_OUT_USE_MMAP, VALUE_DEFAULT_USE_MMAP);
         requestedOutConfig.setMMap(outMMAP);
@@ -181,7 +276,13 @@ public class IntentBasedTestSupport {
         requestedInConfig.setNativeApi(audioApi);
 
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
-        requestedInConfig.setChannelCount(inChannels);
+        int channelMask = getChannelMaskFromBundle(bundle);
+        // Respect channel mask when it is specified.
+        if (channelMask != StreamConfiguration.UNSPECIFIED) {
+            requestedInConfig.setChannelMask(channelMask);
+        } else {
+            requestedInConfig.setChannelCount(inChannels);
+        }
 
         boolean inMMAP = bundle.getBoolean(KEY_IN_USE_MMAP, VALUE_DEFAULT_USE_MMAP);
         requestedInConfig.setMMap(inMMAP);

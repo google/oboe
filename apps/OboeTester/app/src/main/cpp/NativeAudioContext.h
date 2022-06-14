@@ -59,7 +59,7 @@
 #define NATIVE_MODE_OPENSLES     1
 #define NATIVE_MODE_AAUDIO       2
 
-#define MAX_SINE_OSCILLATORS     8
+#define MAX_SINE_OSCILLATORS     16
 #define AMPLITUDE_SINE           1.0
 #define AMPLITUDE_SAWTOOTH       0.5
 #define FREQUENCY_SAW_PING       800.0
@@ -98,6 +98,7 @@ public:
      * @param nativeApi
      * @param sampleRate
      * @param channelCount
+     * @param channelMask
      * @param format
      * @param sharingMode
      * @param performanceMode
@@ -115,6 +116,7 @@ public:
     int open(jint nativeApi,
              jint sampleRate,
              jint channelCount,
+             jint channelMask,
              jint format,
              jint sharingMode,
              jint performanceMode,

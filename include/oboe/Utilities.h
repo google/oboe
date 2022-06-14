@@ -82,6 +82,8 @@ int getPropertyInteger(const char * name, int defaultValue);
  */
 int getSdkVersion();
 
+int getChannelCountFromChannelMask(ChannelMask channelMask);
+
 } // namespace oboe
 
 #endif //OBOE_UTILITIES_H

@@ -19,6 +19,7 @@
 
 #include "oboe/Definitions.h"
 #include "oboe/AudioStreamBase.h"
+#include "oboe/Utilities.h"
 #include "ResultWithValue.h"
 
 namespace oboe {
@@ -42,11 +43,35 @@ public:
      *
      * Default is kUnspecified. If the value is unspecified then
      * the application should query for the actual value after the stream is opened.
+     *
+     * As the channel count here may be different from the corresponding channel count of
+     * provided channel mask used in setChannelMask(). The last called will be respected
+     * if this function and setChannelMask() are called.
      */
     AudioStreamBuilder *setChannelCount(int channelCount) {
         mChannelCount = channelCount;
+        mChannelMask = ChannelMask::Unspecified;
         return this;
     }
+
+    /**
+     * Request a specific channel mask.
+     *
+     * Default is kUnspecified. If the value is unspecified then the application
+     * should query for the actual value after the stream is opened.
+     *
+     * As the corresponding channel count of provided channel mask here may be different
+     * from the channel count used in setChannelCount(). The last called will be respected
+     * if this function and setChannelCount() are called.
+     *
+     * As the setChannelMask API is available on Android 32+, this call will only take effects
+     * on Android 32+.
+     */
+     AudioStreamBuilder *setChannelMask(ChannelMask channelMask) {
+         mChannelMask = channelMask;
+         mChannelCount = getChannelCountFromChannelMask(channelMask);
+         return this;
+     }
 
     /**
      * Request the direction for a stream. The default is Direction::Output.

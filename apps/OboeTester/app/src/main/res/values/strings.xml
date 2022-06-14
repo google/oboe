@@ -211,4 +211,6 @@
         <item>Best</item>
     </string-array>
 
+    <string name="channel_mask_prompt">ChannelMask:</string>
+
 </resources>

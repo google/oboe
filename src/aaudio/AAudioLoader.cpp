@@ -88,6 +88,10 @@ int AAudioLoader::open() {
         builder_setAttributionTag    = load_V_PBCPH("AAudioStreamBuilder_setAttributionTag");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_S_V2__) {
+        builder_setChannelMask = load_V_PBU("AAudioStreamBuilder_setChannelMask");
+    }
+
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
 
@@ -137,6 +141,10 @@ int AAudioLoader::open() {
         stream_getContentType  = load_I_PS("AAudioStream_getContentType");
         stream_getInputPreset  = load_I_PS("AAudioStream_getInputPreset");
         stream_getSessionId    = load_I_PS("AAudioStream_getSessionId");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_S_V2__) {
+        stream_getChannelMask = load_U_PS("AAudioStream_getChannelMask");
     }
     return 0;
 }
@@ -249,9 +257,25 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
     return reinterpret_cast<signature_I_PSKPLPL>(proc);
 }
 
+AAudioLoader::signature_V_PBU AAudioLoader::load_V_PBU(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBU>(proc);
+}
+
+AAudioLoader::signature_U_PS AAudioLoader::load_U_PS(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_U_PS>(proc);
+}
+
 // Ensure that all AAudio primitive data types are int32_t
 #define ASSERT_INT32(type) static_assert(std::is_same<int32_t, type>::value, \
 #type" must be int32_t")
+
+// Ensure that all AAudio primitive data types are uint32_t
+#define ASSERT_UINT32(type) static_assert(std::is_same<uint32_t, type>::value, \
+#type" must be uint32_t")
 
 #define ERRMSG "Oboe constants must match AAudio constants."
 
@@ -360,6 +384,66 @@ AAudioLoader::signature_I_PSKPLPL AAudioLoader::load_I_PSKPLPL(const char *funct
     static_assert((int32_t)SessionId::Allocate == AAUDIO_SESSION_ID_ALLOCATE, ERRMSG);
 
 #endif // __NDK_MAJOR__ >= 17
+
+// The aaudio channel masks were added in NDK 24,
+// which is the first version to support Android SC_V2 (API 32).
+#if __NDK_MAJOR__ >= 24
+
+    ASSERT_UINT32(aaudio_channel_mask_t);
+
+    static_assert((uint32_t)ChannelMask::FrontLeft == AAUDIO_CHANNEL_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontRight == AAUDIO_CHANNEL_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontCenter == AAUDIO_CHANNEL_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::LowFrequency == AAUDIO_CHANNEL_LOW_FREQUENCY, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackLeft == AAUDIO_CHANNEL_BACK_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackRight == AAUDIO_CHANNEL_BACK_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontLeftOfCenter == AAUDIO_CHANNEL_FRONT_LEFT_OF_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontRightOfCenter == AAUDIO_CHANNEL_FRONT_RIGHT_OF_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BackCenter == AAUDIO_CHANNEL_BACK_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::SideLeft == AAUDIO_CHANNEL_SIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::SideRight == AAUDIO_CHANNEL_SIDE_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopCenter == AAUDIO_CHANNEL_TOP_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontLeft == AAUDIO_CHANNEL_TOP_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontCenter == AAUDIO_CHANNEL_TOP_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopFrontRight == AAUDIO_CHANNEL_TOP_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackLeft == AAUDIO_CHANNEL_TOP_BACK_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackCenter == AAUDIO_CHANNEL_TOP_BACK_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopBackRight == AAUDIO_CHANNEL_TOP_BACK_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopSideLeft == AAUDIO_CHANNEL_TOP_SIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TopSideRight == AAUDIO_CHANNEL_TOP_SIDE_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontLeft == AAUDIO_CHANNEL_BOTTOM_FRONT_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontCenter == AAUDIO_CHANNEL_BOTTOM_FRONT_CENTER, ERRMSG);
+    static_assert((uint32_t)ChannelMask::BottomFrontRight == AAUDIO_CHANNEL_BOTTOM_FRONT_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::LowFrequency2 == AAUDIO_CHANNEL_LOW_FREQUENCY_2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontWideLeft == AAUDIO_CHANNEL_FRONT_WIDE_LEFT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontWideRight == AAUDIO_CHANNEL_FRONT_WIDE_RIGHT, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Mono == AAUDIO_CHANNEL_MONO, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Stereo == AAUDIO_CHANNEL_STEREO, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM2Point1 == AAUDIO_CHANNEL_2POINT1, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Tri == AAUDIO_CHANNEL_TRI, ERRMSG);
+    static_assert((uint32_t)ChannelMask::TriBack == AAUDIO_CHANNEL_TRI_BACK, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM3Point1 == AAUDIO_CHANNEL_3POINT1, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM2Point0Point2 == AAUDIO_CHANNEL_2POINT0POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM2Point1Point2 == AAUDIO_CHANNEL_2POINT1POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM3Point0Point2 == AAUDIO_CHANNEL_3POINT0POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM3Point1Point2 == AAUDIO_CHANNEL_3POINT1POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Quad == AAUDIO_CHANNEL_QUAD, ERRMSG);
+    static_assert((uint32_t)ChannelMask::QuadSide == AAUDIO_CHANNEL_QUAD_SIDE, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Surround == AAUDIO_CHANNEL_SURROUND, ERRMSG);
+    static_assert((uint32_t)ChannelMask::Penta == AAUDIO_CHANNEL_PENTA, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM5Point1 == AAUDIO_CHANNEL_5POINT1, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM5Point1Side == AAUDIO_CHANNEL_5POINT1_SIDE, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM6Point1 == AAUDIO_CHANNEL_6POINT1, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM7Point1 == AAUDIO_CHANNEL_7POINT1, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM5Point1Point2 == AAUDIO_CHANNEL_5POINT1POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM5Point1Point4 == AAUDIO_CHANNEL_5POINT1POINT4, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM7Point1Point2 == AAUDIO_CHANNEL_7POINT1POINT2, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM7Point1Point4 == AAUDIO_CHANNEL_7POINT1POINT4, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM9Point1Point4 == AAUDIO_CHANNEL_9POINT1POINT4, ERRMSG);
+    static_assert((uint32_t)ChannelMask::CM9Point1Point6 == AAUDIO_CHANNEL_9POINT1POINT6, ERRMSG);
+    static_assert((uint32_t)ChannelMask::FrontBack == AAUDIO_CHANNEL_FRONT_BACK, ERRMSG);
+
+#endif
 
 #endif // AAUDIO_AAUDIO_H
 

@@ -22,11 +22,13 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.util.Log;
 
 import com.mobileer.audio_device.AudioDeviceListEntry;
 import com.mobileer.audio_device.AudioDeviceSpinner;
@@ -37,6 +39,8 @@ import com.mobileer.audio_device.AudioDeviceSpinner;
  */
 
 public class StreamConfigurationView extends LinearLayout {
+    private static final String TAG = "StreamConfigurationView";
+
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
 
@@ -50,6 +54,8 @@ public class StreamConfigurationView extends LinearLayout {
     private CheckBox mFormatConversionBox;
     private Spinner  mChannelCountSpinner;
     private TextView mActualChannelCountView;
+    private Spinner mChannelMaskSpinner;
+    private TextView mActualChannelMaskView;
     private TextView mActualFormatView;
 
     private TableRow mInputPresetTableRow;
@@ -79,6 +85,8 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mOptionExpander;
     private String mHideSettingsText;
     private String mShowSettingsText;
+
+    private boolean mIsChannelMaskLastSelected;
 
     // Create an anonymous implementation of OnClickListener
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
@@ -184,6 +192,17 @@ public class StreamConfigurationView extends LinearLayout {
         mSampleRateSpinner = (Spinner) findViewById(R.id.spinnerSampleRate);
         mActualChannelCountView = (TextView) findViewById(R.id.actualChannelCount);
         mChannelCountSpinner = (Spinner) findViewById(R.id.spinnerChannelCount);
+        mChannelCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                onChannelCountSpinnerSelected();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // no-op
+            }
+        });
         mActualFormatView = (TextView) findViewById(R.id.actualAudioFormat);
         mFormatSpinner = (Spinner) findViewById(R.id.spinnerFormat);
         mRateConversionQualitySpinner = (Spinner) findViewById(R.id.spinnerSRCQuality);
@@ -212,6 +231,24 @@ public class StreamConfigurationView extends LinearLayout {
 
         mDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.devices_spinner);
 
+        mActualChannelMaskView = (TextView) findViewById(R.id.actualChannelMask);
+        mChannelMaskSpinner = (Spinner) findViewById(R.id.spinnerChannelMask);
+        ArrayAdapter<String> channelMaskSpinnerArrayAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_item,
+                StreamConfiguration.getAllChannelMasks());
+        mChannelMaskSpinner.setAdapter(channelMaskSpinnerArrayAdapter);
+        mChannelMaskSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                onChannelMaskSpinnerSelected();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // no-op
+            }
+        });
+
         showSettingsView();
     }
 
@@ -238,7 +275,6 @@ public class StreamConfigurationView extends LinearLayout {
     public void applyToModel(StreamConfiguration config) {
         // Menu position matches actual enum value for these properties.
         config.setNativeApi(mNativeApiSpinner.getSelectedItemPosition());
-        config.setChannelCount(mChannelCountSpinner.getSelectedItemPosition());
         config.setFormat(mFormatSpinner.getSelectedItemPosition());
         config.setRateConversionQuality(mRateConversionQualitySpinner.getSelectedItemPosition());
 
@@ -260,6 +296,20 @@ public class StreamConfigurationView extends LinearLayout {
         text = mContentTypeSpinner.getSelectedItem().toString();
         int contentType = StreamConfiguration.convertTextToContentType(text);
         config.setContentType(contentType);
+
+        // The corresponding channel count of the selected channel mask may be different from
+        // the selected channel count, the last selected will be respected.
+        if (mIsChannelMaskLastSelected) {
+            text = mChannelMaskSpinner.getSelectedItem().toString();
+            int channelMask = StreamConfiguration.convertTextToChannelMask(text);
+            config.setChannelMask(channelMask);
+            config.setChannelCount(0);
+            Log.d(TAG, String.format("Set channel mask as %s(%#x)", text, channelMask));
+        } else {
+            config.setChannelCount(mChannelCountSpinner.getSelectedItemPosition());
+            config.setChannelMask(StreamConfiguration.UNSPECIFIED);
+            Log.d(TAG, "Set channel count as " + mChannelCountSpinner.getSelectedItemPosition());
+        }
 
         config.setMMap(mRequestedMMapView.isChecked());
         config.setChannelConversionAllowed(mChannelConversionBox.isChecked());
@@ -283,6 +333,7 @@ public class StreamConfigurationView extends LinearLayout {
         mChannelConversionBox.setEnabled(enabled);
         mFormatConversionBox.setEnabled(enabled);
         mChannelCountSpinner.setEnabled(enabled);
+        mChannelMaskSpinner.setEnabled(enabled);
         mInputPresetSpinner.setEnabled(enabled);
         mUsageSpinner.setEnabled(enabled);
         mContentTypeSpinner.setEnabled(enabled);
@@ -328,6 +379,8 @@ public class StreamConfigurationView extends LinearLayout {
         mActualChannelCountView.setText(actualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(actualConfiguration.getSampleRate() + "");
         mActualSessionIdView.setText("S#: " + actualConfiguration.getSessionId());
+        value = actualConfiguration.getChannelMask();
+        mActualChannelMaskView.setText(StreamConfiguration.convertChannelMaskToText(value));
 
         boolean isMMap = actualConfiguration.isMMap();
         mStreamInfoView.setText("burst = " + actualConfiguration.getFramesPerBurst()
@@ -355,6 +408,14 @@ public class StreamConfigurationView extends LinearLayout {
 
     public void setFormatConversionAllowed(boolean allowed) {
         mFormatConversionBox.setChecked(allowed);
+    }
+
+    private void onChannelCountSpinnerSelected() {
+        mIsChannelMaskLastSelected = false;
+    }
+
+    private void onChannelMaskSpinnerSelected() {
+        mIsChannelMaskLastSelected = true;
     }
 
 }

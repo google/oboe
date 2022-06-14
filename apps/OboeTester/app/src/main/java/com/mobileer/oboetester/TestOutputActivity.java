@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 public final class TestOutputActivity extends TestOutputActivityBase {
 
-    public static final int MAX_CHANNEL_BOXES = 8;
+    public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
     private Spinner mNativeApiSpinner;
 
@@ -70,6 +70,14 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox5);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox6);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox7);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox8);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox9);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox10);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox11);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox12);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox13);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox14);
+        mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox15);
         configureChannelBoxes(0);
 
         mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
