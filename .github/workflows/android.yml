@@ -12,10 +12,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@v1.1.0
+      with:
+        doxyfile-path: "./Doxyfile"
+        working-directory: "."
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/reference
+
     - name: set up JDK 11
       uses: actions/setup-java@v1
       with:
         java-version: 11
+
     - name: build samples and apps
       uses: github/codeql-action/init@v1
       with:
@@ -33,5 +47,6 @@ jobs:
         chmod +x gradlew
         ./gradlew -q clean bundleDebug
         popd
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
