@@ -67,8 +67,10 @@ public:
      * Called by by OpenSL ES framework.
      *
      * This is public, but don't call it directly.
+     *
+     * @return whether the current stream should be stopped.
      */
-    void processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
+    bool processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
 
     Result waitForStateChange(StreamState currentState,
                               StreamState *nextState,

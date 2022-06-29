@@ -298,15 +298,23 @@ Result AudioOutputStreamOpenSLES::requestStart() {
     setDataCallbackEnabled(true);
 
     setState(StreamState::Starting);
+
+    if (getBufferDepth(mSimpleBufferQueueInterface) == 0) {
+        // Enqueue the first buffer if needed to start the streaming.
+        // We may need to stop the current stream.
+        bool shouldStopStream = processBufferCallback(mSimpleBufferQueueInterface);
+        if (shouldStopStream) {
+            LOGD("Stopping the current stream.");
+            if (requestStop_l() != Result::OK) {
+                LOGW("Failed to flush the stream. Error %s", convertToText(flush()));
+            }
+        }
+    }
+
     Result result = setPlayState_l(SL_PLAYSTATE_PLAYING);
     if (result == Result::OK) {
         setState(StreamState::Started);
         mLock.unlock();
-        if (getBufferDepth(mSimpleBufferQueueInterface) == 0) {
-            // Enqueue the first buffer if needed to start the streaming.
-            // This might call requestStop() so try to avoid a recursive lock.
-            processBufferCallback(mSimpleBufferQueueInterface);
-        }
     } else {
         setState(initialState);
         mLock.unlock();
@@ -377,6 +385,12 @@ Result AudioOutputStreamOpenSLES::requestFlush_l() {
 }
 
 Result AudioOutputStreamOpenSLES::requestStop() {
+    std::lock_guard<std::mutex> lock(mLock);
+    return requestStop_l();
+}
+
+
+Result AudioOutputStreamOpenSLES::requestStop_l() {
     LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
     std::lock_guard<std::mutex> lock(mLock);
 
