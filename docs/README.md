@@ -1,7 +1,7 @@
 Oboe documentation
 ===
 - [Android Audio History](AndroidAudioHistory.md)
-- [API reference](https://google.github.io/oboe/reference/)
+- [API reference](https://google.github.io/oboe/)
 - [Apps using Oboe](AppsUsingOboe.md)
 - [Changelog](ChangeLog.md)
 - [FAQs](FAQ.md)
