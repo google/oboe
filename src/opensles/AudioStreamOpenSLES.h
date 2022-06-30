@@ -66,6 +66,8 @@ public:
      * Process next OpenSL ES buffer.
      * Called by by OpenSL ES framework.
      *
+     * This is public, but don't call it directly.
+     *
      * @return whether the current stream should be stopped.
      */
     bool processBufferCallback(SLAndroidSimpleBufferQueueItf bq);
