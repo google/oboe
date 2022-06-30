@@ -313,8 +313,8 @@ int32_t AudioStreamOpenSLES::getBufferDepth(SLAndroidSimpleBufferQueueItf bq) {
     return (result == SL_RESULT_SUCCESS) ? queueState.count : -1;
 }
 
-bool AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
-    bool shouldStopStream = false;
+void AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq) {
+    bool stopStream = false;
     // Ask the app callback to process the buffer.
     DataCallbackResult result =
             fireDataCallback(mCallbackBuffer[mCallbackBufferIndex].get(), mFramesPerCallback);
@@ -323,7 +323,7 @@ bool AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
         SLresult enqueueResult = enqueueCallbackBuffer(bq);
         if (enqueueResult != SL_RESULT_SUCCESS) {
             LOGE("%s() returned %d", __func__, enqueueResult);
-            shouldStopStream = true;
+            stopStream = true;
         }
         // Update Oboe client position with frames handled by the callback.
         if (getDirection() == Direction::Input) {
@@ -333,15 +333,15 @@ bool AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
         }
     } else if (result == DataCallbackResult::Stop) {
         LOGD("Oboe callback returned Stop");
-        shouldStopStream = true;
+        stopStream = true;
     } else {
         LOGW("Oboe callback returned unexpected value = %d", result);
-        shouldStopStream = true;
+        stopStream = true;
     }
-    if (shouldStopStream) {
+    if (stopStream) {
+        requestStop();
         mCallbackBufferIndex = 0;
     }
-    return shouldStopStream;
 }
 
 // This callback handler is called every time a buffer has been processed by OpenSL ES.

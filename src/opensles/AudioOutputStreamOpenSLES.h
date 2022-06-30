@@ -61,8 +61,6 @@ private:
 
     Result requestFlush_l();
 
-    Result requestStop_l();
-
     /**
      * Set OpenSL ES PLAYSTATE.
      *
