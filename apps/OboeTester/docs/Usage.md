@@ -34,6 +34,9 @@ You can see the affect of the changing workload in the "% cpu" report in the sta
 The extra workload will always cause glitching when you get close to 100% CPU load.
 If the workload is causing glitching at a low % CPU load then there may be a problem with the callback timing.
 
+Instructions for using TEST OUTPUT for 4 or more chanels is in 
+[Wiki/OboeTester_MultiChannelOutput](https://github.com/google/oboe/wiki/OboeTester_MultiChannelOutput).
+
 ### Test Input
 
 Test input streams. Displays current volume as VU bars.
