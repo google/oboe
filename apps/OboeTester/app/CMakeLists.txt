@@ -6,6 +6,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 link_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
+# Increment this number when adding files to OboeTester => 100
+# The change in this file will help Android Studio resync
+# and generate new build files that reference the new code.
 file(GLOB_RECURSE app_native_sources src/main/cpp/*)
 
 ### Name must match loadLibrary() call in MainActivity.java
@@ -31,4 +34,3 @@ include_directories(
 # link to oboe
 target_link_libraries(oboetester log oboe atomic)
 
-# bump 4 to resync CMake
