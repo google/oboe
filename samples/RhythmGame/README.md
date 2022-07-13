@@ -31,9 +31,9 @@ The game plays the clap sounds on the first 3 beats of the bar. These are played
 
 ![Game architecture](images/2-architecture.png "Game architecture")
 
-Oboe provides the [`AudioStream`](https://github.com/google/oboe/blob/master/include/oboe/AudioStream.h) class and associated objects to allow the sample to output audio data to the audio device. All other objects are provided by the sample.
+Oboe provides the [`AudioStream`](https://github.com/google/oboe/blob/main/include/oboe/AudioStream.h) class and associated objects to allow the sample to output audio data to the audio device. All other objects are provided by the sample.
 
-Each time the `AudioStream` needs more audio data it calls [`AudioDataCallback::onAudioReady`](https://github.com/google/oboe/blob/master/include/oboe/AudioStreamCallback.h). This passes a container array named `audioData` to the `Game` object which must then fill the array with `numFrames` of audio frames.
+Each time the `AudioStream` needs more audio data it calls [`AudioDataCallback::onAudioReady`](https://github.com/google/oboe/blob/main/include/oboe/AudioStreamCallback.h). This passes a container array named `audioData` to the `Game` object which must then fill the array with `numFrames` of audio frames.
 
 
 ![onAudioReady signature](images/3-audioData.png "onAudioReady signature")
@@ -41,8 +41,8 @@ Each time the `AudioStream` needs more audio data it calls [`AudioDataCallback::
 ### Latency optimizations
 The sample uses the following optimizations to obtain a low latency audio stream:
 
-- Performance mode set to [Low Latency](https://github.com/google/oboe/blob/master/FullGuide.md#setting-performance-mode)
-- Sharing mode set to [Exclusive](https://github.com/google/oboe/blob/master/FullGuide.md#sharing-mode)
+- Performance mode set to [Low Latency](https://github.com/google/oboe/blob/main/FullGuide.md#setting-performance-mode)
+- Sharing mode set to [Exclusive](https://github.com/google/oboe/blob/main/FullGuide.md#sharing-mode)
 - Buffer size set to twice the number of frames in a burst (double buffering)
 
 ### Audio rendering

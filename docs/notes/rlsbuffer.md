@@ -36,7 +36,7 @@ The sequence of events is:
 1. user plugs in headphones, which invalidates the audio device
 1. app is called (callback) to render audio using the buffer
 1. the app or Oboe calls getFramesRead() or getTimestamp(), which calls down to AudioTrack::getPosition() or AudioTrack::getTimestamp()
-1. device routing change occurs because the audio device is [invalid](https://cs.android.com/android/platform/superproject/+/master:frameworks/av/media/libaudioclient/AudioTrack.cpp;l=1239;drc=48e98cf8dbd9fa212a0e129822929dc40e6c3898)
+1. device routing change occurs because the audio device is [invalid](https://cs.android.com/android/platform/superproject/+/primary:frameworks/av/media/libaudioclient/AudioTrack.cpp;l=1239;drc=48e98cf8dbd9fa212a0e129822929dc40e6c3898)
 1. callback ends by releasing the buffer back to a different device
 1. AudioTrackShared::releaseBuffer() checks to make sure the device matches the one in ObtainBuffer() and asserts if they do not match.
 

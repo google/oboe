@@ -36,4 +36,4 @@ These generate reports that contain the results of the test plus information abo
 But you, the user, can can email them to someone, or upload them to Google Drive, or send them to other Sharing destinations.
 This is optional. No reports are uploaded or saved by the program unless the user requests it.
 
-The source code for Oboetester is available [here](https://github.com/google/oboe/tree/master/apps/OboeTester) on GitHub.
+The source code for Oboetester is available [here](https://github.com/google/oboe/tree/main/apps/OboeTester) on GitHub.

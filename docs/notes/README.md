@@ -1,4 +1,4 @@
-[Oboe Docs Home](https://github.com/google/oboe/blob/master/docs/README.md)
+[Oboe Docs Home](https://github.com/google/oboe/blob/main/docs/README.md)
 
 Note that the Tech Notes are moving to here: https://github.com/google/oboe/wiki#tech-notes
 
