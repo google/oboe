@@ -88,7 +88,7 @@ We record the Input and Output stream together for about a second.
 Then we correlate the two streams by sliding the portion of the output stream that contains the random bits over the input stream at different time offsets.
 The Manchaster Encoded signal provide a very sharp peak when the offset matches the combined input and output latency.
 
-Source code for the analyzer in [LatencyAnalyzer.h](https://github.com/google/oboe/blob/master/apps/OboeTester/app/src/main/cpp/analyzer/LatencyAnalyzer.h).
+Source code for the analyzer in [LatencyAnalyzer.h](https://github.com/google/oboe/blob/main/apps/OboeTester/app/src/main/cpp/analyzer/LatencyAnalyzer.h).
 
 ### Glitch Test
 
