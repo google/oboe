@@ -377,7 +377,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 <p >Note that the latency of an OUTPUT stream will increase abruptly when you write data to it and then decrease slowly over time as the data is consumed.</p>
 <p >The latency of an INPUT stream will decrease abruptly when you read data from it and then increase slowly over time as more data arrives.</p>
 <p >The latency of an OUTPUT stream is generally higher than the INPUT latency because an app generally tries to keep the OUTPUT buffer full and the INPUT buffer empty.</p>
-<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md</a></p>
+<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md</a></p>
 <dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a> which has a result of Result::OK and a value containing the latency in milliseconds, or a result of Result::Error*. </dd></dl>
 
 </div>
@@ -731,7 +731,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 <p >Get the estimated time that the frame at <code>framePosition</code> entered or left the audio processing pipeline.</p>
 <p >This can be used to coordinate events and interactions with the external environment, and to estimate the latency of an audio stream. An example of usage can be found in the hello-oboe sample (search for "calculateCurrentOutputLatencyMillis").</p>
 <p >The time is based on the implementation's best effort, using whatever knowledge is available to the system, but cannot account for any delay unknown to the implementation.</p>
-<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md</a></p>
+<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md</a></p>
 <p >See </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">clockId</td><td>the type of clock to use e.g. CLOCK_MONOTONIC </td></tr>
@@ -784,7 +784,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 <p >Get the estimated time that the frame at <code>framePosition</code> entered or left the audio processing pipeline.</p>
 <p >This can be used to coordinate events and interactions with the external environment, and to estimate the latency of an audio stream. An example of usage can be found in the hello-oboe sample (search for "calculateCurrentOutputLatencyMillis").</p>
 <p >The time is based on the implementation's best effort, using whatever knowledge is available to the system, but cannot account for any delay unknown to the implementation.</p>
-<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/master/docs/notes/rlsbuffer.md</a></p>
+<p >Note that due to issues in Android before R, we recommend NOT calling this method from a data callback. See this tech note for more details. <a href="https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md">https://github.com/google/oboe/blob/main/docs/notes/rlsbuffer.md</a></p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>since 1.0, use <a class="el" href="classoboe_1_1_audio_stream.html#afe78adb3735f3f03867a96f0eedf0aa2">AudioStream::getTimestamp(clockid_t clockId)</a> instead, which returns <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
