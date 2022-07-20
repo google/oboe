@@ -23,7 +23,7 @@ An app may then choose to reopen a stream.
 
 On some versions of Android P (9), and some early versions of Q (10), the disconnect message does not reach AAudio and the app will not
 know that the device has changed. There is a "TEST DISCONNECT" option in
-[OboeTester](https://github.com/google/oboe/tree/master/apps/OboeTester/docs)
+[OboeTester](https://github.com/google/oboe/tree/main/apps/OboeTester/docs)
 that can be used to diagnose this problem.
 
 ## Workaround for not Disconnecting Properly

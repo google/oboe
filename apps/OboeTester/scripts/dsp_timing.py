@@ -20,7 +20,7 @@ limitations under the License.
 # Print a CSV table of offsets and glitch counts.
 #
 # Run Automated Test using an Intent
-# https://github.com/google/oboe/blob/master/apps/OboeTester/docs/AutomatedTesting.md
+# https://github.com/google/oboe/blob/main/apps/OboeTester/docs/AutomatedTesting.md
 
 import array
 import collections

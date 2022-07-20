@@ -5,7 +5,7 @@ OpenSLES Migration Guide
 
 This guide will show you how to migrate your code from [OpenSL ES for Android](https://developer.android.com/ndk/guides/audio/opensl/opensl-for-android) (just OpenSL from now on) to Oboe. 
 
-To familiarise yourself with Oboe, please read the [Getting Started guide](https://github.com/google/oboe/blob/master/docs/GettingStarted.md) and ensure that Oboe has been added as a dependency in your project.
+To familiarise yourself with Oboe, please read the [Getting Started guide](https://github.com/google/oboe/blob/main/docs/GettingStarted.md) and ensure that Oboe has been added as a dependency in your project.
 
 
 # Concepts
@@ -84,7 +84,7 @@ DataCallbackResult onAudioReady(
 ```
 
 
-You supply your implementation of `onAudioReady` when building the audio stream by constructing an `AudioStreamDataCallback` object. [Here's an example.](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#creating-an-audio-stream)
+You supply your implementation of `onAudioReady` when building the audio stream by constructing an `AudioStreamDataCallback` object. [Here's an example.](https://github.com/google/oboe/blob/main/docs/GettingStarted.md#creating-an-audio-stream)
 
 
 ### Buffer sizes
@@ -101,7 +101,7 @@ audioStream.setBufferSizeInFrames(audioStream.getFramesPerBurst() * 2);
 ```
 
 
-**Note:** because Oboe uses OpenSL under-the-hood on older devices which does not provide the same information about audio devices, it still needs to know [sensible default values for the burst to be used with OpenSL](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency).
+**Note:** because Oboe uses OpenSL under-the-hood on older devices which does not provide the same information about audio devices, it still needs to know [sensible default values for the burst to be used with OpenSL](https://github.com/google/oboe/blob/main/docs/GettingStarted.md#obtaining-optimal-latency).
 
 
 ## Audio stream properties
@@ -117,14 +117,14 @@ builder.openStream(myStream);
 ```
 
 
-However, you may want to specify some properties. These are set using the `AudioStreamBuilder` ([example](https://github.com/google/oboe/blob/master/docs/FullGuide.md#set-the-audio-stream-configuration-using-an-audiostreambuilder)).
+However, you may want to specify some properties. These are set using the `AudioStreamBuilder` ([example](https://github.com/google/oboe/blob/main/docs/FullGuide.md#set-the-audio-stream-configuration-using-an-audiostreambuilder)).
 
 
 ## Stream disconnection
 
 OpenSL has no mechanism, other than stopping callbacks, to indicate that an audio device has been disconnected - for example, when headphones are unplugged.
 
-In Oboe, you can be notified of stream disconnection by overriding one of the `onError` methods in `AudioStreamErrorCallback`. This allows you to clean up any resources associated with the audio stream and create a new stream with optimal properties for the current audio device ([more info](https://github.com/google/oboe/blob/master/docs/FullGuide.md#disconnected-audio-stream)).
+In Oboe, you can be notified of stream disconnection by overriding one of the `onError` methods in `AudioStreamErrorCallback`. This allows you to clean up any resources associated with the audio stream and create a new stream with optimal properties for the current audio device ([more info](https://github.com/google/oboe/blob/main/docs/FullGuide.md#disconnected-audio-stream)).
 
 
 # Unsupported features
@@ -141,7 +141,7 @@ Compressed audio, such as MP3, is not supported for a number of reasons but chie
 *   The OpenSL ES implementation has performance and reliability issues.
 *   It keeps the Oboe API and the underlying implementation simple.
 
-Extraction and decoding can be done either through the NDK [Media APIs](https://developer.android.com/ndk/reference/group/media) or by using a third party library like [FFmpeg](https://ffmpeg.org/). An example of both these approaches can be seen in the [RhythmGame sample](https://github.com/google/oboe/tree/master/samples/RhythmGame).
+Extraction and decoding can be done either through the NDK [Media APIs](https://developer.android.com/ndk/reference/group/media) or by using a third party library like [FFmpeg](https://ffmpeg.org/). An example of both these approaches can be seen in the [RhythmGame sample](https://github.com/google/oboe/tree/main/samples/RhythmGame).
 
 
 ## Miscellaneous features
@@ -153,7 +153,7 @@ Oboe does **not** support the following features:
 *   Channel masks - only [indexed channel masks](https://developer.android.com/reference/kotlin/android/media/AudioFormat#channel-index-masks) are supported.
 *   Playing audio content from a file pathname or [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier).
 *   Notification callbacks for position updates.
-*   Platform output effects on API 27 and below. [They are supported from API 28 and above.](https://github.com/google/oboe/blob/master/docs/notes/effects.md)
+*   Platform output effects on API 27 and below. [They are supported from API 28 and above.](https://github.com/google/oboe/blob/main/docs/notes/effects.md)
 
 
 # Summary
@@ -164,6 +164,6 @@ Oboe does **not** support the following features:
 *   Use your value for `numBuffers` to set the audio stream's buffer size as a multiple of the burst size. For example: `audioStream.setBufferSizeInFrames(audioStream.getFramesPerBurst * numBuffers)`.
 *   Create an `AudioStreamDataCallback` object and move your OpenSL callback code inside the `onAudioReady` method.
 *   Handle stream disconnect events by creating an `AudioStreamErrorCallback` object and overriding one of its `onError` methods.
-*   Pass sensible default sample rate and buffer size values to Oboe from `AudioManager` [using this method](https://github.com/google/oboe/blob/master/docs/GettingStarted.md#obtaining-optimal-latency) so that your app is still performant on older devices.
+*   Pass sensible default sample rate and buffer size values to Oboe from `AudioManager` [using this method](https://github.com/google/oboe/blob/main/docs/GettingStarted.md#obtaining-optimal-latency) so that your app is still performant on older devices.
 
-For more information please read the [Full Guide to Oboe](https://github.com/google/oboe/blob/master/docs/FullGuide.md).
+For more information please read the [Full Guide to Oboe](https://github.com/google/oboe/blob/main/docs/FullGuide.md).

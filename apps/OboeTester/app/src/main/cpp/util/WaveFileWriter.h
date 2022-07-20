@@ -15,7 +15,7 @@
  */
 
 // Based on the WaveFileWriter in Java from the open source JSyn library by Phil Burk
-// https://github.com/philburk/jsyn/blob/master/src/com/jsyn/util/WaveFileWriter.java
+// https://github.com/philburk/jsyn/blob/master/src/main/java/com/jsyn/util/WaveFileWriter.java
 
 #ifndef UTIL_WAVE_FILE_WRITER
 #define UTIL_WAVE_FILE_WRITER
