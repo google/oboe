@@ -6,30 +6,21 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = MainActivity.class.getName();
-    private static final String TEST_BINARY_FILEANAME = "testOboe";
+    private static final String TEST_BINARY_FILENAME = "testOboe.so";
     private static final int APP_PERMISSION_REQUEST = 0;
 
     private TextView outputText;
@@ -57,42 +48,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String executeBinary() {
-
-        AssetManager assetManager = getAssets();
-
-        StringBuffer output = new StringBuffer();
-        String abi = Build.CPU_ABI;
-        String extraStringForDebugBuilds = "-hwasan";
-        if (abi.endsWith(extraStringForDebugBuilds)) {
-            abi = abi.substring(0, abi.length() - extraStringForDebugBuilds.length());
-        }
-        String filesDir = getFilesDir().getPath();
-        String testBinaryPath = abi + "/" + TEST_BINARY_FILEANAME;
+        StringBuilder output = new StringBuilder();
 
         try {
-            InputStream inStream = assetManager.open(testBinaryPath);
-            Log.d(TAG, "Opened " + testBinaryPath);
-
-            // Copy this file to an executable location
-            File outFile = new File(filesDir, TEST_BINARY_FILEANAME);
-
-            OutputStream outStream = new FileOutputStream(outFile);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = inStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, read);
-            }
-            inStream.close();
-            outStream.flush();
-            outStream.close();
-            Log.d(TAG, "Copied " + testBinaryPath + " to " + filesDir);
-
-            String executablePath =  filesDir + "/" + TEST_BINARY_FILEANAME;
+            String executablePath =  getApplicationInfo().nativeLibraryDir + "/" + TEST_BINARY_FILENAME;
             Log.d(TAG, "Attempting to execute " + executablePath);
-
-            new File(executablePath).setExecutable(true, false);
-            Log.d(TAG, "Setting execute permission on " + executablePath);
 
             Process process = Runtime.getRuntime().exec(executablePath);
 
@@ -103,16 +63,16 @@ public class MainActivity extends AppCompatActivity {
                     InputStreamReader(process.getErrorStream()));
 
             // read the output from the command
-            String s = null;
+            String s;
             while ((s = stdInput.readLine()) != null) {
                 Log.d(TAG, s);
-                output.append(s + "\n");
+                output.append(s).append("\n");
             }
 
             // read any errors from the attempted command
             while ((s = stdError.readLine()) != null) {
                 Log.e(TAG, "ERROR: " + s);
-                output.append("ERROR: " + s + "\n");
+                output.append("ERROR: ").append(s).append("\n");
             }
 
             process.waitFor();
@@ -169,19 +129,11 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             final String output = executeBinary();
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    outputText.setText(output);
+            runOnUiThread(() -> {
+                outputText.setText(output);
 
-                    // Scroll to the bottom so we can see the test result
-                    scrollView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            scrollView.scrollTo(0, outputText.getBottom());
-                        }
-                    }, 100);
-                }
+                // Scroll to the bottom so we can see the test result
+                scrollView.postDelayed(() -> scrollView.scrollTo(0, outputText.getBottom()), 100);
             });
         }
     }

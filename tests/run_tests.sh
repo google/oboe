@@ -50,7 +50,7 @@ CMAKE=cmake
 TEST_BINARY_FILENAME=testOboe
 TEST_RUNNER_DIR=UnitTestRunner
 TEST_RUNNER_PACKAGE_NAME=com.google.oboe.tests.unittestrunner
-TEST_RUNNER_ASSET_DIR=${TEST_RUNNER_DIR}/app/src/main/assets
+TEST_RUNNER_JNILIBS_DIR=${TEST_RUNNER_DIR}/app/src/main/jniLibs
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -113,10 +113,11 @@ pushd ${BUILD_DIR}
 popd
 
 # Copy the binary into the unit test runner app
-mkdir ${TEST_RUNNER_ASSET_DIR}/${ABI}
-DESTINATION_DIR=${TEST_RUNNER_ASSET_DIR}/${ABI}/${TEST_BINARY_FILENAME}
+mkdir ${TEST_RUNNER_JNILIBS_DIR}
+mkdir ${TEST_RUNNER_JNILIBS_DIR}/${ABI}
+DESTINATION_DIR=${TEST_RUNNER_JNILIBS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
 echo "Copying binary to ${DESTINATION_DIR}"
-cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
+cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}.so
 
 # Build and install the unit test runner app
 pushd ${TEST_RUNNER_DIR}
@@ -141,4 +142,4 @@ echo "Starting app - Check your device for test results"
 adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
 
 sleep 1
-adb logcat ${TEST_RUNNER_PACKAGE_NAME}
+adb logcat ${TEST_RUNNER_PACKAGE_NAME}.MainActivity:D *:S

@@ -8,4 +8,5 @@
 .DS_Store
 /build
 /captures
+/jniLibs
 .externalNativeBuild
