@@ -51,6 +51,7 @@ TEST_BINARY_FILENAME=testOboe
 TEST_RUNNER_DIR=UnitTestRunner
 TEST_RUNNER_PACKAGE_NAME=com.google.oboe.tests.unittestrunner
 TEST_RUNNER_JNILIBS_DIR=${TEST_RUNNER_DIR}/app/src/main/jniLibs
+TEST_RUNNER_CXX_DIR=${TEST_RUNNER_DIR}/app/.cxx
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -97,7 +98,10 @@ CMAKE_ARGS="-H. \
 
 mkdir -p ${BUILD_DIR} 
 
-cmake ${CMAKE_ARGS}	
+# Clean up previous build because swapping phones may result in stale binaries
+rm -r ${BUILD_DIR}
+
+cmake ${CMAKE_ARGS}
   
 # Perform the build
 pushd ${BUILD_DIR}
@@ -112,7 +116,7 @@ pushd ${BUILD_DIR}
 	
 popd
 
-# Copy the binary into the unit test runner app
+# Copy the binary into the jniLibs of the unit test runner app
 mkdir ${TEST_RUNNER_JNILIBS_DIR}
 mkdir ${TEST_RUNNER_JNILIBS_DIR}/${ABI}
 DESTINATION_DIR=${TEST_RUNNER_JNILIBS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
