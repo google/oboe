@@ -118,7 +118,10 @@ TEST_F(StreamOpenOutput, ForOpenSLESDefaultFramesPerBurstIsUsed){
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getFramesPerBurst(), 128);
+    // Some devices like emulators may not support Low Latency
+    if (mStream->getPerformanceMode() == PerformanceMode::LowLatency) {
+        ASSERT_EQ(mStream->getFramesPerBurst(), 128);
+    }
     ASSERT_TRUE(closeStream());
 }
 

@@ -69,7 +69,7 @@ fi
 ABI=$(adb shell getprop ro.product.cpu.abi | tr -d '\n\r')
 
 if [ -z "$ABI" ]; then
-    echo "No device ABI was set. Please ensure a device or emulator is running"
+    echo "No device ABI was set. Please ensure a device or emulator is running. You may need to unplug extra devices."
     exit 1
 fi  
 
