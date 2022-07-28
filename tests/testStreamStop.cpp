@@ -71,7 +71,7 @@ protected:
         std::thread stopper([str] {
             int64_t estimatedCompletionTimeUs = kMicroSecondsPerSecond * kFramesToWrite / str->getSampleRate();
             usleep(estimatedCompletionTimeUs / 2); // Stop halfway during the read/write
-            str->close();
+            EXPECT_EQ(str->close(), Result::OK);
         });
 
         if (mBuilder.getDirection() == Direction::Output) {

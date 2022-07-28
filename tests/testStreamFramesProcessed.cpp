@@ -36,7 +36,7 @@ class StreamFramesProcessed : public ::testing::Test,
 protected:
     void TearDown() override;
 
-    static constexpr int PROCESS_TIME_SECONDS = 15;
+    static constexpr int PROCESS_TIME_SECONDS = 5;
 
     AudioStreamBuilder mBuilder;
     AudioStream *mStream = nullptr;

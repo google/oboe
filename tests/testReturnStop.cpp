@@ -29,8 +29,7 @@ static constexpr int kTimeoutInNanos = 500 * kNanosPerMillisecond;
 class ReturnStopCallback : public AudioStreamDataCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override {
-        callbackCount++;
-        return (callbackCount < kMaxCallbacks) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
+        return (++callbackCount < kMaxCallbacks) ? DataCallbackResult::Continue : DataCallbackResult::Stop;
     }
 
     void reset() {
@@ -93,7 +92,7 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
         ASSERT_EQ(r, Result::OK) << "Failed to start stream. " << convertToText(r);
     
         // Wait for callbacks to complete.
-        const int kMaxCallbackPeriodMillis = 1000;
+        const int kMaxCallbackPeriodMillis = 500;
         const int kPollPeriodMillis = 20;
         int timeout = 2 * callback->getMaxCallbacks() * kMaxCallbackPeriodMillis / kPollPeriodMillis;
         do {
@@ -110,8 +109,8 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
         
         EXPECT_EQ(callback->callbackCount, callback->getMaxCallbacks()) << "Too many callbacks = " << callback->callbackCount;
 
-        // Sleep for the minimal amount of time (1 microsecond)
-        usleep(1);
+        const int kOboeOpenCloseSleepMSec = 10;
+        usleep(kOboeOpenCloseSleepMSec * 1000); // avoid race condition in emulator
     }
 
     ASSERT_EQ(Result::OK, mStream->close());
