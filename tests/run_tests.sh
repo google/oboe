@@ -51,7 +51,7 @@ TEST_BINARY_FILENAME=testOboe
 TEST_RUNNER_DIR=UnitTestRunner
 TEST_RUNNER_PACKAGE_NAME=com.google.oboe.tests.unittestrunner
 TEST_RUNNER_JNILIBS_DIR=${TEST_RUNNER_DIR}/app/src/main/jniLibs
-TEST_RUNNER_CXX_DIR=${TEST_RUNNER_DIR}/app/.cxx
+TEST_RUNNER_ASSETS_DIR=${TEST_RUNNER_DIR}/app/src/main/assets
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -116,10 +116,18 @@ pushd ${BUILD_DIR}
 	
 popd
 
-# Copy the binary into the jniLibs of the unit test runner app
+# Copy the binary into the jniLibs and assets folders of the unit test runner app
+# The assets folder does not work after Android R for security reasons
+# The jniLibs folder doesn't seem to work before Android O
+# Thus, copy into both
 mkdir ${TEST_RUNNER_JNILIBS_DIR}
 mkdir ${TEST_RUNNER_JNILIBS_DIR}/${ABI}
 DESTINATION_DIR=${TEST_RUNNER_JNILIBS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
+echo "Copying binary to ${DESTINATION_DIR}"
+cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}.so
+mkdir ${TEST_RUNNER_ASSETS_DIR}
+mkdir ${TEST_RUNNER_ASSETS_DIR}/${ABI}
+DESTINATION_DIR=${TEST_RUNNER_ASSETS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
 echo "Copying binary to ${DESTINATION_DIR}"
 cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}.so
 

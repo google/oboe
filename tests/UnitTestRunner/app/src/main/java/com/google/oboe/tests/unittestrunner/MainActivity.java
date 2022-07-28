@@ -6,6 +6,8 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -14,8 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,7 +58,13 @@ public class MainActivity extends AppCompatActivity {
         StringBuilder output = new StringBuilder();
 
         try {
-            String executablePath =  getApplicationInfo().nativeLibraryDir + "/" + TEST_BINARY_FILENAME;
+            String executablePath;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                executablePath = getApplicationInfo().nativeLibraryDir + "/" + TEST_BINARY_FILENAME;
+            } else {
+                executablePath = getExecutablePathFromAssets();
+            }
+
             Log.d(TAG, "Attempting to execute " + executablePath);
 
             Process process = Runtime.getRuntime().exec(executablePath);
@@ -84,6 +97,48 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return output.toString();
+    }
+
+    private String getExecutablePathFromAssets() {
+        AssetManager assetManager = getAssets();
+
+        String abi = Build.CPU_ABI;
+        String extraStringForDebugBuilds = "-hwasan";
+        if (abi.endsWith(extraStringForDebugBuilds)) {
+            abi = abi.substring(0, abi.length() - extraStringForDebugBuilds.length());
+        }
+        String filesDir = getFilesDir().getPath();
+        String testBinaryPath = abi + "/" + TEST_BINARY_FILENAME;
+
+        try {
+            InputStream inStream = assetManager.open(testBinaryPath);
+            Log.d(TAG, "Opened " + testBinaryPath);
+
+            // Copy this file to an executable location
+            File outFile = new File(filesDir, TEST_BINARY_FILENAME);
+
+            OutputStream outStream = new FileOutputStream(outFile);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = inStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, read);
+            }
+            inStream.close();
+            outStream.flush();
+            outStream.close();
+            Log.d(TAG, "Copied " + testBinaryPath + " to " + filesDir);
+
+            String executablePath = filesDir + "/" + TEST_BINARY_FILENAME;
+            Log.d(TAG, "Setting execute permission on " + executablePath);
+            new File(executablePath).setExecutable(true, false);
+            return executablePath;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private boolean isRecordPermissionGranted() {
