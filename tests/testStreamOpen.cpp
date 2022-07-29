@@ -236,15 +236,17 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     mBuilder.setPerformanceMode(PerformanceMode::None);
     ASSERT_TRUE(openStream());
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
-    ASSERT_EQ(mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames()), Result::OK);
-    ASSERT_EQ(mStream->requestStart(), Result::OK);
-    int timeout = 20;
-    while (callback.framesPerCallback == 0 && timeout > 0) {
-        usleep(50 * 1000);
-        timeout--;
+    if (mStream->getAudioApi() == AudioApi::AAudio) {
+        ASSERT_EQ(mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames()), Result::OK);
+        ASSERT_EQ(mStream->requestStart(), Result::OK);
+        int timeout = 20;
+        while (callback.framesPerCallback == 0 && timeout > 0) {
+            usleep(50 * 1000);
+            timeout--;
+        }
+        ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
+        ASSERT_EQ(mStream->requestStop(), Result::OK);
     }
-    ASSERT_EQ(kRequestedFramesPerCallback, callback.framesPerCallback);
-    ASSERT_EQ(mStream->requestStop(), Result::OK);
     ASSERT_TRUE(closeStream());
 }
 

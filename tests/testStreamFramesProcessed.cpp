@@ -55,7 +55,7 @@ TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
 
     AudioStreamDataCallback *callback = new FramesProcessedCallback();
     mBuilder.setDirection(direction)
-            ->setFormat(AudioFormat::Float)
+            ->setFormat(AudioFormat::I16)
             ->setSampleRate(sampleRate)
             ->setSampleRateConversionQuality(SampleRateConversionQuality::Medium)
             ->setPerformanceMode(PerformanceMode::LowLatency)

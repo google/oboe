@@ -42,7 +42,7 @@ public:
     
 private:
     // I get strange linker errors with GTest if I try to reference this directly.
-    static constexpr int kMaxCallbacks = 4;
+    static constexpr int kMaxCallbacks = 400;
 };
 
 using StreamReturnStopParams = std::tuple<Direction, AudioApi, PerformanceMode, bool>;
@@ -73,7 +73,7 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
     ReturnStopCallback *callback = new ReturnStopCallback();
     mBuilder.setDirection(direction)
             ->setAudioApi(audioApi)
-            ->setFormat(AudioFormat::Float)
+            ->setFormat(AudioFormat::I16)
             ->setPerformanceMode(performanceMode)
             ->setDataCallback(callback);
     mStream = nullptr;
@@ -109,8 +109,8 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
         
         EXPECT_EQ(callback->callbackCount, callback->getMaxCallbacks()) << "Too many callbacks = " << callback->callbackCount;
 
-        const int kOboeOpenCloseSleepMSec = 10;
-        usleep(kOboeOpenCloseSleepMSec * 1000); // avoid race condition in emulator
+        const int kOboeStartStopSleepMSec = 10;
+        usleep(kOboeStartStopSleepMSec * 1000); // avoid race condition in emulator
     }
 
     ASSERT_EQ(Result::OK, mStream->close());

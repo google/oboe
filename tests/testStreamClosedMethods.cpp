@@ -211,11 +211,12 @@ TEST_F(StreamClosedReturnValues, GetFramesWrittenReturnsLastKnownValue){
     mBuilder.setFormat(AudioFormat::I16);
     mBuilder.setChannelCount(1);
     ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames()), Result::OK);
     mStream->start();
 
     int16_t buffer[4] = { 1, 2, 3, 4 };
     Result r = mStream->write(&buffer, 4, 0);
-    if (r != Result::OK){
+    if (r != Result::OK) {
         FAIL() << "Could not write to audio stream";
     }
 
@@ -226,7 +227,6 @@ TEST_F(StreamClosedReturnValues, GetFramesWrittenReturnsLastKnownValue){
     ASSERT_EQ(mStream->getFramesWritten(), f);
 }
 
-// TODO: Reading a positive value doesn't work on OpenSL ES in this test - why?
 TEST_F(StreamClosedReturnValues, GetFramesReadReturnsLastKnownValue) {
 
     mBuilder.setDirection(Direction::Input);
@@ -236,14 +236,12 @@ TEST_F(StreamClosedReturnValues, GetFramesReadReturnsLastKnownValue) {
     ASSERT_TRUE(openStream());
     mStream->start();
 
-/*
     int16_t buffer[192];
-    auto r = mStream->read(&buffer, 192, 0);
+    auto r = mStream->read(&buffer, 192, 1000 * kNanosPerMillisecond);
     ASSERT_EQ(r.value(), 192);
-*/
 
     auto f = mStream->getFramesRead();
-//    ASSERT_EQ(f, 192);
+    ASSERT_EQ(f, 192);
 
     ASSERT_TRUE(closeStream());
     ASSERT_EQ(mStream->getFramesRead(), f);
@@ -301,7 +299,7 @@ TEST_F(StreamClosedReturnValues, WaitForStateChangeReturnsClosed){
     ASSERT_TRUE(openAndCloseStream());
     StreamState next;
     Result r = mStream->waitForStateChange(StreamState::Open, &next, 0);
-    ASSERT_EQ(r, Result::ErrorClosed) << convertToText(r);
+    EXPECT_TRUE(r == Result::OK || r == Result::ErrorClosed) << convertToText(r);
 }
 
 TEST_F(StreamClosedReturnValues, SetBufferSizeInFramesReturnsClosed){
