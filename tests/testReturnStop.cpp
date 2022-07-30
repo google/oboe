@@ -72,10 +72,12 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
 
     ReturnStopCallback *callback = new ReturnStopCallback();
     mBuilder.setDirection(direction)
-            ->setAudioApi(audioApi)
             ->setFormat(AudioFormat::I16)
             ->setPerformanceMode(performanceMode)
             ->setDataCallback(callback);
+    if (mBuilder.isAAudioRecommended()) {
+        mBuilder.setAudioApi(audioApi);
+    }
     mStream = nullptr;
     Result r = mBuilder.openStream(&mStream);
     ASSERT_EQ(r, Result::OK) << "Failed to open stream. " << convertToText(r);

@@ -66,7 +66,9 @@ protected:
         CallbackSizeMonitor callback;
 
         mBuilder.setDirection(direction);
-        mBuilder.setAudioApi(AudioApi::AAudio);
+        if (mBuilder.isAAudioRecommended()) {
+            mBuilder.setAudioApi(AudioApi::AAudio);
+        }
         mBuilder.setCallback(&callback);
         mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
         mBuilder.setSampleRate(44100);

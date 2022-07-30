@@ -36,7 +36,9 @@ protected:
 
     bool openStream(Direction direction, AudioApi audioApi, PerformanceMode perfMode) {
         mBuilder.setDirection(direction);
-        mBuilder.setAudioApi(audioApi);
+        if (mBuilder.isAAudioRecommended()) {
+            mBuilder.setAudioApi(audioApi);
+        }
         mBuilder.setPerformanceMode(perfMode);
         mBuilder.setChannelCount(1);
         mBuilder.setFormat(AudioFormat::I16);
