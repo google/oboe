@@ -24,7 +24,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
-import androidx.core.view.MotionEventCompat;
 
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,11 +41,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends Activity {
-
     private static final String TAG = MainActivity.class.getName();
     private static final long UPDATE_LATENCY_EVERY_MILLIS = 1000;
     private static final Integer[] CHANNEL_COUNT_OPTIONS = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -73,8 +72,7 @@ public class MainActivity extends Activity {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = MotionEventCompat.getActionMasked(event);
-        switch (action) {
+        switch (event.getAction()) {
             case (MotionEvent.ACTION_DOWN):
                 PlaybackEngine.setToneOn(true);
                 break;
@@ -125,9 +123,13 @@ public class MainActivity extends Activity {
             showToast("Error stopping stream = " + result);
         }
 
-        if (mScoStarted) {
-            stopBluetoothSco();
-            mScoStarted = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            clearCommunicationDevice();
+        } else {
+            if (mScoStarted) {
+                stopBluetoothSco();
+                mScoStarted = false;
+            }
         }
 
         PlaybackEngine.delete();
@@ -137,7 +139,7 @@ public class MainActivity extends Activity {
     private void setupChannelCountSpinner() {
         mChannelCountSpinner = findViewById(R.id.channelCountSpinner);
 
-        ArrayAdapter<Integer> channelCountAdapter = new ArrayAdapter<Integer>(this, R.layout.channel_counts_spinner, CHANNEL_COUNT_OPTIONS);
+        ArrayAdapter<Integer> channelCountAdapter = new ArrayAdapter<>(this, R.layout.channel_counts_spinner, CHANNEL_COUNT_OPTIONS);
         mChannelCountSpinner.setAdapter(channelCountAdapter);
         mChannelCountSpinner.setSelection(CHANNEL_COUNT_DEFAULT_OPTION_INDEX);
 
@@ -183,13 +185,23 @@ public class MainActivity extends Activity {
             mPlaybackDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    // Start Bluetooth SCO if needed.
-                    if (isScoDevice(getPlaybackDeviceId()) && !mScoStarted) {
-                        startBluetoothSco();
-                        mScoStarted = true;
-                    } else if (!isScoDevice(getPlaybackDeviceId()) && mScoStarted) {
-                        stopBluetoothSco();
-                        mScoStarted = false;
+                    // To use Bluetooth SCO, setCommunicationDevice() or startBluetoothSco() must
+                    // be called. The AudioManager.startBluetoothSco() is deprecated in Android T.
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (isScoDevice(getPlaybackDeviceId())){
+                            setCommunicationDevice(getPlaybackDeviceId());
+                        } else {
+                            clearCommunicationDevice();
+                        }
+                    } else {
+                        // Start Bluetooth SCO if needed.
+                        if (isScoDevice(getPlaybackDeviceId()) && !mScoStarted) {
+                            startBluetoothSco();
+                            mScoStarted = true;
+                        } else if (!isScoDevice(getPlaybackDeviceId()) && mScoStarted) {
+                            stopBluetoothSco();
+                            mScoStarted = false;
+                        }
                     }
                     PlaybackEngine.setAudioDeviceId(getPlaybackDeviceId());
                 }
@@ -237,7 +249,7 @@ public class MainActivity extends Activity {
         // parseInt will throw a NumberFormatException if the string doesn't contain a valid integer
         // representation. We don't need to worry about this because the values are derived from
         // the BUFFER_SIZE_OPTIONS int array.
-        return Integer.parseInt(selectedOption.get(valueKey));
+        return Integer.parseInt(Objects.requireNonNull(selectedOption.get(valueKey)));
     }
 
     private void setupLatencyUpdater() {
@@ -257,12 +269,7 @@ public class MainActivity extends Activity {
                     latencyStr = getString(R.string.only_supported_on_api_26);
                 }
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mLatencyText.setText(getString(R.string.latency, latencyStr));
-                    }
-                });
+                runOnUiThread(() -> mLatencyText.setText(getString(R.string.latency, latencyStr)));
             }
         };
         mLatencyUpdater = new Timer();
@@ -308,26 +315,36 @@ public class MainActivity extends Activity {
     }
 
     protected void showToast(final String message) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this,
-                        message,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                message,
+                Toast.LENGTH_SHORT).show());
     }
 
-    /**
-     * @param deviceId
-     * @return true if the device is TYPE_BLUETOOTH_SCO
-     */
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void setCommunicationDevice(int deviceId) {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        final AudioDeviceInfo[] devices;
+        devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        for (AudioDeviceInfo device : devices) {
+            if (device.getId() == deviceId) {
+                audioManager.setCommunicationDevice(device);
+                return;
+            }
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private void clearCommunicationDevice() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioManager.clearCommunicationDevice();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private boolean isScoDevice(int deviceId) {
         if (deviceId == 0) return false; // Unspecified
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         final AudioDeviceInfo[] devices;
-        devices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
         for (AudioDeviceInfo device : devices) {
             if (device.getId() == deviceId) {
                 return device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO;
