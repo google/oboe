@@ -42,7 +42,7 @@ public:
     
 private:
     // I get strange linker errors with GTest if I try to reference this directly.
-    static constexpr int kMaxCallbacks = 400;
+    static constexpr int kMaxCallbacks = 40;
 };
 
 using StreamReturnStopParams = std::tuple<Direction, AudioApi, PerformanceMode, bool>;

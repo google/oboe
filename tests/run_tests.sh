@@ -154,4 +154,4 @@ echo "Starting app - Check your device for test results"
 adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
 
 sleep 1
-adb logcat
+adb logcat ${TEST_RUNNER_PACKAGE_NAME}.MainActivity:V OboeAudio:V *:S
