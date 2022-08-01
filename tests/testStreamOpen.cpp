@@ -432,3 +432,11 @@ TEST_F(StreamOpenInput, AAudioInputSetAttributionTag){
         ASSERT_TRUE(closeStream());
     }
 }
+
+TEST_F(StreamOpenOutput, OutputForOpenSLESPerformanceModeNoneGetBufferSizeInFrames){
+    mBuilder.setPerformanceMode(PerformanceMode::None);
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    ASSERT_TRUE(openStream());
+    EXPECT_GT(mStream->getBufferSizeInFrames(), 0);
+    ASSERT_TRUE(closeStream());
+}
