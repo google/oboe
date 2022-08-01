@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     private String getExecutablePathFromAssets() {
         AssetManager assetManager = getAssets();
 
-        String abi = Build.CPU_ABI;
+        String abi = Build.SUPPORTED_ABIS[0];
         String extraStringForDebugBuilds = "-hwasan";
         if (abi.endsWith(extraStringForDebugBuilds)) {
             abi = abi.substring(0, abi.length() - extraStringForDebugBuilds.length());
