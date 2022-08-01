@@ -84,6 +84,11 @@ else
 	exit 1
 fi
 
+mkdir -p ${BUILD_DIR} 
+
+echo "Cleaning up previous build because swapping phones may result in stale binaries"
+rm -r ${BUILD_DIR}
+
 # Configure the build
 echo "Building tests for ${ABI} using ${PLATFORM}"
 
@@ -95,11 +100,6 @@ CMAKE_ARGS="-H. \
 	-DCMAKE_CXX_FLAGS=-std=c++17 \
 	-DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
 	-DCMAKE_VERBOSE_MAKEFILE=1"
-
-mkdir -p ${BUILD_DIR} 
-
-# Clean up previous build because swapping phones may result in stale binaries
-rm -r ${BUILD_DIR}
 
 cmake ${CMAKE_ARGS}
   
@@ -154,4 +154,5 @@ echo "Starting app - Check your device for test results"
 adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
 
 sleep 1
+echo "Logging test logs and Oboe logs. Run adb logcat for complete logs."
 adb logcat ${TEST_RUNNER_PACKAGE_NAME}.MainActivity:V OboeAudio:V *:S

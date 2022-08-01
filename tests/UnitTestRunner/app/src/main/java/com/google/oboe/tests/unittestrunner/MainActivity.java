@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
         return output.toString();
     }
 
+    // Legacy method to get asset path.
+    // This will not work on more recent Android releases.
     private String getExecutablePathFromAssets() {
         AssetManager assetManager = getAssets();
 
@@ -131,10 +132,11 @@ public class MainActivity extends AppCompatActivity {
 
             String executablePath = filesDir + "/" + TEST_BINARY_FILENAME;
             Log.d(TAG, "Setting execute permission on " + executablePath);
-            new File(executablePath).setExecutable(true, false);
+            boolean success = new File(executablePath).setExecutable(true, false);
+            if (!success) {
+                Log.d(TAG, "Could not set execute permission on " + executablePath);
+            }
             return executablePath;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
