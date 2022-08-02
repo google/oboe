@@ -66,7 +66,9 @@ protected:
         CallbackSizeMonitor callback;
 
         mBuilder.setDirection(direction);
-        mBuilder.setAudioApi(AudioApi::AAudio);
+        if (mBuilder.isAAudioRecommended()) {
+            mBuilder.setAudioApi(AudioApi::AAudio);
+        }
         mBuilder.setCallback(&callback);
         mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
         mBuilder.setSampleRate(44100);
@@ -118,7 +120,10 @@ TEST_F(StreamOpenOutput, ForOpenSLESDefaultFramesPerBurstIsUsed){
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getFramesPerBurst(), 128);
+    // Some devices like emulators may not support Low Latency
+    if (mStream->getPerformanceMode() == PerformanceMode::LowLatency) {
+        ASSERT_EQ(mStream->getFramesPerBurst(), 128);
+    }
     ASSERT_TRUE(closeStream());
 }
 
@@ -233,7 +238,6 @@ TEST_F(StreamOpen, AAudioFramesPerCallbackNone) {
     mBuilder.setPerformanceMode(PerformanceMode::None);
     ASSERT_TRUE(openStream());
     ASSERT_EQ(kRequestedFramesPerCallback, mStream->getFramesPerCallback());
-    ASSERT_EQ(mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames()), Result::OK);
     ASSERT_EQ(mStream->requestStart(), Result::OK);
     int timeout = 20;
     while (callback.framesPerCallback == 0 && timeout > 0) {

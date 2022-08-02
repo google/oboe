@@ -36,7 +36,9 @@ protected:
 
     bool openStream(Direction direction, AudioApi audioApi, PerformanceMode perfMode) {
         mBuilder.setDirection(direction);
-        mBuilder.setAudioApi(audioApi);
+        if (mBuilder.isAAudioRecommended()) {
+            mBuilder.setAudioApi(audioApi);
+        }
         mBuilder.setPerformanceMode(perfMode);
         mBuilder.setChannelCount(1);
         mBuilder.setFormat(AudioFormat::I16);
@@ -71,7 +73,7 @@ protected:
         std::thread stopper([str] {
             int64_t estimatedCompletionTimeUs = kMicroSecondsPerSecond * kFramesToWrite / str->getSampleRate();
             usleep(estimatedCompletionTimeUs / 2); // Stop halfway during the read/write
-            str->close();
+            EXPECT_EQ(str->close(), Result::OK);
         });
 
         if (mBuilder.getDirection() == Direction::Output) {

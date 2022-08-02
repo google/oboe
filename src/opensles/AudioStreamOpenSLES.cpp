@@ -16,7 +16,6 @@
 #include <cassert>
 #include <android/log.h>
 
-
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 #include <oboe/AudioStream.h>

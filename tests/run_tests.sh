@@ -50,7 +50,8 @@ CMAKE=cmake
 TEST_BINARY_FILENAME=testOboe
 TEST_RUNNER_DIR=UnitTestRunner
 TEST_RUNNER_PACKAGE_NAME=com.google.oboe.tests.unittestrunner
-TEST_RUNNER_ASSET_DIR=${TEST_RUNNER_DIR}/app/src/main/assets
+TEST_RUNNER_JNILIBS_DIR=${TEST_RUNNER_DIR}/app/src/main/jniLibs
+TEST_RUNNER_ASSETS_DIR=${TEST_RUNNER_DIR}/app/src/main/assets
 
 # Check prerequisites
 if [ -z "$ANDROID_NDK" ]; then
@@ -68,7 +69,7 @@ fi
 ABI=$(adb shell getprop ro.product.cpu.abi | tr -d '\n\r')
 
 if [ -z "$ABI" ]; then
-    echo "No device ABI was set. Please ensure a device or emulator is running"
+    echo "No device ABI was set. Please ensure a device or emulator is running. You may need to unplug extra devices."
     exit 1
 fi  
 
@@ -83,6 +84,11 @@ else
 	exit 1
 fi
 
+mkdir -p ${BUILD_DIR} 
+
+echo "Cleaning up previous build because swapping phones may result in stale binaries"
+rm -r ${BUILD_DIR}
+
 # Configure the build
 echo "Building tests for ${ABI} using ${PLATFORM}"
 
@@ -95,9 +101,7 @@ CMAKE_ARGS="-H. \
 	-DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
 	-DCMAKE_VERBOSE_MAKEFILE=1"
 
-mkdir -p ${BUILD_DIR} 
-
-cmake ${CMAKE_ARGS}	
+cmake ${CMAKE_ARGS}
   
 # Perform the build
 pushd ${BUILD_DIR}
@@ -112,11 +116,20 @@ pushd ${BUILD_DIR}
 	
 popd
 
-# Copy the binary into the unit test runner app
-mkdir ${TEST_RUNNER_ASSET_DIR}/${ABI}
-DESTINATION_DIR=${TEST_RUNNER_ASSET_DIR}/${ABI}/${TEST_BINARY_FILENAME}
+# Copy the binary into the jniLibs and assets folders of the unit test runner app
+# The assets folder does not work after Android R for security reasons
+# The jniLibs folder doesn't seem to work before Android O
+# Thus, copy into both
+mkdir ${TEST_RUNNER_JNILIBS_DIR}
+mkdir ${TEST_RUNNER_JNILIBS_DIR}/${ABI}
+DESTINATION_DIR=${TEST_RUNNER_JNILIBS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
 echo "Copying binary to ${DESTINATION_DIR}"
-cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}
+cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}.so
+mkdir ${TEST_RUNNER_ASSETS_DIR}
+mkdir ${TEST_RUNNER_ASSETS_DIR}/${ABI}
+DESTINATION_DIR=${TEST_RUNNER_ASSETS_DIR}/${ABI}/${TEST_BINARY_FILENAME}
+echo "Copying binary to ${DESTINATION_DIR}"
+cp ${BUILD_DIR}/${TEST_BINARY_FILENAME} ${DESTINATION_DIR}.so
 
 # Build and install the unit test runner app
 pushd ${TEST_RUNNER_DIR}
@@ -141,4 +154,5 @@ echo "Starting app - Check your device for test results"
 adb shell am start ${TEST_RUNNER_PACKAGE_NAME}/.MainActivity 
 
 sleep 1
-adb logcat ${TEST_RUNNER_PACKAGE_NAME}
+echo "Logging test logs and Oboe logs. Run adb logcat for complete logs."
+adb logcat ${TEST_RUNNER_PACKAGE_NAME}.MainActivity:V OboeAudio:V *:S
