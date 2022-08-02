@@ -85,6 +85,8 @@ public class MainActivity extends Activity
                     // Do nothing
                 }
             });
+        } else {
+            recordingDeviceSpinner.setEnabled(false);
         }
 
         playbackDeviceSpinner = findViewById(R.id.playback_devices_spinner);
@@ -101,6 +103,8 @@ public class MainActivity extends Activity
                     // Do nothing
                 }
             });
+        } else {
+            playbackDeviceSpinner.setEnabled(false);
         }
 
         ((RadioGroup)findViewById(R.id.apiSelectionGroup)).check(R.id.aaudioButton);

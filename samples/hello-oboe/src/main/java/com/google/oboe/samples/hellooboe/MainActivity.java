@@ -210,6 +210,8 @@ public class MainActivity extends Activity {
                 public void onNothingSelected(AdapterView<?> adapterView) {
                 }
             });
+        } else {
+            mPlaybackDeviceSpinner.setEnabled(false);
         }
     }
 
