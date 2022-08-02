@@ -92,8 +92,9 @@ object EffectsAdapter :
                 minLabelView.text = floatFormat.format(param.minValue)
                 maxLabelView.text = floatFormat.format(param.maxValue)
                 seekBar.progress =
-                    ((param.defaultValue - param.minValue) * 100 / (param.maxValue - param.minValue)).toInt()
-                curLabelView.text = floatFormat.format(param.defaultValue)
+                    ((effectList[index].paramValues[counter] - param.minValue) * 100 / (param.maxValue
+                            - param.minValue)).toInt()
+                curLabelView.text = floatFormat.format(effectList[index].paramValues[counter])
                 // Bind param listeners to effects
                 seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                     val paramInd = counter
