@@ -96,6 +96,10 @@ bool HelloOboeEngine::isLatencyDetectionSupported() {
     return mIsLatencyDetectionSupported;
 }
 
+bool HelloOboeEngine::isAAudioRecommended() {
+    return oboe::AudioStreamBuilder::isAAudioRecommended();
+}
+
 void HelloOboeEngine::tap(bool isDown) {
     if (mAudioSource) {
         mAudioSource->tap(isDown);
