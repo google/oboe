@@ -177,6 +177,20 @@ Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1isLatencyDetection
     return (engine->isLatencyDetectionSupported() ? JNI_TRUE : JNI_FALSE);
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1isAAudioRecommended(
+        JNIEnv *env,
+        jclass type,
+        jlong engineHandle) {
+
+    HelloOboeEngine *engine = reinterpret_cast<HelloOboeEngine*>(engineHandle);
+    if (engine == nullptr) {
+        LOGE("Engine is null, you must call createEngine before calling this method");
+        return JNI_FALSE;
+    }
+    return (engine->isAAudioRecommended() ? JNI_TRUE : JNI_FALSE);
+}
+
 JNIEXPORT void JNICALL
 Java_com_google_oboe_samples_hellooboe_PlaybackEngine_native_1setDefaultStreamValues(
         JNIEnv *env,

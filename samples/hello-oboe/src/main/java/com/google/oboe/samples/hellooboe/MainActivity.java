@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     private static final int CHANNEL_COUNT_DEFAULT_OPTION_INDEX = 1;
     private static final int[] BUFFER_SIZE_OPTIONS = {0, 1, 2, 4, 8};
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
+    private static final int OBOE_API_OPENSL_ES = 1;
     // Default all other spinners to the first option on the list
     private static final int SPINNER_DEFAULT_OPTION_INDEX = 0;
 
@@ -107,7 +108,12 @@ public class MainActivity extends Activity {
         mChannelCountSpinner.setSelection(CHANNEL_COUNT_DEFAULT_OPTION_INDEX);
         mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
         mBufferSizeSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
-        mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        if (PlaybackEngine.isAAudioRecommended()) {
+            mAudioApiSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+        } else {
+            mAudioApiSpinner.setSelection(OBOE_API_OPENSL_ES);
+            mAudioApiSpinner.setEnabled(false);
+        }
 
         int result = PlaybackEngine.start();
         if (result != 0) {
@@ -210,6 +216,8 @@ public class MainActivity extends Activity {
                 public void onNothingSelected(AdapterView<?> adapterView) {
                 }
             });
+        } else {
+            mPlaybackDeviceSpinner.setEnabled(false);
         }
     }
 
@@ -227,6 +235,12 @@ public class MainActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 PlaybackEngine.setAudioApi(i);
+                if (i == OBOE_API_OPENSL_ES) {
+                    mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
+                    mPlaybackDeviceSpinner.setEnabled(false);
+                } else {
+                    mPlaybackDeviceSpinner.setEnabled(true);
+                }
             }
 
             @Override

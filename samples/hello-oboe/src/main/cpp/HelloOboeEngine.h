@@ -86,6 +86,8 @@ public:
 
     bool isLatencyDetectionSupported();
 
+    bool isAAudioRecommended();
+
 private:
     oboe::Result reopenStream();
     oboe::Result openPlaybackStream();

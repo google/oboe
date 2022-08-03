@@ -100,6 +100,10 @@ public class PlaybackEngine {
         return mEngineHandle != 0 && native_isLatencyDetectionSupported(mEngineHandle);
     }
 
+    static boolean isAAudioRecommended() {
+        return mEngineHandle != 0 && native_isAAudioRecommended(mEngineHandle);
+    }
+
     // Native methods
     private static native long native_createEngine();
     private static native int native_startEngine(long engineHandle);
@@ -112,5 +116,6 @@ public class PlaybackEngine {
     private static native void native_setBufferSizeInBursts(long engineHandle, int bufferSizeInBursts);
     private static native double native_getCurrentOutputLatencyMillis(long engineHandle);
     private static native boolean native_isLatencyDetectionSupported(long engineHandle);
+    private static native boolean native_isAAudioRecommended(long engineHandle);
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 }
