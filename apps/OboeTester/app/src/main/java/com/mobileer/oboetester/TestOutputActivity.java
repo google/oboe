@@ -92,8 +92,6 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public void openAudio() throws IOException {
         super.openAudio();
-        int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
-        configureChannelBoxes(channelCount);
     }
 
     private void configureChannelBoxes(int channelCount) {
@@ -105,7 +103,15 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public void closeAudio() {
         configureChannelBoxes(0);
+        mNativeApiSpinner.setEnabled(true);
         super.closeAudio();
+    }
+
+    public void startAudio() throws IOException {
+        super.startAudio();
+        int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
+        configureChannelBoxes(channelCount);
+        mNativeApiSpinner.setEnabled(false);
     }
 
     public void onChannelBoxClicked(View view) {
