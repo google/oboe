@@ -223,11 +223,11 @@ bool QuirksManager::isConversionNeeded(
         conversionNeeded = true;
     }
 
-    // If a SAMPLE RATE is specified for low latency then let the native code choose an optimal rate.
+    // If a SAMPLE RATE is specified for low latency, let the native code choose an optimal rate.
+    // This isn't really a workaround. It is an Oboe feature that is convenient to place here.
     // TODO There may be a problem if the devices supports low latency
     //      at a higher rate than the default.
-    if (OboeGlobals::areWorkaroundsEnabled()
-            && builder.getSampleRate() != oboe::Unspecified
+    if (builder.getSampleRate() != oboe::Unspecified
             && builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None
             && isLowLatency
             ) {
@@ -249,7 +249,7 @@ bool QuirksManager::isConversionNeeded(
         LOGI("QuirksManager::%s() forcing internal format to I16 for low latency", __func__);
     }
 
-    // Add quirk for float output on API <21
+    // Add quirk for float output when needed.
     if (OboeGlobals::areWorkaroundsEnabled()
             && isFloat
             && !isInput
