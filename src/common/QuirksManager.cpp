@@ -62,6 +62,16 @@ bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder 
             && builder.getChannelCount() <= kChannelCountStereo;
 }
 
+bool QuirksManager::DeviceQuirks::shouldConvertFloatToI16() {
+    std::string productManufacturer = getPropertyString("ro.product.manufacturer");
+    if (getSdkVersion() < __ANDROID_API_L__) {
+        return true;
+    } else if ((productManufacturer == "vivo") && (getSdkVersion() < __ANDROID_API_M__)) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * This is for Samsung Exynos quirks. Samsung Mobile uses Qualcomm chips so
  * the QualcommDeviceQuirks would apply.
@@ -216,7 +226,8 @@ bool QuirksManager::isConversionNeeded(
     // If a SAMPLE RATE is specified for low latency then let the native code choose an optimal rate.
     // TODO There may be a problem if the devices supports low latency
     //      at a higher rate than the default.
-    if (builder.getSampleRate() != oboe::Unspecified
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && builder.getSampleRate() != oboe::Unspecified
             && builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None
             && isLowLatency
             ) {
@@ -226,7 +237,8 @@ bool QuirksManager::isConversionNeeded(
 
     // Data Format
     // OpenSL ES and AAudio before P do not support FAST path for FLOAT capture.
-    if (isFloat
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && isFloat
             && isInput
             && builder.isFormatConversionAllowed()
             && isLowLatency
@@ -238,14 +250,16 @@ bool QuirksManager::isConversionNeeded(
     }
 
     // Add quirk for float output on API <21
-    if (isFloat
+    if (OboeGlobals::areWorkaroundsEnabled()
+            && isFloat
             && !isInput
-            && getSdkVersion() < __ANDROID_API_L__
             && builder.isFormatConversionAllowed()
+            && mDeviceQuirks->shouldConvertFloatToI16()
             ) {
         childBuilder.setFormat(AudioFormat::I16);
         conversionNeeded = true;
-        LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices, "
+        LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices "
+             "and some devices like Vivo devices may have issues on L devices, "
              "creating an underlying I16 stream and using format conversion to provide a float "
              "stream", __func__);
     }
