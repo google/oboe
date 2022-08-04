@@ -62,7 +62,7 @@ bool QuirksManager::DeviceQuirks::isAAudioMMapPossible(const AudioStreamBuilder 
             && builder.getChannelCount() <= kChannelCountStereo;
 }
 
-bool QuirksManager::DeviceQuirks::shouldConvertFloatToI16() {
+bool QuirksManager::DeviceQuirks::shouldConvertFloatToI16ForOutputStreams() {
     std::string productManufacturer = getPropertyString("ro.product.manufacturer");
     if (getSdkVersion() < __ANDROID_API_L__) {
         return true;
@@ -254,7 +254,7 @@ bool QuirksManager::isConversionNeeded(
             && isFloat
             && !isInput
             && builder.isFormatConversionAllowed()
-            && mDeviceQuirks->shouldConvertFloatToI16()
+            && mDeviceQuirks->shouldConvertFloatToI16ForOutputStreams()
             ) {
         childBuilder.setFormat(AudioFormat::I16);
         conversionNeeded = true;
