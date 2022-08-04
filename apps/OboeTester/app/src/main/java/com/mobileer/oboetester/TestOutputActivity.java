@@ -33,9 +33,9 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
-    private Spinner mNativeApiSpinner;
+    private Spinner mOutputSignalSpinner;
 
-    private class NativeApiSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+    private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             mAudioOutTester.setSignalType(pos);
@@ -80,9 +80,9 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox15);
         configureChannelBoxes(0);
 
-        mNativeApiSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
-        mNativeApiSpinner.setOnItemSelectedListener(new NativeApiSpinnerListener());
-        mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
+        mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
+        mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
+        mOutputSignalSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
     }
 
     @Override
@@ -101,9 +101,21 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         }
     }
 
+    public void stopAudio() {
+        configureChannelBoxes(0);
+        mOutputSignalSpinner.setEnabled(true);
+        super.stopAudio();
+    }
+
+    public void pauseAudio() {
+        configureChannelBoxes(0);
+        mOutputSignalSpinner.setEnabled(true);
+        super.pauseAudio();
+    }
+
     public void closeAudio() {
         configureChannelBoxes(0);
-        mNativeApiSpinner.setEnabled(true);
+        mOutputSignalSpinner.setEnabled(true);
         super.closeAudio();
     }
 
@@ -111,7 +123,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         super.startAudio();
         int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
         configureChannelBoxes(channelCount);
-        mNativeApiSpinner.setEnabled(false);
+        mOutputSignalSpinner.setEnabled(false);
     }
 
     public void onChannelBoxClicked(View view) {
