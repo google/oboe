@@ -104,7 +104,7 @@ public class DeviceReportActivity extends Activity {
         StringBuffer report = new StringBuffer();
         report.append("Device Report:\n");
         report.append("App: ").append(MainActivity.getVersiontext()).append("\n");
-        report.append("Phone: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
+        report.append("Device: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
                 .append(", ").append(Build.PRODUCT).append("\n");
 
         for (AudioDeviceInfo deviceInfo : devices) {
