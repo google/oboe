@@ -103,8 +103,8 @@ public class DeviceReportActivity extends Activity {
         logClear();
         StringBuffer report = new StringBuffer();
         report.append("Device Report:\n");
-        report.append(MainActivity.getVersiontext());
-        report.append(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
+        report.append(MainActivity.getVersiontext()).append("\n");
+        report.append(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT).append("\n");
 
         for (AudioDeviceInfo deviceInfo : devices) {
             report.append("\n==== Device =================== " + deviceInfo.getId() + "\n");
