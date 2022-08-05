@@ -327,9 +327,9 @@ public class StreamConfigurationView extends LinearLayout {
 
     public void setChildrenEnabled(boolean enabled) {
         mNativeApiSpinner.setEnabled(enabled);
-        mRequestedMMapView.setEnabled(enabled);
         mPerformanceSpinner.setEnabled(enabled);
-        mRequestedExclusiveView.setEnabled(enabled);
+        mRequestedMMapView.setEnabled(enabled && NativeEngine.isMMapSupported());
+        mRequestedExclusiveView.setEnabled(enabled && NativeEngine.isMMapExclusiveSupported());
         mChannelConversionBox.setEnabled(enabled);
         mFormatConversionBox.setEnabled(enabled);
         mChannelCountSpinner.setEnabled(enabled);
