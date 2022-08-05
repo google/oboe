@@ -533,6 +533,10 @@ protected:
         mDataCallbackEnabled = enabled;
     }
 
+    /**
+     * This should only be called as a stream is being opened.
+     * Otherwise we might override setDelayBeforeCloseMillis().
+     */
     void calculateDefaultDelayBeforeCloseMillis();
 
     /**

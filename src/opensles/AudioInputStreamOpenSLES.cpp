@@ -216,6 +216,9 @@ Result AudioInputStreamOpenSLES::close() {
         result = Result::ErrorClosed;
     } else {
         (void) requestStop_l();
+        if (OboeGlobals::areWorkaroundsEnabled()) {
+            sleepBeforeClose();
+        }
         // invalidate any interfaces
         mRecordInterface = nullptr;
         result = AudioStreamOpenSLES::close_l();
