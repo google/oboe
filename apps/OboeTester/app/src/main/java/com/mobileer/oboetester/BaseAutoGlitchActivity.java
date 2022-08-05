@@ -257,6 +257,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             // Set output size to a level that will avoid glitches.
             AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
             int sizeFrames = outStream.getBufferCapacityInFrames() / 2;
+            sizeFrames = Math.max(sizeFrames, 2 * outStream.getFramesPerBurst());
             outStream.setBufferSizeInFrames(sizeFrames);
             AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
             log("  " + getConfigText(actualInConfig));
