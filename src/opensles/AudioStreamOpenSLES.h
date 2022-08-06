@@ -78,6 +78,14 @@ public:
 
 protected:
 
+    /**
+     * Finish setting up the stream. Common for INPUT and OUTPUT.
+     *
+     * @param configItf
+     * @return SL_RESULT_SUCCESS if OK.
+     */
+    SLresult finishCommonOpen(SLAndroidConfigurationItf configItf);
+
     // This must be called under mLock.
     Result close_l();
 
@@ -88,20 +96,14 @@ protected:
 
     static SLuint32 getDefaultByteOrder();
 
-    SLresult registerBufferQueueCallback();
-
     int32_t getBufferDepth(SLAndroidSimpleBufferQueueItf bq);
 
     SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
 
     SLresult configurePerformanceMode(SLAndroidConfigurationItf configItf);
 
-    SLresult updateStreamParameters(SLAndroidConfigurationItf configItf);
-
     PerformanceMode convertPerformanceMode(SLuint32 openslMode) const;
     SLuint32 convertPerformanceMode(PerformanceMode oboeMode) const;
-
-    Result configureBufferSizes(int32_t sampleRate);
 
     void logUnsupportedAttributes();
 
@@ -123,6 +125,10 @@ protected:
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
+    SLresult registerBufferQueueCallback();
+    SLresult updateStreamParameters(SLAndroidConfigurationItf configItf);
+    Result configureBufferSizes(int32_t sampleRate);
+
     std::unique_ptr<uint8_t[]>    mCallbackBuffer[kBufferQueueLength];
     int                           mCallbackBufferIndex = 0;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};

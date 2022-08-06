@@ -214,22 +214,10 @@ Result AudioOutputStreamOpenSLES::open() {
         goto error;
     }
 
-    result = AudioStreamOpenSLES::registerBufferQueueCallback();
+    result = finishCommonOpen(configItf);
     if (SL_RESULT_SUCCESS != result) {
         goto error;
     }
-
-    result = updateStreamParameters(configItf);
-    if (SL_RESULT_SUCCESS != result) {
-        goto error;
-    }
-
-    oboeResult = configureBufferSizes(mSampleRate);
-    if (Result::OK != oboeResult) {
-        goto error;
-    }
-
-    allocateFifo();
 
     setState(StreamState::Open);
     return Result::OK;
@@ -252,6 +240,9 @@ Result AudioOutputStreamOpenSLES::close() {
         result = Result::ErrorClosed;
     } else {
         (void) requestPause_l();
+        if (OboeGlobals::areWorkaroundsEnabled()) {
+            sleepBeforeClose();
+        }
         // invalidate any interfaces
         mPlayInterface = nullptr;
         result = AudioStreamOpenSLES::close_l();

@@ -99,6 +99,30 @@ Result AudioStreamOpenSLES::open() {
     return Result::OK;
 }
 
+
+SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configItf) {
+    SLresult result = registerBufferQueueCallback();
+    if (SL_RESULT_SUCCESS != result) {
+        return result;
+    }
+
+    result = updateStreamParameters(configItf);
+    if (SL_RESULT_SUCCESS != result) {
+        return result;
+    }
+
+    Result oboeResult = configureBufferSizes(mSampleRate);
+    if (Result::OK != oboeResult) {
+        return (SLresult) oboeResult;
+    }
+
+    allocateFifo();
+
+    calculateDefaultDelayBeforeCloseMillis();
+
+    return SL_RESULT_SUCCESS;
+}
+
 Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
     LOGD("AudioStreamOpenSLES:%s(%d) initial mFramesPerBurst = %d, mFramesPerCallback = %d",
             __func__, sampleRate, mFramesPerBurst, mFramesPerCallback);

@@ -50,6 +50,43 @@ protected:
         return (s == StreamState::Closed);
     }
 
+    static int64_t getNanoseconds() {
+        struct timespec time;
+        int result = clock_gettime(CLOCK_MONOTONIC, &time);
+        if (result < 0) {
+            return result;
+        }
+        return (time.tv_sec * (int64_t)1e9) + time.tv_nsec;
+    }
+
+    int32_t mElapsedTimeMillis = 0; // used for passing back a value from a test function.
+	// ASSERT_* requires a void return type.
+    void measureCloseTime(int32_t delayMillis) {
+        ASSERT_TRUE(openStream());
+        mStream->setDelayBeforeCloseMillis(delayMillis);
+        ASSERT_EQ(delayMillis, mStream->getDelayBeforeCloseMillis());
+        // Measure time it takes to close.
+        int64_t startTimeMillis = getNanoseconds() / 1e6;
+        ASSERT_TRUE(closeStream());
+        int64_t stopTimeMillis = getNanoseconds() / 1e6;
+        int32_t elapsedTimeMillis = (int32_t)(stopTimeMillis - startTimeMillis);
+        ASSERT_GE(elapsedTimeMillis, delayMillis);
+        mElapsedTimeMillis = elapsedTimeMillis;
+    }
+
+    void testDelayBeforeClose() {
+        const int32_t delayMillis = 100;
+        measureCloseTime(0);
+        int32_t elapsedTimeMillis1 = mElapsedTimeMillis;
+        // Do it again with a longer sleep using setDelayBeforeCloseMillis.
+        // The increase in elapsed time should match the added delay.
+        measureCloseTime(delayMillis);
+        int32_t elapsedTimeMillis2 = mElapsedTimeMillis;
+        int32_t extraElapsedTime = elapsedTimeMillis2 - elapsedTimeMillis1;
+        // Expect the additional elapsed time to be close to the added delay.
+        ASSERT_LE(abs(extraElapsedTime - delayMillis), delayMillis / 5);
+    }
+
     AudioStreamBuilder mBuilder;
     AudioStream       *mStream = nullptr;
 
@@ -335,4 +372,30 @@ TEST_F(StreamClosedReturnValues, WriteReturnsClosed){
     int buffer[8]{0};
     auto r = mStream->write(buffer, 1, 0);
     ASSERT_EQ(r.error(), Result::ErrorClosed);
+}
+
+TEST_F(StreamClosedReturnValues, DelayBeforeCloseInput){
+    if (AudioStreamBuilder::isAAudioRecommended()) {
+        mBuilder.setDirection(Direction::Input);
+        testDelayBeforeClose();
+    }
+}
+
+TEST_F(StreamClosedReturnValues, DelayBeforeCloseOutput){
+    if (AudioStreamBuilder::isAAudioRecommended()) {
+        mBuilder.setDirection(Direction::Output);
+        testDelayBeforeClose();
+    }
+}
+
+TEST_F(StreamClosedReturnValues, DelayBeforeCloseInputOpenSL){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setDirection(Direction::Input);
+    testDelayBeforeClose();
+}
+
+TEST_F(StreamClosedReturnValues, DelayBeforeCloseOutputOpenSL){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setDirection(Direction::Output);
+    testDelayBeforeClose();
 }
