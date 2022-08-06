@@ -71,6 +71,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classoboe_1_1_audio_stream-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">oboe::AudioStream Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
@@ -164,6 +165,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac0974b61c525d3b275dce342f75c208f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fe8afdf164a1fe835c514f709743d75"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">getLastErrorCallbackResult</a> () const</td></tr>
 <tr class="separator:a8fe8afdf164a1fe835c514f709743d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1546ccf70b3438c8c53a9a187aa25e5d"><td class="memItemLeft" align="right" valign="top"><a id="a1546ccf70b3438c8c53a9a187aa25e5d" name="a1546ccf70b3438c8c53a9a187aa25e5d"></a>
+int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getDelayBeforeCloseMillis</b> () const</td></tr>
+<tr class="separator:a1546ccf70b3438c8c53a9a187aa25e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2d5e150a46fe166a99982f4a072ddbd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">setDelayBeforeCloseMillis</a> (int32_t delayBeforeCloseMillis)</td></tr>
+<tr class="separator:af2d5e150a46fe166a99982f4a072ddbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
 <tr class="memitem:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa6b103e1b0f808bbc4949d56f0829f98">AudioStreamBase</a> (const <a class="el" href="classoboe_1_1_audio_stream_base.html">AudioStreamBase</a> &amp;)=default</td></tr>
 <tr class="separator:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -230,6 +236,10 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:add85011ba825f74931deeb92c5edf831"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0faa6d3a6fd4f367e6f80d5a29e6dcba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">setDataCallbackEnabled</a> (bool enabled)</td></tr>
 <tr class="separator:a0faa6d3a6fd4f367e6f80d5a29e6dcba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef19aa03f38dacb7e275a0e8e93e743f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">calculateDefaultDelayBeforeCloseMillis</a> ()</td></tr>
+<tr class="separator:aef19aa03f38dacb7e275a0e8e93e743f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f743b9ec83a31ce8b7edc7ed6bbca8b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">sleepBeforeClose</a> ()</td></tr>
+<tr class="separator:a5f743b9ec83a31ce8b7edc7ed6bbca8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68b28845855f7391c24ed0c7cee26ffe"><td class="memItemLeft" align="right" valign="top"><a id="a68b28845855f7391c24ed0c7cee26ffe" name="a68b28845855f7391c24ed0c7cee26ffe"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setWeakThis</b> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">oboe::AudioStream</a> &gt; &amp;sharedStream)</td></tr>
 <tr class="separator:a68b28845855f7391c24ed0c7cee26ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -257,6 +267,9 @@ std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td><
 <tr class="separator:af4e4e04b87a53e6b286a6059be32b053"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0187b0557bb9c7b7ea8bb64fe421d7b4"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">mFramesPerBurst</a> = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td></tr>
 <tr class="separator:a0187b0557bb9c7b7ea8bb64fe421d7b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5befc4a964b8e154ead52a0fa18db0f"><td class="memItemLeft" align="right" valign="top"><a id="ae5befc4a964b8e154ead52a0fa18db0f" name="ae5befc4a964b8e154ead52a0fa18db0f"></a>
+int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>mDelayBeforeCloseMillis</b> = kMinDelayBeforeCloseMillis</td></tr>
+<tr class="separator:ae5befc4a964b8e154ead52a0fa18db0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
 <tr class="memitem:a6d8493f66a945cb426506c70f0358e5f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f">mDataCallback</a> = nullptr</td></tr>
 <tr class="separator:a6d8493f66a945cb426506c70f0358e5f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -306,6 +319,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mSampleRateConversionQuality</b> = <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da6adf97f83acf6453d4a6a4b1070f3754">SampleRateConversionQuality::None</a></td></tr>
 <tr class="separator:a2dd35a6f009f36172838260144218f6d inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
+Static Protected Attributes</h2></td></tr>
+<tr class="memitem:aa39fed31978a9554fa49af61aed4c6ed"><td class="memItemLeft" align="right" valign="top"><a id="aa39fed31978a9554fa49af61aed4c6ed" name="aa39fed31978a9554fa49af61aed4c6ed"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>kMinDelayBeforeCloseMillis</b> = 10</td></tr>
+<tr class="separator:aa39fed31978a9554fa49af61aed4c6ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
 <tr class="memitem:a8468a51a2352c31aef00fade27a43e9e"><td class="memItemLeft" align="right" valign="top"><a id="a8468a51a2352c31aef00fade27a43e9e" name="a8468a51a2352c31aef00fade27a43e9e"></a>
@@ -349,6 +368,32 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="aef19aa03f38dacb7e275a0e8e93e743f" name="aef19aa03f38dacb7e275a0e8e93e743f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef19aa03f38dacb7e275a0e8e93e743f">&#9670;&nbsp;</a></span>calculateDefaultDelayBeforeCloseMillis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::AudioStream::calculateDefaultDelayBeforeCloseMillis </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p >This should only be called as a stream is being opened. Otherwise we might override <a class="el" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">setDelayBeforeCloseMillis()</a>. </p>
+
+</div>
+</div>
 <a id="a3caa2803064eafd217ef86b282d249da" name="a3caa2803064eafd217ef86b282d249da"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3caa2803064eafd217ef86b282d249da">&#9670;&nbsp;</a></span>calculateLatencyMillis()</h2>
 
@@ -1220,6 +1265,67 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 </table>
 </div><div class="memdoc">
 <p >This can be set false internally to prevent callbacks after DataCallbackResult::Stop has been returned. </p>
+
+</div>
+</div>
+<a id="af2d5e150a46fe166a99982f4a072ddbd" name="af2d5e150a46fe166a99982f4a072ddbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2d5e150a46fe166a99982f4a072ddbd">&#9670;&nbsp;</a></span>setDelayBeforeCloseMillis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::AudioStream::setDelayBeforeCloseMillis </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>delayBeforeCloseMillis</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p >Set the time to sleep before closing the internal stream.</p>
+<p >Sometimes a callback can occur shortly after a stream has been stopped and even after a close! If the stream has been closed then the callback might access memory that has been freed, which could cause a crash. This seems to be more likely in Android P or earlier. But it can also occur in later versions. By sleeping, we give time for the callback threads to finish.</p>
+<p >Note that this only has an effect when OboeGlobals::areWorkaroundsEnabled() is true.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">delayBeforeCloseMillis</td><td>time to sleep before close. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5f743b9ec83a31ce8b7edc7ed6bbca8b" name="a5f743b9ec83a31ce8b7edc7ed6bbca8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f743b9ec83a31ce8b7edc7ed6bbca8b">&#9670;&nbsp;</a></span>sleepBeforeClose()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::AudioStream::sleepBeforeClose </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p >Try to avoid a race condition when closing. </p>
 
 </div>
 </div>
