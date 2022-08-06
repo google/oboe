@@ -30,7 +30,8 @@
 namespace oboe {
 
 constexpr int kBitsPerByte = 8;
-constexpr int kBufferQueueLength = 2; // double buffered for callbacks
+constexpr int kBufferQueueLengthDefault = 2; // double buffered for callbacks
+constexpr int kBufferQueueLengthMax = 8; // AudioFlinger won't use more than 8
 
 /**
  * INTERNAL USE ONLY
@@ -98,6 +99,9 @@ protected:
 
     int32_t getBufferDepth(SLAndroidSimpleBufferQueueItf bq);
 
+    int32_t calculateOptimalBufferQueueLength();
+    int32_t estimateNativeFramesPerBurst();
+
     SLresult enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq);
 
     SLresult configurePerformanceMode(SLAndroidConfigurationItf configItf);
@@ -120,6 +124,7 @@ protected:
     // OpenSLES stuff
     SLObjectItf                   mObjectInterface = nullptr;
     SLAndroidSimpleBufferQueueItf mSimpleBufferQueueInterface = nullptr;
+    int                           mBufferQueueLength = 0;
 
     int32_t                       mBytesPerCallback = oboe::kUnspecified;
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
@@ -129,7 +134,7 @@ private:
     SLresult updateStreamParameters(SLAndroidConfigurationItf configItf);
     Result configureBufferSizes(int32_t sampleRate);
 
-    std::unique_ptr<uint8_t[]>    mCallbackBuffer[kBufferQueueLength];
+    std::unique_ptr<uint8_t[]>    mCallbackBuffer[kBufferQueueLengthMax];
     int                           mCallbackBufferIndex = 0;
     std::atomic<StreamState>      mState{StreamState::Uninitialized};
 
