@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -65,9 +66,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
 
-
     private int mAudioState = AUDIO_STATE_CLOSED;
-    protected String audioManagerSampleRate;
     protected int audioManagerFramesPerBurst;
     protected ArrayList<StreamContext> mStreamContexts;
     private Button mOpenButton;
@@ -418,10 +417,11 @@ abstract class TestAudioActivity extends Activity {
     }
 
     private void queryNativeAudioParameters() {
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManagerSampleRate = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
-        String audioManagerFramesPerBurstText = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-        audioManagerFramesPerBurst = Integer.parseInt(audioManagerFramesPerBurstText);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            String audioManagerFramesPerBurstText = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+            audioManagerFramesPerBurst = Integer.parseInt(audioManagerFramesPerBurstText);
+        }
     }
 
     abstract public void setupEffects(int sessionId);
