@@ -140,6 +140,7 @@ int32_t AudioStreamOpenSLES::calculateOptimalBufferQueueLength() {
         queueLength = std::max(queueLength, queueLengthFromCallbackSize);
     }
     queueLength = std::min(queueLength, kBufferQueueLengthMax);
+    // TODO Investigate the effect of queueLength on latency for normal streams. (not low latency)
     return queueLength;
 }
 
