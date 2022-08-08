@@ -125,7 +125,6 @@ public:
              jint contentType,
              jint deviceId,
              jint sessionId,
-             jint framesPerBurst,
              jboolean channelConversionAllowed,
              jboolean formatConversionAllowed,
              jint rateConversionQuality,

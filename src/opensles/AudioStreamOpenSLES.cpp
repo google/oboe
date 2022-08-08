@@ -123,23 +123,22 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
     return SL_RESULT_SUCCESS;
 }
 
+static int32_t roundUpDivideByN(int32_t x, int32_t n) {
+    return (x + n - 1) / n;
+}
+
 int32_t AudioStreamOpenSLES::calculateOptimalBufferQueueLength() {
     int32_t queueLength = kBufferQueueLengthDefault;
     int32_t likelyFramesPerBurst = estimateNativeFramesPerBurst();
-    // What is required based on capacity?
-    if (mBufferCapacityInFrames > 0) {
-        int32_t queueLengthFromCapacity = (mBufferCapacityInFrames + likelyFramesPerBurst - 1)
-                / likelyFramesPerBurst;
+    int32_t minCapacity = mBufferCapacityInFrames; // specified by app or zero
+    // The buffer capacity needs to be at least twice the size of the requested callbackSize
+    // so that we can have double buffering.
+    minCapacity = std::max(minCapacity, 2 * mFramesPerCallback);
+    if (minCapacity > 0) {
+        int32_t queueLengthFromCapacity = roundUpDivideByN(minCapacity, likelyFramesPerBurst);
         queueLength = std::max(queueLength, queueLengthFromCapacity);
     }
-    // What is required based on requested callback size?
-    if (mFramesPerCallback > 0) {
-        int32_t minCapacity = 2 * mFramesPerCallback;
-        int32_t queueLengthFromCallbackSize = (minCapacity + likelyFramesPerBurst - 1)
-                                  / likelyFramesPerBurst;
-        queueLength = std::max(queueLength, queueLengthFromCallbackSize);
-    }
-    queueLength = std::min(queueLength, kBufferQueueLengthMax);
+    queueLength = std::min(queueLength, kBufferQueueLengthMax); // clip to max
     // TODO Investigate the effect of queueLength on latency for normal streams. (not low latency)
     return queueLength;
 }
@@ -152,9 +151,15 @@ int32_t AudioStreamOpenSLES::calculateOptimalBufferQueueLength() {
  */
 int32_t AudioStreamOpenSLES::estimateNativeFramesPerBurst() {
     int32_t framesPerBurst = DefaultStreamValues::FramesPerBurst;
+    LOGD("AudioStreamOpenSLES:%s() DefaultStreamValues::FramesPerBurst = %d",
+            __func__, DefaultStreamValues::FramesPerBurst);
     framesPerBurst = std::max(framesPerBurst, 16);
     // Calculate the size of a fixed duration high latency buffer based on sample rate.
-    int32_t sampleRate = (mSampleRate > 0) ? mSampleRate : 48000;
+    // Estimate sample based on default options in order of priority.
+    int32_t sampleRate = 48000;
+    sampleRate = (DefaultStreamValues::SampleRate > 0)
+            ? DefaultStreamValues::SampleRate : sampleRate;
+    sampleRate = (mSampleRate > 0) ? mSampleRate : sampleRate;
     int32_t framesPerHighLatencyBuffer =
             (kHighLatencyBufferSizeMillis * sampleRate) / kMillisPerSecond;
     // For high latency streams, use a larger buffer size.
@@ -163,7 +168,7 @@ int32_t AudioStreamOpenSLES::estimateNativeFramesPerBurst() {
             && mPerformanceMode != PerformanceMode::LowLatency
             && framesPerBurst < framesPerHighLatencyBuffer) {
         // Find a multiple of framesPerBurst >= framesPerHighLatencyBuffer.
-        int32_t numBursts = (framesPerHighLatencyBuffer + framesPerBurst - 1) / framesPerBurst;
+        int32_t numBursts = roundUpDivideByN(framesPerHighLatencyBuffer, framesPerBurst);
         framesPerBurst *= numBursts;
         LOGD("AudioStreamOpenSLES:%s() NOT low latency, numBursts = %d, mSampleRate = %d, set framesPerBurst = %d",
              __func__, numBursts, mSampleRate, framesPerBurst);

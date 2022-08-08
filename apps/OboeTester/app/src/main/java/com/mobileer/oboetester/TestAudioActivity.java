@@ -67,7 +67,8 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_DATA_PATHS = 8;
 
     private int mAudioState = AUDIO_STATE_CLOSED;
-    protected int audioManagerFramesPerBurst;
+//    protected int audioManagerSampleRate;
+//    protected int audioManagerFramesPerBurst;
     protected ArrayList<StreamContext> mStreamContexts;
     private Button mOpenButton;
     private Button mStartButton;
@@ -400,8 +401,6 @@ abstract class TestAudioActivity extends Activity {
         }
         mStreamContexts = new ArrayList<StreamContext>();
 
-        queryNativeAudioParameters();
-
         mCallbackReturnStopBox = (CheckBox) findViewById(R.id.callbackReturnStop);
         if (mCallbackReturnStopBox != null) {
             mCallbackReturnStopBox.setOnClickListener(new View.OnClickListener() {
@@ -416,11 +415,14 @@ abstract class TestAudioActivity extends Activity {
         mStreamSniffer = new MyStreamSniffer();
     }
 
-    private void queryNativeAudioParameters() {
+    private void updateNativeAudioParameters() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            String audioManagerFramesPerBurstText = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
-            audioManagerFramesPerBurst = Integer.parseInt(audioManagerFramesPerBurstText);
+            String text = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+            int audioManagerSampleRate = Integer.parseInt(text);
+            text = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+            int audioManagerFramesPerBurst = Integer.parseInt(text);
+            setDefaultAudioValues(audioManagerSampleRate, audioManagerFramesPerBurst);
         }
     }
 
@@ -490,6 +492,8 @@ abstract class TestAudioActivity extends Activity {
     public void openAudio() throws IOException {
         closeAudio();
 
+        updateNativeAudioParameters();
+
         if (!isTestConfiguredUsingBundle()) {
             applyConfigurationViewsToModels();
         }
@@ -527,7 +531,8 @@ abstract class TestAudioActivity extends Activity {
     boolean isScoDevice(int deviceId) {
         if (deviceId == 0) return false; // Unspecified
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        final AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        final AudioDeviceInfo[] devices = audioManager.getDevices(
+                AudioManager.GET_DEVICES_INPUTS | AudioManager.GET_DEVICES_OUTPUTS);
         for (AudioDeviceInfo device : devices) {
             if (device.getId() == deviceId) {
                 return device.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO;
@@ -539,7 +544,6 @@ abstract class TestAudioActivity extends Activity {
     private void openStreamContext(StreamContext streamContext) throws IOException {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
-        requestedConfig.setFramesPerBurst(audioManagerFramesPerBurst);
 
         streamContext.tester.open(); // OPEN the stream
 
@@ -564,6 +568,8 @@ abstract class TestAudioActivity extends Activity {
     protected native void setActivityType(int activityType);
 
     private native int getFramesPerCallback();
+
+    private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
 
     public void startAudio() throws IOException {
         Log.i(TAG, "startAudio() called =========================");

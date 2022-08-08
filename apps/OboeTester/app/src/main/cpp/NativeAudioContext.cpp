@@ -154,16 +154,11 @@ int ActivityContext::open(jint nativeApi,
                           jint contentType,
                           jint deviceId,
                           jint sessionId,
-                          jint framesPerBurst,
                           jboolean channelConversionAllowed,
                           jboolean formatConversionAllowed,
                           jint rateConversionQuality,
                           jboolean isMMap,
                           jboolean isInput) {
-
-    if (framesPerBurst > 0) {
-        oboe::DefaultStreamValues::FramesPerBurst = framesPerBurst;
-    }
 
     oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
     switch (nativeApi) {
