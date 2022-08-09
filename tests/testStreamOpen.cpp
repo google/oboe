@@ -444,3 +444,49 @@ TEST_F(StreamOpenOutput, OutputForOpenSLESPerformanceModeNoneGetBufferSizeInFram
     EXPECT_GT(mStream->getBufferSizeInFrames(), 0);
     ASSERT_TRUE(closeStream());
 }
+
+TEST_F(StreamOpenOutput, OpenSLESOutputReturnsMmapNotUsed){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    ASSERT_TRUE(openStream());
+    EXPECT_FALSE(mStream->isMMapUsed());
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenInput, OpenSLESInputReturnsMmapNotUsed){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setDirection(Direction::Input);
+    ASSERT_TRUE(openStream());
+    EXPECT_FALSE(mStream->isMMapUsed());
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenOutput, OutputMmapUsedShouldMeanItsSupported){
+    ASSERT_TRUE(openStream());
+    if (mStream->isMMapUsed()){
+        EXPECT_TRUE(mBuilder.willUseMMap());
+    }
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenInput, InputMmapUsedShouldMeanItsSupported){
+    mBuilder.setDirection(Direction::Input);
+    ASSERT_TRUE(openStream());
+    if (mStream->isMMapUsed()){
+        EXPECT_TRUE(mBuilder.willUseMMap());
+    }
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenOutput, OutputMmapExclusiveSupportedShouldMeanItsSupported){
+    mBuilder.setDirection(Direction::Input);
+    if (mBuilder.willUseExclusiveMMap()){
+        EXPECT_TRUE(mBuilder.willUseMMap());
+    }
+}
+
+TEST_F(StreamOpenInput, InputMmapExclusiveSupportedShouldMeanItsSupported){
+    mBuilder.setDirection(Direction::Input);
+    if (mBuilder.willUseExclusiveMMap()){
+        EXPECT_TRUE(mBuilder.willUseMMap());
+    }
+}

@@ -472,6 +472,11 @@ public:
         mDelayBeforeCloseMillis = delayBeforeCloseMillis;
     }
 
+    /**
+     * @return true if MMAP is used on the stream
+     */
+    virtual bool isMMapUsed() = 0;
+
 protected:
 
     /**

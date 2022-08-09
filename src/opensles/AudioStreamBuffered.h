@@ -55,6 +55,10 @@ public:
 
     bool isXRunCountSupported() const override;
 
+    bool isMMapUsed() override {
+        return false;
+    }
+
 protected:
 
     DataCallbackResult onDefaultCallback(void *audioData, int numFrames) override;

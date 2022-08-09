@@ -210,6 +210,10 @@ public:
         return mChildStream->getLastErrorCallbackResult();
     }
 
+    bool isMMapUsed() override {
+        return mChildStream->isMMapUsed();
+    }
+
 private:
 
     std::unique_ptr<AudioStream>             mChildStream; // this stream wraps the child stream

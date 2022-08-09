@@ -221,4 +221,12 @@ Result AudioStreamBuilder::openStream(std::shared_ptr<AudioStream> &sharedStream
     return result;
 }
 
+bool AudioStreamBuilder::willUseMMap() const {
+    return AAudioExtensions::getInstance().isMMapSupported();
+}
+
+bool AudioStreamBuilder::willUseExclusiveMMap() const {
+    return AAudioExtensions::getInstance().isMMapExclusiveSupported();
+}
+
 } // namespace oboe
