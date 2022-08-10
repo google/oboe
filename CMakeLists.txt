@@ -18,6 +18,7 @@ set (oboe_sources
     src/common/FixedBlockReader.cpp
     src/common/FixedBlockWriter.cpp
     src/common/LatencyTuner.cpp
+    src/common/OboeExtensions.cpp
     src/common/SourceFloatCaller.cpp
     src/common/SourceI16Caller.cpp
     src/common/SourceI24Caller.cpp
