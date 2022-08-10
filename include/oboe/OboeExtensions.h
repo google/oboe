@@ -25,16 +25,25 @@
 namespace oboe {
 
 /**
- * Extra Oboe APIs to query and set whether MMAP is enabled.
+ * The definitions below are only for testing.
+ * They are not recommended for use in an application.
+ * They may change or be removed at any time.
  */
 class OboeExtensions {
 public:
+
+    /**
+    * @returns true if the device supports AAudio MMAP
+    */
     static bool isMMapSupported();
 
+    /**
+    * @returns true if the AAudio MMAP data path can be selected
+    */
     static bool isMMapEnabled();
 
     /**
-     * Controls whether the MMAP data path can be selected when opening a stream.
+     * Controls whether the AAudio MMAP data path can be selected when opening a stream.
      * It has no effect after the stream has been opened.
      * It only affects the application that calls it. Other apps are not affected.
      *
@@ -43,6 +52,10 @@ public:
      */
     static int32_t setMMapEnabled(bool enabled);
 
+    /**
+     * @param oboeStream
+     * @return true if the AAudio MMAP data path is used on the stream
+     */
     static bool isMMapUsed(oboe::AudioStream *oboeStream);
 };
 

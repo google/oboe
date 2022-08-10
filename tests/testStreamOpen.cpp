@@ -449,9 +449,6 @@ TEST_F(StreamOpenOutput, OboeExtensions){
     if (OboeExtensions::isMMapSupported()) {
         ASSERT_EQ(OboeExtensions::setMMapEnabled(true), 0);
         ASSERT_TRUE(OboeExtensions::isMMapEnabled());
-        ASSERT_TRUE(openStream());
-        EXPECT_TRUE(OboeExtensions::isMMapUsed(mStream));
-        ASSERT_TRUE(closeStream());
 
         ASSERT_EQ(OboeExtensions::setMMapEnabled(false), 0);
         ASSERT_FALSE(OboeExtensions::isMMapEnabled());
@@ -461,8 +458,5 @@ TEST_F(StreamOpenOutput, OboeExtensions){
 
         ASSERT_EQ(OboeExtensions::setMMapEnabled(true), 0);
         ASSERT_TRUE(OboeExtensions::isMMapEnabled());
-        ASSERT_TRUE(openStream());
-        EXPECT_TRUE(OboeExtensions::isMMapUsed(mStream));
-        ASSERT_TRUE(closeStream());
     }
 }
