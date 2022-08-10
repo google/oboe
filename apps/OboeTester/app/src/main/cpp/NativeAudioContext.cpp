@@ -111,7 +111,8 @@ void ActivityContext::close(int32_t streamIndex) {
 bool ActivityContext::isMMapUsed(int32_t streamIndex) {
     std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
     if (oboeStream == nullptr) return false;
-    return oboeStream->isMMapUsed();
+    if (oboeStream->getAudioApi() != AudioApi::AAudio) return false;
+    return AAudioExtensions::getInstance().isMMapUsed(oboeStream.get());
 }
 
 oboe::Result ActivityContext::pause() {

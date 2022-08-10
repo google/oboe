@@ -500,16 +500,6 @@ public:
     }
 
     /**
-     * @return true if MMAP will be used based on the current settings.
-     */
-    bool willUseMMap() const;
-
-    /**
-     * @return true if EXCLUSIVE MMAP will be used based on the current settings.
-     */
-    bool willUseExclusiveMMap() const;
-
-    /**
      * Create and open a stream object based on the current settings.
      *
      * The caller owns the pointer to the AudioStream object

@@ -91,7 +91,7 @@ public:
                                                    void *audioData,
                                                    int32_t numFrames);
 
-    bool isMMapUsed() override;
+    bool isMMapUsed();
 
 protected:
     static void internalErrorCallback(
