@@ -99,8 +99,9 @@ public class MainActivity extends BaseOboeTesterActivity {
             int oboeMajor = (oboeVersion >> 24) & 0xFF;
             int oboeMinor = (oboeVersion >> 16) & 0xFF;
             int oboePatch = oboeVersion & 0xFF;
-            mVersionText = "OboeTester (" + pinfo.versionCode + ") v " + pinfo.versionName
-                    + ", Oboe v " + oboeMajor + "." + oboeMinor + "." + oboePatch;
+            mVersionText = getString(R.string.app_name_version,
+                    pinfo.versionCode, pinfo.versionName,
+                    oboeMajor, oboeMinor, oboePatch);
             mVersionTextView.setText(mVersionText);
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
@@ -134,7 +135,7 @@ public class MainActivity extends BaseOboeTesterActivity {
         saveIntentBundleForLaterProcessing(getIntent());
     }
 
-    public static String getVersiontext() {
+    public static String getVersionText() {
         return mVersionText;
     }
 

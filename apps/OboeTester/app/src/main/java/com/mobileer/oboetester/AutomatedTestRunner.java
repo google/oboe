@@ -3,7 +3,6 @@ package com.mobileer.oboetester;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -266,7 +265,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         logClear();
         log("=== STARTED at " + new Date());
         log(mActivity.getTestName());
-        log(MainActivity.getVersiontext());
+        log(MainActivity.getVersionText());
         log(Build.MANUFACTURER + ", " + Build.MODEL + ", " + Build.PRODUCT);
         log(Build.DISPLAY);
         appendFailedSummary("Summary\n");

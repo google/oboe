@@ -25,9 +25,6 @@ import android.media.AudioManager;
 import android.media.MicrophoneInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
-import android.view.View;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
@@ -103,7 +100,7 @@ public class DeviceReportActivity extends Activity {
         logClear();
         StringBuffer report = new StringBuffer();
         report.append("Device Report:\n");
-        report.append("App: ").append(MainActivity.getVersiontext()).append("\n");
+        report.append("App: ").append(MainActivity.getVersionText()).append("\n");
         report.append("Device: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
                 .append(", ").append(Build.PRODUCT).append("\n");
 
