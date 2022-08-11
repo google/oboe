@@ -58,7 +58,7 @@ For example:
 
 ## Parameters
 
-There is are two required parameters for all tests:
+There are two required parameters for all tests:
 
     --es test {latency, glitch, data_paths, input, output}
             The "latency" test will perform a Round Trip Latency test.
@@ -77,7 +77,7 @@ There are some optional parameter in common for all tests:
                             Stream type for the setStreamVolume() call. Default is "music".
     --ez background         {"true", 1, "false", 0} // if true then Oboetester will continue to run in the background
 
-There are several optional parameter in common for glitch, latency, input, and output tests:
+There are several optional parameters in common for glitch, latency, input, and output tests:
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
