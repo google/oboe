@@ -37,11 +37,8 @@ import java.io.Writer;
  */
 public class AnalyzerActivity extends TestInputActivity {
 
-    private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
-
     AudioOutputTester mAudioOutTester;
     protected BufferSizeView mBufferSizeView;
-    private String mTestResults;
     protected AutomatedTestRunner mAutomatedTestRunner;
 
     // Note that these string must match the enum result_code in LatencyAnalyzer.h
@@ -73,6 +70,7 @@ public class AnalyzerActivity extends TestInputActivity {
     public native int getMeasuredResult();
     public native int getResetCount();
 
+    @Override
     @NonNull
     protected String getCommonTestReport() {
         StringBuffer report = new StringBuffer();
@@ -152,27 +150,6 @@ public class AnalyzerActivity extends TestInputActivity {
     public void stopAudioTest() {
     }
 
-    void writeTestResultIfPermitted(String resultString) {
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            mTestResults = resultString;
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
-        } else {
-            // Permission has already been granted
-            writeTestResult(resultString);
-        }
-    }
-
-    void maybeWriteTestResult(String resultString) {
-        if (mResultFileName != null) {
-            writeTestResultIfPermitted(resultString);
-        };
-    }
-
     @Override
     public void saveIntentLog() {
         if (mTestRunningByIntent) {
@@ -183,53 +160,11 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions,
-                                           int[] grantResults) {
-
-        if (MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE != requestCode) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            return;
-        }
-        // If request is cancelled, the result arrays are empty.
-        if (grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            writeTestResult(mTestResults);
-        } else {
-            showToast("Writing external storage needed for test results.");
-        }
-    }
-
     private void writeTestInBackground(final String resultString) {
         new Thread() {
             public void run() {
                 writeTestResult(resultString);
             }
         }.start();
-    }
-
-    // Run this in a background thread.
-    private void writeTestResult(String resultString) {
-        File resultFile = new File(mResultFileName);
-        Writer writer = null;
-        try {
-            writer = new OutputStreamWriter(new FileOutputStream(resultFile));
-            writer.write(resultString);
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-            showErrorToast(" writing result file. " + e.getMessage());
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        mResultFileName = null;
     }
 }

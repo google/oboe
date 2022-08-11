@@ -166,7 +166,7 @@ public class IntentBasedTestSupport {
     public static int getChannelMaskFromBundle(Bundle bundle) {
         String channelMaskText = bundle.getString(KEY_CHANNEL_MASK);
         if (channelMaskText == null) {
-            return StreamConfiguration.UNSPECIFIED;
+            return 0;
         }
         switch (channelMaskText) {
             case VALUE_CHANNEL_MONO:

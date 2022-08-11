@@ -19,6 +19,8 @@ package com.mobileer.oboetester;
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -34,6 +36,13 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
     private Spinner mOutputSignalSpinner;
+
+    public static final String KEY_SIGNAL_TYPE = "signal_type";
+    public static final String VALUE_SIGNAL_SINE = "sine";
+    public static final String VALUE_SIGNAL_SAWTOOTH = "sawtooth";
+    public static final String VALUE_SIGNAL_FREQ_SWEEP = "freq_sweep";
+    public static final String VALUE_SIGNAL_PITCH_SWEEP = "pitch_sweep";
+    public static final String VALUE_SIGNAL_WHITE_NOISE = "white_noise";
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -139,12 +148,56 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
             IntentBasedTestSupport.configureOutputStreamFromBundle(mBundleFromIntent, requestedOutConfig);
 
+            int signalType = getSignalTypeFromBundle(mBundleFromIntent);
+            mAudioOutTester.setSignalType(signalType);
+
             openAudio();
             startAudio();
+
+            int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
+            if (durationSeconds > 0) {
+                // Schedule the end of the test.
+                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        stopAutomaticTest();
+                    }
+                }, durationSeconds * 1000);
+            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         } finally {
             mBundleFromIntent = null;
+        }
+    }
+
+    void stopAutomaticTest() {
+        String report = getCommonTestReport();
+        stopAudio();
+        maybeWriteTestResult(report);
+        mTestRunningByIntent = false;
+    }
+
+    public static int getSignalTypeFromBundle(Bundle bundle) {
+        String signalTypeText = bundle.getString(KEY_SIGNAL_TYPE);
+        if (signalTypeText == null) {
+            return 0;
+        }
+        switch (signalTypeText) {
+            case VALUE_SIGNAL_SINE:
+                return 0;
+            case VALUE_SIGNAL_SAWTOOTH:
+                return 1;
+            case VALUE_SIGNAL_FREQ_SWEEP:
+                return 2;
+            case VALUE_SIGNAL_PITCH_SWEEP:
+                return 3;
+            case VALUE_SIGNAL_WHITE_NOISE:
+                return 4;
+            default:
+                throw new IllegalArgumentException(
+                        KEY_SIGNAL_TYPE + " invalid: " + signalTypeText);
         }
     }
 }

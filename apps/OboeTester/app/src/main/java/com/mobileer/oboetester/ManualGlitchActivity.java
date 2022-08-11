@@ -26,9 +26,6 @@ import java.io.IOException;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
-    public static final String KEY_DURATION = "duration";
-    public static final int VALUE_DEFAULT_DURATION = 10;
-
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
