@@ -207,6 +207,11 @@ public class TestDisconnectActivity extends TestAudioActivity {
                                    int sharingMode,
                                    int sampleRate,
                                    boolean requestPlugin) throws InterruptedException {
+        if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
+            mAutomatedTestRunner.incrementTestCount();
+            return;
+        }
+
         String actualConfigText = "none";
         mSkipTest = false;
 
