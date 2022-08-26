@@ -76,9 +76,6 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
 
-    public static final String KEY_DURATION = "duration";
-    public static final int VALUE_DEFAULT_DURATION = 10;
-
     private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
 
     private int mAudioState = AUDIO_STATE_CLOSED;

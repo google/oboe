@@ -218,7 +218,7 @@ public class TestInputActivity  extends TestAudioActivity {
             openAudio();
             startAudio();
 
-            int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
+            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
             if (durationSeconds > 0) {
                 // Schedule the end of the test.
                 Handler handler = new Handler(Looper.getMainLooper()); // UI thread
