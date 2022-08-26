@@ -94,6 +94,13 @@ public class IntentBasedTestSupport {
     public static final String VALUE_CHANNEL_9POINT1POINT6 = "9.1.6";
     public static final String VALUE_CHANNEL_FRONT_BACK = "frontBack";
 
+    public static final String KEY_SIGNAL_TYPE = "signal_type";
+    public static final String VALUE_SIGNAL_SINE = "sine";
+    public static final String VALUE_SIGNAL_SAWTOOTH = "sawtooth";
+    public static final String VALUE_SIGNAL_FREQ_SWEEP = "freq_sweep";
+    public static final String VALUE_SIGNAL_PITCH_SWEEP = "pitch_sweep";
+    public static final String VALUE_SIGNAL_WHITE_NOISE = "white_noise";
+
     public static int getApiFromText(String text) {
         if (VALUE_API_AAUDIO.equals(text)) {
             return StreamConfiguration.NATIVE_API_AAUDIO;
@@ -303,4 +310,25 @@ public class IntentBasedTestSupport {
         requestedInConfig.setInputPreset(inputPreset);
     }
 
+    public static int getSignalTypeFromBundle(Bundle bundle) {
+        String signalTypeText = bundle.getString(KEY_SIGNAL_TYPE);
+        if (signalTypeText == null) {
+            return 0;
+        }
+        switch (signalTypeText) {
+            case VALUE_SIGNAL_SINE:
+                return 0;
+            case VALUE_SIGNAL_SAWTOOTH:
+                return 1;
+            case VALUE_SIGNAL_FREQ_SWEEP:
+                return 2;
+            case VALUE_SIGNAL_PITCH_SWEEP:
+                return 3;
+            case VALUE_SIGNAL_WHITE_NOISE:
+                return 4;
+            default:
+                throw new IllegalArgumentException(
+                        KEY_SIGNAL_TYPE + " invalid: " + signalTypeText);
+        }
+    }
 }
