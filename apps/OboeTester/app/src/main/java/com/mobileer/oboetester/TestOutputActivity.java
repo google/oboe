@@ -19,6 +19,8 @@ package com.mobileer.oboetester;
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -139,12 +141,34 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
             IntentBasedTestSupport.configureOutputStreamFromBundle(mBundleFromIntent, requestedOutConfig);
 
+            int signalType = IntentBasedTestSupport.getSignalTypeFromBundle(mBundleFromIntent);
+            mAudioOutTester.setSignalType(signalType);
+
             openAudio();
             startAudio();
+
+            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
+            if (durationSeconds > 0) {
+                // Schedule the end of the test.
+                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        stopAutomaticTest();
+                    }
+                }, durationSeconds * 1000);
+            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         } finally {
             mBundleFromIntent = null;
         }
+    }
+
+    void stopAutomaticTest() {
+        String report = getCommonTestReport();
+        stopAudio();
+        maybeWriteTestResult(report);
+        mTestRunningByIntent = false;
     }
 }

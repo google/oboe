@@ -26,9 +26,6 @@ import java.io.IOException;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
-    public static final String KEY_DURATION = "duration";
-    public static final int VALUE_DEFAULT_DURATION = 10;
-
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
@@ -122,7 +119,7 @@ public class ManualGlitchActivity extends GlitchActivity {
     public void startTestUsingBundle() {
         configureStreamsFromBundle(mBundleFromIntent);
 
-        int durationSeconds = mBundleFromIntent.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
+        int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
         int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
 
         try {

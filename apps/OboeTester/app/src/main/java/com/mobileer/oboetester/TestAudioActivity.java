@@ -16,15 +16,21 @@
 
 package com.mobileer.oboetester;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,7 +38,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 
 /**
@@ -66,6 +76,8 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
 
+    private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
+
     private int mAudioState = AUDIO_STATE_CLOSED;
     protected int audioManagerFramesPerBurst;
     protected ArrayList<StreamContext> mStreamContexts;
@@ -83,6 +95,7 @@ abstract class TestAudioActivity extends Activity {
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
     protected String mResultFileName;
+    private String mTestResults;
 
     public String getTestName() {
         return "TestAudio";
@@ -240,7 +253,6 @@ abstract class TestAudioActivity extends Activity {
         if (mTestRunningByIntent) {
             return;
         }
-
 
         // Delay the test start to avoid race conditions. See Oboe Issue #1533
         mTestRunningByIntent = true;
@@ -665,4 +677,97 @@ abstract class TestAudioActivity extends Activity {
         myAudioMgr.stopBluetoothSco();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+
+        if (MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE != requestCode) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+        // If request is cancelled, the result arrays are empty.
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            writeTestResult(mTestResults);
+        } else {
+            showToast("Writing external storage needed for test results.");
+        }
+    }
+
+    @NonNull
+    protected String getCommonTestReport() {
+        StringBuffer report = new StringBuffer();
+        // Add some extra information for the remote tester.
+        report.append("build.fingerprint = " + Build.FINGERPRINT + "\n");
+        try {
+            PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            report.append(String.format("test.version = %s\n", pinfo.versionName));
+            report.append(String.format("test.version.code = %d\n", pinfo.versionCode));
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        report.append("time.millis = " + System.currentTimeMillis() + "\n");
+
+        if (mStreamContexts.size() == 0) {
+            report.append("ERROR: no active streams" + "\n");
+        } else {
+            StreamContext streamContext = mStreamContexts.get(0);
+            AudioStreamTester streamTester = streamContext.tester;
+            report.append(streamTester.actualConfiguration.dump());
+            AudioStreamBase.StreamStatus status = streamTester.getCurrentAudioStream().getStreamStatus();
+            AudioStreamBase.DoubleStatistics latencyStatistics =
+                    streamTester.getCurrentAudioStream().getLatencyStatistics();
+            int framesPerBurst = streamTester.getCurrentAudioStream().getFramesPerBurst();
+            status.framesPerCallback = getFramesPerCallback();
+            report.append("timestamp.latency = " + latencyStatistics.dump() + "\n");
+            report.append(status.dump(framesPerBurst));
+        }
+
+        return report.toString();
+    }
+
+    void writeTestResultIfPermitted(String resultString) {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            mTestResults = resultString;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
+        } else {
+            // Permission has already been granted
+            writeTestResult(resultString);
+        }
+    }
+
+    void maybeWriteTestResult(String resultString) {
+        if (mResultFileName != null) {
+            writeTestResultIfPermitted(resultString);
+        };
+    }
+
+    // Run this in a background thread.
+    void writeTestResult(String resultString) {
+        File resultFile = new File(mResultFileName);
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(resultFile));
+            writer.write(resultString);
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+            showErrorToast(" writing result file. " + e.getMessage());
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        mResultFileName = null;
+    }
 }

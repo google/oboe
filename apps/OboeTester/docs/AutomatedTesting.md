@@ -58,7 +58,7 @@ For example:
 
 ## Parameters
 
-There is one required parameter for all tests:
+There are two required parameters for all tests:
 
     --es test {latency, glitch, data_paths, input, output}
             The "latency" test will perform a Round Trip Latency test.
@@ -67,8 +67,6 @@ There is one required parameter for all tests:
             The "data_paths" test will verify input and output streams in many possible configurations.
             The "input" test will open and start an input stream.
             The "output" test will open and start an output stream.
-
-The latency, glitch, data_paths tests have an additional required parameter:
 
     --es file {full path for resulting file} // We recommend using the "/sdcard/Download" folder
 
@@ -79,7 +77,7 @@ There are some optional parameter in common for all tests:
                             Stream type for the setStreamVolume() call. Default is "music".
     --ez background         {"true", 1, "false", 0} // if true then Oboetester will continue to run in the background
 
-There are several optional parameter in common for glitch, latency, input and output tests:
+There are several optional parameters in common for glitch, latency, input, and output tests:
 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
@@ -94,11 +92,14 @@ There are several optional parameter in common for glitch, latency, input and ou
     --ez in_use_mmap        {"true", 1, "false", 0} // if true then MMAP is allowed, if false then MMAP will be disabled
     --ez out_use_mmap       {"true", 1, "false", 0} // if true then MMAP is allowed, if false then MMAP will be disabled
 
+There are some optional parameters in common for glitch, input, and output tests:
+
+    --ei duration           {seconds}    // glitch test duration, default is 10 seconds
+
 There are several optional parameters for just the "glitch" test:
 
     --ef tolerance          {tolerance}  // amount of deviation from expected that is considered a glitch
                                          // Range of tolerance is 0.0 to 1.0. Default is 0.1. Note use of "-ef".
-    --ei duration           {seconds}    // glitch test duration, default is 10 seconds
                             // input preset, default is "voicerec"
     --es in_preset          ("generic", "camcorder", "voicerec", "voicecomm", "unprocessed", "performance"}
 
@@ -108,6 +109,10 @@ There are several optional parameters for just the "data_paths" test:
     --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices. Note use of "-ez"
     --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices. Note use of "-ez"
     --ei single_test_index  {testId}  // Index for testing one specific test
+
+There are some optional parameters for just the "output" test:
+
+    --es signal_type        {sine, sawtooth, freq_sweep, pitch_sweep, white_noise} // type of sound to play, default is sine
 
 For example, a complete command for a "latency" test might be:
 
