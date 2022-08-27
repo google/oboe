@@ -67,8 +67,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_DATA_PATHS = 8;
 
     private int mAudioState = AUDIO_STATE_CLOSED;
-//    protected int audioManagerSampleRate;
-//    protected int audioManagerFramesPerBurst;
+
     protected ArrayList<StreamContext> mStreamContexts;
     private Button mOpenButton;
     private Button mStartButton;

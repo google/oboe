@@ -130,6 +130,9 @@ protected:
     MonotonicCounter              mPositionMillis; // for tracking OpenSL ES service position
 
 private:
+
+    constexpr static int kDoubleBufferCount = 2;
+
     SLresult registerBufferQueueCallback();
     SLresult updateStreamParameters(SLAndroidConfigurationItf configItf);
     Result configureBufferSizes(int32_t sampleRate);

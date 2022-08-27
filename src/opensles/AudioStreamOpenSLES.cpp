@@ -133,7 +133,7 @@ int32_t AudioStreamOpenSLES::calculateOptimalBufferQueueLength() {
     int32_t minCapacity = mBufferCapacityInFrames; // specified by app or zero
     // The buffer capacity needs to be at least twice the size of the requested callbackSize
     // so that we can have double buffering.
-    minCapacity = std::max(minCapacity, 2 * mFramesPerCallback);
+    minCapacity = std::max(minCapacity, kDoubleBufferCount * mFramesPerCallback);
     if (minCapacity > 0) {
         int32_t queueLengthFromCapacity = roundUpDivideByN(minCapacity, likelyFramesPerBurst);
         queueLength = std::max(queueLength, queueLengthFromCapacity);
@@ -191,7 +191,7 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
         return Result::ErrorInvalidFormat; // causing bytesPerFrame == 0
     }
 
-    for (int i = 0; i < kBufferQueueLengthMax; ++i) {
+    for (int i = 0; i < mBufferQueueLength; ++i) {
         mCallbackBuffer[i] = std::make_unique<uint8_t[]>(mBytesPerCallback);
     }
 
@@ -357,7 +357,7 @@ Result AudioStreamOpenSLES::close_l() {
 SLresult AudioStreamOpenSLES::enqueueCallbackBuffer(SLAndroidSimpleBufferQueueItf bq) {
     SLresult result = (*bq)->Enqueue(
             bq, mCallbackBuffer[mCallbackBufferIndex].get(), mBytesPerCallback);
-    mCallbackBufferIndex = (mCallbackBufferIndex + 1) % kBufferQueueLengthMax;
+    mCallbackBufferIndex = (mCallbackBufferIndex + 1) % mBufferQueueLength;
     return result;
 }
 
