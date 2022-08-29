@@ -444,8 +444,4 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     boolean isOutput() {
         return false;
     }
-
-    @Override
-    public void setupEffects(int sessionId) {
-    }
 }

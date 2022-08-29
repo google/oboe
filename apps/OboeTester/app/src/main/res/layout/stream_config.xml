@@ -293,6 +293,63 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/inputEffects"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <CheckBox
+                android:id="@+id/checkBoxAutomaticGainControl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Automatic Gain Control" />
+
+            <CheckBox
+                android:id="@+id/checkBoxAcousticEchoCanceler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Acoustic Echo Canceler" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/outputEffects"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textBassBoost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bass Boost" />
+
+            <SeekBar
+                android:id="@+id/seekBarBassBoost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="1000"
+                android:progress="0" />
+
+            <TextView
+                android:id="@+id/textLoudnessEnhancer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loudness Enhancer" />
+
+            <SeekBar
+                android:id="@+id/seekBarLoudnessEnhancer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="5000"
+                android:progress="0" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">

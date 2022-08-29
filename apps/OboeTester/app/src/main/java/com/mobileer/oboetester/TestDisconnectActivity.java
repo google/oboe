@@ -104,10 +104,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
         return true;
     }
 
-    @Override
-    public void setupEffects(int sessionId) {
-    }
-
     private void updateFailSkipButton(final boolean running) {
         runOnUiThread(new Runnable() {
             @Override

@@ -365,10 +365,6 @@ public class GlitchActivity extends AnalyzerActivity {
         return false;
     }
 
-    @Override
-    public void setupEffects(int sessionId) {
-    }
-
     public double getMaxSecondsWithNoGlitch() {
         return mGlitchSniffer.getMaxSecondsWithNoGlitch();
     }

@@ -18,12 +18,17 @@ package com.mobileer.oboetester;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.AutomaticGainControl;
+import android.media.audiofx.BassBoost;
+import android.media.audiofx.LoudnessEnhancer;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -86,7 +91,24 @@ public class StreamConfigurationView extends LinearLayout {
     private String mHideSettingsText;
     private String mShowSettingsText;
 
+    private LinearLayout mInputEffectsLayout;
+    private LinearLayout mOutputEffectsLayout;
+
+    private CheckBox mAutomaticGainControlCheckBox;
+    private CheckBox mAcousticEchoCancelerCheckBox;
+    private TextView mBassBoostTextView;
+    private SeekBar mBassBoostSeekBar;
+    private TextView mLoudnessEnhancerTextView;
+    private SeekBar mLoudnessEnhancerSeekBar;
+
     private boolean mIsChannelMaskLastSelected;
+
+    private boolean misOutput;
+
+    private BassBoost mBassBoost;
+    private LoudnessEnhancer mLoudnessEnhancer;
+    private AcousticEchoCanceler mAcousticEchoCanceler;
+    private AutomaticGainControl mAutomaticGainControl;
 
     // Create an anonymous implementation of OnClickListener
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
@@ -188,6 +210,51 @@ public class StreamConfigurationView extends LinearLayout {
         mActualSessionIdView = (TextView) findViewById(R.id.sessionId);
         mRequestAudioEffect = (CheckBox) findViewById(R.id.requestAudioEffect);
 
+        mOutputEffectsLayout = (LinearLayout) findViewById(R.id.outputEffects);
+        mInputEffectsLayout = (LinearLayout) findViewById(R.id.inputEffects);
+
+        mRequestAudioEffect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onRequestAudioEffectClicked(((CheckBox) view).isChecked());
+            }
+        });
+
+        mAutomaticGainControlCheckBox = (CheckBox) findViewById(R.id.checkBoxAutomaticGainControl);
+        mAcousticEchoCancelerCheckBox = (CheckBox) findViewById(R.id.checkBoxAcousticEchoCanceler);
+        mBassBoostTextView = (TextView) findViewById(R.id.textBassBoost);
+        mBassBoostSeekBar = (SeekBar) findViewById(R.id.seekBarBassBoost);
+        mLoudnessEnhancerTextView = (TextView) findViewById(R.id.textLoudnessEnhancer);
+        mLoudnessEnhancerSeekBar = (SeekBar) findViewById(R.id.seekBarLoudnessEnhancer);
+
+        mBassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                onBassBoostSeekBarChanged(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        mLoudnessEnhancerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                onLoudnessEnhancerSeekBarChanged(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
         mActualSampleRateView = (TextView) findViewById(R.id.actualSampleRate);
         mSampleRateSpinner = (Spinner) findViewById(R.id.spinnerSampleRate);
         mActualChannelCountView = (TextView) findViewById(R.id.actualChannelCount);
@@ -253,6 +320,7 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void setOutput(boolean output) {
+        misOutput = output;
         String ioText;
         if (output) {
             mDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_OUTPUTS);
@@ -418,4 +486,55 @@ public class StreamConfigurationView extends LinearLayout {
         mIsChannelMaskLastSelected = true;
     }
 
+    private void onRequestAudioEffectClicked(boolean isChecked) {
+        if (isChecked){
+            if (misOutput) {
+                mOutputEffectsLayout.setVisibility(VISIBLE);
+            } else {
+                mInputEffectsLayout.setVisibility(VISIBLE);
+            }
+        } else {
+            if (misOutput) {
+                mOutputEffectsLayout.setVisibility(GONE);
+            } else {
+                mInputEffectsLayout.setVisibility(GONE);
+            }
+        }
+    }
+
+    public void setupEffects(int sessionId) {
+        if (misOutput) {
+            mBassBoost = new BassBoost(0, sessionId);
+            mBassBoost.setStrength((short) mBassBoostSeekBar.getProgress());
+            mLoudnessEnhancer = new LoudnessEnhancer(sessionId);
+            mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
+        } else {
+            mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
+            if (mAcousticEchoCanceler != null) {
+                mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isEnabled());
+            } else {
+                Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
+            }
+            mAutomaticGainControl = AutomaticGainControl.create(sessionId);
+            if (mAutomaticGainControl != null) {
+                mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isEnabled());
+            } else {
+                Log.e(TAG, String.format("Could not create AutomaticGainControl"));
+            }
+        }
+    }
+
+    private void onLoudnessEnhancerSeekBarChanged(int progress) {
+        if (mLoudnessEnhancer != null) {
+            mLoudnessEnhancer.setTargetGain(progress);
+        }
+        mLoudnessEnhancerTextView.setText("Loudness Enhancer: " + progress);
+    }
+
+    private void onBassBoostSeekBarChanged(int progress) {
+        if (mBassBoost != null) {
+            mBassBoost.setStrength((short) progress);
+        }
+        mBassBoostTextView.setText("Bass Boost: " + progress);
+    }
 }

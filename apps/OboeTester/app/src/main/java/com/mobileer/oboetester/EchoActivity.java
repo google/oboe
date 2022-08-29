@@ -204,8 +204,4 @@ public class EchoActivity extends TestInputActivity {
     boolean isOutput() {
         return false;
     }
-
-    @Override
-    public void setupEffects(int sessionId) {
-    }
 }

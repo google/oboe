@@ -144,20 +144,6 @@ public class TestInputActivity  extends TestAudioActivity {
         showToast("Pause not implemented. Returned " + result);
     }
 
-
-    public void setupAGC(int sessionId) {
-        AutomaticGainControl effect =  AutomaticGainControl.create(sessionId);
-    }
-
-    public void setupAEC(int sessionId) {
-        AcousticEchoCanceler effect =  AcousticEchoCanceler.create(sessionId);
-    }
-
-    @Override
-    public void setupEffects(int sessionId) {
-        setupAEC(sessionId);
-    }
-
     protected int saveWaveFile(File file) {
         // Pass filename to native to write WAV file
         int result = saveWaveFile(file.getAbsolutePath());
