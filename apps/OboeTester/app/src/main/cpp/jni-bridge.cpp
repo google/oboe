@@ -48,7 +48,6 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint contentType,
                                                        jint deviceId,
                                                        jint sessionId,
-                                                       jint framesPerBurst,
                                                        jboolean channelConversionAllowed,
                                                        jboolean formatConversionAllowed,
                                                        jint rateConversionQuality,
@@ -127,13 +126,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jint contentType,
         jint deviceId,
         jint sessionId,
-        jint framesPerBurst,
         jboolean channelConversionAllowed,
         jboolean formatConversionAllowed,
         jint rateConversionQuality,
         jboolean isMMap,
         jboolean isInput) {
-    LOGD("OboeAudioStream_openNative: sampleRate = %d, framesPerBurst = %d", sampleRate, framesPerBurst);
+    LOGD("OboeAudioStream_openNative: sampleRate = %d", sampleRate);
 
     return (jint) engine.getCurrentActivity()->open(nativeApi,
                                                     sampleRate,
@@ -147,7 +145,6 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
                                                     contentType,
                                                     deviceId,
                                                     sessionId,
-                                                    framesPerBurst,
                                                     channelConversionAllowed,
                                                     formatConversionAllowed,
                                                     rateConversionQuality,
@@ -745,6 +742,14 @@ Java_com_mobileer_oboetester_ManualGlitchActivity_getGlitch(JNIEnv *env, jobject
 
     env->ReleaseFloatArrayElements(waveform_, waveform, 0);
     return numSamples;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env, jclass clazz,
+                                                                     jint audio_manager_sample_rate,
+                                                                     jint audio_manager_frames_per_burst) {
+    oboe::DefaultStreamValues::SampleRate = audio_manager_sample_rate;
+    oboe::DefaultStreamValues::FramesPerBurst = audio_manager_frames_per_burst;
 }
 
 }
