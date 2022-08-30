@@ -227,6 +227,9 @@ public class StreamConfigurationView extends LinearLayout {
         mLoudnessEnhancerTextView = (TextView) findViewById(R.id.textLoudnessEnhancer);
         mLoudnessEnhancerSeekBar = (SeekBar) findViewById(R.id.seekBarLoudnessEnhancer);
 
+        mAutomaticGainControlCheckBox.setEnabled(AutomaticGainControl.isAvailable());
+        mAcousticEchoCancelerCheckBox.setEnabled(AcousticEchoCanceler.isAvailable());
+
         mBassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 onBassBoostSeekBarChanged(progress);
@@ -509,17 +512,21 @@ public class StreamConfigurationView extends LinearLayout {
             mLoudnessEnhancer = new LoudnessEnhancer(sessionId);
             mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
         } else {
-            mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
-            if (mAcousticEchoCanceler != null) {
-                mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isEnabled());
-            } else {
-                Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
+            if (mAcousticEchoCanceler.getEnabled()) {
+                mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
+                if (mAcousticEchoCanceler != null) {
+                    mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isEnabled());
+                } else {
+                    Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
+                }
             }
-            mAutomaticGainControl = AutomaticGainControl.create(sessionId);
-            if (mAutomaticGainControl != null) {
-                mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isEnabled());
-            } else {
-                Log.e(TAG, String.format("Could not create AutomaticGainControl"));
+            if (mAutomaticGainControl.getEnabled()) {
+                mAutomaticGainControl = AutomaticGainControl.create(sessionId);
+                if (mAutomaticGainControl != null) {
+                    mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isEnabled());
+                } else {
+                    Log.e(TAG, String.format("Could not create AutomaticGainControl"));
+                }
             }
         }
     }
