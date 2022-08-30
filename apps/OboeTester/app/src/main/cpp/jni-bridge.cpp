@@ -26,6 +26,7 @@
 #include "oboe/Oboe.h"
 
 #include "NativeAudioContext.h"
+#include "TestErrorCallback.h"
 
 NativeAudioContext engine;
 
@@ -750,6 +751,20 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
                                                                      jint audio_manager_frames_per_burst) {
     oboe::DefaultStreamValues::SampleRate = audio_manager_sample_rate;
     oboe::DefaultStreamValues::FramesPerBurst = audio_manager_frames_per_burst;
+}
+
+static TestErrorCallback sTester;
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestErrorCallbackActivity_testDeleteCrash(
+        JNIEnv *env, jobject instance) {
+    sTester.test();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestErrorCallbackActivity_getCallbackMagic(
+        JNIEnv *env, jobject instance) {
+    return sTester.getCallbackMagic();
 }
 
 }
