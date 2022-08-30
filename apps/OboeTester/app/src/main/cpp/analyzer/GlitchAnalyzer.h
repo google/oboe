@@ -123,7 +123,7 @@ public:
     result_code processInputFrame(const float *frameData, int /* channelCount */) override {
         result_code result = RESULT_OK;
 
-        float sample = frameData[0];
+        float sample = frameData[getInputChannel()];
         float peak = mPeakFollower.process(sample);
         mInfiniteRecording.write(sample);
 
