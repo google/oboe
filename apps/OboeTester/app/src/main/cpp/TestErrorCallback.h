@@ -73,17 +73,21 @@ private:
             LOGE("%s() - error = %s, parent = %p",
                  __func__, oboe::convertToText(error), &mParent);
             // Trigger a crash by deleting this callback object while in use!
-            // Do not try this at home. We are just trying to reproduce a crash
+            // Do not try this at home. We are just trying to reproduce the crash
             // reported in #1603.
             std::thread t([this]() {
                     this->mParent->cleanup();
                     LOGE("onErrorBeforeClose called cleanup!");
                 });
             t.detach();
+            // There is a race condition between the deleting thread and this thread.
+            // We do not want to add synchronization because the object is getting deleted
+            // and cannot be relied on.
+            // So we sleep here to give the deleting thread a chance to win the race.
+            usleep(10 * 1000);
         }
 
         void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
-            usleep(10 * 1000); // Force us to lose the race condition.
             // The callback was probably deleted by now.
             LOGE("%s() - error = %s, mMagic = 0x%08X",
                  __func__, oboe::convertToText(error), mMagic.load());
