@@ -512,6 +512,7 @@ public class StreamConfigurationView extends LinearLayout {
             mLoudnessEnhancer = new LoudnessEnhancer(sessionId);
             mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
         } else {
+            // If AEC is not available, the checkbox will be disabled in initializeViews().
             if (mAcousticEchoCanceler.getEnabled()) {
                 mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
                 if (mAcousticEchoCanceler != null) {
@@ -520,6 +521,7 @@ public class StreamConfigurationView extends LinearLayout {
                     Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
                 }
             }
+            // If AGC is not available, the checkbox will be disabled in initializeViews().
             if (mAutomaticGainControl.getEnabled()) {
                 mAutomaticGainControl = AutomaticGainControl.create(sessionId);
                 if (mAutomaticGainControl != null) {
