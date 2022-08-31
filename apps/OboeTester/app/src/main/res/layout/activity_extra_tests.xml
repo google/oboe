@@ -41,5 +41,15 @@
         android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchPlugLatencyTest"
         android:text="Plug Latency" />
-    </GridLayout>
+
+    <Button
+        android:id="@+id/buttonErrorCallback"
+        android:layout_gravity="fill"
+        android:layout_width="0dp"
+        android:layout_columnWeight="1"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/button_tint"
+        android:onClick="onLaunchErrorCallbackTest"
+        android:text="Error Callback" />
+</GridLayout>
 </android.support.constraint.ConstraintLayout>

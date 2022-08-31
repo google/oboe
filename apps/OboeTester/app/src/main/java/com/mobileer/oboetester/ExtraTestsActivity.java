@@ -25,4 +25,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
         launchTestActivity(TestPlugLatencyActivity.class);
     }
 
+    public void onLaunchErrorCallbackTest(View view) {
+        launchTestActivity(TestErrorCallbackActivity.class);
+    }
+
 }
