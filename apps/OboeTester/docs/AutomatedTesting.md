@@ -82,8 +82,10 @@ There are several optional parameters in common for glitch, latency, input, and 
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
     --es out_api            {"unspecified", "opensles", "aaudio"}  // native output API, default is "unspecified"
-    --ei in_channels        {samples}    // number of input channels, default is 2
-    --ei out_channels       {samples}    // number of output channels, default is 2
+    --es in_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
+    --es out_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
+    --ei in_channels        {samples}    // number of input channels, default is 2. This is ignored if in_channel_mask is set.
+    --ei out_channels       {samples}    // number of output channels, default is 2. This is ignored if out_channel_mask is set.
     --ei sample_rate        {hertz}
     --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
     --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
