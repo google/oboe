@@ -558,7 +558,11 @@ abstract class TestAudioActivity extends Activity {
         int sessionId = actualConfig.getSessionId();
         if (streamContext.configurationView != null) {
             if (sessionId > 0) {
-                streamContext.configurationView.setupEffects(sessionId);
+                try {
+                    streamContext.configurationView.setupEffects(sessionId);
+                } catch (Exception e) {
+                    showErrorToast(e.getMessage());
+                }
             }
             streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
         }
