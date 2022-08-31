@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TableRow;
@@ -255,6 +256,18 @@ public class StreamConfigurationView extends LinearLayout {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        mAutomaticGainControlCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onAutomaticGainControlCheckBoxChanged(isChecked);
+            }
+        });
+
+        mAcousticEchoCancelerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onAcousticEchoCancelerCheckBoxChanged(isChecked);
             }
         });
 
@@ -513,19 +526,19 @@ public class StreamConfigurationView extends LinearLayout {
             mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
         } else {
             // If AEC is not available, the checkbox will be disabled in initializeViews().
-            if (mAcousticEchoCanceler.getEnabled()) {
+            if (mAcousticEchoCancelerCheckBox.isEnabled()) {
                 mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
                 if (mAcousticEchoCanceler != null) {
-                    mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isEnabled());
+                    mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isChecked());
                 } else {
                     Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
                 }
             }
             // If AGC is not available, the checkbox will be disabled in initializeViews().
-            if (mAutomaticGainControl.getEnabled()) {
+            if (mAutomaticGainControlCheckBox.isEnabled()) {
                 mAutomaticGainControl = AutomaticGainControl.create(sessionId);
                 if (mAutomaticGainControl != null) {
-                    mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isEnabled());
+                    mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isChecked());
                 } else {
                     Log.e(TAG, String.format("Could not create AutomaticGainControl"));
                 }
@@ -545,5 +558,17 @@ public class StreamConfigurationView extends LinearLayout {
             mBassBoost.setStrength((short) progress);
         }
         mBassBoostTextView.setText("Bass Boost: " + progress);
+    }
+
+    private void onAutomaticGainControlCheckBoxChanged(boolean isChecked) {
+        if (mAutomaticGainControlCheckBox.isEnabled() && mAutomaticGainControl != null) {
+            mAutomaticGainControl.setEnabled(isChecked);
+        }
+    }
+
+    private void onAcousticEchoCancelerCheckBoxChanged(boolean isChecked) {
+        if (mAcousticEchoCancelerCheckBox.isEnabled() && mAcousticEchoCanceler != null) {
+            mAcousticEchoCanceler.setEnabled(isChecked);
+        }
     }
 }
