@@ -74,6 +74,7 @@ public class IntentBasedTestSupport {
     public static final String VALUE_CHANNEL_2POINT1 = "2.1";
     public static final String VALUE_CHANNEL_TRI = "tri";
     public static final String VALUE_CHANNEL_TRI_BACK = "triBack";
+    public static final String VALUE_CHANNEL_TRI_BACK_LOWERCASE = "triback";
     public static final String VALUE_CHANNEL_3POINT1 = "3.1";
     public static final String VALUE_CHANNEL_2POINT0POINT2 = "2.0.2";
     public static final String VALUE_CHANNEL_2POINT1POINT2 = "2.1.2";
@@ -81,10 +82,12 @@ public class IntentBasedTestSupport {
     public static final String VALUE_CHANNEL_3POINT1POINT2 = "3.1.2";
     public static final String VALUE_CHANNEL_QUAD = "quad";
     public static final String VALUE_CHANNEL_QUAD_SIDE = "quadSide";
+    public static final String VALUE_CHANNEL_QUAD_SIDE_LOWERCASE = "quadside";
     public static final String VALUE_CHANNEL_SURROUND = "surround";
     public static final String VALUE_CHANNEL_PENTA = "penta";
     public static final String VALUE_CHANNEL_5POINT1 = "5.1";
     public static final String VALUE_CHANNEL_5POINT1_SIDE = "5.1Side";
+    public static final String VALUE_CHANNEL_5POINT1_SIDE_LOWERCASE = "5.1side";
     public static final String VALUE_CHANNEL_6POINT1 = "6.1";
     public static final String VALUE_CHANNEL_7POINT1 = "7.1";
     public static final String VALUE_CHANNEL_5POINT1POINT2 = "5.1.2";
@@ -94,6 +97,7 @@ public class IntentBasedTestSupport {
     public static final String VALUE_CHANNEL_9POINT1POINT4 = "9.1.4";
     public static final String VALUE_CHANNEL_9POINT1POINT6 = "9.1.6";
     public static final String VALUE_CHANNEL_FRONT_BACK = "frontBack";
+    public static final String VALUE_CHANNEL_FRONT_BACK_LOWERCASE = "frontback";
 
     public static final String KEY_SIGNAL_TYPE = "signal_type";
     public static final String VALUE_SIGNAL_SINE = "sine";
@@ -178,62 +182,64 @@ public class IntentBasedTestSupport {
         String channelMaskText = bundle.getString(channelMaskKey);
         if (channelMaskText == null) {
             return StreamConfiguration.UNSPECIFIED;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_MONO)) {
-            return StreamConfiguration.CHANNEL_MONO;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_STEREO)) {
-            return StreamConfiguration.CHANNEL_STEREO;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_2POINT1)) {
-            return StreamConfiguration.CHANNEL_2POINT1;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_TRI)) {
-            return StreamConfiguration.CHANNEL_TRI;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_TRI_BACK) ||
-                channelMaskText.equals(VALUE_CHANNEL_TRI_BACK.toLowerCase())) {
-            return StreamConfiguration.CHANNEL_TRI_BACK;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_3POINT1)) {
-            return StreamConfiguration.CHANNEL_3POINT1;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_2POINT0POINT2)) {
-            return StreamConfiguration.CHANNEL_2POINT0POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_2POINT1POINT2)) {
-            return StreamConfiguration.CHANNEL_2POINT1POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_3POINT0POINT2)) {
-            return StreamConfiguration.CHANNEL_3POINT0POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_3POINT1POINT2)) {
-            return StreamConfiguration.CHANNEL_3POINT1POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_QUAD)) {
-            return StreamConfiguration.CHANNEL_QUAD;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_QUAD_SIDE) ||
-                channelMaskText.equals(VALUE_CHANNEL_QUAD_SIDE.toLowerCase())) {
-            return StreamConfiguration.CHANNEL_QUAD_SIDE;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_SURROUND)) {
-            return StreamConfiguration.CHANNEL_SURROUND;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_PENTA)) {
-            return StreamConfiguration.CHANNEL_PENTA;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_5POINT1)) {
-            return StreamConfiguration.CHANNEL_5POINT1;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_5POINT1_SIDE) ||
-                channelMaskText.equals(VALUE_CHANNEL_5POINT1_SIDE.toLowerCase())) {
-            return StreamConfiguration.CHANNEL_5POINT1_SIDE;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_6POINT1)) {
-            return StreamConfiguration.CHANNEL_6POINT1;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_7POINT1)) {
-            return StreamConfiguration.CHANNEL_7POINT1;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_5POINT1POINT2)) {
-            return StreamConfiguration.CHANNEL_5POINT1POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_5POINT1POINT4)) {
-            return StreamConfiguration.CHANNEL_5POINT1POINT4;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_7POINT1POINT2)) {
-            return StreamConfiguration.CHANNEL_7POINT1POINT2;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_7POINT1POINT4)) {
-            return StreamConfiguration.CHANNEL_7POINT1POINT4;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_9POINT1POINT4)) {
-            return StreamConfiguration.CHANNEL_9POINT1POINT4;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_9POINT1POINT6)) {
-            return StreamConfiguration.CHANNEL_9POINT1POINT6;
-        } else if (channelMaskText.equals(VALUE_CHANNEL_FRONT_BACK) ||
-                channelMaskText.equals(VALUE_CHANNEL_FRONT_BACK.toLowerCase())) {
-            return StreamConfiguration.CHANNEL_FRONT_BACK;
-        } else {
-            throw new IllegalArgumentException(
+        }
+        switch (channelMaskText) {
+            case VALUE_CHANNEL_MONO:
+                return StreamConfiguration.CHANNEL_MONO;
+            case VALUE_CHANNEL_STEREO:
+                return StreamConfiguration.CHANNEL_STEREO;
+            case VALUE_CHANNEL_2POINT1:
+                return StreamConfiguration.CHANNEL_2POINT1;
+            case VALUE_CHANNEL_TRI:
+                return StreamConfiguration.CHANNEL_TRI;
+            case VALUE_CHANNEL_TRI_BACK:
+            case VALUE_CHANNEL_TRI_BACK_LOWERCASE:
+                return StreamConfiguration.CHANNEL_TRI_BACK;
+            case VALUE_CHANNEL_3POINT1:
+                return StreamConfiguration.CHANNEL_3POINT1;
+            case VALUE_CHANNEL_2POINT0POINT2:
+                return StreamConfiguration.CHANNEL_2POINT0POINT2;
+            case VALUE_CHANNEL_2POINT1POINT2:
+                return StreamConfiguration.CHANNEL_2POINT1POINT2;
+            case VALUE_CHANNEL_3POINT0POINT2:
+                return StreamConfiguration.CHANNEL_3POINT0POINT2;
+            case VALUE_CHANNEL_3POINT1POINT2:
+                return StreamConfiguration.CHANNEL_3POINT1POINT2;
+            case VALUE_CHANNEL_QUAD:
+                return StreamConfiguration.CHANNEL_QUAD;
+            case VALUE_CHANNEL_QUAD_SIDE:
+            case VALUE_CHANNEL_QUAD_SIDE_LOWERCASE:
+                return StreamConfiguration.CHANNEL_QUAD_SIDE;
+            case VALUE_CHANNEL_SURROUND:
+                return StreamConfiguration.CHANNEL_SURROUND;
+            case VALUE_CHANNEL_PENTA:
+                return StreamConfiguration.CHANNEL_PENTA;
+            case VALUE_CHANNEL_5POINT1:
+                return StreamConfiguration.CHANNEL_5POINT1;
+            case VALUE_CHANNEL_5POINT1_SIDE:
+            case VALUE_CHANNEL_5POINT1_SIDE_LOWERCASE:
+                return StreamConfiguration.CHANNEL_5POINT1_SIDE;
+            case VALUE_CHANNEL_6POINT1:
+                return StreamConfiguration.CHANNEL_6POINT1;
+            case VALUE_CHANNEL_7POINT1:
+                return StreamConfiguration.CHANNEL_7POINT1;
+            case VALUE_CHANNEL_5POINT1POINT2:
+                return StreamConfiguration.CHANNEL_5POINT1POINT2;
+            case VALUE_CHANNEL_5POINT1POINT4:
+                return StreamConfiguration.CHANNEL_5POINT1POINT4;
+            case VALUE_CHANNEL_7POINT1POINT2:
+                return StreamConfiguration.CHANNEL_7POINT1POINT2;
+            case VALUE_CHANNEL_7POINT1POINT4:
+                return StreamConfiguration.CHANNEL_7POINT1POINT4;
+            case VALUE_CHANNEL_9POINT1POINT4:
+                return StreamConfiguration.CHANNEL_9POINT1POINT4;
+            case VALUE_CHANNEL_9POINT1POINT6:
+                return StreamConfiguration.CHANNEL_9POINT1POINT6;
+            case VALUE_CHANNEL_FRONT_BACK:
+            case VALUE_CHANNEL_FRONT_BACK_LOWERCASE:
+                return StreamConfiguration.CHANNEL_FRONT_BACK;
+            default:
+                throw new IllegalArgumentException(
                         channelMaskKey + " invalid: " + channelMaskText);
         }
     }
