@@ -24,14 +24,19 @@ using namespace oboe;
 oboe::Result TestErrorCallback::open() {
     mCallbackMagic = 0;
     mDataCallback = std::make_unique<MyDataCallback>();
-    mErrorCallback = std::make_unique<MyErrorCallback>(this);
+    mErrorCallback = std::make_shared<MyErrorCallback>(this);
     AudioStreamBuilder builder;
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setChannelCount(kChannelCount)
+#if 0
             ->setDataCallback(mDataCallback.get())
-            ->setErrorCallback(mErrorCallback.get())
+            ->setErrorCallback(mErrorCallback.get()) // This can lead to a crash.
+#else
+            ->setDataCallback(mDataCallback)
+            ->setErrorCallback(mErrorCallback) // shared_ptr avoids a crash
+#endif
             ->openStream(mStream);
     return result;
 }
