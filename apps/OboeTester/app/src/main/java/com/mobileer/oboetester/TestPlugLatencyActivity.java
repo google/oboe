@@ -139,10 +139,6 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
         return true;
     }
 
-    @Override
-    public void setupEffects(int sessionId) {
-    }
-
     // Write to status and command view
     private void setInstructionsText(final String text) {
         runOnUiThread(new Runnable() {

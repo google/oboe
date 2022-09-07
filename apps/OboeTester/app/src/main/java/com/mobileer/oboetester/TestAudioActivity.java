@@ -437,8 +437,6 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
-    abstract public void setupEffects(int sessionId);
-
     protected void showErrorToast(String message) {
         String text = "Error: " + message;
         Log.e(TAG, text);
@@ -561,10 +559,14 @@ abstract class TestAudioActivity extends Activity {
         mSampleRate = actualConfig.getSampleRate();
         mAudioState = AUDIO_STATE_OPEN;
         int sessionId = actualConfig.getSessionId();
-        if (sessionId > 0) {
-            setupEffects(sessionId);
-        }
         if (streamContext.configurationView != null) {
+            if (sessionId > 0) {
+                try {
+                    streamContext.configurationView.setupEffects(sessionId);
+                } catch (Exception e) {
+                    showErrorToast(e.getMessage());
+                }
+            }
             streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
         }
     }
