@@ -40,7 +40,7 @@ MultiChannelResampler::MultiChannelResampler(const MultiChannelResampler::Builde
     ratio.reduce();
     mNumerator = ratio.getNumerator();
     mDenominator = ratio.getDenominator();
-    mIntegerPhase = mDenominator;
+    mIntegerPhase = mDenominator; // so we start with a write needed
 }
 
 // static factory method

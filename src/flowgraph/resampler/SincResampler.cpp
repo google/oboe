@@ -24,9 +24,10 @@ SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
         : MultiChannelResampler(builder)
         , mSingleFrame2(builder.getChannelCount()) {
     assert((getNumTaps() % 4) == 0); // Required for loop unrolling.
-    mNumRows = kMaxCoefficients / getNumTaps(); // no guard row needed
-    mPhaseScaler = (double) mNumRows / mDenominator;
-    double phaseIncrement = 1.0 / mNumRows;
+    mNumRows = kMaxCoefficients / getNumTaps(); // includes guard row
+    int32_t numRowsNoGuard = mNumRows - 1;
+    mPhaseScaler = (double) numRowsNoGuard / mDenominator;
+    double phaseIncrement = 1.0 / numRowsNoGuard;
     generateCoefficients(builder.getInputRate(),
                          builder.getOutputRate(),
                          mNumRows,
@@ -42,16 +43,8 @@ void SincResampler::readFrame(float *frame) {
     // Determine indices into coefficients table.
     double tablePhase = getIntegerPhase() * mPhaseScaler;
     int index1 = static_cast<int>(floor(tablePhase));
-    if (index1 >= mNumRows) { // no guard row needed because we wrap the indices
-        tablePhase -= mNumRows;
-        index1 -= mNumRows;
-    }
-
-    int index2 = index1 + 1;
-    if (index2 >= mNumRows) { // no guard row needed because we wrap the indices
-        index2 -= mNumRows;
-    }
-
+    int index2 = index1 + 1; // OK because using a guard row.
+    assert (index2 < mNumRows);
     float *coefficients1 = &mCoefficients[static_cast<size_t>(index1)
             * static_cast<size_t>(getNumTaps())];
     float *coefficients2 = &mCoefficients[static_cast<size_t>(index2)
@@ -63,7 +56,7 @@ void SincResampler::readFrame(float *frame) {
         float coefficient2 = *coefficients2++;
         for (int channel = 0; channel < getChannelCount(); channel++) {
             float sample = *xFrame++;
-            mSingleFrame[channel] +=  sample * coefficient1;
+            mSingleFrame[channel]  += sample * coefficient1;
             mSingleFrame2[channel] += sample * coefficient2;
         }
     }

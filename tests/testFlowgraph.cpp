@@ -18,9 +18,8 @@
  * Test FlowGraph
  */
 
+#include "math.h"
 #include "stdio.h"
-
-#include <iostream>
 
 #include <gtest/gtest.h>
 #include <oboe/Oboe.h>
@@ -29,7 +28,6 @@
 #include "flowgraph/MonoToMultiConverter.h"
 #include "flowgraph/SourceFloat.h"
 #include "flowgraph/RampLinear.h"
-#include "flowgraph/SampleRateConverter.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
 #include "flowgraph/SinkI24.h"
