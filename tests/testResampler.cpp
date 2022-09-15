@@ -66,12 +66,14 @@ static void checkResampler(int32_t sourceRate, int32_t sinkRate,
     std::unique_ptr<float[]>  outputBuffer = std::make_unique<float[]>(kNumOutputSamples);
 
     // Generate a sine wave for input.
-    const double kPhaseIncrement =  2.0 * sinkRate / (framesPerCycle * sourceRate);
+    const double kPhaseIncrement = 2.0 * sinkRate / (framesPerCycle * sourceRate);
     double phase = 0.0;
     for (int i = 0; i < numInputSamples; i++) {
         inputBuffer[i] = sin(phase * M_PI);
         phase += kPhaseIncrement;
-        if (phase > 1.0) phase -= 2.0;
+        while (phase > 1.0) {
+            phase -= 2.0;
+        }
     }
     int sourceZeroCrossingCount = countZeroCrossingsWithHysteresis(inputBuffer.get(), numInputSamples);
 
@@ -86,7 +88,7 @@ static void checkResampler(int32_t sourceRate, int32_t sinkRate,
     float *input = inputBuffer.get(); // for iteration
     float *output = outputBuffer.get();
     while (inputFramesLeft > 0) {
-        if(mcResampler->isWriteNeeded()) {
+        if (mcResampler->isWriteNeeded()) {
             mcResampler->writeNextFrame(input);
             input++;
             inputFramesLeft--;
@@ -98,10 +100,14 @@ static void checkResampler(int32_t sourceRate, int32_t sinkRate,
     }
 
     ASSERT_LE(numRead, kNumOutputSamples);
-    EXPECT_GT(numRead, kNumOutputSamples - 16);
+    // Some frames are lost priming the FIR filter.
+    const int kMaxAlgorithmicFrameLoss = 16;
+    EXPECT_GT(numRead, kNumOutputSamples - kMaxAlgorithmicFrameLoss);
 
     int sinkZeroCrossingCount = countZeroCrossingsWithHysteresis(outputBuffer.get(), numRead);
-    EXPECT_LE(abs(sourceZeroCrossingCount - sinkZeroCrossingCount), 3);
+    // Some cycles may get chopped off at the end.
+    const int kMaxZeroCrossingDelta = 3;
+    EXPECT_LE(abs(sourceZeroCrossingCount - sinkZeroCrossingCount), kMaxZeroCrossingDelta);
 
     // Detect glitches by looking for spikes in the second derivative.
     output = outputBuffer.get();
