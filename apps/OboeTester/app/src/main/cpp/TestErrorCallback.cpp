@@ -23,7 +23,7 @@ using namespace oboe;
 
 oboe::Result TestErrorCallback::open() {
     mCallbackMagic = 0;
-    mDataCallback = std::make_unique<MyDataCallback>();
+    mDataCallback = std::make_shared<MyDataCallback>();
     mErrorCallback = std::make_shared<MyErrorCallback>(this);
     AudioStreamBuilder builder;
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
@@ -32,7 +32,7 @@ oboe::Result TestErrorCallback::open() {
             ->setChannelCount(kChannelCount)
 #if 0
             ->setDataCallback(mDataCallback.get())
-            ->setErrorCallback(mErrorCallback.get()) // This can lead to a crash.
+            ->setErrorCallback(mErrorCallback.get()) // This can lead to a crash or FAIL.
 #else
             ->setDataCallback(mDataCallback)
             ->setErrorCallback(mErrorCallback) // shared_ptr avoids a crash
