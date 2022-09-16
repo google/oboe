@@ -57,9 +57,7 @@ void SincResamplerStereo::readFrame(float *frame) {
     float *coefficients1 = &mCoefficients[static_cast<size_t>(index1)
             * static_cast<size_t>(getNumTaps())];
     int index2 = (index1 + 1);
-    if (index2 >= mNumRows) { // no guard row needed because we wrap the indices
-        index2 = 0;
-    }
+    assert (index2 < mNumRows);
     float *coefficients2 = &mCoefficients[static_cast<size_t>(index2)
             * static_cast<size_t>(getNumTaps())];
     float *xFrame = &mX[static_cast<size_t>(mCursor) * static_cast<size_t>(getChannelCount())];
