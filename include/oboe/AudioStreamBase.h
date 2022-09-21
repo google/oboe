@@ -188,9 +188,11 @@ public:
 protected:
     /** The callback which will be fired when new data is ready to be read/written. **/
     AudioStreamDataCallback        *mDataCallback = nullptr;
+    std::shared_ptr<AudioStreamDataCallback> mSharedDataCallback;
 
     /** The callback which will be fired when an error or a disconnect occurs. **/
     AudioStreamErrorCallback       *mErrorCallback = nullptr;
+    std::shared_ptr<AudioStreamErrorCallback> mSharedErrorCallback;
 
     /** Number of audio frames which will be requested in each callback */
     int32_t                         mFramesPerCallback = kUnspecified;

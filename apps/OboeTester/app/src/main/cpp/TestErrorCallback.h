@@ -44,7 +44,9 @@ protected:
 private:
 
     void cleanup() {
+        mDataCallback.reset();
         mErrorCallback.reset();
+        mStream.reset();
     }
 
     class MyDataCallback : public oboe::AudioStreamDataCallback {    public:
@@ -72,11 +74,11 @@ private:
         void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
             LOGE("%s() - error = %s, parent = %p",
                  __func__, oboe::convertToText(error), &mParent);
-            // Trigger a crash by deleting this callback object while in use!
+            // Trigger a crash by "deleting" this callback object while in use!
             // Do not try this at home. We are just trying to reproduce the crash
             // reported in #1603.
             std::thread t([this]() {
-                    this->mParent->cleanup();
+                    this->mParent->cleanup(); // Possibly delete stream and callback objects.
                     LOGE("onErrorBeforeClose called cleanup!");
                 });
             t.detach();
@@ -102,8 +104,8 @@ private:
     };
 
     std::shared_ptr<oboe::AudioStream> mStream;
-    std::unique_ptr<MyDataCallback> mDataCallback;
-    std::unique_ptr<MyErrorCallback> mErrorCallback;
+    std::shared_ptr<MyDataCallback> mDataCallback;
+    std::shared_ptr<MyErrorCallback> mErrorCallback;
 
     static constexpr int kChannelCount = 2;
 };

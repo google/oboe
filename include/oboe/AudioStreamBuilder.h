@@ -354,11 +354,31 @@ public:
      * <strong>Important: See AudioStreamCallback for restrictions on what may be called
      * from the callback methods.</strong>
      *
+     * We pass a shared_ptr so that the sharedDataCallback object cannot be deleted
+     * before the stream is deleted.
+     *
      * @param dataCallback
      * @return pointer to the builder so calls can be chained
      */
-    AudioStreamBuilder *setDataCallback(oboe::AudioStreamDataCallback *dataCallback) {
+    AudioStreamBuilder *setDataCallback(std::shared_ptr<AudioStreamDataCallback> sharedDataCallback) {
+        // Use this raw pointer in the rest of the code to retain backwards compatibility.
+        mDataCallback = sharedDataCallback.get();
+        // Hold a shared_ptr to protect the raw pointer for the lifetime of the stream.
+        mSharedDataCallback = sharedDataCallback;
+        return this;
+    }
+
+    /**
+    * Pass a raw pointer to a data callback. This is not recommended because the dataCallback
+    * object might get deleted by the app while it is being used.
+    *
+    * @deprecated Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) instead.
+    * @param dataCallback
+    * @return pointer to the builder so calls can be chained
+    */
+    AudioStreamBuilder *setDataCallback(AudioStreamDataCallback *dataCallback) {
         mDataCallback = dataCallback;
+        mSharedDataCallback = nullptr;
         return this;
     }
 
@@ -374,11 +394,32 @@ public:
      * <strong>When an error callback occurs, the associated stream must be stopped and closed
      * in a separate thread.</strong>
      *
-     * @param errorCallback
+     * We pass a shared_ptr so that the errorCallback object cannot be deleted before the stream is deleted.
+     * If the stream was created using a shared_ptr then the stream cannot be deleted before the
+     * error callback has finished running.
+     *
+     * @param sharedErrorCallback
      * @return pointer to the builder so calls can be chained
      */
-    AudioStreamBuilder *setErrorCallback(oboe::AudioStreamErrorCallback *errorCallback) {
+    AudioStreamBuilder *setErrorCallback(std::shared_ptr<AudioStreamErrorCallback> sharedErrorCallback) {
+        // Use this raw pointer in the rest of the code to retain backwards compatibility.
+        mErrorCallback = sharedErrorCallback.get();
+        // Hold a shared_ptr to protect the raw pointer for the lifetime of the stream.
+        mSharedErrorCallback = sharedErrorCallback;
+        return this;
+    }
+
+    /**
+    * Pass a raw pointer to an error callback. This is not recommended because the errorCallback
+    * object might get deleted by the app while it is being used.
+    *
+    * @deprecated Call setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.
+    * @param errorCallback
+    * @return pointer to the builder so calls can be chained
+    */
+    AudioStreamBuilder *setErrorCallback(AudioStreamErrorCallback *errorCallback) {
         mErrorCallback = errorCallback;
+        mSharedErrorCallback = nullptr;
         return this;
     }
 
