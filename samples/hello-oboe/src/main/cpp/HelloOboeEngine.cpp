@@ -133,11 +133,14 @@ void HelloOboeEngine::restart() {
 oboe::Result HelloOboeEngine::start() {
     std::lock_guard<std::mutex> lock(mLock);
     oboe::Result result = oboe::Result::OK;
-    // It is possible for a stream's device to become disconnected between the Open and the Start.
+    // It is possible for a stream's device to become disconnected during thew open or between
+    // the Open and the Start.
     // So if it fails to start, close the old stream and try again.
     int tryCount = 0;
-    bool startFailed = false;
     do {
+        if (tryCount > 0) {
+            usleep(20 * 1000); // Sleep between tries to give the system time to settle.
+        }
         mIsLatencyDetectionSupported = false;
         result = openPlaybackStream();
         if (result == oboe::Result::OK){
@@ -155,16 +158,14 @@ oboe::Result HelloOboeEngine::start() {
                 LOGE("Error starting playback stream. Error: %s", oboe::convertToText(result));
                 mStream->close();
                 mStream.reset();
-                startFailed = true;
             } else {
                 mIsLatencyDetectionSupported = (mStream->getTimestamp((CLOCK_MONOTONIC)) !=
                                                 oboe::Result::ErrorUnimplemented);
-                startFailed = false;
             }
         } else {
             LOGE("Error creating playback stream. Error: %s", oboe::convertToText(result));
         }
-    } while (tryCount++ < 3 && startFailed);
+    } while (result != oboe::Result::OK && tryCount++ < 3);
     return result;
 }
 
