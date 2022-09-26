@@ -460,7 +460,7 @@ public:
      * On some devices, mono streams might be broken, so a stereo stream might be opened
      * and converted to mono.
      *
-     * Default is true.
+     * Default is false.
      */
     AudioStreamBuilder *setChannelConversionAllowed(bool allowed) {
         mChannelConversionAllowed = allowed;
