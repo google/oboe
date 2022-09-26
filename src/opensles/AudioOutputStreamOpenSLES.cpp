@@ -130,9 +130,9 @@ Result AudioOutputStreamOpenSLES::open() {
     }
 
     // OpenSL ES only supports I16 and Float
-    //if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
-    //    return Result::ErrorInvalidFormat;
-    //}
+    if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
+        return Result::ErrorInvalidFormat;
+    }
 
     Result oboeResult = AudioStreamOpenSLES::open();
     if (Result::OK != oboeResult)  return oboeResult;
