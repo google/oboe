@@ -1,26 +1,35 @@
+/*
+ * Copyright 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.minimaloboe
 
-import android.content.Context
-import android.content.ContextWrapper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
 import com.example.minimaloboe.ui.theme.SamplesTheme
+import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
-
-    var mPlayer = AudioPlayer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,51 +40,71 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainControls(mPlayer)
+                    MainControls()
                 }
             }
         }
     }
 }
 
-@Composable
-fun StartButton(audioPlayer: AudioPlayer) {
-    Button(onClick = {
-        audioPlayer.startAudio()
-    }) {
-        Text(text = "Start")
+class ExampleViewModel : ViewModel() {
+
+    var audioPlayer = AudioPlayer();
+
+    fun startAudio(): Int {
+        return audioPlayer.startAudio()
+
+    }
+
+    fun stopAudio(): Int {
+        return audioPlayer.stopAudio()
     }
 }
 
 @Composable
-fun StopButton(audioPlayer: AudioPlayer) {
-    Button(onClick = {
-        audioPlayer.stopAudio()
-    }) {
-        Text(text = "Stop")
-    }
-}
+fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
 
-@Composable
-fun MainControls(audioPlayer: AudioPlayer) {
+    // State that affects the UI.
+    var started by remember { mutableStateOf(false) }
+    var result by remember { mutableStateOf(1) }
+
     Column {
         Text(text = "Minimal Oboe!")
-        StartButton(audioPlayer)
-        StopButton(audioPlayer)
+        // START button
+        Button(
+            onClick = {
+                // Start Oboe from a coroutine in case it blocks for too long.
+                // If the AudioServer has died it may take several seconds to recover.
+                // That can cause an ANR if we are starting audio from the main UI thread.
+                GlobalScope.launch {
+                    result = viewModel.startAudio()
+                    started = (result == 0)
+                }
+            },
+            enabled = !started
+        ) {
+            Text(text = "Start Audio")
+        }
+        // STOP button
+        Button(
+            onClick = {
+                GlobalScope.launch {
+                    result = viewModel.stopAudio()
+                    started = false
+                }
+            },
+            enabled = started
+        ) {
+            Text(text = "Stop Audio")
+        }
+        Text("Result = " + result)
     }
-}
-
-fun Context.findActivity(): AppCompatActivity? = when (this) {
-    is AppCompatActivity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    var player = AudioPlayer()
     SamplesTheme {
-        MainControls(player)
+        MainControls()
     }
 }
