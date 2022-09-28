@@ -62,8 +62,8 @@ private:
     };
 
     std::shared_ptr<oboe::AudioStream> mStream;
-    std::unique_ptr<MyDataCallback> mDataCallback;
-    std::unique_ptr<MyErrorCallback> mErrorCallback;
+    std::shared_ptr<MyDataCallback> mDataCallback;
+    std::shared_ptr<MyErrorCallback> mErrorCallback;
 
     static constexpr int kChannelCount = 2;
 };
