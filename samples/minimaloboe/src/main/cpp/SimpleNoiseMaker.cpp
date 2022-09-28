@@ -25,8 +25,10 @@ static const char *TAG = "SimpleNoiseMaker";
 using namespace oboe;
 
 oboe::Result SimpleNoiseMaker::open() {
-    mDataCallback = std::make_unique<MyDataCallback>();
-    mErrorCallback = std::make_unique<MyErrorCallback>(this);
+    // Use shared_ptr to prevent use of a deleted callback.
+    mDataCallback = std::make_shared<MyDataCallback>();
+    mErrorCallback = std::make_shared<MyErrorCallback>(this);
+    
     AudioStreamBuilder builder;
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
