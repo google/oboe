@@ -28,7 +28,7 @@ oboe::Result SimpleNoiseMaker::open() {
     // Use shared_ptr to prevent use of a deleted callback.
     mDataCallback = std::make_shared<MyDataCallback>();
     mErrorCallback = std::make_shared<MyErrorCallback>(this);
-    
+
     AudioStreamBuilder builder;
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
