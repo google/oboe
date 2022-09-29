@@ -55,8 +55,10 @@ JNIEXPORT jint JNICALL Java_com_example_minimaloboe_AudioPlayer_startAudioStream
 JNIEXPORT jint JNICALL Java_com_example_minimaloboe_AudioPlayer_stopAudioStreamNative(
         JNIEnv * /* env */, jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", __func__);
+    // We need to close() even if the stop() fails because we need to delete the resources.
     Result result1 = sPlayer.stop();
     Result result2 = sPlayer.close();
+    // Return first failure code.
     return (jint) ((result1 != Result::OK) ? result1 : result2);
 }
 #ifdef __cplusplus
