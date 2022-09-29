@@ -31,6 +31,8 @@ import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
 
+    var mExampleViewModel = ExampleViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,20 +42,25 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainControls()
+                    MainControls(mExampleViewModel)
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        // call the superclass method first
+        super.onStop()
+        mExampleViewModel.stopAudio()
     }
 }
 
 class ExampleViewModel : ViewModel() {
 
-    var audioPlayer = AudioPlayer();
+    var audioPlayer = AudioPlayer()
 
     fun startAudio(): Int {
         return audioPlayer.startAudio()
-
     }
 
     fun stopAudio(): Int {
@@ -64,9 +71,11 @@ class ExampleViewModel : ViewModel() {
 @Composable
 fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
 
+    val NO_RESULT_YET = 1
+
     // State that affects the UI.
     var started by remember { mutableStateOf(false) }
-    var result by remember { mutableStateOf(1) }
+    var result by remember { mutableStateOf(NO_RESULT_YET) }
 
     Column {
         Text(text = "Minimal Oboe!")
@@ -97,7 +106,7 @@ fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
         ) {
             Text(text = "Stop Audio")
         }
-        Text("Result = " + result)
+        Text("Result = " + (if (result == NO_RESULT_YET) "?" else result))
     }
 }
 
