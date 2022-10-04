@@ -21,24 +21,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.minimaloboe.ui.theme.SamplesTheme
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
-    var mExampleViewModel = ExampleViewModel()
 
     @OptIn(ExperimentalLifecycleComposeApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,20 +55,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainControls(mExampleViewModel)
+                    MainControls()
                 }
             }
         }
     }
-
-    override fun onStop() {
-        // call the superclass method first
-        super.onStop()
-        mExampleViewModel.stopAudio()
-    }
 }
 
-class ExampleViewModel : ViewModel() {
+class ExampleViewModel : ViewModel(), DefaultLifecycleObserver {
 
     private val _uiState = MutableStateFlow<PlayingUiState>(PlayingUiState.NoResultYet)
     val uiState : StateFlow<PlayingUiState> = _uiState.asStateFlow()
@@ -95,9 +94,10 @@ class ExampleViewModel : ViewModel() {
         }
     }
 
-    fun startAudio() = setPlaybackEnabled(true)
-
-    fun stopAudio() = setPlaybackEnabled(false)
+    override fun onStop(owner: LifecycleOwner) {
+        super.onStop(owner)
+        setPlaybackEnabled(false)
+    }
 
 }
 
@@ -110,9 +110,14 @@ sealed interface PlayingUiState {
 
 @ExperimentalLifecycleComposeApi
 @Composable
-fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
-
+fun MainControls(viewModel: ExampleViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MainControls(uiState, viewModel::setPlaybackEnabled)
+}
+
+@ExperimentalLifecycleComposeApi
+@Composable
+fun MainControls(uiState: PlayingUiState, setPlaybackEnabled: (Boolean) -> Unit){
 
     Column {
 
@@ -127,7 +132,7 @@ fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
             "Start Audio"
         }
 
-        Button(onClick = { viewModel.setPlaybackEnabled(!isPlaying) }
+        Button(onClick = { setPlaybackEnabled(!isPlaying) }
         ) {
             Text(text = buttonText)
         }
@@ -152,6 +157,6 @@ fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
 @Composable
 fun DefaultPreview() {
     SamplesTheme {
-        MainControls()
+        MainControls(PlayingUiState.Started) { }
     }
 }
