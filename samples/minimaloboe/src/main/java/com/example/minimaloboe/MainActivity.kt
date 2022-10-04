@@ -29,25 +29,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.minimaloboe.ui.theme.SamplesTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalLifecycleComposeApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Let our AudioPlayer observe lifecycle events for the application so when it goes into the
+        // background we can stop audio playback.
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AudioPlayer)
+
         setContent {
             SamplesTheme {
                 // A surface container using the 'background' color from the theme
@@ -62,66 +58,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class ExampleViewModel : ViewModel(), DefaultLifecycleObserver {
-
-    private val _uiState = MutableStateFlow<PlayingUiState>(PlayingUiState.NoResultYet)
-    val uiState : StateFlow<PlayingUiState> = _uiState.asStateFlow()
-
-    private val audioPlayer = AudioPlayer()
-
-    fun setPlaybackEnabled(isEnabled: Boolean){
-        // Start (and stop) Oboe from a coroutine in case it blocks for too long.
-        // If the AudioServer has died it may take several seconds to recover.
-        // That can cause an ANR if we are starting audio from the main UI thread.
-        viewModelScope.launch {
-            val result = if (isEnabled){
-                audioPlayer.startAudio()
-            } else {
-                audioPlayer.stopAudio()
-            }
-
-            val newUiState = if (result == 0){
-                if (isEnabled){
-                    PlayingUiState.Started
-                } else {
-                    PlayingUiState.Stopped
-                }
-            } else {
-                PlayingUiState.Unknown(result)
-            }
-
-            _uiState.update { newUiState }
-        }
-    }
-
-    override fun onStop(owner: LifecycleOwner) {
-        super.onStop(owner)
-        setPlaybackEnabled(false)
-    }
-
-}
-
-sealed interface PlayingUiState {
-    object NoResultYet : PlayingUiState
-    object Started : PlayingUiState
-    object Stopped : PlayingUiState
-    data class Unknown(val resultCode: Int) : PlayingUiState
+@ExperimentalLifecycleComposeApi
+@Composable
+fun MainControls() {
+    val playerState by AudioPlayer.playerState.collectAsStateWithLifecycle()
+    MainControls(playerState, AudioPlayer::setPlaybackEnabled)
 }
 
 @ExperimentalLifecycleComposeApi
 @Composable
-fun MainControls(viewModel: ExampleViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    MainControls(uiState, viewModel::setPlaybackEnabled)
-}
-
-@ExperimentalLifecycleComposeApi
-@Composable
-fun MainControls(uiState: PlayingUiState, setPlaybackEnabled: (Boolean) -> Unit){
+fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit){
 
     Column {
 
-        val isPlaying = uiState is PlayingUiState.Started
+        val isPlaying = playerState is PlayerState.Started
 
         Text(text = "Minimal Oboe!")
 
@@ -139,12 +89,12 @@ fun MainControls(uiState: PlayingUiState, setPlaybackEnabled: (Boolean) -> Unit)
 
         // Create a status message for displaying the current playback state.
         val uiStatusMessage = "Current status: " +
-            when (uiState){
-                PlayingUiState.NoResultYet -> "No result yet"
-                PlayingUiState.Started -> "Started"
-                PlayingUiState.Stopped -> "Stopped"
-                is PlayingUiState.Unknown -> {
-                    "Unknown. Result = " + (uiState as PlayingUiState.Unknown).resultCode
+            when (playerState){
+                PlayerState.NoResultYet -> "No result yet"
+                PlayerState.Started -> "Started"
+                PlayerState.Stopped -> "Stopped"
+                is PlayerState.Unknown -> {
+                    "Unknown. Result = " + playerState.resultCode
                 }
             }
 
@@ -157,6 +107,6 @@ fun MainControls(uiState: PlayingUiState, setPlaybackEnabled: (Boolean) -> Unit)
 @Composable
 fun DefaultPreview() {
     SamplesTheme {
-        MainControls(PlayingUiState.Started) { }
+        MainControls(PlayerState.Started) { }
     }
 }
