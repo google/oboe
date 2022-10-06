@@ -34,8 +34,8 @@ oboe::Result SimpleNoiseMaker::open() {
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setChannelCount(kChannelCount)
-            ->setDataCallback(mDataCallback.get())
-            ->setErrorCallback(mErrorCallback.get())
+            ->setDataCallback(mDataCallback)
+            ->setErrorCallback(mErrorCallback)
                     // Open using a shared_ptr.
             ->openStream(mStream);
     return result;
