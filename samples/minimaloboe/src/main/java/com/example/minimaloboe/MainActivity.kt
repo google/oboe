@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -67,7 +68,7 @@ fun MainControls() {
 
 @ExperimentalLifecycleComposeApi
 @Composable
-fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit){
+fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit) {
 
     Column {
 
@@ -75,28 +76,31 @@ fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit
 
         Text(text = "Minimal Oboe!")
 
-        // Display a button for starting and stopping playback.
-        val buttonText = if (isPlaying){
-            "Stop Audio"
-        } else {
-            "Start Audio"
-        }
-
-        Button(onClick = { setPlaybackEnabled(!isPlaying)}
+        Row {
+            Button(
+                onClick = { setPlaybackEnabled(true) },
+                enabled = !isPlaying
             ) {
-            Text(text = buttonText)
+                Text(text = "Start Audio")
+            }
+            Button(
+                onClick = { setPlaybackEnabled(false) },
+                enabled = isPlaying
+            ) {
+                Text(text = "Stop Audio")
+            }
         }
 
         // Create a status message for displaying the current playback state.
         val uiStatusMessage = "Current status: " +
-            when (playerState){
-                PlayerState.NoResultYet -> "No result yet"
-                PlayerState.Started -> "Started"
-                PlayerState.Stopped -> "Stopped"
-                is PlayerState.Unknown -> {
-                    "Unknown. Result = " + playerState.resultCode
+                when (playerState) {
+                    PlayerState.NoResultYet -> "No result yet"
+                    PlayerState.Started -> "Started"
+                    PlayerState.Stopped -> "Stopped"
+                    is PlayerState.Unknown -> {
+                        "Unknown. Result = " + playerState.resultCode
+                    }
                 }
-            }
 
         Text(uiStatusMessage)
     }
