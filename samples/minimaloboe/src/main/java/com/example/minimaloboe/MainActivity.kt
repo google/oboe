@@ -21,20 +21,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.minimaloboe.ui.theme.SamplesTheme
-import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
 
-    var mExampleViewModel = ExampleViewModel()
-
+    @OptIn(ExperimentalLifecycleComposeApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Let our AudioPlayer observe lifecycle events for the application so when it goes into the
+        // background we can stop audio playback.
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AudioPlayer)
+
         setContent {
             SamplesTheme {
                 // A surface container using the 'background' color from the theme
@@ -42,78 +51,62 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainControls(mExampleViewModel)
+                    MainControls()
                 }
             }
         }
     }
-
-    override fun onStop() {
-        // call the superclass method first
-        super.onStop()
-        mExampleViewModel.stopAudio()
-    }
 }
 
-class ExampleViewModel : ViewModel() {
-
-    var audioPlayer = AudioPlayer()
-
-    fun startAudio(): Int {
-        return audioPlayer.startAudio()
-    }
-
-    fun stopAudio(): Int {
-        return audioPlayer.stopAudio()
-    }
-}
-
+@ExperimentalLifecycleComposeApi
 @Composable
-fun MainControls(viewModel: ExampleViewModel = ExampleViewModel()) {
+fun MainControls() {
+    val playerState by AudioPlayer.playerState.collectAsStateWithLifecycle()
+    MainControls(playerState, AudioPlayer::setPlaybackEnabled)
+}
 
-    val NO_RESULT_YET = 1
-
-    // State that affects the UI.
-    var started by remember { mutableStateOf(false) }
-    var result by remember { mutableStateOf(NO_RESULT_YET) }
+@ExperimentalLifecycleComposeApi
+@Composable
+fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit){
 
     Column {
+
+        val isPlaying = playerState is PlayerState.Started
+
         Text(text = "Minimal Oboe!")
-        // START button
-        Button(
-            onClick = {
-                // Start Oboe from a coroutine in case it blocks for too long.
-                // If the AudioServer has died it may take several seconds to recover.
-                // That can cause an ANR if we are starting audio from the main UI thread.
-                GlobalScope.launch {
-                    result = viewModel.startAudio()
-                    started = (result == 0)
-                }
-            },
-            enabled = !started
-        ) {
-            Text(text = "Start Audio")
+
+        // Display a button for starting and stopping playback.
+        val buttonText = if (isPlaying){
+            "Stop Audio"
+        } else {
+            "Start Audio"
         }
-        // STOP button
-        Button(
-            onClick = {
-                GlobalScope.launch {
-                    result = viewModel.stopAudio()
-                    started = false
-                }
-            },
-            enabled = started
-        ) {
-            Text(text = "Stop Audio")
+
+        Button(onClick = { setPlaybackEnabled(!isPlaying)}
+            ) {
+            Text(text = buttonText)
         }
-        Text("Result = " + (if (result == NO_RESULT_YET) "?" else result))
+
+        // Create a status message for displaying the current playback state.
+        val uiStatusMessage = "Current status: " +
+            when (playerState){
+                PlayerState.NoResultYet -> "No result yet"
+                PlayerState.Started -> "Started"
+                PlayerState.Stopped -> "Stopped"
+                is PlayerState.Unknown -> {
+                    "Unknown. Result = " + playerState.resultCode
+                }
+            }
+
+        Text(uiStatusMessage)
     }
 }
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     SamplesTheme {
-        MainControls()
+        MainControls(PlayerState.Started) { }
     }
 }
