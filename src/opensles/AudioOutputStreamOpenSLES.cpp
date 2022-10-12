@@ -167,11 +167,6 @@ Result AudioOutputStreamOpenSLES::open() {
     SLAndroidDataFormat_PCM_EX format_pcm_ex;
     if (getSdkVersion() >= __ANDROID_API_L__) {
         SLuint32 representation = OpenSLES_ConvertFormatToRepresentation(getFormat());
-        if (representation == 0) {
-            LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %d",
-                 __func__, getFormat());
-            return Result::ErrorInvalidFormat;
-        }
         // Fill in the format structure.
         format_pcm_ex = OpenSLES_createExtendedFormat(format_pcm, representation);
         // Use in place of the previous format.
