@@ -70,6 +70,13 @@ Result AudioStreamOpenSLES::open() {
 
     LOGI("AudioStreamOpenSLES::open() chans=%d, rate=%d", mChannelCount, mSampleRate);
 
+    // OpenSL ES only supports I16 and Float
+    if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
+        LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %d",
+             __func__, mFormat);
+        return Result::ErrorInvalidFormat;
+    }
+
     SLresult result = EngineOpenSLES::getInstance().open();
     if (SL_RESULT_SUCCESS != result) {
         return Result::ErrorInternal;
