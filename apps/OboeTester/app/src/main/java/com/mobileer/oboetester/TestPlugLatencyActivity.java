@@ -202,6 +202,11 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
         sb.append("\nType: ");
         sb.append(AudioDeviceInfoConverter.typeToString(adi.getType()));
 
+        sb.append("\nIsSource: ");
+        sb.append(String.valueOf(adi.isSource()));
+        sb.append(", IsSink: ");
+        sb.append(String.valueOf(adi.isSink()));
+
         return sb.toString();
     }
 
