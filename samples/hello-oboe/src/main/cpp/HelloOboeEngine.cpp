@@ -133,7 +133,7 @@ void HelloOboeEngine::restart() {
 oboe::Result HelloOboeEngine::start() {
     std::lock_guard<std::mutex> lock(mLock);
     oboe::Result result = oboe::Result::OK;
-    // It is possible for a stream's device to become disconnected during thew open or between
+    // It is possible for a stream's device to become disconnected during the open or between
     // the Open and the Start.
     // So if it fails to start, close the old stream and try again.
     int tryCount = 0;
