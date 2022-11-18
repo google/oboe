@@ -271,8 +271,17 @@ namespace oboe {
          * This may be implemented using bilinear interpolation.
          */
         Fastest,
+        /**
+         * Low quality conversion with 8 taps.
+         */
         Low,
+        /**
+         * Medium quality conversion with 16 taps.
+         */
         Medium,
+        /**
+         * High quality conversion with 32 taps.
+         */
         High,
         /**
          * Highest quality conversion, which may be expensive in terms of CPU.
@@ -487,18 +496,15 @@ namespace oboe {
 
     /**
      * The channel mask of the audio stream. The underlying type is `uint32_t`.
-     * Use of this enum is convenient
+     * Use of this enum is convenient.
+     *
+     * ChannelMask::Unspecified means this is not specified.
+     * The rest of the enums are channel position masks.
+     * Use the combinations of the channel position masks defined below instead of
+     * using those values directly.
      */
     enum class ChannelMask : uint32_t { // aaudio_channel_mask_t
-        /**
-         * Audio channel mask is not specified.
-         */
         Unspecified = kUnspecified,
-
-        /**
-         * Channel position masks. Use the combinations of the channel position masks
-         * defined below instead of using those values directly.
-         */
         FrontLeft = 1 << 0,
         FrontRight = 1 << 1,
         FrontCenter = 1 << 2,
