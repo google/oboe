@@ -56,19 +56,19 @@ oboe::Result MegaDroneEngine::createPlaybackStream() {
     return builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
-            ->setDataCallback(mDataCallback.get())
-            ->setErrorCallback(mErrorCallback.get())
+            ->setDataCallback(mDataCallback)
+            ->setErrorCallback(mErrorCallback)
             ->openStream(mStream);
 }
 
 // Create the callback and set its thread affinity to the supplied CPU core IDs
 void MegaDroneEngine::createCallback(std::vector<int> cpuIds){
 
-    mDataCallback = std::make_unique<DefaultDataCallback>();
+    mDataCallback = std::make_shared<DefaultDataCallback>();
 
     // Create the error callback, we supply ourselves as the parent so that we can restart the stream
     // when it's disconnected
-    mErrorCallback = std::make_unique<DefaultErrorCallback>(*this);
+    mErrorCallback = std::make_shared<DefaultErrorCallback>(*this);
 
     // Bind the audio callback to specific CPU cores as this can help avoid underruns caused by
     // core migrations
