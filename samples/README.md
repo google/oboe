@@ -2,13 +2,15 @@ Oboe Samples
 ==============
 These samples demonstrate how to use the Oboe library:
 
-1. [hello-oboe](hello-oboe): creates an output (playback) stream and plays a
-sine wave when you tap the screen
+1. [MinimalOboe](minimaloboe): Just create an Oboe stream and play white noise. Restart stream when disconnected. (Kotlin/Compose)
+1. [hello-oboe](hello-oboe): Creates an output (playback) stream and plays a
+sine wave when you tap the screen. (Java)
 1. [RhythmGame](RhythmGame): A simple rhythm game where you copy the clap patterns you hear by tapping on the screen.
-There is an associated codelab to follow along with.
-1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance
-1. [LiveEffect](LiveEffect): loops audio from input stream to output stream to demonstrate duplex capability
-1. [SoundBoard](SoundBoard): A 30 note dynamic synthesizer, demonstating combining signals.
+There is an associated codelab to follow along with. (Java)
+1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance. (Java)
+1. [DrumThumper](drumthumper): A drum pad that plays sounds from loaded WAV files. (Java)
+1. [LiveEffect](LiveEffect): Loops audio from input stream to output stream to demonstrate duplex capability. (Java)
+1. [SoundBoard](SoundBoard): A 30 note dynamic synthesizer, demonstating combining signals. (Kotlin)
 
 Pre-requisites
 -------------
