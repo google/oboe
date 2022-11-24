@@ -333,7 +333,7 @@ An audio stream can become disconnected at any time if one of these events happe
 When a stream is disconnected, it has the state "Disconnected" and calls to `write()` or other functions will return `Result::ErrorDisconnected`.  When a stream is disconnected, all you can do is close it.
 
 If you need to be informed when an audio device is disconnected, write a class
-which extends `AudioStreamErrorCallback` and then register your class using `builder.setErrorCallback(yourCallbackClass)`.
+which extends `AudioStreamErrorCallback` and then register your class using `builder.setErrorCallback(yourCallbackClass)`. It is recommended to pass a shared_ptr.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
 
 Your callback can implement the following methods (called in a separate thread): 
@@ -349,6 +349,7 @@ Methods that reference the underlying stream should not be called (e.g. `getTime
 Opening a separate stream is also a valid use of this callback, especially if the error received is `Error::Disconnected`. 
 However, it is important to note that the new audio device may have vastly different properties than the stream that was disconnected.
 
+See the SoundBoard sample for an example of setErrorCallback.
 
 ## Optimizing performance
 

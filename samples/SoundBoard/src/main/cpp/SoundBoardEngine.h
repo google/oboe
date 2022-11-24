@@ -53,8 +53,8 @@ private:
 
     std::shared_ptr<AudioStream> mStream;
     std::shared_ptr<Synth> mSynth;
-    std::unique_ptr<DefaultDataCallback> mDataCallback;
-    std::unique_ptr<DefaultErrorCallback> mErrorCallback;
+    std::shared_ptr<DefaultDataCallback> mDataCallback;
+    std::shared_ptr<DefaultErrorCallback> mErrorCallback;
 
     oboe::Result createPlaybackStream();
     void createCallback(int32_t numSignals);

@@ -93,8 +93,8 @@ private:
     oboe::Result openPlaybackStream();
 
     std::shared_ptr<oboe::AudioStream> mStream;
-    std::unique_ptr<LatencyTuningCallback> mLatencyCallback;
-    std::unique_ptr<DefaultErrorCallback> mErrorCallback;
+    std::shared_ptr<LatencyTuningCallback> mLatencyCallback;
+    std::shared_ptr<DefaultErrorCallback> mErrorCallback;
     std::shared_ptr<SoundGenerator> mAudioSource;
     bool mIsLatencyDetectionSupported = false;
 
