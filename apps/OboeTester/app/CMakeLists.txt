@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
+project(oboetester)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++17 -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
@@ -31,6 +32,10 @@ include_directories(
 
 ### END OBOE INCLUDE SECTION ###
 
-# link to oboe
-target_link_libraries(oboetester log oboe atomic)
+# Enable hardware address sanitizer
+target_compile_options(oboetester PUBLIC -fsanitize=address -fno-omit-frame-pointer)
+set_target_properties(oboetester PROPERTIES LINK_FLAGS -fsanitize=address)
 
+# link to oboe
+# I tried adding asan but that did not work.
+target_link_libraries(oboetester log oboe atomic)
