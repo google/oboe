@@ -155,6 +155,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_startNative(JNIEnv *env, jobject) {
+    // Test ASAN
+    LOGE("%s FIXME - try to CRASH!!", __func__);
+    int *test = new int[3];
+    test[3] = 5;
+    LOGE("test[3] = %d", *(test + 3));
+    
     return (jint) engine.getCurrentActivity()->start();
 }
 
