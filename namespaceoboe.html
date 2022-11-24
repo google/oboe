@@ -222,10 +222,10 @@ Enumerations</h2></td></tr>
 <tr class="memitem:a82f3720eba7654aceb7282be36f9ff1d"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a> : int32_t { <br />
 &#160;&#160;<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da6adf97f83acf6453d4a6a4b1070f3754">None</a>
 , <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e">Fastest</a>
-, <b>Low</b>
-, <b>Medium</b>
+, <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef">Low</a>
+, <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5">Medium</a>
 , <br />
-&#160;&#160;<b>High</b>
+&#160;&#160;<a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35">High</a>
 , <a class="el" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd">Best</a>
 <br />
  }</td></tr>
@@ -275,8 +275,8 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="separator:a522e6806948369987639a0d1df03c029"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9c3eaf42351943995479b742f8a8d33"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a> : uint32_t { <br />
-&#160;&#160;<a class="el" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a6fcdc090caeade09d0efd6253932b6f5">Unspecified</a> = kUnspecified
-, <a class="el" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a3a86c1ecef856c6360b14ee920abd2d4">FrontLeft</a> = 1 &lt;&lt; 0
+&#160;&#160;<b>Unspecified</b> = kUnspecified
+, <b>FrontLeft</b> = 1 &lt;&lt; 0
 , <b>FrontRight</b> = 1 &lt;&lt; 1
 , <b>FrontCenter</b> = 1 &lt;&lt; 2
 , <br />
@@ -504,13 +504,8 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p >The channel mask of the audio stream. The underlying type is <code>uint32_t</code>. Use of this enum is convenient </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac9c3eaf42351943995479b742f8a8d33a6fcdc090caeade09d0efd6253932b6f5" name="ac9c3eaf42351943995479b742f8a8d33a6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p >Audio channel mask is not specified. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ac9c3eaf42351943995479b742f8a8d33a3a86c1ecef856c6360b14ee920abd2d4" name="ac9c3eaf42351943995479b742f8a8d33a3a86c1ecef856c6360b14ee920abd2d4"></a>FrontLeft&#160;</td><td class="fielddoc"><p >Channel position masks. Use the combinations of the channel position masks defined below instead of using those values directly. </p>
-</td></tr>
-</table>
+<p >The channel mask of the audio stream. The underlying type is <code>uint32_t</code>. Use of this enum is convenient.</p>
+<p >ChannelMask::Unspecified means this is not specified. The rest of the enums are channel position masks. Use the combinations of the channel position masks defined below instead of using those values directly. </p>
 
 </div>
 </div>
@@ -702,6 +697,12 @@ Variables</h2></td></tr>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da6adf97f83acf6453d4a6a4b1070f3754" name="a82f3720eba7654aceb7282be36f9ff1da6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p >No conversion by Oboe. Underlying APIs may still do conversion. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e" name="a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e"></a>Fastest&#160;</td><td class="fielddoc"><p >Fastest conversion but may not sound great. This may be implemented using bilinear interpolation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef" name="a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef"></a>Low&#160;</td><td class="fielddoc"><p >Low quality conversion with 8 taps. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5" name="a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5"></a>Medium&#160;</td><td class="fielddoc"><p >Medium quality conversion with 16 taps. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35" name="a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35"></a>High&#160;</td><td class="fielddoc"><p >High quality conversion with 32 taps. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd" name="a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd"></a>Best&#160;</td><td class="fielddoc"><p >Highest quality conversion, which may be expensive in terms of CPU. </p>
 </td></tr>

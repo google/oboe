@@ -7,6 +7,5 @@ var searchData=
   ['float_4',['Float',['../namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a22ae0e2b89e5e3d477f988cc36d3272b',1,'oboe']]],
   ['flush_5',['flush',['../classoboe_1_1_audio_stream.html#a32c25c0333eab3d65ce02275ad4acb3d',1,'oboe::AudioStream']]],
   ['framesperburst_6',['FramesPerBurst',['../classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300',1,'oboe::DefaultStreamValues']]],
-  ['frametimestamp_7',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]],
-  ['frontleft_8',['FrontLeft',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a3a86c1ecef856c6360b14ee920abd2d4',1,'oboe']]]
+  ['frametimestamp_7',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]]
 ];
