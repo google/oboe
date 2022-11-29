@@ -153,14 +153,19 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
                                                     isInput);
 }
 
+volatile int* gSmallArray = nullptr;
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_startNative(JNIEnv *env, jobject) {
     // Test ASAN
+    static int callCounter = 0;
     LOGE("%s FIXME - try to CRASH!!", __func__);
-    int *test = new int[3];
-    test[3] = 5;
-    LOGE("test[3] = %d", *(test + 3));
-    
+    if (gSmallArray == nullptr) {
+        gSmallArray = new int[3]{0};
+    }
+    gSmallArray[3] = ++callCounter;
+    LOGE("gSmallArray[3] = %d", *(gSmallArray + 3));
+
     return (jint) engine.getCurrentActivity()->start();
 }
 
