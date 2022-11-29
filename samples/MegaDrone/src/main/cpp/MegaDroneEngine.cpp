@@ -77,7 +77,18 @@ void MegaDroneEngine::createCallback(std::vector<int> cpuIds){
 }
 
 bool MegaDroneEngine::start(){
-    auto result = createPlaybackStream();
+    oboe::Result result = oboe::Result::OK;
+    // It is possible for a stream's device to become disconnected during stream open or between
+    // stream open and stream start.
+    // If the stream fails to start, close the old stream and try again.
+    int tryCount = 0;
+    do {
+        if (tryCount > 0) {
+            usleep(20 * 1000); // Sleep between tries to give the system time to settle.
+        }
+        result = createPlaybackStream();
+    } while (result != oboe::Result::OK && tryCount++ < 3);
+
     if (result == Result::OK){
         // Create our synthesizer audio source using the properties of the stream
         mAudioSource = std::make_shared<Synth>(mStream->getSampleRate(), mStream->getChannelCount());
