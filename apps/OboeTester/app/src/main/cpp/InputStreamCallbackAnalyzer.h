@@ -29,14 +29,12 @@
 #include "MultiChannelRecording.h"
 #include "OboeTesterStreamCallback.h"
 
-constexpr int kMaxInputChannels = 8;
-
 class InputStreamCallbackAnalyzer : public OboeTesterStreamCallback {
 public:
 
     void reset() {
-        for (auto detector : mPeakDetectors) {
-            detector.reset();
+        for (int iChannel = 0; iChannel < mNumChannels; iChannel++) {
+            mPeakDetectors[iChannel].reset();
         }
         OboeTesterStreamCallback::reset();
     }
@@ -44,6 +42,8 @@ public:
     void setup(int32_t maxFramesPerCallback,
                int32_t channelCount,
                oboe::AudioFormat inputFormat) {
+        mNumChannels = channelCount;
+        mPeakDetectors = std::make_unique<PeakDetector[]>(channelCount);
         int32_t bufferSize = maxFramesPerCallback * channelCount;
         mInputConverter = std::make_unique<FormatConverterBox>(bufferSize,
                                                                inputFormat,
@@ -75,11 +75,11 @@ public:
     }
 
 public:
-    PeakDetector            mPeakDetectors[kMaxInputChannels];
+    int32_t mNumChannels = 0;
+    std::unique_ptr<PeakDetector[]> mPeakDetectors;
     MultiChannelRecording  *mRecording = nullptr;
 
 private:
-
     std::unique_ptr<FormatConverterBox> mInputConverter;
     int32_t                 mMinimumFramesBeforeRead = 0;
 };
