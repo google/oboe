@@ -62,9 +62,7 @@ public:
         mRecording = recording;
     }
 
-    double getPeakLevel(int index) {
-        return mPeakDetectors[index].getLevel();
-    }
+    double getPeakLevel(int index);
 
     void setMinimumFramesBeforeRead(int32_t numFrames) {
         mMinimumFramesBeforeRead = numFrames;
@@ -75,13 +73,13 @@ public:
     }
 
 public:
-    int32_t mNumChannels = 0;
+    int32_t                         mNumChannels = 0;
     std::unique_ptr<PeakDetector[]> mPeakDetectors;
-    MultiChannelRecording  *mRecording = nullptr;
+    MultiChannelRecording          *mRecording = nullptr;
 
 private:
     std::unique_ptr<FormatConverterBox> mInputConverter;
-    int32_t                 mMinimumFramesBeforeRead = 0;
+    int32_t                             mMinimumFramesBeforeRead = 0;
 };
 
 #endif //NATIVEOBOE_INPUTSTREAMCALLBACKANALYZER_H
