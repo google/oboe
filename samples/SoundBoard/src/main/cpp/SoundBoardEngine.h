@@ -56,6 +56,7 @@ private:
     std::shared_ptr<DefaultDataCallback> mDataCallback;
     std::shared_ptr<DefaultErrorCallback> mErrorCallback;
 
+    bool attemptStart();
     oboe::Result createPlaybackStream();
     void createCallback(int32_t numSignals);
 };
