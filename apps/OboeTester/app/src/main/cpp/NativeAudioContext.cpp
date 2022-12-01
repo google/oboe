@@ -539,8 +539,7 @@ oboe::Result ActivityRecording::startPlayback() {
     builder.setChannelCount(mChannelCount)
             ->setSampleRate(mSampleRate)
             ->setFormat(oboe::AudioFormat::Float)
-            ->setCallback(&mPlayRecordingCallback)
-            ->setAudioApi(oboe::AudioApi::OpenSLES);
+            ->setCallback(&mPlayRecordingCallback);
     oboe::Result result = builder.openStream(&playbackStream);
     if (result != oboe::Result::OK) {
         delete playbackStream;
