@@ -156,4 +156,12 @@
             android:entries="@array/output_signals"
             android:prompt="@string/output_signal_prompt" />
     </LinearLayout>
+
+    <com.mobileer.oboetester.CommunicationDeviceView
+        android:id="@+id/comm_device_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
 </LinearLayout>

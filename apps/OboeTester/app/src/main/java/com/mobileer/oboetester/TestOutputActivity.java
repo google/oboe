@@ -16,15 +16,17 @@
 
 package com.mobileer.oboetester;
 
-import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
-
+import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -36,6 +38,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
     private Spinner mOutputSignalSpinner;
+    protected CommunicationDeviceView mCommunicationDeviceView;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -85,11 +88,21 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
         mOutputSignalSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
+
+        mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
     }
 
     @Override
     int getActivityType() {
         return ACTIVITY_TEST_OUTPUT;
+    }
+
+    @Override
+    protected void onStop() {
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.cleanup();
+        }
+        super.onStop();
     }
 
     public void openAudio() throws IOException {

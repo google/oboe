@@ -12,6 +12,13 @@
 
     <include layout="@layout/merge_audio_common"/>
 
+    <com.mobileer.oboetester.CommunicationDeviceView
+        android:id="@+id/comm_device_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
     <com.mobileer.oboetester.VolumeBarView
         android:id="@+id/volumeBar0"
         android:layout_marginBottom="4dp"

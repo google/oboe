@@ -312,13 +312,6 @@ public class MainActivity extends BaseOboeTesterActivity {
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 
-    public void onSetSpeakerphoneOn(View view) {
-        CheckBox checkBox = (CheckBox) view;
-        boolean enabled = checkBox.isChecked();
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        myAudioMgr.setSpeakerphoneOn(enabled);
-    }
-
     public void onStartStopBluetoothSco(View view) {
         CheckBox checkBox = (CheckBox) view;
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);

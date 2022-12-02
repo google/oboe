@@ -42,6 +42,7 @@ public class EchoActivity extends TestInputActivity {
     private Button mStartButton;
     private Button mStopButton;
     private TextView mStatusTextView;
+    private CommunicationDeviceView mCommunicationDeviceView;
 
     private ColdStartSniffer mNativeSniffer = new ColdStartSniffer(this);
 
@@ -158,7 +159,16 @@ public class EchoActivity extends TestInputActivity {
                 100.0);
         mFaderDelayTime.setProgress(MAX_DELAY_TIME_PROGRESS / 2);
 
+        mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
         hideSettingsViews();
+    }
+
+    @Override
+    protected void onStop() {
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.cleanup();
+        }
+        super.onStop();
     }
 
     private void setDelayTimeByPosition(int progress) {
