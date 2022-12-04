@@ -68,30 +68,6 @@ void HelloOboeEngine::setBufferSizeInBursts(int32_t numBursts) {
     }
 }
 
-void HelloOboeEngine::setAudioApi(oboe::AudioApi audioApi) {
-    if (mAudioApi != audioApi) {
-        mAudioApi = audioApi;
-        reopenStream();
-    }
-}
-
-void HelloOboeEngine::setChannelCount(int channelCount) {
-    if (mChannelCount != channelCount) {
-        mChannelCount = channelCount;
-        reopenStream();
-    }
-}
-
-void HelloOboeEngine::setDeviceId(int32_t deviceId) {
-    if (mDeviceId != deviceId) {
-        mDeviceId = deviceId;
-        if (reopenStream() != oboe::Result::OK) {
-            LOGW("Open stream failed, forcing deviceId to Unspecified");
-            mDeviceId = oboe::Unspecified;
-        }
-    }
-}
-
 bool HelloOboeEngine::isLatencyDetectionSupported() {
     return mIsLatencyDetectionSupported;
 }
@@ -130,6 +106,13 @@ void HelloOboeEngine::restart() {
     start();
 }
 
+oboe::Result HelloOboeEngine::start(oboe::AudioApi audioApi, int deviceId, int channelCount) {
+    mAudioApi = audioApi;
+    mDeviceId = deviceId;
+    mChannelCount = channelCount;
+    return start();
+}
+
 oboe::Result HelloOboeEngine::start() {
     std::lock_guard<std::mutex> lock(mLock);
     oboe::Result result = oboe::Result::OK;
@@ -143,15 +126,16 @@ oboe::Result HelloOboeEngine::start() {
         }
         mIsLatencyDetectionSupported = false;
         result = openPlaybackStream();
-        if (result == oboe::Result::OK){
-            mAudioSource =  std::make_shared<SoundGenerator>(mStream->getSampleRate(),
-                    mStream->getChannelCount());
-            mLatencyCallback->setSource(std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
+        if (result == oboe::Result::OK) {
+            mAudioSource = std::make_shared<SoundGenerator>(mStream->getSampleRate(),
+                                                            mStream->getChannelCount());
+            mLatencyCallback->setSource(
+                    std::dynamic_pointer_cast<IRenderableAudio>(mAudioSource));
 
             LOGD("Stream opened: AudioAPI = %d, channelCount = %d, deviceID = %d",
-                     mStream->getAudioApi(),
-                     mStream->getChannelCount(),
-                     mStream->getDeviceId());
+                 mStream->getAudioApi(),
+                 mStream->getChannelCount(),
+                 mStream->getDeviceId());
 
             result = mStream->requestStart();
             if (result != oboe::Result::OK) {
