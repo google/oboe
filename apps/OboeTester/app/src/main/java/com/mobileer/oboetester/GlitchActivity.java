@@ -309,7 +309,15 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     // Called on UI thread
-    public void onStartAudioTest(View view) throws IOException {
+    public void onStartAudioTest(View view) {
+        try {
+            openStartAudioTestUI();
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
+    }
+
+    protected void openStartAudioTestUI() throws IOException {
         openAudio();
         startAudioTest();
         mStartButton.setEnabled(false);

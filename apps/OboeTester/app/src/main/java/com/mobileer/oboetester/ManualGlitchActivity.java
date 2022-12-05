@@ -123,7 +123,7 @@ public class ManualGlitchActivity extends GlitchActivity {
         int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
 
         try {
-            onStartAudioTest(null);
+            openStartAudioTestUI();
             int sizeFrames = mAudioOutTester.getCurrentAudioStream().getFramesPerBurst() * numBursts;
             mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
 
@@ -159,6 +159,7 @@ public class ManualGlitchActivity extends GlitchActivity {
     public void onTestFinished() {
         super.onTestFinished();
     }
+
     // Only call from UI thread.
     @Override
     public void onTestBegan() {

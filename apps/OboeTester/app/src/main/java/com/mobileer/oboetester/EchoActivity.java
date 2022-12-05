@@ -174,21 +174,24 @@ public class EchoActivity extends TestInputActivity {
         return ACTIVITY_ECHO;
     }
 
-
     @Override
     protected void resetConfiguration() {
         super.resetConfiguration();
         mAudioOutTester.reset();
     }
 
-    public void onStartEcho(View view)  throws IOException {
-        openAudio();
-        startAudio();
-        setDelayTime(mDelayTime);
-        mStartButton.setEnabled(false);
-        mStopButton.setEnabled(true);
-        keepScreenOn(true);
-        mNativeSniffer.startSniffer();
+    public void onStartEcho(View view) {
+        try {
+            openAudio();
+            startAudio();
+            setDelayTime(mDelayTime);
+            mStartButton.setEnabled(false);
+            mStopButton.setEnabled(true);
+            keepScreenOn(true);
+            mNativeSniffer.startSniffer();
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
     }
 
     public void onStopEcho(View view) {
