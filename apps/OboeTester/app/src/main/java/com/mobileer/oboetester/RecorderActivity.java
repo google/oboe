@@ -58,12 +58,16 @@ public class RecorderActivity extends TestInputActivity {
         return ACTIVITY_RECORD_PLAY;
     }
 
-    public void onStartRecording(View view) throws IOException {
-        openAudio();
-        startAudio();
-        mRecorderState = STATE_RECORDING;
-        mGotRecording = true;
-        updateButtons();
+    public void onStartRecording(View view) {
+        try {
+            openAudio();
+            startAudio();
+            mRecorderState = STATE_RECORDING;
+            mGotRecording = true;
+            updateButtons();
+        } catch (IOException e) {
+            showErrorToast(e.getMessage());
+        }
     }
 
     public void onStopRecordPlay(View view) {
