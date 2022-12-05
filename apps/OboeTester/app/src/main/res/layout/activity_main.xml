@@ -182,25 +182,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView" />
 
-
-    <CheckBox
-        android:id="@+id/setSpeakerphoneOn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:checked="false"
-        android:onClick="onSetSpeakerphoneOn"
-        android:text="setSpeakerphoneOn/Off()"
-        app:layout_constraintStart_toStartOf="@+id/useCallback"
-        app:layout_constraintTop_toBottomOf="@+id/useCallback" />
-
     <LinearLayout
         android:id="@+id/layoutBluetoothSco"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="@+id/setSpeakerphoneOn"
-        app:layout_constraintTop_toBottomOf="@+id/setSpeakerphoneOn"
+        app:layout_constraintStart_toStartOf="@+id/callbackSize"
+        app:layout_constraintTop_toBottomOf="@+id/callbackSize"
         >
         <CheckBox
             android:id="@+id/setBluetoothScoOn"
