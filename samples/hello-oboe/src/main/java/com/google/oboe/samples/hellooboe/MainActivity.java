@@ -75,9 +75,12 @@ public class MainActivity extends Activity {
     private static final int WHAT_SET_CHANNEL_COUNT = 104;
 
     private class MyBackgroundRunner extends BackgroundRunner {
+        // These are initialized to zero by Java.
+        // Zero matches the oboe::Unspecified value.
         int audioApi;
         int deviceId;
         int channelCount;
+
         @Override
             /* Execute this in a background thread to avoid ANRs. */
         void handleMessageInBackground(Message message) {
