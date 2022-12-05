@@ -104,7 +104,6 @@ public class CommunicationDeviceSpinner extends Spinner {
 
             public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
                 updateDeviceList();
-                setSelection(0);
             }
 
             private void updateDeviceList() {
@@ -115,6 +114,7 @@ public class CommunicationDeviceSpinner extends Spinner {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     List<AudioDeviceInfo> commDeviceList = mAudioManager.getAvailableCommunicationDevices();
                     mCommDeviceArray = commDeviceList.toArray(new AudioDeviceInfo[0]);
+                    // Communications Devices are always OUTPUTS.
                     List<AudioDeviceListEntry> deviceList =
                             AudioDeviceListEntry.createListFrom(
                                     mCommDeviceArray, AudioManager.GET_DEVICES_OUTPUTS);

@@ -126,7 +126,7 @@ public class CommunicationDeviceView extends LinearLayout {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             AudioDeviceInfo commDeviceInfo = mAudioManager.getCommunicationDevice();
             if (commDeviceInfo != null) {
-                text += ", CD#" + commDeviceInfo.getId();
+                text += ", CommDev=" + commDeviceInfo.getId();
             }
         }
         mIsSpeakerphoneText.setText(" => " + text);
