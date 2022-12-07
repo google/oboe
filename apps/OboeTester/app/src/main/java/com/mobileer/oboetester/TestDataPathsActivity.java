@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.CheckBox;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
@@ -66,11 +67,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private final static int TYPICAL_SAMPLE_RATE = 48000;
     private final static double FRAMES_PER_CYCLE = TYPICAL_SAMPLE_RATE / MAX_SINE_FREQUENCY;
     private final static double PHASE_PER_BIN = 2.0 * Math.PI / FRAMES_PER_CYCLE;
-    private final static double MAX_ALLOWED_JITTER = 0.5 * PHASE_PER_BIN;
-    // Start by failing then let good results drive us into a pass value.
-    private final static double INITIAL_JITTER = 2.0 * MAX_ALLOWED_JITTER;
-    // A coefficient of 0.0 is no filtering. 0.9999 is extreme low pass.
-    private final static double JITTER_FILTER_COEFFICIENT = 0.8;
+    private final static double MAX_ALLOWED_JITTER = 2.0 * PHASE_PER_BIN;
     private final static String MAGNITUDE_FORMAT = "%7.5f";
 
     final int TYPE_BUILTIN_SPEAKER_SAFE = 0x18; // API 30
@@ -79,7 +76,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mMaxMagnitude;
     private int    mPhaseCount;
     private double mPhase;
-    private double mPhaseJitter;
+    private double mPhaseErrorSum;
+    private double mPhaseErrorCount;
 
     AudioManager   mAudioManager;
     private CheckBox mCheckBoxInputPresets;
@@ -112,6 +110,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    public static double calculatePhaseError(double p1, double p2) {
+        double diff = Math.abs(p1 - p2);
+        if (diff > Math.PI) {
+            diff = (Math.PI * 2) - diff;
+        }
+        return diff;
+    }
+
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
 
@@ -125,7 +131,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mMaxMagnitude = -1.0;
             mPhaseCount = 0;
             mPhase = 0.0;
-            mPhaseJitter = INITIAL_JITTER;
+            mPhaseErrorSum = 0.0;
+            mPhaseErrorCount = 0;
             super.startSniffer();
         }
 
@@ -133,14 +140,18 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         public void run() {
             mMagnitude = getMagnitude();
             mMaxMagnitude = getMaxMagnitude();
+            Log.d(TAG, String.format("magnitude = %7.4f, maxMagnitude = %7.4f",
+                    mMagnitude, mMaxMagnitude));
             // Only look at the phase if we have a signal.
             if (mMagnitude >= MIN_REQUIRED_MAGNITUDE) {
                 double phase = getPhase();
                 if (mPhaseCount > 3) {
-                    double diff = Math.abs(phase - mPhase);
+                    double phaseError = calculatePhaseError(phase, mPhase);
                     // low pass filter
-                    mPhaseJitter = (mPhaseJitter * JITTER_FILTER_COEFFICIENT)
-                            + ((diff * (1.0 - JITTER_FILTER_COEFFICIENT)));
+                    mPhaseErrorSum += phaseError;
+                    mPhaseErrorCount++;
+                    Log.d(TAG, String.format("phase = %7.4f, diff = %7.4f, jitter = %7.4f",
+                            phase, phaseError, getAveragePhaseError()));
                 }
                 mPhase = phase;
                 mPhaseCount++;
@@ -154,7 +165,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     "magnitude = " + getMagnitudeText(mMagnitude)
                     + ", max = " + getMagnitudeText(mMaxMagnitude)
                     + "\nphase = " + getMagnitudeText(mPhase)
-                    + ", jitter = " + getMagnitudeText(mPhaseJitter)
+                    + ", jitter = " + getMagnitudeText(getAveragePhaseError())
                     + ", #" + mPhaseCount
                     + "\n");
             return message.toString();
@@ -163,7 +174,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         @Override
         public String getShortReport() {
             return "maxMag = " + getMagnitudeText(mMaxMagnitude)
-                    + ", jitter = " + getMagnitudeText(mPhaseJitter);
+                    + ", jitter = " + (isPhaseJitterValid() ? getMagnitudeText(getAveragePhaseError()) : "?");
         }
 
         @Override
@@ -256,7 +267,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected boolean isFinishedEarly() {
-        return (mMaxMagnitude > MIN_REQUIRED_MAGNITUDE) && (mPhaseJitter < MAX_ALLOWED_JITTER);
+        return (mMaxMagnitude > MIN_REQUIRED_MAGNITUDE)
+                && (getAveragePhaseError() < MAX_ALLOWED_JITTER)
+                && isPhaseJitterValid();
     }
 
     // @return reasons for failure of empty string
@@ -267,14 +280,23 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        boolean passed = true;
         if (mMaxMagnitude <= MIN_REQUIRED_MAGNITUDE) {
             why += ", mag";
         }
-        if (mPhaseJitter > MAX_ALLOWED_JITTER) {
-            why += ", jitter";
+        if (!isPhaseJitterValid()) {
+            why += ", jitterUnknown";
+        } else if (getAveragePhaseError() > MAX_ALLOWED_JITTER) {
+            why += ", jitterHigh";
         }
         return why;
+    }
+
+    private double getAveragePhaseError() {
+        return (mPhaseErrorCount > 0) ? (mPhaseErrorSum / mPhaseErrorCount) : MAX_ALLOWED_JITTER;
+    }
+
+    private boolean isPhaseJitterValid() {
+        return mPhaseErrorCount > 4;
     }
 
     String getOneLineSummary() {
@@ -321,7 +343,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         TestResult testResult = testConfigurations();
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
-                    + ", jitter = " + TestDataPathsActivity.getMagnitudeText(mPhaseJitter));
+                    + ", jitter = " + TestDataPathsActivity.getMagnitudeText(getAveragePhaseError()));
         }
         return testResult;
     }
