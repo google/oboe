@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
     private static final int WHAT_SET_DEVICE_ID = 102;
     private static final int WHAT_SET_AUDIO_API = 103;
     private static final int WHAT_SET_CHANNEL_COUNT = 104;
+    BackgroundRunner mRunner = new MyBackgroundRunner();
 
     private class MyBackgroundRunner extends BackgroundRunner {
         // These are initialized to zero by Java.
@@ -126,7 +127,6 @@ public class MainActivity extends Activity {
             }
         }
     }
-    BackgroundRunner mRunner = new MyBackgroundRunner();
 
     /*
      * Hook to user control to start / stop audio playback:
@@ -156,9 +156,8 @@ public class MainActivity extends Activity {
         setupPlaybackDeviceSpinner();
         setupChannelCountSpinner();
         setupBufferSizeSpinner();
-
-        mRunner.start();
     }
+
     /*
     * Creating engine in onResume() and destroying in onPause() so the stream retains exclusive
     * mode only while in focus. This allows other apps to reclaim exclusive stream mode.

@@ -7,27 +7,37 @@ import android.os.Message;
 /** Run Audio function in a background thread.
  * This will avoid ANRs that can occur if the AudioServer or HAL crashes
  * and takes a long time to recover.
+ *
+ * This thread will run for the lifetime of the app so only make one BackgroundRunner
+ * and reuse it.
  */
-public abstract class BackgroundRunner extends Thread {
+public abstract class BackgroundRunner {
     private Handler mHandler;
+    private BackgroundThread mThread = new BackgroundThread();
 
-    public void run() {
-        Looper.prepare();
+    public BackgroundRunner(){
+        mThread.start();
+    }
 
-        mHandler = new Handler(Looper.myLooper()) {
-            public void handleMessage(Message message) {
-                handleMessageInBackground(message);
-            }
-        };
+    private class BackgroundThread extends Thread {
+        public void run() {
+            Looper.prepare();
 
-        Looper.loop();
+            mHandler = new Handler(Looper.myLooper()) {
+                public void handleMessage(Message message) {
+                    handleMessageInBackground(message);
+                }
+            };
+
+            Looper.loop();
+        }
     }
 
     /**
      * @param message
      * @return true if the message was successfully queued
      */
-    boolean sendMessage(Message message) {
+    public boolean sendMessage(Message message) {
         return mHandler.sendMessage(message);
     }
 
@@ -36,14 +46,14 @@ public abstract class BackgroundRunner extends Thread {
      * @param arg1 optional argument
      * @return true if the message was successfully queued
      */
-    boolean sendMessage(int what, int arg1) {
+    public boolean sendMessage(int what, int arg1) {
         Message message = mHandler.obtainMessage();
         message.what = what;
         message.arg1 = arg1;
         return sendMessage(message);
     }
 
-    boolean sendMessage(int what) {
+    public boolean sendMessage(int what) {
         return sendMessage(what, 0);
     }
 
