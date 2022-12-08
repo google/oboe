@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
     private static final int WHAT_SET_DEVICE_ID = 102;
     private static final int WHAT_SET_AUDIO_API = 103;
     private static final int WHAT_SET_CHANNEL_COUNT = 104;
-    BackgroundRunner mRunner = new MyBackgroundRunner();
+    private BackgroundRunner mRunner = new MyBackgroundRunner();
 
     private class MyBackgroundRunner extends BackgroundRunner {
         // These are initialized to zero by Java.
