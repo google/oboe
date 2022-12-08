@@ -1,7 +1,7 @@
 package com.google.oboe.samples.hellooboe;
 
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.os.Message;
 
 /** Run Audio function in a background thread.
@@ -13,24 +13,16 @@ import android.os.Message;
  */
 public abstract class BackgroundRunner {
     private Handler mHandler;
-    private BackgroundThread mThread = new BackgroundThread();
+    private HandlerThread mThread = new HandlerThread("BackgroundRunner");
 
-    public BackgroundRunner(){
+    public BackgroundRunner() {
         mThread.start();
-    }
-
-    private class BackgroundThread extends Thread {
-        public void run() {
-            Looper.prepare();
-
-            mHandler = new Handler(Looper.myLooper()) {
-                public void handleMessage(Message message) {
-                    handleMessageInBackground(message);
-                }
-            };
-
-            Looper.loop();
-        }
+        mHandler = new Handler(mThread.getLooper()) {
+            public void handleMessage(Message message) {
+                super.handleMessage(message);
+                handleMessageInBackground(message);
+            }
+        };
     }
 
     /**
