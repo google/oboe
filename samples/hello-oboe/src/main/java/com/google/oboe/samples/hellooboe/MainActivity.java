@@ -25,6 +25,8 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 
+import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -46,7 +48,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends Activity {
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = "HelloOboe";
     private static final long UPDATE_LATENCY_EVERY_MILLIS = 1000;
     private static final Integer[] CHANNEL_COUNT_OPTIONS = {1, 2, 3, 4, 5, 6, 7, 8};
     // Default to Stereo (OPTIONS is zero-based array so index 1 = 2 channels)
@@ -64,6 +66,67 @@ public class MainActivity extends Activity {
     private TextView mLatencyText;
     private Timer mLatencyUpdater;
     private boolean mScoStarted = false;
+
+    /** Commands for background thread. */
+    private static final int WHAT_START = 100;
+    private static final int WHAT_STOP = 101;
+    private static final int WHAT_SET_DEVICE_ID = 102;
+    private static final int WHAT_SET_AUDIO_API = 103;
+    private static final int WHAT_SET_CHANNEL_COUNT = 104;
+    private BackgroundRunner mRunner = new MyBackgroundRunner();
+
+    private class MyBackgroundRunner extends BackgroundRunner {
+        // These are initialized to zero by Java.
+        // Zero matches the oboe::Unspecified value.
+        int audioApi;
+        int deviceId;
+        int channelCount;
+
+        @Override
+            /* Execute this in a background thread to avoid ANRs. */
+        void handleMessageInBackground(Message message) {
+            int what = message.what;
+            int arg1 = message.arg1;
+            Log.i(MainActivity.TAG, "got background message, what = " + what + ", arg1 = " + arg1);
+            int result = 0;
+            boolean restart = false;
+            switch (what) {
+                case WHAT_START:
+                    result = PlaybackEngine.startEngine(audioApi, deviceId, channelCount);
+                    break;
+                case WHAT_STOP:
+                    result = PlaybackEngine.stopEngine();
+                    break;
+                case WHAT_SET_AUDIO_API:
+                    if (audioApi != arg1) {
+                        audioApi = arg1;
+                        restart = true;
+                    }
+                    break;
+                case WHAT_SET_DEVICE_ID:
+                    if (deviceId != arg1) {
+                        deviceId = arg1;
+                        restart = true;
+                    }
+                    break;
+                case WHAT_SET_CHANNEL_COUNT:
+                    if (channelCount != arg1) {
+                        channelCount = arg1;
+                        restart = true;
+                    }
+                    break;
+            }
+            if (restart) {
+                int result1 = PlaybackEngine.stopEngine();
+                int result2 = PlaybackEngine.startEngine(audioApi, deviceId, channelCount);
+                result = (result2 != 0) ? result2 : result1;
+            }
+            if (result != 0) {
+                Log.e(TAG, "audio error " + result);
+                showToast("Error in audio =" + result);
+            }
+        }
+    }
 
     /*
      * Hook to user control to start / stop audio playback:
@@ -94,6 +157,7 @@ public class MainActivity extends Activity {
         setupChannelCountSpinner();
         setupBufferSizeSpinner();
     }
+
     /*
     * Creating engine in onResume() and destroying in onPause() so the stream retains exclusive
     * mode only while in focus. This allows other apps to reclaim exclusive stream mode.
@@ -101,7 +165,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        PlaybackEngine.create(this);
+        PlaybackEngine.setDefaultStreamValues(this);
         setupLatencyUpdater();
 
         // Return the spinner states to their default value
@@ -115,19 +179,13 @@ public class MainActivity extends Activity {
             mAudioApiSpinner.setEnabled(false);
         }
 
-        int result = PlaybackEngine.start();
-        if (result != 0) {
-            showToast("Error opening stream = " + result);
-        }
+        startAudioAsync();
     }
 
     @Override
     protected void onPause() {
         if (mLatencyUpdater != null) mLatencyUpdater.cancel();
-        int result = PlaybackEngine.stop();
-        if (result != 0) {
-            showToast("Error stopping stream = " + result);
-        }
+        stopAudioAsync();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             clearCommunicationDevice();
@@ -137,8 +195,6 @@ public class MainActivity extends Activity {
                 mScoStarted = false;
             }
         }
-
-        PlaybackEngine.delete();
         super.onPause();
     }
 
@@ -152,7 +208,7 @@ public class MainActivity extends Activity {
         mChannelCountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                PlaybackEngine.setChannelCount(CHANNEL_COUNT_OPTIONS[mChannelCountSpinner.getSelectedItemPosition()]);
+                setChannelCountAsync(CHANNEL_COUNT_OPTIONS[mChannelCountSpinner.getSelectedItemPosition()]);
             }
 
             @Override
@@ -209,7 +265,7 @@ public class MainActivity extends Activity {
                             mScoStarted = false;
                         }
                     }
-                    PlaybackEngine.setAudioDeviceId(getPlaybackDeviceId());
+                    setAudioDeviceIdAsync(getPlaybackDeviceId());
                 }
 
                 @Override
@@ -234,7 +290,7 @@ public class MainActivity extends Activity {
         mAudioApiSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                PlaybackEngine.setAudioApi(i);
+                setAudioApiAsync(i);
                 if (i == OBOE_API_OPENSL_ES) {
                     mPlaybackDeviceSpinner.setSelection(SPINNER_DEFAULT_OPTION_INDEX);
                     mPlaybackDeviceSpinner.setEnabled(false);
@@ -375,5 +431,26 @@ public class MainActivity extends Activity {
     private void stopBluetoothSco() {
         AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myAudioMgr.stopBluetoothSco();
+    }
+
+
+    void startAudioAsync() {
+        mRunner.sendMessage(WHAT_START);
+    }
+
+    void stopAudioAsync() {
+        mRunner.sendMessage(WHAT_STOP);
+    }
+
+    void setAudioApiAsync(int audioApi){
+        mRunner.sendMessage(WHAT_SET_AUDIO_API, audioApi);
+    }
+
+    void setAudioDeviceIdAsync(int deviceId){
+        mRunner.sendMessage(WHAT_SET_DEVICE_ID, deviceId);
+    }
+
+    void setChannelCountAsync(int channelCount) {
+        mRunner.sendMessage(WHAT_SET_CHANNEL_COUNT, channelCount);
     }
 }

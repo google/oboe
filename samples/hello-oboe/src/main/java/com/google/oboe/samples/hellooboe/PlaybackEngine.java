@@ -20,23 +20,12 @@ import android.media.AudioManager;
 import android.os.Build;
 
 public class PlaybackEngine {
-
-    static long mEngineHandle = 0;
-
     // Load native library
     static {
         System.loadLibrary("hello-oboe");
     }
 
-    static boolean create(Context context){
-        if (mEngineHandle == 0){
-            setDefaultStreamValues(context);
-            mEngineHandle = native_createEngine();
-        }
-        return (mEngineHandle != 0);
-    }
-
-    private static void setDefaultStreamValues(Context context) {
+    static void setDefaultStreamValues(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
             AudioManager myAudioMgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             String sampleRateStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
@@ -44,78 +33,20 @@ public class PlaybackEngine {
             String framesPerBurstStr = myAudioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
             int defaultFramesPerBurst = Integer.parseInt(framesPerBurstStr);
 
-            native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
+            setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
         }
     }
 
-    static int start() {
-        if (mEngineHandle != 0) {
-            return native_startEngine(mEngineHandle);
-        } else {
-            return -1;
-        }
-    }
 
-    static int stop() {
-        if (mEngineHandle != 0) {
-            return native_stopEngine(mEngineHandle);
-        } else {
-            return -1;
-        }
-    }
+    // Native methods that require audioserver calls and might take several seconds.
+    static native int startEngine(int audioApi, int deviceId, int channelCount);
+    static native int stopEngine();
 
-    static void delete(){
-        if (mEngineHandle != 0){
-            native_deleteEngine(mEngineHandle);
-        }
-        mEngineHandle = 0;
-    }
-
-    static void setToneOn(boolean isToneOn){
-        if (mEngineHandle != 0) native_setToneOn(mEngineHandle, isToneOn);
-    }
-
-    static void setAudioApi(int audioApi){
-        if (mEngineHandle != 0) native_setAudioApi(mEngineHandle, audioApi);
-    }
-
-    static void setAudioDeviceId(int deviceId){
-        if (mEngineHandle != 0) native_setAudioDeviceId(mEngineHandle, deviceId);
-    }
-
-    static void setChannelCount(int channelCount) {
-        if (mEngineHandle != 0) native_setChannelCount(mEngineHandle, channelCount);
-    }
-
-    static void setBufferSizeInBursts(int bufferSizeInBursts){
-        if (mEngineHandle != 0) native_setBufferSizeInBursts(mEngineHandle, bufferSizeInBursts);
-    }
-
-    static double getCurrentOutputLatencyMillis(){
-        if (mEngineHandle == 0) return 0;
-        return native_getCurrentOutputLatencyMillis(mEngineHandle);
-    }
-
-    static boolean isLatencyDetectionSupported() {
-        return mEngineHandle != 0 && native_isLatencyDetectionSupported(mEngineHandle);
-    }
-
-    static boolean isAAudioRecommended() {
-        return mEngineHandle != 0 && native_isAAudioRecommended(mEngineHandle);
-    }
-
-    // Native methods
-    private static native long native_createEngine();
-    private static native int native_startEngine(long engineHandle);
-    private static native int native_stopEngine(long engineHandle);
-    private static native void native_deleteEngine(long engineHandle);
-    private static native void native_setToneOn(long engineHandle, boolean isToneOn);
-    private static native void native_setAudioApi(long engineHandle, int audioApi);
-    private static native void native_setAudioDeviceId(long engineHandle, int deviceId);
-    private static native void native_setChannelCount(long mEngineHandle, int channelCount);
-    private static native void native_setBufferSizeInBursts(long engineHandle, int bufferSizeInBursts);
-    private static native double native_getCurrentOutputLatencyMillis(long engineHandle);
-    private static native boolean native_isLatencyDetectionSupported(long engineHandle);
-    private static native boolean native_isAAudioRecommended(long engineHandle);
-    private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
+    // Native methods that only talk to the native client code.
+    static native void setToneOn(boolean isToneOn);
+    static native void setBufferSizeInBursts(int bufferSizeInBursts);
+    static native double getCurrentOutputLatencyMillis();
+    static native boolean isLatencyDetectionSupported();
+    static native boolean isAAudioRecommended();
+    static native void setDefaultStreamValues(int sampleRate, int framesPerBurst);
 }

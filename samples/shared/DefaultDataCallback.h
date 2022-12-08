@@ -17,7 +17,6 @@
 #ifndef SAMPLES_DEFAULT_DATA_CALLBACK_H
 #define SAMPLES_DEFAULT_DATA_CALLBACK_H
 
-
 #include <vector>
 #include <oboe/AudioStreamCallback.h>
 #include <logging_macros.h>
