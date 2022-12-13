@@ -112,8 +112,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     public static double calculatePhaseError(double p1, double p2) {
         double diff = Math.abs(p1 - p2);
+        // Wrap around the circle.
+        while (diff > (2 * Math.PI)) {
+            diff -= (2 * Math.PI);
+        }
+        // A phase error close to 2*PI is actually a small phase error.
         if (diff > Math.PI) {
-            diff = (Math.PI * 2) - diff;
+            diff = (2 * Math.PI) - diff;
         }
         return diff;
     }
@@ -145,7 +150,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             // Only look at the phase if we have a signal.
             if (mMagnitude >= MIN_REQUIRED_MAGNITUDE) {
                 double phase = getPhase();
-                if (mPhaseCount > 3) {
+                // Wait for the analyzer to get a lock on the signal.
+                // Arbitrary number of phase measurements before we start measuring jitter.
+                final int kMinPhaseMeasurementsRequired = 4;
+                if (mPhaseCount >= kMinPhaseMeasurementsRequired) {
                     double phaseError = calculatePhaseError(phase, mPhase);
                     // low pass filter
                     mPhaseErrorSum += phaseError;
@@ -165,7 +173,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     "magnitude = " + getMagnitudeText(mMagnitude)
                     + ", max = " + getMagnitudeText(mMaxMagnitude)
                     + "\nphase = " + getMagnitudeText(mPhase)
-                    + ", jitter = " + getMagnitudeText(getAveragePhaseError())
+                    + ", jitter = " + getJitterText()
                     + ", #" + mPhaseCount
                     + "\n");
             return message.toString();
@@ -174,7 +182,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         @Override
         public String getShortReport() {
             return "maxMag = " + getMagnitudeText(mMaxMagnitude)
-                    + ", jitter = " + (isPhaseJitterValid() ? getMagnitudeText(getAveragePhaseError()) : "?");
+                    + ", jitter = " + getJitterText();
         }
 
         @Override
@@ -184,6 +192,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 setAnalyzerText(mLastGlitchReport);
             });
         }
+    }
+
+    private String getJitterText() {
+        return isPhaseJitterValid() ? getMagnitudeText(getAveragePhaseError()) : "?";
     }
 
     @Override
@@ -292,11 +304,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     private double getAveragePhaseError() {
-        return (mPhaseErrorCount > 0) ? (mPhaseErrorSum / mPhaseErrorCount) : MAX_ALLOWED_JITTER;
+        // If we have no measurements then return maximum possible phase jitter
+        // to avoid dividing by zero.
+        return (mPhaseErrorCount > 0) ? (mPhaseErrorSum / mPhaseErrorCount) : Math.PI;
     }
 
     private boolean isPhaseJitterValid() {
-        return mPhaseErrorCount > 4;
+        // Arbitrary number of measurements to be considered valid.
+        final int kMinPhaseErrorCount = 5;
+        return mPhaseErrorCount >= kMinPhaseErrorCount;
     }
 
     String getOneLineSummary() {
@@ -343,7 +359,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         TestResult testResult = testConfigurations();
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
-                    + ", jitter = " + TestDataPathsActivity.getMagnitudeText(getAveragePhaseError()));
+                    + ", jitter = " + getJitterText());
         }
         return testResult;
     }
