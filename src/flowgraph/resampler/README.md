@@ -40,7 +40,7 @@ Note that the number of output frames generated for a given number of input fram
 
 For example, suppose you are converting from 44100 Hz to 48000 Hz and using an input buffer with 960 frames. If you calculate the number of output frames you get:
 
-    960 * 48000 * 44100 = 1044.897959...
+    960.0 * 48000 / 44100 = 1044.897959...
 
 You cannot generate a fractional number of frames. So the resampler will sometimes generate 1044 frames and sometimes 1045 frames. On average it will generate 1044.897959 frames. The resampler stores the fraction internally and keeps track of when to consume or generate a frame.
 
