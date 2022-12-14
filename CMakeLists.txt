@@ -32,6 +32,7 @@ set (oboe_sources
     src/flowgraph/FlowGraphNode.cpp
     src/flowgraph/ChannelCountConverter.cpp
     src/flowgraph/ClipToRange.cpp
+    src/flowgraph/Limiter.cpp
     src/flowgraph/ManyToMultiConverter.cpp
     src/flowgraph/MonoBlend.cpp
     src/flowgraph/MonoToMultiConverter.cpp
@@ -84,7 +85,7 @@ target_compile_options(oboe
         -Wextra-semi
         -Wshadow
         -Wshadow-field
-        -Ofast
+        "$<$<CONFIG:RELEASE>:-Ofast>"
         "$<$<CONFIG:DEBUG>:-Werror>")
 
 # Enable logging of D,V for debug builds
