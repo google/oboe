@@ -23,8 +23,7 @@
 
 #include "FlowGraphNode.h"
 
-namespace FLOWGRAPH_OUTER_NAMESPACE {
-namespace flowgraph {
+namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
 
 class Limiter : public FlowGraphFilter {
 public:
@@ -60,7 +59,6 @@ private:
     float mLastValidOutput = 0.0f;
 };
 
-} /* namespace flowgraph */
-} /* namespace FLOWGRAPH_OUTER_NAMESPACE */
+} /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
 
 #endif //FLOWGRAPH_LIMITER_H
