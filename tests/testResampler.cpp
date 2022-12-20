@@ -211,11 +211,9 @@ TEST(test_resampler, resampler_44100_48000_best) {
 TEST(test_resampler, resampler_48000_11025_best) {
     checkResampler(48000, 11025, MultiChannelResampler::Quality::Best);
 }
-
 TEST(test_resampler, resampler_48000_44100_best) {
     checkResampler(48000, 44100, MultiChannelResampler::Quality::Best);
 }
-
 TEST(test_resampler, resampler_44100_11025_best) {
     checkResampler(44100, 11025, MultiChannelResampler::Quality::Best);
 }
