@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,9 +212,8 @@ TEST(test_resampler, resampler_48000_11025_best) {
     checkResampler(48000, 11025, MultiChannelResampler::Quality::Best);
 }
 TEST(test_resampler, resampler_48000_44100_best) {
-    checkResampler(48000, 11025, MultiChannelResampler::Quality::Best);
+    checkResampler(48000, 44100, MultiChannelResampler::Quality::Best);
 }
-
 TEST(test_resampler, resampler_44100_11025_best) {
-    checkResampler(48000, 11025, MultiChannelResampler::Quality::Best);
+    checkResampler(44100, 11025, MultiChannelResampler::Quality::Best);
 }

@@ -25,9 +25,9 @@ SincResampler::SincResampler(const MultiChannelResampler::Builder &builder)
         , mSingleFrame2(builder.getChannelCount()) {
     assert((getNumTaps() % 4) == 0); // Required for loop unrolling.
     mNumRows = kMaxCoefficients / getNumTaps(); // includes guard row
-    int32_t numRowsNoGuard = mNumRows - 1;
+    const int32_t numRowsNoGuard = mNumRows - 1;
     mPhaseScaler = (double) numRowsNoGuard / mDenominator;
-    double phaseIncrement = 1.0 / numRowsNoGuard;
+    const double phaseIncrement = 1.0 / numRowsNoGuard;
     generateCoefficients(builder.getInputRate(),
                          builder.getOutputRate(),
                          mNumRows,
@@ -41,9 +41,9 @@ void SincResampler::readFrame(float *frame) {
     std::fill(mSingleFrame2.begin(), mSingleFrame2.end(), 0.0);
 
     // Determine indices into coefficients table.
-    double tablePhase = getIntegerPhase() * mPhaseScaler;
-    int indexLow = static_cast<int>(floor(tablePhase));
-    int indexHigh = indexLow + 1; // OK because using a guard row.
+    const double tablePhase = getIntegerPhase() * mPhaseScaler;
+    const int indexLow = static_cast<int>(floor(tablePhase));
+    const int indexHigh = indexLow + 1; // OK because using a guard row.
     assert (indexHigh < mNumRows);
     float *coefficientsLow = &mCoefficients[static_cast<size_t>(indexLow)
                                             * static_cast<size_t>(getNumTaps())];
@@ -52,20 +52,20 @@ void SincResampler::readFrame(float *frame) {
 
     float *xFrame = &mX[static_cast<size_t>(mCursor) * static_cast<size_t>(getChannelCount())];
     for (int tap = 0; tap < mNumTaps; tap++) {
-        float coefficientLow = *coefficientsLow++;
-        float coefficientHigh = *coefficientsHigh++;
+        const float coefficientLow = *coefficientsLow++;
+        const float coefficientHigh = *coefficientsHigh++;
         for (int channel = 0; channel < getChannelCount(); channel++) {
-            float sample = *xFrame++;
+            const float sample = *xFrame++;
             mSingleFrame[channel] += sample * coefficientLow;
             mSingleFrame2[channel] += sample * coefficientHigh;
         }
     }
 
     // Interpolate and copy to output.
-    float fraction = tablePhase - indexLow;
+    const float fraction = tablePhase - indexLow;
     for (int channel = 0; channel < getChannelCount(); channel++) {
-        float low = mSingleFrame[channel];
-        float high = mSingleFrame2[channel];
+        const float low = mSingleFrame[channel];
+        const float high = mSingleFrame2[channel];
         frame[channel] = low + (fraction * (high - low));
     }
 }
