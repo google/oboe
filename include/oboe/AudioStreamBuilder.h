@@ -431,18 +431,8 @@ public:
      * <strong>Important: See AudioStreamCallback for restrictions on what may be called
      * from the callback methods.</strong>
      *
-     * When an error callback occurs, the associated stream will be stopped and closed in a separate thread.
-     *
-     * A note on why the streamCallback parameter is a raw pointer rather than a smart pointer:
-     *
-     * The caller should retain ownership of the object streamCallback points to. At first glance weak_ptr may seem like
-     * a good candidate for streamCallback as this implies temporary ownership. However, a weak_ptr can only be created
-     * from a shared_ptr. A shared_ptr incurs some performance overhead. The callback object is likely to be accessed
-     * every few milliseconds when the stream requires new data so this overhead is something we want to avoid.
-     *
-     * This leaves a raw pointer as the logical type choice. The only caveat being that the caller must not destroy
-     * the callback before the stream has been closed.
-     *
+     * @deprecated Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) and
+     *     setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.
      * @param streamCallback
      * @return pointer to the builder so calls can be chained
      */
