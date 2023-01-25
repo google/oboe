@@ -357,7 +357,7 @@ public:
      * We pass a shared_ptr so that the sharedDataCallback object cannot be deleted
      * before the stream is deleted.
      *
-     * @param dataCallback
+     * @param sharedDataCallback
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setDataCallback(std::shared_ptr<AudioStreamDataCallback> sharedDataCallback) {
