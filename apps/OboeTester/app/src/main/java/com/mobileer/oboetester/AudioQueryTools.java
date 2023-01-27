@@ -113,7 +113,7 @@ public class AudioQueryTools {
 
     public static String getMediaPerformanceClass() {
         int mpc = Build.VERSION.MEDIA_PERFORMANCE_CLASS;
-        String text = (mpc == 0) ? "Unrecognized" : convertSdkToShortName(mpc);
+        String text = (mpc == 0) ? "not declared" : convertSdkToShortName(mpc);
         return formatKeyValueLine("Media Perf Class",
                 mpc + " (" + text + ")");
     }
