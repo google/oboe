@@ -104,13 +104,14 @@ public class DeviceReportActivity extends Activity {
         report.append("Device: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
                 .append(", ").append(Build.PRODUCT).append("\n");
 
+        report.append(reportExtraDeviceInfo());
+
         for (AudioDeviceInfo deviceInfo : devices) {
             report.append("\n==== Device =================== " + deviceInfo.getId() + "\n");
             String item = AudioDeviceInfoConverter.toString(deviceInfo);
             report.append(item);
         }
         report.append(reportAllMicrophones());
-        report.append(reportExtraDeviceInfo());
         log(report.toString());
     }
 
@@ -138,10 +139,12 @@ public class DeviceReportActivity extends Activity {
     private String reportExtraDeviceInfo() {
         StringBuffer report = new StringBuffer();
         report.append("\n\n############################");
-        report.append("\nExtras:");
-
+        report.append("\nAudioManager:");
         report.append(AudioQueryTools.getAudioManagerReport(mAudioManager));
+        report.append("\n\nFeatures:");
         report.append(AudioQueryTools.getAudioFeatureReport(getPackageManager()));
+        report.append(AudioQueryTools.getMediaPerformanceClass());
+        report.append("\n\nProperties:");
         report.append(AudioQueryTools.getAudioPropertyReport());
         return report.toString();
     }
