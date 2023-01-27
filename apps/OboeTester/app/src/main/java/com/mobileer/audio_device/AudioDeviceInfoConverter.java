@@ -92,6 +92,12 @@ public class AudioDeviceInfoConverter {
         switch (type) {
             case AudioDeviceInfo.TYPE_AUX_LINE:
                 return "auxiliary line-level connectors";
+            case AudioDeviceInfo.TYPE_BLE_BROADCAST:
+                return "BLE broadcast";
+            case AudioDeviceInfo.TYPE_BLE_HEADSET:
+                return "BLE headset";
+            case AudioDeviceInfo.TYPE_BLE_SPEAKER:
+                return "BLE speaker";
             case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
                 return "Bluetooth A2DP";
             case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
@@ -102,26 +108,36 @@ public class AudioDeviceInfoConverter {
                 return "built-in microphone";
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
                 return "built-in speaker";
-            case 0x18: // AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
                 return "built-in speaker safe";
             case AudioDeviceInfo.TYPE_BUS:
-                return "BUS";
+                return "bus";
             case AudioDeviceInfo.TYPE_DOCK:
-                return "DOCK";
+                return "dock";
+            case 31: // AudioDeviceInfo.TYPE_DOCK_ANALOG:
+                return "dock analog";
+            case 28: // AudioDeviceInfo.TYPE_ECHO_REFERENCE:
+                return "echo reference";
             case AudioDeviceInfo.TYPE_FM:
                 return "FM";
             case AudioDeviceInfo.TYPE_FM_TUNER:
                 return "FM tuner";
             case AudioDeviceInfo.TYPE_HDMI:
                 return "HDMI";
+            case AudioDeviceInfo.TYPE_HEARING_AID:
+                return "hearing aid";
             case AudioDeviceInfo.TYPE_HDMI_ARC:
                 return "HDMI audio return channel";
+            case AudioDeviceInfo.TYPE_HDMI_EARC:
+                return "HDMI enhanced ARC";
             case AudioDeviceInfo.TYPE_IP:
                 return "IP";
             case AudioDeviceInfo.TYPE_LINE_ANALOG:
                 return "line analog";
             case AudioDeviceInfo.TYPE_LINE_DIGITAL:
                 return "line digital";
+            case AudioDeviceInfo.TYPE_REMOTE_SUBMIX:
+                return "remote submix";
             case AudioDeviceInfo.TYPE_TELEPHONY:
                 return "telephony";
             case AudioDeviceInfo.TYPE_TV_TUNER:
@@ -130,6 +146,8 @@ public class AudioDeviceInfoConverter {
                 return "USB accessory";
             case AudioDeviceInfo.TYPE_USB_DEVICE:
                 return "USB device";
+            case AudioDeviceInfo.TYPE_USB_HEADSET:
+                return "USB headset";
             case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
                 return "wired headphones";
             case AudioDeviceInfo.TYPE_WIRED_HEADSET:
