@@ -18,6 +18,7 @@ package com.mobileer.oboetester;
 
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.os.Build;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,10 +74,48 @@ public class AudioQueryTools {
         return report.toString();
     }
 
-    private static String getSystemPropertyLine(String key) {
+    private static String formatKeyValueLine(String key, String value) {
         int numSpaces = Math.max(1, 21 - key.length());
         String spaces = String.format("%0" + numSpaces + "d", 0).replace("0", " ");
-        return "\n" + key + spaces + ": " + getSystemProperty(key);
+        return "\n" + key + spaces + ": " + value;
+    }
+
+    private static String getSystemPropertyLine(String key) {
+        return formatKeyValueLine(key, getSystemProperty(key));
+    }
+
+    public static String convertSdkToShortName(int sdk) {
+        if (sdk < 16) return "early";
+        if (sdk > 34) return "future";
+        final String[] names = {
+                "J",   // 16
+                "J+",
+                "J++",
+                "K",
+                "K+",
+                "L",   // 21
+                "L+",
+                "M",
+                "N",   // 24
+                "N_MR1",
+                "O",
+                "O_MR1",
+                "P",   // 28
+                "Q",
+                "R",
+                "S",
+                "S_V2",
+                "T",   // 33
+                "U"
+        };
+        return names[sdk - 16];
+    }
+
+    public static String getMediaPerformanceClass() {
+        int mpc = Build.VERSION.MEDIA_PERFORMANCE_CLASS;
+        String text = (mpc == 0) ? "not declared" : convertSdkToShortName(mpc);
+        return formatKeyValueLine("Media Perf Class",
+                mpc + " (" + text + ")");
     }
 
     public static String getAudioPropertyReport() {
