@@ -435,7 +435,12 @@ public:
      * This can be used with an EXCLUSIVE MMAP input stream to avoid reading data too close to
      * the DSP write position, which may cause glitches.
      *
-     * @param numFrames minimum frames available
+     * Starting with Oboe 1.7.1, the numFrames will be clipped internally against the
+     * BufferCapacity minus BurstSize. This is to prevent trying to wait for more frames
+     * than could possibly be available. In this case, the return value may be less than numFrames.
+     * Note that there may still be glitching if numFrames is too high.
+     *
+     * @param numFrames requested minimum frames available
      * @param timeoutNanoseconds
      * @return number of frames available, ErrorTimeout
      */
