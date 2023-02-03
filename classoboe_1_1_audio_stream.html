@@ -1501,9 +1501,10 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
       </table>
 </div><div class="memdoc">
 <p>Wait until the stream has a minimum amount of data available in its buffer. This can be used with an EXCLUSIVE MMAP input stream to avoid reading data too close to the DSP write position, which may cause glitches.</p>
+<p>Starting with Oboe 1.7.1, the numFrames will be clipped internally against the BufferCapacity minus BurstSize. This is to prevent trying to wait for more frames than could possibly be available. In this case, the return value may be less than numFrames. Note that there may still be glitching if numFrames is too high.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">numFrames</td><td>minimum frames available </td></tr>
+    <tr><td class="paramname">numFrames</td><td>requested minimum frames available </td></tr>
     <tr><td class="paramname">timeoutNanoseconds</td><td></td></tr>
   </table>
   </dd>
