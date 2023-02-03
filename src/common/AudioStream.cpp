@@ -166,6 +166,14 @@ ResultWithValue<int32_t> AudioStream::waitForAvailableFrames(int32_t numFrames,
     if (numFrames == 0) return Result::OK;
     if (numFrames < 0) return Result::ErrorOutOfRange;
 
+    // Make sure we don't try to wait for more frames than the buffer can hold.
+    // Subtract framesPerBurst because this is often called from a callback
+    // and we don't want to be sleeping if the buffer is close to overflowing.
+    const int32_t maxAvailableFrames = getBufferCapacityInFrames() - getFramesPerBurst();
+    numFrames = std::min(numFrames, maxAvailableFrames);
+    // The capacity should never be less than one burst. But clip to zero just in case.
+    numFrames = std::max(0, numFrames);
+
     int64_t framesAvailable = 0;
     int64_t burstInNanos = getFramesPerBurst() * kNanosPerSecond / getSampleRate();
     bool ready = false;
