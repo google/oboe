@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -344,7 +343,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mShareButton = (Button) findViewById(R.id.button_share);
         mShareButton.setEnabled(false);
         mAnalyzerView = (TextView) findViewById(R.id.text_status);
-        mAnalyzerView.setMovementMethod(new ScrollingMovementMethod());
         updateEnabledWidgets();
 
         hideSettingsViews();
