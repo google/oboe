@@ -549,7 +549,7 @@ public:
         ALOGD("latency: st = %d = %s", mState, convertStateToText(mState));
     }
 
-    result_code processInputFrame(const float *frameData, int channelCount) override {
+    result_code processInputFrame(const float *frameData, int /* channelCount */) override {
         echo_state nextState = mState;
         mLoopCounter++;
         float input = frameData[0];
