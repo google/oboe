@@ -332,17 +332,17 @@ Result AudioStreamAAudio::open() {
 
 error2:
     mLibLoader->builder_delete(aaudioBuilder);
-    LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s = %d",
-         mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)),
-         static_cast<int>(result));
     if (static_cast<int>(result) > 0) {
         // Possibly due to b/267531411
+        LOGW("AudioStreamAAudio.open: AAudioStream_Open() returned positive error = %d",
+             static_cast<int>(result));
         if (OboeGlobals::areWorkaroundsEnabled()) {
             result = Result::ErrorInternal; // Coerce to negative error.
-        } else {
-            LOGW("AudioStreamAAudio.open: AAudioStream_Open() returned positive error = %d",
-                 static_cast<int>(result));
         }
+    } else {
+        LOGD("AudioStreamAAudio.open: AAudioStream_Open() returned %s = %d",
+             mLibLoader->convertResultToText(static_cast<aaudio_result_t>(result)),
+             static_cast<int>(result));
     }
     return result;
 }
