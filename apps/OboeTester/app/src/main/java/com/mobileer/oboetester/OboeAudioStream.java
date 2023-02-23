@@ -29,7 +29,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     @Override
     public void stopPlayback() throws IOException {
         int result = stopPlaybackNative();
-        if (result < 0) {
+        if (result != 0) {
             throw new IOException("Stop Playback failed! result = " + result);
         }
     }
@@ -39,7 +39,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     @Override
     public void startPlayback() throws IOException {
         int result = startPlaybackNative();
-        if (result < 0) {
+        if (result != 0) {
             throw new IOException("Start Playback failed! result = " + result);
         }
     }
