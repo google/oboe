@@ -264,7 +264,7 @@ public:
      *
      * Note that due to issues in Android before R, we recommend NOT calling
      * this method from a data callback. See this tech note for more details.
-     * https://github.com/google/oboe/wiki/TechNote_Effects
+     * https://github.com/google/oboe/wiki/TechNote_ReleaseBuffer
      *
      * @return a ResultWithValue which has a result of Result::OK and a value containing the latency
      * in milliseconds, or a result of Result::Error*.
@@ -286,7 +286,7 @@ public:
      *
      * Note that due to issues in Android before R, we recommend NOT calling
      * this method from a data callback. See this tech note for more details.
-     * https://github.com/google/oboe/wiki/TechNote_Effects
+     * https://github.com/google/oboe/wiki/TechNote_ReleaseBuffer
      *
      * @deprecated since 1.0, use AudioStream::getTimestamp(clockid_t clockId) instead, which
      * returns ResultWithValue
@@ -313,7 +313,7 @@ public:
      *
      * Note that due to issues in Android before R, we recommend NOT calling
      * this method from a data callback. See this tech note for more details.
-     * https://github.com/google/oboe/wiki/TechNote_Effects
+     * https://github.com/google/oboe/wiki/TechNote_ReleaseBuffer
      *
      * See 
      * @param clockId the type of clock to use e.g. CLOCK_MONOTONIC
