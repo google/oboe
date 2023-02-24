@@ -587,7 +587,7 @@ abstract class TestAudioActivity extends Activity {
     public void startAudio() throws IOException {
         Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
-        if (result < 0) {
+        if (result != 0) {
             showErrorToast("Start failed with " + result);
             throw new IOException("startNative returned " + result);
         } else {
@@ -608,7 +608,7 @@ abstract class TestAudioActivity extends Activity {
 
     public void pauseAudio() {
         int result = pauseNative();
-        if (result < 0) {
+        if (result != 0) {
             toastPauseError(result);
         } else {
             mAudioState = AUDIO_STATE_PAUSED;
@@ -618,7 +618,7 @@ abstract class TestAudioActivity extends Activity {
 
     public void stopAudio() {
         int result = stopNative();
-        if (result < 0) {
+        if (result != 0) {
             showErrorToast("Stop failed with " + result);
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
