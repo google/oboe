@@ -60,6 +60,9 @@ public class MicrophoneInfoConverter {
         sb.append("\nType       : " + micInfo.getType());
 
         List<Pair<Integer, Integer>> mapping = micInfo.getChannelMapping();
+        if (mapping == null) {
+            throw new RuntimeException("MicrophoneInfo. getChannelMapping() returned null!");
+        }
         sb.append("\nChannelMapping: {");
         for (Pair<Integer, Integer> pair : mapping) {
             sb.append("[" + pair.first + "," + pair.second + "], ");

@@ -25,7 +25,9 @@ import android.media.AudioManager;
 import android.media.MicrophoneInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
@@ -127,8 +129,12 @@ public class DeviceReportActivity extends Activity {
                     report.append(micItem);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TestAudioActivity.TAG, "Caught ", e);
                 return e.getMessage();
+            } catch (Exception e) {
+                Log.e(TestAudioActivity.TAG, "Caught ", e);
+                showErrorToast(e.getMessage());
+                report.append("\nERROR: " + e.getMessage() + "\n");
             }
         } else {
             report.append("\nMicrophoneInfo not available on V" + android.os.Build.VERSION.SDK_INT);
@@ -169,4 +175,20 @@ public class DeviceReportActivity extends Activity {
         });
     }
 
+    protected void showErrorToast(String message) {
+        String text = "Error: " + message;
+        Log.e(TestAudioActivity.TAG, text);
+        showToast(text);
+    }
+
+    protected void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(DeviceReportActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }
