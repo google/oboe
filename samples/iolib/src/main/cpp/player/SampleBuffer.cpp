@@ -62,7 +62,7 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
     int32_t numOutFramesAllocated = (int32_t)(temp + 0.5);
     // We iterate thousands of times through the loop. Roundoff error could accumulate
     // so add a few more frames for padding
-    numOutFramesAllocated += 200;
+    numOutFramesAllocated += 8;
 
     MultiChannelResampler *resampler = MultiChannelResampler::make(
             numChannels, // channel count
@@ -76,7 +76,7 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
 
     int numOutputSamples = 0;
     int inputSamplesLeft = input.mNumSamples;
-    while (inputSamplesLeft > 0 && (numOutputSamples < numOutFramesAllocated)) {
+    while ((inputSamplesLeft > 0) && (numOutputSamples < numOutFramesAllocated)) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
             inputBuffer += numChannels;
