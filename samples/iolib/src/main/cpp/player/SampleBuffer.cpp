@@ -74,20 +74,20 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
     float *outputBuffer = new float[numOutFrames];    // multi-channel buffer to be filled
     output->mBuffer = outputBuffer;
 
-    int numOutputFrames = 0;
-    int inputFramesLeft = input.mNumSamples;
-    while (inputFramesLeft > 0) {
+    int numOutputSamples = 0;
+    int inputSamplesLeft = input.mNumSamples;
+    while (inputSamplesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
             inputBuffer += numChannels;
-            inputFramesLeft -= numChannels;
+            inputSamplesLeft -= numChannels;
         } else {
             resampler->readNextFrame(outputBuffer);
             outputBuffer += numChannels;
-            numOutputFrames += numChannels;
+            numOutputSamples += numChannels;
         }
     }
-    output->mNumSamples = numOutputFrames;
+    output->mNumSamples = numOutputSamples;
 
     delete resampler;
 }
