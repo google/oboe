@@ -153,7 +153,7 @@ Oboe does **not** support the following features:
 *   Channel masks - only [indexed channel masks](https://developer.android.com/reference/kotlin/android/media/AudioFormat#channel-index-masks) are supported.
 *   Playing audio content from a file pathname or [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier).
 *   Notification callbacks for position updates.
-*   Platform output effects on API 27 and below. [They are supported from API 28 and above.](https://github.com/google/oboe/blob/main/docs/notes/effects.md)
+*   Platform output effects on API 27 and below. [They are supported from API 28 and above.](https://github.com/google/oboe/wiki/TechNote_Effects)
 
 
 # Summary
