@@ -50,13 +50,13 @@ class ResampleBlock {
 public:
     int32_t mSampleRate;
     float*  mBuffer;
-    int32_t mNumFrames;
+    int32_t mNumSamples;
 };
 
 void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChannels) {
     // Calculate output buffer size
     double temp =
-            ((double)input.mNumFrames * (double)output->mSampleRate) / (double)input.mSampleRate;
+            ((double)input.mNumSamples * (double)output->mSampleRate) / (double)input.mSampleRate;
 
     // round up
     int32_t numOutFrames = (int32_t)(temp + 0.5);
@@ -75,19 +75,19 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
     output->mBuffer = outputBuffer;
 
     int numOutputFrames = 0;
-    int inputFramesLeft = input.mNumFrames;
+    int inputFramesLeft = input.mNumSamples;
     while (inputFramesLeft > 0) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
             inputBuffer += numChannels;
-            inputFramesLeft--;
+            inputFramesLeft -= numChannels;
         } else {
             resampler->readNextFrame(outputBuffer);
             outputBuffer += numChannels;
-            numOutputFrames++;
+            numOutputFrames += numChannels;
         }
     }
-    output->mNumFrames = numOutputFrames;
+    output->mNumSamples = numOutputFrames;
 
     delete resampler;
 }
@@ -100,7 +100,7 @@ void SampleBuffer::resampleData(int sampleRate) {
 
     ResampleBlock inputBlock;
     inputBlock.mBuffer = mSampleData;
-    inputBlock.mNumFrames = mNumSamples;
+    inputBlock.mNumSamples = mNumSamples;
     inputBlock.mSampleRate = mAudioProperties.sampleRate;
 
     ResampleBlock outputBlock;
@@ -112,7 +112,7 @@ void SampleBuffer::resampleData(int sampleRate) {
 
     // install the resampled data
     mSampleData = outputBlock.mBuffer;
-    mNumSamples = outputBlock.mNumFrames;
+    mNumSamples = outputBlock.mNumSamples;
     mAudioProperties.sampleRate = outputBlock.mSampleRate;
 }
 
