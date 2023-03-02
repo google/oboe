@@ -50,19 +50,19 @@ class ResampleBlock {
 public:
     int32_t mSampleRate;
     float*  mBuffer;
-    int32_t mNumFrames;
+    int32_t mNumSamples;
 };
 
 void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChannels) {
     // Calculate output buffer size
     double temp =
-            ((double)input.mNumFrames * (double)output->mSampleRate) / (double)input.mSampleRate;
+            ((double)input.mNumSamples * (double)output->mSampleRate) / (double)input.mSampleRate;
 
     // round up
-    int32_t numOutFrames = (int32_t)(temp + 0.5);
+    int32_t numOutFramesAllocated = (int32_t)(temp + 0.5);
     // We iterate thousands of times through the loop. Roundoff error could accumulate
     // so add a few more frames for padding
-    numOutFrames += 8;
+    numOutFramesAllocated += 8;
 
     MultiChannelResampler *resampler = MultiChannelResampler::make(
             numChannels, // channel count
@@ -71,23 +71,23 @@ void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChan
             MultiChannelResampler::Quality::Medium); // conversion quality
 
     float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
-    float *outputBuffer = new float[numOutFrames];    // multi-channel buffer to be filled
+    float *outputBuffer = new float[numOutFramesAllocated];    // multi-channel buffer to be filled
     output->mBuffer = outputBuffer;
 
-    int numOutputFrames = 0;
-    int inputFramesLeft = input.mNumFrames;
-    while (inputFramesLeft > 0) {
+    int numOutputSamples = 0;
+    int inputSamplesLeft = input.mNumSamples;
+    while ((inputSamplesLeft > 0) && (numOutputSamples < numOutFramesAllocated)) {
         if(resampler->isWriteNeeded()) {
             resampler->writeNextFrame(inputBuffer);
             inputBuffer += numChannels;
-            inputFramesLeft--;
+            inputSamplesLeft -= numChannels;
         } else {
             resampler->readNextFrame(outputBuffer);
             outputBuffer += numChannels;
-            numOutputFrames++;
+            numOutputSamples += numChannels;
         }
     }
-    output->mNumFrames = numOutputFrames;
+    output->mNumSamples = numOutputSamples;
 
     delete resampler;
 }
@@ -100,7 +100,7 @@ void SampleBuffer::resampleData(int sampleRate) {
 
     ResampleBlock inputBlock;
     inputBlock.mBuffer = mSampleData;
-    inputBlock.mNumFrames = mNumSamples;
+    inputBlock.mNumSamples = mNumSamples;
     inputBlock.mSampleRate = mAudioProperties.sampleRate;
 
     ResampleBlock outputBlock;
@@ -112,7 +112,7 @@ void SampleBuffer::resampleData(int sampleRate) {
 
     // install the resampled data
     mSampleData = outputBlock.mBuffer;
-    mNumSamples = outputBlock.mNumFrames;
+    mNumSamples = outputBlock.mNumSamples;
     mAudioProperties.sampleRate = outputBlock.mSampleRate;
 }
 
