@@ -8,7 +8,7 @@ sine wave when you tap the screen. (Java)
 1. [RhythmGame](RhythmGame): A simple rhythm game where you copy the clap patterns you hear by tapping on the screen.
 There is an associated codelab to follow along with. (Java)
 1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance. (Java)
-1. [DrumThumper](drumthumper): A drum pad that plays sounds from loaded WAV files. (Java)
+1. [DrumThumper](drumthumper): A drum pad that plays sounds from loaded WAV files. (Kotlin)
 1. [LiveEffect](LiveEffect): Loops audio from input stream to output stream to demonstrate duplex capability. (Java)
 1. [SoundBoard](SoundBoard): A 30 note dynamic synthesizer, demonstating combining signals. (Kotlin)
 

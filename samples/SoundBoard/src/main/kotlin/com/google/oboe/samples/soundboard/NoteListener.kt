@@ -1,5 +1,3 @@
-package com.google.oboe.samples.soundboard;
-
 /*
  * Copyright 2021 The Android Open Source Project
  *
@@ -16,21 +14,18 @@ package com.google.oboe.samples.soundboard;
  * limitations under the License.
  */
 
-public class NoteListener implements MusicTileView.TileListener {
-    private native void noteOn(long engineHandle, int noteIndex);
-    private native void noteOff(long engineHandle, int noteIndex);
+package com.google.oboe.samples.soundboard
 
-    long mEngineHandle;
+import com.google.oboe.samples.soundboard.MusicTileView.TileListener
 
-    public NoteListener(long engineHandle) {
-        mEngineHandle = engineHandle;
+class NoteListener(private var mEngineHandle: Long) : TileListener {
+    private external fun noteOn(engineHandle: Long, noteIndex: Int)
+    private external fun noteOff(engineHandle: Long, noteIndex: Int)
+    override fun onTileOn(index: Int) {
+        noteOn(mEngineHandle, index)
     }
 
-    public void onTileOn(int index) {
-        noteOn(mEngineHandle, index);
-    }
-
-    public void onTileOff(int index) {
-        noteOff(mEngineHandle, index);
+    override fun onTileOff(index: Int) {
+        noteOff(mEngineHandle, index)
     }
 }
