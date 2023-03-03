@@ -24,7 +24,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 
 ### Community
 - Reddit: [r/androidaudiodev](https://www.reddit.com/r/androidaudiodev/)
-- StackOverflow: [#oboe](https://stackoverflow.com/questions/tagged/oboe)
+- StackOverflow: [oboe tagged](https://stackoverflow.com/questions/tagged/oboe)
 
 ## Testing
 - [**OboeTester** app for measuring latency, glitches, etc.](https://github.com/google/oboe/blob/main/apps/OboeTester/docs)
