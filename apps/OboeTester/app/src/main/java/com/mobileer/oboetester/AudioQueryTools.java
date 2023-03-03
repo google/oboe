@@ -58,6 +58,10 @@ public class AudioQueryTools {
                 + packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO));
         report.append("\nLowLatency Feature   : "
                 + packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY));
+        report.append("\nAudio Output Feature : "
+                + packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_OUTPUT));
+        report.append("\nMicrophone Feature   : "
+                + packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE));
         report.append("\nMIDI Feature         : "
                 + packageManager.hasSystemFeature(PackageManager.FEATURE_MIDI));
         report.append("\nUSB Host Feature     : "
