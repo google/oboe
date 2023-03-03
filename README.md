@@ -13,12 +13,12 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 - [Used by popular apps and frameworks](https://github.com/google/oboe/wiki/AppsUsingOboe)
 
 ## Documentation
-- [Getting Started Guide](docs/GettingStarted.md)
-- [Full Guide to Oboe](docs/FullGuide.md)
+- [Getting Started Guide](https://github.com/google/oboe/blob/main/docs/GettingStarted.md)
+- [Full Guide to Oboe](https://github.com/google/oboe/blob/main/docs/FullGuide.md)
 - [API reference](https://google.github.io/oboe)
-- [History of Audio features/bugs by Android version](docs/AndroidAudioHistory.md)
-- [Migration guide for apps using OpenSL ES](docs/OpenSLESMigration.md)
-- [Frequently Asked Questions](docs/FAQ.md) (FAQ)
+- [History of Audio features/bugs by Android version](https://github.com/google/oboe/blob/main/docs/AndroidAudioHistory.md)
+- [Migration guide for apps using OpenSL ES](https://github.com/google/oboe/blob/main/docs/OpenSLESMigration.md)
+- [Frequently Asked Questions](https://github.com/google/oboe/blob/main/docs/FAQ.md) (FAQ)
 - [Wiki](https://github.com/google/oboe/wiki)
 - [Our roadmap](https://github.com/google/oboe/milestones) - Vote on a feature/issue by adding a thumbs up to the first comment.
 
@@ -27,7 +27,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 - StackOverflow: [#oboe](https://stackoverflow.com/questions/tagged/oboe)
 
 ## Testing
-- [**OboeTester** app for measuring latency, glitches, etc.](apps/OboeTester/docs)
+- [**OboeTester** app for measuring latency, glitches, etc.](https://github.com/google/oboe/blob/main/apps/OboeTester/docs)
 - [Oboe unit tests](tests)
 
 ## Videos
@@ -44,7 +44,7 @@ Oboe is a C++ library which makes it easy to build high-performance audio apps o
 - [Ableton Link integration demo](https://github.com/jbloit/AndroidLinkAudio) (author: jbloit)
 
 ## Contributing
-We would love to receive your pull requests. Before we can though, please read the [contributing](CONTRIBUTING.md) guidelines.
+We would love to receive your pull requests. Before we can though, please read the [contributing](https://github.com/google/oboe/blob/main/CONTRIBUTING.md) guidelines.
 
 ## Version history
 View the [releases page](../../releases).
