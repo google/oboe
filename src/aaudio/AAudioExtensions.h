@@ -41,7 +41,7 @@ typedef struct AAudioStreamStruct         AAudioStream;
  * Call some AAudio test routines that are not part of the normal API.
  */
 class AAudioExtensions {
-public:
+private: // Because it is a singleton. Call getInstance() instead.
     AAudioExtensions() {
         int32_t policy = getIntegerProperty("aaudio.mmap_policy", 0);
         mMMapSupported = isPolicyEnabled(policy);
@@ -50,6 +50,7 @@ public:
         mMMapExclusiveSupported = isPolicyEnabled(policy);
     }
 
+public:
     static bool isPolicyEnabled(int32_t policy) {
         return (policy == AAUDIO_POLICY_AUTO || policy == AAUDIO_POLICY_ALWAYS);
     }
