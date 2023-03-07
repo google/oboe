@@ -25,14 +25,12 @@ namespace iolib {
 void OneShotSampleSource::mixAudio(float* outBuff, int numChannels, int32_t numFrames) {
     int32_t numSamples = mSampleBuffer->getNumSamples();
     int32_t sampleChannels = mSampleBuffer->getProperties().channelCount;
-    int32_t sampleIndex = mCurSampleIndex;
-    int32_t samplesLeft = numSamples - sampleIndex;
+    int32_t samplesLeft = numSamples - mCurSampleIndex;
     int32_t numWriteFrames = mIsPlaying
                          ? std::min(numFrames, samplesLeft / sampleChannels)
                          : 0;
 
     if (numWriteFrames != 0) {
-        int32_t sampleIndex2 = mCurSampleIndex;
         const float* data  = mSampleBuffer->getSampleData();
         if ((sampleChannels == 1) && (numChannels == 1)) {
             // MONO output from MONO samples
