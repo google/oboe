@@ -22,11 +22,10 @@ import java.io.IOException
 class DrumPlayer {
     companion object {
         // Sample attributes
-        val NUM_PLAY_CHANNELS: Int = 2  // The number of channels in the player Stream.
-                                        // Stereo Playback, set to 1 for Mono playback
-                                        // This IS NOT the channel format of the source samples
-                                        // (which must be mono).
-        val NUM_SAMPLE_CHANNELS: Int = 1   // All WAV resource must be mono
+        val NUM_PLAY_CHANNELS: Int = 2      // The number of channels in the player Stream.
+                                            // Stereo Playback, set to 1 for Mono playback
+        val NUM_SAMPLE_CHANNELS: Int = 1    // The number of channels of the WAV files.
+                                            // Mono, set to 2 for Stereo files
 
         // Sample Buffer IDs
         val BASSDRUM: Int = 0

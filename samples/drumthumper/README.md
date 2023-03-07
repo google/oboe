@@ -33,9 +33,7 @@ To keep things simple, **DrumThumper** specifically does not:
 
 **DrumThumper** now supports different sample rates for the source samples.
 
-If one wanted to extend **DrumThumper** to support Stereo samples:
-* The SampleSource class would need to be extended to understand Stereo SampleBuffer objects, it currently assumes Mono.
-* The OneShotSampleSource.mixAudio() method would need to have separate mixing logic for Stereo and Mono SampleSource.
+**DrumThumper** now supports mono and stereo sources.
 
 ## DrumThumper project structure
 ### Kotlin App Layer

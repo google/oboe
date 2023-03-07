@@ -47,8 +47,6 @@ static SimpleMultiPlayer sDTPlayer;
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_setupAudioStreamNative(
         JNIEnv* env, jobject, jint numChannels) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
-
-    // we know in this case that the sample buffers are all 1-channel, 41K
     sDTPlayer.setupAudioStream(numChannels);
 }
 
