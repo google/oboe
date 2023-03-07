@@ -73,8 +73,18 @@ public class AudioQueryTools {
 
     public static String getAudioManagerReport(AudioManager audioManager) {
         StringBuffer report = new StringBuffer();
-        String unprocessedSupport = audioManager.getParameters(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED);
-        report.append("\nSUPPORT_UNPROCESSED  : " + ((unprocessedSupport == null) ? "null" : "yes"));
+        String unprocessedSupport = audioManager.getProperty(
+                AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED);
+        report.append("\nSUPPORT_AUDIO_SOURCE_UNPROCESSED  : " + ((unprocessedSupport == null) ?
+                "null" : unprocessedSupport));
+        String outputFramesPerBuffer = audioManager.getProperty(
+                AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        report.append("\nOUTPUT_FRAMES_PER_BUFFER  : " + ((outputFramesPerBuffer == null) ?
+                "null" : outputFramesPerBuffer));
+        String outputSampleRate = audioManager.getProperty(
+                AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+        report.append("\nOUTPUT_SAMPLE_RATE  : " + ((outputSampleRate == null) ? "null" :
+                outputSampleRate));
         return report.toString();
     }
 
