@@ -18,10 +18,11 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 
+import androidx.annotation.NonNull;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;

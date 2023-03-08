@@ -18,6 +18,8 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 
+import androidx.annotation.NonNull;
+
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
@@ -25,7 +27,6 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.CheckBox;
 
