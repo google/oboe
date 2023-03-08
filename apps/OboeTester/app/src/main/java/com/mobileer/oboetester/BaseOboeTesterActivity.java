@@ -16,14 +16,13 @@
 
 package com.mobileer.oboetester;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 /**
  * Support requesting RECORD_AUDIO permission.

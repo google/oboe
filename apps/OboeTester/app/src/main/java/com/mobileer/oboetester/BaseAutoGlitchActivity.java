@@ -16,11 +16,10 @@
 
 package com.mobileer.oboetester;
 
-import androidx.annotation.Nullable;
-
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
