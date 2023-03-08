@@ -24,6 +24,8 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.Locale;
+
 /**
  * Display volume in dB as a red bar.
  * Display the amplitude, 0.0 to 1.0, as text in the bar.
@@ -81,7 +83,7 @@ public class VolumeBarView extends View {
         float volumeWidth = ((MIN_VOLUME_DB - mVolume) / MIN_VOLUME_DB) * mCurrentWidth;
         canvas.drawRect(0.0f, 0.0f, volumeWidth,
                 mCurrentHeight, mBarPaint);
-        String text = String.format(FORMAT_AMPLITUDE, mClippedAmplitude);
+        String text = String.format(Locale.getDefault(), FORMAT_AMPLITUDE, mClippedAmplitude);
         mTextPaint.getTextBounds(text, 0, text.length(), mTextBounds);
         canvas.drawText(text,
                 20.0f,

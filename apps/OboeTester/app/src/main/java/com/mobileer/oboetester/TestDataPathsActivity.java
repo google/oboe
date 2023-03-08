@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
 import java.lang.reflect.Field;
+import java.util.Locale;
 
 /**
  * Play a recognizable tone on each channel of each speaker device
@@ -145,7 +146,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         public void run() {
             mMagnitude = getMagnitude();
             mMaxMagnitude = getMaxMagnitude();
-            Log.d(TAG, String.format("magnitude = %7.4f, maxMagnitude = %7.4f",
+            Log.d(TAG, String.format(Locale.getDefault(), "magnitude = %7.4f, maxMagnitude = %7.4f",
                     mMagnitude, mMaxMagnitude));
             // Only look at the phase if we have a signal.
             if (mMagnitude >= MIN_REQUIRED_MAGNITUDE) {
@@ -158,7 +159,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     // low pass filter
                     mPhaseErrorSum += phaseError;
                     mPhaseErrorCount++;
-                    Log.d(TAG, String.format("phase = %7.4f, diff = %7.4f, jitter = %7.4f",
+                    Log.d(TAG, String.format(Locale.getDefault(), "phase = %7.4f, diff = %7.4f, jitter = %7.4f",
                             phase, phaseError, getAveragePhaseError()));
                 }
                 mPhase = phase;
@@ -232,7 +233,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     static String getMagnitudeText(double value) {
-        return String.format(MAGNITUDE_FORMAT, value);
+        return String.format(Locale.getDefault(), MAGNITUDE_FORMAT, value);
     }
 
     protected String getConfigText(StreamConfiguration config) {

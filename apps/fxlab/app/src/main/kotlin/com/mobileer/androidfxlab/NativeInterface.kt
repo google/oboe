@@ -34,7 +34,7 @@ object NativeInterface {
     // Functions/Members called by UI code
     // Adds effect at end of effect list
     fun addEffect(effect: Effect) {
-        Log.d("INTERFACE", String.format("Effect %s added", effect.name))
+        Log.d("INTERFACE", String.format(Locale.getDefault(), "Effect %s added", effect.name))
         addDefaultEffectNative(
             convertEffectToId(
                 effect
@@ -44,7 +44,7 @@ object NativeInterface {
 
     // Enables effect at index
     fun enableEffectAt(turnOn: Boolean, index: Int) {
-        Log.d("INTERFACE", String.format("Effect %b at index %d", turnOn, index))
+        Log.d("INTERFACE", String.format(Locale.getDefault(), "Effect %b at index %d", turnOn, index))
         enableEffectNative(index, turnOn)
     }
 
@@ -52,7 +52,7 @@ object NativeInterface {
     fun updateParamsAt(effect: Effect, index: Int) {
         Log.d(
             "INTERFACE",
-            String.format(
+            String.format(Locale.getDefault(), 
                 "Params were updated at index %d to %f",
                 index,
                 effect.paramValues[0]
@@ -67,13 +67,13 @@ object NativeInterface {
 
     // Removes effect at index
     fun removeEffectAt(index: Int) {
-        Log.d("INTERFACE", String.format("Effect was removed at index %d", index))
+        Log.d("INTERFACE", String.format(Locale.getDefault(), "Effect was removed at index %d", index))
         removeEffectNative(index)
     }
 
     // Rotates existing effect from index to another
     fun rotateEffectAt(from: Int, to: Int) {
-        Log.d("INTERFACE", String.format("Effect was rotated from %d to %d", from, to))
+        Log.d("INTERFACE", String.format(Locale.getDefault(), "Effect was rotated from %d to %d", from, to))
         rotateEffectNative(from, to)
     }
 

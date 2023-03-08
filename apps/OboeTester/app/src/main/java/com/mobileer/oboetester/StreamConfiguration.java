@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Container for the properties of a Stream.
@@ -571,26 +572,26 @@ public class StreamConfiguration {
     public String dump() {
         String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
         StringBuffer message = new StringBuffer();
-        message.append(String.format("%s.channels = %d\n", prefix, mChannelCount));
-        message.append(String.format("%s.perf = %s\n", prefix,
-                convertPerformanceModeToText(mPerformanceMode).toLowerCase()));
+        message.append(String.format(Locale.getDefault(), "%s.channels = %d\n", prefix, mChannelCount));
+        message.append(String.format(Locale.getDefault(), "%s.perf = %s\n", prefix,
+                convertPerformanceModeToText(mPerformanceMode).toLowerCase(Locale.getDefault())));
         if (getDirection() == DIRECTION_INPUT) {
-            message.append(String.format("%s.preset = %s\n", prefix,
-                    convertInputPresetToText(mInputPreset).toLowerCase()));
+            message.append(String.format(Locale.getDefault(), "%s.preset = %s\n", prefix,
+                    convertInputPresetToText(mInputPreset).toLowerCase(Locale.getDefault())));
         } else {
-            message.append(String.format("%s.preset = %s\n", prefix,
-                    convertUsageToText(mUsage).toLowerCase()));
-            message.append(String.format("%s.contentType = %s\n", prefix,
-                    convertContentTypeToText(mContentType).toLowerCase()));
+            message.append(String.format(Locale.getDefault(), "%s.preset = %s\n", prefix,
+                    convertUsageToText(mUsage).toLowerCase(Locale.getDefault())));
+            message.append(String.format(Locale.getDefault(), "%s.contentType = %s\n", prefix,
+                    convertContentTypeToText(mContentType).toLowerCase(Locale.getDefault())));
         }
-        message.append(String.format("%s.sharing = %s\n", prefix,
-                convertSharingModeToText(mSharingMode).toLowerCase()));
-        message.append(String.format("%s.api = %s\n", prefix,
-                convertNativeApiToText(getNativeApi()).toLowerCase()));
-        message.append(String.format("%s.rate = %d\n", prefix, mSampleRate));
-        message.append(String.format("%s.device = %d\n", prefix, mDeviceId));
-        message.append(String.format("%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
-        message.append(String.format("%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
+        message.append(String.format(Locale.getDefault(), "%s.sharing = %s\n", prefix,
+                convertSharingModeToText(mSharingMode).toLowerCase(Locale.getDefault())));
+        message.append(String.format(Locale.getDefault(), "%s.api = %s\n", prefix,
+                convertNativeApiToText(getNativeApi()).toLowerCase(Locale.getDefault())));
+        message.append(String.format(Locale.getDefault(), "%s.rate = %d\n", prefix, mSampleRate));
+        message.append(String.format(Locale.getDefault(), "%s.device = %d\n", prefix, mDeviceId));
+        message.append(String.format(Locale.getDefault(), "%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
+        message.append(String.format(Locale.getDefault(), "%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
         return message.toString();
     }
 
@@ -622,7 +623,7 @@ public class StreamConfiguration {
     }
 
     private static boolean matchInputPreset(String text, int preset) {
-        return convertInputPresetToText(preset).toLowerCase().equals(text);
+        return convertInputPresetToText(preset).toLowerCase(Locale.getDefault()).equals(text);
     }
 
     /**
@@ -631,7 +632,7 @@ public class StreamConfiguration {
      * @return inputPreset, eg. INPUT_PRESET_CAMCORDER
      */
     public static int convertTextToInputPreset(String text) {
-        text = text.toLowerCase();
+        text = text.toLowerCase(Locale.getDefault());
         if (matchInputPreset(text, INPUT_PRESET_GENERIC)) {
             return INPUT_PRESET_GENERIC;
         } else if (matchInputPreset(text, INPUT_PRESET_CAMCORDER)) {

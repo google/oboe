@@ -23,6 +23,7 @@ import android.os.Build;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Locale;
 
 public class AudioQueryTools {
     private static String GETPROP_EXECUTABLE_PATH = "/system/bin/getprop";
@@ -90,7 +91,7 @@ public class AudioQueryTools {
 
     private static String formatKeyValueLine(String key, String value) {
         int numSpaces = Math.max(1, 21 - key.length());
-        String spaces = String.format("%0" + numSpaces + "d", 0).replace("0", " ");
+        String spaces = String.format(Locale.getDefault(), "%0" + numSpaces + "d", 0).replace("0", " ");
         return "\n" + key + spaces + ": " + value;
     }
 
