@@ -106,9 +106,7 @@ public class DeviceReportActivity extends Activity {
         report.append("Device: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
                 .append(", ").append(Build.PRODUCT).append("\n");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            report.append(AudioQueryTools.getMediaPerformanceClass());
-        }
+        report.append(reportExtraDeviceInfo());
 
         for (AudioDeviceInfo deviceInfo : devices) {
             report.append("\n==== Device =================== " + deviceInfo.getId() + "\n");
