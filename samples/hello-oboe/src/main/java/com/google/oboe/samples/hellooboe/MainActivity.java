@@ -331,7 +331,7 @@ public class MainActivity extends Activity {
                 if (PlaybackEngine.isLatencyDetectionSupported()) {
                     double latency = PlaybackEngine.getCurrentOutputLatencyMillis();
                     if (latency >= 0) {
-                        latencyStr = String.format(Locale.getDefault(), Locale.getDefault(), "%.2fms", latency);
+                        latencyStr = String.format(Locale.getDefault(), "%.2fms", latency);
                     } else {
                         latencyStr = "Unknown";
                     }
