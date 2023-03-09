@@ -100,7 +100,7 @@ public class WorkloadView extends LinearLayout {
         double workload = mExponentialTaper.linearToExponential(
                 ((double)progress) / FADER_PROGRESS_MAX);
         mAudioStreamTester.setWorkload(workload);
-        mTextView.setText("Workload = " + String.format(Locale.US, "%6.2f", workload));
+        mTextView.setText("Workload = " + String.format(Locale.getDefault(), "%6.2f", workload));
     }
 
     @Override

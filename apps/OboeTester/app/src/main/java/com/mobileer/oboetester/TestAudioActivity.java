@@ -710,8 +710,8 @@ abstract class TestAudioActivity extends Activity {
         report.append("build.fingerprint = " + Build.FINGERPRINT + "\n");
         try {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            report.append(String.format(Locale.US, "test.version = %s\n", pinfo.versionName));
-            report.append(String.format(Locale.US, "test.version.code = %d\n", pinfo.versionCode));
+            report.append(String.format(Locale.getDefault(), "test.version = %s\n", pinfo.versionName));
+            report.append(String.format(Locale.getDefault(), "test.version.code = %d\n", pinfo.versionCode));
         } catch (PackageManager.NameNotFoundException e) {
         }
         report.append("time.millis = " + System.currentTimeMillis() + "\n");

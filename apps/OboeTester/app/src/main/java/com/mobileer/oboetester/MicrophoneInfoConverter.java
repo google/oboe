@@ -40,7 +40,7 @@ public class MicrophoneInfoConverter {
 
     static String convertCoordinates(MicrophoneInfo.Coordinate3F coordinates) {
         if (coordinates == MicrophoneInfo.POSITION_UNKNOWN) return "Unknown";
-        return String.format(Locale.US, "{ %6.4g, %5.3g, %5.3g }",
+        return String.format(Locale.getDefault(), "{ %6.4g, %5.3g, %5.3g }",
                 coordinates.x, coordinates.y, coordinates.z);
     }
 

@@ -179,7 +179,7 @@ public class SynthEngine extends MidiReceiver {
     public void logMidiMessage(byte[] data, int offset, int count) {
         String text = "Received: ";
         for (int i = 0; i < count; i++) {
-            text += String.format(Locale.US, "0x%02X, ", data[offset + i]);
+            text += String.format(Locale.getDefault(), "0x%02X, ", data[offset + i]);
         }
         Log.i(TAG, text);
     }

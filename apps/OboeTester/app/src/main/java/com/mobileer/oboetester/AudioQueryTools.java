@@ -91,7 +91,7 @@ public class AudioQueryTools {
 
     private static String formatKeyValueLine(String key, String value) {
         int numSpaces = Math.max(1, 21 - key.length());
-        String spaces = String.format(Locale.US, "%0" + numSpaces + "d", 0).replace("0", " ");
+        String spaces = String.format(Locale.getDefault(), "%0" + numSpaces + "d", 0).replace("0", " ");
         return "\n" + key + spaces + ": " + value;
     }
 
