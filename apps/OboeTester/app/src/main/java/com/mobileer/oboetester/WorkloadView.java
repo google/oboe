@@ -23,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 public class WorkloadView extends LinearLayout {
 
     private AudioStreamTester mAudioStreamTester;
@@ -98,7 +100,7 @@ public class WorkloadView extends LinearLayout {
         double workload = mExponentialTaper.linearToExponential(
                 ((double)progress) / FADER_PROGRESS_MAX);
         mAudioStreamTester.setWorkload(workload);
-        mTextView.setText("Workload = " + String.format("%6.2f", workload));
+        mTextView.setText("Workload = " + String.format(Locale.getDefault(), "%6.2f", workload));
     }
 
     @Override

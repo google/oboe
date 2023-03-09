@@ -28,15 +28,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Base class for other Activities.
@@ -709,8 +710,8 @@ abstract class TestAudioActivity extends Activity {
         report.append("build.fingerprint = " + Build.FINGERPRINT + "\n");
         try {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            report.append(String.format("test.version = %s\n", pinfo.versionName));
-            report.append(String.format("test.version.code = %d\n", pinfo.versionCode));
+            report.append(String.format(Locale.getDefault(), "test.version = %s\n", pinfo.versionName));
+            report.append(String.format(Locale.getDefault(), "test.version.code = %d\n", pinfo.versionCode));
         } catch (PackageManager.NameNotFoundException e) {
         }
         report.append("time.millis = " + System.currentTimeMillis() + "\n");

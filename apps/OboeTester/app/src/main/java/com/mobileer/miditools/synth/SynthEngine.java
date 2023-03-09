@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 
 /**
  * Very simple polyphonic, single channel synthesizer. It runs a background
@@ -178,7 +179,7 @@ public class SynthEngine extends MidiReceiver {
     public void logMidiMessage(byte[] data, int offset, int count) {
         String text = "Received: ";
         for (int i = 0; i < count; i++) {
-            text += String.format("0x%02X, ", data[offset + i]);
+            text += String.format(Locale.getDefault(), "0x%02X, ", data[offset + i]);
         }
         Log.i(TAG, text);
     }

@@ -19,10 +19,11 @@ package com.mobileer.oboetester;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class BaseAutoGlitchActivity extends GlitchActivity {
 
@@ -208,8 +209,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 ? getOutputChannel() : getInputChannel();
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "INP")
                 + (config.isMMap() ? "-M" : "-L")
-                + ", ID = " + String.format("%2d", config.getDeviceId())
-                + ", SR = " + String.format("%5d", config.getSampleRate())
+                + ", ID = " + String.format(Locale.getDefault(), "%2d", config.getDeviceId())
+                + ", SR = " + String.format(Locale.getDefault(), "%5d", config.getSampleRate())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())

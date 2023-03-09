@@ -39,6 +39,8 @@ import android.util.Log;
 import com.mobileer.audio_device.AudioDeviceListEntry;
 import com.mobileer.audio_device.AudioDeviceSpinner;
 
+import java.util.Locale;
+
 /**
  * View for Editing a requested StreamConfiguration
  * and displaying the actual StreamConfiguration.
@@ -388,7 +390,7 @@ public class StreamConfigurationView extends LinearLayout {
             int channelMask = StreamConfiguration.convertTextToChannelMask(text);
             config.setChannelMask(channelMask);
             config.setChannelCount(0);
-            Log.d(TAG, String.format("Set channel mask as %s(%#x)", text, channelMask));
+            Log.d(TAG, String.format(Locale.getDefault(), "Set channel mask as %s(%#x)", text, channelMask));
         } else {
             config.setChannelCount(mChannelCountSpinner.getSelectedItemPosition());
             config.setChannelMask(StreamConfiguration.UNSPECIFIED);
@@ -531,7 +533,7 @@ public class StreamConfigurationView extends LinearLayout {
                 if (mAcousticEchoCanceler != null) {
                     mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isChecked());
                 } else {
-                    Log.e(TAG, String.format("Could not create AcousticEchoCanceler"));
+                    Log.e(TAG, String.format(Locale.getDefault(), "Could not create AcousticEchoCanceler"));
                 }
             }
             // If AGC is not available, the checkbox will be disabled in initializeViews().
@@ -540,7 +542,7 @@ public class StreamConfigurationView extends LinearLayout {
                 if (mAutomaticGainControl != null) {
                     mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isChecked());
                 } else {
-                    Log.e(TAG, String.format("Could not create AutomaticGainControl"));
+                    Log.e(TAG, String.format(Locale.getDefault(), "Could not create AutomaticGainControl"));
                 }
             }
         }
