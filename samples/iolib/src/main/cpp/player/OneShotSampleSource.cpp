@@ -23,31 +23,44 @@
 namespace iolib {
 
 void OneShotSampleSource::mixAudio(float* outBuff, int numChannels, int32_t numFrames) {
-    int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
+    int32_t numSamples = mSampleBuffer->getNumSamples();
+    int32_t sampleChannels = mSampleBuffer->getProperties().channelCount;
+    int32_t samplesLeft = numSamples - mCurSampleIndex;
     int32_t numWriteFrames = mIsPlaying
-                         ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
+                         ? std::min(numFrames, samplesLeft / sampleChannels)
                          : 0;
 
     if (numWriteFrames != 0) {
-        // Mix in the samples
-
-        // investigate unrolling these loops...
         const float* data  = mSampleBuffer->getSampleData();
-        if (numChannels == 1) {
-            // MONO output
+        if ((sampleChannels == 1) && (numChannels == 1)) {
+            // MONO output from MONO samples
             for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                outBuff[frameIndex] += data[mCurFrameIndex++] * mGain;
+                outBuff[frameIndex] += data[mCurSampleIndex++] * mGain;
             }
-        } else if (numChannels == 2) {
-            // STEREO output
+        } else if ((sampleChannels == 1) && (numChannels == 2)) {
+            // STEREO output from MONO samples
             int dstSampleIndex = 0;
             for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                outBuff[dstSampleIndex++] += data[mCurFrameIndex] * mLeftGain;
-                outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * mRightGain;
+                outBuff[dstSampleIndex++] += data[mCurSampleIndex] * mLeftGain;
+                outBuff[dstSampleIndex++] += data[mCurSampleIndex++] * mRightGain;
+            }
+        } else if ((sampleChannels == 2) && (numChannels == 1)) {
+            // MONO output from STEREO samples
+            int dstSampleIndex = 0;
+            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                outBuff[dstSampleIndex++] += data[mCurSampleIndex++] * mLeftGain +
+                                             data[mCurSampleIndex++] * mRightGain;
+            }
+        } else if ((sampleChannels == 2) && (numChannels == 2)) {
+            // STEREO output from STEREO samples
+            int dstSampleIndex = 0;
+            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                outBuff[dstSampleIndex++] += data[mCurSampleIndex++] * mLeftGain;
+                outBuff[dstSampleIndex++] += data[mCurSampleIndex++] * mRightGain;
             }
         }
 
-        if (mCurFrameIndex >= numSampleFrames) {
+        if (mCurSampleIndex >= numSamples) {
             mIsPlaying = false;
         }
     }

@@ -168,15 +168,8 @@ class DrumThumperActivity : AppCompatActivity(),
 
         mDrumPlayer.setupAudioStream()
 
-        val allAssetsValid = mDrumPlayer.loadWavAssets(getAssets())
+        mDrumPlayer.loadWavAssets(getAssets())
 
-        if (!allAssetsValid) {
-            // show toast
-            val toast = Toast.makeText(this,
-                    "One or more audio assets has an incorrect format and may not play correctly",
-                    Toast.LENGTH_LONG)
-            toast.show()
-        }
         mDrumPlayer.startAudioStream()
 
         if (mUseDeviceChangeFallback) {

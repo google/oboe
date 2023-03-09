@@ -43,7 +43,7 @@ public:
     virtual AudioProperties getProperties() const { return mAudioProperties; }
 
     float* getSampleData() { return mSampleData; }
-    int32_t getNumSampleFrames() { return mNumSamples; }
+    int32_t getNumSamples() { return mNumSamples; }
 
 protected:
     AudioProperties mAudioProperties;
