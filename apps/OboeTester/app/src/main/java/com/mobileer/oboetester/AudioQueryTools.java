@@ -126,6 +126,9 @@ public class AudioQueryTools {
     }
 
     public static String getMediaPerformanceClass() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
+            return formatKeyValueLine("Media Perf Class", "not supported");
+        }
         int mpc = Build.VERSION.MEDIA_PERFORMANCE_CLASS;
         String text = (mpc == 0) ? "not declared" : convertSdkToShortName(mpc);
         return formatKeyValueLine("Media Perf Class",
