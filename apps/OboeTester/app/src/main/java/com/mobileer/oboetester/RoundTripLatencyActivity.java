@@ -133,18 +133,18 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                             mTimestampLatencies.calculateMeanAbsoluteDeviation(timestampLatencyMean);
                 }
                 message = "average.latency.msec = "
-                        + String.format(Locale.getDefault(), LATENCY_FORMAT, meanLatency) + "\n"
+                        + String.format(Locale.US, LATENCY_FORMAT, meanLatency) + "\n"
                         + "mean.absolute.deviation = "
-                        + String.format(Locale.getDefault(), LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
+                        + String.format(Locale.US, LATENCY_FORMAT, meanAbsoluteDeviation) + "\n"
                         + "average.confidence = "
-                        + String.format(Locale.getDefault(), CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
-                        + "min.latency.msec = " + String.format(Locale.getDefault(), LATENCY_FORMAT, mLatencies.getMin()) + "\n"
-                        + "max.latency.msec = " + String.format(Locale.getDefault(), LATENCY_FORMAT, mLatencies.getMax()) + "\n"
+                        + String.format(Locale.US, CONFIDENCE_FORMAT, mAverageConfidence) + "\n"
+                        + "min.latency.msec = " + String.format(Locale.US, LATENCY_FORMAT, mLatencies.getMin()) + "\n"
+                        + "max.latency.msec = " + String.format(Locale.US, LATENCY_FORMAT, mLatencies.getMax()) + "\n"
                         + "num.iterations = " + mLatencies.count() + "\n"
                         + "timestamp.latency.msec = "
-                        + String.format(Locale.getDefault(), LATENCY_FORMAT, timestampLatencyMean) + "\n"
+                        + String.format(Locale.US, LATENCY_FORMAT, timestampLatencyMean) + "\n"
                         + "timestamp.latency.mad = "
-                        + String.format(Locale.getDefault(), LATENCY_FORMAT, timestampLatencyMAD) + "\n";
+                        + String.format(Locale.US, LATENCY_FORMAT, timestampLatencyMAD) + "\n";
             }
             message += "num.failed = " + mBadCount + "\n";
             message += "\n"; // mark end of average report
@@ -249,7 +249,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         int progress = getAnalyzerProgress();
         int state = getAnalyzerState();
         int resetCount = getResetCount();
-        String message = String.format(Locale.getDefault(), "progress = %d\nstate = %d\n#resets = %d\n",
+        String message = String.format(Locale.US, "progress = %d\nstate = %d\n#resets = %d\n",
                 progress, state, resetCount);
         message += mAverageLatencyTestRunner.getLastReport();
         return message;
@@ -273,8 +273,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         double confidence = getMeasuredConfidence();
         String message = "";
 
-        message += String.format(Locale.getDefault(), "confidence = " + CONFIDENCE_FORMAT + "\n", confidence);
-        message += String.format(Locale.getDefault(), "result.text = %s\n", resultCodeToString(result));
+        message += String.format(Locale.US, "confidence = " + CONFIDENCE_FORMAT + "\n", confidence);
+        message += String.format(Locale.US, "result.text = %s\n", resultCodeToString(result));
 
         // Only report valid latencies.
         if (result == 0) {
@@ -283,26 +283,26 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             int bufferSize = mAudioOutTester.getCurrentAudioStream().getBufferSizeInFrames();
             int latencyEmptyFrames = latencyFrames - bufferSize;
             double latencyEmptyMillis = latencyEmptyFrames * 1000.0 / getSampleRate();
-            message += String.format(Locale.getDefault(), "latency.msec = " + LATENCY_FORMAT + "\n", latencyMillis);
-            message += String.format(Locale.getDefault(), "latency.frames = %d\n", latencyFrames);
-            message += String.format(Locale.getDefault(), "latency.empty.msec = " + LATENCY_FORMAT + "\n", latencyEmptyMillis);
-            message += String.format(Locale.getDefault(), "latency.empty.frames = %d\n", latencyEmptyFrames);
+            message += String.format(Locale.US, "latency.msec = " + LATENCY_FORMAT + "\n", latencyMillis);
+            message += String.format(Locale.US, "latency.frames = %d\n", latencyFrames);
+            message += String.format(Locale.US, "latency.empty.msec = " + LATENCY_FORMAT + "\n", latencyEmptyMillis);
+            message += String.format(Locale.US, "latency.empty.frames = %d\n", latencyEmptyFrames);
         }
 
-        message += String.format(Locale.getDefault(), "rms.signal = %7.5f\n", getSignalRMS());
-        message += String.format(Locale.getDefault(), "rms.noise = %7.5f\n", getBackgroundRMS());
-        message += String.format(Locale.getDefault(), "correlation = " + CONFIDENCE_FORMAT + "\n",
+        message += String.format(Locale.US, "rms.signal = %7.5f\n", getSignalRMS());
+        message += String.format(Locale.US, "rms.noise = %7.5f\n", getBackgroundRMS());
+        message += String.format(Locale.US, "correlation = " + CONFIDENCE_FORMAT + "\n",
                 getMeasuredCorrelation());
         double timestampLatency = getTimestampLatencyMillis();
-        message += String.format(Locale.getDefault(), "timestamp.latency.msec = " + LATENCY_FORMAT + "\n",
+        message += String.format(Locale.US, "timestamp.latency.msec = " + LATENCY_FORMAT + "\n",
                 timestampLatency);
         if (mTimestampLatencyStats.count() > 0) {
-            message += String.format(Locale.getDefault(), "timestamp.latency.mad = " + LATENCY_FORMAT + "\n",
+            message += String.format(Locale.US, "timestamp.latency.mad = " + LATENCY_FORMAT + "\n",
                     mTimestampLatencyStats.calculateMeanAbsoluteDeviation(timestampLatency));
         }
         message +=  "timestamp.latency.count = " + mTimestampLatencyStats.count() + "\n";
-        message += String.format(Locale.getDefault(), "reset.count = %d\n", resetCount);
-        message += String.format(Locale.getDefault(), "result = %d\n", result);
+        message += String.format(Locale.US, "reset.count = %d\n", resetCount);
+        message += String.format(Locale.US, "result = %d\n", result);
 
         return message;
     }

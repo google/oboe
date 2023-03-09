@@ -209,8 +209,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 ? getOutputChannel() : getInputChannel();
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "INP")
                 + (config.isMMap() ? "-M" : "-L")
-                + ", ID = " + String.format(Locale.getDefault(), "%2d", config.getDeviceId())
-                + ", SR = " + String.format(Locale.getDefault(), "%5d", config.getSampleRate())
+                + ", ID = " + String.format(Locale.US, "%2d", config.getDeviceId())
+                + ", SR = " + String.format(Locale.US, "%5d", config.getSampleRate())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())

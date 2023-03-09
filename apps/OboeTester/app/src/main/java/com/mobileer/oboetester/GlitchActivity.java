@@ -174,21 +174,21 @@ public class GlitchActivity extends AnalyzerActivity {
 
             StringBuffer message = new StringBuffer();
             message.append("state = " + stateToString(mPreviousState) + "\n");
-            message.append(String.format(Locale.getDefault(), "unlocked.frames = %d\n", mLastUnlockedFrames));
-            message.append(String.format(Locale.getDefault(), "locked.frames = %d\n", mLastLockedFrames));
-            message.append(String.format(Locale.getDefault(), "glitch.frames = %d\n", mLastGlitchFrames));
-            message.append(String.format(Locale.getDefault(), "reset.count = %d\n", mLastResetCount - mStartResetCount));
-            message.append(String.format(Locale.getDefault(), "peak.amplitude = %8.6f\n", mPeakAmplitude));
-            message.append(String.format(Locale.getDefault(), "sine.amplitude = %8.6f\n", mSineAmplitude));
+            message.append(String.format(Locale.US, "unlocked.frames = %d\n", mLastUnlockedFrames));
+            message.append(String.format(Locale.US, "locked.frames = %d\n", mLastLockedFrames));
+            message.append(String.format(Locale.US, "glitch.frames = %d\n", mLastGlitchFrames));
+            message.append(String.format(Locale.US, "reset.count = %d\n", mLastResetCount - mStartResetCount));
+            message.append(String.format(Locale.US, "peak.amplitude = %8.6f\n", mPeakAmplitude));
+            message.append(String.format(Locale.US, "sine.amplitude = %8.6f\n", mSineAmplitude));
             if (mLastLockedFrames > 0) {
-                message.append(String.format(Locale.getDefault(), "signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
+                message.append(String.format(Locale.US, "signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             }
-            message.append(String.format(Locale.getDefault(), "time.total = %4.2f seconds\n", totalSeconds));
+            message.append(String.format(Locale.US, "time.total = %4.2f seconds\n", totalSeconds));
             if (mLastLockedFrames > 0) {
-                message.append(String.format(Locale.getDefault(), "time.no.glitches = %4.2f\n", mSecondsWithoutGlitches));
-                message.append(String.format(Locale.getDefault(), "max.time.no.glitches = %4.2f\n",
+                message.append(String.format(Locale.US, "time.no.glitches = %4.2f\n", mSecondsWithoutGlitches));
+                message.append(String.format(Locale.US, "max.time.no.glitches = %4.2f\n",
                         mMaxSecondsWithoutGlitches));
-                message.append(String.format(Locale.getDefault(), "glitch.count = %d\n", mLastGlitchCount));
+                message.append(String.format(Locale.US, "glitch.count = %d\n", mLastGlitchCount));
             }
             return message.toString();
         }
@@ -198,7 +198,7 @@ public class GlitchActivity extends AnalyzerActivity {
             String resultText = "#glitches = " + getLastGlitchCount()
                     + ", #resets = " + getLastResetCount()
                     + ", max no glitch = " + getMaxSecondsWithNoGlitch() + " secs\n";
-            resultText += String.format(Locale.getDefault(), "SNR = %5.1f db", mSignalToNoiseDB);
+            resultText += String.format(Locale.US, "SNR = %5.1f db", mSignalToNoiseDB);
             resultText += ", #locked = " + mLastLockedFrames;
             return resultText;
         }

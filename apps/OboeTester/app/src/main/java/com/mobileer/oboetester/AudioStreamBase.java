@@ -69,7 +69,7 @@ public abstract class AudioStreamBase {
 
         public String dump() {
             if (count == 0) return "?";
-            return String.format(Locale.getDefault(), "%3.1f/%3.1f/%3.1f ms", minimum, getAverage(), maximum);
+            return String.format(Locale.US, "%3.1f/%3.1f/%3.1f ms", minimum, getAverage(), maximum);
         }
     }
 
@@ -98,15 +98,15 @@ public abstract class AudioStreamBase {
             buffer.append("time between callbacks = " + callbackTimeStr + "\n");
 
             buffer.append("written "
-                    + String.format(Locale.getDefault(), "0x%08X", framesWritten)
-                    + " - read " + String.format(Locale.getDefault(), "0x%08X", framesRead)
+                    + String.format(Locale.US, "0x%08X", framesWritten)
+                    + " - read " + String.format(Locale.US, "0x%08X", framesRead)
                     + " = " + (framesWritten - framesRead) + " frames\n");
 
-            String cpuLoadText = String.format(Locale.getDefault(), "%2d%c", (int)(cpuLoad * 100), '%');
+            String cpuLoadText = String.format(Locale.US, "%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
                     convertStateToString(state)
                     + ", #cb=" + callbackCount
-                    + ", f/cb=" + String.format(Locale.getDefault(), "%3d", framesPerCallback)
+                    + ", f/cb=" + String.format(Locale.US, "%3d", framesPerCallback)
                     + ", " + cpuLoadText + " cpu"
                     + "\n");
 

@@ -177,7 +177,7 @@ public class TapToToneTester {
                     mLatencyMax = latencyMillis;
                 }
 
-                text = String.format(Locale.getDefault(), "tap-to-tone latency = %3d msec\n", latencyMillis);
+                text = String.format(Locale.US, "tap-to-tone latency = %3d msec\n", latencyMillis);
             }
             mWaveformView.setSampleData(result.filtered);
         }
@@ -186,7 +186,7 @@ public class TapToToneTester {
             int averageLatencySamples = mLatencySumSamples / mMeasurementCount;
             int averageLatencyMillis = 1000 * averageLatencySamples / result.frameRate;
             final String plural = (mMeasurementCount == 1) ? "test" : "tests";
-            text = text + String.format(Locale.getDefault(), "min = %3d, avg = %3d, max = %3d, %d %s",
+            text = text + String.format(Locale.US, "min = %3d, avg = %3d, max = %3d, %d %s",
                     mLatencyMin, averageLatencyMillis, mLatencyMax, mMeasurementCount, plural);
         }
         final String postText = text;
