@@ -480,11 +480,12 @@ public class StreamConfigurationView extends LinearLayout {
         int hardwareChannelCount = actualConfiguration.getHardwareChannelCount();
         int hardwareSampleRate = actualConfiguration.getHardwareSampleRate();
         int hardwareFormat = actualConfiguration.getHardwareFormat();
-        msg += "\nhardware channel count = " + (hardwareChannelCount ==
-                StreamConfiguration.UNSPECIFIED ? "Unspecified" : hardwareChannelCount);
-        msg += "\nhardware sample rate = " + (hardwareSampleRate ==
-                StreamConfiguration.UNSPECIFIED ? "Unspecified" : hardwareSampleRate);
-        msg += "\nhardware format = " + StreamConfiguration.convertFormatToText(hardwareFormat);
+        msg += "\nHW: #ch=" + (hardwareChannelCount ==
+                StreamConfiguration.UNSPECIFIED ? "?" : hardwareChannelCount);
+        msg += ", SR=" + (hardwareSampleRate ==
+                StreamConfiguration.UNSPECIFIED ? "?" : hardwareSampleRate);
+        msg += ", format=" + (hardwareFormat == StreamConfiguration.UNSPECIFIED ?
+               "?" : StreamConfiguration.convertFormatToText(hardwareFormat));
 
         mStreamInfoView.setText(msg);
 
