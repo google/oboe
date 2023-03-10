@@ -15,14 +15,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/startAudio" />
+            android:text="@string/runTest" />
 
         <Button
             android:id="@+id/button_stop"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/stopAudio" />
+            android:text="@string/cancelTest" />
 
         <Button
             android:id="@+id/button_share"
