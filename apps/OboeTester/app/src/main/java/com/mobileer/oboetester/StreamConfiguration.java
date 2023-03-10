@@ -278,6 +278,9 @@ public class StreamConfiguration {
     private int mFramesPerBurst;
     private boolean mMMap;
     private int mChannelMask;
+    private int mHardwareChannelCount;
+    private int mHardwareSampleRate;
+    private int mHardwareFormat;
 
     public StreamConfiguration() {
         reset();
@@ -328,6 +331,9 @@ public class StreamConfiguration {
         mChannelConversionAllowed = false;
         mRateConversionQuality = RATE_CONVERSION_QUALITY_NONE;
         mMMap = NativeEngine.isMMapSupported();
+        mHardwareChannelCount = UNSPECIFIED;
+        mHardwareSampleRate = UNSPECIFIED;
+        mHardwareFormat = UNSPECIFIED;
     }
 
     public int getFramesPerBurst() {
@@ -592,6 +598,10 @@ public class StreamConfiguration {
         message.append(String.format(Locale.getDefault(), "%s.device = %d\n", prefix, mDeviceId));
         message.append(String.format(Locale.getDefault(), "%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
         message.append(String.format(Locale.getDefault(), "%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
+        message.append(String.format(Locale.getDefault(), "%s.hardware.channels = %d\n", prefix, mHardwareChannelCount));
+        message.append(String.format(Locale.getDefault(), "%s.hardware.sampleRate = %d\n", prefix, mHardwareSampleRate));
+        message.append(String.format(Locale.getDefault(), "%s.hardware.format = %s\n", prefix,
+                convertFormatToText(mHardwareFormat).toLowerCase(Locale.getDefault())));
         return message.toString();
     }
 
@@ -727,4 +737,27 @@ public class StreamConfiguration {
         return mChannelMaskStrings;
     }
 
+    public int getHardwareChannelCount() {
+        return mHardwareChannelCount;
+    }
+
+    public void setHardwareChannelCount(int hardwareChannelCount) {
+        this.mHardwareChannelCount = hardwareChannelCount;
+    }
+
+    public int getHardwareSampleRate() {
+        return mHardwareSampleRate;
+    }
+
+    public void setHardwareSampleRate(int hardwareSampleRate) {
+        this.mHardwareSampleRate = hardwareSampleRate;
+    }
+
+    public int getHardwareFormat() {
+        return mHardwareFormat;
+    }
+
+    public void setHardwareFormat(int hardwareFormat) {
+        this.mHardwareFormat = hardwareFormat;
+    }
 }

@@ -146,6 +146,12 @@ int AAudioLoader::open() {
     if (getSdkVersion() >= __ANDROID_API_S_V2__) {
         stream_getChannelMask = load_U_PS("AAudioStream_getChannelMask");
     }
+
+    // TODO: Add check for __ANDROID_API_U__ after Android U release
+    stream_getHardwareChannelCount     = load_I_PS("AAudioStream_getHardwareChannelCount");
+    stream_getHardwareSampleRate       = load_I_PS("AAudioStream_getHardwareSampleRate");
+    stream_getHardwareFormat           = load_F_PS("AAudioStream_getHardwareFormat");
+
     return 0;
 }
 

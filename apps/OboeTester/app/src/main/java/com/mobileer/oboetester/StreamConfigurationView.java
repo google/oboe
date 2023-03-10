@@ -469,12 +469,24 @@ public class StreamConfigurationView extends LinearLayout {
         mActualChannelMaskView.setText(StreamConfiguration.convertChannelMaskToText(value));
 
         boolean isMMap = actualConfiguration.isMMap();
-        mStreamInfoView.setText("burst = " + actualConfiguration.getFramesPerBurst()
-                + ", capacity = " + actualConfiguration.getBufferCapacityInFrames()
-                + ", devID = " + actualConfiguration.getDeviceId()
-                + ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy")
-                + (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "")
-        );
+
+        String msg = "";
+        msg += "burst = " + actualConfiguration.getFramesPerBurst();
+        msg += ", capacity = " + actualConfiguration.getBufferCapacityInFrames();
+        msg += ", devID = " + actualConfiguration.getDeviceId();
+        msg += ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy");
+        msg += (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "");
+
+        int hardwareChannelCount = actualConfiguration.getHardwareChannelCount();
+        int hardwareSampleRate = actualConfiguration.getHardwareSampleRate();
+        int hardwareFormat = actualConfiguration.getHardwareFormat();
+        msg += "\nhardware channel count = " + (hardwareChannelCount ==
+                StreamConfiguration.UNSPECIFIED ? "Unspecified" : hardwareChannelCount);
+        msg += "\nhardware sample rate = " + (hardwareSampleRate ==
+                StreamConfiguration.UNSPECIFIED ? "Unspecified" : hardwareSampleRate);
+        msg += "\nhardware format = " + StreamConfiguration.convertFormatToText(hardwareFormat);
+
+        mStreamInfoView.setText(msg);
 
         mHideableView.requestLayout();
     }

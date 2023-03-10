@@ -98,6 +98,8 @@ namespace oboe {
 
         /**
          * Unspecified format. Format will be decided by Oboe.
+         * When calling getHardwareFormat(), this will be returned if
+         * the API is not supported.
          */
         Unspecified = 0, // AAUDIO_FORMAT_UNSPECIFIED,
 
