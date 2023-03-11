@@ -123,3 +123,17 @@ This checks for dead speaker and mic channels, dead Input Presets and other audi
 1. Place the phone on a table in a quiet room and hit START.
 1. Wait a few minutes, quietly, for the test to complete. You will hear some sine tones.
 1. You will get a report at the end that you can SHARE by GMail or Drive.
+
+### External Tap-to-Tone
+
+This lets you measure the latency between touching a screen to the sound coming out on a second device.
+You could use this to measure, for example, the latency on an iPhone.
+
+1. Launch OboeTester on Android device (A) in a quiet room.
+2. Tap "EXTRAS..." button.
+3. Tap "EXTERNAL TAP" button.
+4. Launch a program on a second device (B) that will make a sound when you touch the screen. A good example would be an interactive drum pad.
+5. Tap "START" button to start listening on device (A).
+6. Tap on the app on the device (B) with your fingertip. You need to make a noise with your fingernail.
+7. Quickly tap the "ANALYSE" button on device (A).
+8. OboeTester will now look for two sounds in the recording and measure the time between them.
