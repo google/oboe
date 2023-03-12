@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>   // Do NOT delete. Needed for LLVM. See #1746
 #include <cassert>
 #include <math.h>
 #include "IntegerRatio.h"
