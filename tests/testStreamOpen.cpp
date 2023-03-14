@@ -460,3 +460,69 @@ TEST_F(StreamOpenOutput, OboeExtensions){
         ASSERT_TRUE(OboeExtensions::isMMapEnabled());
     }
 }
+
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedMedia){
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setInputPreset(InputPreset::Unprocessed);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Disabled);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedVoice){
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Enabled);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeVoiceDisabled){
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+        mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Disabled);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Disabled);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnprocessedEnabled){
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setInputPreset(InputPreset::Unprocessed);
+        mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Enabled);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Enabled);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetPrivacySensitiveModeGetsUnspecified){
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Enabled);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeGetsUnspecified){
+    mBuilder.setDirection(Direction::Input);
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
+    ASSERT_TRUE(closeStream());
+}

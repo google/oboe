@@ -649,6 +649,33 @@ namespace oboe {
     };
 
     /**
+     * The PrivacySensitiveMode attribute adds the possibility for apps to indicate that their
+     * capture use case is private and that a privileged Assistant should not be able to capture
+     * concurrently.
+     *
+     * This allows to override the default behavior tied to the audio source (e.g
+     * VOICE_COMMUNICATION is private by default but UNPROCESSED is not).
+     */
+    enum class PrivacySensitiveMode : int32_t {
+
+        /**
+         * When not explicitly requested, set privacy sensitive mode according to input preset:
+         * communication and camcorder captures are considered privacy sensitive by default.
+         */
+        Unspecified = kUnspecified,
+
+        /**
+         * Privacy sensitive mode disabled.
+         */
+        Disabled = 1,
+
+        /**
+         * Privacy sensitive mode enabled.
+         */
+        Enabled = 2,
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:

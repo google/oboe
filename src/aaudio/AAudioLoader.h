@@ -71,6 +71,10 @@ typedef int32_t aaudio_session_id_t;
 typedef uint32_t aaudio_channel_mask_t;
 #endif
 
+#ifndef __ANDROID_API_R__
+#define __ANDROID_API_R__ 30
+#endif
+
 #ifndef __ANDROID_API_S__
 #define __ANDROID_API_S__ 31
 #endif
@@ -115,6 +119,9 @@ class AAudioLoader {
     typedef void    (*signature_V_PBU)(AAudioStreamBuilder *, uint32_t);
 
     typedef void    (*signature_V_PBCPH)(AAudioStreamBuilder *, const char *);
+
+    // AAudioStreamBuilder_setPrivacySensitive
+    typedef void    (*signature_V_PBB)(AAudioStreamBuilder *, bool);
 
     typedef int32_t (*signature_I_PS)(AAudioStream *);  // AAudioStream_getSampleRate()
     typedef int64_t (*signature_L_PS)(AAudioStream *);  // AAudioStream_getFramesRead()
@@ -181,6 +188,8 @@ class AAudioLoader {
     signature_V_PBI builder_setInputPreset = nullptr;
     signature_V_PBI builder_setSessionId = nullptr;
 
+    signature_V_PBB builder_setPrivacySensitive = nullptr;
+
     signature_V_PBCPH builder_setPackageName = nullptr;
     signature_V_PBCPH builder_setAttributionTag = nullptr;
 
@@ -228,6 +237,8 @@ class AAudioLoader {
     signature_I_PS   stream_getInputPreset = nullptr;
     signature_I_PS   stream_getSessionId = nullptr;
 
+    signature_B_PS   stream_isPrivacySensitive = nullptr;
+
     signature_U_PS   stream_getChannelMask = nullptr;
 
   private:
@@ -254,6 +265,7 @@ class AAudioLoader {
     signature_I_PSKPLPL load_I_PSKPLPL(const char *name);
     signature_V_PBU     load_V_PBU(const char *name);
     signature_U_PS      load_U_PS(const char *name);
+    signature_V_PBB     load_V_PBB(const char *name);
 
     void *mLibHandle = nullptr;
 };

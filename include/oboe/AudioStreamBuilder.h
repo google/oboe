@@ -349,6 +349,29 @@ public:
     }
 
     /**
+     * Request an input stream to a specific privacy sensitive mode.
+     *
+     * In most cases, this should not be used.
+     *
+     * The PrivacySensitiveMode attribute adds the possibility for apps to indicate that their
+     * capture use case is private and that a privileged Assistant should not be able to capture
+     * concurrently.
+     *
+     * This allows to override the default behavior tied to the audio
+     * source (e.g VOICE_COMMUNICATION is private by default but
+     * UNPROCESSED is not).
+     *
+     * Note that when using OpenSL ES or input streams, this will be ignored.
+     *
+     * @param privacySensitiveMode privacy sensitive mode to use
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setPrivacySensitiveMode(PrivacySensitiveMode privacySensitiveMode) {
+        mPrivacySensitiveMode = privacySensitiveMode;
+        return this;
+    }
+
+    /**
      * Specifies an object to handle data related callbacks from the underlying API.
      *
      * <strong>Important: See AudioStreamCallback for restrictions on what may be called

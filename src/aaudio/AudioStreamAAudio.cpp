@@ -263,6 +263,12 @@ Result AudioStreamAAudio::open() {
                                            mAttributionTag.c_str());
     }
 
+    if (mLibLoader->builder_setPrivacySensitive != nullptr && mDirection == oboe::Direction::Input
+            && mPrivacySensitiveMode != PrivacySensitiveMode::Unspecified) {
+        mLibLoader->builder_setPrivacySensitive(aaudioBuilder,
+                mPrivacySensitiveMode == PrivacySensitiveMode::Enabled);
+    }
+
     if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerDataCallback());
@@ -318,6 +324,14 @@ Result AudioStreamAAudio::open() {
         mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
     } else {
         mSessionId = SessionId::None;
+    }
+
+    if (mLibLoader->stream_isPrivacySensitive != nullptr && mDirection == oboe::Direction::Input) {
+        bool isPrivacySensitive = mLibLoader->stream_isPrivacySensitive(mAAudioStream);
+        mPrivacySensitiveMode = isPrivacySensitive ? PrivacySensitiveMode::Enabled :
+                PrivacySensitiveMode::Disabled;
+    } else {
+        mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;
     }
 
     if (mLibLoader->stream_getChannelMask != nullptr) {
