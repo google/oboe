@@ -310,6 +310,18 @@ int getSdkVersion() {
     return sCachedSdkVersion;
 }
 
+bool isAtLeastPreReleaseCodename(const std::string& codename) {
+    std::string buildCodename = getPropertyString("ro.build.version.codename");
+    // Special case "REL", which means the build is not a pre-release build.
+    if ("REL" == buildCodename) {
+        return false;
+    }
+
+    // Otherwise lexically compare them. Return true if the build codename is equal to or
+    // greater than the requested codename.
+    return buildCodename.compare(codename) >= 0;
+}
+
 int getChannelCountFromChannelMask(ChannelMask channelMask) {
     return __builtin_popcount(static_cast<uint32_t>(channelMask));
 }
