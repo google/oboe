@@ -34,11 +34,12 @@ namespace iolib {
 constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
 
 SimpleMultiPlayer::SimpleMultiPlayer()
-  : mChannelCount(0), mOutputReset(false)
+  : mChannelCount(0), mOutputReset(false), mSampleRate(0), mNumSampleBuffers(0)
 {}
 
-DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void *audioData,
-        int32_t numFrames) {
+DataCallbackResult SimpleMultiPlayer::MyDataCallback::onAudioReady(AudioStream *oboeStream,
+                                                                   void *audioData,
+                                                                   int32_t numFrames) {
 
     StreamState streamState = oboeStream->getState();
     if (streamState != StreamState::Open && streamState != StreamState::Started) {
@@ -48,40 +49,42 @@ DataCallbackResult SimpleMultiPlayer::onAudioReady(AudioStream *oboeStream, void
         __android_log_print(ANDROID_LOG_ERROR, TAG, "  streamState::Disconnected");
     }
 
-    memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>(mChannelCount)
-            * sizeof(float));
+    memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>
+            (mParent->mChannelCount) * sizeof(float));
 
     // OneShotSampleSource* sources = mSampleSources.get();
-    for(int32_t index = 0; index < mNumSampleBuffers; index++) {
-        if (mSampleSources[index]->isPlaying()) {
-            mSampleSources[index]->mixAudio((float*)audioData, mChannelCount, numFrames);
+    for(int32_t index = 0; index < mParent->mNumSampleBuffers; index++) {
+        if (mParent->mSampleSources[index]->isPlaying()) {
+            mParent->mSampleSources[index]->mixAudio((float*)audioData, mParent->mChannelCount,
+                                                     numFrames);
         }
     }
 
     return DataCallbackResult::Continue;
 }
 
-void SimpleMultiPlayer::onErrorAfterClose(AudioStream *oboeStream, Result error) {
+void SimpleMultiPlayer::MyErrorCallback::onErrorAfterClose(AudioStream *oboeStream, Result error) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorAfterClose() error:%d", error);
 
-    resetAll();
-    if (openStream() && startStream()) {
-        mOutputReset = true;
+    mParent->resetAll();
+    if (mParent->openStream() && mParent->startStream()) {
+        mParent->mOutputReset = true;
     }
-}
-
-void SimpleMultiPlayer::onErrorBeforeClose(AudioStream *, Result error) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "==== onErrorBeforeClose() error:%d", error);
 }
 
 bool SimpleMultiPlayer::openStream() {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
 
+    // Use shared_ptr to prevent use of a deleted callback.
+    mDataCallback = std::make_shared<MyDataCallback>(this);
+    mErrorCallback = std::make_shared<MyErrorCallback>(this);
+
     // Create an audio stream
     AudioStreamBuilder builder;
     builder.setChannelCount(mChannelCount);
     // we will resample source data to device rate, so take default sample rate
-    builder.setCallback(this);
+    builder.setDataCallback(mDataCallback);
+    builder.setErrorCallback(mErrorCallback);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
