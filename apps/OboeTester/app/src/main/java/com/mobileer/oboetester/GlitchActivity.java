@@ -342,9 +342,6 @@ public class GlitchActivity extends AnalyzerActivity {
     public void onStopAudioTest(View view) {
         stopAudioTest();
         onTestFinished();
-        mStartButton.setEnabled(true);
-        mStopButton.setEnabled(false);
-        mShareButton.setEnabled(false);
         keepScreenOn(false);
     }
 

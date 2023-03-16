@@ -157,12 +157,6 @@ public class ManualGlitchActivity extends GlitchActivity {
 
     // Only call from UI thread.
     @Override
-    public void onTestFinished() {
-        super.onTestFinished();
-    }
-
-    // Only call from UI thread.
-    @Override
     public void onTestBegan() {
         mWaveformView.clearSampleData();
         mWaveformView.postInvalidate();
