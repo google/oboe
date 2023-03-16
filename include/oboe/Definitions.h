@@ -649,12 +649,11 @@ namespace oboe {
     };
 
     /**
-     * The PrivacySensitiveMode attribute adds the possibility for apps to indicate that their
-     * capture use case is private and that a privileged Assistant should not be able to capture
-     * concurrently.
+     * The PrivacySensitiveMode attribute determines whether an input stream can be shared
+     * with another privileged app, for example the Assistant.
      *
      * This allows to override the default behavior tied to the audio source (e.g
-     * VOICE_COMMUNICATION is private by default but UNPROCESSED is not).
+     * InputPreset::VoiceCommunication is private by default but InputPreset::Unprocessed is not).
      */
     enum class PrivacySensitiveMode : int32_t {
 

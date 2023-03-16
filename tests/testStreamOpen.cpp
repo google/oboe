@@ -461,7 +461,7 @@ TEST_F(StreamOpenOutput, OboeExtensions){
     }
 }
 
-TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedMedia){
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedUnprocessed){
     if (getSdkVersion() >= __ANDROID_API_R__){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setAudioApi(AudioApi::AAudio);
@@ -472,7 +472,7 @@ TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedMedia){
     }
 }
 
-TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedVoice){
+TEST_F(StreamOpenInput, AAudioInputSetPrivacySensitiveModeUnspecifiedVoiceCommunication){
     if (getSdkVersion() >= __ANDROID_API_R__){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setAudioApi(AudioApi::AAudio);
@@ -525,4 +525,14 @@ TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeGetsUnspecified){
     ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
     ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenInput, OldAndroidVersionInputSetPrivacySensitiveModeGetsUnspecified){
+    if (getSdkVersion() < __ANDROID_API_R__) {
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
+        ASSERT_TRUE(closeStream());
+    }
 }

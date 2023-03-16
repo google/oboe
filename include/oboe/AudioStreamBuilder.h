@@ -348,24 +348,26 @@ public:
         return this;
     }
 
-    /**
-     * Request an input stream to a specific privacy sensitive mode.
-     *
-     * In most cases, this should not be used.
-     *
-     * The PrivacySensitiveMode attribute adds the possibility for apps to indicate that their
-     * capture use case is private and that a privileged Assistant should not be able to capture
-     * concurrently.
-     *
-     * This allows to override the default behavior tied to the audio
-     * source (e.g VOICE_COMMUNICATION is private by default but
-     * UNPROCESSED is not).
-     *
-     * Note that when using OpenSL ES or input streams, this will be ignored.
-     *
-     * @param privacySensitiveMode privacy sensitive mode to use
-     * @return pointer to the builder so calls can be chained
-     */
+
+    /** Indicates whether this input stream must be marked as privacy sensitive or not.
+    *
+    * When PrivacySensitiveMode::Enabled, this input stream is privacy sensitive and any
+    * concurrent capture is not permitted.
+    *
+    * This is off (PrivacySensitiveMode::Disabled) by default except when the input preset is
+    * InputPreset::VoiceRecognition or InputPreset::Camcorder
+    *
+    * Always takes precedence over default from input preset when set explicitly.
+    *
+    * Only relevant if the stream direction is Direction::Input and AAudio is used.
+    *
+    * Added in API level 30 to AAudio.
+    *
+    * @param builder reference provided by AAudio_createStreamBuilder()
+    * @param privacySensitive PrivacySensitiveMode::Enabled if capture from this stream must be
+    * marked as privacy sensitive, PrivacySensitiveMode::Disabled if stream should be marked as
+    * not sensitive.
+    */
     AudioStreamBuilder *setPrivacySensitiveMode(PrivacySensitiveMode privacySensitiveMode) {
         mPrivacySensitiveMode = privacySensitiveMode;
         return this;

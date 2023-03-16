@@ -158,8 +158,17 @@ public:
     SessionId getSessionId() const { return mSessionId; }
 
     /**
-     * @return the stream's privacy sensitive mode.
-     */
+    * Return whether this input stream is marked as privacy sensitive.
+    *
+    * See AudioStreamBuilder_setPrivacySensitiveMode().
+    *
+    * Added in API level 30 to AAudio.
+    *
+    * @param stream reference provided by AAudioStreamBuilder_openStream()
+    * @return PrivacySensitiveMode::Enabled if privacy sensitive,
+    * PrivacySensitiveMode::Disabled if not privacy sensitive, and
+    * PrivacySensitiveMode::Unspecified if API is not supported.
+    */
     PrivacySensitiveMode getPrivacySensitiveMode() const { return mPrivacySensitiveMode; }
 
     /**
