@@ -363,6 +363,8 @@ Functions</h2></td></tr>
 <tr class="separator:a4284cffcf4d852ca4f357429303d7af5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54528938e9fccab7ad8947ccf0e409db"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a54528938e9fccab7ad8947ccf0e409db">getSdkVersion</a> ()</td></tr>
 <tr class="separator:a54528938e9fccab7ad8947ccf0e409db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8820e8cbf9e51c02f07f2333b8a4449e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a8820e8cbf9e51c02f07f2333b8a4449e">isAtLeastPreReleaseCodename</a> (const std::string &amp;codename)</td></tr>
+<tr class="separator:a8820e8cbf9e51c02f07f2333b8a4449e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8a7b699ea0ce2aa0d1e3959abec8a45"><td class="memItemLeft" align="right" valign="top"><a id="ae8a7b699ea0ce2aa0d1e3959abec8a45" name="ae8a7b699ea0ce2aa0d1e3959abec8a45"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>getChannelCountFromChannelMask</b> (<a class="el" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a> channelMask)</td></tr>
 <tr class="separator:ae8a7b699ea0ce2aa0d1e3959abec8a45"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -442,7 +444,7 @@ Variables</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b" name="a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b"></a>Invalid&#160;</td><td class="fielddoc"><p>Invalid format. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5" name="a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p>Unspecified format. Format will be decided by Oboe. </p>
+<tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5" name="a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p>Unspecified format. Format will be decided by Oboe. When calling getHardwareFormat(), this will be returned if the API is not supported. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d" name="a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d"></a>I16&#160;</td><td class="fielddoc"><p>Signed 16-bit integers. </p>
 </td></tr>
@@ -1051,6 +1053,32 @@ template&lt;typename FromType &gt; </div>
 <p>Return the version of the SDK that is currently running.</p>
 <p>For example, on Android, this would return 27 for Oreo 8.1. If the version number cannot be determined then this will return -1.</p>
 <dl class="section return"><dt>Returns</dt><dd>version number or -1 </dd></dl>
+
+</div>
+</div>
+<a id="a8820e8cbf9e51c02f07f2333b8a4449e" name="a8820e8cbf9e51c02f07f2333b8a4449e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8820e8cbf9e51c02f07f2333b8a4449e">&#9670;&#160;</a></span>isAtLeastPreReleaseCodename()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::isAtLeastPreReleaseCodename </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>codename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns whether a device is on a pre-release SDK that is at least the specified codename version.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">codename</td><td>the code name to verify. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>boolean of whether the device is on a pre-release SDK and is at least the specified codename </dd></dl>
 
 </div>
 </div>

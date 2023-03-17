@@ -147,6 +147,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1de8d6982d411a0cf50a32efba0ca3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a960887cfbac00417560e31b37538833d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a960887cfbac00417560e31b37538833d">getChannelMask</a> () const</td></tr>
 <tr class="separator:a960887cfbac00417560e31b37538833d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5a7ef505c01a808c8e2435fe43a6b5d"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ad5a7ef505c01a808c8e2435fe43a6b5d">getHardwareChannelCount</a> () const</td></tr>
+<tr class="separator:ad5a7ef505c01a808c8e2435fe43a6b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d2dd829dc24189e050bd97d668d36fd"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a6d2dd829dc24189e050bd97d668d36fd">getHardwareSampleRate</a> () const</td></tr>
+<tr class="separator:a6d2dd829dc24189e050bd97d668d36fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dfa57c51ae304e6d7fdeedc74fd49cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a4dfa57c51ae304e6d7fdeedc74fd49cb">getHardwareFormat</a> () const</td></tr>
+<tr class="separator:a4dfa57c51ae304e6d7fdeedc74fd49cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -199,6 +205,12 @@ std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_error_callbac
 <tr class="separator:ac74373825f5ecd1c7f4048ce85d9d41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae910f70ecc4785619312d98e6560f450"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ae910f70ecc4785619312d98e6560f450">mAttributionTag</a></td></tr>
 <tr class="separator:ae910f70ecc4785619312d98e6560f450"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a814d3abbb25bd721437c2948b906f2cc"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a814d3abbb25bd721437c2948b906f2cc">mHardwareChannelCount</a> = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td></tr>
+<tr class="separator:a814d3abbb25bd721437c2948b906f2cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a057c286587a513e23601c325b0fefd96"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a057c286587a513e23601c325b0fefd96">mHardwareSampleRate</a> = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td></tr>
+<tr class="separator:a057c286587a513e23601c325b0fefd96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e49ada79b226634348c1f9d273b8c12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a0e49ada79b226634348c1f9d273b8c12">mHardwareFormat</a> = <a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5">AudioFormat::Unspecified</a></td></tr>
+<tr class="separator:a0e49ada79b226634348c1f9d273b8c12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae47a39b573250751f933dd159d09bf0f"><td class="memItemLeft" align="right" valign="top"><a id="ae47a39b573250751f933dd159d09bf0f" name="ae47a39b573250751f933dd159d09bf0f"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>mChannelConversionAllowed</b> = false</td></tr>
 <tr class="separator:ae47a39b573250751f933dd159d09bf0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -550,6 +562,84 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the number of frames in each data callback or kUnspecified. </dd></dl>
+
+</div>
+</div>
+<a id="ad5a7ef505c01a808c8e2435fe43a6b5d" name="ad5a7ef505c01a808c8e2435fe43a6b5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5a7ef505c01a808c8e2435fe43a6b5d">&#9670;&#160;</a></span>getHardwareChannelCount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::AudioStreamBase::getHardwareChannelCount </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>number of channels for the hardware, for example 2 for stereo, or kUnspecified. </dd></dl>
+
+</div>
+</div>
+<a id="a4dfa57c51ae304e6d7fdeedc74fd49cb" name="a4dfa57c51ae304e6d7fdeedc74fd49cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4dfa57c51ae304e6d7fdeedc74fd49cb">&#9670;&#160;</a></span>getHardwareFormat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a> oboe::AudioStreamBase::getHardwareFormat </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>the audio sample format of the hardware (e.g. Float or I16) </dd></dl>
+
+</div>
+</div>
+<a id="a6d2dd829dc24189e050bd97d668d36fd" name="a6d2dd829dc24189e050bd97d668d36fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d2dd829dc24189e050bd97d668d36fd">&#9670;&#160;</a></span>getHardwareSampleRate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::AudioStreamBase::getHardwareSampleRate </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>hardware sample rate for the stream or kUnspecified </dd></dl>
 
 </div>
 </div>
@@ -1166,6 +1256,75 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 </table>
 </div><div class="memdoc">
 <p>Number of audio frames which will be requested in each callback </p>
+
+</div>
+</div>
+<a id="a814d3abbb25bd721437c2948b906f2cc" name="a814d3abbb25bd721437c2948b906f2cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a814d3abbb25bd721437c2948b906f2cc">&#9670;&#160;</a></span>mHardwareChannelCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::AudioStreamBase::mHardwareChannelCount = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hardware channel count. Only specified on Android 34+ AAudio streams </p>
+
+</div>
+</div>
+<a id="a0e49ada79b226634348c1f9d273b8c12" name="a0e49ada79b226634348c1f9d273b8c12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e49ada79b226634348c1f9d273b8c12">&#9670;&#160;</a></span>mHardwareFormat</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a> oboe::AudioStreamBase::mHardwareFormat = <a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a6fcdc090caeade09d0efd6253932b6f5">AudioFormat::Unspecified</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hardware format. Only specified on Android 34+ AAudio streams </p>
+
+</div>
+</div>
+<a id="a057c286587a513e23601c325b0fefd96" name="a057c286587a513e23601c325b0fefd96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a057c286587a513e23601c325b0fefd96">&#9670;&#160;</a></span>mHardwareSampleRate</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t oboe::AudioStreamBase::mHardwareSampleRate = <a class="el" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hardware sample rate. Only specified on Android 34+ AAudio streams </p>
 
 </div>
 </div>
