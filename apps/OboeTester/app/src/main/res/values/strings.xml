@@ -9,6 +9,7 @@
     <string name="startAudio">Start</string>
     <string name="pauseAudio">Pause</string>
     <string name="stopAudio">Stop</string>
+    <string name="releaseAudio">Release</string>
     <string name="closeAudio">Close</string>
     <string name="recordAudio">Record</string>
     <string name="playAudio">Play</string>

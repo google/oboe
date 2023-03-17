@@ -128,6 +128,12 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         super.pauseAudio();
     }
 
+    public void releaseAudio() {
+        configureChannelBoxes(0);
+        mOutputSignalSpinner.setEnabled(true);
+        super.releaseAudio();
+    }
+
     public void closeAudio() {
         configureChannelBoxes(0);
         mOutputSignalSpinner.setEnabled(true);

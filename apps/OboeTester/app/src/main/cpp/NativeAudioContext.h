@@ -131,6 +131,8 @@ public:
              jboolean isMMap,
              jboolean isInput);
 
+    oboe::Result release();
+
     virtual void close(int32_t streamIndex);
 
     virtual void configureForStart() {}

@@ -98,6 +98,16 @@ int32_t ActivityContext::allocateStreamIndex() {
     return mNextStreamHandle++;
 }
 
+oboe::Result ActivityContext::release() {
+    oboe::Result result = oboe::Result::OK;
+    stopBlockingIOThread();
+    for (auto entry : mOboeStreams) {
+        std::shared_ptr<oboe::AudioStream> oboeStream = entry.second;
+        result = oboeStream->release();
+    }
+    return result;
+}
+
 void ActivityContext::close(int32_t streamIndex) {
     stopBlockingIOThread();
     std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);

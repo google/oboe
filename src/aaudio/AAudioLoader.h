@@ -71,6 +71,10 @@ typedef int32_t aaudio_session_id_t;
 typedef uint32_t aaudio_channel_mask_t;
 #endif
 
+#ifndef __ANDROID_API_R__
+#define __ANDROID_API_R__ 30
+#endif
+
 #ifndef __ANDROID_API_S__
 #define __ANDROID_API_S__ 31
 #endif
@@ -202,6 +206,7 @@ class AAudioLoader {
 
     signature_I_PSKPLPL stream_getTimestamp = nullptr;
 
+    signature_I_PS   stream_release = nullptr;
     signature_I_PS   stream_close = nullptr;
 
     signature_I_PS   stream_getChannelCount = nullptr;

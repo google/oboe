@@ -59,8 +59,9 @@ abstract class TestAudioActivity extends Activity {
     public static final int AUDIO_STATE_STARTED = 1;
     public static final int AUDIO_STATE_PAUSED = 2;
     public static final int AUDIO_STATE_STOPPED = 3;
-    public static final int AUDIO_STATE_CLOSING = 4;
-    public static final int AUDIO_STATE_CLOSED = 5;
+    public static final int AUDIO_STATE_RELEASED = 4;
+    public static final int AUDIO_STATE_CLOSING = 5;
+    public static final int AUDIO_STATE_CLOSED = 6;
 
     public static final int COLOR_ACTIVE = 0xFFD0D0A0;
     public static final int COLOR_IDLE = 0xFFD0D0D0;
@@ -86,6 +87,7 @@ abstract class TestAudioActivity extends Activity {
     private Button mStartButton;
     private Button mPauseButton;
     private Button mStopButton;
+    private Button mReleaseButton;
     private Button mCloseButton;
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
@@ -309,6 +311,7 @@ abstract class TestAudioActivity extends Activity {
             mStartButton.setBackgroundColor(mAudioState == AUDIO_STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
             mPauseButton.setBackgroundColor(mAudioState == AUDIO_STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
             mStopButton.setBackgroundColor(mAudioState == AUDIO_STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
+            mReleaseButton.setBackgroundColor(mAudioState == AUDIO_STATE_RELEASED ? COLOR_ACTIVE : COLOR_IDLE);
             mCloseButton.setBackgroundColor(mAudioState == AUDIO_STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
         }
         setConfigViewsEnabled(mAudioState == AUDIO_STATE_CLOSED);
@@ -409,6 +412,7 @@ abstract class TestAudioActivity extends Activity {
             mStartButton = (Button) findViewById(R.id.button_start);
             mPauseButton = (Button) findViewById(R.id.button_pause);
             mStopButton = (Button) findViewById(R.id.button_stop);
+            mReleaseButton = (Button) findViewById(R.id.button_release);
             mCloseButton = (Button) findViewById(R.id.button_close);
         }
         mStreamContexts = new ArrayList<StreamContext>();
@@ -495,6 +499,10 @@ abstract class TestAudioActivity extends Activity {
         closeAudio();
     }
 
+    public void releaseAudio(View view) {
+        releaseAudio();
+    }
+
     public int getSampleRate() {
         return mSampleRate;
     }
@@ -579,6 +587,8 @@ abstract class TestAudioActivity extends Activity {
 
     private native int stopNative();
 
+    private native int releaseNative();
+
     protected native void setActivityType(int activityType);
 
     private native int getFramesPerCallback();
@@ -623,6 +633,16 @@ abstract class TestAudioActivity extends Activity {
             showErrorToast("Stop failed with " + result);
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
+            updateEnabledWidgets();
+        }
+    }
+
+    public void releaseAudio() {
+        int result = releaseNative();
+        if (result != 0) {
+            showErrorToast("release failed with " + result);
+        } else {
+            mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();
         }
     }
