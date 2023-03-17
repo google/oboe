@@ -285,6 +285,12 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
         LOGW("SessionId [AudioStreamBuilder::setSessionId()] "
              "is not supported on OpenSLES streams.");
     }
+
+    // Privacy Sensitive Mode
+    if (mPrivacySensitiveMode != PrivacySensitiveMode::Unspecified) {
+        LOGW("PrivacySensitiveMode [AudioStreamBuilder::setPrivacySensitiveMode()] "
+             "is not supported on OpenSLES streams.");
+    }
 }
 
 SLresult AudioStreamOpenSLES::configurePerformanceMode(SLAndroidConfigurationItf configItf) {

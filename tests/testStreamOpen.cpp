@@ -518,19 +518,21 @@ TEST_F(StreamOpenOutput, AAudioOutputSetPrivacySensitiveModeGetsUnspecified){
     }
 }
 
-TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeGetsUnspecified){
+TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeDoesNotCrash){
     mBuilder.setDirection(Direction::Input);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+    mBuilder.setInputPreset(InputPreset::Unprocessed);
+    mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Enabled);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
+    ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Enabled);
     ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpenInput, OldAndroidVersionInputSetPrivacySensitiveModeDoesNotCrash){
     if (getSdkVersion() < __ANDROID_API_R__) {
         mBuilder.setDirection(Direction::Input);
-        mBuilder.setInputPreset(InputPreset::VoiceCommunication);
+        mBuilder.setInputPreset(InputPreset::Unprocessed);
+        mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Enabled);
         ASSERT_TRUE(openStream());
         ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
         ASSERT_TRUE(closeStream());
