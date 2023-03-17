@@ -185,6 +185,21 @@ public:
         return mChannelMask;
     }
 
+    /**
+     * @return number of channels for the hardware, for example 2 for stereo, or kUnspecified.
+     */
+    int32_t getHardwareChannelCount() const { return mHardwareChannelCount; }
+
+    /**
+     * @return hardware sample rate for the stream or kUnspecified
+     */
+    int32_t getHardwareSampleRate() const { return mHardwareSampleRate; }
+
+    /**
+     * @return the audio sample format of the hardware (e.g. Float or I16)
+     */
+    AudioFormat getHardwareFormat() const { return mHardwareFormat; }
+
 protected:
     /** The callback which will be fired when new data is ready to be read/written. **/
     AudioStreamDataCallback        *mDataCallback = nullptr;
@@ -233,6 +248,13 @@ protected:
     std::string                     mPackageName;
     /** Control the attribution tag of the context creating the stream. Only active on Android 31+ */
     std::string                     mAttributionTag;
+
+    /** Hardware channel count. Only specified on Android 34+ AAudio streams */
+    int32_t                         mHardwareChannelCount = kUnspecified;
+    /** Hardware sample rate. Only specified on Android 34+ AAudio streams */
+    int32_t                         mHardwareSampleRate = kUnspecified;
+    /** Hardware format. Only specified on Android 34+ AAudio streams */
+    AudioFormat                     mHardwareFormat = AudioFormat::Unspecified;
 
     // Control whether Oboe can convert channel counts to achieve optimal results.
     bool                            mChannelConversionAllowed = false;

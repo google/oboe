@@ -98,6 +98,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setDirection(isInput()
                 ? StreamConfiguration.DIRECTION_INPUT
                 : StreamConfiguration.DIRECTION_OUTPUT);
+        actualConfiguration.setHardwareChannelCount(getHardwareChannelCount());
+        actualConfiguration.setHardwareSampleRate(getHardwareSampleRate());
+        actualConfiguration.setHardwareFormat(getHardwareFormat());
     }
 
     private native int openNative(
@@ -206,6 +209,21 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getChannelMask(streamIndex);
     }
     private native int getChannelMask(int streamIndex);
+
+    public int getHardwareChannelCount() {
+        return getHardwareChannelCount(streamIndex);
+    }
+    private native int getHardwareChannelCount(int streamIndex);
+
+    public int getHardwareSampleRate() {
+        return getHardwareSampleRate(streamIndex);
+    }
+    private native int getHardwareSampleRate(int streamIndex);
+
+    public int getHardwareFormat() {
+        return getHardwareFormat(streamIndex);
+    }
+    private native int getHardwareFormat(int streamIndex);
 
     public int getDeviceId() {
         return getDeviceId(streamIndex);

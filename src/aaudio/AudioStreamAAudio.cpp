@@ -324,6 +324,16 @@ Result AudioStreamAAudio::open() {
         mChannelMask = static_cast<ChannelMask>(mLibLoader->stream_getChannelMask(mAAudioStream));
     }
 
+    if (mLibLoader->stream_getHardwareChannelCount != nullptr) {
+        mHardwareChannelCount = mLibLoader->stream_getHardwareChannelCount(mAAudioStream);
+    }
+    if (mLibLoader->stream_getHardwareSampleRate != nullptr) {
+        mHardwareSampleRate = mLibLoader->stream_getHardwareSampleRate(mAAudioStream);
+    }
+    if (mLibLoader->stream_getHardwareFormat != nullptr) {
+        mHardwareFormat = static_cast<AudioFormat>(mLibLoader->stream_getHardwareFormat(mAAudioStream));
+    }
+
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
             static_cast<int>(mBufferCapacityInFrames));

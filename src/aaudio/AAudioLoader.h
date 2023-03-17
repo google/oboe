@@ -79,6 +79,10 @@ typedef uint32_t aaudio_channel_mask_t;
 #define __ANDROID_API_S_V2__ 32
 #endif
 
+#ifndef __ANDROID_API_U__
+#define __ANDROID_API_U__ 34
+#endif
+
 namespace oboe {
 
 /**
@@ -229,6 +233,10 @@ class AAudioLoader {
     signature_I_PS   stream_getSessionId = nullptr;
 
     signature_U_PS   stream_getChannelMask = nullptr;
+
+    signature_I_PS   stream_getHardwareChannelCount = nullptr;
+    signature_I_PS   stream_getHardwareSampleRate = nullptr;
+    signature_F_PS   stream_getHardwareFormat = nullptr;
 
   private:
     AAudioLoader() {}
