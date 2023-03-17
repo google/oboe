@@ -527,7 +527,7 @@ TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeGetsUnspecified){
     ASSERT_TRUE(closeStream());
 }
 
-TEST_F(StreamOpenInput, OldAndroidVersionInputSetPrivacySensitiveModeGetsUnspecified){
+TEST_F(StreamOpenInput, OldAndroidVersionInputSetPrivacySensitiveModeDoesNotCrash){
     if (getSdkVersion() < __ANDROID_API_R__) {
         mBuilder.setDirection(Direction::Input);
         mBuilder.setInputPreset(InputPreset::VoiceCommunication);
