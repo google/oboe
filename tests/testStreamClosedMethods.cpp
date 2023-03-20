@@ -38,7 +38,7 @@ protected:
 
     bool releaseStream() {
         Result r = mStream->release();
-        if (getSdkVersion() >= __ANDROID_API_R__ && mBuilder.getAudioApi() != AudioApi::OpenSLES) {
+        if (getSdkVersion() > __ANDROID_API_R__ && mBuilder.getAudioApi() != AudioApi::OpenSLES) {
             EXPECT_EQ(r, Result::OK) << "Failed to release stream. " << convertToText(r);
             return (r == Result::OK);
         } else {

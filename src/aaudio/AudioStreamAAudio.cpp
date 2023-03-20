@@ -362,6 +362,12 @@ Result AudioStreamAAudio::release() {
         return Result::ErrorUnimplemented;
     }
 
+    // AAudioStream_release() is buggy on Android R.
+    if (OboeGlobals::areWorkaroundsEnabled() && getSdkVersion() == __ANDROID_API_R__) {
+        LOGW("Skipping release() on Android R");
+        return Result::ErrorUnimplemented;
+    }
+
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
     if (stream != nullptr) {
