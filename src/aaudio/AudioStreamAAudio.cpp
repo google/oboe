@@ -369,7 +369,6 @@ Result AudioStreamAAudio::release() {
             // Make sure we are really stopped. Do it under mLock
             // so another thread cannot call requestStart() right before the close.
             requestStop_l(stream);
-            sleepBeforeClose();
         }
         return static_cast<Result>(mLibLoader->stream_release(stream));
     } else {
