@@ -90,6 +90,7 @@
         <item>PCM_FLOAT</item>
         <item>PCM_I24</item>
         <item>PCM_I32</item>
+        <item>IEC61937</item>
     </string-array>
 
     <string name="input_preset_prompt">InPreset:</string>

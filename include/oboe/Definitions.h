@@ -139,6 +139,19 @@ namespace oboe {
          */
         I32 = 4, // AAUDIO_FORMAT_PCM_I32
 
+        /**
+        * This format is used for compressed audio wrapped in IEC61937 for HDMI
+        * or S/PDIF passthrough.
+        *
+        * Unlike PCM playback, the Android framework is not able to do format
+        * conversion for IEC61937. In that case, when IEC61937 is requested, sampling
+        * rate and channel count or channel mask must be specified. Otherwise, it may
+        * fail when opening the stream. Apps are able to get the correct configuration
+        * for the playback by calling AudioManager#getDevices(int).
+        *
+        * Available since API 34 (U).
+        */
+        IEC61937 = 5, // AAUDIO_FORMAT_IEC61937
     };
 
     /**

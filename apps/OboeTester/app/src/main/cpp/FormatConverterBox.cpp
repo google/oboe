@@ -28,6 +28,7 @@ FormatConverterBox::FormatConverterBox(int32_t numSamples,
     mSource.reset();
     switch (mInputFormat) {
         case oboe::AudioFormat::I16:
+        case oboe::AudioFormat::IEC61937:
             mSource = std::make_unique<oboe::flowgraph::SourceI16>(1);
             break;
         case oboe::AudioFormat::I24:
@@ -46,6 +47,7 @@ FormatConverterBox::FormatConverterBox(int32_t numSamples,
     mSink.reset();
     switch (mOutputFormat) {
         case oboe::AudioFormat::I16:
+        case oboe::AudioFormat::IEC61937:
             mSink = std::make_unique<oboe::flowgraph::SinkI16>(1);
             break;
         case oboe::AudioFormat::I24:

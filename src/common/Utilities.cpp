@@ -66,6 +66,9 @@ int32_t convertFormatToSizeInBytes(AudioFormat format) {
         case AudioFormat::I32:
             size = sizeof(int32_t);
             break;
+        case AudioFormat::IEC61937:
+            size = sizeof(int16_t);
+            break;
         default:
             break;
     }
@@ -106,6 +109,7 @@ const char *convertToText<AudioFormat>(AudioFormat format) {
         case AudioFormat::Float:        return "Float";
         case AudioFormat::I24:          return "I24";
         case AudioFormat::I32:          return "I32";
+        case AudioFormat::IEC61937:     return "IEC61937";
         default:                        return "Unrecognized format";
     }
 }
