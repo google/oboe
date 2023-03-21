@@ -97,6 +97,15 @@ It plays a sine wave and then tries to record and lock onto that sine wave.
 If the actual input does not match the expected sine wave value then it is counted as a glitch.
 The test will display the maximum time that it ran without seeing a glitch.
 
+1. Plug in loopback adapter. (Optional)
+2. Press green bars to show input and output settings. Make changes. (optional)
+3. Press START button.
+4. Watch for state=LOCKED, which means it has detected and locked onto the sine wave output.
+5. Note the glitch count, which should be zero.
+6. Also the "max.time.no.glitcxhes" should be as long as you run the test.
+7. Press STOP button.
+8. Press SHARE button to send a WAV file recording of the last glitch by email to yourself.
+
 Look for the #XRuns display.
 If #XRuns increments when a glitch occurs then the glitch is probably due to preemption of the audio task.
 If #XRuns is not incrementing then the glitches may be due to AAudio MMAP tuning errors in the HAL.
