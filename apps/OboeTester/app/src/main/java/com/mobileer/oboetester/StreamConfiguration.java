@@ -495,7 +495,7 @@ public class StreamConfiguration {
             case AUDIO_FORMAT_PCM_FLOAT:
                 return "Float";
             case AUDIO_FORMAT_IEC61937:
-                return "Float";
+                return "IEC61937";
             default:
                 return "Invalid";
         }
