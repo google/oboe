@@ -524,7 +524,7 @@ TEST_F(StreamOpenInput, OpenSLESInputSetPrivacySensitiveModeDoesNotCrash){
     mBuilder.setInputPreset(InputPreset::Unprocessed);
     mBuilder.setPrivacySensitiveMode(PrivacySensitiveMode::Enabled);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Enabled);
+    ASSERT_EQ(mStream->getPrivacySensitiveMode(), PrivacySensitiveMode::Unspecified);
     ASSERT_TRUE(closeStream());
 }
 

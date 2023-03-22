@@ -108,6 +108,9 @@ Result AudioStreamOpenSLES::open() {
 
 
 SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configItf) {
+    // Setting privacy sensitive mode is not supported for OpenSL ES.
+    mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;
+
     SLresult result = registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
         return result;
