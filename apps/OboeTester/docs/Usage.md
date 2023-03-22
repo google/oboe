@@ -102,7 +102,7 @@ The test will display the maximum time that it ran without seeing a glitch.
 3. Press START button.
 4. Watch for state=LOCKED, which means it has detected and locked onto the sine wave output.
 5. Note the glitch count, which should be zero.
-6. Also the "max.time.no.glitcxhes" should be as long as you run the test.
+6. Also the "max.time.no.glitches" should be as long as you run the test.
 7. Press STOP button.
 8. Press SHARE button to send a WAV file recording of the last glitch by email to yourself.
 
