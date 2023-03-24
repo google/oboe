@@ -29,4 +29,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
         launchTestActivity(TestErrorCallbackActivity.class);
     }
 
+    public void onLaunchRouteDuringCallbackTest(View view) {
+        launchTestActivity(TestRouteDuringCallbackActivity.class);
+    }
+
 }

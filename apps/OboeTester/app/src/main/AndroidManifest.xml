@@ -108,6 +108,10 @@
             android:name=".TestErrorCallbackActivity"
             android:label="@string/title_error_callback"
             android:exported="true" />
+        <activity
+            android:name=".TestRouteDuringCallbackActivity"
+            android:label="@string/title_route_during_callback"
+            android:exported="true" />
 
         <service
             android:name=".MidiTapTester"

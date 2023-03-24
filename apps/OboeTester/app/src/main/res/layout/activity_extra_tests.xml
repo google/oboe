@@ -51,5 +51,15 @@
         android:backgroundTint="@color/button_tint"
         android:onClick="onLaunchErrorCallbackTest"
         android:text="Error Callback" />
+
+        <Button
+            android:id="@+id/buttonRouteDuringCallback"
+            android:layout_gravity="fill"
+            android:layout_width="0dp"
+            android:layout_columnWeight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchRouteDuringCallbackTest"
+            android:text="Routing Stress" />
 </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
