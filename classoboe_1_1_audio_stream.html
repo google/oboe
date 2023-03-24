@@ -102,6 +102,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8ebb587a07bf62c864fd62c63b241fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a686c6ce8a29051c858fd1de386805dc6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a686c6ce8a29051c858fd1de386805dc6">open</a> ()</td></tr>
 <tr class="separator:a686c6ce8a29051c858fd1de386805dc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eff89cae5bffa989e2413557e64c386"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a4eff89cae5bffa989e2413557e64c386">release</a> ()</td></tr>
+<tr class="separator:a4eff89cae5bffa989e2413557e64c386"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c8ea30e30e513766d5e996c370eb8d8"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#a9c8ea30e30e513766d5e996c370eb8d8">close</a> ()</td></tr>
 <tr class="separator:a9c8ea30e30e513766d5e996c370eb8d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af04f03eb6b64b564f1c4401688987d21"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21">start</a> (int64_t timeoutNanoseconds=<a class="el" href="namespaceoboe.html#aab8f5f081a8b2147e16ec920347c1b5c">kDefaultTimeoutNanos</a>)</td></tr>
@@ -1124,6 +1126,41 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a> which has a result of Result::OK and a value containing the number of frames actually read, or result of Result::Error*. </dd></dl>
+
+</div>
+</div>
+<a id="a4eff89cae5bffa989e2413557e64c386" name="a4eff89cae5bffa989e2413557e64c386"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4eff89cae5bffa989e2413557e64c386">&#9670;&#160;</a></span>release()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a> oboe::AudioStream::release </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Free the audio resources associated with a stream created by AAudioStreamBuilder_openStream().</p>
+<p>AAudioStream_close() should be called at some point after calling this function.</p>
+<p>After this call, the stream will be in AAUDIO_STREAM_STATE_CLOSING</p>
+<p>This function is useful if you want to release the audio resources immediately, but still allow queries to the stream to occur from other threads. This often happens if you are monitoring stream progress from a UI thread.</p>
+<p>NOTE: This function is only fully implemented for MMAP streams, which are low latency streams supported by some devices. On other "Legacy" streams some audio resources will still be in use and some callbacks may still be in process after this call.</p>
+<p>Available in AAudio since API level 30. Returns Result::ErrorUnimplemented otherwise.</p>
+<ul>
+<li><dl class="section return"><dt>Returns</dt><dd>either Result::OK or an error. </dd></dl>
+</li>
+</ul>
 
 </div>
 </div>
