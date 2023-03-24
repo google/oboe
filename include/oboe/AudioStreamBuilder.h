@@ -348,6 +348,31 @@ public:
         return this;
     }
 
+
+    /** Indicates whether this input stream must be marked as privacy sensitive or not.
+    *
+    * When PrivacySensitiveMode::Enabled, this input stream is privacy sensitive and any
+    * concurrent capture is not permitted.
+    *
+    * This is off (PrivacySensitiveMode::Disabled) by default except when the input preset is
+    * InputPreset::VoiceRecognition or InputPreset::Camcorder
+    *
+    * Always takes precedence over default from input preset when set explicitly.
+    *
+    * Only relevant if the stream direction is Direction::Input and AAudio is used.
+    *
+    * Added in API level 30 to AAudio.
+    *
+    * @param builder reference provided by AAudio_createStreamBuilder()
+    * @param privacySensitive PrivacySensitiveMode::Enabled if capture from this stream must be
+    * marked as privacy sensitive, PrivacySensitiveMode::Disabled if stream should be marked as
+    * not sensitive.
+    */
+    AudioStreamBuilder *setPrivacySensitiveMode(PrivacySensitiveMode privacySensitiveMode) {
+        mPrivacySensitiveMode = privacySensitiveMode;
+        return this;
+    }
+
     /**
      * Specifies an object to handle data related callbacks from the underlying API.
      *

@@ -158,6 +158,20 @@ public:
     SessionId getSessionId() const { return mSessionId; }
 
     /**
+    * Return whether this input stream is marked as privacy sensitive.
+    *
+    * See AudioStreamBuilder_setPrivacySensitiveMode().
+    *
+    * Added in API level 30 to AAudio.
+    *
+    * @param stream reference provided by AAudioStreamBuilder_openStream()
+    * @return PrivacySensitiveMode::Enabled if privacy sensitive,
+    * PrivacySensitiveMode::Disabled if not privacy sensitive, and
+    * PrivacySensitiveMode::Unspecified if API is not supported.
+    */
+    PrivacySensitiveMode getPrivacySensitiveMode() const { return mPrivacySensitiveMode; }
+
+    /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
     bool isChannelConversionAllowed() const {
@@ -243,6 +257,9 @@ protected:
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
+
+    /** Privacy Sensitive Mode. Only active on Android 30+ */
+    PrivacySensitiveMode            mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;
 
     /** Control the name of the package creating the stream. Only active on Android 31+ */
     std::string                     mPackageName;

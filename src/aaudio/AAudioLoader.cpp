@@ -83,6 +83,10 @@ int AAudioLoader::open() {
         builder_setSessionId   = load_V_PBI("AAudioStreamBuilder_setSessionId");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        builder_setPrivacySensitive  = load_V_PBO("AAudioStreamBuilder_setPrivacySensitive");
+    }
+
     if (getSdkVersion() >= __ANDROID_API_S__){
         builder_setPackageName       = load_V_PBCPH("AAudioStreamBuilder_setPackageName");
         builder_setAttributionTag    = load_V_PBCPH("AAudioStreamBuilder_setAttributionTag");
@@ -145,6 +149,10 @@ int AAudioLoader::open() {
         stream_getContentType  = load_I_PS("AAudioStream_getContentType");
         stream_getInputPreset  = load_I_PS("AAudioStream_getInputPreset");
         stream_getSessionId    = load_I_PS("AAudioStream_getSessionId");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_R__){
+        stream_isPrivacySensitive  = load_O_PS("AAudioStream_isPrivacySensitive");
     }
 
     if (getSdkVersion() >= __ANDROID_API_S_V2__) {
@@ -227,10 +235,10 @@ AAudioLoader::signature_F_PS AAudioLoader::load_F_PS(const char *functionName) {
     return reinterpret_cast<signature_F_PS>(proc);
 }
 
-AAudioLoader::signature_B_PS AAudioLoader::load_B_PS(const char *functionName) {
+AAudioLoader::signature_O_PS AAudioLoader::load_O_PS(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
-    return reinterpret_cast<signature_B_PS>(proc);
+    return reinterpret_cast<signature_O_PS>(proc);
 }
 
 AAudioLoader::signature_I_PB AAudioLoader::load_I_PB(const char *functionName) {
@@ -279,6 +287,12 @@ AAudioLoader::signature_U_PS AAudioLoader::load_U_PS(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_U_PS>(proc);
+}
+
+AAudioLoader::signature_V_PBO AAudioLoader::load_V_PBO(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBO>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t

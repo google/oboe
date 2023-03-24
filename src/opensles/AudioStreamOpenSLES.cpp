@@ -108,6 +108,9 @@ Result AudioStreamOpenSLES::open() {
 
 
 SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configItf) {
+    // Setting privacy sensitive mode is not supported for OpenSL ES.
+    mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;
+
     SLresult result = registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
         return result;
@@ -283,6 +286,12 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
     // Session Id
     if (mSessionId != SessionId::None) {
         LOGW("SessionId [AudioStreamBuilder::setSessionId()] "
+             "is not supported on OpenSLES streams.");
+    }
+
+    // Privacy Sensitive Mode
+    if (mPrivacySensitiveMode != PrivacySensitiveMode::Unspecified) {
+        LOGW("PrivacySensitiveMode [AudioStreamBuilder::setPrivacySensitiveMode()] "
              "is not supported on OpenSLES streams.");
     }
 }
