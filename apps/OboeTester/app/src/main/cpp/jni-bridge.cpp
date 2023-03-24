@@ -169,6 +169,11 @@ Java_com_mobileer_oboetester_TestAudioActivity_stopNative(JNIEnv *env, jobject) 
 }
 
 JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_releaseNative(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->release();
+}
+
+JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_getFramesPerCallback(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->getFramesPerCallback();
 }

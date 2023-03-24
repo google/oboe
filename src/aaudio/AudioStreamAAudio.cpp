@@ -357,6 +357,31 @@ error2:
     return result;
 }
 
+Result AudioStreamAAudio::release() {
+    if (getSdkVersion() < __ANDROID_API_R__) {
+        return Result::ErrorUnimplemented;
+    }
+
+    // AAudioStream_release() is buggy on Android R.
+    if (OboeGlobals::areWorkaroundsEnabled() && getSdkVersion() == __ANDROID_API_R__) {
+        LOGW("Skipping release() on Android R");
+        return Result::ErrorUnimplemented;
+    }
+
+    std::lock_guard<std::mutex> lock(mLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream != nullptr) {
+        if (OboeGlobals::areWorkaroundsEnabled()) {
+            // Make sure we are really stopped. Do it under mLock
+            // so another thread cannot call requestStart() right before the close.
+            requestStop_l(stream);
+        }
+        return static_cast<Result>(mLibLoader->stream_release(stream));
+    } else {
+        return Result::ErrorClosed;
+    }
+}
+
 Result AudioStreamAAudio::close() {
     // Prevent two threads from closing the stream at the same time and crashing.
     // This could occur, for example, if an application called close() at the same

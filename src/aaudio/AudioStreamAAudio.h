@@ -51,6 +51,7 @@ public:
     // These functions override methods in AudioStream.
     // See AudioStream for documentation.
     Result open() override;
+    Result release() override;
     Result close() override;
 
     Result requestStart() override;

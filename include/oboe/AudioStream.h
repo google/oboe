@@ -69,6 +69,29 @@ public:
     }
 
     /**
+     * Free the audio resources associated with a stream created by AAudioStreamBuilder_openStream().
+     *
+     * AAudioStream_close() should be called at some point after calling this function.
+     *
+     * After this call, the stream will be in AAUDIO_STREAM_STATE_CLOSING
+     *
+     * This function is useful if you want to release the audio resources immediately, but still allow
+     * queries to the stream to occur from other threads. This often happens if you are monitoring
+     * stream progress from a UI thread.
+     *
+     * NOTE: This function is only fully implemented for MMAP streams, which are low latency streams
+     * supported by some devices. On other "Legacy" streams some audio resources will still be in use
+     * and some callbacks may still be in process after this call.
+     *
+     * Available in AAudio since API level 30. Returns Result::ErrorUnimplemented otherwise.
+     *
+     * * @return either Result::OK or an error.
+     */
+    virtual Result release() {
+        return Result::ErrorUnimplemented;
+    }
+
+    /**
      * Close the stream and deallocate any resources from the open() call.
      */
     virtual Result close();

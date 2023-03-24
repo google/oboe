@@ -36,6 +36,17 @@ protected:
         return (r == Result::OK);
     }
 
+    bool releaseStream() {
+        Result r = mStream->release();
+        if (getSdkVersion() > __ANDROID_API_R__ && mBuilder.getAudioApi() != AudioApi::OpenSLES) {
+            EXPECT_EQ(r, Result::OK) << "Failed to release stream. " << convertToText(r);
+            return (r == Result::OK);
+        } else {
+            EXPECT_EQ(r, Result::ErrorUnimplemented) << "Did not get  ErrorUnimplemented" << convertToText(r);
+            return (r == Result::ErrorUnimplemented);
+        }
+    }
+
     bool closeStream() {
         Result r = mStream->close();
         EXPECT_EQ(r, Result::OK) << "Failed to close stream. " << convertToText(r);
@@ -398,4 +409,34 @@ TEST_F(StreamClosedReturnValues, DelayBeforeCloseOutputOpenSL){
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setDirection(Direction::Output);
     testDelayBeforeClose();
+}
+
+TEST_F(StreamClosedReturnValues, TestReleaseInput){
+    mBuilder.setDirection(Direction::Input);
+    ASSERT_TRUE(openStream());
+    ASSERT_TRUE(releaseStream());
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamClosedReturnValues, TestReleaseInputOpenSLES){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setDirection(Direction::Input);
+    ASSERT_TRUE(openStream());
+    ASSERT_TRUE(releaseStream());
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamClosedReturnValues, TestReleaseOutput){
+    mBuilder.setDirection(Direction::Output);
+    ASSERT_TRUE(openStream());
+    ASSERT_TRUE(releaseStream());
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamClosedReturnValues, TestReleaseOutputOpenSLES){
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setDirection(Direction::Output);
+    ASSERT_TRUE(openStream());
+    ASSERT_TRUE(releaseStream());
+    ASSERT_TRUE(closeStream());
 }

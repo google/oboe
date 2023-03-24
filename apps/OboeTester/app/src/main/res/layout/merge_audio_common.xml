@@ -69,6 +69,16 @@
             android:text="@string/stopAudio" />
 
         <Button
+            android:id="@+id/button_release"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="releaseAudio"
+            android:text="@string/releaseAudio" />
+
+        <Button
             android:id="@+id/button_close"
             android:layout_width="0dp"
             android:layout_weight="1"

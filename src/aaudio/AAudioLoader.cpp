@@ -112,6 +112,10 @@ int AAudioLoader::open() {
         stream_getChannelCount    = load_I_PS("AAudioStream_getSamplesPerFrame");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_R__) {
+        stream_release         = load_I_PS("AAudioStream_release");
+    }
+
     stream_close               = load_I_PS("AAudioStream_close");
 
     stream_getBufferSize       = load_I_PS("AAudioStream_getBufferSizeInFrames");
