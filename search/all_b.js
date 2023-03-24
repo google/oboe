@@ -27,9 +27,10 @@ var searchData=
   ['movie_24',['Movie',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1',1,'oboe']]],
   ['mpackagename_25',['mPackageName',['../classoboe_1_1_audio_stream_base.html#ac74373825f5ecd1c7f4048ce85d9d41b',1,'oboe::AudioStreamBase']]],
   ['mperformancemode_26',['mPerformanceMode',['../classoboe_1_1_audio_stream_base.html#ab99671c2d0552557e75dc7b4afe91765',1,'oboe::AudioStreamBase']]],
-  ['msamplerate_27',['mSampleRate',['../classoboe_1_1_audio_stream_base.html#a998885bb6c4f37e145f4626ad4177dea',1,'oboe::AudioStreamBase']]],
-  ['msessionid_28',['mSessionId',['../classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737',1,'oboe::AudioStreamBase']]],
-  ['msharingmode_29',['mSharingMode',['../classoboe_1_1_audio_stream_base.html#ae9187492b679c97a0963e264954be473',1,'oboe::AudioStreamBase']]],
-  ['musage_30',['mUsage',['../classoboe_1_1_audio_stream_base.html#a5b518e82f39c9fcbd7050fd66adb253c',1,'oboe::AudioStreamBase']]],
-  ['music_31',['Music',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517',1,'oboe']]]
+  ['mprivacysensitivemode_27',['mPrivacySensitiveMode',['../classoboe_1_1_audio_stream_base.html#a6462348e66eab8c8b6c51372147062e7',1,'oboe::AudioStreamBase']]],
+  ['msamplerate_28',['mSampleRate',['../classoboe_1_1_audio_stream_base.html#a998885bb6c4f37e145f4626ad4177dea',1,'oboe::AudioStreamBase']]],
+  ['msessionid_29',['mSessionId',['../classoboe_1_1_audio_stream_base.html#abe1c1e9cada1ced9b5c1504ac9b07737',1,'oboe::AudioStreamBase']]],
+  ['msharingmode_30',['mSharingMode',['../classoboe_1_1_audio_stream_base.html#ae9187492b679c97a0963e264954be473',1,'oboe::AudioStreamBase']]],
+  ['musage_31',['mUsage',['../classoboe_1_1_audio_stream_base.html#a5b518e82f39c9fcbd7050fd66adb253c',1,'oboe::AudioStreamBase']]],
+  ['music_32',['Music',['../namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517',1,'oboe']]]
 ];

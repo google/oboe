@@ -342,6 +342,11 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:ac9c3eaf42351943995479b742f8a8d33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a0eebf27bb53b62c1c136d5a9d0f9fa"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">PrivacySensitiveMode</a> : int32_t { <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa6fcdc090caeade09d0efd6253932b6f5">Unspecified</a> = kUnspecified
+, <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">Disabled</a> = 1
+, <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2
+ }</td></tr>
+<tr class="separator:a4a0eebf27bb53b62c1c136d5a9d0f9fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -647,6 +652,38 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a1068781f3920654b1bfd7ed136468184abbad080463ed11f9d77797c04aa1e5b1" name="a1068781f3920654b1bfd7ed136468184abbad080463ed11f9d77797c04aa1e5b1"></a>PowerSaving&#160;</td><td class="fielddoc"><p>Extending battery life is most important. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a1068781f3920654b1bfd7ed136468184a611907b5ab1865515c35357efa41a9b9" name="a1068781f3920654b1bfd7ed136468184a611907b5ab1865515c35357efa41a9b9"></a>LowLatency&#160;</td><td class="fielddoc"><p>Reducing latency is most important. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="a4a0eebf27bb53b62c1c136d5a9d0f9fa" name="a4a0eebf27bb53b62c1c136d5a9d0f9fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a0eebf27bb53b62c1c136d5a9d0f9fa">&#9670;&#160;</a></span>PrivacySensitiveMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">oboe::PrivacySensitiveMode</a> : int32_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The PrivacySensitiveMode attribute determines whether an input stream can be shared with another privileged app, for example the Assistant.</p>
+<p>This allows to override the default behavior tied to the audio source (e.g <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">InputPreset::VoiceCommunication</a> is private by default but <a class="el" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">InputPreset::Unprocessed</a> is not). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4a0eebf27bb53b62c1c136d5a9d0f9faa6fcdc090caeade09d0efd6253932b6f5" name="a4a0eebf27bb53b62c1c136d5a9d0f9faa6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p>When not explicitly requested, set privacy sensitive mode according to input preset: communication and camcorder captures are considered privacy sensitive by default. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241" name="a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241"></a>Disabled&#160;</td><td class="fielddoc"><p>Privacy sensitive mode disabled. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32" name="a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32"></a>Enabled&#160;</td><td class="fielddoc"><p>Privacy sensitive mode enabled. </p>
 </td></tr>
 </table>
 
