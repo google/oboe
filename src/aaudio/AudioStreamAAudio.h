@@ -118,11 +118,6 @@ private:
      */
     void launchStopThread();
 
-public:
-    int32_t getMDelayBeforeCloseMillis() const;
-
-    void setDelayBeforeCloseMillis(int32_t mDelayBeforeCloseMillis);
-
 private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
