@@ -17,11 +17,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
             android:gravity="bottom"
-            android:text="
-Try to cause a crash by changing the\n
-VoiceCommunication routing while playing\n
-audio with a long duration callback.\n
-            " />
+            android:text="@string/routing_crash_intro" />
 
         <Button
             android:id="@+id/buttonRoutingCrash"
