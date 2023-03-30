@@ -217,9 +217,11 @@
     <string name="analyze">Analyze</string>
 
     <string name="routing_crash_intro">
-    Try to cause a crash by changing the\n
-    VoiceCommunication routing while playing\n
-    audio with a long duration callback.\n
+        May cause a crash by changing the\n
+        VoiceCommunication routing while playing\n
+        audio with a long duration callback.\n
+        More likely to crash with Bluetooth\n
+        headsets. Issue #1763
     </string>
 
     <string-array name="conversion_qualities">

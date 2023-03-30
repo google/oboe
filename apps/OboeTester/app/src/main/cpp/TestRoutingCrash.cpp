@@ -23,7 +23,8 @@
 
 using namespace oboe;
 
-int32_t TestRoutingCrash::start() {
+// open start start an Oboe stream
+int32_t TestRoutingCrash::start(bool useInput) {
 
     mDataCallback = std::make_shared<MyDataCallback>(this);
 
@@ -32,18 +33,21 @@ int32_t TestRoutingCrash::start() {
     AAudioExtensions::getInstance().setMMapEnabled(false);
 
     AudioStreamBuilder builder;
-    oboe::Result result = builder.setPerformanceMode(oboe::PerformanceMode::LowLatency)
-            ->setFormat(oboe::AudioFormat::Float)
+    oboe::Result result = builder.setFormat(oboe::AudioFormat::Float)
+#if 1
+            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+#else
+            ->setPerformanceMode(oboe::PerformanceMode::None)
+#endif
+            ->setDirection(useInput ? oboe::Direction::Input : oboe::Direction::Output)
             ->setChannelCount(kChannelCount)
-            ->setBufferCapacityInFrames(32000)
             ->setDataCallback(mDataCallback)
-            ->setUsage(oboe::Usage::VoiceCommunication) // so we can reroute it
+            // Use VoiceCommunication so we can reroute it by setting SpeakerPhone ON/OFF.
+            ->setUsage(oboe::Usage::VoiceCommunication)
             ->openStream(mStream);
     if (result != oboe::Result::OK) {
         return (int32_t) result;
     }
-
-    mStream->setBufferSizeInFrames(mStream->getBufferCapacityInFrames());
 
     AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
     return (int32_t) mStream->requestStart();
@@ -55,36 +59,53 @@ int32_t TestRoutingCrash::stop() {
     return (int32_t)((result1 != oboe::Result::OK) ? result1 : result2);
 }
 
+// Callback that sleeps then touches the audio buffer.
 DataCallbackResult TestRoutingCrash::MyDataCallback::onAudioReady(
         AudioStream *audioStream,
         void *audioData,
         int32_t numFrames) {
-    float *output = (float *) audioData;
+    float *floatData = (float *) audioData;
 
-    // Sleep so that we spend most of our time in the callback without underflowing.
+    // If I call getTimestamp() here it does NOT crash!
+
+    // Simulate the timing of a heavy workload by sleeping.
     // Otherwise the window for the crash is very narrow.
-    int64_t now = AudioClock::getNanoseconds();
-    int64_t elapsed = now - mLastCallbackTime;
-    double bufferTimeNanos = 1.0e9 * numFrames / (double) audioStream->getSampleRate();
-    int64_t targetDuration = (int64_t) (bufferTimeNanos * 0.7);
-    mParent->sleepTimeNanos = targetDuration - elapsed;
-    AudioClock::sleepForNanos(mParent->sleepTimeNanos);
+    const double kDutyCycle = 0.7;
+    const double bufferTimeNanos = 1.0e9 * numFrames / (double) audioStream->getSampleRate();
+    const int64_t targetDurationNanos = (int64_t) (bufferTimeNanos * kDutyCycle);
+    if (targetDurationNanos > 0) {
+        AudioClock::sleepForNanos(targetDurationNanos);
+    }
+    const double kFilterCoefficient = 0.95; // low pass IIR filter
+    const double sleepMicros = targetDurationNanos * 0.0001;
+    mParent->averageSleepTimeMicros = ((1.0 - kFilterCoefficient) * sleepMicros)
+            + (kFilterCoefficient * mParent->averageSleepTimeMicros);
 
-    // Try to trigger a restoreTrack_l() in AudioFlinger.
-    audioStream->getTimestamp(CLOCK_MONOTONIC);
+    // If I call getTimestamp() here it crashes.
+    audioStream->getTimestamp(CLOCK_MONOTONIC); // Trigger a restoreTrack_l() in framework.
 
-    // Fill mono buffer with a sine wave.
-    // If the routing occurred then the buffer may be dead and
-    // we may be writing into unallocated memory.
-    int numSamples = numFrames * kChannelCount;
-    for (int i = 0; i < numSamples; i++) {
-        *output++ = sinf(mPhase) * 0.2f;
-        mPhase += mPhaseIncrement;
-        // Wrap the phase around the circular.
-        if (mPhase >= M_PI) mPhase -= 2 * M_PI;
+    const int numSamples = numFrames * kChannelCount;
+    if (audioStream->getDirection() == oboe::Direction::Input) {
+        // Read buffer and write sum of samples to a member variable.
+        // We just want to touch the memory and not get optimized away by the compiler.
+        float sum = 0.0f;
+        for (int i = 0; i < numSamples; i++) {
+            sum += *floatData++;
+        }
+        mInputSum = sum;
+    } else {
+        // Fill mono buffer with a sine wave.
+        // If the routing occurred then the buffer may be dead and
+        // we may be writing into unallocated memory.
+        for (int i = 0; i < numSamples; i++) {
+            *floatData++ = sinf(mPhase) * 0.2f;
+            mPhase += kPhaseIncrement;
+            // Wrap the phase around in a circle.
+            if (mPhase >= M_PI) mPhase -= 2 * M_PI;
+        }
     }
 
-    mLastCallbackTime = AudioClock::getNanoseconds();
+    // If I call getTimestamp() here it does NOT crash!
 
     return oboe::DataCallbackResult::Continue;
 }

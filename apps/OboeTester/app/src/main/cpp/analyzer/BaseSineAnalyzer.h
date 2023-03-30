@@ -106,7 +106,7 @@ public:
             incrementOutputPhase();
             output = (sinOut * mOutputAmplitude)
                      + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
-            // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  mPhaseIncrement);
+            // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
         }
         for (int i = 0; i < channelCount; i++) {
             frameData[i] = (i == mOutputChannel) ? output : 0.0f;

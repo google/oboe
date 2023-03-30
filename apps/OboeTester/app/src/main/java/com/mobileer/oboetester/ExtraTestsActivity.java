@@ -30,7 +30,7 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     }
 
     public void onLaunchRouteDuringCallbackTest(View view) {
-        launchTestActivity(TestRouteDuringCallbackActivity.class);
+        launchTestThatDoesRecording(TestRouteDuringCallbackActivity.class);
     }
 
 }

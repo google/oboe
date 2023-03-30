@@ -24,6 +24,8 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import java.util.Random;
@@ -38,6 +40,10 @@ public class TestRouteDuringCallbackActivity extends Activity {
     private TextView mStatusView;
     private MyStreamSniffer mStreamSniffer;
     private AudioManager mAudioManager;
+    private RadioButton mOutputButton;
+    private RadioButton mInputButton;
+    private Button mStartButton;
+    private Button mStopButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +51,31 @@ public class TestRouteDuringCallbackActivity extends Activity {
         setContentView(R.layout.activity_routing_crash);
         mStatusView = (TextView) findViewById(R.id.text_callback_status);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        mStartButton = (Button) findViewById(R.id.button_start_test);
+        mStopButton = (Button) findViewById(R.id.button_stop_test);
+        mOutputButton = (RadioButton) findViewById(R.id.direction_output);
+        mInputButton = (RadioButton) findViewById(R.id.direction_input);
+        setButtonsEnabled(false);
     }
 
-    public void onTestRoutingCrash(View view) {
+    public void onStartRoutingTest(View view) {
         stopSniffer();
         mStreamSniffer = new MyStreamSniffer();
         mStreamSniffer.start();
+        setButtonsEnabled(true);
+    }
+
+    public void onStopRoutingTest(View view) {
+        stopSniffer();
+        setButtonsEnabled(false);
+    }
+
+    private void setButtonsEnabled(boolean running) {
+        mStartButton.setEnabled(!running);
+        mStopButton.setEnabled(running);
+        mOutputButton.setEnabled(!running);
+        mInputButton.setEnabled(!running);
     }
 
     // Change routing while the stream is playing.
@@ -59,6 +84,7 @@ public class TestRouteDuringCallbackActivity extends Activity {
         boolean enabled = true;
         int routingOption = 0;
         StringBuffer statusBuffer = new StringBuffer();
+        int loopCount;
 
         @Override
         public void run() {
@@ -67,18 +93,21 @@ public class TestRouteDuringCallbackActivity extends Activity {
             int result;
             Random random = new Random();
             while (enabled) {
+                loopCount++;
                 if (routingOption == 0) {
                     statusBuffer = new StringBuffer();
                 }
                 try {
                     sleep(100);
-                    result = startStream();
+                    boolean useInput = mInputButton.isChecked();
+                    result = startStream(useInput);
                     sleep(100);
-                    log("-------\nstartStream() returned " + result);
+                    log("-------#" + loopCount + ", " + (useInput ? "IN" : "OUT")
+                            + "\nstartStream() returned " + result);
                     int sleepTimeMillis = 500 + random.nextInt(500);
                     sleep(sleepTimeMillis);
                     routingOption = (routingOption == 0) ? 1 : 0;
-                    log("changeRoute " + routingOption);
+                    log( "changeRoute " + routingOption);
                     changeRoute(routingOption);
                     sleep(50);
                 } catch (InterruptedException e) {
@@ -92,7 +121,7 @@ public class TestRouteDuringCallbackActivity extends Activity {
 
         // Log to screen and logcat.
         private void log(String text) {
-            Log.e(TAG, "RoutingCrash: " + text);
+            Log.d(TAG, "RoutingCrash: " + text);
             statusBuffer.append(text + ", sleep " + getSleepTimeMicros() + " us\n");
             showStatus(statusBuffer.toString());
         }
@@ -122,7 +151,7 @@ public class TestRouteDuringCallbackActivity extends Activity {
         mAudioManager.setSpeakerphoneOn(option > 0);
     }
 
-    private native int startStream();
+    private native int startStream(boolean useInput);
     private native int getSleepTimeMicros();
     private native int stopStream();
 
