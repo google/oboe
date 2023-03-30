@@ -213,7 +213,14 @@
     <string name="title_external_tap">External Tap To Tone</string>
     <string name="title_plug_latency">Plug Latency Test</string>
     <string name="title_error_callback">Error Callback Test</string>
+    <string name="title_route_during_callback">Route Callback Test</string>
     <string name="analyze">Analyze</string>
+
+    <string name="routing_crash_intro">
+    Try to cause a crash by changing the\n
+    VoiceCommunication routing while playing\n
+    audio with a long duration callback.\n
+    </string>
 
     <string-array name="conversion_qualities">
         <item>None</item>

@@ -27,6 +27,7 @@
 
 #include "NativeAudioContext.h"
 #include "TestErrorCallback.h"
+#include "TestRoutingCrash.h"
 
 NativeAudioContext engine;
 
@@ -790,18 +791,38 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
     oboe::DefaultStreamValues::FramesPerBurst = audio_manager_frames_per_burst;
 }
 
-static TestErrorCallback sTester;
+static TestErrorCallback sErrorCallbackTester;
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestErrorCallbackActivity_testDeleteCrash(
         JNIEnv *env, jobject instance) {
-    sTester.test();
+    sErrorCallbackTester.test();
 }
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestErrorCallbackActivity_getCallbackMagic(
         JNIEnv *env, jobject instance) {
-    return sTester.getCallbackMagic();
+    return sErrorCallbackTester.getCallbackMagic();
+}
+
+static TestRoutingCrash sRoutingCrash;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_startStream(
+        JNIEnv *env, jobject instance) {
+    return sRoutingCrash.start();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_stopStream(
+        JNIEnv *env, jobject instance) {
+    return sRoutingCrash.stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_getSleepTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sRoutingCrash.getSleepTimeMicros();
 }
 
 }
