@@ -29,16 +29,16 @@
 class TestRoutingCrash {
 public:
 
-    int32_t start();
+    int32_t start(bool useInput);
     int32_t stop();
 
     int32_t getSleepTimeMicros() {
-        return (int32_t) (sleepTimeNanos.load() / 1000);
+        return (int32_t) (averageSleepTimeMicros.load());
     }
 
 protected:
 
-    std::atomic<int64_t> sleepTimeNanos{0};
+    std::atomic<double> averageSleepTimeMicros{0};
 
 private:
 
@@ -52,10 +52,10 @@ private:
                 int32_t numFrames) override;
     private:
         TestRoutingCrash *mParent;
-        int64_t mLastCallbackTime = 0;
         // For sine generator.
         float mPhase = 0.0f;
-        float mPhaseIncrement = 2.0f * (float) M_PI * 440.0f / 48000.0f;
+        static constexpr float kPhaseIncrement = 2.0f * (float) M_PI * 440.0f / 48000.0f;
+        float mInputSum = 0.0f; // For saving input data sum to prevent over-optimization.
     };
 
     std::shared_ptr<oboe::AudioStream> mStream;

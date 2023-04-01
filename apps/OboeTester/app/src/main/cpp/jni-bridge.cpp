@@ -809,8 +809,9 @@ static TestRoutingCrash sRoutingCrash;
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_startStream(
-        JNIEnv *env, jobject instance) {
-    return sRoutingCrash.start();
+        JNIEnv *env, jobject instance,
+        jboolean useInput) {
+    return sRoutingCrash.start(useInput);
 }
 
 JNIEXPORT jint JNICALL

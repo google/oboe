@@ -19,15 +19,48 @@
             android:gravity="bottom"
             android:text="@string/routing_crash_intro" />
 
-        <Button
-            android:id="@+id/buttonRoutingCrash"
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkedButton="@+id/direction_output"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/direction_output"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Output" />
+
+            <RadioButton
+                android:id="@+id/direction_input"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Input" />
+        </RadioGroup>
+
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:backgroundTint="@color/button_tint"
-            android:onClick="onTestRoutingCrash"
-            android:text="Run test" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_start_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onStartRoutingTest"
+                android:text="Start Test" />
+            <Button
+                android:id="@+id/button_stop_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onStopRoutingTest"
+                android:text="Stop Test" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/text_callback_status"
