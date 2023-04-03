@@ -83,6 +83,10 @@ int AAudioLoader::open() {
         builder_setSessionId   = load_V_PBI("AAudioStreamBuilder_setSessionId");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        builder_setAllowedCapturePolicy = load_V_PBI("AAudioStreamBuilder_setAllowedCapturePolicy");
+    }
+
     if (getSdkVersion() >= __ANDROID_API_R__){
         builder_setPrivacySensitive  = load_V_PBO("AAudioStreamBuilder_setPrivacySensitive");
     }
@@ -149,6 +153,10 @@ int AAudioLoader::open() {
         stream_getContentType  = load_I_PS("AAudioStream_getContentType");
         stream_getInputPreset  = load_I_PS("AAudioStream_getInputPreset");
         stream_getSessionId    = load_I_PS("AAudioStream_getSessionId");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        stream_getAllowedCapturePolicy    = load_I_PS("AAudioStream_getAllowedCapturePolicy");
     }
 
     if (getSdkVersion() >= __ANDROID_API_R__){
@@ -410,6 +418,19 @@ AAudioLoader::signature_V_PBO AAudioLoader::load_V_PBO(const char *functionName)
     static_assert((int32_t)SessionId::Allocate == AAUDIO_SESSION_ID_ALLOCATE, ERRMSG);
 
 #endif // __NDK_MAJOR__ >= 17
+
+// aaudio_allowed_capture_policy_t was added in NDK 20,
+// which is the first version to support Android Q (API 29).
+#if __NDK_MAJOR__ >= 20
+
+    ASSERT_INT32(aaudio_allowed_capture_policy_t);
+
+    static_assert((int32_t)AllowedCapturePolicy::Unspecified == AAUDIO_UNSPECIFIED, ERRMSG);
+    static_assert((int32_t)AllowedCapturePolicy::All == AAUDIO_ALLOW_CAPTURE_BY_ALL, ERRMSG);
+    static_assert((int32_t)AllowedCapturePolicy::System == AAUDIO_ALLOW_CAPTURE_BY_SYSTEM, ERRMSG);
+    static_assert((int32_t)AllowedCapturePolicy::None == AAUDIO_ALLOW_CAPTURE_BY_NONE, ERRMSG);
+
+#endif // __NDK_MAJOR__ >= 20
 
 // The aaudio channel masks were added in NDK 24,
 // which is the first version to support Android SC_V2 (API 32).

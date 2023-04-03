@@ -677,6 +677,48 @@ namespace oboe {
     };
 
     /**
+     * Specifying if audio may or may not be captured by other apps or the system for an output stream.
+     *
+     * Note that these match the equivalent values in AudioAttributes in the Android Java API.
+     *
+     * Added in API level 29 for AAudio.
+     */
+    enum class AllowedCapturePolicy : int32_t {
+        /**
+         * When not explicitly requested, set privacy sensitive mode according to the Usage.
+         * This should behave similarly to setting AllowedCapturePolicy::All.
+         */
+        Unspecified = kUnspecified,
+        /**
+         * Indicates that the audio may be captured by any app.
+         *
+         * For privacy, the following Usages can not be recorded: VoiceCommunication*,
+         * Notification*, Assistance* and Assistant.
+         *
+         * On Android Q, only Usage::Game and Usage::Media may be captured.
+         *
+         * See ALLOW_CAPTURE_BY_ALL in the AudioAttributes Java API.
+         */
+        All = 1,
+        /**
+         * Indicates that the audio may only be captured by system apps.
+         *
+         * System apps can capture for many purposes like accessibility, user guidance...
+         * but have strong restriction. See ALLOW_CAPTURE_BY_SYSTEM in the AudioAttributes Java API
+         * for what the system apps can do with the capture audio.
+         */
+        System = 2,
+        /**
+         * Indicates that the audio may not be recorded by any app, even if it is a system app.
+         *
+         * It is encouraged to use AllowedCapturePolicy::System instead of this value as system apps
+         * provide significant and useful features for the user (eg. accessibility).
+         * See ALLOW_CAPTURE_BY_NONE in the AudioAttributes Java API
+         */
+        None = 3,
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:
