@@ -333,11 +333,6 @@ public class GlitchActivity extends AnalyzerActivity {
         onTestBegan();
     }
 
-    public void onCancel(View view) {
-        stopAudioTest();
-        onTestFinished();
-    }
-
     // Called on UI thread
     public void onStopAudioTest(View view) {
         stopAudioTest();
@@ -363,6 +358,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public void stopTest() {
+        mNativeSniffer.stopSniffer();
         stopAudio();
     }
 

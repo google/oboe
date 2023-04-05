@@ -129,7 +129,8 @@ public:
         double cosMean = mCosAccumulator / mFramesAccumulated;
         double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
         if (phasePtr != nullptr) {
-            double phase = M_PI_2 - atan2(sinMean, cosMean);
+            double phase = atan2(cosMean, sinMean);
+
             *phasePtr = phase;
         }
         return magnitude;
@@ -138,6 +139,7 @@ public:
     /**
      * Perform sin/cos analysis on each sample.
      * Measure magnitude and phase on every period.
+     * Updates mPhaseOffset
      * @param sample
      * @param referencePhase
      * @return true if magnitude and phase updated
@@ -154,6 +156,7 @@ public:
             double magnitude = calculateMagnitudePhase(&mPhaseOffset);
             // One pole averaging filter.
             setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
+            resetAccumulator();
             return true;
         } else {
             return false;

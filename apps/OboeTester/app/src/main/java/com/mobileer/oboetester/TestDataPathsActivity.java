@@ -23,8 +23,6 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.widget.CheckBox;
 import androidx.annotation.NonNull;
@@ -90,9 +88,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             // StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
             StreamConfiguration.INPUT_PRESET_GENERIC,
             StreamConfiguration.INPUT_PRESET_CAMCORDER,
-            // TODO Resolve issue with echo cancellation killing the signal.
-            StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
             StreamConfiguration.INPUT_PRESET_UNPROCESSED,
+            // Do not use INPUT_PRESET_VOICE_COMMUNICATION because AEC kills the signal.
+            StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
             StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
     };
 
@@ -112,14 +110,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     public static double calculatePhaseError(double p1, double p2) {
-        double diff = Math.abs(p1 - p2);
+        double diff = p1 - p2;
         // Wrap around the circle.
-        while (diff > (2 * Math.PI)) {
-            diff -= (2 * Math.PI);
+        while (diff > Math.PI) {
+            diff -= 2 * Math.PI;
         }
-        // A phase error close to 2*PI is actually a small phase error.
-        if (diff > Math.PI) {
-            diff = (2 * Math.PI) - diff;
+        while (diff < -Math.PI) {
+            diff += 2 * Math.PI;
         }
         return diff;
     }
@@ -155,17 +152,19 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 // Arbitrary number of phase measurements before we start measuring jitter.
                 final int kMinPhaseMeasurementsRequired = 4;
                 if (mPhaseCount >= kMinPhaseMeasurementsRequired) {
-                    double phaseError = calculatePhaseError(phase, mPhase);
-                    // low pass filter
+                    double phaseError = Math.abs(calculatePhaseError(phase, mPhase));
+                    // collect average error
                     mPhaseErrorSum += phaseError;
                     mPhaseErrorCount++;
-                    Log.d(TAG, String.format(Locale.getDefault(), "phase = %7.4f, diff = %7.4f, jitter = %7.4f",
-                            phase, phaseError, getAveragePhaseError()));
+                    Log.d(TAG, String.format(Locale.getDefault(), "phase = %7.4f, mPhase = %7.4f, phaseError = %7.4f, jitter = %7.4f",
+                            phase, mPhase, phaseError, getAveragePhaseError()));
                 }
                 mPhase = phase;
                 mPhaseCount++;
             }
-            reschedule();
+            if (mEnabled) {
+                reschedule();
+            }
         }
 
         public String getCurrentStatusReport() {
@@ -357,7 +356,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     private TestResult testConfigurationsAddMagJitter() throws InterruptedException {
-        TestResult testResult = testConfigurations();
+        TestResult testResult = testInOutConfigurations();
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
                     + ", jitter = " + getJitterText());
@@ -382,11 +381,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         TestResult testResult = testConfigurationsAddMagJitter();
         if (testResult != null) {
             int result = testResult.result;
-            String summary = getOneLineSummary()
-                    + ", inPre = "
-                    + StreamConfiguration.convertInputPresetToText(inputPreset)
-                    + "\n";
-            appendSummary(summary);
+            String extra = ", inPre = "
+                    + StreamConfiguration.convertInputPresetToText(inputPreset);
+            logOneLineSummary(testResult, extra);
             if (result == TEST_RESULT_FAILED) {
                 if (getMagnitude() < 0.000001) {
                     testResult.addComment("The input is completely SILENT!");
@@ -448,7 +445,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         mMagnitude = -1.0;
         TestResult testResult = testConfigurationsAddMagJitter();
         if (testResult != null) {
-            appendSummary(getOneLineSummary() + "\n");
+            logOneLineSummary(testResult);
         }
     }
 
@@ -496,13 +493,30 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     }
                 }
             } else {
-                log("Device skipped for type.");
+                log("Device skipped. Not BuiltIn Mic.");
             }
         }
 
         if (numTested == 0) {
             log("NO INPUT DEVICE FOUND!\n");
         }
+    }
+
+    void logOneLineSummary(TestResult testResult) {
+        logOneLineSummary(testResult, "");
+    }
+
+    void logOneLineSummary(TestResult testResult, String extra) {
+        int result = testResult.result;
+        String oneLineSummary;
+        if (result == TEST_RESULT_SKIPPED) {
+            oneLineSummary = "#" + mAutomatedTestRunner.getTestCount() + extra + ", SKIP";
+        } else if (result == TEST_RESULT_FAILED) {
+            oneLineSummary = getOneLineSummary() + extra + ", FAIL";
+        } else {
+            oneLineSummary = getOneLineSummary() + extra;
+        }
+        appendSummary(oneLineSummary + "\n");
     }
 
     void testOutputDeviceCombo(int deviceId,
@@ -520,8 +534,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         mMagnitude = -1.0;
         TestResult testResult = testConfigurationsAddMagJitter();
         if (testResult != null) {
+            logOneLineSummary(testResult);
             int result = testResult.result;
-            appendSummary(getOneLineSummary() + "\n");
             if (result == TEST_RESULT_FAILED) {
                 if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
                         && numOutputChannels == 2
@@ -592,7 +606,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     }
                 }
             } else {
-                log("Device skipped for type.");
+                log("Device skipped. Not BuiltIn Speaker.");
             }
         }
         if (numTested == 0) {
