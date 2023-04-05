@@ -22,13 +22,14 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.util.AttributeSet;
-import android.widget.Spinner;
+
+import androidx.appcompat.widget.AppCompatSpinner;
 
 import com.mobileer.oboetester.R;
 
 import java.util.List;
 
-public class CommunicationDeviceSpinner extends Spinner {
+public class CommunicationDeviceSpinner extends AppCompatSpinner {
     private static final int CLEAR_DEVICE_ID = 0;
     private static final String TAG = CommunicationDeviceSpinner.class.getName();
     private AudioDeviceAdapter mDeviceAdapter;
@@ -62,14 +63,8 @@ public class CommunicationDeviceSpinner extends Spinner {
     }
 
     public CommunicationDeviceSpinner(Context context, AttributeSet attrs, int defStyleAttr,
-                                      int defStyleRes, int mode){
-        super(context, attrs, defStyleAttr, defStyleRes, mode);
-        setup(context);
-    }
-
-    public CommunicationDeviceSpinner(Context context, AttributeSet attrs, int defStyleAttr,
-                                      int defStyleRes, int mode, Theme popupTheme){
-        super(context, attrs, defStyleAttr, defStyleRes, mode, popupTheme);
+                                      int mode, Theme popupTheme){
+        super(context, attrs, defStyleAttr, mode, popupTheme);
         setup(context);
     }
 
