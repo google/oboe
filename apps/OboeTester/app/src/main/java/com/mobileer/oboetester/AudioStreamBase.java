@@ -111,7 +111,7 @@ public abstract class AudioStreamBase {
                     + "\n");
 
             buffer.append("buffer size = ");
-            if (bufferSize < 0) {
+            if (bufferSize <= 0 || framesPerBurst <= 0) {
                 buffer.append("?");
             } else {
                 int numBuffers = bufferSize / framesPerBurst;

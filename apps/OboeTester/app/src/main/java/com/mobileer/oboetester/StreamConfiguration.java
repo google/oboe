@@ -45,6 +45,7 @@ public class StreamConfiguration {
     public static final int AUDIO_FORMAT_PCM_FLOAT = 2; // must match AAUDIO
     public static final int AUDIO_FORMAT_PCM_24 = 3; // must match AAUDIO
     public static final int AUDIO_FORMAT_PCM_32 = 4; // must match AAUDIO
+    public static final int AUDIO_FORMAT_IEC61937 = 5; // must match AAUDIO
 
     public static final int DIRECTION_OUTPUT = 0; // must match AAUDIO
     public static final int DIRECTION_INPUT = 1; // must match AAUDIO
@@ -493,6 +494,8 @@ public class StreamConfiguration {
                 return "I32";
             case AUDIO_FORMAT_PCM_FLOAT:
                 return "Float";
+            case AUDIO_FORMAT_IEC61937:
+                return "IEC61937";
             default:
                 return "Invalid";
         }

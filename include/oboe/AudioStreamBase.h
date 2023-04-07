@@ -288,6 +288,7 @@ protected:
             case AudioFormat::Float:
             case AudioFormat::I24:
             case AudioFormat::I32:
+            case AudioFormat::IEC61937:
                 break;
 
             default:
