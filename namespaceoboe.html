@@ -158,6 +158,7 @@ Enumerations</h2></td></tr>
 , <br />
 &#160;&#160;<a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6acd843ec248d0b4cac64ece9662ce5c72">I24</a> = 3
 , <a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b">I32</a> = 4
+, <a class="el" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb">IEC61937</a> = 5
 <br />
  }</td></tr>
 <tr class="separator:a92afc593e856571aacbfd02e57075df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -463,6 +464,10 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b" name="a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b"></a>I32&#160;</td><td class="fielddoc"><p>Signed 32-bit integers.</p>
 <p>Note that the use of this format does not guarantee that the full precision will be provided. The underlying device may be using I16 format.</p>
 <p>Added in API 31 (S). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb" name="a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb"></a>IEC61937&#160;</td><td class="fielddoc"><p>This format is used for compressed audio wrapped in IEC61937 for HDMI or S/PDIF passthrough.</p>
+<p>Unlike PCM playback, the Android framework is not able to do format conversion for IEC61937. In that case, when IEC61937 is requested, sampling rate and channel count or channel mask must be specified. Otherwise, it may fail when opening the stream. Apps are able to get the correct configuration for the playback by calling AudioManager::getDevices(int).</p>
+<p>Available since API 34 (U). </p>
 </td></tr>
 </table>
 
