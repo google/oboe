@@ -77,7 +77,7 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
 
         setTolerance(0.3f); // FIXME remove
 
-        testConfigurations();
+        testInOutConfigurations();
     }
 
     private void testConfiguration(int performanceMode,

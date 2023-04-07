@@ -231,7 +231,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     // Run one test based on the requested input/output configurations.
     @Nullable
-    protected TestResult testConfigurations() throws InterruptedException {
+    protected TestResult testInOutConfigurations() throws InterruptedException {
         int result = TEST_RESULT_SKIPPED;
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
