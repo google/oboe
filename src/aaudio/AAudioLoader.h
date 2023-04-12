@@ -69,6 +69,7 @@ typedef int32_t aaudio_session_id_t;
 #if __NDK_MAJOR__ < 24
 // Defined in SC_V2
 typedef uint32_t aaudio_channel_mask_t;
+typedef int32_t aaudio_spatialization_behavior_t;
 #endif
 
 #ifndef __ANDROID_API_R__
@@ -199,6 +200,9 @@ class AAudioLoader {
     signature_V_PBCPH builder_setPackageName = nullptr;
     signature_V_PBCPH builder_setAttributionTag = nullptr;
 
+    signature_V_PBO builder_setIsContentSpatialized = nullptr;
+    signature_V_PBI builder_setSpatializationBehavior = nullptr;
+
     signature_V_PBPDPV  builder_setDataCallback = nullptr;
     signature_V_PBPEPV  builder_setErrorCallback = nullptr;
 
@@ -247,6 +251,9 @@ class AAudioLoader {
     signature_O_PS   stream_isPrivacySensitive = nullptr;
 
     signature_U_PS   stream_getChannelMask = nullptr;
+
+    signature_O_PS   stream_isContentSpatialized = nullptr;
+    signature_I_PS   stream_getSpatializationBehavior = nullptr;
 
     signature_I_PS   stream_getHardwareChannelCount = nullptr;
     signature_I_PS   stream_getHardwareSampleRate = nullptr;

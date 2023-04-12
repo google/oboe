@@ -158,6 +158,16 @@ public:
     SessionId getSessionId() const { return mSessionId; }
 
     /**
+     * @return whether the content of the stream is spatialized.
+     */
+    bool isContentSpatialized() const { return mIsContentSpatialized; }
+
+    /**
+     * @return the spatialization behavior for the stream.
+     */
+    SpatializationBehavior getSpatializationBehavior() const { return mSpatializationBehavior; }
+
+    /**
     * Return whether this input stream is marked as privacy sensitive.
     *
     * See AudioStreamBuilder_setPrivacySensitiveMode().
@@ -265,6 +275,11 @@ protected:
     std::string                     mPackageName;
     /** Control the attribution tag of the context creating the stream. Only active on Android 31+ */
     std::string                     mAttributionTag;
+
+    /** Whether the content is already spatialized. Only active on Android 32+ */
+    bool                            mIsContentSpatialized = false;
+    /** Spatialization Behavior. Only active on Android 32+ */
+    SpatializationBehavior          mSpatializationBehavior = SpatializationBehavior::Unspecified;
 
     /** Hardware channel count. Only specified on Android 34+ AAudio streams */
     int32_t                         mHardwareChannelCount = kUnspecified;

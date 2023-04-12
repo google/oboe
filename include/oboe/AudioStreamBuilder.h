@@ -374,6 +374,38 @@ public:
     }
 
     /**
+     * Specifies whether the audio data of this output stream has already been processed for spatialization.
+     *
+     * If the stream has been processed for spatialization, setting this to true will prevent issues such as
+     * double-processing on platforms that will spatialize audio data.
+     *
+     * Available since API level 32.
+     *
+     * @param isContentSpatialized whether the content is already spatialized
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setIsContentSpatialized(bool isContentSpatialized) {
+        mIsContentSpatialized = isContentSpatialized;
+        return this;
+    }
+
+    /**
+     * Sets the behavior affecting whether spatialization will be used.
+     *
+     * The AAudio system will use this information to select whether the stream will go through a
+     * spatializer effect or not when the effect is supported and enabled.
+     *
+     * Available since API level 32.
+     *
+     * @param spatializationBehavior the desired spatialization behavior
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setSpatializationBehavior(SpatializationBehavior spatializationBehavior) {
+        mSpatializationBehavior = spatializationBehavior;
+        return this;
+    }
+
+    /**
      * Specifies an object to handle data related callbacks from the underlying API.
      *
      * <strong>Important: See AudioStreamCallback for restrictions on what may be called
