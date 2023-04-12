@@ -669,8 +669,7 @@ namespace oboe {
     enum class SpatializationBehavior : int32_t {
 
         /**
-         * When not explicitly requested, set to the default of the APIs below it. For AAudio,
-         * this is AAUDIO_SPATIALIZATION_BEHAVIOR_AUTO. For OpenSL ES, this is not used.
+         * Constant indicating that the spatialization behavior is not specified.
          */
         Unspecified = kUnspecified,
 

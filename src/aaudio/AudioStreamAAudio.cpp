@@ -274,6 +274,10 @@ Result AudioStreamAAudio::open() {
     }
 
     if (mLibLoader->builder_setSpatializationBehavior != nullptr) {
+        // Override Unspecified as Never to reduce latency.
+        if (mSpatializationBehavior == SpatializationBehavior::Unspecified) {
+            mSpatializationBehavior = SpatializationBehavior::Never;
+        }
         mLibLoader->builder_setSpatializationBehavior(aaudioBuilder,
                 static_cast<aaudio_spatialization_behavior_t>(mSpatializationBehavior));
     }

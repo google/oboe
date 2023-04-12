@@ -462,7 +462,7 @@ TEST_F(StreamOpenOutput, AAudioOutputSetSpatializationBehaviorUnspecified) {
     mBuilder.setSpatializationBehavior(SpatializationBehavior::Unspecified);
     ASSERT_TRUE(openStream());
     if (getSdkVersion() >= __ANDROID_API_S_V2__){
-        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
+        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
     } else {
         ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Unspecified);
     }
