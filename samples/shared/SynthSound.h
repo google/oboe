@@ -91,12 +91,12 @@ public:
     };
 
 private:
-    std::atomic<bool> mTrigger;
+    std::atomic<bool> mTrigger { false };
     float mMasterAmplitude = 0.0f;
-    std::atomic<float> mAmplitudeScaler;
+    std::atomic<float> mAmplitudeScaler { 0.0f };
     std::array<std::atomic<float>, kNumSineWaves> mAmplitudes;
     float mPhase = 0.0f;
-    std::atomic<float> mPhaseIncrement;
+    std::atomic<float> mPhaseIncrement { 0 };
     std::atomic<float> mFrequency { kDefaultFrequency };
     std::atomic<int32_t> mSampleRate { kDefaultSampleRate };
     void updatePhaseIncrement(){

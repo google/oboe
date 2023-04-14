@@ -16,14 +16,14 @@
 
 package com.google.oboe.samples.soundboard
 
-import android.media.AudioManager
-import android.os.Bundle
-import android.util.DisplayMetrics
 import android.app.Activity
 import android.content.Context
+import android.graphics.Point
 import android.graphics.Rect
+import android.media.AudioManager
+import android.os.Build
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import java.util.ArrayList
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
@@ -32,8 +32,12 @@ class MainActivity : AppCompatActivity() {
     private external fun native_setDefaultStreamValues(sampleRate: Int, framesPerBurst: Int)
 
     companion object {
-        private const val NUM_ROWS = 6
-        private const val NUM_COLUMNS = 5
+        private const val DIMENSION_MIN_SIZE = 5
+        private const val DIMENSION_MAX_SIZE = 8
+        private var mNumColumns : Int = 0;
+        private var mNumRows : Int = 0;
+        private var mRectangles = ArrayList<Rect>()
+
         private var mEngineHandle: Long = 0
 
         // Used to load the 'native-lib' library on application startup.
@@ -49,7 +53,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         setDefaultStreamValues(this)
-        mEngineHandle = startEngine(NUM_ROWS * NUM_COLUMNS)
+        calculateAndSetRectangles(this)
+        mEngineHandle = startEngine(mNumRows * mNumColumns)
         createMusicTiles(this)
         super.onResume()
     }
@@ -69,31 +74,52 @@ class MainActivity : AppCompatActivity() {
         native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst)
     }
 
-    private fun createMusicTiles(context: Context) {
-        val displayMetrics = DisplayMetrics()
-        (context as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        val width = displayMetrics.widthPixels
-
-        // 5 by 6 tiles
-        val numRows = NUM_ROWS
-        val numColumns = NUM_COLUMNS
-        val tileLength = min(height / numRows, width / numColumns)
-        val xStartLocation = (width - tileLength * numColumns) / 2
-        // Height isn't a perfect measurement so shift the location slightly up from the "center"
-        val yStartLocation = (height - tileLength * numRows) / 2 / 2
-        val rectangles = ArrayList<Rect>()
-        for (i in 0 until numRows) {
-            for (j in 0 until numColumns) {
+    private fun calculateAndSetRectangles(context: Context) {
+        val size = Point()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display?.getRealSize(size)
+        } else {
+            windowManager.defaultDisplay.getRealSize(size)
+        }
+        val height = size.y
+        val width = size.x
+        if (height > width) {
+            mNumColumns = DIMENSION_MIN_SIZE
+            mNumRows = min(DIMENSION_MIN_SIZE * height / width, DIMENSION_MAX_SIZE)
+        } else {
+            mNumRows = DIMENSION_MIN_SIZE
+            mNumColumns = min(DIMENSION_MIN_SIZE * width / height, DIMENSION_MAX_SIZE)
+        }
+        val tileLength = min(height / mNumRows, width / mNumColumns)
+        val xStartLocation = (width - tileLength * mNumColumns) / 2
+        val yStartLocation = 0
+        mRectangles = ArrayList<Rect>()
+        for (i in 0 until mNumRows) {
+            for (j in 0 until mNumColumns) {
                 val rectangle = Rect(
                     xStartLocation + j * tileLength,
                     yStartLocation + i * tileLength,
                     xStartLocation + j * tileLength + tileLength,
                     yStartLocation + i * tileLength + tileLength
                 )
-                rectangles.add(rectangle)
+                mRectangles.add(rectangle)
             }
         }
-        setContentView(MusicTileView(this, rectangles, NoteListener(mEngineHandle)))
     }
+
+    private fun createMusicTiles(context: Context) {
+        setContentView(MusicTileView(this, mRectangles, NoteListener(mEngineHandle)))
+    }
+
+    fun Activity.getRealScreenSize(): Pair<Int, Int> { //<width, height>
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val size = Point()
+            display?.getRealSize(size)
+            Pair(size.x, size.y)
+        } else {
+            val size = Point()
+            windowManager.defaultDisplay.getRealSize(size)
+            Pair(size.x, size.y)
+
+        }}
 }

@@ -21,7 +21,6 @@ import android.graphics.*
 import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
-import java.util.ArrayList
 
 class MusicTileView(
     context: Context?,
