@@ -347,7 +347,7 @@ protected:
 
     oboe::Result startStreams() override {
         mInputAnalyzer.reset();
-        mInputAnalyzer.setup(getInputStream()->getFramesPerBurst(),
+        mInputAnalyzer.setup(std::max(getInputStream()->getFramesPerBurst(), callbackSize),
                              getInputStream()->getChannelCount(),
                              getInputStream()->getFormat());
         return getInputStream()->requestStart();
