@@ -271,6 +271,8 @@ Result AudioStreamAAudio::open() {
 
     if (mLibLoader->builder_setIsContentSpatialized != nullptr) {
         mLibLoader->builder_setIsContentSpatialized(aaudioBuilder, mIsContentSpatialized);
+    } else {
+        mIsContentSpatialized = false;
     }
 
     if (mLibLoader->builder_setSpatializationBehavior != nullptr) {
@@ -280,6 +282,8 @@ Result AudioStreamAAudio::open() {
         }
         mLibLoader->builder_setSpatializationBehavior(aaudioBuilder,
                 static_cast<aaudio_spatialization_behavior_t>(mSpatializationBehavior));
+    } else {
+        mSpatializationBehavior = SpatializationBehavior::Never;
     }
 
     if (isDataCallbackSpecified()) {

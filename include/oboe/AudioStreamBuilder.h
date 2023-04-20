@@ -379,6 +379,8 @@ public:
      * If the stream has been processed for spatialization, setting this to true will prevent issues such as
      * double-processing on platforms that will spatialize audio data.
      *
+     * This is false by default.
+     *
      * Available since API level 32.
      *
      * @param isContentSpatialized whether the content is already spatialized
@@ -394,6 +396,8 @@ public:
      *
      * The AAudio system will use this information to select whether the stream will go through a
      * spatializer effect or not when the effect is supported and enabled.
+     *
+     * This is SpatializationBehavior::Never by default.
      *
      * Available since API level 32.
      *
