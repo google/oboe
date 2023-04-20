@@ -583,6 +583,18 @@ TEST_F(StreamOpenOutput, AAudioOutputSetAllowedCapturePolicyNone){
     }
 }
 
+TEST_F(StreamOpenOutput, AAudioOutputDoNotSetAllowedCapturePolicy){
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setAudioApi(AudioApi::AAudio);
+    ASSERT_TRUE(openStream());
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::All);
+    } else {
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::Unspecified);
+    }
+    ASSERT_TRUE(closeStream());
+}
+
 TEST_F(StreamOpenOutput, OpenSLESOutputSetAllowedCapturePolicyAllGetsUnspecified){
     mBuilder.setDirection(Direction::Output);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
