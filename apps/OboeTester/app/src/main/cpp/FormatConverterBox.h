@@ -38,7 +38,7 @@
 
 class FormatConverterBox {
 public:
-    FormatConverterBox(int32_t numSamples,
+    FormatConverterBox(int32_t maxSamples,
                        oboe::AudioFormat inputFormat,
                        oboe::AudioFormat outputFormat);
 
@@ -90,6 +90,7 @@ private:
     oboe::AudioFormat mInputFormat{oboe::AudioFormat::Invalid};
     oboe::AudioFormat mOutputFormat{oboe::AudioFormat::Invalid};
 
+    int32_t mMaxSamples = 0;
     std::unique_ptr<uint8_t[]> mInputBuffer;
     std::unique_ptr<uint8_t[]> mOutputBuffer;
 
