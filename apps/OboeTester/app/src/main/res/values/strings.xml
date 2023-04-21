@@ -221,7 +221,8 @@
         VoiceCommunication routing while playing\n
         audio with a long duration callback.\n
         More likely to crash with Bluetooth\n
-        headsets. Issue #1763
+        headsets. Fixed in SDK 34 (U).\n
+        Issue #1763
     </string>
 
     <string-array name="conversion_qualities">
