@@ -115,7 +115,7 @@
 
         <activity
             android:name=".DynamicWorkloadActivity"
-            android:label="@string/title_external_tap"
+            android:label="@string/title_dynamic_load"
             android:exported="true" />
 
         <service

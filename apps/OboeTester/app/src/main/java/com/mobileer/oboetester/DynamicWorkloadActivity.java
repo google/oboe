@@ -39,10 +39,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
-        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
+        public static final int SNIFFER_UPDATE_PERIOD_MSEC = 40;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
-        public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 3000;
-        public static final int REQUIRED_STABLE_MEASUREMENTS = 30;
+        public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 4000;
+        public static final int REQUIRED_STABLE_MEASUREMENTS = 20;
 
         private Handler mHandler;
         private int mCount;
@@ -50,13 +50,28 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private double mTargetCpuLoad = 0.80;
         private double mLowWorkload = 0.0;
         private double mHighWorkload = 0.0;
-        private static final int STATE_MEASURE_TARGET = 0;
+        private static final int STATE_BENCHMARK_TARGET = 0;
         private static final int STATE_RUN_LOW = 1;
         private static final int STATE_RUN_HIGH = 2;
-        private int mState = STATE_MEASURE_TARGET;
+        private int mState = STATE_BENCHMARK_TARGET;
         private long mLastToggleTime = 0;
         private int mStableCount = 0;
+        private boolean mArmLoadMonitor = false;
+        private long mRecoveryTimeBegin;
+        private long mRecoveryTimeEnd;
 
+        String stateToString(int state) {
+            switch(state) {
+                case STATE_BENCHMARK_TARGET:
+                    return "Benchmarking";
+                case STATE_RUN_LOW:
+                    return "low";
+                case STATE_RUN_HIGH:
+                    return "HIGH";
+                default:
+                    return "Unrecognized";
+            }
+        }
         // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
@@ -68,7 +83,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 long now = System.currentTimeMillis();
 
                 switch (mState) {
-                    case STATE_MEASURE_TARGET:
+                    case STATE_BENCHMARK_TARGET:
                         double targetWorkload = (mWorkload / cpuLoad) * mTargetCpuLoad;
                         // low pass filter to find matching workload
                         nextWorkload = ((4 * mWorkload) + targetWorkload) / 5;
@@ -86,6 +101,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_HIGH;
+                            mRecoveryTimeBegin = 0;
+                            mRecoveryTimeEnd = 0;
                         }
                         break;
                     case STATE_RUN_HIGH:
@@ -94,12 +111,24 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                             mLastToggleTime = now;
                             mState = STATE_RUN_LOW;
                         }
+                        if (mRecoveryTimeBegin == 0) {
+                            if (cpuLoad > 1.0) {
+                                mRecoveryTimeBegin = now;
+                            }
+                        } else if (mRecoveryTimeEnd == 0) {
+                            if (cpuLoad < 0.85) {
+                                mRecoveryTimeEnd = now;
+                            }
+                        }
                         break;
                 }
+                String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
+                        "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message = "Count = " + mCount++
-                        + "\nmState = " + mState
+                        + "\nWorkload = " + stateToString(mState)
                         + "\nCPU = " + String.format("%5.3f%c", cpuLoad * 100, '%')
-                        + "\nWork = " + String.format("%5.3f", nextWorkload);
+                        + "\nWork = " + String.format("%5.3f", nextWorkload)
+                        + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload(nextWorkload);
                 mWorkload = nextWorkload;
@@ -112,7 +141,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             stop();
             mCount = 0;
             mStableCount = 0;
-            mState = STATE_MEASURE_TARGET;
+            mState = STATE_BENCHMARK_TARGET;
             mHandler = new Handler(Looper.getMainLooper());
             // Start the initial runnable task by posting through the handler
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
@@ -167,10 +196,21 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             checkBox.setOnClickListener(checkBoxListener);
         }
 
+        CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
+
+        perfHintBox.setOnClickListener(buttonView -> {
+                CheckBox checkBox = (CheckBox) buttonView;
+                setPerformanceHintEnabled(checkBox.isChecked());
+        });
+
         updateButtons(false);
 
         updateEnabledWidgets();
 
+    }
+
+    private void setPerformanceHintEnabled(boolean checked) {
+      mAudioOutTester.getCurrentAudioStream().setPerformanceHintEnabled(checked);
     }
 
     private void updateButtons(boolean running) {

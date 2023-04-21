@@ -154,6 +154,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native int setBufferSizeInFrames(int streamIndex, int thresholdFrames);
 
+    @Override
+    public void setPerformanceHintEnabled(boolean checked) {
+        setPerformanceHintEnabled(streamIndex, checked);
+    }
+    private native void setPerformanceHintEnabled(int streamIndex, boolean checked);
+
     public int getNativeApi() {
         return getNativeApi(streamIndex);
     }
@@ -234,6 +240,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getSessionId(streamIndex);
     }
     private native int getSessionId(int streamIndex);
+
 
     public boolean isMMap() {
         return isMMap(streamIndex);

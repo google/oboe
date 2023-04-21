@@ -49,6 +49,9 @@ public abstract class AudioStreamBase {
         return mLatencyStatistics;
     }
 
+    public void setPerformanceHintEnabled(boolean checked) {
+    }
+
     public static class DoubleStatistics {
         private double sum;
         private int count;

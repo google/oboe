@@ -33,6 +33,7 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
 }
 
 Result AudioStream::close() {
+    closePerformanceHint();
     // Update local counters so they can be read after the close.
     updateFramesWritten();
     updateFramesRead();
@@ -58,6 +59,24 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         return DataCallbackResult::Stop; // Should not be getting called
     }
 
+    if (mPerformanceHintEnabled && !mAdpfOpenAttempted) {
+        int64_t targetDurationNanos = (mFramesPerBurst * 1e9) / getSampleRate();
+        // This has to be called from the callback thread so we get the right TID.
+        int adpfResult = mAdpfWrapper.open(gettid(), targetDurationNanos);
+        if (adpfResult < 0) {
+            LOGW("WARNING ADPF not supported, %d\n", adpfResult);
+        } else {
+            LOGD("ADPF is active\n");
+        }
+        mAdpfOpenAttempted = true;
+    } else if (!mPerformanceHintEnabled && mAdpfOpenAttempted) {
+        LOGD("ADPF closed\n");
+        mAdpfWrapper.close();
+        mAdpfOpenAttempted = false;
+    }
+    int64_t beginCallback = AudioClock::getNanoseconds(CLOCK_REALTIME);
+
+    // Call the app to do the work.
     DataCallbackResult result;
     if (mDataCallback) {
         result = mDataCallback->onAudioReady(this, audioData, numFrames);
@@ -67,6 +86,12 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     // On Oreo, we might get called after returning stop.
     // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
+
+    if (mAdpfWrapper.isOpen()) {
+        int64_t endCallback = AudioClock::getNanoseconds(CLOCK_REALTIME);
+        int64_t actualDurationNanos = endCallback - beginCallback;
+        mAdpfWrapper.reportActualDuration(actualDurationNanos);
+    }
 
     return result;
 }

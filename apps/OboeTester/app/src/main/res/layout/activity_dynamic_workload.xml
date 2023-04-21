@@ -35,6 +35,14 @@
 
     </LinearLayout>
 
+
+    <CheckBox
+        android:id="@+id/enable_perf_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8sp"
+        android:text="Performance Hint" />
+
     <TextView
         android:id="@+id/resultView"
         android:layout_width="match_parent"

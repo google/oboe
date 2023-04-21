@@ -226,6 +226,15 @@ Java_com_mobileer_oboetester_OboeAudioStream_getBufferSizeInFrames(
     return result;
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintEnabled(
+        JNIEnv *env, jobject, jint streamIndex, jboolean enabled) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        oboeStream->setPerformanceHintEnabled(enabled);
+    }
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getBufferCapacityInFrames(
         JNIEnv *env, jobject, jint streamIndex) {

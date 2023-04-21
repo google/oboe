@@ -193,8 +193,10 @@
     <string name="title_extra_tests">Extra Tests</string>
 
     <string name="title_external_tap">External Tap To Tone</string>
-    <string name="title_dynamic_load">Dynamic Load</string>
     <string name="title_plug_latency">Plug Latency Test</string>
+    <string name="title_error_callback">Error Callback Test</string>
+    <string name="title_route_during_callback">Route Callback Test</string>
+    <string name="title_dynamic_load">Dynamic CPU Load</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
@@ -214,10 +216,6 @@
     <string name="skipTest">Skip</string>
     <string name="test_datapath_instructions">Disconnect all headsets.\nIn quiet room, volume up, [START]</string>
     <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [START]</string>
-    <string name="title_external_tap">External Tap To Tone</string>
-    <string name="title_plug_latency">Plug Latency Test</string>
-    <string name="title_error_callback">Error Callback Test</string>
-    <string name="title_route_during_callback">Route Callback Test</string>
 
     <string name="analyze">Analyze</string>
 
