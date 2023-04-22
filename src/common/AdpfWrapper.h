@@ -44,17 +44,28 @@ public:
         return (mHintSession == nullptr);
     }
 
+    void close();
+
+    /**
+     * Call this at the beginning of the callback that you are measuring.
+     */
+    void onBeginCallback();
+
+    /**
+     * Call this at the end of the callback that you are measuring.
+     */
+    void onEndCallback();
+
+private:
     /**
      * Report the measured duration of a callback.
      * @param actualDurationNanos
      */
     void reportActualDuration(int64_t actualDurationNanos);
 
-    void close();
-
-private:
     std::mutex mLock;
     APerformanceHintSession* mHintSession = nullptr;
+    int64_t mBeginCallbackNanos = 0;
 };
 
 #endif //SYNTHMARK_ADPF_WRAPPER_H

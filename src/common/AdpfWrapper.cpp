@@ -19,6 +19,7 @@
 #include <sys/types.h>
 
 #include "AdpfWrapper.h"
+#include "AudioClock.h"
 
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,
@@ -95,6 +96,20 @@ void AdpfWrapper::close() {
     if (mHintSession != nullptr) {
         gAPH_closeSessionFn(mHintSession);
         mHintSession = nullptr;
+    }
+}
+
+void AdpfWrapper::onBeginCallback() {
+    if (isOpen()) {
+        mBeginCallbackNanos = oboe::AudioClock::getNanoseconds(CLOCK_REALTIME);
+    }
+}
+
+void AdpfWrapper::onEndCallback() {
+    if (isOpen()) {
+        int64_t endCallbackNanos = oboe::AudioClock::getNanoseconds(CLOCK_REALTIME);
+        int64_t actualDurationNanos = endCallbackNanos - mBeginCallbackNanos;
+        reportActualDuration(actualDurationNanos);
     }
 }
 

@@ -21,7 +21,6 @@
 #include <cstdint>
 #include <ctime>
 #include <mutex>
-#include <common/AdpfWrapper.h>
 #include "oboe/Definitions.h"
 #include "oboe/ResultWithValue.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -505,7 +504,10 @@ public:
         mPerformanceHintEnabled = enabled;
     }
 
-    AdpfWrapper          mAdpfWrapper;
+    bool isPerformanceHintEnabled() {
+        return mPerformanceHintEnabled;
+    }
+
 protected:
 
     /**
@@ -582,10 +584,9 @@ protected:
         }
     }
 
-    void closePerformanceHint() {
-        mAdpfWrapper.close();
-        mAdpfOpenAttempted = false;
-    }
+    virtual void beginPerformanceHintInCallback() {}
+    virtual void endPerformanceHintInCallback() {}
+    virtual void closePerformanceHint() {}
 
     /*
      * Set a weak_ptr to this stream from the shared_ptr so that we can
@@ -635,8 +636,6 @@ protected:
     static constexpr int kMinDelayBeforeCloseMillis = 10;
     int32_t              mDelayBeforeCloseMillis = kMinDelayBeforeCloseMillis;
 
-    // set by callback (or app when idle)
-    std::atomic<bool>    mAdpfOpenAttempted{false};
 private:
 
     // Log the scheduler if it changes.

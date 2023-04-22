@@ -59,22 +59,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         return DataCallbackResult::Stop; // Should not be getting called
     }
 
-    if (mPerformanceHintEnabled && !mAdpfOpenAttempted) {
-        int64_t targetDurationNanos = (mFramesPerBurst * 1e9) / getSampleRate();
-        // This has to be called from the callback thread so we get the right TID.
-        int adpfResult = mAdpfWrapper.open(gettid(), targetDurationNanos);
-        if (adpfResult < 0) {
-            LOGW("WARNING ADPF not supported, %d\n", adpfResult);
-        } else {
-            LOGD("ADPF is active\n");
-        }
-        mAdpfOpenAttempted = true;
-    } else if (!mPerformanceHintEnabled && mAdpfOpenAttempted) {
-        LOGD("ADPF closed\n");
-        mAdpfWrapper.close();
-        mAdpfOpenAttempted = false;
-    }
-    int64_t beginCallback = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    beginPerformanceHintInCallback();
 
     // Call the app to do the work.
     DataCallbackResult result;
@@ -87,11 +72,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
 
-    if (mAdpfWrapper.isOpen()) {
-        int64_t endCallback = AudioClock::getNanoseconds(CLOCK_REALTIME);
-        int64_t actualDurationNanos = endCallback - beginCallback;
-        mAdpfWrapper.reportActualDuration(actualDurationNanos);
-    }
+    endPerformanceHintInCallback();
 
     return result;
 }
@@ -237,5 +218,6 @@ void AudioStream::calculateDefaultDelayBeforeCloseMillis() {
     LOGD("calculateDefaultDelayBeforeCloseMillis() default = %d",
          static_cast<int>(mDelayBeforeCloseMillis));
 }
+
 
 } // namespace oboe
