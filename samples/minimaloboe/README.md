@@ -14,3 +14,6 @@ Oboe is called through an external native function.
 
 This app uses shared_ptr for passing callbacks to Oboe.
 When the stream is disconnected, it starts a new stream.
+
+## Screenshots
+![minimaloboe-screenshot](minimaloboe-screenshot.png)
