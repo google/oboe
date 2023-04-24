@@ -55,13 +55,6 @@ This test works well for measuring the latency of Bluetooth headsets.
 
 More instructions in the [Wiki/OboeTester_TapToTone](https://github.com/google/oboe/wiki/OboeTester_TapToTone).
 
-### Record and Play
-
-* Tap RECORD to record several seconds of audio. You should see the red VU meters move.
-* Tap STOP then PLAY to play it back.
-* Tap SHARE button to the recorded WAV file to GDrive, GMail or another app.
-You can then examine the WAV file using a program like Audacity.
-
 ### Echo Input to Output
 
 This test copies input to output and adds up to 3 seconds of delay.
@@ -89,6 +82,13 @@ Then we correlate the two streams by sliding the portion of the output stream th
 The Manchaster Encoded signal provide a very sharp peak when the offset matches the combined input and output latency.
 
 Source code for the analyzer in [LatencyAnalyzer.h](https://github.com/google/oboe/blob/main/apps/OboeTester/app/src/main/cpp/analyzer/LatencyAnalyzer.h).
+
+### Record and Play
+
+* Tap RECORD to record several seconds of audio. You should see the red VU meters move.
+* Tap STOP then PLAY to play it back.
+* Tap SHARE button to the recorded WAV file to GDrive, GMail or another app.
+You can then examine the WAV file using a program like Audacity.
 
 ### Glitch Test
 
@@ -122,6 +122,13 @@ The Share button will let you email the report to yourself.
 You can test whether the disconnect logic is working in Android by plugging or unplugging a headset.
 Just follow the instructions in red. You will get a report at the end that you can SHARE by GMail or Drive.
 
+### Device Report
+
+Provides a device report. This report includes info about the features enabled, the properties set, audio
+paths, and microphones.
+You can share this report by first pressing the icon with the three vertical dots at the top right of OboeTester.
+After that, simply press the share button and you should be able to email this to yourself.
+
 ### Data Paths
 
 This checks for dead speaker and mic channels, dead Input Presets and other audio data path problems.
@@ -146,3 +153,12 @@ You could use this to measure, for example, the latency on an iPhone.
 6. Tap on the app on the device (B) with your fingertip. You need to make a noise with your fingernail.
 7. Quickly tap the "ANALYSE" button on device (A).
 8. OboeTester will now look for two sounds in the recording and measure the time between them.
+
+### Plug Latency
+Measures the time it takes to close, open, and start streams as audio devices are plugged in and removed.
+
+### Error Callback Test
+Lets you delete an error callback while it is used by Oboe. Targeted test for issue #1603.
+
+### Route Callback Test
+Changes the VoiceCommunication route while playing audio. Targeted test for issue #1763.
