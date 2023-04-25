@@ -677,7 +677,7 @@ namespace oboe {
     };
 
     /**
-     * Specifying whether audio may or may not be captured by other apps or the system for an
+     * Specifies whether audio may or may not be captured by other apps or the system for an
      * output stream.
      *
      * Note that these match the equivalent values in AudioAttributes in the Android Java API.
