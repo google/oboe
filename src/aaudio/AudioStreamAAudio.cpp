@@ -205,6 +205,20 @@ Result AudioStreamAAudio::open() {
     }
     mLibLoader->builder_setBufferCapacityInFrames(aaudioBuilder, capacity);
 
+    if (mLibLoader->builder_setSessionId != nullptr) {
+        mLibLoader->builder_setSessionId(aaudioBuilder,
+                                         static_cast<aaudio_session_id_t>(mSessionId));
+        // Output effects do not support PerformanceMode::LowLatency.
+        if (OboeGlobals::areWorkaroundsEnabled()
+                && mSessionId != SessionId::None
+                && mDirection == oboe::Direction::Output
+                && mPerformanceMode == PerformanceMode::LowLatency) {
+                    mPerformanceMode = PerformanceMode::None;
+                    LOGD("AudioStreamAAudio.open() performance mode changed to None when session "
+                         "id is requested");
+        }
+    }
+
     // Channel mask was added in SC_V2. Given the corresponding channel count of selected channel
     // mask may be different from selected channel count, the last set value will be respected.
     // If channel count is set after channel mask, the previously set channel mask will be cleared.
@@ -247,11 +261,6 @@ Result AudioStreamAAudio::open() {
                                            static_cast<aaudio_input_preset_t>(inputPreset));
     }
 
-    if (mLibLoader->builder_setSessionId != nullptr) {
-        mLibLoader->builder_setSessionId(aaudioBuilder,
-                                         static_cast<aaudio_session_id_t>(mSessionId));
-    }
-
     // These were added in S so we have to check for the function pointer.
     if (mLibLoader->builder_setPackageName != nullptr && !mPackageName.empty()) {
         mLibLoader->builder_setPackageName(aaudioBuilder,
@@ -261,6 +270,12 @@ Result AudioStreamAAudio::open() {
     if (mLibLoader->builder_setAttributionTag != nullptr && !mAttributionTag.empty()) {
         mLibLoader->builder_setAttributionTag(aaudioBuilder,
                                            mAttributionTag.c_str());
+    }
+
+    // This was added in Q so we have to check for the function pointer.
+    if (mLibLoader->builder_setAllowedCapturePolicy != nullptr && mDirection == oboe::Direction::Output) {
+        mLibLoader->builder_setAllowedCapturePolicy(aaudioBuilder,
+                                           static_cast<aaudio_allowed_capture_policy_t>(mAllowedCapturePolicy));
     }
 
     if (mLibLoader->builder_setPrivacySensitive != nullptr && mDirection == oboe::Direction::Input
@@ -339,6 +354,13 @@ Result AudioStreamAAudio::open() {
         mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
     } else {
         mSessionId = SessionId::None;
+    }
+
+    // This was added in Q so we have to check for the function pointer.
+    if (mLibLoader->stream_getAllowedCapturePolicy != nullptr && mDirection == oboe::Direction::Output) {
+        mAllowedCapturePolicy = static_cast<AllowedCapturePolicy>(mLibLoader->stream_getAllowedCapturePolicy(mAAudioStream));
+    } else {
+        mAllowedCapturePolicy = AllowedCapturePolicy::Unspecified;
     }
 
     if (mLibLoader->stream_isPrivacySensitive != nullptr && mDirection == oboe::Direction::Input) {

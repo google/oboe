@@ -19,6 +19,7 @@ package com.mobileer.oboetester;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -26,8 +27,12 @@ import android.media.MicrophoneInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
@@ -72,6 +77,24 @@ public class DeviceReportActivity extends Activity {
         setContentView(R.layout.activity_device_report);
         mAutoTextView = (TextView) findViewById(R.id.text_log_device_report);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem settings = menu.findItem(R.id.action_share);
+        settings.setOnMenuItemClickListener(item -> {
+            if(mAutoTextView !=null) {
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_TEXT, mAutoTextView.getText().toString());
+                sendIntent.setType("text/plain");
+                Intent shareIntent = Intent.createChooser(sendIntent, null);
+                startActivity(shareIntent);
+            }
+            return false;
+        });
+        return true;
     }
 
     @Override

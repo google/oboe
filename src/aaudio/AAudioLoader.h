@@ -72,6 +72,10 @@ typedef uint32_t aaudio_channel_mask_t;
 typedef int32_t aaudio_spatialization_behavior_t;
 #endif
 
+#ifndef __ANDROID_API_Q__
+#define __ANDROID_API_Q__ 29
+#endif
+
 #ifndef __ANDROID_API_R__
 #define __ANDROID_API_R__ 30
 #endif
@@ -196,6 +200,7 @@ class AAudioLoader {
     signature_V_PBI builder_setSessionId = nullptr;
 
     signature_V_PBO builder_setPrivacySensitive = nullptr;
+    signature_V_PBI builder_setAllowedCapturePolicy = nullptr;
 
     signature_V_PBCPH builder_setPackageName = nullptr;
     signature_V_PBCPH builder_setAttributionTag = nullptr;
@@ -249,6 +254,7 @@ class AAudioLoader {
     signature_I_PS   stream_getSessionId = nullptr;
 
     signature_O_PS   stream_isPrivacySensitive = nullptr;
+    signature_I_PS   stream_getAllowedCapturePolicy = nullptr;
 
     signature_U_PS   stream_getChannelMask = nullptr;
 

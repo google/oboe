@@ -167,18 +167,28 @@ public:
      */
     SpatializationBehavior getSpatializationBehavior() const { return mSpatializationBehavior; }
 
+     * Return the policy that determines whether the audio may or may not be captured
+     * by other apps or the system.
+     *
+     * See AudioStreamBuilder_setAllowedCapturePolicy().
+     *
+     * Added in API level 29 to AAudio.
+     *
+     * @return the allowed capture policy, for example AllowedCapturePolicy::All
+     */
+    AllowedCapturePolicy getAllowedCapturePolicy() const { return mAllowedCapturePolicy; }
+
     /**
-    * Return whether this input stream is marked as privacy sensitive.
-    *
-    * See AudioStreamBuilder_setPrivacySensitiveMode().
-    *
-    * Added in API level 30 to AAudio.
-    *
-    * @param stream reference provided by AAudioStreamBuilder_openStream()
-    * @return PrivacySensitiveMode::Enabled if privacy sensitive,
-    * PrivacySensitiveMode::Disabled if not privacy sensitive, and
-    * PrivacySensitiveMode::Unspecified if API is not supported.
-    */
+     * Return whether this input stream is marked as privacy sensitive.
+     *
+     * See AudioStreamBuilder_setPrivacySensitiveMode().
+     *
+     * Added in API level 30 to AAudio.
+     *
+     * @return PrivacySensitiveMode::Enabled if privacy sensitive,
+     * PrivacySensitiveMode::Disabled if not privacy sensitive, and
+     * PrivacySensitiveMode::Unspecified if API is not supported.
+     */
     PrivacySensitiveMode getPrivacySensitiveMode() const { return mPrivacySensitiveMode; }
 
     /**
@@ -267,6 +277,9 @@ protected:
     InputPreset                     mInputPreset = InputPreset::VoiceRecognition;
     /** Stream session ID allocation strategy. Only active on Android 28+ */
     SessionId                       mSessionId = SessionId::None;
+
+    /** Allowed Capture Policy. Only active on Android 29+ */
+    AllowedCapturePolicy            mAllowedCapturePolicy = AllowedCapturePolicy::Unspecified;
 
     /** Privacy Sensitive Mode. Only active on Android 30+ */
     PrivacySensitiveMode            mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;

@@ -62,3 +62,6 @@ An Android View subclass which implements the "trigger pad" UI widgets
 ## Native-interface (JNI)
 * DrumPlayerJNI.cpp
  This is where all the access to the native functionality is implemented.
+
+## Screenshots
+![drumthumper-screenshot](drumthumper-screenshot.png)
