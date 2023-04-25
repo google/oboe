@@ -111,9 +111,8 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
     // Setting privacy sensitive mode is not supported for OpenSL ES.
     mPrivacySensitiveMode = PrivacySensitiveMode::Unspecified;
 
-    // Spatialization Behavior and Is Content Spatialized not supported for OpenSL ES.
+    // Spatialization Behavior is not supported for OpenSL ES.
     mSpatializationBehavior = SpatializationBehavior::Never;
-    mIsContentSpatialized = false;
 
     SLresult result = registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
@@ -296,12 +295,6 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
     // Privacy Sensitive Mode
     if (mPrivacySensitiveMode != PrivacySensitiveMode::Unspecified) {
         LOGW("PrivacySensitiveMode [AudioStreamBuilder::setPrivacySensitiveMode()] "
-             "is not supported on OpenSLES streams.");
-    }
-
-    // Is Content Spatialized
-    if (mIsContentSpatialized) {
-        LOGW("AllowedCapturePolicy [AudioStreamBuilder::setIsContentSpatialized()] "
              "is not supported on OpenSLES streams.");
     }
 

@@ -490,11 +490,7 @@ TEST_F(StreamOpenInput, AAudioInputSetIsContentSpatialized) {
     mBuilder.setDirection(Direction::Input);
     mBuilder.setIsContentSpatialized(true);
     ASSERT_TRUE(openStream());
-    if (getSdkVersion() >= __ANDROID_API_S_V2__){
-        ASSERT_EQ(mStream->isContentSpatialized(), true);
-    } else {
-        ASSERT_EQ(mStream->isContentSpatialized(), false);
-    }
+    ASSERT_EQ(mStream->isContentSpatialized(), true);
     ASSERT_TRUE(closeStream());
 }
 
@@ -502,11 +498,7 @@ TEST_F(StreamOpenOutput, AAudioOutputSetIsContentSpatialized) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setIsContentSpatialized(true);
     ASSERT_TRUE(openStream());
-    if (getSdkVersion() >= __ANDROID_API_S_V2__){
-        ASSERT_EQ(mStream->isContentSpatialized(), true);
-    } else {
-        ASSERT_EQ(mStream->isContentSpatialized(), false);
-    }
+    ASSERT_EQ(mStream->isContentSpatialized(), true);
     ASSERT_TRUE(closeStream());
 }
 
@@ -514,6 +506,14 @@ TEST_F(StreamOpenOutput, OpenSLESOutputSetIsContentSpatialized) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
     mBuilder.setIsContentSpatialized(true);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->isContentSpatialized(), true);
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetIsContentSpatializedFalse) {
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setIsContentSpatialized(false);
     ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->isContentSpatialized(), false);
     ASSERT_TRUE(closeStream());

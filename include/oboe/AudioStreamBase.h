@@ -276,7 +276,7 @@ protected:
     /** Control the attribution tag of the context creating the stream. Only active on Android 31+ */
     std::string                     mAttributionTag;
 
-    /** Whether the content is already spatialized. Only active on Android 32+ */
+    /** Whether the content is already spatialized. Only used on Android 32+ */
     bool                            mIsContentSpatialized = false;
     /** Spatialization Behavior. Only active on Android 32+ */
     SpatializationBehavior          mSpatializationBehavior = SpatializationBehavior::Unspecified;
