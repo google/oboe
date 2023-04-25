@@ -167,6 +167,7 @@ public:
      */
     SpatializationBehavior getSpatializationBehavior() const { return mSpatializationBehavior; }
 
+    /**
      * Return the policy that determines whether the audio may or may not be captured
      * by other apps or the system.
      *
