@@ -272,6 +272,12 @@ Result AudioStreamAAudio::open() {
                                            mAttributionTag.c_str());
     }
 
+    // This was added in Q so we have to check for the function pointer.
+    if (mLibLoader->builder_setAllowedCapturePolicy != nullptr && mDirection == oboe::Direction::Output) {
+        mLibLoader->builder_setAllowedCapturePolicy(aaudioBuilder,
+                                           static_cast<aaudio_allowed_capture_policy_t>(mAllowedCapturePolicy));
+    }
+
     if (mLibLoader->builder_setPrivacySensitive != nullptr && mDirection == oboe::Direction::Input
             && mPrivacySensitiveMode != PrivacySensitiveMode::Unspecified) {
         mLibLoader->builder_setPrivacySensitive(aaudioBuilder,
@@ -333,6 +339,13 @@ Result AudioStreamAAudio::open() {
         mSessionId = static_cast<SessionId>(mLibLoader->stream_getSessionId(mAAudioStream));
     } else {
         mSessionId = SessionId::None;
+    }
+
+    // This was added in Q so we have to check for the function pointer.
+    if (mLibLoader->stream_getAllowedCapturePolicy != nullptr && mDirection == oboe::Direction::Output) {
+        mAllowedCapturePolicy = static_cast<AllowedCapturePolicy>(mLibLoader->stream_getAllowedCapturePolicy(mAAudioStream));
+    } else {
+        mAllowedCapturePolicy = AllowedCapturePolicy::Unspecified;
     }
 
     if (mLibLoader->stream_isPrivacySensitive != nullptr && mDirection == oboe::Direction::Input) {

@@ -538,3 +538,87 @@ TEST_F(StreamOpenInput, OldAndroidVersionInputSetPrivacySensitiveModeDoesNotCras
         ASSERT_TRUE(closeStream());
     }
 }
+
+TEST_F(StreamOpenOutput, AAudioOutputSetAllowedCapturePolicyUnspecifiedGetsAll){
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::Unspecified);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::All);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetAllowedCapturePolicyAll){
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::All);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::All);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetAllowedCapturePolicySystem){
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::System);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::System);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputSetAllowedCapturePolicyNone){
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::None);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::None);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenOutput, AAudioOutputDoNotSetAllowedCapturePolicy){
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setAudioApi(AudioApi::AAudio);
+    ASSERT_TRUE(openStream());
+    if (getSdkVersion() >= __ANDROID_API_Q__){
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::All);
+    } else {
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::Unspecified);
+    }
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenOutput, OpenSLESOutputSetAllowedCapturePolicyAllGetsUnspecified){
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setAudioApi(AudioApi::OpenSLES);
+    mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::All);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::Unspecified);
+    ASSERT_TRUE(closeStream());
+}
+
+TEST_F(StreamOpenOutput, AAudioBeforeQOutputSetAllowedCapturePolicyAllGetsUnspecified){
+    if (getSdkVersion() < __ANDROID_API_Q__){
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::All);
+        ASSERT_TRUE(openStream());
+        ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::Unspecified);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
+TEST_F(StreamOpenInput, AAudioInputSetAllowedCapturePolicyAllGetsUnspecified){
+    mBuilder.setDirection(Direction::Input);
+    mBuilder.setAllowedCapturePolicy(AllowedCapturePolicy::All);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->getAllowedCapturePolicy(), AllowedCapturePolicy::Unspecified);
+    ASSERT_TRUE(closeStream());
+}

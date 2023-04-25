@@ -348,26 +348,43 @@ public:
         return this;
     }
 
+    /**
+     * Specify whether this stream audio may or may not be captured by other apps or the system.
+     *
+     * The default is AllowedCapturePolicy::Unspecified which maps to AAUDIO_ALLOW_CAPTURE_BY_ALL.
+     *
+     * Note that an application can also set its global policy, in which case the most restrictive
+     * policy is always applied. See android.media.AudioAttributes.setAllowedCapturePolicy.
+     *
+     * Added in API level 29 to AAudio.
+     *
+     * @param inputPreset the desired level of opt-out from being captured.
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setAllowedCapturePolicy(AllowedCapturePolicy allowedCapturePolicy) {
+        mAllowedCapturePolicy = allowedCapturePolicy;
+        return this;
+    }
 
     /** Indicates whether this input stream must be marked as privacy sensitive or not.
-    *
-    * When PrivacySensitiveMode::Enabled, this input stream is privacy sensitive and any
-    * concurrent capture is not permitted.
-    *
-    * This is off (PrivacySensitiveMode::Disabled) by default except when the input preset is
-    * InputPreset::VoiceRecognition or InputPreset::Camcorder
-    *
-    * Always takes precedence over default from input preset when set explicitly.
-    *
-    * Only relevant if the stream direction is Direction::Input and AAudio is used.
-    *
-    * Added in API level 30 to AAudio.
-    *
-    * @param builder reference provided by AAudio_createStreamBuilder()
-    * @param privacySensitive PrivacySensitiveMode::Enabled if capture from this stream must be
-    * marked as privacy sensitive, PrivacySensitiveMode::Disabled if stream should be marked as
-    * not sensitive.
-    */
+     *
+     * When PrivacySensitiveMode::Enabled, this input stream is privacy sensitive and any
+     * concurrent capture is not permitted.
+     *
+     * This is off (PrivacySensitiveMode::Disabled) by default except when the input preset is
+     * InputPreset::VoiceRecognition or InputPreset::Camcorder
+     *
+     * Always takes precedence over default from input preset when set explicitly.
+     *
+     * Only relevant if the stream direction is Direction::Input and AAudio is used.
+     *
+     * Added in API level 30 to AAudio.
+     *
+     * @param privacySensitive PrivacySensitiveMode::Enabled if capture from this stream must be
+     * marked as privacy sensitive, PrivacySensitiveMode::Disabled if stream should be marked as
+     * not sensitive.
+     * @return pointer to the builder so calls can be chained
+     */
     AudioStreamBuilder *setPrivacySensitiveMode(PrivacySensitiveMode privacySensitiveMode) {
         mPrivacySensitiveMode = privacySensitiveMode;
         return this;
