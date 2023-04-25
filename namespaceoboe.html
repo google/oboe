@@ -348,6 +348,12 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2
  }</td></tr>
 <tr class="separator:a4a0eebf27bb53b62c1c136d5a9d0f9fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74be6aa00698ae73f6eff21f47f9fa9a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">AllowedCapturePolicy</a> : int32_t { <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aa6fcdc090caeade09d0efd6253932b6f5">Unspecified</a> = kUnspecified
+, <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">All</a> = 1
+, <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">System</a> = 2
+, <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aa6adf97f83acf6453d4a6a4b1070f3754">None</a> = 3
+ }</td></tr>
+<tr class="separator:a74be6aa00698ae73f6eff21f47f9fa9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -396,6 +402,46 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>WARNING - UNDER CONSTRUCTION - THIS API WILL CHANGE. </p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a74be6aa00698ae73f6eff21f47f9fa9a" name="a74be6aa00698ae73f6eff21f47f9fa9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74be6aa00698ae73f6eff21f47f9fa9a">&#9670;&#160;</a></span>AllowedCapturePolicy</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">oboe::AllowedCapturePolicy</a> : int32_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Specifies whether audio may or may not be captured by other apps or the system for an output stream.</p>
+<p>Note that these match the equivalent values in AudioAttributes in the Android Java API.</p>
+<p>Added in API level 29 for AAudio. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a74be6aa00698ae73f6eff21f47f9fa9aa6fcdc090caeade09d0efd6253932b6f5" name="a74be6aa00698ae73f6eff21f47f9fa9aa6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p>When not explicitly requested, set privacy sensitive mode according to the Usage. This should behave similarly to setting <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">AllowedCapturePolicy::All</a>. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680" name="a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680"></a>All&#160;</td><td class="fielddoc"><p>Indicates that the audio may be captured by any app.</p>
+<p>For privacy, the following Usages can not be recorded: VoiceCommunication*, Notification*, Assistance* and Assistant.</p>
+<p>On Android Q, only <a class="el" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a63d72051e901c069f8aa1b32aa0c43bb">Usage::Game</a> and <a class="el" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74">Usage::Media</a> may be captured.</p>
+<p>See ALLOW_CAPTURE_BY_ALL in the AudioAttributes Java API. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a" name="a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a"></a>System&#160;</td><td class="fielddoc"><p>Indicates that the audio may only be captured by system apps.</p>
+<p>System apps can capture for many purposes like accessibility, user guidance... but have strong restriction. See ALLOW_CAPTURE_BY_SYSTEM in the AudioAttributes Java API for what the system apps can do with the capture audio. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a74be6aa00698ae73f6eff21f47f9fa9aa6adf97f83acf6453d4a6a4b1070f3754" name="a74be6aa00698ae73f6eff21f47f9fa9aa6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>Indicates that the audio may not be recorded by any app, even if it is a system app.</p>
+<p>It is encouraged to use <a class="el" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">AllowedCapturePolicy::System</a> instead of this value as system apps provide significant and useful features for the user (eg. accessibility). See ALLOW_CAPTURE_BY_NONE in the AudioAttributes Java API </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="a92972414867c81d5974cb2ed7abefbf6" name="a92972414867c81d5974cb2ed7abefbf6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a92972414867c81d5974cb2ed7abefbf6">&#9670;&#160;</a></span>AudioApi</h2>
 
