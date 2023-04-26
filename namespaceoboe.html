@@ -343,6 +343,11 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:ac9c3eaf42351943995479b742f8a8d33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbe6ae96ea5b5dc74b746353e757bb7a"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">SpatializationBehavior</a> : int32_t { <a class="el" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6fcdc090caeade09d0efd6253932b6f5">Unspecified</a> = kUnspecified
+, <a class="el" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">Auto</a> = 1
+, <a class="el" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">Never</a> = 2
+ }</td></tr>
+<tr class="separator:afbe6ae96ea5b5dc74b746353e757bb7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a0eebf27bb53b62c1c136d5a9d0f9fa"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">PrivacySensitiveMode</a> : int32_t { <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa6fcdc090caeade09d0efd6253932b6f5">Unspecified</a> = kUnspecified
 , <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">Disabled</a> = 1
 , <a class="el" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2
@@ -849,6 +854,37 @@ Variables</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a8330247b25429953a08354f41834d520aa6156ea9d66fef24e87e841fbabf7cca" name="a8330247b25429953a08354f41834d520aa6156ea9d66fef24e87e841fbabf7cca"></a>Shared&#160;</td><td class="fielddoc"><p>Multiple applications can share the same device. The data from output streams will be mixed by the audio service. The data for input streams will be distributed by the audio service.</p>
 <p>This will have higher latency than the EXCLUSIVE mode. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="afbe6ae96ea5b5dc74b746353e757bb7a" name="afbe6ae96ea5b5dc74b746353e757bb7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbe6ae96ea5b5dc74b746353e757bb7a">&#9670;&#160;</a></span>SpatializationBehavior</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">oboe::SpatializationBehavior</a> : int32_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The spatialization behavior of the audio stream. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="afbe6ae96ea5b5dc74b746353e757bb7aa6fcdc090caeade09d0efd6253932b6f5" name="afbe6ae96ea5b5dc74b746353e757bb7aa6fcdc090caeade09d0efd6253932b6f5"></a>Unspecified&#160;</td><td class="fielddoc"><p>Constant indicating that the spatialization behavior is not specified. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb" name="afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb"></a>Auto&#160;</td><td class="fielddoc"><p>Constant indicating the audio content associated with these attributes will follow the default platform behavior with regards to which content will be spatialized or not. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c" name="afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c"></a>Never&#160;</td><td class="fielddoc"><p>Constant indicating the audio content associated with these attributes should never be spatialized. </p>
 </td></tr>
 </table>
 
