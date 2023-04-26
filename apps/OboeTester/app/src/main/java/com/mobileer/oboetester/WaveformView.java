@@ -27,6 +27,7 @@ import android.view.View;
 
 /**
  * Display an audio waveform in a custom View.
+ * Data is assumed to have a constant x-axis increment, ie. isochronous.
  */
 public class WaveformView extends View {
     private static final float MESSAGE_TEXT_SIZE = 80;
@@ -144,7 +145,8 @@ public class WaveformView extends View {
     }
 
     /**
-     * Copy data into internal buffer then repaint.
+     * Copy data into internal buffer.
+     * Caller should then postInvalidate().
      */
     public void setSampleData(float[] samples) {
         setSampleData(samples, 0, samples.length);
@@ -170,7 +172,8 @@ public class WaveformView extends View {
     }
 
     /**
-     * Copy cursor positions into internal buffer then repaint.
+     * Copy cursor positions into internal buffer.
+     * Caller should then postInvalidate().
      */
     public void setCursorData(int[] cursors) {
         if (cursors == null) {

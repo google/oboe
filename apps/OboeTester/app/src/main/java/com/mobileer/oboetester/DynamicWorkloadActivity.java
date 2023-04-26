@@ -16,6 +16,7 @@
 
 package com.mobileer.oboetester;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,18 +37,21 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private LinearLayout mAffinityLayout;
     private ArrayList<CheckBox> mAffinityBoxes = new ArrayList<CheckBox>();
     private WorkloadUpdateThread mUpdateThread = new WorkloadUpdateThread();
+    private MultiLineChart mMultiLineChart;
+    private MultiLineChart.Trace mCpuLoadTrace;
+    private MultiLineChart.Trace mWorkloadTrace;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 40;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
-        public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 4000;
+        public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 3000;
         public static final int REQUIRED_STABLE_MEASUREMENTS = 20;
 
         private Handler mHandler;
         private int mCount;
         private double mWorkload = 1.0;
-        private double mTargetCpuLoad = 0.80;
+        private double mTargetCpuLoad = 0.90; // Determine workload that will hit 90% CPU load.
         private double mLowWorkload = 0.0;
         private double mHighWorkload = 0.0;
         private static final int STATE_BENCHMARK_TARGET = 0;
@@ -59,6 +63,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private boolean mArmLoadMonitor = false;
         private long mRecoveryTimeBegin;
         private long mRecoveryTimeEnd;
+        private long mStartTimeNanos;
 
         String stateToString(int state) {
             switch(state) {
@@ -72,6 +77,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                     return "Unrecognized";
             }
         }
+
         // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
             @Override
@@ -92,7 +98,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                                 mLastToggleTime = now;
                                 mState = STATE_RUN_LOW;
                                 mLowWorkload = nextWorkload * 0.02;
-                                mHighWorkload = nextWorkload;
+                                mHighWorkload = nextWorkload * (0.8 / 0.9);
+                                mWorkloadTrace.setMax((float)(2.0 * nextWorkload));
                             }
                         }
                         break;
@@ -111,17 +118,28 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                             mLastToggleTime = now;
                             mState = STATE_RUN_LOW;
                         }
+
                         if (mRecoveryTimeBegin == 0) {
                             if (cpuLoad > 1.0) {
                                 mRecoveryTimeBegin = now;
                             }
                         } else if (mRecoveryTimeEnd == 0) {
-                            if (cpuLoad < 0.85) {
+                            if (cpuLoad < 0.90) {
                                 mRecoveryTimeEnd = now;
                             }
+                        } else if (cpuLoad > 0.90) {
+                            mRecoveryTimeEnd = now;
                         }
                         break;
                 }
+                // Update chart
+                float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
+                mMultiLineChart.addX(nowMicros);
+                mCpuLoadTrace.add((float) cpuLoad);
+                mWorkloadTrace.add((float) mWorkload);
+                mMultiLineChart.update();
+
+                // Display numbers
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message = "Count = " + mCount++
@@ -139,6 +157,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         private void start() {
             stop();
+            mStartTimeNanos = System.nanoTime();
+            mMultiLineChart.reset();
             mCount = 0;
             mStableCount = 0;
             mState = STATE_BENCHMARK_TARGET;
@@ -173,6 +193,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         // Add a row of checkboxes for setting CPU affinity.
         final int cpuCount = NativeEngine.getCpuCount();
+        final int defaultCpuAffinity = 2;
         View.OnClickListener checkBoxListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -194,7 +215,15 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mAffinityBoxes.add(checkBox);
             checkBox.setText(cpuIndex + "");
             checkBox.setOnClickListener(checkBoxListener);
+            if (cpuIndex == defaultCpuAffinity) {
+                checkBox.setChecked(true);
+            }
         }
+        NativeEngine.setCpuAffinityMask(1 << defaultCpuAffinity);
+
+        mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
+        mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,  0.0f, 2.0f);
+        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 30.0f);
 
         CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
 
@@ -206,7 +235,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         updateButtons(false);
 
         updateEnabledWidgets();
-
+        hideSettingsViews(); // make more room
     }
 
     private void setPerformanceHintEnabled(boolean checked) {

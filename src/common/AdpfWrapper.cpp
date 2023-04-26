@@ -112,4 +112,3 @@ void AdpfWrapper::onEndCallback() {
         reportActualDuration(actualDurationNanos);
     }
 }
-

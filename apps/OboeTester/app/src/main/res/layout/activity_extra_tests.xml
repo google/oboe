@@ -70,6 +70,6 @@
             android:layout_gravity="fill"
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchDynamicWorkloadTest"
-            android:text="Dynamic Load" />
+            android:text="CPU Load" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
