@@ -10,7 +10,8 @@ There is an associated codelab to follow along with. (Java)
 1. [MegaDrone](MegaDrone): A one hundred oscillator synthesizer, demonstrates low latency and CPU performance. (Java)
 1. [DrumThumper](drumthumper): A drum pad that plays sounds from loaded WAV files. (Kotlin)
 1. [LiveEffect](LiveEffect): Loops audio from input stream to output stream to demonstrate duplex capability. (Java)
-1. [SoundBoard](SoundBoard): A 30 note dynamic synthesizer, demonstating combining signals. (Kotlin)
+1. [SoundBoard](SoundBoard): A 25 to 40 note dynamic synthesizer, demonstating combining signals. The stream restarts
+when the display rotates. (Kotlin)
 
 Pre-requisites
 -------------
