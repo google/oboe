@@ -98,6 +98,8 @@ int AAudioLoader::open() {
 
     if (getSdkVersion() >= __ANDROID_API_S_V2__) {
         builder_setChannelMask = load_V_PBU("AAudioStreamBuilder_setChannelMask");
+        builder_setIsContentSpatialized = load_V_PBO("AAudioStreamBuilder_setIsContentSpatialized");
+        builder_setSpatializationBehavior = load_V_PBI("AAudioStreamBuilder_setSpatializationBehavior");
     }
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
@@ -165,6 +167,8 @@ int AAudioLoader::open() {
 
     if (getSdkVersion() >= __ANDROID_API_S_V2__) {
         stream_getChannelMask = load_U_PS("AAudioStream_getChannelMask");
+        stream_isContentSpatialized = load_O_PS("AAudioStream_isContentSpatialized");
+        stream_getSpatializationBehavior = load_I_PS("AAudioStream_getSpatializationBehavior");
     }
 
     // TODO: Remove pre-release check after Android U release
@@ -432,7 +436,7 @@ AAudioLoader::signature_V_PBO AAudioLoader::load_V_PBO(const char *functionName)
 
 #endif // __NDK_MAJOR__ >= 20
 
-// The aaudio channel masks were added in NDK 24,
+// The aaudio channel masks and spatialization behavior were added in NDK 24,
 // which is the first version to support Android SC_V2 (API 32).
 #if __NDK_MAJOR__ >= 24
 
@@ -489,6 +493,12 @@ AAudioLoader::signature_V_PBO AAudioLoader::load_V_PBO(const char *functionName)
     static_assert((uint32_t)ChannelMask::CM9Point1Point4 == AAUDIO_CHANNEL_9POINT1POINT4, ERRMSG);
     static_assert((uint32_t)ChannelMask::CM9Point1Point6 == AAUDIO_CHANNEL_9POINT1POINT6, ERRMSG);
     static_assert((uint32_t)ChannelMask::FrontBack == AAUDIO_CHANNEL_FRONT_BACK, ERRMSG);
+
+    ASSERT_INT32(aaudio_spatialization_behavior_t);
+
+    static_assert((int32_t)SpatializationBehavior::Unspecified == AAUDIO_UNSPECIFIED, ERRMSG);
+    static_assert((int32_t)SpatializationBehavior::Auto == AAUDIO_SPATIALIZATION_BEHAVIOR_AUTO, ERRMSG);
+    static_assert((int32_t)SpatializationBehavior::Never == AAUDIO_SPATIALIZATION_BEHAVIOR_NEVER, ERRMSG);
 
 #endif
 

@@ -284,6 +284,21 @@ Result AudioStreamAAudio::open() {
                 mPrivacySensitiveMode == PrivacySensitiveMode::Enabled);
     }
 
+    if (mLibLoader->builder_setIsContentSpatialized != nullptr) {
+        mLibLoader->builder_setIsContentSpatialized(aaudioBuilder, mIsContentSpatialized);
+    }
+
+    if (mLibLoader->builder_setSpatializationBehavior != nullptr) {
+        // Override Unspecified as Never to reduce latency.
+        if (mSpatializationBehavior == SpatializationBehavior::Unspecified) {
+            mSpatializationBehavior = SpatializationBehavior::Never;
+        }
+        mLibLoader->builder_setSpatializationBehavior(aaudioBuilder,
+                static_cast<aaudio_spatialization_behavior_t>(mSpatializationBehavior));
+    } else {
+        mSpatializationBehavior = SpatializationBehavior::Never;
+    }
+
     if (isDataCallbackSpecified()) {
         mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerDataCallback());
@@ -358,6 +373,15 @@ Result AudioStreamAAudio::open() {
 
     if (mLibLoader->stream_getChannelMask != nullptr) {
         mChannelMask = static_cast<ChannelMask>(mLibLoader->stream_getChannelMask(mAAudioStream));
+    }
+
+    if (mLibLoader->stream_isContentSpatialized != nullptr) {
+        mIsContentSpatialized = mLibLoader->stream_isContentSpatialized(mAAudioStream);
+    }
+
+    if (mLibLoader->stream_getSpatializationBehavior != nullptr) {
+        mSpatializationBehavior = static_cast<SpatializationBehavior>(
+                mLibLoader->stream_getSpatializationBehavior(mAAudioStream));
     }
 
     if (mLibLoader->stream_getHardwareChannelCount != nullptr) {

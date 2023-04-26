@@ -664,6 +664,29 @@ namespace oboe {
     };
 
     /**
+     * The spatialization behavior of the audio stream.
+     */
+    enum class SpatializationBehavior : int32_t {
+
+        /**
+         * Constant indicating that the spatialization behavior is not specified.
+         */
+        Unspecified = kUnspecified,
+
+        /**
+         * Constant indicating the audio content associated with these attributes will follow the
+         * default platform behavior with regards to which content will be spatialized or not.
+         */
+        Auto = 1,
+
+        /**
+         * Constant indicating the audio content associated with these attributes should never
+         * be spatialized.
+         */
+        Never = 2,
+    };
+
+    /**
      * The PrivacySensitiveMode attribute determines whether an input stream can be shared
      * with another privileged app, for example the Assistant.
      *
