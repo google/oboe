@@ -19,15 +19,14 @@ package com.mobileer.oboetester;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-
-import androidx.appcompat.widget.AppCompatTextView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
 /**
  * Button-like View that responds quickly to touch events.
  */
-public class FastButton extends AppCompatTextView {
+public class FastButton extends TextView {
 
     public FastButton(Context context) {
         super(context);
