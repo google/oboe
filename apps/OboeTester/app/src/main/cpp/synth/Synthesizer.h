@@ -64,7 +64,7 @@ public:
         }
         mActiveVoiceCount = numVoices;
         // Leave some headroom so the resonant filter does not clip.
-        mVoiceAmplitude = 0.5f / mActiveVoiceCount;
+        mVoiceAmplitude = 0.5f / sqrt(mActiveVoiceCount);
 
         int pitchIndex = 0;
         synth_float_t pitches[] = {60.0, 64.0, 67.0, 69.0};

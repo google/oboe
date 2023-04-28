@@ -51,7 +51,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private Handler mHandler;
         private int mCount;
         private double mWorkload = 1.0;
-        private double mTargetCpuLoad = 0.90; // Determine workload that will hit 90% CPU load.
+        private double mBenchmarkCpuLoad = 0.90; // Determine workload that will hit 90% CPU load.
+        private double mOperatingCpuLoad = 0.80; // CPU load during HIGH cycle.
         private double mLowWorkload = 0.0;
         private double mHighWorkload = 0.0;
         private static final double WORKLOAD_FILTER_COEFFICIENT = 0.9;
@@ -92,16 +93,16 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 switch (mState) {
                     case STATE_BENCHMARK_TARGET:
                         // prevent divide by zero
-                        double targetWorkload = (mWorkload / Math.max(cpuLoad, 0.1)) * mTargetCpuLoad;
+                        double targetWorkload = (mWorkload / Math.max(cpuLoad, 0.1)) * mBenchmarkCpuLoad;
                         // low pass filter to find matching workload
                         nextWorkload = (WORKLOAD_FILTER_COEFFICIENT * mWorkload)
                                 + ((1.0 - WORKLOAD_FILTER_COEFFICIENT) * targetWorkload);
-                        if (Math.abs(cpuLoad - mTargetCpuLoad) < 0.04) {
-                            if (mStableCount++ > REQUIRED_STABLE_MEASUREMENTS) {
+                        if (Math.abs(cpuLoad - mBenchmarkCpuLoad) < 0.04) {
+                            if (++mStableCount > REQUIRED_STABLE_MEASUREMENTS) {
                                 mLastToggleTime = now;
                                 mState = STATE_RUN_LOW;
-                                mLowWorkload = nextWorkload * 0.02;
-                                mHighWorkload = nextWorkload * (0.8 / 0.9);
+                                mLowWorkload = Math.max(1.0, nextWorkload * 0.02);
+                                mHighWorkload = nextWorkload * (mOperatingCpuLoad / mBenchmarkCpuLoad);
                                 mWorkloadTrace.setMax((float)(2.0 * nextWorkload));
                             }
                         }
@@ -226,7 +227,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
         mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,  0.0f, 2.0f);
-        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 30.0f);
+        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 100.0f);
 
         CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
 

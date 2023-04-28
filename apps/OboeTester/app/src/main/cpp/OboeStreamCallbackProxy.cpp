@@ -73,6 +73,11 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         return oboe::DataCallbackResult::Stop;
     }
 
+
+    if (mCallback != nullptr) {
+        callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
+    }
+
     if (mUseSynthWorkload) {
         mSynthWorkload.onCallback(mWorkload);
         float *buffer = (audioStream->getChannelCount() == 2) // FIXME mono crashes!
@@ -80,10 +85,6 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         mSynthWorkload.renderStereo(buffer, numFrames);
     } else {
         s_burnCPU((int32_t) (mWorkload * kWorkloadScaler * numFrames));
-    }
-
-    if (mCallback != nullptr) {
-        callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
 
 

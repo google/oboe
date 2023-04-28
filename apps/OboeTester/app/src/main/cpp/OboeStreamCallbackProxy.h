@@ -68,6 +68,11 @@ private:
     std::atomic<double> maximum { 0 };
 };
 
+/**
+ * Manage the synthesizer workload that burdens the CPU.
+ * Adjust the number of voices according to the requested workload.
+ * Trigger noteOn and noteOff messages.
+ */
 class SynthWorkload {
 public:
     SynthWorkload() {
@@ -95,13 +100,33 @@ public:
         }
     }
 
+    /**
+     * Render the notes into a stereo buffer.
+     * Passing a nullptr will cause the calculated results to be discarded.
+     * The workload should be the same.
+     * @param buffer a real stereo buffer or nullptr
+     * @param numFrames
+     */
     void renderStereo(float *buffer, int numFrames) {
-        mSynth.renderStereo(buffer, numFrames);
+        if (buffer == nullptr) {
+            int framesLeft = numFrames;
+            while (framesLeft > 0) {
+                int framesThisTime = std::min(kDummyBufferSizeInFrames, framesLeft);
+                // Do the work then throw it away.
+                mSynth.renderStereo(&mDummyStereoBuffer[0], framesThisTime);
+                framesLeft -= framesThisTime;
+            }
+        } else {
+            mSynth.renderStereo(buffer, numFrames);
+        }
+        mCountdown -= numFrames;
     }
 
 private:
     marksynth::Synthesizer   mSynth;
-    double                   mPreviousWorkload = 0.0;
+    static constexpr int     kDummyBufferSizeInFrames = 32;
+    float                    mDummyStereoBuffer[kDummyBufferSizeInFrames * 2];
+    double                   mPreviousWorkload = 1.0;
     bool                     mAreNotesOn = false;
     int                      mCountdown = 0;
     int                      mOnFrames = (int) (0.2 * 48000);
