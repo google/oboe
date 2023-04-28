@@ -17,6 +17,8 @@
 #include "common/OboeDebug.h"
 #include "OboeStreamCallbackProxy.h"
 
+#include "synth/IncludeMeOnce.h"
+
 // Linear congruential random number generator.
 static uint32_t s_random16() {
     static uint32_t seed = 1234;
@@ -71,24 +73,32 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         return oboe::DataCallbackResult::Stop;
     }
 
-    s_burnCPU((int32_t)(mWorkload * kWorkloadScaler * numFrames));
+    if (mUseSynthWorkload) {
+        mSynthWorkload.onCallback(mWorkload);
+        float *buffer = (audioStream->getChannelCount() == 2) // FIXME mono crashes!
+                        ? static_cast<float *>(audioData) : nullptr;
+        mSynthWorkload.renderStereo(buffer, numFrames);
+    } else {
+        s_burnCPU((int32_t) (mWorkload * kWorkloadScaler * numFrames));
+    }
 
     if (mCallback != nullptr) {
         callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
 
+
     // Update CPU load
-    double calculationTime = (double)(getNanoseconds() - startTimeNanos);
+
+    int64_t currentTimeNanos = getNanoseconds();
+    double calculationTime = (double)(currentTimeNanos - startTimeNanos);
     double inverseRealTime = audioStream->getSampleRate() / (1.0e9 * numFrames);
     double currentCpuLoad = calculationTime * inverseRealTime; // avoid a divide
     mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
 
-    int64_t currentTimeNs = getNanoseconds();
-
     if (mPreviousCallbackTimeNs != 0) {
-        mStatistics.add((currentTimeNs - mPreviousCallbackTimeNs) * kNsToMsScaler);
+        mStatistics.add((currentTimeNanos - mPreviousCallbackTimeNs) * kNsToMsScaler);
     }
-    mPreviousCallbackTimeNs = currentTimeNs;
+    mPreviousCallbackTimeNs = currentTimeNanos;
 
     return callbackResult;
 }

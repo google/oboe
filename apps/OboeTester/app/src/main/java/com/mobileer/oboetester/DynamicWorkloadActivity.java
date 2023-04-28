@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
-    public static final int INT = 100;
     private Button mStopButton;
     private Button mStartButton;
     private TextView mResultView;
     private LinearLayout mAffinityLayout;
     private ArrayList<CheckBox> mAffinityBoxes = new ArrayList<CheckBox>();
-    private WorkloadUpdateThread mUpdateThread = new WorkloadUpdateThread();
+    private WorkloadUpdateThread mUpdateThread;
+
     private MultiLineChart mMultiLineChart;
     private MultiLineChart.Trace mCpuLoadTrace;
     private MultiLineChart.Trace mWorkloadTrace;
@@ -54,9 +54,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private double mTargetCpuLoad = 0.90; // Determine workload that will hit 90% CPU load.
         private double mLowWorkload = 0.0;
         private double mHighWorkload = 0.0;
+        private static final double WORKLOAD_FILTER_COEFFICIENT = 0.9;
         private static final int STATE_BENCHMARK_TARGET = 0;
         private static final int STATE_RUN_LOW = 1;
         private static final int STATE_RUN_HIGH = 2;
+
         private int mState = STATE_BENCHMARK_TARGET;
         private long mLastToggleTime = 0;
         private int mStableCount = 0;
@@ -85,14 +87,15 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 double nextWorkload = 0.0;
                 AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
                 double cpuLoad = stream.getCpuLoad();
-                cpuLoad = Math.max(cpuLoad, 0.01); // prevent divide by zero
                 long now = System.currentTimeMillis();
 
                 switch (mState) {
                     case STATE_BENCHMARK_TARGET:
-                        double targetWorkload = (mWorkload / cpuLoad) * mTargetCpuLoad;
+                        // prevent divide by zero
+                        double targetWorkload = (mWorkload / Math.max(cpuLoad, 0.1)) * mTargetCpuLoad;
                         // low pass filter to find matching workload
-                        nextWorkload = ((4 * mWorkload) + targetWorkload) / 5;
+                        nextWorkload = (WORKLOAD_FILTER_COEFFICIENT * mWorkload)
+                                + ((1.0 - WORKLOAD_FILTER_COEFFICIENT) * targetWorkload);
                         if (Math.abs(cpuLoad - mTargetCpuLoad) < 0.04) {
                             if (mStableCount++ > REQUIRED_STABLE_MEASUREMENTS) {
                                 mLastToggleTime = now;
@@ -272,6 +275,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             super.startAudio();
             updateButtons(true);
             postResult("Running test");
+            mUpdateThread = new WorkloadUpdateThread();
             mUpdateThread.start();
         } catch (IOException e) {
             e.printStackTrace();

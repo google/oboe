@@ -22,6 +22,8 @@
 #include <sys/sysinfo.h>
 
 #include "oboe/Oboe.h"
+#include "synth/Synthesizer.h"
+#include "synth/SynthTools.h"
 
 class DoubleStatistics {
 public:
@@ -66,12 +68,54 @@ private:
     std::atomic<double> maximum { 0 };
 };
 
+class SynthWorkload {
+public:
+    SynthWorkload() {
+        mSynth.setup(marksynth::kSynthmarkSampleRate, marksynth::kSynthmarkMaxVoices);
+    }
+
+    void onCallback(double workload) {
+        // If workload changes then restart notes.
+        if (workload != mPreviousWorkload) {
+            mSynth.allNotesOff();
+            mAreNotesOn = false;
+            mCountdown = 0; // trigger notes on
+            mPreviousWorkload = workload;
+        }
+        if (mCountdown <= 0) {
+            if (mAreNotesOn) {
+                mSynth.allNotesOff();
+                mAreNotesOn = false;
+                mCountdown = mOffFrames;
+            } else {
+                mSynth.notesOn((int)mPreviousWorkload);
+                mAreNotesOn = true;
+                mCountdown = mOnFrames;
+            }
+        }
+    }
+
+    void renderStereo(float *buffer, int numFrames) {
+        mSynth.renderStereo(buffer, numFrames);
+    }
+
+private:
+    marksynth::Synthesizer   mSynth;
+    double                   mPreviousWorkload = 0.0;
+    bool                     mAreNotesOn = false;
+    int                      mCountdown = 0;
+    int                      mOnFrames = (int) (0.2 * 48000);
+    int                      mOffFrames = (int) (0.3 * 48000);
+};
+
 class OboeStreamCallbackProxy : public oboe::AudioStreamCallback {
 public:
+
     void setCallback(oboe::AudioStreamCallback *callback) {
         mCallback = callback;
         setCallbackCount(0);
         mStatistics.clear();
+        mPreviousMask = 0;
     }
 
     static void setCallbackReturnStop(bool b) {
@@ -157,6 +201,8 @@ private:
     std::atomic<double>        mCpuLoad{0};
     int64_t                    mPreviousCallbackTimeNs = 0;
     DoubleStatistics           mStatistics;
+    SynthWorkload              mSynthWorkload;
+    bool                       mUseSynthWorkload = true;
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
@@ -166,6 +212,5 @@ private:
     std::atomic<uint32_t>      mCpuAffinityMask{0};
     std::atomic<uint32_t>      mPreviousMask{0};
 };
-
 
 #endif //NATIVEOBOE_OBOESTREAMCALLBACKPROXY_H
