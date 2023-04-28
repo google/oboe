@@ -646,6 +646,7 @@ private:
     std::atomic<bool>    mErrorCallbackCalled{false};
 
     std::atomic<bool>    mPerformanceHintEnabled{false}; // set only by app
+    std::atomic<bool>    mHearWorkload{false}; // set only by app
 };
 
 /**

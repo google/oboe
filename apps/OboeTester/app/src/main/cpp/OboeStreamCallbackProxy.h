@@ -170,14 +170,18 @@ public:
     /**
      * Specify the amount of artificial workload that will waste CPU cycles
      * and increase the CPU load.
-     * @param workload typically ranges from 0.0 to 100.0
+     * @param workload typically ranges from 0 to 400
      */
-    void setWorkload(double workload) {
-        mWorkload = std::max(0.0, workload);
+    void setWorkload(int32_t workload) {
+        mNumWorkloadVoices = std::max(0, workload);
     }
 
-    double getWorkload() const {
-        return mWorkload;
+    int32_t getWorkload() const {
+        return mNumWorkloadVoices;
+    }
+
+    void setHearWorkload(bool enabled) {
+        mHearWorkload = enabled;
     }
 
     double getCpuLoad() const {
@@ -220,14 +224,13 @@ public:
     }
 
 private:
-    static constexpr int32_t   kWorkloadScaler = 500;
     static constexpr double    kNsToMsScaler = 0.000001;
-    double                     mWorkload = 0.0;
     std::atomic<double>        mCpuLoad{0};
     int64_t                    mPreviousCallbackTimeNs = 0;
     DoubleStatistics           mStatistics;
+    int32_t                    mNumWorkloadVoices = 0;
     SynthWorkload              mSynthWorkload;
-    bool                       mUseSynthWorkload = true;
+    bool                       mHearWorkload = false;
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;

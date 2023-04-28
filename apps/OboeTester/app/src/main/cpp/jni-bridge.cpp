@@ -235,6 +235,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintEnabled(
     }
 }
 
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getBufferCapacityInFrames(
         JNIEnv *env, jobject, jint streamIndex) {
@@ -506,8 +507,14 @@ Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeString(JNIEnv *env, 
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setWorkload(
-        JNIEnv *env, jobject, jdouble workload) {
+        JNIEnv *env, jobject, jint workload) {
     engine.getCurrentActivity()->setWorkload(workload);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setHearWorkload(
+        JNIEnv *env, jobject, jint streamIndex, jboolean enabled) {
+    engine.getCurrentActivity()->setHearWorkload(enabled);
 }
 
 JNIEXPORT jint JNICALL

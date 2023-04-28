@@ -51,6 +51,8 @@ public abstract class AudioStreamBase {
 
     public void setPerformanceHintEnabled(boolean checked) {
     }
+    public void setHearWorkload(boolean checked) {
+    }
 
     public static class DoubleStatistics {
         private double sum;
@@ -209,7 +211,7 @@ public abstract class AudioStreamBase {
         return false;
     }
 
-    public void setWorkload(double workload) {}
+    public void setWorkload(int workload) {}
 
     public abstract int getXRunCount();
 

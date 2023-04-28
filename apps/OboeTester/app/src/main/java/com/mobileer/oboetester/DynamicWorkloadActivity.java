@@ -101,8 +101,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                             if (++mStableCount > REQUIRED_STABLE_MEASUREMENTS) {
                                 mLastToggleTime = now;
                                 mState = STATE_RUN_LOW;
-                                mLowWorkload = Math.max(1.0, nextWorkload * 0.02);
-                                mHighWorkload = nextWorkload * (mOperatingCpuLoad / mBenchmarkCpuLoad);
+                                mLowWorkload = Math.max(1, (int)(nextWorkload * 0.02));
+                                mHighWorkload = (int)(nextWorkload * (mOperatingCpuLoad / mBenchmarkCpuLoad));
                                 mWorkloadTrace.setMax((float)(2.0 * nextWorkload));
                             }
                         }
@@ -146,13 +146,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 // Display numbers
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
-                String message = "Count = " + mCount++
-                        + "\nWorkload = " + stateToString(mState)
+                String message = "WorkState = " + stateToString(mState)
+                        + "\nVoices = " + String.format("%3d", (int)nextWorkload)
                         + "\nCPU = " + String.format("%5.3f%c", cpuLoad * 100, '%')
-                        + "\nWork = " + String.format("%5.3f", nextWorkload)
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
-                stream.setWorkload(nextWorkload);
+                stream.setWorkload((int)(nextWorkload));
                 mWorkload = nextWorkload;
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
@@ -230,16 +229,24 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 100.0f);
 
         CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
-
         perfHintBox.setOnClickListener(buttonView -> {
                 CheckBox checkBox = (CheckBox) buttonView;
                 setPerformanceHintEnabled(checkBox.isChecked());
+        });
+        CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
+        hearWorkloadBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            setHearWorkload(checkBox.isChecked());
         });
 
         updateButtons(false);
 
         updateEnabledWidgets();
         hideSettingsViews(); // make more room
+    }
+
+    private void setHearWorkload(boolean checked) {
+        mAudioOutTester.getCurrentAudioStream().setHearWorkload(checked);
     }
 
     private void setPerformanceHintEnabled(boolean checked) {

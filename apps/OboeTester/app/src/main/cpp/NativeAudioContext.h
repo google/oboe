@@ -155,8 +155,12 @@ public:
         return oboeCallbackProxy.getCallbackTimeString();
     }
 
-    void setWorkload(double workload) {
+    void setWorkload(int32_t workload) {
         oboeCallbackProxy.setWorkload(workload);
+    }
+
+    void setHearWorkload(bool enabled) {
+        oboeCallbackProxy.setHearWorkload(enabled);
     }
 
     virtual oboe::Result startPlayback() {

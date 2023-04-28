@@ -160,6 +160,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native void setPerformanceHintEnabled(int streamIndex, boolean checked);
 
+    @Override
+    public void setHearWorkload(boolean checked) {
+        setHearWorkload(streamIndex, checked);
+    }
+    private native void setHearWorkload(int streamIndex, boolean checked);
+
     public int getNativeApi() {
         return getNativeApi(streamIndex);
     }
@@ -293,7 +299,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native String getCallbackTimeString();
 
     @Override
-    public native void setWorkload(double workload);
+    public native void setWorkload(int workload);
 
     @Override
     public int getState() {

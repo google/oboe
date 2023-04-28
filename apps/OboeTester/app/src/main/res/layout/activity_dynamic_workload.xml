@@ -24,26 +24,44 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
+        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+        <CheckBox
+            android:id="@+id/enable_perf_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="Performance Hint" />
+
+        <CheckBox
+            android:id="@+id/hear_workload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="Hear Workload" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+
         android:id="@+id/affinityLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
         tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
-
-
     </LinearLayout>
 
-
-    <CheckBox
-        android:id="@+id/enable_perf_hint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="8sp"
-        android:text="Performance Hint" />
 
     <TextView
         android:id="@+id/resultView"
