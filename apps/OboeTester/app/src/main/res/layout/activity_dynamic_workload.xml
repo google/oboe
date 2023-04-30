@@ -38,14 +38,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
-            android:text="Performance Hint" />
+            android:text="Perf Hint" />
+
+        <CheckBox
+            android:id="@+id/use_alternative_adpf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="Alt ADPF" />
 
         <CheckBox
             android:id="@+id/hear_workload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
-            android:text="Hear Workload" />
+            android:text="Hear Synth" />
     </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

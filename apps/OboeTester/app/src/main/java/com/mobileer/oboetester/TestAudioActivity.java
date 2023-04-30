@@ -594,6 +594,8 @@ abstract class TestAudioActivity extends Activity {
 
     private native int getFramesPerCallback();
 
+    public native void setUseAlternativeAdpf(boolean enabled);
+
     private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
 
     public void startAudio() throws IOException {

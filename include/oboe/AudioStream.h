@@ -585,7 +585,7 @@ protected:
     }
 
     virtual void beginPerformanceHintInCallback() {}
-    virtual void endPerformanceHintInCallback() {}
+    virtual void endPerformanceHintInCallback(int32_t numFrames) {}
     virtual void closePerformanceHint() {}
 
     /*

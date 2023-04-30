@@ -117,7 +117,7 @@ protected:
 
     void beginPerformanceHintInCallback() override;
 
-    void endPerformanceHintInCallback() override;
+    void endPerformanceHintInCallback(int32_t numFrames) override;
 
     // set by callback (or app when idle)
     std::atomic<bool>    mAdpfOpenAttempted{false};

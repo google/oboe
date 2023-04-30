@@ -20,6 +20,7 @@
 
 #include "AdpfWrapper.h"
 #include "AudioClock.h"
+#include "OboeDebug.h"
 
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,
@@ -67,9 +68,11 @@ static int loadAphFunctions() {
     return 0;
 }
 
-int AdpfWrapper::open(pid_t threadId, int64_t targetDurationNanos) {
-    std::lock_guard<std::mutex> lock(mLock);
+bool AdpfWrapper::sUseAlternativeHack = false; // FIXME remove hack
 
+int AdpfWrapper::open(pid_t threadId,
+                      int64_t targetDurationNanos) {
+    std::lock_guard<std::mutex> lock(mLock);
     int result = loadAphFunctions();
     if (result < 0) return result;
 
@@ -77,6 +80,10 @@ int AdpfWrapper::open(pid_t threadId, int64_t targetDurationNanos) {
     APerformanceHintManager* manager = gAPH_getManagerFn();
 
     int32_t thread32 = threadId;
+    if (sUseAlternativeHack) {
+        // FIXME hack because setprop not working!
+        targetDurationNanos = (targetDurationNanos & ~0xFF) | 0xA5;
+    }
     mHintSession = gAPH_createSessionFn(manager, &thread32, 1 /* size */, targetDurationNanos);
     if (mHintSession == nullptr) {
         return -1;
@@ -85,6 +92,7 @@ int AdpfWrapper::open(pid_t threadId, int64_t targetDurationNanos) {
 }
 
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
+    //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
     std::lock_guard<std::mutex> lock(mLock);
     if (mHintSession != nullptr) {
         gAPH_reportActualWorkDurationFn(mHintSession, actualDurationNanos);
@@ -105,10 +113,11 @@ void AdpfWrapper::onBeginCallback() {
     }
 }
 
-void AdpfWrapper::onEndCallback() {
+void AdpfWrapper::onEndCallback(double durationScaler) {
     if (isOpen()) {
         int64_t endCallbackNanos = oboe::AudioClock::getNanoseconds(CLOCK_REALTIME);
         int64_t actualDurationNanos = endCallbackNanos - mBeginCallbackNanos;
-        reportActualDuration(actualDurationNanos);
+        int64_t scaledDurationNanos = static_cast<int64_t>(actualDurationNanos * durationScaler);
+        reportActualDuration(scaledDurationNanos);
     }
 }

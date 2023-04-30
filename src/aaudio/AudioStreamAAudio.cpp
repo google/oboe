@@ -155,10 +155,10 @@ void AudioStreamAAudio::beginPerformanceHintInCallback() {
             if (adpfResult < 0) {
                 LOGW("WARNING ADPF not supported, %d\n", adpfResult);
             } else {
-                LOGD("ADPF is active\n");
+                LOGD("ADPF is now active\n");
             }
+            mAdpfOpenAttempted = true;
         }
-        mAdpfOpenAttempted = true;
         mAdpfWrapper.onBeginCallback();
     } else if (!isPerformanceHintEnabled() && mAdpfOpenAttempted) {
         LOGD("ADPF closed\n");
@@ -167,8 +167,16 @@ void AudioStreamAAudio::beginPerformanceHintInCallback() {
     }
 }
 
-void AudioStreamAAudio::endPerformanceHintInCallback() {
-    mAdpfWrapper.onEndCallback();
+void AudioStreamAAudio::endPerformanceHintInCallback(int32_t numFrames) {
+    if (mAdpfWrapper.isOpen()) {
+        double durationScaler = static_cast<double>(mFramesPerBurst) / numFrames;
+        // Skip this callback if the numFrames is too small.
+        // This can happen when buffers wrap around, particularly when doing sample rate conversion.
+        // If we have a short callback then just scale the duration as if it was a full burst.
+        if (durationScaler < 2.0) {
+            mAdpfWrapper.onEndCallback(durationScaler);
+        }
+    }
 }
 
 void AudioStreamAAudio::logUnsupportedAttributes() {

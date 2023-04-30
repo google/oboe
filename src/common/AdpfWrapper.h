@@ -35,13 +35,14 @@ public:
      /**
       * Create an ADPF session that can be used to boost performance.
       * @param threadId
-      * @param targetDurationNanos - period of isochronous task
+      * @param targetDurationNanos - nominal period of isochronous task
       * @return zero or negative error
       */
-    int open(pid_t threadId, int64_t targetDurationNanos);
+    int open(pid_t threadId,
+             int64_t targetDurationNanos);
 
     bool isOpen() const {
-        return (mHintSession == nullptr);
+        return (mHintSession != nullptr);
     }
 
     void close();
@@ -54,8 +55,11 @@ public:
     /**
      * Call this at the end of the callback that you are measuring.
      */
-    void onEndCallback();
+    void onEndCallback(double durationScaler);
 
+    static void setUseAlternative(bool enabled) {
+        sUseAlternativeHack = enabled;
+    }
 private:
     /**
      * Report the measured duration of a callback.
@@ -63,9 +67,10 @@ private:
      */
     void reportActualDuration(int64_t actualDurationNanos);
 
-    std::mutex mLock;
+    std::mutex               mLock;
     APerformanceHintSession* mHintSession = nullptr;
-    int64_t mBeginCallbackNanos = 0;
+    int64_t                  mBeginCallbackNanos = 0;
+    static bool              sUseAlternativeHack;
 };
 
 #endif //SYNTHMARK_ADPF_WRAPPER_H

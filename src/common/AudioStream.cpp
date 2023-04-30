@@ -72,7 +72,7 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
 
-    endPerformanceHintInCallback();
+    endPerformanceHintInCallback(numFrames);
 
     return result;
 }

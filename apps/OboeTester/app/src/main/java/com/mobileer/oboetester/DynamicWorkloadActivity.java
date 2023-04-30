@@ -40,6 +40,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private MultiLineChart mMultiLineChart;
     private MultiLineChart.Trace mCpuLoadTrace;
     private MultiLineChart.Trace mWorkloadTrace;
+    private CheckBox mUseAltAdpfBox;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
@@ -228,16 +229,25 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,  0.0f, 2.0f);
         mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 100.0f);
 
+        mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
+        mUseAltAdpfBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            setUseAlternativeAdpf(checkBox.isChecked());
+        });
+
         CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
         perfHintBox.setOnClickListener(buttonView -> {
                 CheckBox checkBox = (CheckBox) buttonView;
                 setPerformanceHintEnabled(checkBox.isChecked());
+                mUseAltAdpfBox.setEnabled(!checkBox.isChecked());
         });
+
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
         hearWorkloadBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             setHearWorkload(checkBox.isChecked());
         });
+
 
         updateButtons(false);
 

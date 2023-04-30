@@ -23,6 +23,7 @@
 #include <sys/sysinfo.h>
 #include <thread>
 
+#include "common/AdpfWrapper.h"
 #include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 
@@ -200,6 +201,11 @@ Java_com_mobileer_oboetester_OboeAudioStream_startPlaybackNative(JNIEnv *env, jo
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint streamIndex) {
     engine.getCurrentActivity()->close(streamIndex);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env, jobject, jboolean enabled) {
+    AdpfWrapper::setUseAlternative(enabled);
 }
 
 JNIEXPORT jint JNICALL
