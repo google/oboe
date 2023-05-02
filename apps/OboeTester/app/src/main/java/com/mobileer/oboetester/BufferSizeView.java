@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 
 import android.view.View;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
@@ -36,6 +37,7 @@ public class BufferSizeView extends LinearLayout {
     private TextView mTextLabel;
     private SeekBar mFader;
     private ExponentialTaper mTaper;
+    private RadioGroup mBufferSizeGroup;
     private RadioButton mBufferSizeRadio1;
     private RadioButton mBufferSizeRadio2;
     private RadioButton mBufferSizeRadio3;
@@ -97,6 +99,8 @@ public class BufferSizeView extends LinearLayout {
         mTaper = new ExponentialTaper(0.0, 1.0, 10.0);
         mFader.setProgress(0);
 
+        mBufferSizeGroup = (RadioGroup) findViewById(R.id.bufferSizeGroup);
+
         mBufferSizeRadio1 = (RadioButton) findViewById(R.id.bufferSize1);
         mBufferSizeRadio1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,13 +122,18 @@ public class BufferSizeView extends LinearLayout {
                 onSizeRadioButtonClicked(view, 3);
             }
         });
+
         mNumBursts = DEFAULT_NUM_BURSTS;
         updateRadioButtons();
         updateBufferSize();
     }
 
     public void updateRadioButtons() {
-        if (mBufferSizeRadio3 != null) {
+        if (mNumBursts == USE_FADER && mBufferSizeGroup != null) {
+            // Clear all the radio buttons using the group.
+            // If you clear a checked button directly then it stops working.
+            mBufferSizeGroup.clearCheck();
+        } else if (mBufferSizeRadio3 != null) {
             mBufferSizeRadio1.setChecked(mNumBursts == 1);
             mBufferSizeRadio2.setChecked(mNumBursts == 2);
             mBufferSizeRadio3.setChecked(mNumBursts == 3);
