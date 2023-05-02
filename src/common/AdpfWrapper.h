@@ -57,6 +57,11 @@ public:
      */
     void onEndCallback(double durationScaler);
 
+    /**
+     * For internal use only!
+     * This is a hack for communicating with experimental versions of ADPF.
+     * @param enabled
+     */
     static void setUseAlternative(bool enabled) {
         sUseAlternativeHack = enabled;
     }

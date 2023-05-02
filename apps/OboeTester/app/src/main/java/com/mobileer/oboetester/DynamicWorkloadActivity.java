@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
+    private static final double WORKLOAD_MAX = 500.0;
+
     private Button mStopButton;
     private Button mStartButton;
     private TextView mResultView;
@@ -49,17 +51,21 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 3000;
         public static final int REQUIRED_STABLE_MEASUREMENTS = 20;
 
-        private Handler mHandler;
-        private int mCount;
-        private double mWorkload = 1.0;
-        private double mBenchmarkCpuLoad = 0.90; // Determine workload that will hit 90% CPU load.
-        private double mOperatingCpuLoad = 0.80; // CPU load during HIGH cycle.
-        private double mLowWorkload = 0.0;
-        private double mHighWorkload = 0.0;
         private static final double WORKLOAD_FILTER_COEFFICIENT = 0.9;
         private static final int STATE_BENCHMARK_TARGET = 0;
         private static final int STATE_RUN_LOW = 1;
         private static final int STATE_RUN_HIGH = 2;
+
+        private Handler mHandler;
+        private int mCount;
+
+        private double mCpuLoadBenchmark = 0.90; // Determine workload that will hit this CPU load.
+        private double mCpuLoadHigh = 0.80; // Target CPU load during HIGH cycle.
+
+        private double mWorkloadLow = 0.0;
+        private double mWorkloadHigh = 0.0;
+        private double mWorkloadCurrent = 1.0;
+        private double mWorkloadBenchmark = 0.0;
 
         private int mState = STATE_BENCHMARK_TARGET;
         private long mLastToggleTime = 0;
@@ -94,22 +100,25 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 switch (mState) {
                     case STATE_BENCHMARK_TARGET:
                         // prevent divide by zero
-                        double targetWorkload = (mWorkload / Math.max(cpuLoad, 0.1)) * mBenchmarkCpuLoad;
+                        double targetWorkload = (mWorkloadCurrent / Math.max(cpuLoad, 0.01)) * mCpuLoadBenchmark;
+                        targetWorkload = Math.min(WORKLOAD_MAX, targetWorkload);
                         // low pass filter to find matching workload
-                        nextWorkload = (WORKLOAD_FILTER_COEFFICIENT * mWorkload)
+                        nextWorkload = (WORKLOAD_FILTER_COEFFICIENT * mWorkloadCurrent)
                                 + ((1.0 - WORKLOAD_FILTER_COEFFICIENT) * targetWorkload);
-                        if (Math.abs(cpuLoad - mBenchmarkCpuLoad) < 0.04) {
+                        if (Math.abs(cpuLoad - mCpuLoadBenchmark) < 0.04) {
                             if (++mStableCount > REQUIRED_STABLE_MEASUREMENTS) {
+                                // Found the right workload.
+                                mWorkloadBenchmark = nextWorkload;
                                 mLastToggleTime = now;
                                 mState = STATE_RUN_LOW;
-                                mLowWorkload = Math.max(1, (int)(nextWorkload * 0.02));
-                                mHighWorkload = (int)(nextWorkload * (mOperatingCpuLoad / mBenchmarkCpuLoad));
+                                mWorkloadLow = Math.max(1, (int)(nextWorkload * 0.02));
+                                mWorkloadHigh = (int)(nextWorkload * (mCpuLoadHigh / mCpuLoadBenchmark));
                                 mWorkloadTrace.setMax((float)(2.0 * nextWorkload));
                             }
                         }
                         break;
                     case STATE_RUN_LOW:
-                        nextWorkload = mLowWorkload;
+                        nextWorkload = mWorkloadLow;
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_HIGH;
@@ -118,7 +127,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
                         break;
                     case STATE_RUN_HIGH:
-                        nextWorkload = mHighWorkload;
+                        nextWorkload = mWorkloadHigh;
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_LOW;
@@ -141,19 +150,22 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
                 mMultiLineChart.addX(nowMicros);
                 mCpuLoadTrace.add((float) cpuLoad);
-                mWorkloadTrace.add((float) mWorkload);
+                mWorkloadTrace.add((float) mWorkloadCurrent);
                 mMultiLineChart.update();
 
                 // Display numbers
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
-                String message = "WorkState = " + stateToString(mState)
-                        + "\nVoices = " + String.format("%3d", (int)nextWorkload)
+                String message =
+                        "#Voices: max = " + String.format("%d", (int) mWorkloadBenchmark)
+                        + ", high = " + String.format("%d", (int) mWorkloadHigh)
+                        + "\nWorkState = " + stateToString(mState)
+                        + ", #Voices = " + String.format("%d", (int)nextWorkload)
                         + "\nCPU = " + String.format("%5.3f%c", cpuLoad * 100, '%')
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload((int)(nextWorkload));
-                mWorkload = nextWorkload;
+                mWorkloadCurrent = nextWorkload;
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
@@ -226,14 +238,18 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         NativeEngine.setCpuAffinityMask(1 << defaultCpuAffinity);
 
         mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
-        mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,  0.0f, 2.0f);
-        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE, 0.0f, 100.0f);
+        mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
+                0.0f, 2.0f);
+        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE,
+                0.0f, (float)WORKLOAD_MAX);
 
+        // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
         mUseAltAdpfBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             setUseAlternativeAdpf(checkBox.isChecked());
         });
+        mUseAltAdpfBox.setVisibility(View.GONE);
 
         CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
         perfHintBox.setOnClickListener(buttonView -> {

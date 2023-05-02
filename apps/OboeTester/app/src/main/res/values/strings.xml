@@ -209,6 +209,7 @@
     <string name="report_magic_fail">FAIL, got %X, expected %X"</string>
     <string name="log_of_test_results">Log of Test Results</string>
     <string name="save_file">Save</string>
+    <string name="cpu_affinity">CPUs:</string>
 
     <string name="src_prompt">SRC:</string>
     <string name="average">Average</string>
