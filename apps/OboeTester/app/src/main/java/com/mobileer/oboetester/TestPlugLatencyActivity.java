@@ -190,7 +190,7 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
                 // Keep querying as long as error is ok
                 setupTimeout();
                 while (mAudioOutTester.getLastErrorCallbackResult() == 0) {
-                    sleepOrTimeout("timed out waiting for error==0");
+                    sleepOrTimeout("timed out waiting while error==0");
                 }
                 log("Error callback at " + (System.currentTimeMillis() - startMillis) + " ms");
             }
@@ -207,13 +207,13 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
 
             setupTimeout();
             while (stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
-                sleepOrTimeout("timed out waiting for STATE_STARTING");
+                sleepOrTimeout("timed out waiting while STATE_STARTING");
             }
             log("Audio started at " + (System.currentTimeMillis() - startMillis) + " ms");
 
             setupTimeout();
             while (mAudioOutTester.getFramesRead() == 0) {
-                sleepOrTimeout("timed out waiting for framesRead()==0");
+                sleepOrTimeout("timed out waiting while framesRead()==0");
             }
             log("First frame read at " + (System.currentTimeMillis() - startMillis) + " ms");
         } catch (IOException | InterruptedException e) {
