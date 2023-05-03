@@ -57,9 +57,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     protected TextView mDeviceView;
     private TextView mVersionTextView;
     private TextView mBuildTextView;
-    private TextView mBluetoothScoStatusView;
     private Bundle mBundleFromIntent;
-    private BroadcastReceiver mScoStateReceiver;
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
     private static String mVersionText;
@@ -117,35 +115,11 @@ public class MainActivity extends BaseOboeTesterActivity {
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
 
-        mBluetoothScoStatusView = (TextView) findViewById(R.id.textBluetoothScoStatus);
-        mScoStateReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                int state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
-                if (state == AudioManager.SCO_AUDIO_STATE_CONNECTING) {
-                    mBluetoothScoStatusView.setText("CONNECTING");
-                } else if (state == AudioManager.SCO_AUDIO_STATE_CONNECTED) {
-                    mBluetoothScoStatusView.setText("CONNECTED");
-                } else if (state == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) {
-                    mBluetoothScoStatusView.setText("DISCONNECTED");
-                }
-            }
-        };
-
         saveIntentBundleForLaterProcessing(getIntent());
     }
 
     public static String getVersionText() {
         return mVersionText;
-    }
-
-    private void registerScoStateReceiver() {
-        registerReceiver(mScoStateReceiver,
-                new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
-    }
-
-    private void unregisterScoStateReceiver() {
-        unregisterReceiver(mScoStateReceiver);
     }
 
     private void logScreenSize() {
@@ -213,14 +187,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     public void onResume(){
         super.onResume();
         mWorkaroundsCheckBox.setChecked(NativeEngine.areWorkaroundsEnabled());
-        registerScoStateReceiver();
         processBundleFromIntent();
-    }
-
-    @Override
-    public void onPause(){
-        unregisterScoStateReceiver();
-        super.onPause();
     }
 
     private void updateNativeAudioUI() {
@@ -312,13 +279,4 @@ public class MainActivity extends BaseOboeTesterActivity {
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 
-    public void onStartStopBluetoothSco(View view) {
-        CheckBox checkBox = (CheckBox) view;
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if (checkBox.isChecked()) {
-            myAudioMgr.startBluetoothSco();
-        } else {
-            myAudioMgr.stopBluetoothSco();
-        }
-    }
 }

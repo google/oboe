@@ -164,9 +164,16 @@ public class EchoActivity extends TestInputActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.onStart();
+        }
+    }
+    @Override
     protected void onStop() {
         if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.cleanup();
+            mCommunicationDeviceView.onStop();
         }
         super.onStop();
     }

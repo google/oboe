@@ -17,8 +17,6 @@
 package com.mobileer.oboetester;
 
 import android.content.Intent;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AutomaticGainControl;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -83,9 +81,16 @@ public class TestInputActivity  extends TestAudioActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.onStart();
+        }
+    }
+    @Override
     protected void onStop() {
         if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.cleanup();
+            mCommunicationDeviceView.onStop();
         }
         super.onStop();
     }

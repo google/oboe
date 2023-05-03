@@ -182,33 +182,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView" />
 
-    <LinearLayout
-        android:id="@+id/layoutBluetoothSco"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="@+id/callbackSize"
-        app:layout_constraintTop_toBottomOf="@+id/callbackSize"
-        >
-        <CheckBox
-            android:id="@+id/setBluetoothScoOn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:checked="false"
-            android:onClick="onStartStopBluetoothSco"
-            android:text="start/stopBluetoothSco()"
-            />
-
-        <TextView
-            android:id="@+id/textBluetoothScoStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="12sp"
-            android:text="\?" />
-    </LinearLayout>
-
     <CheckBox
         android:id="@+id/boxEnableWorkarounds"
         android:layout_width="wrap_content"
@@ -216,8 +189,8 @@
         android:layout_marginTop="6dp"
         android:checked="false"
         android:text="enable Oboe workarounds"
-        app:layout_constraintStart_toStartOf="@+id/layoutBluetoothSco"
-        app:layout_constraintTop_toBottomOf="@+id/layoutBluetoothSco" />
+        app:layout_constraintStart_toStartOf="@+id/useCallback"
+        app:layout_constraintTop_toBottomOf="@+id/useCallback" />
 
     <CheckBox
         android:id="@+id/boxEnableBackground"

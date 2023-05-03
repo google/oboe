@@ -16,7 +16,10 @@
 
 package com.mobileer.oboetester;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
@@ -32,10 +35,15 @@ import android.widget.TextView;
 import com.mobileer.audio_device.CommunicationDeviceSpinner;
 
 public class CommunicationDeviceView extends LinearLayout {
-    private CheckBox mSpeakerphoneCheckbox;
-    private TextView mIsSpeakerphoneText;
+
     private AudioManager mAudioManager;
+    private CheckBox mSpeakerphoneCheckbox;
+    private CheckBox mScoCheckbox;
+    private TextView mSpeakerStatusView;
+    private TextView mScoStatusView;
+    private BroadcastReceiver mScoStateReceiver;
     private CommunicationDeviceSpinner mDeviceSpinner;
+    private int mScoState;
 
     public CommunicationDeviceView(Context context) {
         super(context);
@@ -66,6 +74,29 @@ public class CommunicationDeviceView extends LinearLayout {
 
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mSpeakerphoneCheckbox = (CheckBox) findViewById(R.id.setSpeakerphoneOn);
+        mSpeakerphoneCheckbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onSetSpeakerphoneOn(view);
+            }
+        });
+        mSpeakerStatusView = (TextView) findViewById(R.id.spkr_status_view);
+
+        mScoCheckbox = (CheckBox) findViewById(R.id.setBluetoothScoOn);
+        mScoCheckbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onStartStopBluetoothSco(view);
+            }
+        });
+        mScoStatusView = (TextView) findViewById(R.id.sco_status_view);
+        mScoStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                mScoState = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+                showCommDeviceStatus();
+            }
+        };
 
         mDeviceSpinner = (CommunicationDeviceSpinner) findViewById(R.id.comm_devices_spinner);
         mDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -74,15 +105,17 @@ public class CommunicationDeviceView extends LinearLayout {
                 AudioDeviceInfo[] commDeviceArray = mDeviceSpinner.getCommunicationsDevices();
                 if (commDeviceArray != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (position == 0) {
+                        if (position == CommunicationDeviceSpinner.POS_NOOP) {
+                            // do nothing
+                        } else if (position == CommunicationDeviceSpinner.POS_CLEAR) {
                             mAudioManager.clearCommunicationDevice();
                         } else {
-                            AudioDeviceInfo selectedDevice = commDeviceArray[position - 1]; // skip "Clear"
+                            AudioDeviceInfo selectedDevice = commDeviceArray[position - CommunicationDeviceSpinner.POS_DEVICES]; // skip "Clear"
                             mAudioManager.setCommunicationDevice(selectedDevice);
                         }
-                        showCommDeviceStatus();
                     }
                 }
+                showCommDeviceStatus();
             }
             public void onNothingSelected(AdapterView<?> parent) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -92,19 +125,17 @@ public class CommunicationDeviceView extends LinearLayout {
             }
         });
 
-        mSpeakerphoneCheckbox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onSetSpeakerphoneOn(view);
-            }
-        });
-        mIsSpeakerphoneText = (TextView) findViewById(R.id.isSpeakerphoneOn);
         showCommDeviceStatus();
     }
 
-    public void cleanup() {
+    public void onStart() {
+        registerScoStateReceiver();
+    }
+
+    public void onStop() {
         mSpeakerphoneCheckbox.setChecked(false);
         setSpeakerPhoneOn(false);
+        unregisterScoStateReceiver();
     }
 
     public void onSetSpeakerphoneOn(View view) {
@@ -122,14 +153,41 @@ public class CommunicationDeviceView extends LinearLayout {
 
     private void showCommDeviceStatus() {
         boolean enabled = mAudioManager.isSpeakerphoneOn();
-        String text = (enabled ? "ON" : "OFF");
+        String text = ":" + (enabled ? "ON" : "OFF");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             AudioDeviceInfo commDeviceInfo = mAudioManager.getCommunicationDevice();
             if (commDeviceInfo != null) {
-                text += ", CommDev=" + commDeviceInfo.getId();
+                text += ", #" + commDeviceInfo.getId();
             }
         }
-        mIsSpeakerphoneText.setText(" => " + text);
+        mSpeakerStatusView.setText(text + ",");
+
+        if (mScoState == AudioManager.SCO_AUDIO_STATE_CONNECTING) {
+            text = ":wait";
+        } else if (mScoState == AudioManager.SCO_AUDIO_STATE_CONNECTED) {
+            text = ":CON";
+        } else if (mScoState == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) {
+            text = ":DISCO";
+        }
+        mScoStatusView.setText(text);
+    }
+
+    public void onStartStopBluetoothSco(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        if (checkBox.isChecked()) {
+            mAudioManager.startBluetoothSco();
+        } else {
+            mAudioManager.stopBluetoothSco();
+        }
+    }
+
+    private void registerScoStateReceiver() {
+        getContext().registerReceiver(mScoStateReceiver,
+                new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+    }
+
+    private void unregisterScoStateReceiver() {
+        getContext().unregisterReceiver(mScoStateReceiver);
     }
 
 }

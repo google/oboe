@@ -16,17 +16,13 @@
 
 package com.mobileer.oboetester;
 
-import android.content.Context;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -98,9 +94,17 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.onStart();
+        }
+    }
+
+    @Override
     protected void onStop() {
         if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.cleanup();
+            mCommunicationDeviceView.onStop();
         }
         super.onStop();
     }
