@@ -43,6 +43,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private MultiLineChart.Trace mCpuLoadTrace;
     private MultiLineChart.Trace mWorkloadTrace;
     private CheckBox mUseAltAdpfBox;
+    private boolean mDrawChartAlways = true;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
@@ -52,9 +53,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         public static final int REQUIRED_STABLE_MEASUREMENTS = 20;
 
         private static final double WORKLOAD_FILTER_COEFFICIENT = 0.9;
-        private static final int STATE_BENCHMARK_TARGET = 0;
-        private static final int STATE_RUN_LOW = 1;
-        private static final int STATE_RUN_HIGH = 2;
+        private static final int STATE_IDLE = 0;
+        private static final int STATE_BENCHMARK_TARGET = 1;
+        private static final int STATE_RUN_LOW = 2;
+        private static final int STATE_RUN_HIGH = 3;
 
         private Handler mHandler;
         private int mCount;
@@ -67,7 +69,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private double mWorkloadCurrent = 1.0;
         private double mWorkloadBenchmark = 0.0;
 
-        private int mState = STATE_BENCHMARK_TARGET;
+        private int mState = STATE_IDLE;
         private long mLastToggleTime = 0;
         private int mStableCount = 0;
         private boolean mArmLoadMonitor = false;
@@ -77,6 +79,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         String stateToString(int state) {
             switch(state) {
+                case STATE_IDLE:
+                    return "Idle";
                 case STATE_BENCHMARK_TARGET:
                     return "Benchmarking";
                 case STATE_RUN_LOW:
@@ -96,8 +100,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
                 double cpuLoad = stream.getCpuLoad();
                 long now = System.currentTimeMillis();
+                boolean drawChartOnce = false;
 
                 switch (mState) {
+                    case STATE_IDLE:
+                        drawChartOnce = true; // clear old chart
+                        mState = STATE_BENCHMARK_TARGET;
+                        break;
                     case STATE_BENCHMARK_TARGET:
                         // prevent divide by zero
                         double targetWorkload = (mWorkloadCurrent / Math.max(cpuLoad, 0.01)) * mCpuLoadBenchmark;
@@ -131,6 +140,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_LOW;
+                            // Draw now when a CPU spike will not affect the result.
+                            drawChartOnce = true;
                         }
 
                         if (mRecoveryTimeBegin == 0) {
@@ -151,7 +162,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mMultiLineChart.addX(nowMicros);
                 mCpuLoadTrace.add((float) cpuLoad);
                 mWorkloadTrace.add((float) mWorkloadCurrent);
-                mMultiLineChart.update();
+                if (drawChartOnce || mDrawChartAlways){
+                    mMultiLineChart.update();
+                }
 
                 // Display numbers
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
@@ -264,6 +277,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setHearWorkload(checkBox.isChecked());
         });
 
+        CheckBox drawAlwaysBox = (CheckBox) findViewById(R.id.draw_always);
+        drawAlwaysBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mDrawChartAlways = checkBox.isChecked();
+        });
 
         updateButtons(false);
 

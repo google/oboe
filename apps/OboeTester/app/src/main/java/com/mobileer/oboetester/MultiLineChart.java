@@ -20,6 +20,7 @@ public class MultiLineChart extends View {
     private int mBackgroundColor = 0xFFF0F0F0;
     private int mLineColor = Color.RED;
     private Paint mBackgroundPaint;
+    float[] mVertices = new float[4];
 
     CircularFloatArray mXData = new CircularFloatArray(NUM_DATA_VALUES);
     private ArrayList<Trace> mTraceList = new ArrayList<>();
@@ -63,7 +64,6 @@ public class MultiLineChart extends View {
         mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBackgroundPaint.setColor(mBackgroundColor);
         mBackgroundPaint.setStyle(Paint.Style.FILL);
-
     }
 
     @Override
@@ -78,10 +78,16 @@ public class MultiLineChart extends View {
         }
     }
 
-    private void drawTrace(Canvas canvas, Trace trace) {
+    void drawTrace(Canvas canvas, Trace trace) {
         // Determine bounds and XY conversion.
         int numPoints = mXData.size();
         if (numPoints < 2) return;
+        // Allocate array for polyline.
+        int arraySize = (numPoints - 1) * 4;
+        if (arraySize > mVertices.length) {
+            mVertices = new float[arraySize];
+        }
+        // Setup scaling.
         float previousX = 0.0f;
         float previousY = 0.0f;
         float xMax = getXData(1);
@@ -92,19 +98,24 @@ public class MultiLineChart extends View {
         float height = getHeight();
         float xScaler =  width / xRange;
         float yScaler =  height / yRange;
-
         // Iterate through the available data.
-        for (int i = 2; i < numPoints; i++) {
+        int vertexIndex = 0;
+        for (int i = 1; i < numPoints; i++) {
             float xData = getXData(i);
             float yData = trace.get(i);
             float xPos = width - ((xMax - xData) * xScaler);
             float yPos = height - ((yData - yMin) * yScaler);
-            if (i > 2) {
-                canvas.drawLine(previousX, previousY, xPos, yPos, trace.paint);
+            if (i > 1) {
+                // Each line segment requires 4 values!
+                mVertices[vertexIndex++] = previousX;
+                mVertices[vertexIndex++] = previousY;
+                mVertices[vertexIndex++] = xPos;
+                mVertices[vertexIndex++] = yPos;
             }
             previousX = xPos;
             previousY = yPos;
         }
+        canvas.drawLines(mVertices, 0, vertexIndex, trace.paint);
     }
 
     public float getXData(int i) {
@@ -168,8 +179,14 @@ public class MultiLineChart extends View {
             return mData.size();
         }
 
-        public float get(int i) {
-            return mData.get(i);
+        /**
+         * Fetch a previous value. A delayIndex of 1 will return the most recently written value.
+         * A delayIndex of 2 will return the previously written value;
+         * @param delayIndex positive index of previously written data
+         * @return old value
+         */
+        public float get(int delayIndex) {
+            return mData.get(delayIndex);
         }
         public float getMax() {
             return mMax;

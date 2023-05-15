@@ -53,6 +53,14 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
             android:text="Hear Synth" />
+
+        <CheckBox
+            android:id="@+id/draw_always"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:checked="true"
+            android:text="Draw Always" />
     </LinearLayout>
 
     <HorizontalScrollView
