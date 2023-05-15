@@ -90,7 +90,7 @@ public abstract class AudioStreamBase {
         public int state;
         public long callbackCount;
         public int framesPerCallback;
-        public double cpuLoad;
+        public float cpuLoad;
         public String callbackTimeStr;
 
         // These are constantly changing.
@@ -201,7 +201,8 @@ public abstract class AudioStreamBase {
 
     public double getLatency() { return -1.0; }
 
-    public double getCpuLoad() { return 0.0; }
+    public float getCpuLoad() { return 0.0f; }
+    public float getAndResetMaxCpuLoad() { return 0.0f; }
 
     public String getCallbackTimeStr() { return "?"; };
 

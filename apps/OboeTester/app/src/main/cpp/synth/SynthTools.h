@@ -91,7 +91,7 @@ public:
 
     static double convertTimeToExponentialScaler(synth_float_t duration, synth_float_t sampleRate) {
         // Calculate scaler so that scaler^frames = target/source
-        double numFrames = duration * sampleRate;
+        synth_float_t numFrames = duration * sampleRate;
         return pow(kAmplitudeDb90, (1.0 / numFrames));
     }
 

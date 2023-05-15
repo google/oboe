@@ -500,10 +500,39 @@ public:
         mDelayBeforeCloseMillis = delayBeforeCloseMillis;
     }
 
+    /**
+     * Enable or disable a device specific CPU performance hint.
+     * Runtime benchmarks such as the callback duration may be used to
+     * speed up the CPU and improve real-time performance.
+     *
+     * Note that this feature is device specific and may not be implemented.
+     * Also the benefits may vary by device.
+     *
+     * The flag will be checked in the Oboe data callback. If it transitions from false to true
+     * then the PerformanceHint feature will be started.
+     * This only needs to be called once.
+     *
+     * You may want to enable this if you have a dynamically changing workload
+     * and you notice that you are getting underruns and glitches when your workload increases.
+     * This might happen, for example, if you suddenly go from playing one note to
+     * ten notes on a synthesizer.
+     *
+     * Try the CPU Load test in OboeTester if you would like to experiment with this interactively.
+     *
+     * On some devices, this may be implemented using the "ADPF" library.
+     *
+     * @param enabled true if you would like a performance boost
+     */
     void setPerformanceHintEnabled(bool enabled) {
         mPerformanceHintEnabled = enabled;
     }
 
+    /**
+     * This only tells you if the feature has been requested.
+     * It does not tell you if the PerformanceHint feature is implemented or active on the device.
+     *
+     * @return true if set using setPerformanceHintEnabled().
+     */
     bool isPerformanceHintEnabled() {
         return mPerformanceHintEnabled;
     }

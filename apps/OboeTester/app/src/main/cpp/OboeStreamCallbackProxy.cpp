@@ -62,10 +62,14 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     }
 
     int64_t currentTimeNanos = getNanoseconds();
-    double calculationTime = (double)(currentTimeNanos - startTimeNanos);
-    double inverseRealTime = audioStream->getSampleRate() / (1.0e9 * numFrames);
-    double currentCpuLoad = calculationTime * inverseRealTime; // avoid a divide
-    mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
+    // Sometimes we get a short callback when doing sample rate conversion.
+    // Just ignore those to avoid noise.
+    if (numFrames > (getFramesPerCallback() / 2)) {
+        int64_t calculationTime = currentTimeNanos - startTimeNanos;
+        float currentCpuLoad = calculationTime * 0.000000001f * audioStream->getSampleRate() / numFrames;
+        mCpuLoad = (mCpuLoad * 0.95f) + (currentCpuLoad * 0.05f); // simple low pass filter
+        mMaxCpuLoad = std::max(currentCpuLoad, mMaxCpuLoad.load());
+    }
 
     if (mPreviousCallbackTimeNs != 0) {
         mStatistics.add((currentTimeNanos - mPreviousCallbackTimeNs) * kNsToMsScaler);

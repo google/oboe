@@ -241,7 +241,6 @@ Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintEnabled(
     }
 }
 
-
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getBufferCapacityInFrames(
         JNIEnv *env, jobject, jint streamIndex) {
@@ -501,9 +500,14 @@ Java_com_mobileer_oboetester_OboeAudioStream_getTimestampLatency(JNIEnv *env,
     return engine.getCurrentActivity()->getTimestampLatency(streamIndex);
 }
 
-JNIEXPORT jdouble JNICALL
+JNIEXPORT jfloat JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
     return engine.getCurrentActivity()->getCpuLoad();
+}
+
+JNIEXPORT jfloat JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getAndResetMaxCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
+    return engine.getCurrentActivity()->getAndResetMaxCpuLoad();
 }
 
 JNIEXPORT jstring JNICALL

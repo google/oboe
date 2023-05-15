@@ -29,6 +29,11 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Demonstrate the behavior of a changing CPU load on underruns.
+ * Display the workload and the callback duration in a chart.
+ * Enable PerformanceHints (ADPF).
+ */
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private static final double WORKLOAD_MAX = 500.0;
 
@@ -40,9 +45,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private WorkloadUpdateThread mUpdateThread;
 
     private MultiLineChart mMultiLineChart;
-    private MultiLineChart.Trace mCpuLoadTrace;
+    private MultiLineChart.Trace mMaxCpuLoadTrace;
     private MultiLineChart.Trace mWorkloadTrace;
     private CheckBox mUseAltAdpfBox;
+    private CheckBox mPerfHintBox;
     private boolean mDrawChartAlways = true;
 
     // Periodically query the status of the streams.
@@ -98,7 +104,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             public void run() {
                 double nextWorkload = 0.0;
                 AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-                double cpuLoad = stream.getCpuLoad();
+                float cpuLoad = stream.getCpuLoad();
+                float maxCpuLoad = stream.getAndResetMaxCpuLoad();
                 long now = System.currentTimeMillis();
                 boolean drawChartOnce = false;
 
@@ -145,14 +152,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
 
                         if (mRecoveryTimeBegin == 0) {
-                            if (cpuLoad > 1.0) {
+                            if (maxCpuLoad > 1.0) {
                                 mRecoveryTimeBegin = now;
                             }
                         } else if (mRecoveryTimeEnd == 0) {
-                            if (cpuLoad < 0.90) {
+                            if (maxCpuLoad < 0.90) {
                                 mRecoveryTimeEnd = now;
                             }
-                        } else if (cpuLoad > 0.90) {
+                        } else if (maxCpuLoad > 0.90) {
                             mRecoveryTimeEnd = now;
                         }
                         break;
@@ -160,7 +167,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 // Update chart
                 float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
                 mMultiLineChart.addX(nowMicros);
-                mCpuLoadTrace.add((float) cpuLoad);
+                mMaxCpuLoadTrace.add((float) maxCpuLoad);
                 mWorkloadTrace.add((float) mWorkloadCurrent);
                 if (drawChartOnce || mDrawChartAlways){
                     mMultiLineChart.update();
@@ -216,7 +223,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mAudioOutTester = addAudioOutputTester();
 
         mResultView = (TextView) findViewById(R.id.resultView);
-
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
 
@@ -251,21 +257,22 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         NativeEngine.setCpuAffinityMask(1 << defaultCpuAffinity);
 
         mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
-        mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
+        mMaxCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
                 0.0f, 2.0f);
         mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE,
                 0.0f, (float)WORKLOAD_MAX);
 
         // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
+        mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
+
         mUseAltAdpfBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             setUseAlternativeAdpf(checkBox.isChecked());
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
-        CheckBox perfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
-        perfHintBox.setOnClickListener(buttonView -> {
+        mPerfHintBox.setOnClickListener(buttonView -> {
                 CheckBox checkBox = (CheckBox) buttonView;
                 setPerformanceHintEnabled(checkBox.isChecked());
                 mUseAltAdpfBox.setEnabled(!checkBox.isChecked());
@@ -284,7 +291,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         });
 
         updateButtons(false);
-
         updateEnabledWidgets();
         hideSettingsViews(); // make more room
     }
@@ -300,6 +306,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private void updateButtons(boolean running) {
         mStartButton.setEnabled(!running);
         mStopButton.setEnabled(running);
+        mPerfHintBox.setEnabled(running);
     }
 
     private void postResult(final String text) {

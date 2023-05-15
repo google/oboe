@@ -147,8 +147,12 @@ public:
         return stopAllStreams();
     }
 
-    double getCpuLoad() {
+    float getCpuLoad() {
         return oboeCallbackProxy.getCpuLoad();
+    }
+
+    float getAndResetMaxCpuLoad() {
+        return oboeCallbackProxy.getAndResetMaxCpuLoad();
     }
 
     std::string getCallbackTimeString() {

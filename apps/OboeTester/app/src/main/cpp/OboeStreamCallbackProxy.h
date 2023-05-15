@@ -184,8 +184,23 @@ public:
         mHearWorkload = enabled;
     }
 
-    double getCpuLoad() const {
+    /**
+     * This is the callback duration relative to the real-time equivalent.
+     * So it may be higher than 1.0.
+     * @return low pass filtered value for the fractional CPU load
+     */
+    float getCpuLoad() const {
         return mCpuLoad;
+    }
+
+    /**
+     * Calling this will atomically reset the max to zero so only call
+     * this from one client.
+     *
+     * @return last value of the maximum unfiltered CPU load.
+     */
+    float getAndResetMaxCpuLoad() {
+        return mMaxCpuLoad.exchange(0.0f);
     }
 
     std::string getCallbackTimeString() const {
@@ -225,7 +240,8 @@ public:
 
 private:
     static constexpr double    kNsToMsScaler = 0.000001;
-    std::atomic<double>        mCpuLoad{0};
+    std::atomic<float>         mCpuLoad{0.0f};
+    std::atomic<float >        mMaxCpuLoad{0.0f};
     int64_t                    mPreviousCallbackTimeNs = 0;
     DoubleStatistics           mStatistics;
     int32_t                    mNumWorkloadVoices = 0;

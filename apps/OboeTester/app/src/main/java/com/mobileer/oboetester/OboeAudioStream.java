@@ -287,10 +287,16 @@ abstract class OboeAudioStream extends AudioStreamBase {
     private native double getTimestampLatency(int streamIndex);
 
     @Override
-    public double getCpuLoad() {
+    public float getCpuLoad() {
         return getCpuLoad(streamIndex);
     }
-    private native double getCpuLoad(int streamIndex);
+    private native float getCpuLoad(int streamIndex);
+
+    @Override
+    public float getAndResetMaxCpuLoad() {
+        return getAndResetMaxCpuLoad(streamIndex);
+    }
+    private native float getAndResetMaxCpuLoad(int streamIndex);
 
     @Override
     public String getCallbackTimeStr() {
