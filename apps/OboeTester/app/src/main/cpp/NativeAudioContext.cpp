@@ -254,6 +254,8 @@ int ActivityContext::open(jint nativeApi,
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
 
+    configureAfterOpen();
+
     return (result != Result::OK) ? (int)result : streamIndex;
 }
 
@@ -265,8 +267,6 @@ oboe::Result ActivityContext::start() {
         LOGD("%s() - no streams defined", __func__);
         return oboe::Result::ErrorInvalidState; // not open
     }
-
-    configureForStart();
 
     audioStreamGateway.reset();
     result = startStreams();
@@ -381,7 +381,7 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
     }
 }
 
-void ActivityTestOutput::configureForStart() {
+void ActivityTestOutput::configureAfterOpen() {
     manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
 
     mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
@@ -485,7 +485,7 @@ void ActivityTestOutput::runBlockingIO() {
 }
 
 // ======================================================================= ActivityTestInput
-void ActivityTestInput::configureForStart() {
+void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();
     if (mUseCallback) {
         oboeCallbackProxy.setCallback(&mInputAnalyzer);
@@ -565,7 +565,7 @@ oboe::Result ActivityRecording::startPlayback() {
 }
 
 // ======================================================================= ActivityTapToTone
-void ActivityTapToTone::configureForStart() {
+void ActivityTapToTone::configureAfterOpen() {
     monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
 
     mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
@@ -734,7 +734,7 @@ void ActivityTestDisconnect::close(int32_t streamIndex) {
     mSinkFloat.reset();
 }
 
-void ActivityTestDisconnect::configureForStart() {
+void ActivityTestDisconnect::configureAfterOpen() {
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     std::shared_ptr<oboe::AudioStream> inputStream = getInputStream();
     if (outputStream) {

@@ -135,7 +135,7 @@ public:
 
     virtual void close(int32_t streamIndex);
 
-    virtual void configureForStart() {}
+    virtual void configureAfterOpen() {}
 
     oboe::Result start();
 
@@ -326,7 +326,7 @@ public:
     ActivityTestInput() {}
     virtual ~ActivityTestInput() = default;
 
-    void configureForStart() override;
+    void configureAfterOpen() override;
 
     double getPeakLevel(int index) override {
         return mInputAnalyzer.getPeakLevel(index);
@@ -400,7 +400,7 @@ public:
         return getOutputStream()->start();
     }
 
-    void configureForStart() override;
+    void configureAfterOpen() override;
 
     virtual void configureStreamGateway();
 
@@ -451,7 +451,7 @@ public:
     ActivityTapToTone() {}
     virtual ~ActivityTapToTone() = default;
 
-    void configureForStart() override;
+    void configureAfterOpen() override;
 
     virtual void trigger() override {
         sawPingGenerator.trigger();
@@ -645,7 +645,8 @@ public:
 
     void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
-    void configureForStart() override {
+    void configureAfterOpen() override {
+        // set buffer size
         std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
         int32_t capacityInFrames = outputStream->getBufferCapacityInFrames();
         int32_t burstInFrames = outputStream->getFramesPerBurst();
@@ -699,7 +700,7 @@ public:
         return oboe::Result::ErrorNull;
     }
 
-    void configureForStart() override;
+    void configureAfterOpen() override;
 
 private:
     std::unique_ptr<SineOscillator>         sineOscillator;
