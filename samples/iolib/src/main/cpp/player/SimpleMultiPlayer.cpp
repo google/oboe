@@ -116,16 +116,30 @@ bool SimpleMultiPlayer::openStream() {
 }
 
 bool SimpleMultiPlayer::startStream() {
-    Result result = mAudioStream->requestStart();
-    if (result != Result::OK){
-        __android_log_print(
-                ANDROID_LOG_ERROR,
-                TAG,
-                "requestStart failed. Error: %s", convertToText(result));
-        return false;
+    int tryCount = 0;
+    while (tryCount < 3) {
+        bool wasOpenSuccessful = true;
+        if (tryCount > 0) {
+            wasOpenSuccessful = openStream(); // Try to open the stream again after the first try.
+            usleep(20 * 1000); // Sleep between tries to give the system time to settle.
+        }
+        if (wasOpenSuccessful) {
+            Result result = mAudioStream->requestStart();
+            if (result != Result::OK){
+                __android_log_print(
+                        ANDROID_LOG_ERROR,
+                        TAG,
+                        "requestStart failed. Error: %s", convertToText(result));
+                mAudioStream->close();
+                mAudioStream.reset();
+            } else {
+                return true;
+            }
+        }
+        tryCount++;
     }
 
-    return true;
+    return false;
 }
 
 void SimpleMultiPlayer::setupAudioStream(int32_t channelCount) {
