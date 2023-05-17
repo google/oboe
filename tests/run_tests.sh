@@ -92,7 +92,7 @@ rm -r ${BUILD_DIR}
 # Configure the build
 echo "Building tests for ${ABI} using ${PLATFORM}"
 
-CMAKE_ARGS="-H. \
+CMAKE_ARGS="-S. \
 	-B${BUILD_DIR} \
 	-DANDROID_ABI=${ABI} \
 	-DANDROID_PLATFORM=${PLATFORM} \
