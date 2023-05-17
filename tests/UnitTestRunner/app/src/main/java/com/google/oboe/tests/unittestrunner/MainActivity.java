@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         } else {
             // Permission was granted, run the command
+            outputText.setText(R.string.status_record_audio_granted);
             runCommand();
         }
     }
