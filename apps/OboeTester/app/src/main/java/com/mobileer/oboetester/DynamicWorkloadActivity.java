@@ -36,6 +36,8 @@ import java.util.ArrayList;
  */
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private static final double WORKLOAD_MAX = 500.0;
+    public static final double LOAD_RECOVERY_HIGH = 1.0;
+    public static final double LOAD_RECOVERY_LOW = 0.95;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -152,14 +154,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
 
                         if (mRecoveryTimeBegin == 0) {
-                            if (maxCpuLoad > 1.0) {
+                            if (maxCpuLoad > LOAD_RECOVERY_HIGH) {
                                 mRecoveryTimeBegin = now;
                             }
                         } else if (mRecoveryTimeEnd == 0) {
-                            if (maxCpuLoad < 0.90) {
+                            if (maxCpuLoad < LOAD_RECOVERY_LOW) {
                                 mRecoveryTimeEnd = now;
                             }
-                        } else if (maxCpuLoad > 0.90) {
+                        } else if (maxCpuLoad > LOAD_RECOVERY_LOW) {
                             mRecoveryTimeEnd = now;
                         }
                         break;
@@ -178,10 +180,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message =
                         "#Voices: max = " + String.format("%d", (int) mWorkloadBenchmark)
-                        + ", high = " + String.format("%d", (int) mWorkloadHigh)
+                        + ", current = " + String.format("%d", (int) nextWorkload)
                         + "\nWorkState = " + stateToString(mState)
-                        + ", #Voices = " + String.format("%d", (int)nextWorkload)
-                        + "\nCPU = " + String.format("%5.3f%c", cpuLoad * 100, '%')
+                        + "\nCPU = " + String.format("%6.3f%c", cpuLoad * 100, '%')
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload((int)(nextWorkload));

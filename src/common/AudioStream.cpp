@@ -219,5 +219,4 @@ void AudioStream::calculateDefaultDelayBeforeCloseMillis() {
          static_cast<int>(mDelayBeforeCloseMillis));
 }
 
-
 } // namespace oboe

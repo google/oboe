@@ -384,8 +384,6 @@ Result AudioStreamOpenSLES::close_l() {
 
     setState(StreamState::Closed);
 
-    closePerformanceHint();
-
     return Result::OK;
 }
 

@@ -25,7 +25,6 @@
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,
                                                       size_t, int64_t);
-typedef void (*APH_updateTargetWorkDuration)(APerformanceHintSession*, int64_t);
 typedef void (*APH_reportActualWorkDuration)(APerformanceHintSession*, int64_t);
 typedef void (*APH_closeSession)(APerformanceHintSession* session);
 
@@ -68,7 +67,7 @@ static int loadAphFunctions() {
     return 0;
 }
 
-bool AdpfWrapper::sUseAlternativeHack = false; // FIXME remove hack
+bool AdpfWrapper::sUseAlternativeHack = false; // TODO remove hack
 
 int AdpfWrapper::open(pid_t threadId,
                       int64_t targetDurationNanos) {
@@ -81,7 +80,9 @@ int AdpfWrapper::open(pid_t threadId,
 
     int32_t thread32 = threadId;
     if (sUseAlternativeHack) {
-        // FIXME hack because setprop not working!
+        // TODO Remove this hack when we finish experimenting with alternative algorithms.
+        // The A5 is an arbitrary signal to a hacked version of ADPF to try an alternative
+        // algorithm that is not based on PID.
         targetDurationNanos = (targetDurationNanos & ~0xFF) | 0xA5;
     }
     mHintSession = gAPH_createSessionFn(manager, &thread32, 1 /* size */, targetDurationNanos);

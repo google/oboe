@@ -54,6 +54,7 @@ public:
 
     /**
      * Call this at the end of the callback that you are measuring.
+     * It is OK to skip this if you have a short callback.
      */
     void onEndCallback(double durationScaler);
 
@@ -65,13 +66,16 @@ public:
     static void setUseAlternative(bool enabled) {
         sUseAlternativeHack = enabled;
     }
-private:
+
     /**
      * Report the measured duration of a callback.
+     * This is normally called by onEndCallback().
+     * You may want to call this directly in order to give an advance hint of a jump in workload.
      * @param actualDurationNanos
      */
     void reportActualDuration(int64_t actualDurationNanos);
 
+private:
     std::mutex               mLock;
     APerformanceHintSession* mHintSession = nullptr;
     int64_t                  mBeginCallbackNanos = 0;

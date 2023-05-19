@@ -613,8 +613,20 @@ protected:
         }
     }
 
+    /**
+     * This may be called internally at the beginning of a callback.
+     */
     virtual void beginPerformanceHintInCallback() {}
+
+    /**
+     * This may be called internally at the end of a callback.
+     * @param numFrames passed to the callback
+     */
     virtual void endPerformanceHintInCallback(int32_t numFrames) {}
+
+    /**
+     * This will be called when the stream is closed just in case performance hints were enabled.
+     */
     virtual void closePerformanceHint() {}
 
     /*
@@ -675,7 +687,6 @@ private:
     std::atomic<bool>    mErrorCallbackCalled{false};
 
     std::atomic<bool>    mPerformanceHintEnabled{false}; // set only by app
-    std::atomic<bool>    mHearWorkload{false}; // set only by app
 };
 
 /**
