@@ -20,8 +20,10 @@
 #include <cstring>
 #include <jni.h>
 #include <stdint.h>
+#include <sys/sysinfo.h>
 #include <thread>
 
+#include "common/AdpfWrapper.h"
 #include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 
@@ -29,7 +31,7 @@
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 
-NativeAudioContext engine;
+static NativeAudioContext engine;
 
 /*********************************************************************************/
 /**********************  JNI  Prototypes *****************************************/
@@ -114,6 +116,18 @@ Java_com_mobileer_oboetester_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) {
+    return get_nprocs();
+}
+
+JNIEXPORT void JNICALL
+        Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
+                                                                     jclass type,
+                                                                     jint mask) {
+    engine.getCurrentActivity()->setCpuAffinityMask(mask);
+}
+
+JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
         jint nativeApi,
@@ -189,6 +203,11 @@ Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint st
     engine.getCurrentActivity()->close(streamIndex);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env, jobject, jboolean enabled) {
+    AdpfWrapper::setUseAlternative(enabled);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setBufferSizeInFrames(
         JNIEnv *env, jobject, jint streamIndex, jint threshold) {
@@ -211,6 +230,15 @@ Java_com_mobileer_oboetester_OboeAudioStream_getBufferSizeInFrames(
         result = oboeStream->getBufferSizeInFrames();
     }
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintEnabled(
+        JNIEnv *env, jobject, jint streamIndex, jboolean enabled) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        oboeStream->setPerformanceHintEnabled(enabled);
+    }
 }
 
 JNIEXPORT jint JNICALL
@@ -472,9 +500,14 @@ Java_com_mobileer_oboetester_OboeAudioStream_getTimestampLatency(JNIEnv *env,
     return engine.getCurrentActivity()->getTimestampLatency(streamIndex);
 }
 
-JNIEXPORT jdouble JNICALL
+JNIEXPORT jfloat JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
     return engine.getCurrentActivity()->getCpuLoad();
+}
+
+JNIEXPORT jfloat JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getAndResetMaxCpuLoad(JNIEnv *env, jobject instance, jint streamIndex) {
+    return engine.getCurrentActivity()->getAndResetMaxCpuLoad();
 }
 
 JNIEXPORT jstring JNICALL
@@ -484,8 +517,14 @@ Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeString(JNIEnv *env, 
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setWorkload(
-        JNIEnv *env, jobject, jdouble workload) {
+        JNIEnv *env, jobject, jint workload) {
     engine.getCurrentActivity()->setWorkload(workload);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setHearWorkload(
+        JNIEnv *env, jobject, jint streamIndex, jboolean enabled) {
+    engine.getCurrentActivity()->setHearWorkload(enabled);
 }
 
 JNIEXPORT jint JNICALL

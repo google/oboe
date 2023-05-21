@@ -77,6 +77,7 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_GLITCHES = 6;
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
+    public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
 
     private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
 
@@ -592,6 +593,8 @@ abstract class TestAudioActivity extends Activity {
     protected native void setActivityType(int activityType);
 
     private native int getFramesPerCallback();
+
+    public native void setUseAlternativeAdpf(boolean enabled);
 
     private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
 

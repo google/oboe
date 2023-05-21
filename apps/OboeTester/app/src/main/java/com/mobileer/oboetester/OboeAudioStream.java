@@ -154,6 +154,18 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native int setBufferSizeInFrames(int streamIndex, int thresholdFrames);
 
+    @Override
+    public void setPerformanceHintEnabled(boolean checked) {
+        setPerformanceHintEnabled(streamIndex, checked);
+    }
+    private native void setPerformanceHintEnabled(int streamIndex, boolean checked);
+
+    @Override
+    public void setHearWorkload(boolean checked) {
+        setHearWorkload(streamIndex, checked);
+    }
+    private native void setHearWorkload(int streamIndex, boolean checked);
+
     public int getNativeApi() {
         return getNativeApi(streamIndex);
     }
@@ -235,6 +247,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native int getSessionId(int streamIndex);
 
+
     public boolean isMMap() {
         return isMMap(streamIndex);
     }
@@ -274,10 +287,16 @@ abstract class OboeAudioStream extends AudioStreamBase {
     private native double getTimestampLatency(int streamIndex);
 
     @Override
-    public double getCpuLoad() {
+    public float getCpuLoad() {
         return getCpuLoad(streamIndex);
     }
-    private native double getCpuLoad(int streamIndex);
+    private native float getCpuLoad(int streamIndex);
+
+    @Override
+    public float getAndResetMaxCpuLoad() {
+        return getAndResetMaxCpuLoad(streamIndex);
+    }
+    private native float getAndResetMaxCpuLoad(int streamIndex);
 
     @Override
     public String getCallbackTimeStr() {
@@ -286,7 +305,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public native String getCallbackTimeString();
 
     @Override
-    public native void setWorkload(double workload);
+    public native void setWorkload(int workload);
 
     @Override
     public int getState() {

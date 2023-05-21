@@ -146,6 +146,39 @@ void AudioStreamAAudio::internalErrorCallback(
     }
 }
 
+void AudioStreamAAudio::beginPerformanceHintInCallback() {
+    if (isPerformanceHintEnabled()) {
+        if (!mAdpfOpenAttempted) {
+            int64_t targetDurationNanos = (mFramesPerBurst * 1e9) / getSampleRate();
+            // This has to be called from the callback thread so we get the right TID.
+            int adpfResult = mAdpfWrapper.open(gettid(), targetDurationNanos);
+            if (adpfResult < 0) {
+                LOGW("WARNING ADPF not supported, %d\n", adpfResult);
+            } else {
+                LOGD("ADPF is now active\n");
+            }
+            mAdpfOpenAttempted = true;
+        }
+        mAdpfWrapper.onBeginCallback();
+    } else if (!isPerformanceHintEnabled() && mAdpfOpenAttempted) {
+        LOGD("ADPF closed\n");
+        mAdpfWrapper.close();
+        mAdpfOpenAttempted = false;
+    }
+}
+
+void AudioStreamAAudio::endPerformanceHintInCallback(int32_t numFrames) {
+    if (mAdpfWrapper.isOpen()) {
+        // Scale the measured duration based on numFrames so it is normalized to a full burst.
+        double durationScaler = static_cast<double>(mFramesPerBurst) / numFrames;
+        // Skip this callback if numFrames is very small.
+        // This can happen when buffers wrap around, particularly when doing sample rate conversion.
+        if (durationScaler < 2.0) {
+            mAdpfWrapper.onEndCallback(durationScaler);
+        }
+    }
+}
+
 void AudioStreamAAudio::logUnsupportedAttributes() {
     int sdkVersion = getSdkVersion();
 
@@ -524,6 +557,7 @@ Result AudioStreamAAudio::requestStart() {
             setDataCallbackEnabled(true);
         }
         mStopThreadAllowed = true;
+        closePerformanceHint();
         return static_cast<Result>(mLibLoader->stream_requestStart(stream));
     } else {
         return Result::ErrorClosed;

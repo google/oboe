@@ -9,4 +9,8 @@ public class NativeEngine {
     static native void setWorkaroundsEnabled(boolean enabled);
 
     static native boolean areWorkaroundsEnabled();
+
+    static native int getCpuCount();
+
+    static native void setCpuAffinityMask(int mask);
 }

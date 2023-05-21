@@ -22,6 +22,7 @@
 #include <mutex>
 #include <thread>
 
+#include <common/AdpfWrapper.h>
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStream.h"
 #include "oboe/Definitions.h"
@@ -94,6 +95,11 @@ public:
 
     bool isMMapUsed();
 
+    void closePerformanceHint() override {
+        mAdpfWrapper.close();
+        mAdpfOpenAttempted = false;
+    }
+
 protected:
     static void internalErrorCallback(
             AAudioStream *stream,
@@ -108,6 +114,14 @@ protected:
     void updateFramesWritten() override;
 
     void logUnsupportedAttributes();
+
+    void beginPerformanceHintInCallback() override;
+
+    void endPerformanceHintInCallback(int32_t numFrames) override;
+
+    // set by callback (or app when idle)
+    std::atomic<bool>    mAdpfOpenAttempted{false};
+    AdpfWrapper          mAdpfWrapper;
 
 private:
     // Must call under mLock. And stream must NOT be nullptr.

@@ -383,6 +383,7 @@ Result AudioStreamOpenSLES::close_l() {
     EngineOpenSLES::getInstance().close();
 
     setState(StreamState::Closed);
+
     return Result::OK;
 }
 

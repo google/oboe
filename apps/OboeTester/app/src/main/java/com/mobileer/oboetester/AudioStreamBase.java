@@ -49,6 +49,11 @@ public abstract class AudioStreamBase {
         return mLatencyStatistics;
     }
 
+    public void setPerformanceHintEnabled(boolean checked) {
+    }
+    public void setHearWorkload(boolean checked) {
+    }
+
     public static class DoubleStatistics {
         private double sum;
         private int count;
@@ -85,7 +90,7 @@ public abstract class AudioStreamBase {
         public int state;
         public long callbackCount;
         public int framesPerCallback;
-        public double cpuLoad;
+        public float cpuLoad;
         public String callbackTimeStr;
 
         // These are constantly changing.
@@ -97,10 +102,10 @@ public abstract class AudioStreamBase {
 
             buffer.append("time between callbacks = " + callbackTimeStr + "\n");
 
-            buffer.append("written "
-                    + String.format(Locale.getDefault(), "0x%08X", framesWritten)
-                    + " - read " + String.format(Locale.getDefault(), "0x%08X", framesRead)
-                    + " = " + (framesWritten - framesRead) + " frames\n");
+            buffer.append("wr "
+                    + String.format(Locale.getDefault(), "%Xh", framesWritten)
+                    + " - rd " + String.format(Locale.getDefault(), "%Xh", framesRead)
+                    + " = " + (framesWritten - framesRead) + " fr\n");
 
             String cpuLoadText = String.format(Locale.getDefault(), "%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
@@ -196,7 +201,8 @@ public abstract class AudioStreamBase {
 
     public double getLatency() { return -1.0; }
 
-    public double getCpuLoad() { return 0.0; }
+    public float getCpuLoad() { return 0.0f; }
+    public float getAndResetMaxCpuLoad() { return 0.0f; }
 
     public String getCallbackTimeStr() { return "?"; };
 
@@ -206,7 +212,7 @@ public abstract class AudioStreamBase {
         return false;
     }
 
-    public void setWorkload(double workload) {}
+    public void setWorkload(int workload) {}
 
     public abstract int getXRunCount();
 

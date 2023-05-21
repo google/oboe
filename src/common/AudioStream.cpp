@@ -33,6 +33,7 @@ AudioStream::AudioStream(const AudioStreamBuilder &builder)
 }
 
 Result AudioStream::close() {
+    closePerformanceHint();
     // Update local counters so they can be read after the close.
     updateFramesWritten();
     updateFramesRead();
@@ -58,6 +59,9 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
         return DataCallbackResult::Stop; // Should not be getting called
     }
 
+    beginPerformanceHintInCallback();
+
+    // Call the app to do the work.
     DataCallbackResult result;
     if (mDataCallback) {
         result = mDataCallback->onAudioReady(this, audioData, numFrames);
@@ -67,6 +71,8 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     // On Oreo, we might get called after returning stop.
     // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
+
+    endPerformanceHintInCallback(numFrames);
 
     return result;
 }

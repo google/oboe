@@ -17,28 +17,7 @@
 #include "common/OboeDebug.h"
 #include "OboeStreamCallbackProxy.h"
 
-// Linear congruential random number generator.
-static uint32_t s_random16() {
-    static uint32_t seed = 1234;
-    seed = ((seed * 31421) + 6927) & 0x0FFFF;
-    return seed;
-}
-
-/**
- * The random number generator is good for burning CPU because the compiler cannot
- * easily optimize away the computation.
- * @param workload number of times to execute the loop
- * @return a white noise value between -1.0 and +1.0
- */
-static float s_burnCPU(int32_t workload) {
-    uint32_t random = 0;
-    for (int32_t i = 0; i < workload; i++) {
-        for (int32_t j = 0; j < 10; j++) {
-            random = random ^ s_random16();
-        }
-    }
-    return (random - 32768) * (1.0 / 32768);
-}
+#include "synth/IncludeMeOnce.h"
 
 bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
 
@@ -58,6 +37,12 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
 
+    if (mCpuAffinityMask != mPreviousMask) {
+        uint32_t mask = mCpuAffinityMask;
+        applyCpuAffinityMask(mask);
+        mPreviousMask = mask;
+    }
+
     mCallbackCount++;
     mFramesPerCallback = numFrames;
 
@@ -65,24 +50,31 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         return oboe::DataCallbackResult::Stop;
     }
 
-    s_burnCPU((int32_t)(mWorkload * kWorkloadScaler * numFrames));
-
     if (mCallback != nullptr) {
         callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
 
-    // Update CPU load
-    double calculationTime = (double)(getNanoseconds() - startTimeNanos);
-    double inverseRealTime = audioStream->getSampleRate() / (1.0e9 * numFrames);
-    double currentCpuLoad = calculationTime * inverseRealTime; // avoid a divide
-    mCpuLoad = (mCpuLoad * 0.95) + (currentCpuLoad * 0.05); // simple low pass filter
+    mSynthWorkload.onCallback(mNumWorkloadVoices);
+    if (mNumWorkloadVoices > 0) {
+        float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
+                        ? static_cast<float *>(audioData) : nullptr;
+        mSynthWorkload.renderStereo(buffer, numFrames);
+    }
 
-    int64_t currentTimeNs = getNanoseconds();
+    int64_t currentTimeNanos = getNanoseconds();
+    // Sometimes we get a short callback when doing sample rate conversion.
+    // Just ignore those to avoid noise.
+    if (numFrames > (getFramesPerCallback() / 2)) {
+        int64_t calculationTime = currentTimeNanos - startTimeNanos;
+        float currentCpuLoad = calculationTime * 0.000000001f * audioStream->getSampleRate() / numFrames;
+        mCpuLoad = (mCpuLoad * 0.95f) + (currentCpuLoad * 0.05f); // simple low pass filter
+        mMaxCpuLoad = std::max(currentCpuLoad, mMaxCpuLoad.load());
+    }
 
     if (mPreviousCallbackTimeNs != 0) {
-        mStatistics.add((currentTimeNs - mPreviousCallbackTimeNs) * kNsToMsScaler);
+        mStatistics.add((currentTimeNanos - mPreviousCallbackTimeNs) * kNsToMsScaler);
     }
-    mPreviousCallbackTimeNs = currentTimeNs;
+    mPreviousCallbackTimeNs = currentTimeNanos;
 
     return callbackResult;
 }

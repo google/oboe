@@ -9,6 +9,7 @@ project(oboe)
 set (oboe_sources
     src/aaudio/AAudioLoader.cpp
     src/aaudio/AudioStreamAAudio.cpp
+    src/common/AdpfWrapper.cpp
     src/common/AudioSourceCaller.cpp
     src/common/AudioStream.cpp
     src/common/AudioStreamBuilder.cpp

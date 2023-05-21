@@ -20,4 +20,9 @@
     <color name="version_draft">#ffffb0b0</color>
     <color name="version_release">#fff0f0f0</color>
     <color name="button_tint">#ffe0f0e0</color>
+    <color name="light_blue_400">#FF29B6F6</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="gray_400">#FFBDBDBD</color>
+    <color name="gray_600">#FF757575</color>
+    <color name="background_warm">#FFf0F0E8</color>
 </resources>
