@@ -1,4 +1,19 @@
 var searchData=
 [
-  ['latencytuner_0',['LatencyTuner',['../classoboe_1_1_latency_tuner.html#a0263b9a55825c0a403653b2b508073ea',1,'oboe::LatencyTuner::LatencyTuner(AudioStream &amp;stream)'],['../classoboe_1_1_latency_tuner.html#ab437bd10605af9e5733d043f8adc0b43',1,'oboe::LatencyTuner::LatencyTuner(AudioStream &amp;stream, int32_t maximumBufferSize)']]]
+  ['isaaudiorecommended_0',['isAAudioRecommended',['../classoboe_1_1_audio_stream_builder.html#a622732bbe5c6577356d749f7dc2108df',1,'oboe::AudioStreamBuilder']]],
+  ['isaaudiosupported_1',['isAAudioSupported',['../classoboe_1_1_audio_stream_builder.html#a18e7b5f7554a4c2ca763e35e8117d699',1,'oboe::AudioStreamBuilder']]],
+  ['isatleastprereleasecodename_2',['isAtLeastPreReleaseCodename',['../namespaceoboe.html#a8820e8cbf9e51c02f07f2333b8a4449e',1,'oboe']]],
+  ['isatmaximumbuffersize_3',['isAtMaximumBufferSize',['../classoboe_1_1_latency_tuner.html#a45c013fd6787ad09d328385d6314c4d4',1,'oboe::LatencyTuner']]],
+  ['ischannelconversionallowed_4',['isChannelConversionAllowed',['../classoboe_1_1_audio_stream_base.html#aa4ec3aa76e69350fbce6f00786211495',1,'oboe::AudioStreamBase']]],
+  ['iscontentspatialized_5',['isContentSpatialized',['../classoboe_1_1_audio_stream_base.html#aa0236a12662066fb841e8c49167b705c',1,'oboe::AudioStreamBase']]],
+  ['isdatacallbackenabled_6',['isDataCallbackEnabled',['../classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831',1,'oboe::AudioStream']]],
+  ['isdatacallbackspecified_7',['isDataCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#a9a54d38b985a2eb12c6972104dc0ce73',1,'oboe::AudioStreamBase']]],
+  ['iserrorcallbackspecified_8',['isErrorCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#aef579f6d1f779c89d051f0963f2976b3',1,'oboe::AudioStreamBase']]],
+  ['isformatconversionallowed_9',['isFormatConversionAllowed',['../classoboe_1_1_audio_stream_base.html#ace3625a7332bf02a86818fdf63fcccb4',1,'oboe::AudioStreamBase']]],
+  ['ismmapenabled_10',['isMMapEnabled',['../classoboe_1_1_oboe_extensions.html#acb59883549a68c5602961e8b1f5594aa',1,'oboe::OboeExtensions']]],
+  ['ismmapsupported_11',['isMMapSupported',['../classoboe_1_1_oboe_extensions.html#a426a601f357d8644a5d27babf1372ba0',1,'oboe::OboeExtensions']]],
+  ['ismmapused_12',['isMMapUsed',['../classoboe_1_1_oboe_extensions.html#a7fe9cde7ff7cf2410dcce867d07670b2',1,'oboe::OboeExtensions']]],
+  ['isperformancehintenabled_13',['isPerformanceHintEnabled',['../classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b',1,'oboe::AudioStream']]],
+  ['isvalidconfig_14',['isValidConfig',['../classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2',1,'oboe::AudioStreamBase']]],
+  ['isxruncountsupported_15',['isXRunCountSupported',['../classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
 ];
