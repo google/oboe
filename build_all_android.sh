@@ -28,7 +28,7 @@ fi
 # Directories, paths and filenames
 BUILD_DIR=build
 
-CMAKE_ARGS="-H. \
+CMAKE_ARGS="-S. \
   -DBUILD_SHARED_LIBS=true \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DANDROID_TOOLCHAIN=clang \
