@@ -254,9 +254,12 @@ int ActivityContext::open(jint nativeApi,
         dataBuffer = std::make_unique<float[]>(numSamples);
     }
 
-    configureAfterOpen();
-
-    return (result != Result::OK) ? (int)result : streamIndex;
+    if (result != Result::OK) {
+        return (int) result;
+    } else {
+        configureAfterOpen();
+        return streamIndex;
+    }
 }
 
 oboe::Result ActivityContext::start() {
