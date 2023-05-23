@@ -105,9 +105,7 @@ public class CommunicationDeviceView extends LinearLayout {
                 AudioDeviceInfo[] commDeviceArray = mDeviceSpinner.getCommunicationsDevices();
                 if (commDeviceArray != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (position == CommunicationDeviceSpinner.POS_NOOP) {
-                            // do nothing
-                        } else if (position == CommunicationDeviceSpinner.POS_CLEAR) {
+                        if (position == CommunicationDeviceSpinner.POS_CLEAR) {
                             mAudioManager.clearCommunicationDevice();
                         } else {
                             AudioDeviceInfo selectedDevice = commDeviceArray[position - CommunicationDeviceSpinner.POS_DEVICES]; // skip "Clear"

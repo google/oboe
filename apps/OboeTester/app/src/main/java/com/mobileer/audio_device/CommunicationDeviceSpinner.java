@@ -31,9 +31,8 @@ import java.util.List;
 public class CommunicationDeviceSpinner extends Spinner {
     private static final String TAG = CommunicationDeviceSpinner.class.getName();
     // menu positions
-    public static final int POS_NOOP = 0;
-    public static final int POS_CLEAR = 1;
-    public static final int POS_DEVICES = 2; // base position fr device list
+    public static final int POS_CLEAR = 0;
+    public static final int POS_DEVICES = 1; // base position for device list
     private AudioDeviceAdapter mDeviceAdapter;
     private AudioManager mAudioManager;
     private Context mContext;
@@ -90,7 +89,7 @@ public class CommunicationDeviceSpinner extends Spinner {
 
         // Add default entries to the list and select one.
         addDefaultDevicesOptions();
-        setSelection(0);
+        setSelection(POS_CLEAR);
         setupCommunicationDeviceListener();
     }
 
@@ -111,7 +110,7 @@ public class CommunicationDeviceSpinner extends Spinner {
             private void updateDeviceList() {
                 mDeviceAdapter.clear();
                 addDefaultDevicesOptions();
-                setSelection(0);
+                setSelection(POS_CLEAR);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     List<AudioDeviceInfo> commDeviceList = mAudioManager.getAvailableCommunicationDevices();
                     mCommDeviceArray = commDeviceList.toArray(new AudioDeviceInfo[0]);
@@ -126,8 +125,6 @@ public class CommunicationDeviceSpinner extends Spinner {
     }
 
     private void addDefaultDevicesOptions() {
-        mDeviceAdapter.add(new AudioDeviceListEntry(POS_NOOP,
-                "No Action"));
         mDeviceAdapter.add(new AudioDeviceListEntry(POS_CLEAR,
                 mContext.getString(R.string.clear_comm)));
     }
