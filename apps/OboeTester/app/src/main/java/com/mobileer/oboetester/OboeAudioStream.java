@@ -46,12 +46,6 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     public native int startPlaybackNative();
 
-    // Write disabled because the synth is in native code.
-    @Override
-    public int write(float[] buffer, int offset, int length) {
-        return 0;
-    }
-
     @Override
     public void open(StreamConfiguration requestedConfiguration,
                      StreamConfiguration actualConfiguration, int bufferSizeInFrames) throws IOException {
@@ -142,11 +136,6 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getBufferSizeInFrames(streamIndex);
     }
     private native int getBufferSizeInFrames(int streamIndex);
-
-    @Override
-    public boolean isThresholdSupported() {
-        return true;
-    }
 
     @Override
     public int setBufferSizeInFrames(int thresholdFrames) {
