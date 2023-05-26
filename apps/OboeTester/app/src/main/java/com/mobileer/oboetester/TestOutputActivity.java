@@ -34,7 +34,6 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
     private Spinner mOutputSignalSpinner;
-    protected CommunicationDeviceView mCommunicationDeviceView;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -91,22 +90,6 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     @Override
     int getActivityType() {
         return ACTIVITY_TEST_OUTPUT;
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.onStart();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.onStop();
-        }
-        super.onStop();
     }
 
     public void openAudio() throws IOException {

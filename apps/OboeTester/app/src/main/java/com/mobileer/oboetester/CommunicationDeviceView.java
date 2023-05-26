@@ -42,6 +42,7 @@ public class CommunicationDeviceView extends LinearLayout {
     private TextView mSpeakerStatusView;
     private TextView mScoStatusView;
     private BroadcastReceiver mScoStateReceiver;
+    private boolean mScoStateReceiverRegistered = false;
     private CommunicationDeviceSpinner mDeviceSpinner;
     private int mScoState;
 
@@ -133,6 +134,8 @@ public class CommunicationDeviceView extends LinearLayout {
     public void onStop() {
         mSpeakerphoneCheckbox.setChecked(false);
         setSpeakerPhoneOn(false);
+        mScoCheckbox.setChecked(false);
+        mAudioManager.stopBluetoothSco();
         unregisterScoStateReceiver();
     }
 
@@ -161,11 +164,11 @@ public class CommunicationDeviceView extends LinearLayout {
         mSpeakerStatusView.setText(text + ",");
 
         if (mScoState == AudioManager.SCO_AUDIO_STATE_CONNECTING) {
-            text = ":wait";
+            text = ":WAIT";
         } else if (mScoState == AudioManager.SCO_AUDIO_STATE_CONNECTED) {
             text = ":CON";
         } else if (mScoState == AudioManager.SCO_AUDIO_STATE_DISCONNECTED) {
-            text = ":DISCO";
+            text = ":DISCON";
         }
         mScoStatusView.setText(text);
     }
@@ -179,13 +182,19 @@ public class CommunicationDeviceView extends LinearLayout {
         }
     }
 
-    private void registerScoStateReceiver() {
-        getContext().registerReceiver(mScoStateReceiver,
-                new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+    private synchronized void registerScoStateReceiver() {
+        if (!mScoStateReceiverRegistered) {
+            getContext().registerReceiver(mScoStateReceiver,
+                    new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED));
+            mScoStateReceiverRegistered = true;
+        }
     }
 
-    private void unregisterScoStateReceiver() {
-        getContext().unregisterReceiver(mScoStateReceiver);
+    private synchronized void unregisterScoStateReceiver() {
+        if (mScoStateReceiverRegistered) {
+            getContext().unregisterReceiver(mScoStateReceiver);
+            mScoStateReceiverRegistered = false;
+        }
     }
 
 }

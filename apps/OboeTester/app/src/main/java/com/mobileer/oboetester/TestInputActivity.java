@@ -42,7 +42,6 @@ public class TestInputActivity  extends TestAudioActivity {
     private InputMarginView mInputMarginView;
     private int mInputMarginBursts = 0;
     private WorkloadView mWorkloadView;
-    private CommunicationDeviceView mCommunicationDeviceView;
 
     public native void setMinimumFramesBeforeRead(int frames);
     public native int saveWaveFile(String absolutePath);
@@ -78,21 +77,6 @@ public class TestInputActivity  extends TestAudioActivity {
         }
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.onStart();
-        }
-    }
-    @Override
-    protected void onStop() {
-        if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.onStop();
-        }
-        super.onStop();
     }
 
     @Override
