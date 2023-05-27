@@ -135,10 +135,9 @@ void MultiChannelResampler::generateCoefficients(int32_t inputRate,
     int coefficientIndex = 0;
     double phase = 0.0; // ranges from 0.0 to 1.0, fraction between samples
     // Stretch the sinc function for low pass filtering.
-    const float cutoffScaler = normalizedCutoff *
-            ((outputRate < inputRate)
-             ? ((float)outputRate / inputRate)
-             : ((float)inputRate / outputRate));
+    const float cutoffScaler = (outputRate < inputRate)
+             ? (normalizedCutoff * (float)outputRate / inputRate)
+             : 1.0f; // Do not filter when upsampling.
     const int numTapsHalf = getNumTaps() / 2; // numTaps must be even.
     const float numTapsHalfInverse = 1.0f / numTapsHalf;
     for (int i = 0; i < numRows; i++) {
