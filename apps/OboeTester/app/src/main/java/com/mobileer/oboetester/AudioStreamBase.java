@@ -26,9 +26,42 @@ public abstract class AudioStreamBase {
 
     private StreamConfiguration mRequestedStreamConfiguration;
     private StreamConfiguration mActualStreamConfiguration;
-    AudioStreamBase.DoubleStatistics mLatencyStatistics;
-
+    private AudioStreamBase.DoubleStatistics mLatencyStatistics;
+    private SampleRateMonitor mSampleRateMonitor = new SampleRateMonitor();
     private int mBufferSizeInFrames;
+
+    private class SampleRateMonitor {
+        private static final int SIZE = 16; // power of 2
+        private static final long MASK = SIZE - 1L;
+        private long[] times = new long[SIZE];
+        private long[] frames = new long[SIZE];
+        private long cursor;
+
+        void add(long numFrames) {
+            int index = (int) (cursor & MASK);
+            frames[index] = numFrames;
+            times[index] = System.currentTimeMillis();
+            cursor++;
+        }
+
+        int getRate() {
+            if (cursor < 2) return 0;
+            long numValid = Math.min((long)SIZE, cursor);
+            int oldestIndex = (int)((cursor - numValid) & MASK);
+            int newestIndex = (int)((cursor - 1) & MASK);
+            long deltaTime = times[newestIndex] - times[oldestIndex];
+            long deltaFrames = frames[newestIndex] - frames[oldestIndex];
+            if (deltaTime <= 0) {
+                return -1;
+            }
+            long sampleRate = (deltaFrames * 1000) / deltaTime;
+            return (int) sampleRate;
+        }
+
+        void reset() {
+            cursor = 0;
+        }
+    }
 
     public StreamStatus getStreamStatus() {
         StreamStatus status = new StreamStatus();
@@ -42,6 +75,8 @@ public abstract class AudioStreamBase {
         status.callbackTimeStr = getCallbackTimeStr();
         status.cpuLoad = getCpuLoad();
         status.state = getState();
+        mSampleRateMonitor.add(status.framesRead);
+        status.measuredRate = mSampleRateMonitor.getRate();
         return status;
     }
 
@@ -92,6 +127,7 @@ public abstract class AudioStreamBase {
         public int framesPerCallback;
         public float cpuLoad;
         public String callbackTimeStr;
+        public int measuredRate;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -105,14 +141,15 @@ public abstract class AudioStreamBase {
             buffer.append("wr "
                     + String.format(Locale.getDefault(), "%Xh", framesWritten)
                     + " - rd " + String.format(Locale.getDefault(), "%Xh", framesRead)
-                    + " = " + (framesWritten - framesRead) + " fr\n");
+                    + " = " + (framesWritten - framesRead) + " fr"
+                    + ", SR = " + ((measuredRate <= 0) ? "?" : measuredRate) + "\n");
 
             String cpuLoadText = String.format(Locale.getDefault(), "%2d%c", (int)(cpuLoad * 100), '%');
             buffer.append(
                     convertStateToString(state)
                     + ", #cb=" + callbackCount
                     + ", f/cb=" + String.format(Locale.getDefault(), "%3d", framesPerCallback)
-                    + ", " + cpuLoadText + " cpu"
+                    + ", " + cpuLoadText + " CPU"
                     + "\n");
 
             buffer.append("buffer size = ");
@@ -157,13 +194,18 @@ public abstract class AudioStreamBase {
         mLatencyStatistics = new AudioStreamBase.DoubleStatistics();
     }
 
+    public void onStart() {
+        mSampleRateMonitor.reset();
+    }
+    public void onStop() {
+        mSampleRateMonitor.reset();
+    }
+
     public abstract boolean isInput();
 
     public void startPlayback() throws IOException {}
 
     public void stopPlayback() throws IOException {}
-
-    public abstract int write(float[] buffer, int offset, int length);
 
     public abstract void close();
 
@@ -207,10 +249,6 @@ public abstract class AudioStreamBase {
     public String getCallbackTimeStr() { return "?"; };
 
     public int getState() { return -1; }
-
-    public boolean isThresholdSupported() {
-        return false;
-    }
 
     public void setWorkload(int workload) {}
 

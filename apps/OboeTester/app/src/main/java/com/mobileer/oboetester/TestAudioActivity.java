@@ -469,6 +469,17 @@ abstract class TestAudioActivity extends Activity {
         });
     }
 
+    private void onStartAllContexts() {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.tester.getCurrentAudioStream().onStart();
+        }
+    }
+    private void onStopAllContexts() {
+        for (StreamContext streamContext : mStreamContexts) {
+            streamContext.tester.getCurrentAudioStream().onStop();
+        }
+    }
+
     public void openAudio(View view) {
         try {
             openAudio();
@@ -549,6 +560,7 @@ abstract class TestAudioActivity extends Activity {
             }
         }
         updateEnabledWidgets();
+        onStartAllContexts();
         mStreamSniffer.startStreamSniffer();
     }
 
@@ -614,6 +626,7 @@ abstract class TestAudioActivity extends Activity {
             showErrorToast("Start failed with " + result);
             throw new IOException("startNative returned " + result);
         } else {
+            onStartAllContexts();
             for (StreamContext streamContext : mStreamContexts) {
                 StreamConfigurationView configView = streamContext.configurationView;
                 if (configView != null) {
@@ -636,6 +649,7 @@ abstract class TestAudioActivity extends Activity {
         } else {
             mAudioState = AUDIO_STATE_PAUSED;
             updateEnabledWidgets();
+            onStopAllContexts();
         }
     }
 
@@ -646,6 +660,7 @@ abstract class TestAudioActivity extends Activity {
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
+            onStopAllContexts();
         }
     }
 
@@ -656,6 +671,7 @@ abstract class TestAudioActivity extends Activity {
         } else {
             mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();
+            onStopAllContexts();
         }
     }
 
