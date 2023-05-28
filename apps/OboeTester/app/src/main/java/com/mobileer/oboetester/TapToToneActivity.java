@@ -103,6 +103,8 @@ public class TapToToneActivity extends TestOutputActivityBase {
             return true;
         });
 
+        mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
+
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
         updateButtons(false);

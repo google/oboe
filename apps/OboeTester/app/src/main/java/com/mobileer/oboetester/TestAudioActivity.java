@@ -92,6 +92,8 @@ abstract class TestAudioActivity extends Activity {
     private Button mCloseButton;
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
+    // Only set in some activities
+    protected CommunicationDeviceView mCommunicationDeviceView;
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
@@ -229,6 +231,10 @@ abstract class TestAudioActivity extends Activity {
         super.onStart();
         resetConfiguration();
         setActivityType(getActivityType());
+        // TODO Use LifeCycleObserver instead of this.
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.onStart();
+        }
     }
 
     protected void resetConfiguration() {
@@ -292,6 +298,9 @@ abstract class TestAudioActivity extends Activity {
         if (!isBackgroundEnabled()) {
             Log.i(TAG, "onStop() called so stop the test =========================");
             onStopTest();
+        }
+        if (mCommunicationDeviceView != null) {
+            mCommunicationDeviceView.onStop();
         }
         super.onStop();
     }

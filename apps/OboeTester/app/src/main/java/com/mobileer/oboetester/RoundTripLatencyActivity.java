@@ -349,6 +349,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         hideSettingsViews();
 
         mBufferSizeView.setFaderNormalizedProgress(0.0); // for lowest latency
+
+        mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
     }
 
     @Override

@@ -17,8 +17,6 @@
 package com.mobileer.oboetester;
 
 import android.content.Intent;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AutomaticGainControl;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -44,7 +42,6 @@ public class TestInputActivity  extends TestAudioActivity {
     private InputMarginView mInputMarginView;
     private int mInputMarginBursts = 0;
     private WorkloadView mWorkloadView;
-    private CommunicationDeviceView mCommunicationDeviceView;
 
     public native void setMinimumFramesBeforeRead(int frames);
     public native int saveWaveFile(String absolutePath);
@@ -80,14 +77,6 @@ public class TestInputActivity  extends TestAudioActivity {
         }
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
-    }
-
-    @Override
-    protected void onStop() {
-        if (mCommunicationDeviceView != null) {
-            mCommunicationDeviceView.cleanup();
-        }
-        super.onStop();
     }
 
     @Override
