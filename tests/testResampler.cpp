@@ -191,10 +191,9 @@ TEST(test_resampler, resampler_11025_44100_best) {
     checkResampler(11025, 44100, MultiChannelResampler::Quality::Best);
 }
 
-// TODO This fails because the output is very low.
-//TEST(test_resampler, resampler_11025_88200_best) {
-//    checkResampler(11025, 88200, MultiChannelResampler::Quality::Best);
-//}
+TEST(test_resampler, resampler_11025_88200_best) {
+   checkResampler(11025, 88200, MultiChannelResampler::Quality::Best);
+}
 
 TEST(test_resampler, resampler_16000_48000_best) {
     checkResampler(16000, 48000, MultiChannelResampler::Quality::Best);
