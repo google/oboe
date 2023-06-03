@@ -56,6 +56,7 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
 
     mSynthWorkload.onCallback(mNumWorkloadVoices);
     if (mNumWorkloadVoices > 0) {
+        // Render into the buffer or discard the synth voices.
         float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
                         ? static_cast<float *>(audioData) : nullptr;
         mSynthWorkload.renderStereo(buffer, numFrames);

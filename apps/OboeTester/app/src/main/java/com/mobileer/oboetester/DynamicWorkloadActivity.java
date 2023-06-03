@@ -345,9 +345,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     public void stopTest(View view) {
+        onStopTest();
+    }
+
+    @Override
+    public void onStopTest() {
         mUpdateThread.stop();
-        stopAudio();
-        closeAudio();
         updateButtons(false);
+        super.onStopTest();
     }
 }
