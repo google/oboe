@@ -99,14 +99,22 @@ static void checkResampler(int32_t sourceRate, int32_t sinkRate,
         }
     }
 
+    // Flush out remaining frames from the flowgraph
+    while (!mcResampler->isWriteNeeded()) {
+        mcResampler->readNextFrame(output);
+        output++;
+        numRead++;
+    }
+
     ASSERT_LE(numRead, kNumOutputSamples);
     // Some frames are lost priming the FIR filter.
-    const int kMaxAlgorithmicFrameLoss = 16;
+    const int kMaxAlgorithmicFrameLoss = 5;
     EXPECT_GT(numRead, kNumOutputSamples - kMaxAlgorithmicFrameLoss);
 
     int sinkZeroCrossingCount = countZeroCrossingsWithHysteresis(outputBuffer.get(), numRead);
-    // Some cycles may get chopped off at the end.
-    const int kMaxZeroCrossingDelta = 3;
+    // The sine wave may be cut off partially. This may cause multiple crossing
+    // differences when upsampling.
+    const int kMaxZeroCrossingDelta = std::max(sinkRate / sourceRate / 2, 1);
     EXPECT_LE(abs(sourceZeroCrossingCount - sinkZeroCrossingCount), kMaxZeroCrossingDelta);
 
     // Detect glitches by looking for spikes in the second derivative.
@@ -134,8 +142,7 @@ static void checkResampler(int32_t sourceRate, int32_t sinkRate,
 
 
 TEST(test_resampler, resampler_scan_all) {
-    // TODO Add 64000, 88200, 96000 when they work. Failing now.
-    const int rates[] = {8000, 11025, 22050, 32000, 44100, 48000};
+    const int rates[] = {8000, 11025, 22050, 32000, 44100, 48000, 64000, 88200, 96000};
     const MultiChannelResampler::Quality qualities[] =
     {
         MultiChannelResampler::Quality::Fastest,
