@@ -39,7 +39,7 @@ public class IntentBasedTestSupport {
 
     public static final String KEY_IN_USE_MMAP = "in_use_mmap";
     public static final String KEY_OUT_USE_MMAP = "out_use_mmap";
-    public static final boolean VALUE_DEFAULT_USE_MMAP = true;
+    public static final boolean VALUE_DEFAULT_USE_MMAP = NativeEngine.isMMapSupported();
 
     public static final String KEY_IN_PRESET = "in_preset";
     public static final String KEY_SAMPLE_RATE = "sample_rate";
