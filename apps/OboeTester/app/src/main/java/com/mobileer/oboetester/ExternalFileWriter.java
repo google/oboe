@@ -34,8 +34,8 @@ public class ExternalFileWriter {
     }
 
     public File writeStringToExternalFile(String result, String fileName) throws IOException {
-        File[] dirs = mContext.getExternalFilesDirs(null);
-        File resultFile = new File(dirs[0], fileName);
+        File dir = mContext.getExternalFilesDir(null);
+        File resultFile = new File(dir, fileName);
         Log.d(TAG, "EXTFILE = " + resultFile.getAbsolutePath());
         Writer writer = null;
         try {
