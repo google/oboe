@@ -346,6 +346,7 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     ActivityContext::close(streamIndex);
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
+    mVolumeRamps.clear();
     mSinkFloat.reset();
     mSinkI16.reset();
     mSinkI24.reset();
@@ -353,46 +354,47 @@ void ActivityTestOutput::close(int32_t streamIndex) {
 }
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
-    if (manyToMulti == nullptr) {
+    if (channelIndex >= mVolumeRamps.size()) {
         return;
     }
     if (enabled) {
         switch (mSignalType) {
             case SignalType::Sine:
                 sineOscillators[channelIndex].frequency.disconnect();
-                sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                sineOscillators[channelIndex].output.connect(&(mVolumeRamps[channelIndex]->input));
                 break;
             case SignalType::Sawtooth:
-                sawtoothOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                sawtoothOscillators[channelIndex].output.connect(&
+                        (mVolumeRamps[channelIndex]->input));
                 break;
             case SignalType::FreqSweep:
                 mLinearShape.output.connect(&sineOscillators[channelIndex].frequency);
-                sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                sineOscillators[channelIndex].output.connect(&(mVolumeRamps[channelIndex]->input));
                 break;
             case SignalType::PitchSweep:
                 mExponentialShape.output.connect(&sineOscillators[channelIndex].frequency);
-                sineOscillators[channelIndex].output.connect(manyToMulti->inputs[channelIndex].get());
+                sineOscillators[channelIndex].output.connect(&(mVolumeRamps[channelIndex]->input));
                 break;
             case SignalType::WhiteNoise:
-                mWhiteNoise.output.connect(manyToMulti->inputs[channelIndex].get());
+                mWhiteNoise.output.connect(&(mVolumeRamps[channelIndex]->input));
                 break;
             default:
                 break;
         }
     } else {
-        manyToMulti->inputs[channelIndex]->disconnect();
+        mVolumeRamps[channelIndex]->input.disconnect();
     }
 }
 
 void ActivityTestOutput::configureAfterOpen() {
     manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
 
+    std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
+
     mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
     mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
     mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
     mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
-
-    std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
 
     mTriangleOscillator.setSampleRate(outputStream->getSampleRate());
     mTriangleOscillator.frequency.setValue(1.0/kSweepPeriod);
@@ -416,6 +418,11 @@ void ActivityTestOutput::configureAfterOpen() {
             sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate());
             sawtoothOscillators[i].frequency.setValue(frequency);
             sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
+            mVolumeRamps.emplace_back(std::make_unique<RampLinear>(1));
+            mVolumeRamps[i]->setTarget(mVolumeScalar);
+            mVolumeRamps[i]->setLengthInFrames(kRampMSec * outputStream->getSampleRate()
+                    / MILLIS_PER_SECOND);
+            mVolumeRamps[i]->output.connect(manyToMulti->inputs[i].get());
 
             frequency *= 4.0 / 3.0; // each wave is at a higher frequency
             setChannelEnabled(i, true);

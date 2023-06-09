@@ -602,6 +602,11 @@ Java_com_mobileer_oboetester_OboeAudioOutputStream_setSignalType(
     engine.getCurrentActivity()->setSignalType(signalType);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioOutputStream_setVolume(JNIEnv *env, jobject, jfloat volume) {
+    engine.getCurrentActivity()->setVolume(volume);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getOboeVersionNumber(JNIEnv *env,
                                                                           jclass type) {

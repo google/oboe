@@ -22,7 +22,9 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -34,6 +36,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public static final int MAX_CHANNEL_BOXES = 16;
     private CheckBox[] mChannelBoxes;
     private Spinner mOutputSignalSpinner;
+    private TextView mVolumeTextView;
+    private SeekBar mVolumeSeekBar;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -46,6 +50,21 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             mAudioOutTester.setSignalType(0);
         }
     }
+
+    private SeekBar.OnSeekBarChangeListener mVolumeChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            setVolume(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    };
 
     @Override
     protected void inflateActivity() {
@@ -85,6 +104,10 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mOutputSignalSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
+
+        mVolumeTextView = (TextView) findViewById(R.id.textVolumeSlider);
+        mVolumeSeekBar = (SeekBar) findViewById(R.id.faderVolumeSlider);
+        mVolumeSeekBar.setOnSeekBarChangeListener(mVolumeChangeListener);
     }
 
     @Override
@@ -102,6 +125,12 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             mChannelBoxes[i].setEnabled(i < channelCount);
         }
     }
+
+    private void setVolume(int volume) {
+        mAudioOutTester.setVolume(volume / 100.0f);
+        mVolumeTextView.setText("Volume:" + volume + "%");
+    }
+
 
     public void stopAudio() {
         configureChannelBoxes(0);

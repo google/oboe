@@ -32,6 +32,7 @@
 #include "flowunits/ImpulseOscillator.h"
 #include "flowgraph/ManyToMultiConverter.h"
 #include "flowgraph/MonoToMultiConverter.h"
+#include "flowgraph/RampLinear.h"
 #include "flowgraph/SinkFloat.h"
 #include "flowgraph/SinkI16.h"
 #include "flowgraph/SinkI24.h"
@@ -69,6 +70,8 @@
 #define NANOS_PER_MICROSECOND    ((int64_t) 1000)
 #define NANOS_PER_MILLISECOND    (1000 * NANOS_PER_MICROSECOND)
 #define NANOS_PER_SECOND         (1000 * NANOS_PER_MILLISECOND)
+
+#define MILLIS_PER_SECOND     1000
 
 #define SECONDS_TO_RECORD        10
 
@@ -280,6 +283,8 @@ public:
 
     virtual void setSignalType(int signalType) {}
 
+    virtual void setVolume(float volume) {}
+
     virtual int32_t saveWaveFile(const char *filename);
 
     virtual void setMinimumFramesBeforeRead(int32_t numFrames) {}
@@ -433,6 +438,13 @@ public:
         mSignalType = (SignalType) signalType;
     }
 
+    void setVolume(float volume) override {
+        mVolumeScalar = volume;
+        for (int i = 0; i < mVolumeRamps.size(); i++) {
+            mVolumeRamps[i]->setTarget(mVolumeScalar);
+        }
+    }
+
 protected:
     SignalType                       mSignalType = SignalType::Sine;
 
@@ -445,6 +457,10 @@ protected:
     LinearShape                      mLinearShape;
     ExponentialShape                 mExponentialShape;
     class WhiteNoise                 mWhiteNoise;
+
+    static constexpr int             kRampMSec = 10; // for volume control
+    float                            mVolumeScalar = 1.0f;
+    std::vector<std::unique_ptr<RampLinear>> mVolumeRamps;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
