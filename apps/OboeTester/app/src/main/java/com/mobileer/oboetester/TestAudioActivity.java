@@ -79,8 +79,6 @@ abstract class TestAudioActivity extends Activity {
     public static final int ACTIVITY_DATA_PATHS = 8;
     public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
 
-    private static final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 1001;
-
     private int mAudioState = AUDIO_STATE_CLOSED;
 
     protected ArrayList<StreamContext> mStreamContexts;
@@ -102,6 +100,7 @@ abstract class TestAudioActivity extends Activity {
     protected boolean mTestRunningByIntent;
     protected String mResultFileName;
     private String mTestResults;
+    private ExternalFileWriter mExternalFileWriter = new ExternalFileWriter(this);
 
     public String getTestName() {
         return "TestAudio";
@@ -733,24 +732,6 @@ abstract class TestAudioActivity extends Activity {
         myAudioMgr.stopBluetoothSco();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions,
-                                           int[] grantResults) {
-
-        if (MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE != requestCode) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            return;
-        }
-        // If request is cancelled, the result arrays are empty.
-        if (grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            writeTestResult(mTestResults);
-        } else {
-            showToast("Writing external storage needed for test results.");
-        }
-    }
-
     @NonNull
     protected String getCommonTestReport() {
         StringBuffer report = new StringBuffer();
@@ -782,48 +763,17 @@ abstract class TestAudioActivity extends Activity {
         return report.toString();
     }
 
-    void writeTestResultIfPermitted(String resultString) {
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            mTestResults = resultString;
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
-        } else {
-            // Permission has already been granted
-            writeTestResult(resultString);
-        }
-    }
-
-    void maybeWriteTestResult(String resultString) {
+    File maybeWriteTestResult(String resultString) {
+        File fileWritten = null;
         if (mResultFileName != null) {
-            writeTestResultIfPermitted(resultString);
-        };
-    }
-
-    // Run this in a background thread.
-    void writeTestResult(String resultString) {
-        File resultFile = new File(mResultFileName);
-        Writer writer = null;
-        try {
-            writer = new OutputStreamWriter(new FileOutputStream(resultFile));
-            writer.write(resultString);
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-            showErrorToast(" writing result file. " + e.getMessage());
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                fileWritten = mExternalFileWriter.writeStringToExternalFile(resultString, mResultFileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+                showErrorToast(" writing result file. " + e.getMessage());
             }
+            mResultFileName = null;
         }
-
-        mResultFileName = null;
+        return fileWritten;
     }
 }

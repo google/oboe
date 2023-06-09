@@ -21,11 +21,13 @@ import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFro
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -209,7 +211,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     } else {
                         message = getResultString();
                     }
-                    onAnalyzerDone();
+                    File resultFile = onAnalyzerDone();
+                    if (resultFile != null) {
+                        message = "result.file = " + resultFile.getAbsolutePath() + "\n" + message;
+                    }
                 } else {
                     message = getProgressText();
                     message += "please wait... " + counter + "\n";
@@ -255,15 +260,17 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         return message;
     }
 
-    private void onAnalyzerDone() {
+    private File onAnalyzerDone() {
+        File resultFile = null;
         if (mTestRunningByIntent) {
             String report = getCommonTestReport();
             report += getResultString();
-            maybeWriteTestResult(report);
+            resultFile = maybeWriteTestResult(report);
         }
         mTestRunningByIntent = false;
         mHasRecording = true;
         stopAudioTest();
+        return resultFile;
     }
 
     @NonNull
@@ -351,6 +358,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mBufferSizeView.setFaderNormalizedProgress(0.0); // for lowest latency
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
+
     }
 
     @Override

@@ -161,11 +161,4 @@ public class AnalyzerActivity extends TestInputActivity {
         }
     }
 
-    private void writeTestInBackground(final String resultString) {
-        new Thread() {
-            public void run() {
-                writeTestResult(resultString);
-            }
-        }.start();
-    }
 }
