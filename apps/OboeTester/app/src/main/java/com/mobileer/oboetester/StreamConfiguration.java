@@ -588,7 +588,7 @@ public class StreamConfiguration {
             message.append(String.format(Locale.getDefault(), "%s.preset = %s\n", prefix,
                     convertInputPresetToText(mInputPreset).toLowerCase(Locale.getDefault())));
         } else {
-            message.append(String.format(Locale.getDefault(), "%s.preset = %s\n", prefix,
+            message.append(String.format(Locale.getDefault(), "%s.usage = %s\n", prefix,
                     convertUsageToText(mUsage).toLowerCase(Locale.getDefault())));
             message.append(String.format(Locale.getDefault(), "%s.contentType = %s\n", prefix,
                     convertContentTypeToText(mContentType).toLowerCase(Locale.getDefault())));

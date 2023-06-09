@@ -46,6 +46,13 @@ public class IntentBasedTestSupport {
     public static final int VALUE_DEFAULT_SAMPLE_RATE = 48000;
     public static final String VALUE_UNSPECIFIED = "unspecified";
 
+    public static final String KEY_OUT_USAGE = "out_usage";
+    public static final String VALUE_USAGE_MEDIA = "media";
+    public static final String VALUE_USAGE_VOICE_COMMUNICATION = "voice_communication";
+    public static final String VALUE_USAGE_ALARM = "alarm";
+    public static final String VALUE_USAGE_NOTIFICATION = "notification";
+    public static final String VALUE_USAGE_GAME = "game";
+
     public static final String KEY_IN_API = "in_api";
     public static final String KEY_OUT_API = "out_api";
     public static final String VALUE_API_AAUDIO = "aaudio";
@@ -136,6 +143,21 @@ public class IntentBasedTestSupport {
             return StreamConfiguration.SHARING_MODE_SHARED;
         } else {
             return StreamConfiguration.SHARING_MODE_EXCLUSIVE;
+        }
+    }
+    public static int getUsageFromText(String text) {
+        if (VALUE_USAGE_GAME.equals(text)) {
+            return StreamConfiguration.USAGE_GAME;
+        } else if (VALUE_USAGE_VOICE_COMMUNICATION.equals(text)) {
+            return StreamConfiguration.USAGE_VOICE_COMMUNICATION;
+        } else if (VALUE_USAGE_MEDIA.equals(text)) {
+            return StreamConfiguration.USAGE_MEDIA;
+        } else if (VALUE_USAGE_ALARM.equals(text)) {
+            return StreamConfiguration.USAGE_ALARM;
+        } else if (VALUE_USAGE_NOTIFICATION.equals(text)) {
+            return StreamConfiguration.USAGE_NOTIFICATION;
+        } else {
+            return StreamConfiguration.UNSPECIFIED;
         }
     }
 
@@ -277,6 +299,11 @@ public class IntentBasedTestSupport {
         text = bundle.getString(KEY_OUT_SHARING, VALUE_SHARING_EXCLUSIVE);
         int sharingMode = getSharingFromText(text);
         requestedOutConfig.setSharingMode(sharingMode);
+
+        text = bundle.getString(KEY_OUT_USAGE, VALUE_USAGE_MEDIA);
+        int usage = getUsageFromText(text);
+        requestedOutConfig.setUsage(usage);
+
 
     }
 
