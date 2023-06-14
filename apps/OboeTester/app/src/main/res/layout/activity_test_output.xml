@@ -156,7 +156,7 @@
             android:id="@+id/textVolumeSlider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Volume:100%" />
+            android:text="Amplitude:1.000" />
 
         <SeekBar
             android:id="@+id/faderVolumeSlider"

@@ -27,6 +27,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Test basic output.
@@ -126,9 +127,17 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         }
     }
 
-    private void setVolume(int volume) {
-        mAudioOutTester.setVolume(volume / 100.0f);
-        mVolumeTextView.setText("Volume:" + volume + "%");
+    private void setVolume(int progress) {
+        // Convert from (0, 100) range to (-100, 0).
+        double decibels = (progress - 100) / 2.0f;
+        double amplitude = Math.pow(10.0, decibels / 20.0);
+        // When the slider is all way to the left, set a zero amplitude.
+        if (progress == 0) {
+            amplitude = 0;
+        }
+        mVolumeTextView.setText("Amplitude:" + String.format(Locale.getDefault(), "%.3f",
+                amplitude));
+        mAudioOutTester.setAmplitude((float) amplitude);
     }
 
 

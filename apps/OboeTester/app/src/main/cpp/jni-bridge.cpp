@@ -87,7 +87,7 @@ Java_com_mobileer_oboetester_OboeAudioOutputStream_trigger(JNIEnv *env, jobject)
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioOutputStream_setToneType(JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_OboeAudioOutputStream_setAmplitude(JNIEnv *env, jobject, jdouble);
+Java_com_mobileer_oboetester_OboeAudioOutputStream_setAmplitude(JNIEnv *env, jobject, jfloat);
 
 /*********************************************************************************/
 /**********************  JNI Implementations *************************************/
@@ -603,8 +603,8 @@ Java_com_mobileer_oboetester_OboeAudioOutputStream_setSignalType(
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_OboeAudioOutputStream_setVolume(JNIEnv *env, jobject, jfloat volume) {
-    engine.getCurrentActivity()->setVolume(volume);
+Java_com_mobileer_oboetester_OboeAudioOutputStream_setAmplitude(JNIEnv *env, jobject, jfloat amplitude) {
+    engine.getCurrentActivity()->setAmplitude(amplitude);
 }
 
 JNIEXPORT jint JNICALL

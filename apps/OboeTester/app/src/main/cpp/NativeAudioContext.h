@@ -71,7 +71,7 @@
 #define NANOS_PER_MILLISECOND    (1000 * NANOS_PER_MICROSECOND)
 #define NANOS_PER_SECOND         (1000 * NANOS_PER_MILLISECOND)
 
-#define MILLIS_PER_SECOND     1000
+#define MILLISECONDS_PER_SECOND     1000
 
 #define SECONDS_TO_RECORD        10
 
@@ -283,7 +283,7 @@ public:
 
     virtual void setSignalType(int signalType) {}
 
-    virtual void setVolume(float volume) {}
+    virtual void setAmplitude(float amplitude) {}
 
     virtual int32_t saveWaveFile(const char *filename);
 
@@ -438,11 +438,9 @@ public:
         mSignalType = (SignalType) signalType;
     }
 
-    void setVolume(float volume) override {
-        mVolumeScalar = volume;
-        for (int i = 0; i < mVolumeRamps.size(); i++) {
-            mVolumeRamps[i]->setTarget(mVolumeScalar);
-        }
+    void setAmplitude(float amplitude) override {
+        mAmplitude = amplitude;
+        mVolumeRamp->setTarget(mAmplitude);
     }
 
 protected:
@@ -459,8 +457,8 @@ protected:
     class WhiteNoise                 mWhiteNoise;
 
     static constexpr int             kRampMSec = 10; // for volume control
-    float                            mVolumeScalar = 1.0f;
-    std::vector<std::unique_ptr<RampLinear>> mVolumeRamps;
+    float                            mAmplitude = 1.0f;
+    std::shared_ptr<RampLinear> mVolumeRamp;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
