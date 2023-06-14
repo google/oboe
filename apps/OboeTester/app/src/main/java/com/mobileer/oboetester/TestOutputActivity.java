@@ -128,15 +128,15 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     private void setVolume(int progress) {
-        // Convert from (0, 100) range to (-100, 0).
-        double decibels = (progress - 100) / 2.0f;
+        // Convert from (0, 500) range to (-50, 0).
+        double decibels = (progress - 500) / 10.0f;
         double amplitude = Math.pow(10.0, decibels / 20.0);
         // When the slider is all way to the left, set a zero amplitude.
         if (progress == 0) {
             amplitude = 0;
         }
-        mVolumeTextView.setText("Amplitude:" + String.format(Locale.getDefault(), "%.3f",
-                amplitude));
+        mVolumeTextView.setText("Volume(dB): " + String.format(Locale.getDefault(), "%.1f",
+                decibels));
         mAudioOutTester.setAmplitude((float) amplitude);
     }
 

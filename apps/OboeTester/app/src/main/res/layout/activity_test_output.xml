@@ -156,14 +156,14 @@
             android:id="@+id/textVolumeSlider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Amplitude:1.000" />
+            android:text="Volume(dB): 0.0" />
 
         <SeekBar
             android:id="@+id/faderVolumeSlider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="100" />
+            android:max="500"
+            android:progress="500" />
     </LinearLayout>
 
     <LinearLayout

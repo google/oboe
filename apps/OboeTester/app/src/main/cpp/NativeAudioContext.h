@@ -440,7 +440,9 @@ public:
 
     void setAmplitude(float amplitude) override {
         mAmplitude = amplitude;
-        mVolumeRamp->setTarget(mAmplitude);
+        if (mVolumeRamp) {
+            mVolumeRamp->setTarget(mAmplitude);
+        }
     }
 
 protected:
