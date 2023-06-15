@@ -31,4 +31,6 @@ public class OboeAudioOutputStream extends OboeAudioStream {
     public native void setChannelEnabled(int channelIndex, boolean enabled);
 
     public native void setSignalType(int type);
+
+    public native void setAmplitude(float amplitude);
 }

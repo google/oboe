@@ -153,6 +153,24 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <TextView
+            android:id="@+id/textVolumeSlider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Volume(dB): 0.0" />
+
+        <SeekBar
+            android:id="@+id/faderVolumeSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="500"
+            android:progress="500" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Signal:" />

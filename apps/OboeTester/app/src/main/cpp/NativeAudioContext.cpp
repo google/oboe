@@ -346,6 +346,7 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     ActivityContext::close(streamIndex);
     manyToMulti.reset(nullptr);
     monoToMulti.reset(nullptr);
+    mVolumeRamp.reset();
     mSinkFloat.reset();
     mSinkI16.reset();
     mSinkI24.reset();
@@ -387,12 +388,17 @@ void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
 void ActivityTestOutput::configureAfterOpen() {
     manyToMulti = std::make_unique<ManyToMultiConverter>(mChannelCount);
 
+    std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
+
+    mVolumeRamp = std::make_shared<RampLinear>(mChannelCount);
+    mVolumeRamp->setLengthInFrames(kRampMSec * outputStream->getSampleRate() /
+            MILLISECONDS_PER_SECOND);
+    mVolumeRamp->setTarget(mAmplitude);
+
     mSinkFloat = std::make_shared<SinkFloat>(mChannelCount);
     mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
     mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
     mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
-
-    std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
 
     mTriangleOscillator.setSampleRate(outputStream->getSampleRate());
     mTriangleOscillator.frequency.setValue(1.0/kSweepPeriod);
@@ -424,10 +430,12 @@ void ActivityTestOutput::configureAfterOpen() {
 
     mWhiteNoise.amplitude.setValue(0.5);
 
-    manyToMulti->output.connect(&(mSinkFloat.get()->input));
-    manyToMulti->output.connect(&(mSinkI16.get()->input));
-    manyToMulti->output.connect(&(mSinkI24.get()->input));
-    manyToMulti->output.connect(&(mSinkI32.get()->input));
+    manyToMulti->output.connect(&(mVolumeRamp.get()->input));
+
+    mVolumeRamp->output.connect(&(mSinkFloat.get()->input));
+    mVolumeRamp->output.connect(&(mSinkI16.get()->input));
+    mVolumeRamp->output.connect(&(mSinkI24.get()->input));
+    mVolumeRamp->output.connect(&(mSinkI32.get()->input));
 
     mSinkFloat->pullReset();
     mSinkI16->pullReset();
