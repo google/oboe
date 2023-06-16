@@ -84,7 +84,7 @@ public class AudioDeviceSpinner extends Spinner {
 
         // Add a default entry to the list and select it
         mDeviceAdapter.add(new AudioDeviceListEntry(AUTO_SELECT_DEVICE_ID,
-                mContext.getString(R.string.auto_select)));
+                mContext.getString(R.string.auto_select), null));
         setSelection(0);
 
     }

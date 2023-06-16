@@ -126,6 +126,6 @@ public class CommunicationDeviceSpinner extends Spinner {
 
     private void addDefaultDevicesOptions() {
         mDeviceAdapter.add(new AudioDeviceListEntry(POS_CLEAR,
-                mContext.getString(R.string.clear_comm)));
+                mContext.getString(R.string.clear_comm), null));
     }
 }
