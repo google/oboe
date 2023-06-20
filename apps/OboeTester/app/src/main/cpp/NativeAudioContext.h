@@ -126,6 +126,7 @@ public:
              jint inputPreset,
              jint usage,
              jint contentType,
+             jint bufferCapacityInFrames,
              jint deviceId,
              jint sessionId,
              jboolean channelConversionAllowed,
