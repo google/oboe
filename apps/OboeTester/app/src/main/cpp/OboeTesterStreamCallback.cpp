@@ -15,12 +15,16 @@
  */
 
 
+#include "synth/IncludeMeOnce.h"
+#include "OboeStreamCallbackProxy.h"
 #include "AudioStreamGateway.h"
 #include "oboe/Oboe.h"
 #include "common/OboeDebug.h"
 #include <sched.h>
 #include <cstring>
 #include "OboeTesterStreamCallback.h"
+
+int32_t OboeTesterStreamCallback::mHangTimeMillis = 0;
 
 // Print if scheduler changes.
 void OboeTesterStreamCallback::printScheduler() {
@@ -37,4 +41,42 @@ void OboeTesterStreamCallback::printScheduler() {
         mPreviousScheduler = scheduler;
     }
 #endif
+}
+
+// Sleep to cause an XRun. Then reschedule.
+void OboeTesterStreamCallback::maybeHang(const int64_t startNanos) {
+    if (mHangTimeMillis == 0) return;
+
+    if (startNanos > mNextTimeToHang) {
+        LOGD("%s() start sleeping", __func__);
+        // Take short naps until it is time to wake up.
+        int64_t nowNanos = startNanos;
+        int64_t wakeupNanos = startNanos + (mHangTimeMillis * 1000L * 1000L);
+        while (nowNanos < wakeupNanos && mHangTimeMillis > 0) {
+            int32_t sleepTimeMicros = (int32_t) ((wakeupNanos - nowNanos) / 1000);
+            // Don't usleep for more than a second.
+            sleepTimeMicros = std::min(100 * 1000, sleepTimeMicros);
+            if (sleepTimeMicros == 0) break;
+            usleep(sleepTimeMicros);
+            nowNanos = getNanoseconds();
+        }
+        // Calculate when we hang again.
+        const int32_t minDurationMillis = 500;
+        const int32_t maxDurationMillis = std::max(10000, mHangTimeMillis * 2);
+        int32_t durationMillis = mHangTimeMillis * 10;
+        durationMillis = std::max(minDurationMillis, std::min(maxDurationMillis, durationMillis));
+        mNextTimeToHang = startNanos + (durationMillis * 1000L * 1000L);
+        LOGD("%s() slept for %d msec, durationMillis = %d", __func__,
+             (int)((nowNanos - startNanos) / 1e6L),
+             durationMillis);
+    }
+}
+
+int64_t OboeTesterStreamCallback::getNanoseconds(clockid_t clockId) {
+    struct timespec time;
+    int result = clock_gettime(clockId, &time);
+    if (result < 0) {
+        return result;
+    }
+    return (time.tv_sec * 1e9) + time.tv_nsec;
 }

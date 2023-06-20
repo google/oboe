@@ -572,6 +572,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_setCallbackReturnStop(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setHangTimeMillis(JNIEnv *env, jclass type,
+                                                                   jint hangTimeMillis) {
+    OboeTesterStreamCallback::setHangTimeMillis(hangTimeMillis);
+}
+
+JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize) {
     ActivityContext::callbackSize = callbackSize;

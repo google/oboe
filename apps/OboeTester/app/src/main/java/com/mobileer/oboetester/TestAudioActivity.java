@@ -31,12 +31,16 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.mobileer.audio_device.CommunicationDeviceSpinner;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -90,6 +94,8 @@ abstract class TestAudioActivity extends Activity {
     private Button mCloseButton;
     private MyStreamSniffer mStreamSniffer;
     private CheckBox mCallbackReturnStopBox;
+    private Spinner mHangTimeSpinner;
+
     // Only set in some activities
     protected CommunicationDeviceView mCommunicationDeviceView;
     private int mSampleRate;
@@ -437,6 +443,24 @@ abstract class TestAudioActivity extends Activity {
         }
         OboeAudioStream.setCallbackReturnStop(false);
 
+        mHangTimeSpinner = (Spinner) findViewById(R.id.spinner_hang_time);
+        if (mHangTimeSpinner != null) {
+            mHangTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    String hangTimeText = (String) mHangTimeSpinner.getAdapter().getItem(position);
+                    int hangTimeMillis = Integer.parseInt(hangTimeText);
+                    Log.d(TAG, "Hang Time = " + hangTimeMillis + " msec");
+
+                    OboeAudioStream.setHangTimeMillis(hangTimeMillis);
+                }
+
+                public void onNothingSelected(AdapterView<?> parent) {
+                    OboeAudioStream.setHangTimeMillis(0);
+                }
+            });
+        }
+        OboeAudioStream.setHangTimeMillis(0);
+
         mStreamSniffer = new MyStreamSniffer();
     }
 
@@ -487,8 +511,16 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
+    void clearHangTime() {
+        OboeAudioStream.setHangTimeMillis(0);
+        if (mHangTimeSpinner != null) {
+            mHangTimeSpinner.setSelection(0);
+        }
+    }
+
     public void startAudio(View view) {
         Log.i(TAG, "startAudio() called =======================================");
+        clearHangTime(); // start running
         try {
             startAudio();
         } catch (Exception e) {

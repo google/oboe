@@ -17,18 +17,7 @@
 #include "common/OboeDebug.h"
 #include "OboeStreamCallbackProxy.h"
 
-#include "synth/IncludeMeOnce.h"
-
 bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
-
-int64_t OboeStreamCallbackProxy::getNanoseconds(clockid_t clockId) {
-    struct timespec time;
-    int result = clock_gettime(clockId, &time);
-    if (result < 0) {
-        return result;
-    }
-    return (time.tv_sec * 1e9) + time.tv_nsec;
-}
 
 oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         oboe::AudioStream *audioStream,
@@ -36,6 +25,8 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         int numFrames) {
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
+
+    maybeHang(startTimeNanos);
 
     if (mCpuAffinityMask != mPreviousMask) {
         uint32_t mask = mCpuAffinityMask;
@@ -62,6 +53,7 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         mSynthWorkload.renderStereo(buffer, numFrames);
     }
 
+    // Measure CPU load.
     int64_t currentTimeNanos = getNanoseconds();
     // Sometimes we get a short callback when doing sample rate conversion.
     // Just ignore those to avoid noise.

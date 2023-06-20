@@ -19,8 +19,11 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/sysinfo.h>
 #include "flowgraph/FlowGraphNode.h"
 #include "oboe/Oboe.h"
+#include "synth/Synthesizer.h"
+#include "synth/SynthTools.h"
 
 class OboeTesterStreamCallback : public oboe::AudioStreamCallback {
 public:
@@ -31,10 +34,24 @@ public:
         mPreviousScheduler = -1;
     }
 
-protected:
-    void    printScheduler();
+    static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
 
-    int     mPreviousScheduler = -1;
+    /**
+     * Specify a sleep time that will hang the audio periodically.
+     *
+     * @param hangTimeMillis
+     */
+    static void setHangTimeMillis(int hangTimeMillis) {
+        mHangTimeMillis = hangTimeMillis;
+    }
+
+protected:
+    void        printScheduler();
+    void        maybeHang(int64_t nowNanos);
+
+    int         mPreviousScheduler = -1;
+    static int  mHangTimeMillis;
+    int64_t     mNextTimeToHang = 0;
 };
 
 

@@ -172,6 +172,20 @@
         <item>White Noise</item>
     </string-array>
 
+    <string name="hang_prompt">, Hang(ms)</string>
+    <string-array name="hang_times">
+        <item>0</item>
+        <item>4</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>100</item>
+        <item>300</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+    </string-array>
+
     <string name="synth_sender_text">Select Sender for Synth</string>
     <string name="error_port_busy">Selected port is in use or unavailable.</string>
     <string name="port_open_ok">Port opened OK.</string>
