@@ -37,10 +37,10 @@ class DrumPlayer {
 
         // initial pan position for each drum sample
         val PAN_BASSDRUM: Float = 0f         // Dead Center
-        val PAN_SNAREDRUM: Float = 0.25f     // A little Right
+        val PAN_SNAREDRUM: Float = -0.75f    // Mostly Left
         val PAN_CRASHCYMBAL: Float = -0.75f  // Mostly Left
         val PAN_RIDECYMBAL: Float = 1.0f     // Hard Right
-        val PAN_MIDTOM: Float = -0.75f       // Mostly Left
+        val PAN_MIDTOM: Float = 0.25f        // A little Right
         val PAN_LOWTOM: Float = 0.75f        // Mostly Right
         val PAN_HIHATOPEN: Float = -1.0f     // Hard Left
         val PAN_HIHATCLOSED: Float = -1.0f   // Hard Left
