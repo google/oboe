@@ -381,7 +381,6 @@ abstract class TestAudioActivity extends Activity {
         if (streamContext.configurationView != null) {
             streamContext.configurationView.setOutput(false);
         }
-        streamContext.tester = AudioInputTester.getInstance();
         mStreamContexts.add(streamContext);
         return streamContext;
     }
