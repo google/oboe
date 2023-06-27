@@ -20,7 +20,21 @@
 oboe::Result  FullDuplexEcho::start() {
     int32_t delayFrames = (int32_t) (kMaxDelayTimeSeconds * getOutputStream()->getSampleRate());
     mDelayLine = std::make_unique<InterpolatingDelayLine>(delayFrames);
+    // Use peak detector for input streams
+    mNumChannels = getInputStream()->getChannelCount();
+    mPeakDetectors = std::make_unique<PeakDetector[]>(mNumChannels);
     return FullDuplexStream::start();
+}
+
+double FullDuplexEcho::getPeakLevel(int index) {
+    if (mPeakDetectors == nullptr) {
+        LOGE("%s() called before setup()", __func__);
+        return -1.0;
+    } else if (index < 0 || index >= mNumChannels) {
+        LOGE("%s(), index out of range, 0 <= %d < %d", __func__, index, mNumChannels.load());
+        return -2.0;
+    }
+    return mPeakDetectors[index].getLevel();
 }
 
 oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
@@ -40,6 +54,12 @@ oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
     float delayFrames = mDelayTimeSeconds * getOutputStream()->getSampleRate();
     while (framesToEcho-- > 0) {
         *outputFloat = mDelayLine->process(delayFrames, *inputFloat); // mono delay
+
+        for (int iChannel = 0; iChannel < inputStride; iChannel++) {
+            float sample = * (inputFloat + iChannel);
+            mPeakDetectors[iChannel].process(sample);
+        }
+
         inputFloat += inputStride;
         outputFloat += outputStride;
     }

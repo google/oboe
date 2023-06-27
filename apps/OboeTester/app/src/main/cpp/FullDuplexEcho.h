@@ -22,6 +22,7 @@
 
 #include "oboe/Oboe.h"
 #include "FullDuplexStream.h"
+#include "analyzer/LatencyAnalyzer.h"
 #include "InterpolatingDelayLine.h"
 
 class FullDuplexEcho : public FullDuplexStream {
@@ -43,6 +44,8 @@ public:
 
     oboe::Result start() override;
 
+    double getPeakLevel(int index);
+
     void setDelayTime(double delayTimeSeconds) {
         mDelayTimeSeconds = delayTimeSeconds;
     }
@@ -51,6 +54,9 @@ private:
     std::unique_ptr<InterpolatingDelayLine> mDelayLine;
     static constexpr double kMaxDelayTimeSeconds = 4.0;
     double mDelayTimeSeconds = kMaxDelayTimeSeconds;
+    std::atomic<int32_t> mNumChannels{0};
+    std::unique_ptr<PeakDetector[]> mPeakDetectors;
+
 };
 
 

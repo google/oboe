@@ -536,6 +536,10 @@ public:
         }
     }
 
+    double getPeakLevel(int index) override {
+        return mFullDuplexEcho->getPeakLevel(index);
+    }
+
     FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
         return (FullDuplexAnalyzer *) mFullDuplexEcho.get();
     }
