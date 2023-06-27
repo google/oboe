@@ -65,7 +65,8 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner mChannelMaskSpinner;
     private TextView mActualChannelMaskView;
     private TextView mActualFormatView;
-
+    private Spinner  mCapacitySpinner;
+    private TextView mActualCapacityView;
     private TableRow mInputPresetTableRow;
     private Spinner  mInputPresetSpinner;
     private TextView mActualInputPresetView;
@@ -290,6 +291,10 @@ public class StreamConfigurationView extends LinearLayout {
         });
         mActualFormatView = (TextView) findViewById(R.id.actualAudioFormat);
         mFormatSpinner = (Spinner) findViewById(R.id.spinnerFormat);
+
+        mActualCapacityView = (TextView) findViewById(R.id.actualCapacity);
+        mCapacitySpinner = (Spinner) findViewById(R.id.spinnerCapacity);
+
         mRateConversionQualitySpinner = (Spinner) findViewById(R.id.spinnerSRCQuality);
 
         mActualPerformanceView = (TextView) findViewById(R.id.actualPerformanceMode);
@@ -397,6 +402,10 @@ public class StreamConfigurationView extends LinearLayout {
             Log.d(TAG, "Set channel count as " + mChannelCountSpinner.getSelectedItemPosition());
         }
 
+        text = mCapacitySpinner.getSelectedItem().toString();
+        int bufferCapacity = Integer.parseInt(text);
+        config.setBufferCapacityInFrames(bufferCapacity);
+
         config.setMMap(mRequestedMMapView.isChecked());
         config.setChannelConversionAllowed(mChannelConversionBox.isChecked());
         config.setFormatConversionAllowed(mFormatConversionBox.isChecked());
@@ -420,6 +429,7 @@ public class StreamConfigurationView extends LinearLayout {
         mFormatConversionBox.setEnabled(enabled);
         mChannelCountSpinner.setEnabled(enabled);
         mChannelMaskSpinner.setEnabled(enabled);
+        mCapacitySpinner.setEnabled(enabled);
         mInputPresetSpinner.setEnabled(enabled);
         mUsageSpinner.setEnabled(enabled);
         mContentTypeSpinner.setEnabled(enabled);
@@ -467,12 +477,12 @@ public class StreamConfigurationView extends LinearLayout {
         mActualSessionIdView.setText("S#: " + actualConfiguration.getSessionId());
         value = actualConfiguration.getChannelMask();
         mActualChannelMaskView.setText(StreamConfiguration.convertChannelMaskToText(value));
+        mActualCapacityView.setText(actualConfiguration.getBufferCapacityInFrames() + "");
 
         boolean isMMap = actualConfiguration.isMMap();
 
         String msg = "";
         msg += "burst = " + actualConfiguration.getFramesPerBurst();
-        msg += ", capacity = " + actualConfiguration.getBufferCapacityInFrames();
         msg += ", devID = " + actualConfiguration.getDeviceId();
         msg += ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy");
         msg += (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "");

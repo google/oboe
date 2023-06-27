@@ -162,6 +162,7 @@ int ActivityContext::open(jint nativeApi,
                           jint inputPreset,
                           jint usage,
                           jint contentType,
+                          jint bufferCapacityInFrames,
                           jint deviceId,
                           jint sessionId,
                           jboolean channelConversionAllowed,
@@ -201,6 +202,7 @@ int ActivityContext::open(jint nativeApi,
             ->setInputPreset((oboe::InputPreset)inputPreset)
             ->setUsage((oboe::Usage)usage)
             ->setContentType((oboe::ContentType)contentType)
+            ->setBufferCapacityInFrames(bufferCapacityInFrames)
             ->setDeviceId(deviceId)
             ->setSessionId((oboe::SessionId) sessionId)
             ->setSampleRate(sampleRate)
