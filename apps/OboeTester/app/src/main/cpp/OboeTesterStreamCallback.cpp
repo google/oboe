@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-
-#include "synth/IncludeMeOnce.h"
-#include "OboeStreamCallbackProxy.h"
-#include "AudioStreamGateway.h"
-#include "oboe/Oboe.h"
-#include "common/OboeDebug.h"
 #include <sched.h>
 #include <cstring>
+
+#include "AudioStreamGateway.h"
+#include "common/OboeDebug.h"
+#include "oboe/Oboe.h"
+#include "OboeStreamCallbackProxy.h"
 #include "OboeTesterStreamCallback.h"
+#include "OboeTools.h"
+#include "synth/IncludeMeOnce.h"
 
 int32_t OboeTesterStreamCallback::mHangTimeMillis = 0;
 
@@ -51,12 +52,15 @@ void OboeTesterStreamCallback::maybeHang(const int64_t startNanos) {
         LOGD("%s() start sleeping", __func__);
         // Take short naps until it is time to wake up.
         int64_t nowNanos = startNanos;
-        int64_t wakeupNanos = startNanos + (mHangTimeMillis * 1000L * 1000L);
+        int64_t wakeupNanos = startNanos + (mHangTimeMillis * NANOS_PER_MILLISECOND);
         while (nowNanos < wakeupNanos && mHangTimeMillis > 0) {
             int32_t sleepTimeMicros = (int32_t) ((wakeupNanos - nowNanos) / 1000);
-            // Don't usleep for more than a second.
-            sleepTimeMicros = std::min(100 * 1000, sleepTimeMicros);
             if (sleepTimeMicros == 0) break;
+            // The usleep() function can fail if it sleeps for more than one second.
+            // So sleep for several small intervals.
+            // This also allows us to exit the loop if mHangTimeMillis gets set to zero.
+            const int32_t maxSleepTimeMicros =  100 * 1000;
+            sleepTimeMicros = std::min(maxSleepTimeMicros, sleepTimeMicros);
             usleep(sleepTimeMicros);
             nowNanos = getNanoseconds();
         }
@@ -65,7 +69,7 @@ void OboeTesterStreamCallback::maybeHang(const int64_t startNanos) {
         const int32_t maxDurationMillis = std::max(10000, mHangTimeMillis * 2);
         int32_t durationMillis = mHangTimeMillis * 10;
         durationMillis = std::max(minDurationMillis, std::min(maxDurationMillis, durationMillis));
-        mNextTimeToHang = startNanos + (durationMillis * 1000L * 1000L);
+        mNextTimeToHang = startNanos + (durationMillis * NANOS_PER_MILLISECOND);
         LOGD("%s() slept for %d msec, durationMillis = %d", __func__,
              (int)((nowNanos - startNanos) / 1e6L),
              durationMillis);

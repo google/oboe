@@ -52,6 +52,7 @@
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
 #include "OboeStreamCallbackProxy.h"
+#include "OboeTools.h"
 #include "PlayRecordingCallback.h"
 #include "SawPingGenerator.h"
 
@@ -67,11 +68,6 @@
 #define AMPLITUDE_SAW_PING       0.8
 #define AMPLITUDE_IMPULSE        0.7
 
-#define NANOS_PER_MICROSECOND    ((int64_t) 1000)
-#define NANOS_PER_MILLISECOND    (1000 * NANOS_PER_MICROSECOND)
-#define NANOS_PER_SECOND         (1000 * NANOS_PER_MILLISECOND)
-
-#define MILLISECONDS_PER_SECOND     1000
 
 #define SECONDS_TO_RECORD        10
 
