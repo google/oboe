@@ -34,6 +34,10 @@ public class AudioDeviceListEntry {
 
     private AudioDeviceInfo mDeviceInfo;
 
+    public AudioDeviceListEntry(int deviceId, String deviceName) {
+        this(deviceId, deviceName, null);
+    }
+
     public AudioDeviceListEntry(int deviceId, String deviceName, AudioDeviceInfo deviceInfo) {
         mId = deviceId;
         mName = deviceName;
