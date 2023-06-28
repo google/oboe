@@ -515,9 +515,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 int[] channelMasks = deviceInfo.getChannelMasks();
                 if (channelMasks.length > 0) {
                     for (int channelMask : channelMasks) {
-                        // The native channel mask is its channel mask shifted right by 2 bits.
-                        // See AudioFormat.convertChannelOutMaskToNativeMask()
-                        int nativeChannelMask = channelMask >> 2;
+                        int nativeChannelMask =
+                                convertJavaChannelMaskToNativeChannelMask(channelMask);
                         // Test higher channel counts.
                         log("nativeChannelMask = " + nativeChannelMask + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
@@ -535,6 +534,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         if (numTested == 0) {
             log("NO INPUT DEVICE FOUND!\n");
         }
+    }
+
+    // The native channel mask is its channel mask shifted right by 2 bits.
+    // See AudioFormat.convertChannelOutMaskToNativeMask()
+    int convertJavaChannelMaskToNativeChannelMask(int javaChannelMask) {
+        return javaChannelMask >> 2;
     }
 
     void logOneLineSummary(TestResult testResult) {
@@ -653,10 +658,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 int[] channelMasks = deviceInfo.getChannelMasks();
                 if (channelMasks.length > 0) {
                     for (int channelMask : channelMasks) {
-                        // The native channel mask is its channel mask shifted right by 2 bits.
-                        // See AudioFormat.convertChannelOutMaskToNativeMask()
-                        int nativeChannelMask = channelMask >> 2;
-                        // Test higher channel counts.
+                        int nativeChannelMask =
+                                convertJavaChannelMaskToNativeChannelMask(channelMask);
                         log("nativeChannelMask = " + nativeChannelMask + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
