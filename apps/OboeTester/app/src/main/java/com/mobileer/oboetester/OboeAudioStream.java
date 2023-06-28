@@ -306,6 +306,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     public static native void setCallbackReturnStop(boolean b);
 
+    public static native void setHangTimeMillis(int hangTimeMillis);
+
     public static native void setUseCallback(boolean checked);
 
     public static native void setCallbackSize(int callbackSize);

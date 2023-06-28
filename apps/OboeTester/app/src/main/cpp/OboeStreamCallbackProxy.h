@@ -24,6 +24,7 @@
 #include "oboe/Oboe.h"
 #include "synth/Synthesizer.h"
 #include "synth/SynthTools.h"
+#include "OboeTesterStreamCallback.h"
 
 class DoubleStatistics {
 public:
@@ -133,7 +134,7 @@ private:
     int                      mOffFrames = (int) (0.3 * 48000);
 };
 
-class OboeStreamCallbackProxy : public oboe::AudioStreamCallback {
+class OboeStreamCallbackProxy : public OboeTesterStreamCallback {
 public:
 
     void setCallback(oboe::AudioStreamCallback *callback) {
@@ -207,8 +208,6 @@ public:
         return mStatistics.dump();
     }
 
-    static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC);
-
     /**
      * @param cpuIndex
      * @return 0 on success or a negative errno
@@ -250,11 +249,13 @@ private:
 
     oboe::AudioStreamCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
+
     int64_t                    mCallbackCount = 0;
     std::atomic<int32_t>       mFramesPerCallback{0};
 
     std::atomic<uint32_t>      mCpuAffinityMask{0};
     std::atomic<uint32_t>      mPreviousMask{0};
+
 };
 
 #endif //NATIVEOBOE_OBOESTREAMCALLBACKPROXY_H
