@@ -1,6 +1,7 @@
 package com.mobileer.oboetester;
 
 import android.app.Activity;
+import android.media.AudioDeviceInfo;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -198,5 +199,9 @@ public class TapToToneTester {
         });
 
         mArmed = true;
+    }
+
+    void setInputDevice(AudioDeviceInfo deviceInfo) {
+        mRecorder.setInputDevice(deviceInfo);
     }
 }

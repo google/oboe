@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -40,6 +41,8 @@ class AudioRecordThread implements Runnable {
     private int mTaskCountdown;
     private boolean mCaptureEnabled = true;
 
+    private AudioDeviceInfo mDeviceInfo;
+
     public AudioRecordThread(int frameRate, int channelCount, int maxFrames) {
         mSampleRate = frameRate;
         mChannelCount = channelCount;
@@ -59,6 +62,7 @@ class AudioRecordThread implements Runnable {
                 channelConfig,
                 audioFormat,
                 2 * minRecordBuffSizeInBytes);
+        mRecorder.setPreferredDevice(mDeviceInfo);
         if (mRecorder.getState() == AudioRecord.STATE_UNINITIALIZED) {
             throw new RuntimeException("Could not make the AudioRecord - UNINITIALIZED");
         }
@@ -159,4 +163,7 @@ class AudioRecordThread implements Runnable {
         return mCaptureBuffer.readMostRecent(buffer);
     }
 
+    public void setInputDevice(AudioDeviceInfo deviceInfo) {
+        mDeviceInfo = deviceInfo;
+    }
 }
