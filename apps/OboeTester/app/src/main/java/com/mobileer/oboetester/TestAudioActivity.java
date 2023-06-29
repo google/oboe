@@ -95,6 +95,7 @@ abstract class TestAudioActivity extends Activity {
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
+    private static boolean mShouldKeepScreenOn;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -177,9 +178,15 @@ abstract class TestAudioActivity extends Activity {
         mBackgroundEnabled = enabled;
     }
 
+    public static void setShouldKeepScreenOn(boolean enabled) {
+        mShouldKeepScreenOn = enabled;
+    }
+
     public static boolean isBackgroundEnabled() {
         return mBackgroundEnabled;
     }
+
+    public static boolean shouldKeepScreenOn() { return mShouldKeepScreenOn; }
 
     public void onStreamClosed() {
     }
@@ -233,6 +240,14 @@ abstract class TestAudioActivity extends Activity {
         // TODO Use LifeCycleObserver instead of this.
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStart();
+        }
+
+        if (mShouldKeepScreenOn) {
+            getWindow()
+                    .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow()
+                    .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 

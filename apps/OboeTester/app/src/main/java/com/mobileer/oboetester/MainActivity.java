@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
@@ -60,6 +61,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private Bundle mBundleFromIntent;
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
+    private CheckBox mKeepScreenOnCheckBox;
     private static String mVersionText;
 
     @Override
@@ -111,6 +113,7 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(false);
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
+        mKeepScreenOnCheckBox = (CheckBox) findViewById(R.id.boxKeepScreenOn);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
@@ -253,6 +256,7 @@ public class MainActivity extends BaseOboeTesterActivity {
 
         NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
+        TestAudioActivity.setShouldKeepScreenOn(mKeepScreenOnCheckBox.isChecked());
     }
 
     @Override
@@ -264,6 +268,17 @@ public class MainActivity extends BaseOboeTesterActivity {
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());
+    }
+
+    public void onKeepScreenOnClicked(View view) {
+        boolean checked = ((CheckBox) view).isChecked();
+        if (checked) {
+            getWindow()
+                    .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow()
+                    .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     private void updateCallbackSize() {

@@ -202,6 +202,17 @@
         app:layout_constraintStart_toStartOf="@+id/boxEnableWorkarounds"
         app:layout_constraintTop_toBottomOf="@+id/boxEnableWorkarounds" />
 
+    <CheckBox
+        android:id="@+id/boxKeepScreenOn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:checked="false"
+        android:onClick="onKeepScreenOnClicked"
+        android:text="keep screen on"
+        app:layout_constraintStart_toStartOf="@+id/boxEnableBackground"
+        app:layout_constraintTop_toBottomOf="@+id/boxEnableBackground" />
+
 
     <TextView
         android:id="@+id/textView2"
@@ -209,7 +220,7 @@
         android:layout_height="wrap_content"
         android:text="Mode:"
         app:layout_constraintBaseline_toBaselineOf="@+id/spinnerAudioMode"
-        app:layout_constraintStart_toStartOf="@+id/boxEnableBackground" />
+        app:layout_constraintStart_toStartOf="@+id/boxKeepScreenOn" />
 
     <Spinner
         android:id="@+id/spinnerAudioMode"
@@ -218,7 +229,7 @@
         android:entries="@array/audio_modes"
         android:prompt="@string/audio_mode_prompt"
         app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/boxEnableBackground" />
+        app:layout_constraintTop_toBottomOf="@+id/boxKeepScreenOn" />
 
     <TextView
         android:id="@+id/deviceView"
