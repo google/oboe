@@ -34,6 +34,7 @@ oboe::DataCallbackResult InputStreamCallbackAnalyzer::onAudioReady(
         int numFrames) {
     int32_t channelCount = audioStream->getChannelCount();
 
+    maybeHang(getNanoseconds());
     printScheduler();
     mInputConverter->convertToInternalOutput(numFrames * channelCount, audioData);
     float *floatData = (float *) mInputConverter->getOutputBuffer();

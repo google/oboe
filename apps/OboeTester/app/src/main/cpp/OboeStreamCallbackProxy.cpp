@@ -26,8 +26,6 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
 
-    maybeHang(startTimeNanos);
-
     if (mCpuAffinityMask != mPreviousMask) {
         uint32_t mask = mCpuAffinityMask;
         applyCpuAffinityMask(mask);
