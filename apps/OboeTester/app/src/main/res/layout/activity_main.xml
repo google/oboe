@@ -207,7 +207,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:checked="false"
+        android:checked="true"
         android:onClick="onKeepScreenOnClicked"
         android:text="keep screen on"
         app:layout_constraintStart_toStartOf="@+id/boxEnableBackground"
