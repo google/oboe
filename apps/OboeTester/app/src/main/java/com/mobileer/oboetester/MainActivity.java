@@ -114,6 +114,7 @@ public class MainActivity extends BaseOboeTesterActivity {
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
         mKeepScreenOnCheckBox = (CheckBox) findViewById(R.id.boxKeepScreenOn);
+        keepScreenOn(((CheckBox) mKeepScreenOnCheckBox).isChecked());
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY);
@@ -271,14 +272,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     }
 
     public void onKeepScreenOnClicked(View view) {
-        boolean checked = ((CheckBox) view).isChecked();
-        if (checked) {
-            getWindow()
-                    .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        } else {
-            getWindow()
-                    .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
+        keepScreenOn(((CheckBox) view).isChecked());
     }
 
     private void updateCallbackSize() {
@@ -294,4 +288,13 @@ public class MainActivity extends BaseOboeTesterActivity {
         OboeAudioStream.setCallbackSize(callbackSize);
     }
 
+    void keepScreenOn(boolean enabled) {
+        if (enabled) {
+            getWindow()
+                    .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow()
+                    .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
 }

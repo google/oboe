@@ -242,7 +242,7 @@ abstract class TestAudioActivity extends Activity {
             mCommunicationDeviceView.onStart();
         }
 
-        if (mShouldKeepScreenOn) {
+        if (shouldKeepScreenOn()) {
             getWindow()
                     .addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
