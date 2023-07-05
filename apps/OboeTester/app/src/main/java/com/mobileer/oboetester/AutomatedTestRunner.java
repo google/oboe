@@ -184,8 +184,9 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private void stopAutoThread() {
         try {
             if (mAutoThread != null) {
-                log("Disable background test thread.");
-                new RuntimeException("Disable background test thread.").printStackTrace();
+                Log.d(TestAudioActivity.TAG,
+                        "Who called stopAutoThread()?",
+                        new RuntimeException("Just for debugging."));
                 mThreadEnabled = false;
                 mAutoThread.interrupt();
                 mAutoThread.join(100);
