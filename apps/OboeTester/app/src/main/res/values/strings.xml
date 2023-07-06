@@ -6,6 +6,7 @@
     <string name="tap_help">Click START button!</string>
     <string name="openAudio">Open</string>
     <string name="startAudio">Start</string>
+    <string name="flushAudio">Flush</string>
     <string name="pauseAudio">Pause</string>
     <string name="stopAudio">Stop</string>
     <string name="releaseAudio">Release</string>
