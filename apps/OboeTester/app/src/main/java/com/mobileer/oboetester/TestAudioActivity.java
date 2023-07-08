@@ -475,8 +475,8 @@ abstract class TestAudioActivity extends Activity {
     }
 
     protected void showErrorToast(String message) {
+        Log.e(TAG, "showErrorToast(\"" + message + "\")");
         String text = "Error: " + message;
-        Log.e(TAG, text);
         showToast(text);
     }
 
@@ -506,7 +506,7 @@ abstract class TestAudioActivity extends Activity {
         try {
             openAudio();
         } catch (Exception e) {
-            showErrorToast(e.getMessage());
+            showErrorToast("openAudio() caught " + e.getMessage());
         }
     }
 
@@ -523,7 +523,7 @@ abstract class TestAudioActivity extends Activity {
         try {
             startAudio();
         } catch (Exception e) {
-            showErrorToast(e.getMessage());
+            showErrorToast("startAudio() caught " + e.getMessage());
         }
         keepScreenOn(true);
     }
@@ -625,7 +625,7 @@ abstract class TestAudioActivity extends Activity {
                 try {
                     streamContext.configurationView.setupEffects(sessionId);
                 } catch (Exception e) {
-                    showErrorToast(e.getMessage());
+                    showErrorToast("openStreamContext() caught " + e.getMessage());
                 }
             }
             streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
