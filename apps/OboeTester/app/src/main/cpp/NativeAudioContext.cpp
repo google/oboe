@@ -497,6 +497,15 @@ void ActivityTestOutput::runBlockingIO() {
     }
 }
 
+oboe::Result ActivityTestOutput::startStreams() {
+    mSinkFloat->pullReset();
+    mSinkI16->pullReset();
+    mSinkI24->pullReset();
+    mSinkI32->pullReset();
+    mVolumeRamp->setTarget(mAmplitude);
+    return getOutputStream()->start();
+}
+
 // ======================================================================= ActivityTestInput
 void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();

@@ -410,9 +410,7 @@ public:
 
     void close(int32_t streamIndex) override;
 
-    oboe::Result startStreams() override {
-        return getOutputStream()->start();
-    }
+    oboe::Result startStreams() override;
 
     void configureAfterOpen() override;
 
