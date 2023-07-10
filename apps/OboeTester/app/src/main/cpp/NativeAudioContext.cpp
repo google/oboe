@@ -301,7 +301,6 @@ oboe::Result ActivityContext::start() {
 
 oboe::Result ActivityContext::flush() {
     oboe::Result result = oboe::Result::OK;
-    stopBlockingIOThread();
     for (auto entry : mOboeStreams) {
         std::shared_ptr<oboe::AudioStream> oboeStream = entry.second;
         result = oboeStream->requestFlush();
