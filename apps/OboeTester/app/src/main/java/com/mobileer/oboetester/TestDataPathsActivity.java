@@ -691,6 +691,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mTestResults.clear();
             mDurationSeconds = DURATION_SECONDS;
 
+            runOnUiThread(() -> keepScreenOn(true));
+
             if (mCheckBoxInputPresets.isChecked()) {
                 runOnUiThread(() -> mCheckBoxInputPresets.setEnabled(false));
                 testInputPresets();
@@ -705,6 +707,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             }
 
             analyzeTestResults();
+
+            runOnUiThread(() -> keepScreenOn(false));
 
         } catch (InterruptedException e) {
             analyzeTestResults();
