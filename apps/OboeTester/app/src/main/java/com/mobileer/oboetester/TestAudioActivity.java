@@ -61,8 +61,8 @@ abstract class TestAudioActivity extends Activity {
 
     public static final int AUDIO_STATE_OPEN = 0;
     public static final int AUDIO_STATE_STARTED = 1;
-    public static final int AUDIO_STATE_FLUSHED = 2;
-    public static final int AUDIO_STATE_PAUSED = 3;
+    public static final int AUDIO_STATE_PAUSED = 2;
+    public static final int AUDIO_STATE_FLUSHED = 3;
     public static final int AUDIO_STATE_STOPPED = 4;
     public static final int AUDIO_STATE_RELEASED = 5;
     public static final int AUDIO_STATE_CLOSING = 6;
@@ -89,8 +89,8 @@ abstract class TestAudioActivity extends Activity {
     protected ArrayList<StreamContext> mStreamContexts;
     private Button mOpenButton;
     private Button mStartButton;
-    private Button mFlushButton;
     private Button mPauseButton;
+    private Button mFlushButton;
     private Button mStopButton;
     private Button mReleaseButton;
     private Button mCloseButton;
@@ -326,8 +326,8 @@ abstract class TestAudioActivity extends Activity {
         if (mOpenButton != null) {
             mOpenButton.setBackgroundColor(mAudioState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
             mStartButton.setBackgroundColor(mAudioState == AUDIO_STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
-            mFlushButton.setBackgroundColor(mAudioState == AUDIO_STATE_FLUSHED ? COLOR_ACTIVE : COLOR_IDLE);
             mPauseButton.setBackgroundColor(mAudioState == AUDIO_STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
+            mFlushButton.setBackgroundColor(mAudioState == AUDIO_STATE_FLUSHED ? COLOR_ACTIVE : COLOR_IDLE);
             mStopButton.setBackgroundColor(mAudioState == AUDIO_STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
             mReleaseButton.setBackgroundColor(mAudioState == AUDIO_STATE_RELEASED ? COLOR_ACTIVE : COLOR_IDLE);
             mCloseButton.setBackgroundColor(mAudioState == AUDIO_STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
@@ -427,8 +427,8 @@ abstract class TestAudioActivity extends Activity {
         mOpenButton = (Button) findViewById(R.id.button_open);
         if (mOpenButton != null) {
             mStartButton = (Button) findViewById(R.id.button_start);
-            mFlushButton = (Button) findViewById(R.id.button_flush);
             mPauseButton = (Button) findViewById(R.id.button_pause);
+            mFlushButton = (Button) findViewById(R.id.button_flush);
             mStopButton = (Button) findViewById(R.id.button_stop);
             mReleaseButton = (Button) findViewById(R.id.button_release);
             mCloseButton = (Button) findViewById(R.id.button_close);
@@ -540,10 +540,6 @@ abstract class TestAudioActivity extends Activity {
         }
     }
 
-    public void flushAudio(View view) {
-        flushAudio();
-    }
-
     public void stopAudio(View view) {
         stopAudio();
         keepScreenOn(false);
@@ -552,6 +548,10 @@ abstract class TestAudioActivity extends Activity {
     public void pauseAudio(View view) {
         pauseAudio();
         keepScreenOn(false);
+    }
+
+    public void flushAudio(View view) {
+        flushAudio();
     }
 
     public void closeAudio(View view) {
@@ -643,9 +643,9 @@ abstract class TestAudioActivity extends Activity {
     // Native methods
     private native int startNative();
 
-    private native int flushNative();
-
     private native int pauseNative();
+
+    private native int flushNative();
 
     private native int stopNative();
 
@@ -682,16 +682,6 @@ abstract class TestAudioActivity extends Activity {
         showErrorToast("Pause failed with " + result);
     }
 
-    public void flushAudio() {
-        int result = flushNative();
-        if (result != 0) {
-            showErrorToast("flush failed with " + result);
-        } else {
-            mAudioState = AUDIO_STATE_FLUSHED;
-            updateEnabledWidgets();
-        }
-    }
-
     public void pauseAudio() {
         int result = pauseNative();
         if (result != 0) {
@@ -700,6 +690,16 @@ abstract class TestAudioActivity extends Activity {
             mAudioState = AUDIO_STATE_PAUSED;
             updateEnabledWidgets();
             onStopAllContexts();
+        }
+    }
+
+    public void flushAudio() {
+        int result = flushNative();
+        if (result != 0) {
+            showErrorToast("flush failed with " + result);
+        } else {
+            mAudioState = AUDIO_STATE_FLUSHED;
+            updateEnabledWidgets();
         }
     }
 

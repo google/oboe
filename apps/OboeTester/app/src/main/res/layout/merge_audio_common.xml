@@ -52,17 +52,6 @@
             android:textSize="12sp" />
 
         <Button
-            android:id="@+id/button_flush"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@xml/button_color_selector"
-            android:backgroundTintMode="src_atop"
-            android:onClick="flushAudio"
-            android:text="@string/flushAudio"
-            android:textSize="12sp" />
-
-        <Button
             android:id="@+id/button_pause"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -71,6 +60,17 @@
             android:backgroundTintMode="src_atop"
             android:onClick="pauseAudio"
             android:text="@string/pauseAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_flush"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="flushAudio"
+            android:text="@string/flushAudio"
             android:textSize="12sp" />
 
         <Button

@@ -139,9 +139,9 @@ public:
 
     oboe::Result start();
 
-    oboe::Result flush();
-
     oboe::Result pause();
+
+    oboe::Result flush();
 
     oboe::Result stopAllStreams();
 

@@ -177,13 +177,13 @@ Java_com_mobileer_oboetester_TestAudioActivity_startNative(JNIEnv *env, jobject)
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_TestAudioActivity_flushNative(JNIEnv *env, jobject) {
-    return (jint) engine.getCurrentActivity()->flush();
+Java_com_mobileer_oboetester_TestAudioActivity_pauseNative(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->pause();
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_TestAudioActivity_pauseNative(JNIEnv *env, jobject) {
-    return (jint) engine.getCurrentActivity()->pause();
+Java_com_mobileer_oboetester_TestAudioActivity_flushNative(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->flush();
 }
 
 JNIEXPORT jint JNICALL
