@@ -141,6 +141,8 @@ public:
 
     oboe::Result pause();
 
+    oboe::Result flush();
+
     oboe::Result stopAllStreams();
 
     virtual oboe::Result stop() {

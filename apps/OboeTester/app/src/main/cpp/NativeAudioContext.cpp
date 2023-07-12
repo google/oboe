@@ -299,6 +299,15 @@ oboe::Result ActivityContext::start() {
     return result;
 }
 
+oboe::Result ActivityContext::flush() {
+    oboe::Result result = oboe::Result::OK;
+    for (auto entry : mOboeStreams) {
+        std::shared_ptr<oboe::AudioStream> oboeStream = entry.second;
+        result = oboeStream->requestFlush();
+    }
+    return result;
+}
+
 int32_t  ActivityContext::saveWaveFile(const char *filename) {
     if (mRecording == nullptr) {
         LOGW("ActivityContext::saveWaveFile(%s) but no recording!", filename);

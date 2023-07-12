@@ -182,6 +182,11 @@ Java_com_mobileer_oboetester_TestAudioActivity_pauseNative(JNIEnv *env, jobject)
 }
 
 JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_flushNative(JNIEnv *env, jobject) {
+    return (jint) engine.getCurrentActivity()->flush();
+}
+
+JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_stopNative(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->stop();
 }
