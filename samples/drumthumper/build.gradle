@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     defaultConfig {
         // Usually the applicationId follows the same scheme as the application package name,
@@ -13,7 +13,7 @@ android {
         // who publishes using the application Id prefix of "com.plausiblesoftware".
         applicationId "com.plausiblesoftware.drumthumper"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 2
         versionName "1.01"
 
