@@ -35,6 +35,9 @@ import java.util.Locale;
 public final class TestOutputActivity extends TestOutputActivityBase {
 
     public static final int MAX_CHANNEL_BOXES = 16;
+    public static final double MAX_DECIBELS = 20.0;
+    public static final double MIN_DECIBELS = -50.0;
+    public static final double VOLUME_MAX_PROGRESS = 500.0;
     private CheckBox[] mChannelBoxes;
     private Spinner mOutputSignalSpinner;
     private TextView mVolumeTextView;
@@ -107,11 +110,12 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
 
+        mShouldSetStreamControlByAttributes = (CheckBox) findViewById(R.id.enableSetStreamControlByAttributes);
+
         mVolumeTextView = (TextView) findViewById(R.id.textVolumeSlider);
         mVolumeSeekBar = (SeekBar) findViewById(R.id.faderVolumeSlider);
         mVolumeSeekBar.setOnSeekBarChangeListener(mVolumeChangeListener);
-
-        mShouldSetStreamControlByAttributes = (CheckBox) findViewById(R.id.enableSetStreamControlByAttributes);
+        mVolumeSeekBar.setProgress(convertDecibelsToProgress(0.0));
     }
 
     @Override
@@ -132,16 +136,27 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     private void setVolume(int progress) {
-        // Convert from (0, 500) range to (-50, 0).
-        double decibels = (progress - 500) / 10.0f;
-        double amplitude = Math.pow(10.0, decibels / 20.0);
-        // When the slider is all way to the left, set a zero amplitude.
-        if (progress == 0) {
-            amplitude = 0;
+        double amplitude = 0.0;
+        if (progress > 0) {
+            final double decibels = convertProgressToDecibels(progress);
+            // When the slider is all way to the left, set a zero amplitude.
+            amplitude = (progress == 0) ? 0.0 : Math.pow(10.0, decibels / 20.0);
+            mVolumeTextView.setText("Volume(dB): " + String.format(Locale.getDefault(), "%.2f",
+                    decibels));
+        } else {
+            mVolumeTextView.setText("Volume(dB): -inf");
         }
-        mVolumeTextView.setText("Volume(dB): " + String.format(Locale.getDefault(), "%.1f",
-                decibels));
         mAudioOutTester.setAmplitude((float) amplitude);
+    }
+
+    // Convert from (0, maxProgress) range to (minDecibels, maxDecibels)) range.
+    private double convertProgressToDecibels(int progress) {
+        return MIN_DECIBELS + ((progress / VOLUME_MAX_PROGRESS) * (MAX_DECIBELS - MIN_DECIBELS));
+    }
+
+    private int convertDecibelsToProgress(double decibels) {
+        if (decibels <= MIN_DECIBELS) return 0;
+        return (int)Math.round(((decibels - MIN_DECIBELS) / (MAX_DECIBELS - MIN_DECIBELS)) * VOLUME_MAX_PROGRESS);
     }
 
 
