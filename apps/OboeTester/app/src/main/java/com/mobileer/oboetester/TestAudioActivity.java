@@ -663,8 +663,8 @@ abstract class TestAudioActivity extends Activity {
         Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
         if (result != 0) {
-            showErrorToast("Start failed with " + result);
-            throw new IOException("startNative returned " + result);
+            showErrorToast("Start failed with " + StreamConfiguration.convertErrorToText(result));
+            throw new IOException("startNative returned " + StreamConfiguration.convertErrorToText(result));
         } else {
             onStartAllContexts();
             for (StreamContext streamContext : mStreamContexts) {
@@ -679,7 +679,7 @@ abstract class TestAudioActivity extends Activity {
     }
 
     protected void toastPauseError(int result) {
-        showErrorToast("Pause failed with " + result);
+        showErrorToast("Pause failed with " + StreamConfiguration.convertErrorToText(result));
     }
 
     public void pauseAudio() {
@@ -696,7 +696,7 @@ abstract class TestAudioActivity extends Activity {
     public void flushAudio() {
         int result = flushNative();
         if (result != 0) {
-            showErrorToast("flush failed with " + result);
+            showErrorToast("flush failed with " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_FLUSHED;
             updateEnabledWidgets();
@@ -706,7 +706,7 @@ abstract class TestAudioActivity extends Activity {
     public void stopAudio() {
         int result = stopNative();
         if (result != 0) {
-            showErrorToast("Stop failed with " + result);
+            showErrorToast("Stop failed with " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
@@ -717,7 +717,7 @@ abstract class TestAudioActivity extends Activity {
     public void releaseAudio() {
         int result = releaseNative();
         if (result != 0) {
-            showErrorToast("release failed with " + result);
+            showErrorToast("release failed with " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();

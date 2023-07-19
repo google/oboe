@@ -74,7 +74,25 @@ public class StreamConfiguration {
     public static final int INPUT_PRESET_UNPROCESSED = 9; // must match Oboe
     public static final int INPUT_PRESET_VOICE_PERFORMANCE = 10; // must match Oboe
 
-    public static final int ERROR_DISCONNECTED = -899; // must match Oboe
+    public static final int ERROR_BASE = -900;
+    public static final int ERROR_DISCONNECTED = -899;
+    public static final int ERROR_ILLEGAL_ARGUMENT = -898;
+    public static final int ERROR_INTERNAL = -896;
+    public static final int ERROR_INVALID_STATE = -895;
+    public static final int ERROR_INVALID_HANDLE = -892;
+    public static final int ERROR_UNIMPLEMENTED = -890;
+    public static final int ERROR_UNAVAILABLE = -889;
+    public static final int ERROR_NO_FREE_HANDLES = -888;
+    public static final int ERROR_NO_MEMORY = -887;
+    public static final int ERROR_NULL = -886;
+    public static final int ERROR_TIMEOUT = -885;
+    public static final int ERROR_WOULD_BLOCK = -884;
+    public static final int ERROR_INVALID_FORMAT = -883;
+    public static final int ERROR_OUT_OF_RANGE = -882;
+    public static final int ERROR_NO_SERVICE = -881;
+    public static final int ERROR_INVALID_RATE = -880;
+    public static final int ERROR_CLOSED = -869;
+    public static final int ERROR_OK = 0;
 
     public static final int USAGE_MEDIA = 1;
     public static final int USAGE_VOICE_COMMUNICATION = 2;
@@ -762,5 +780,50 @@ public class StreamConfiguration {
 
     public void setHardwareFormat(int hardwareFormat) {
         this.mHardwareFormat = hardwareFormat;
+    }
+
+    static String convertErrorToText(int error) {
+        switch (error) {
+            case ERROR_BASE:
+                return "ErrorBase";
+            case ERROR_DISCONNECTED:
+                return "ErrorDisconnected";
+            case ERROR_ILLEGAL_ARGUMENT:
+                return "ErrorIllegalArgument";
+            case ERROR_INTERNAL:
+                return "ErrorInternal";
+            case ERROR_INVALID_STATE:
+                return "ErrorInvalidState";
+            case ERROR_INVALID_HANDLE:
+                return "ErrorInvalidHandle";
+            case ERROR_UNIMPLEMENTED:
+                return "ErrorUnimplemented";
+            case ERROR_UNAVAILABLE:
+                return "ErrorUnavailable";
+            case ERROR_NO_FREE_HANDLES:
+                return "ErrorNoFreeHandles";
+            case ERROR_NO_MEMORY:
+                return "ErrorNoMemory";
+            case ERROR_NULL:
+                return "ErrorNull";
+            case ERROR_TIMEOUT:
+                return "ErrorTimeout";
+            case ERROR_WOULD_BLOCK:
+                return "ErrorWouldBlock";
+            case ERROR_INVALID_FORMAT:
+                return "ErrorInvalidFormat";
+            case ERROR_OUT_OF_RANGE:
+                return "ErrorOutOfRange";
+            case ERROR_NO_SERVICE:
+                return "ErrorNoService";
+            case ERROR_INVALID_RATE:
+                return "ErrorInvalidRate";
+            case ERROR_CLOSED:
+                return "ErrorClosed";
+            case ERROR_OK:
+                return "ErrorOk";
+            default:
+                return "?=" + error;
+        }
     }
 }

@@ -141,7 +141,7 @@ public class TestInputActivity  extends TestAudioActivity {
 
     @Override
     protected void toastPauseError(int result) {
-        showToast("Pause not implemented. Returned " + result);
+        showToast("Pause not implemented. Returned " + StreamConfiguration.convertErrorToText(result));
     }
 
     protected int saveWaveFile(File file) {
