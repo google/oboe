@@ -171,8 +171,7 @@ int AAudioLoader::open() {
         stream_getSpatializationBehavior = load_I_PS("AAudioStream_getSpatializationBehavior");
     }
 
-    // TODO: Remove pre-release check after Android U release
-    if (getSdkVersion() >= __ANDROID_API_U__ || isAtLeastPreReleaseCodename("UpsideDownCake")) {
+    if (getSdkVersion() >= __ANDROID_API_U__) {
         stream_getHardwareChannelCount = load_I_PS("AAudioStream_getHardwareChannelCount");
         stream_getHardwareSampleRate = load_I_PS("AAudioStream_getHardwareSampleRate");
         stream_getHardwareFormat = load_F_PS("AAudioStream_getHardwareFormat");
