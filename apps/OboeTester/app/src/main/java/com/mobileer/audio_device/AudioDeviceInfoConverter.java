@@ -15,7 +15,12 @@ package com.mobileer.audio_device;
  * limitations under the License.
  */
 
+import android.media.AudioDescriptor;
 import android.media.AudioDeviceInfo;
+import android.media.AudioProfile;
+import android.os.Build;
+
+import java.util.List;
 
 public class AudioDeviceInfoConverter {
 
@@ -62,6 +67,36 @@ public class AudioDeviceInfoConverter {
         sb.append("\nSample Rates: ");
         int[] sampleRates = adi.getSampleRates();
         sb.append(intArrayToString(sampleRates));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            sb.append("\nAddress: ");
+            sb.append(adi.getAddress());
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            sb.append("\nEncapsulation Metadata Types: ");
+            int[] encapsulationMetadataTypes = adi.getEncapsulationMetadataTypes();
+            sb.append(intArrayToString(encapsulationMetadataTypes));
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            sb.append("\nEncapsulation Modes: ");
+            int[] encapsulationModes = adi.getEncapsulationModes();
+            sb.append(intArrayToString(encapsulationModes));
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            sb.append("\nAudio Descriptors: ");
+            List<AudioDescriptor> audioDescriptors = adi.getAudioDescriptors();
+            sb.append(audioDescriptors);
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            sb.append("\nAudio Profiles: ");
+            List<AudioProfile> audioProfiles = adi.getAudioProfiles();
+            sb.append(audioProfiles);
+        }
+
         sb.append("\n");
         return sb.toString();
     }
