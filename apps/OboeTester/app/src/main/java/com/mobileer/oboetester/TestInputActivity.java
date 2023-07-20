@@ -139,11 +139,6 @@ public class TestInputActivity  extends TestAudioActivity {
         resetVolumeBars();
     }
 
-    @Override
-    protected void toastPauseError(int result) {
-        showToast("Pause not implemented. Returned " + StreamConfiguration.convertErrorToText(result));
-    }
-
     protected int saveWaveFile(File file) {
         // Pass filename to native to write WAV file
         int result = saveWaveFile(file.getAbsolutePath());
