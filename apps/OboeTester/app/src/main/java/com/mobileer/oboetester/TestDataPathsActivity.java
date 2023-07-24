@@ -70,6 +70,38 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private final static double MAX_ALLOWED_JITTER = 2.0 * PHASE_PER_BIN;
     private final static String MAGNITUDE_FORMAT = "%7.5f";
 
+    public static final int JAVA_CHANNEL_IN_LEFT = 1 << 2;
+    public static final int JAVA_CHANNEL_IN_RIGHT = 1 << 3;
+    public static final int JAVA_CHANNEL_IN_FRONT = 1 << 4;
+    public static final int JAVA_CHANNEL_IN_BACK = 1 << 5;
+    public static final int JAVA_CHANNEL_IN_BACK_LEFT = 1 << 16;
+    public static final int JAVA_CHANNEL_IN_BACK_RIGHT = 1 << 17;
+    public static final int JAVA_CHANNEL_IN_CENTER = 1 << 18;
+    public static final int JAVA_CHANNEL_IN_LOW_FREQUENCY = 1 << 20;
+    public static final int JAVA_CHANNEL_IN_TOP_LEFT = 1 << 21;
+    public static final int JAVA_CHANNEL_IN_TOP_RIGHT = 1 << 22;
+
+    public static final int JAVA_CHANNEL_IN_MONO = JAVA_CHANNEL_IN_FRONT;
+    public static final int JAVA_CHANNEL_IN_STEREO = JAVA_CHANNEL_IN_LEFT | JAVA_CHANNEL_IN_RIGHT;
+    public static final int JAVA_CHANNEL_IN_FRONT_BACK = JAVA_CHANNEL_IN_FRONT | JAVA_CHANNEL_IN_BACK;
+    public static final int JAVA_CHANNEL_IN_2POINT0POINT2 = JAVA_CHANNEL_IN_LEFT |
+            JAVA_CHANNEL_IN_RIGHT |
+            JAVA_CHANNEL_IN_TOP_LEFT |
+            JAVA_CHANNEL_IN_TOP_RIGHT;
+    public static final int JAVA_CHANNEL_IN_2POINT1POINT2 =
+            JAVA_CHANNEL_IN_2POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
+    public static final int JAVA_CHANNEL_IN_3POINT0POINT2 =
+            JAVA_CHANNEL_IN_2POINT0POINT2 | JAVA_CHANNEL_IN_CENTER;
+    public static final int JAVA_CHANNEL_IN_3POINT1POINT2 =
+            JAVA_CHANNEL_IN_3POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
+    public static final int JAVA_CHANNEL_IN_5POINT1 = JAVA_CHANNEL_IN_LEFT |
+            JAVA_CHANNEL_IN_CENTER |
+            JAVA_CHANNEL_IN_RIGHT |
+            JAVA_CHANNEL_IN_BACK_LEFT |
+            JAVA_CHANNEL_IN_BACK_RIGHT |
+            JAVA_CHANNEL_IN_LOW_FREQUENCY;
+    public static final int JAVA_CHANNEL_UNDEFINED = -1;
+
     final int TYPE_BUILTIN_SPEAKER_SAFE = 0x18; // API 30
 
     private double mMagnitude;
@@ -519,7 +551,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 if (channelMasks.length > 0) {
                     for (int channelMask : channelMasks) {
                         int nativeChannelMask =
-                                convertJavaChannelMaskToNativeChannelMask(channelMask);
+                                convertJavaInChannelMaskToNativeChannelMask(channelMask);
+                        if (nativeChannelMask == JAVA_CHANNEL_UNDEFINED) {
+                            log("channelMask: " + channelMask + " not supported. Skipping.\n");
+                            continue;
+                        }
                         // Test higher channel counts.
                         log("nativeChannelMask = " + nativeChannelMask + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
@@ -539,10 +575,36 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
-    // The native channel mask is its channel mask shifted right by 2 bits.
+    // The native out channel mask is its channel mask shifted right by 2 bits.
     // See AudioFormat.convertChannelOutMaskToNativeMask()
-    int convertJavaChannelMaskToNativeChannelMask(int javaChannelMask) {
+    int convertJavaOutChannelMaskToNativeChannelMask(int javaChannelMask) {
         return javaChannelMask >> 2;
+    }
+
+    // The native channel mask in AAudio is different than the Java in channel mask.
+    // See AAudioConvert_aaudioToAndroidChannelLayoutMask()
+    int convertJavaInChannelMaskToNativeChannelMask(int javaChannelMask) {
+        switch (javaChannelMask) {
+            case JAVA_CHANNEL_IN_MONO:
+                return StreamConfiguration.CHANNEL_MONO;
+            case JAVA_CHANNEL_IN_STEREO:
+                return StreamConfiguration.CHANNEL_STEREO;
+            case JAVA_CHANNEL_IN_FRONT_BACK:
+                return StreamConfiguration.CHANNEL_FRONT_BACK;
+            case JAVA_CHANNEL_IN_2POINT0POINT2:
+                return StreamConfiguration.CHANNEL_2POINT0POINT2;
+            case JAVA_CHANNEL_IN_2POINT1POINT2:
+                return StreamConfiguration.CHANNEL_2POINT1POINT2;
+            case JAVA_CHANNEL_IN_3POINT0POINT2:
+                return StreamConfiguration.CHANNEL_3POINT0POINT2;
+            case JAVA_CHANNEL_IN_3POINT1POINT2:
+                return StreamConfiguration.CHANNEL_3POINT1POINT2;
+            case JAVA_CHANNEL_IN_5POINT1:
+                return StreamConfiguration.CHANNEL_5POINT1;
+            default:
+                log("Unimplemented java channel mask: " + javaChannelMask + "\n");
+                return JAVA_CHANNEL_UNDEFINED;
+        }
     }
 
     void logOneLineSummary(TestResult testResult) {
@@ -663,7 +725,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 if (channelMasks.length > 0) {
                     for (int channelMask : channelMasks) {
                         int nativeChannelMask =
-                                convertJavaChannelMaskToNativeChannelMask(channelMask);
+                                convertJavaOutChannelMaskToNativeChannelMask(channelMask);
                         log("nativeChannelMask = " + nativeChannelMask + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
