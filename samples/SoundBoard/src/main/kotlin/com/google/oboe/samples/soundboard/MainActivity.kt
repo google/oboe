@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun createMusicTiles(context: Context) {
         setContentView(MusicTileView(this, mRectangles, NoteListener(mEngineHandle),
-            ScreenChangeListener({ setup() })))
+                ScreenChangeListener { setup() }))
     }
 
     class ScreenChangeListener(private var mFunc: () -> Unit) : MusicTileView.ConfigChangeListener {
