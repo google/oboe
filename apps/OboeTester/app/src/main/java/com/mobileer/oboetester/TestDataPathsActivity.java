@@ -84,14 +84,17 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final int JAVA_CHANNEL_IN_MONO = JAVA_CHANNEL_IN_FRONT;
     public static final int JAVA_CHANNEL_IN_STEREO = JAVA_CHANNEL_IN_LEFT | JAVA_CHANNEL_IN_RIGHT;
     public static final int JAVA_CHANNEL_IN_FRONT_BACK = JAVA_CHANNEL_IN_FRONT | JAVA_CHANNEL_IN_BACK;
-    public static final int JAVA_CHANNEL_2POINT0POINT2 = JAVA_CHANNEL_IN_LEFT |
+    public static final int JAVA_CHANNEL_IN_2POINT0POINT2 = JAVA_CHANNEL_IN_LEFT |
             JAVA_CHANNEL_IN_RIGHT |
             JAVA_CHANNEL_IN_TOP_LEFT |
             JAVA_CHANNEL_IN_TOP_RIGHT;
-    public static final int JAVA_CHANNEL_2POINT1POINT2 = JAVA_CHANNEL_2POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
-    public static final int JAVA_CHANNEL_3POINT0POINT2 = JAVA_CHANNEL_2POINT0POINT2 | JAVA_CHANNEL_IN_CENTER;
-    public static final int JAVA_CHANNEL_3POINT1POINT2 = JAVA_CHANNEL_3POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
-    public static final int JAVA_CHANNEL_5POINT1 = JAVA_CHANNEL_IN_LEFT |
+    public static final int JAVA_CHANNEL_IN_2POINT1POINT2 =
+            JAVA_CHANNEL_IN_2POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
+    public static final int JAVA_CHANNEL_IN_3POINT0POINT2 =
+            JAVA_CHANNEL_IN_2POINT0POINT2 | JAVA_CHANNEL_IN_CENTER;
+    public static final int JAVA_CHANNEL_IN_3POINT1POINT2 =
+            JAVA_CHANNEL_IN_3POINT0POINT2 | JAVA_CHANNEL_IN_LOW_FREQUENCY;
+    public static final int JAVA_CHANNEL_IN_5POINT1 = JAVA_CHANNEL_IN_LEFT |
             JAVA_CHANNEL_IN_CENTER |
             JAVA_CHANNEL_IN_RIGHT |
             JAVA_CHANNEL_IN_BACK_LEFT |
@@ -588,15 +591,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 return StreamConfiguration.CHANNEL_STEREO;
             case JAVA_CHANNEL_IN_FRONT_BACK:
                 return StreamConfiguration.CHANNEL_FRONT_BACK;
-            case JAVA_CHANNEL_2POINT0POINT2:
+            case JAVA_CHANNEL_IN_2POINT0POINT2:
                 return StreamConfiguration.CHANNEL_2POINT0POINT2;
-            case JAVA_CHANNEL_2POINT1POINT2:
+            case JAVA_CHANNEL_IN_2POINT1POINT2:
                 return StreamConfiguration.CHANNEL_2POINT1POINT2;
-            case JAVA_CHANNEL_3POINT0POINT2:
+            case JAVA_CHANNEL_IN_3POINT0POINT2:
                 return StreamConfiguration.CHANNEL_3POINT0POINT2;
-            case JAVA_CHANNEL_3POINT1POINT2:
+            case JAVA_CHANNEL_IN_3POINT1POINT2:
                 return StreamConfiguration.CHANNEL_3POINT1POINT2;
-            case JAVA_CHANNEL_5POINT1:
+            case JAVA_CHANNEL_IN_5POINT1:
                 return StreamConfiguration.CHANNEL_5POINT1;
             default:
                 log("Unimplemented java channel mask: " + javaChannelMask + "\n");
