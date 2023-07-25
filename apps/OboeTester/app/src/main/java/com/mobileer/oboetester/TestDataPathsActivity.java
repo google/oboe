@@ -76,6 +76,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final int JAVA_CHANNEL_IN_FRONT = 1 << 4; // AudioFormat.CHANNEL_IN_FRONT
     public static final int JAVA_CHANNEL_IN_BACK = 1 << 5;  // AudioFormat.CHANNEL_IN_BACK
 
+    // These do not have corresponding Java definitions.
+    // They match definitions in system/media/audio/include/system/audio-hal-enums.h
     public static final int JAVA_CHANNEL_IN_BACK_LEFT = 1 << 16;
     public static final int JAVA_CHANNEL_IN_BACK_RIGHT = 1 << 17;
     public static final int JAVA_CHANNEL_IN_CENTER = 1 << 18;
@@ -724,7 +726,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     }
                 }
             } else {
-                log("Device skipped because DeviceType not testable.");
+                log("Device skipped because DeviceType is not testable.");
             }
         }
         if (numTested == 0) {

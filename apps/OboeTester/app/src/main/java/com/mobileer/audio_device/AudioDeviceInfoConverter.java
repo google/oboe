@@ -111,7 +111,7 @@ public class AudioDeviceInfoConverter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < integerArray.length; i++){
             sb.append(integerArray[i]);
-            if (i != integerArray.length -1) sb.append(" ");
+            if (i != integerArray.length - 1) sb.append(" ");
         }
         return sb.toString();
     }
@@ -126,7 +126,7 @@ public class AudioDeviceInfoConverter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < integerArray.length; i++){
             sb.append(String.format("0x%02X", integerArray[i]));
-            if (i != integerArray.length -1) sb.append(" ");
+            if (i != integerArray.length - 1) sb.append(" ");
         }
         return sb.toString();
     }
