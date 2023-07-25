@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['waitforavailableframes_0',['waitForAvailableFrames',['../classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f',1,'oboe::AudioStream']]],
-  ['waitforstatechange_1',['waitForStateChange',['../classoboe_1_1_audio_stream.html#a0c865a5501f369d959c39d8ab8b46a07',1,'oboe::AudioStream']]],
-  ['waitforstatetransition_2',['waitForStateTransition',['../classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6',1,'oboe::AudioStream']]],
-  ['waserrorcallbackcalled_3',['wasErrorCallbackCalled',['../classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28',1,'oboe::AudioStream']]],
-  ['willuseaaudio_4',['willUseAAudio',['../classoboe_1_1_audio_stream_builder.html#aa07ea100fcb107d9f7913f206c2214f4',1,'oboe::AudioStreamBuilder']]],
-  ['write_5',['write',['../classoboe_1_1_audio_stream.html#ad23cd8bf80d480ffb613c03d5e5d4512',1,'oboe::AudioStream::write()'],['../classoboe_1_1_fifo_buffer.html#a6a7cc7a1271ecf08a8eb08424703b459',1,'oboe::FifoBuffer::write()']]]
+  ['value_0',['value',['../classoboe_1_1_result_with_value.html#a45f5c99a2c9f8fbaca502276f7ebb434',1,'oboe::ResultWithValue']]],
+  ['version_1',['Version',['../structoboe_1_1_version.html',1,'oboe']]],
+  ['voicecommunication_2',['VoiceCommunication',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d',1,'oboe::VoiceCommunication'],['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a5bad8854288c956062ec1d4d7c14fed6',1,'oboe::VoiceCommunication']]],
+  ['voicecommunicationsignalling_3',['VoiceCommunicationSignalling',['../namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a404f62633744bf4da0c6a27a2b78ce74',1,'oboe']]],
+  ['voiceperformance_4',['VoicePerformance',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c',1,'oboe']]],
+  ['voicerecognition_5',['VoiceRecognition',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc',1,'oboe']]]
 ];

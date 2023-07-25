@@ -296,214 +296,213 @@ $(function() {
 <div class="line"><a id="l00509" name="l00509"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">  509</a></span>      <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">Stereo</a> = 2,</div>
 <div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>    };</div>
 <div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span> </div>
-<div class="line"><a id="l00521" name="l00521"></a><span class="lineno"><a class="line" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">  521</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a> : uint32_t { <span class="comment">// aaudio_channel_mask_t</span></div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>        FrontLeft = 1 &lt;&lt; 0,</div>
-<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>        FrontRight = 1 &lt;&lt; 1,</div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>        FrontCenter = 1 &lt;&lt; 2,</div>
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>        LowFrequency = 1 &lt;&lt; 3,</div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>        BackLeft = 1 &lt;&lt; 4,</div>
-<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>        BackRight = 1 &lt;&lt; 5,</div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        FrontLeftOfCenter = 1 &lt;&lt; 6,</div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>        FrontRightOfCenter = 1 &lt;&lt; 7,</div>
-<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>        BackCenter = 1 &lt;&lt; 8,</div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>        SideLeft = 1 &lt;&lt; 9,</div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>        SideRight = 1 &lt;&lt; 10,</div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>        TopCenter = 1 &lt;&lt; 11,</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>        TopFrontLeft = 1 &lt;&lt; 12,</div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>        TopFrontCenter = 1 &lt;&lt; 13,</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>        TopFrontRight = 1 &lt;&lt; 14,</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>        TopBackLeft = 1 &lt;&lt; 15,</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>        TopBackCenter = 1 &lt;&lt; 16,</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>        TopBackRight = 1 &lt;&lt; 17,</div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        TopSideLeft = 1 &lt;&lt; 18,</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>        TopSideRight = 1 &lt;&lt; 19,</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>        BottomFrontLeft = 1 &lt;&lt; 20,</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>        BottomFrontCenter = 1 &lt;&lt; 21,</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        BottomFrontRight = 1 &lt;&lt; 22,</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>        LowFrequency2 = 1 &lt;&lt; 23,</div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        FrontWideLeft = 1 &lt;&lt; 24,</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>        FrontWideRight = 1 &lt;&lt; 25,</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">Mono</a> = FrontLeft,</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span> </div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">Stereo</a> = FrontLeft |</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>                 FrontRight,</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno"><a class="line" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">  526</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a> : uint32_t { <span class="comment">// aaudio_channel_mask_t</span></div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>        FrontLeft = 1 &lt;&lt; 0,</div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        FrontRight = 1 &lt;&lt; 1,</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>        FrontCenter = 1 &lt;&lt; 2,</div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>        LowFrequency = 1 &lt;&lt; 3,</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>        BackLeft = 1 &lt;&lt; 4,</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>        BackRight = 1 &lt;&lt; 5,</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>        FrontLeftOfCenter = 1 &lt;&lt; 6,</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>        FrontRightOfCenter = 1 &lt;&lt; 7,</div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>        BackCenter = 1 &lt;&lt; 8,</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>        SideLeft = 1 &lt;&lt; 9,</div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>        SideRight = 1 &lt;&lt; 10,</div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>        TopCenter = 1 &lt;&lt; 11,</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>        TopFrontLeft = 1 &lt;&lt; 12,</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        TopFrontCenter = 1 &lt;&lt; 13,</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>        TopFrontRight = 1 &lt;&lt; 14,</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>        TopBackLeft = 1 &lt;&lt; 15,</div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>        TopBackCenter = 1 &lt;&lt; 16,</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        TopBackRight = 1 &lt;&lt; 17,</div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>        TopSideLeft = 1 &lt;&lt; 18,</div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        TopSideRight = 1 &lt;&lt; 19,</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>        BottomFrontLeft = 1 &lt;&lt; 20,</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>        BottomFrontCenter = 1 &lt;&lt; 21,</div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>        BottomFrontRight = 1 &lt;&lt; 22,</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>        LowFrequency2 = 1 &lt;&lt; 23,</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        FrontWideLeft = 1 &lt;&lt; 24,</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        FrontWideRight = 1 &lt;&lt; 25,</div>
 <div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span> </div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>        CM2Point1 = FrontLeft |</div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>                    FrontRight |</div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>                    LowFrequency,</div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span> </div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>        Tri = FrontLeft |</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>              FrontRight |</div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>              FrontCenter,</div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span> </div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        TriBack = FrontLeft |</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>                  FrontRight |</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>                  BackCenter,</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span> </div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        CM3Point1 = FrontLeft |</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>                    FrontRight |</div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>                    FrontCenter |</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>                    LowFrequency,</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span> </div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>        CM2Point0Point2 = FrontLeft |</div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>                          FrontRight |</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>                          TopSideLeft |</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>                          TopSideRight,</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span> </div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        CM2Point1Point2 = CM2Point0Point2 |</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>                          LowFrequency,</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">Mono</a> = FrontLeft,</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span> </div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">Stereo</a> = FrontLeft |</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>                 FrontRight,</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span> </div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1">CM2Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>                    FrontRight |</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>                    LowFrequency,</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span> </div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3">Tri</a> = FrontLeft |</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>              FrontRight |</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>              FrontCenter,</div>
 <div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span> </div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>        CM3Point0Point2 = FrontLeft |</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>                          FrontRight |</div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>                          FrontCenter |</div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>                          TopSideLeft |</div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>                          TopSideRight,</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span> </div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>        CM3Point1Point2 = CM3Point0Point2 |</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>                          LowFrequency,</div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span> </div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>        Quad = FrontLeft |</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>               FrontRight |</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>               BackLeft |</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>               BackRight,</div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span> </div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>        QuadSide = FrontLeft |</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>                   FrontRight |</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>                   SideLeft |</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>                   SideRight,</div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span> </div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>        Surround = FrontLeft |</div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>                   FrontRight |</div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>                   FrontCenter |</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>                   BackCenter,</div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span> </div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>        Penta = Quad |</div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>                FrontCenter,</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span> </div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>        <span class="comment">// aka 5Point1Back</span></div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>        CM5Point1 = FrontLeft |</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>                    FrontRight |</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>                    FrontCenter |</div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>                    LowFrequency |</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>                    BackLeft |</div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>                    BackRight,</div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span> </div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>        CM5Point1Side = FrontLeft |</div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>                        FrontRight |</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>                        FrontCenter |</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>                        LowFrequency |</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>                        SideLeft |</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>                        SideRight,</div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span> </div>
-<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>        CM6Point1 = FrontLeft |</div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>                    FrontRight |</div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>                    FrontCenter |</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>                    LowFrequency |</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>                    BackLeft |</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>                    BackRight |</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>                    BackCenter,</div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span> </div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>        CM7Point1 = CM5Point1 |</div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>                    SideLeft |</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>                    SideRight,</div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span> </div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>        CM5Point1Point2 = CM5Point1 |</div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>                          TopSideLeft |</div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                          TopSideRight,</div>
-<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span> </div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>        CM5Point1Point4 = CM5Point1 |</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>                          TopFrontLeft |</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>                          TopFrontRight |</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>                          TopBackLeft |</div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>                          TopBackRight,</div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span> </div>
-<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>        CM7Point1Point2 = CM7Point1 |</div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>                          TopSideLeft |</div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>                          TopSideRight,</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8">TriBack</a> = FrontLeft |</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>                  FrontRight |</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>                  BackCenter,</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span> </div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6">CM3Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>                    FrontRight |</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>                    FrontCenter |</div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>                    LowFrequency,</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span> </div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">CM2Point0Point2</a> = FrontLeft |</div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>                          FrontRight |</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>                          TopSideLeft |</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>                          TopSideRight,</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1">CM2Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">CM2Point0Point2</a> |</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>                          LowFrequency,</div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span> </div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">CM3Point0Point2</a> = FrontLeft |</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>                          FrontRight |</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>                          FrontCenter |</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>                          TopSideLeft |</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>                          TopSideRight,</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span> </div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452">CM3Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">CM3Point0Point2</a> |</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>                          LowFrequency,</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span> </div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">Quad</a> = FrontLeft |</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>               FrontRight |</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>               BackLeft |</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>               BackRight,</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span> </div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb">QuadSide</a> = FrontLeft |</div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                   FrontRight |</div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>                   SideLeft |</div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>                   SideRight,</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span> </div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c">Surround</a> = FrontLeft |</div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>                   FrontRight |</div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>                   FrontCenter |</div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>                   BackCenter,</div>
 <div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span> </div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>        CM7Point1Point4 = CM7Point1 |</div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>                          TopFrontLeft |</div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>                          TopFrontRight |</div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>                          TopBackLeft |</div>
-<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>                          TopBackRight,</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0">Penta</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">Quad</a> |</div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>                FrontCenter,</div>
 <div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span> </div>
-<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>        CM9Point1Point4 = CM7Point1Point4 |</div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>                          FrontWideLeft |</div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>                          FrontWideRight,</div>
-<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span> </div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>        CM9Point1Point6 = CM9Point1Point4 |</div>
-<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>                          TopSideLeft |</div>
-<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>                          TopSideRight,</div>
-<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span> </div>
-<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>        FrontBack = FrontCenter |</div>
-<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>                    BackCenter,</div>
-<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>    };</div>
-<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span> </div>
-<div class="line"><a id="l00669" name="l00669"></a><span class="lineno"><a class="line" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">  669</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">SpatializationBehavior</a> : int32_t {</div>
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span> </div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span> </div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">Auto</a> = 1,</div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span> </div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">Never</a> = 2,</div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>    };</div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span> </div>
-<div class="line"><a id="l00696" name="l00696"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">  696</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">PrivacySensitiveMode</a> : int32_t {</div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span> </div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
-<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span> </div>
-<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">Disabled</a> = 1,</div>
-<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span> </div>
-<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2,</div>
-<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>    };</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>                    FrontRight |</div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>                    FrontCenter |</div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>                    LowFrequency |</div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>                    BackLeft |</div>
+<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>                    BackRight,</div>
+<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span> </div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f">CM5Point1Side</a> = FrontLeft |</div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>                        FrontRight |</div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>                        FrontCenter |</div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>                        LowFrequency |</div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>                        SideLeft |</div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>                        SideRight,</div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span> </div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f">CM6Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>                    FrontRight |</div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>                    FrontCenter |</div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>                    LowFrequency |</div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>                    BackLeft |</div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>                    BackRight |</div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>                    BackCenter,</div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span> </div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>                    SideLeft |</div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>                    SideRight,</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span> </div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909">CM5Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>                          TopSideLeft |</div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>                          TopSideRight,</div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span> </div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad">CM5Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>                          TopFrontLeft |</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>                          TopFrontRight |</div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>                          TopBackLeft |</div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>                          TopBackRight,</div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span> </div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97">CM7Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> |</div>
+<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>                          TopSideLeft |</div>
+<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>                          TopSideRight,</div>
 <div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span> </div>
-<div class="line"><a id="l00723" name="l00723"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">  723</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">AllowedCapturePolicy</a> : int32_t {</div>
-<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
-<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">All</a> = 1,</div>
-<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">System</a> = 2,</div>
-<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = 3,</div>
-<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>    };</div>
-<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span> </div>
-<div class="line"><a id="l00776" name="l00776"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html">  776</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a> {</div>
-<div class="line"><a id="l00777" name="l00777"></a><span class="lineno">  777</span> </div>
-<div class="line"><a id="l00778" name="l00778"></a><span class="lineno">  778</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span> </div>
-<div class="line"><a id="l00781" name="l00781"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">  781</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">SampleRate</a>;</div>
-<div class="line"><a id="l00783" name="l00783"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">  783</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">FramesPerBurst</a>;</div>
-<div class="line"><a id="l00785" name="l00785"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">  785</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">ChannelCount</a>;</div>
-<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span> </div>
-<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span>    };</div>
-<div class="line"><a id="l00788" name="l00788"></a><span class="lineno">  788</span> </div>
-<div class="line"><a id="l00792" name="l00792"></a><span class="lineno"><a class="line" href="structoboe_1_1_frame_timestamp.html">  792</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> {</div>
-<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span>        int64_t position; <span class="comment">// in frames</span></div>
-<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span>        int64_t timestamp; <span class="comment">// in nanoseconds</span></div>
-<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span>    };</div>
-<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span> </div>
-<div class="line"><a id="l00797" name="l00797"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html">  797</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_oboe_globals.html">OboeGlobals</a> {</div>
-<div class="line"><a id="l00798" name="l00798"></a><span class="lineno">  798</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00799" name="l00799"></a><span class="lineno">  799</span> </div>
-<div class="line"><a id="l00800" name="l00800"></a><span class="lineno">  800</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> areWorkaroundsEnabled() {</div>
-<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span>            <span class="keywordflow">return</span> mWorkaroundsEnabled;</div>
-<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span>        }</div>
-<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span> </div>
-<div class="line"><a id="l00809" name="l00809"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">  809</a></span>        <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">setWorkaroundsEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
-<div class="line"><a id="l00810" name="l00810"></a><span class="lineno">  810</span>            mWorkaroundsEnabled = enabled;</div>
-<div class="line"><a id="l00811" name="l00811"></a><span class="lineno">  811</span>        }</div>
-<div class="line"><a id="l00812" name="l00812"></a><span class="lineno">  812</span> </div>
-<div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span>    <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00814" name="l00814"></a><span class="lineno">  814</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> mWorkaroundsEnabled;</div>
-<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>    };</div>
-<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>} <span class="comment">// namespace oboe</span></div>
-<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span> </div>
-<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span><span class="preprocessor">#endif </span><span class="comment">// OBOE_DEFINITIONS_H</span></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html">oboe::DefaultStreamValues</a></div><div class="ttdef"><b>Definition</b> Definitions.h:776</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_a46a5d9a653f2153f618cadcab764e1b1"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">oboe::DefaultStreamValues::SampleRate</a></div><div class="ttdeci">static int32_t SampleRate</div><div class="ttdef"><b>Definition</b> Definitions.h:781</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ab5ea5576699cebc56193f5c297d3e300"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">oboe::DefaultStreamValues::FramesPerBurst</a></div><div class="ttdeci">static int32_t FramesPerBurst</div><div class="ttdef"><b>Definition</b> Definitions.h:783</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ad5dce538d5963c81bf58350ab730962d"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">oboe::DefaultStreamValues::ChannelCount</a></div><div class="ttdeci">static int32_t ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:785</div></div>
-<div class="ttc" id="aclassoboe_1_1_oboe_globals_html"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html">oboe::OboeGlobals</a></div><div class="ttdef"><b>Definition</b> Definitions.h:797</div></div>
-<div class="ttc" id="aclassoboe_1_1_oboe_globals_html_af2b8af764c5a5e6fc007b7725117303b"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals::setWorkaroundsEnabled</a></div><div class="ttdeci">static void setWorkaroundsEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> Definitions.h:809</div></div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">CM7Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> |</div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>                          TopFrontLeft |</div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>                          TopFrontRight |</div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>                          TopBackLeft |</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>                          TopBackRight,</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span> </div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">CM9Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">CM7Point1Point4</a> |</div>
+<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>                          FrontWideLeft |</div>
+<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>                          FrontWideRight,</div>
+<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span> </div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508">CM9Point1Point6</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">CM9Point1Point4</a> |</div>
+<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>                          TopSideLeft |</div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>                          TopSideRight,</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span> </div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d">FrontBack</a> = FrontCenter |</div>
+<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>                    BackCenter,</div>
+<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>    };</div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span> </div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno"><a class="line" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">  748</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">SpatializationBehavior</a> : int32_t {</div>
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span> </div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span> </div>
+<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">Auto</a> = 1,</div>
+<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span> </div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">Never</a> = 2,</div>
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    };</div>
+<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span> </div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">  775</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">PrivacySensitiveMode</a> : int32_t {</div>
+<div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span> </div>
+<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span> </div>
+<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">Disabled</a> = 1,</div>
+<div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span> </div>
+<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2,</div>
+<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span>    };</div>
+<div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span> </div>
+<div class="line"><a id="l00802" name="l00802"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">  802</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">AllowedCapturePolicy</a> : int32_t {</div>
+<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">All</a> = 1,</div>
+<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">System</a> = 2,</div>
+<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = 3,</div>
+<div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span>    };</div>
+<div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span> </div>
+<div class="line"><a id="l00855" name="l00855"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html">  855</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a> {</div>
+<div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span> </div>
+<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span> </div>
+<div class="line"><a id="l00860" name="l00860"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">  860</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">SampleRate</a>;</div>
+<div class="line"><a id="l00862" name="l00862"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">  862</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">FramesPerBurst</a>;</div>
+<div class="line"><a id="l00864" name="l00864"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">  864</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">ChannelCount</a>;</div>
+<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span> </div>
+<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span>    };</div>
+<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span> </div>
+<div class="line"><a id="l00871" name="l00871"></a><span class="lineno"><a class="line" href="structoboe_1_1_frame_timestamp.html">  871</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> {</div>
+<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>        int64_t position; <span class="comment">// in frames</span></div>
+<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>        int64_t timestamp; <span class="comment">// in nanoseconds</span></div>
+<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>    };</div>
+<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span> </div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html">  876</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_oboe_globals.html">OboeGlobals</a> {</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span> </div>
+<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> areWorkaroundsEnabled() {</div>
+<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>            <span class="keywordflow">return</span> mWorkaroundsEnabled;</div>
+<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>        }</div>
+<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span> </div>
+<div class="line"><a id="l00888" name="l00888"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">  888</a></span>        <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">setWorkaroundsEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>            mWorkaroundsEnabled = enabled;</div>
+<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>        }</div>
+<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span> </div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> mWorkaroundsEnabled;</div>
+<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>    };</div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>} <span class="comment">// namespace oboe</span></div>
+<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span> </div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span><span class="preprocessor">#endif </span><span class="comment">// OBOE_DEFINITIONS_H</span></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html">oboe::DefaultStreamValues</a></div><div class="ttdef"><b>Definition</b> Definitions.h:855</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_a46a5d9a653f2153f618cadcab764e1b1"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">oboe::DefaultStreamValues::SampleRate</a></div><div class="ttdeci">static int32_t SampleRate</div><div class="ttdef"><b>Definition</b> Definitions.h:860</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ab5ea5576699cebc56193f5c297d3e300"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">oboe::DefaultStreamValues::FramesPerBurst</a></div><div class="ttdeci">static int32_t FramesPerBurst</div><div class="ttdef"><b>Definition</b> Definitions.h:862</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ad5dce538d5963c81bf58350ab730962d"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">oboe::DefaultStreamValues::ChannelCount</a></div><div class="ttdeci">static int32_t ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:864</div></div>
+<div class="ttc" id="aclassoboe_1_1_oboe_globals_html"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html">oboe::OboeGlobals</a></div><div class="ttdef"><b>Definition</b> Definitions.h:876</div></div>
+<div class="ttc" id="aclassoboe_1_1_oboe_globals_html_af2b8af764c5a5e6fc007b7725117303b"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals::setWorkaroundsEnabled</a></div><div class="ttdeci">static void setWorkaroundsEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> Definitions.h:888</div></div>
 <div class="ttc" id="anamespaceoboe_html"><div class="ttname"><a href="namespaceoboe.html">oboe</a></div><div class="ttdef"><b>Definition</b> AudioStream.h:31</div></div>
 <div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">oboe::Usage</a></div><div class="ttdeci">Usage</div><div class="ttdef"><b>Definition</b> Definitions.h:316</div></div>
 <div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f">oboe::Usage::NotificationEvent</a></div><div class="ttdeci">@ NotificationEvent</div></div>
@@ -533,7 +532,7 @@ $(function() {
 <div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">oboe::VoicePerformance</a></div><div class="ttdeci">@ VoicePerformance</div><div class="ttdef"><b>Definition</b> Definitions.h:458</div></div>
 <div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc">oboe::VoiceRecognition</a></div><div class="ttdeci">@ VoiceRecognition</div><div class="ttdef"><b>Definition</b> Definitions.h:439</div></div>
 <div class="ttc" id="anamespaceoboe_html_a486512e787b609c80ba4436f23929af1"><div class="ttname"><a href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a></div><div class="ttdeci">Result</div><div class="ttdef"><b>Definition</b> Definitions.h:172</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9fa"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">oboe::PrivacySensitiveMode</a></div><div class="ttdeci">PrivacySensitiveMode</div><div class="ttdef"><b>Definition</b> Definitions.h:696</div></div>
+<div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9fa"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">oboe::PrivacySensitiveMode</a></div><div class="ttdeci">PrivacySensitiveMode</div><div class="ttdef"><b>Definition</b> Definitions.h:775</div></div>
 <div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">oboe::PrivacySensitiveMode::Enabled</a></div><div class="ttdeci">@ Enabled</div></div>
 <div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">oboe::PrivacySensitiveMode::Disabled</a></div><div class="ttdeci">@ Disabled</div></div>
 <div class="ttc" id="anamespaceoboe_html_a522e6806948369987639a0d1df03c029"><div class="ttname"><a href="namespaceoboe.html#a522e6806948369987639a0d1df03c029">oboe::ChannelCount</a></div><div class="ttdeci">ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:495</div></div>
@@ -544,7 +543,7 @@ $(function() {
 <div class="ttc" id="anamespaceoboe_html_a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f"><div class="ttname"><a href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">oboe::None</a></div><div class="ttdeci">@ None</div><div class="ttdef"><b>Definition</b> Definitions.h:473</div></div>
 <div class="ttc" id="anamespaceoboe_html_a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123"><div class="ttname"><a href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">oboe::Allocate</a></div><div class="ttdeci">@ Allocate</div><div class="ttdef"><b>Definition</b> Definitions.h:482</div></div>
 <div class="ttc" id="anamespaceoboe_html_a5948466b593c4eab65f7025846a39f51"><div class="ttname"><a href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">oboe::kNanosPerSecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerSecond</div><div class="ttdef"><b>Definition</b> Definitions.h:52</div></div>
-<div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9a"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">oboe::AllowedCapturePolicy</a></div><div class="ttdeci">AllowedCapturePolicy</div><div class="ttdef"><b>Definition</b> Definitions.h:723</div></div>
+<div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9a"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">oboe::AllowedCapturePolicy</a></div><div class="ttdeci">AllowedCapturePolicy</div><div class="ttdef"><b>Definition</b> Definitions.h:802</div></div>
 <div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">oboe::AllowedCapturePolicy::System</a></div><div class="ttdeci">@ System</div></div>
 <div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">oboe::AllowedCapturePolicy::All</a></div><div class="ttdeci">@ All</div></div>
 <div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1d"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">oboe::SampleRateConversionQuality</a></div><div class="ttdeci">SampleRateConversionQuality</div><div class="ttdef"><b>Definition</b> Definitions.h:279</div></div>
@@ -569,17 +568,40 @@ $(function() {
 <div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b">oboe::AudioFormat::I32</a></div><div class="ttdeci">@ I32</div></div>
 <div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb">oboe::AudioFormat::IEC61937</a></div><div class="ttdeci">@ IEC61937</div></div>
 <div class="ttc" id="anamespaceoboe_html_ab0772052200184e514082eaa89be7905"><div class="ttname"><a href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">oboe::kUnspecified</a></div><div class="ttdeci">constexpr int32_t kUnspecified</div><div class="ttdef"><b>Definition</b> Definitions.h:31</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">oboe::ChannelMask</a></div><div class="ttdeci">ChannelMask</div><div class="ttdef"><b>Definition</b> Definitions.h:521</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">oboe::ChannelMask</a></div><div class="ttdeci">ChannelMask</div><div class="ttdef"><b>Definition</b> Definitions.h:526</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">oboe::ChannelMask::CM9Point1Point4</a></div><div class="ttdeci">@ CM9Point1Point4</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8">oboe::ChannelMask::TriBack</a></div><div class="ttdeci">@ TriBack</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909">oboe::ChannelMask::CM5Point1Point2</a></div><div class="ttdeci">@ CM5Point1Point2</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d">oboe::ChannelMask::FrontBack</a></div><div class="ttdeci">@ FrontBack</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c">oboe::ChannelMask::Surround</a></div><div class="ttdeci">@ Surround</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1">oboe::ChannelMask::CM2Point1</a></div><div class="ttdeci">@ CM2Point1</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f">oboe::ChannelMask::CM5Point1Side</a></div><div class="ttdeci">@ CM5Point1Side</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97">oboe::ChannelMask::CM7Point1Point2</a></div><div class="ttdeci">@ CM7Point1Point2</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb">oboe::ChannelMask::QuadSide</a></div><div class="ttdeci">@ QuadSide</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f">oboe::ChannelMask::CM6Point1</a></div><div class="ttdeci">@ CM6Point1</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">oboe::ChannelMask::CM3Point0Point2</a></div><div class="ttdeci">@ CM3Point0Point2</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6">oboe::ChannelMask::CM3Point1</a></div><div class="ttdeci">@ CM3Point1</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0">oboe::ChannelMask::Penta</a></div><div class="ttdeci">@ Penta</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">oboe::ChannelMask::CM7Point1</a></div><div class="ttdeci">@ CM7Point1</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">oboe::ChannelMask::CM5Point1</a></div><div class="ttdeci">@ CM5Point1</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3">oboe::ChannelMask::Tri</a></div><div class="ttdeci">@ Tri</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452">oboe::ChannelMask::CM3Point1Point2</a></div><div class="ttdeci">@ CM3Point1Point2</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">oboe::ChannelMask::CM7Point1Point4</a></div><div class="ttdeci">@ CM7Point1Point4</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad">oboe::ChannelMask::CM5Point1Point4</a></div><div class="ttdeci">@ CM5Point1Point4</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">oboe::ChannelMask::CM2Point0Point2</a></div><div class="ttdeci">@ CM2Point0Point2</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">oboe::ChannelMask::Quad</a></div><div class="ttdeci">@ Quad</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508">oboe::ChannelMask::CM9Point1Point6</a></div><div class="ttdeci">@ CM9Point1Point6</div></div>
+<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1">oboe::ChannelMask::CM2Point1Point2</a></div><div class="ttdeci">@ CM2Point1Point2</div></div>
 <div class="ttc" id="anamespaceoboe_html_ad1bb9f5626cec20d3a052a8721959873"><div class="ttname"><a href="namespaceoboe.html#ad1bb9f5626cec20d3a052a8721959873">oboe::kMillisPerSecond</a></div><div class="ttdeci">constexpr int64_t kMillisPerSecond</div><div class="ttdef"><b>Definition</b> Definitions.h:47</div></div>
 <div class="ttc" id="anamespaceoboe_html_aedef0759ae3622b6f0324799bcbdebf0"><div class="ttname"><a href="namespaceoboe.html#aedef0759ae3622b6f0324799bcbdebf0">oboe::kNanosPerMicrosecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerMicrosecond</div><div class="ttdef"><b>Definition</b> Definitions.h:37</div></div>
 <div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5ae"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5ae">oboe::Direction</a></div><div class="ttdeci">Direction</div><div class="ttdef"><b>Definition</b> Definitions.h:77</div></div>
 <div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5aea29c2c02a361c9d7028472e5d92cd4a54"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea29c2c02a361c9d7028472e5d92cd4a54">oboe::Direction::Output</a></div><div class="ttdeci">@ Output</div></div>
 <div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5">oboe::Direction::Input</a></div><div class="ttdeci">@ Input</div></div>
 <div class="ttc" id="anamespaceoboe_html_af85fc9910a287df6c5df0ed396bb75cd"><div class="ttname"><a href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">oboe::DataCallbackResult</a></div><div class="ttdeci">DataCallbackResult</div><div class="ttdef"><b>Definition</b> Definitions.h:160</div></div>
-<div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7a"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">oboe::SpatializationBehavior</a></div><div class="ttdeci">SpatializationBehavior</div><div class="ttdef"><b>Definition</b> Definitions.h:669</div></div>
+<div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7a"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">oboe::SpatializationBehavior</a></div><div class="ttdeci">SpatializationBehavior</div><div class="ttdef"><b>Definition</b> Definitions.h:748</div></div>
 <div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">oboe::SpatializationBehavior::Auto</a></div><div class="ttdeci">@ Auto</div></div>
 <div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">oboe::SpatializationBehavior::Never</a></div><div class="ttdeci">@ Never</div></div>
-<div class="ttc" id="astructoboe_1_1_frame_timestamp_html"><div class="ttname"><a href="structoboe_1_1_frame_timestamp.html">oboe::FrameTimestamp</a></div><div class="ttdef"><b>Definition</b> Definitions.h:792</div></div>
+<div class="ttc" id="astructoboe_1_1_frame_timestamp_html"><div class="ttname"><a href="structoboe_1_1_frame_timestamp.html">oboe::FrameTimestamp</a></div><div class="ttdef"><b>Definition</b> Definitions.h:871</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
