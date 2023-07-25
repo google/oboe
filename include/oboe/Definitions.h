@@ -517,6 +517,11 @@ namespace oboe {
      * The rest of the enums are channel position masks.
      * Use the combinations of the channel position masks defined below instead of
      * using those values directly.
+     *
+     * Channel masks are for input only, output only, or both input and output.
+     * These channel masks are different than those defined in AudioFormat.java.
+     * If an app gets a channel mask from Java API and wants to use it in Oboe,
+     * conversion should be done by the app.
      */
     enum class ChannelMask : uint32_t { // aaudio_channel_mask_t
         Unspecified = kUnspecified,
@@ -547,64 +552,108 @@ namespace oboe {
         FrontWideLeft = 1 << 24,
         FrontWideRight = 1 << 25,
 
+        /**
+         * Supported for Input and Output
+         */
         Mono = FrontLeft,
 
+        /**
+         * Supported for Input and Output
+         */
         Stereo = FrontLeft |
                  FrontRight,
 
+        /**
+         * Supported for only Output
+         */
         CM2Point1 = FrontLeft |
                     FrontRight |
                     LowFrequency,
 
+        /**
+         * Supported for only Output
+         */
         Tri = FrontLeft |
               FrontRight |
               FrontCenter,
 
+        /**
+         * Supported for only Output
+         */
         TriBack = FrontLeft |
                   FrontRight |
                   BackCenter,
 
+        /**
+         * Supported for only Output
+         */
         CM3Point1 = FrontLeft |
                     FrontRight |
                     FrontCenter |
                     LowFrequency,
 
+        /**
+         * Supported for Input and Output
+         */
         CM2Point0Point2 = FrontLeft |
                           FrontRight |
                           TopSideLeft |
                           TopSideRight,
 
+        /**
+         * Supported for Input and Output
+         */
         CM2Point1Point2 = CM2Point0Point2 |
                           LowFrequency,
 
+        /**
+         * Supported for Input and Output
+         */
         CM3Point0Point2 = FrontLeft |
                           FrontRight |
                           FrontCenter |
                           TopSideLeft |
                           TopSideRight,
 
+        /**
+         * Supported for Input and Output
+         */
         CM3Point1Point2 = CM3Point0Point2 |
                           LowFrequency,
 
+        /**
+         * Supported for only Output
+         */
         Quad = FrontLeft |
                FrontRight |
                BackLeft |
                BackRight,
 
+        /**
+         * Supported for only Output
+         */
         QuadSide = FrontLeft |
                    FrontRight |
                    SideLeft |
                    SideRight,
 
+        /**
+         * Supported for only Output
+         */
         Surround = FrontLeft |
                    FrontRight |
                    FrontCenter |
                    BackCenter,
 
+        /**
+         * Supported for only Output
+         */
         Penta = Quad |
                 FrontCenter,
 
-        // aka 5Point1Back
+        /**
+         * Supported for Input and Output. aka 5Point1Back
+         */
         CM5Point1 = FrontLeft |
                     FrontRight |
                     FrontCenter |
@@ -612,6 +661,9 @@ namespace oboe {
                     BackLeft |
                     BackRight,
 
+        /**
+         * Supported for only Output
+         */
         CM5Point1Side = FrontLeft |
                         FrontRight |
                         FrontCenter |
@@ -619,6 +671,9 @@ namespace oboe {
                         SideLeft |
                         SideRight,
 
+        /**
+         * Supported for only Output
+         */
         CM6Point1 = FrontLeft |
                     FrontRight |
                     FrontCenter |
@@ -627,38 +682,62 @@ namespace oboe {
                     BackRight |
                     BackCenter,
 
+        /**
+         * Supported for only Output
+         */
         CM7Point1 = CM5Point1 |
                     SideLeft |
                     SideRight,
 
+        /**
+         * Supported for only Output
+         */
         CM5Point1Point2 = CM5Point1 |
                           TopSideLeft |
                           TopSideRight,
 
+        /**
+         * Supported for only Output
+         */
         CM5Point1Point4 = CM5Point1 |
                           TopFrontLeft |
                           TopFrontRight |
                           TopBackLeft |
                           TopBackRight,
 
+        /**
+         * Supported for only Output
+         */
         CM7Point1Point2 = CM7Point1 |
                           TopSideLeft |
                           TopSideRight,
 
+        /**
+         * Supported for only Output
+         */
         CM7Point1Point4 = CM7Point1 |
                           TopFrontLeft |
                           TopFrontRight |
                           TopBackLeft |
                           TopBackRight,
 
+        /**
+         * Supported for only Output
+         */
         CM9Point1Point4 = CM7Point1Point4 |
                           FrontWideLeft |
                           FrontWideRight,
 
+        /**
+         * Supported for only Output
+         */
         CM9Point1Point6 = CM9Point1Point4 |
                           TopSideLeft |
                           TopSideRight,
 
+        /**
+         * Supported for only Input
+         */
         FrontBack = FrontCenter |
                     BackCenter,
     };
