@@ -540,7 +540,8 @@ Java_com_mobileer_oboetester_OboeAudioStream_getState(JNIEnv *env, jobject insta
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         auto state = oboeStream->getState();
-        if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+        if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started
+                && state != oboe::StreamState::Disconnected) {
             oboe::Result result = oboeStream->waitForStateChange(
                     oboe::StreamState::Uninitialized,
                     &state, 0);
