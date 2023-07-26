@@ -70,10 +70,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private final static double MAX_ALLOWED_JITTER = 2.0 * PHASE_PER_BIN;
     private final static String MAGNITUDE_FORMAT = "%7.5f";
 
-    public static final int JAVA_CHANNEL_IN_LEFT = 1 << 2;
-    public static final int JAVA_CHANNEL_IN_RIGHT = 1 << 3;
-    public static final int JAVA_CHANNEL_IN_FRONT = 1 << 4;
-    public static final int JAVA_CHANNEL_IN_BACK = 1 << 5;
+    // These define the values returned by the Java API deviceInfo.getChannelMasks().
+    public static final int JAVA_CHANNEL_IN_LEFT = 1 << 2;  // AudioFormat.CHANNEL_IN_LEFT
+    public static final int JAVA_CHANNEL_IN_RIGHT = 1 << 3; // AudioFormat.CHANNEL_IN_RIGHT
+    public static final int JAVA_CHANNEL_IN_FRONT = 1 << 4; // AudioFormat.CHANNEL_IN_FRONT
+    public static final int JAVA_CHANNEL_IN_BACK = 1 << 5;  // AudioFormat.CHANNEL_IN_BACK
+
+    // These do not have corresponding Java definitions.
+    // They match definitions in system/media/audio/include/system/audio-hal-enums.h
     public static final int JAVA_CHANNEL_IN_BACK_LEFT = 1 << 16;
     public static final int JAVA_CHANNEL_IN_BACK_RIGHT = 1 << 17;
     public static final int JAVA_CHANNEL_IN_CENTER = 1 << 18;
@@ -117,8 +121,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxOutputDevices;
 
     private static final int[] INPUT_PRESETS = {
-            // VOICE_RECOGNITION gets tested in testInputs()
-            // StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
             StreamConfiguration.INPUT_PRESET_GENERIC,
             StreamConfiguration.INPUT_PRESET_CAMCORDER,
             StreamConfiguration.INPUT_PRESET_UNPROCESSED,
@@ -463,15 +465,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         for (int inputPreset : INPUT_PRESETS) {
             testPresetCombo(inputPreset);
         }
-// TODO Resolve issue with echo cancellation killing the signal.
-//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-//                1, 0, 2, 0);
-//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-//                1, 0, 2, 1);
-//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-//                2, 0, 2, 0);
-//        testPresetCombo(StreamConfiguration.INPUT_PRESET_VOICE_COMMUNICATION,
-//                2, 0, 2, 1);
     }
 
     void testInputDeviceCombo(int deviceId,
@@ -525,7 +518,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         int numTested = 0;
         for (AudioDeviceInfo deviceInfo : devices) {
             log("----\n"
-                    + AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
+                    + AudioDeviceInfoConverter.toString(deviceInfo));
             if (!deviceInfo.isSource()) continue; // FIXME log as error?!
             int deviceType = deviceInfo.getType();
             if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
@@ -701,7 +694,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             if (!deviceInfo.isSink()) continue;
             int deviceType = deviceInfo.getType();
             if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
-                || deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
                 || deviceType == TYPE_BUILTIN_SPEAKER_SAFE) {
                 int id = deviceInfo.getId();
                 int[] channelCounts = deviceInfo.getChannelCounts();
@@ -734,7 +726,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     }
                 }
             } else {
-                log("Device skipped. Not BuiltIn Speaker.");
+                log("Device skipped because DeviceType is not testable.");
             }
         }
         if (numTested == 0) {

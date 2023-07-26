@@ -54,11 +54,11 @@ public class AudioDeviceInfoConverter {
 
         sb.append("\nChannel masks: ");
         int[] channelMasks = adi.getChannelMasks();
-        sb.append(intArrayToString(channelMasks));
+        sb.append(intArrayToStringHex(channelMasks));
 
         sb.append("\nChannel index masks: ");
         int[] channelIndexMasks = adi.getChannelIndexMasks();
-        sb.append(intArrayToString(channelIndexMasks));
+        sb.append(intArrayToStringHex(channelIndexMasks));
 
         sb.append("\nEncodings: ");
         int[] encodings = adi.getEncodings();
@@ -111,7 +111,22 @@ public class AudioDeviceInfoConverter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < integerArray.length; i++){
             sb.append(integerArray[i]);
-            if (i != integerArray.length -1) sb.append(" ");
+            if (i != integerArray.length - 1) sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts an integer array into a hexadecimal string where each int is separated by a space
+     *
+     * @param integerArray the integer array to convert to a string
+     * @return string containing all the integer values separated by spaces
+     */
+    private static String intArrayToStringHex(int[] integerArray){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < integerArray.length; i++){
+            sb.append(String.format("0x%02X", integerArray[i]));
+            if (i != integerArray.length - 1) sb.append(" ");
         }
         return sb.toString();
     }
