@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Demonstrate the behavior of a changing CPU load on underruns.
@@ -179,10 +180,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message =
-                        "#Voices: max = " + String.format("%d", (int) mWorkloadBenchmark)
-                        + ", current = " + String.format("%d", (int) nextWorkload)
+                        "#Voices: max = " + String.format(Locale.getDefault(), "%d", (int) mWorkloadBenchmark)
+                        + ", current = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
                         + "\nWorkState = " + stateToString(mState)
-                        + "\nCPU = " + String.format("%6.3f%c", cpuLoad * 100, '%')
+                        + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload((int)(nextWorkload));
