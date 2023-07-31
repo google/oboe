@@ -181,6 +181,14 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
         }
     }
 
+    // For a pure float graph, there is chance that the data range may be very large.
+    // So we should limit to a reasonable value that allows a little headroom.
+    if (sourceFormat == AudioFormat::Float && sinkFormat == AudioFormat::Float) {
+        mLimiter = std::make_unique<Limiter>(sourceChannelCount);
+        lastOutput->connect(&mLimiter->input);
+        lastOutput = &mLimiter->output;
+    }
+
     // Sample Rate conversion
     if (sourceSampleRate != sinkSampleRate) {
         // Create a resampler to do the math.
