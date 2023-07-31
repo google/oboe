@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     private external fun native_setDefaultStreamValues(sampleRate: Int, framesPerBurst: Int)
 
     companion object {
-        private const val DIMENSION_MIN_SIZE = 5
+        private const val DIMENSION_MIN_SIZE = 6
         private const val DIMENSION_MAX_SIZE = 8
         private var mNumColumns : Int = 0;
         private var mNumRows : Int = 0;
