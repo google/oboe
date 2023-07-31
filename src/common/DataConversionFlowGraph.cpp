@@ -184,7 +184,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
     // For a pure float graph, there is chance that the data range may be very large.
     // So we should limit to a reasonable value that allows a little headroom.
     if (sourceFormat == AudioFormat::Float && sinkFormat == AudioFormat::Float) {
-        mLimiter = std::make_unique<Limiter>(sourceChannelCount);
+        mLimiter = std::make_unique<Limiter>(lastOutput->getSamplesPerFrame());
         lastOutput->connect(&mLimiter->input);
         lastOutput = &mLimiter->output;
     }
