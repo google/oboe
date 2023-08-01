@@ -21,6 +21,7 @@ import android.media.AudioProfile;
 import android.os.Build;
 
 import java.util.List;
+import java.util.Locale;
 
 public class AudioDeviceInfoConverter {
 
@@ -125,7 +126,7 @@ public class AudioDeviceInfoConverter {
     private static String intArrayToStringHex(int[] integerArray){
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < integerArray.length; i++){
-            sb.append(String.format("0x%02X", integerArray[i]));
+            sb.append(String.format(Locale.getDefault(), "0x%02X", integerArray[i]));
             if (i != integerArray.length - 1) sb.append(" ");
         }
         return sb.toString();

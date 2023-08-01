@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
 
 import android.app.Activity;
 import android.content.Context;
@@ -475,8 +476,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                               boolean mmapEnabled) throws InterruptedException {
         String typeString = AudioDeviceInfoConverter.typeToString(deviceType);
         if (channelMask != 0) {
-            setTestName("Test InDev: #" + deviceId + " " + typeString
-                    + " Mask:" + channelMask + "_" + inputChannel + "/" + channelCount);
+            setTestName("Test InDev: #" + deviceId + " " + typeString + "_" +
+                    convertChannelMaskToText(channelMask) + "_" +
+                    inputChannel + "/" + channelCount);
         } else {
             setTestName("Test InDev: #" + deviceId + " " + typeString
                     + "_" + inputChannel + "/" + channelCount);
@@ -549,8 +551,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                             log("channelMask: " + channelMask + " not supported. Skipping.\n");
                             continue;
                         }
-                        // Test higher channel counts.
-                        log("nativeChannelMask = " + nativeChannelMask + "\n");
+                        log("nativeChannelMask = " + convertChannelMaskToText(nativeChannelMask) + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
                             testInputDeviceCombo(id, deviceType, channelCount, nativeChannelMask,
@@ -718,7 +719,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     for (int channelMask : channelMasks) {
                         int nativeChannelMask =
                                 convertJavaOutChannelMaskToNativeChannelMask(channelMask);
-                        log("nativeChannelMask = " + nativeChannelMask + "\n");
+                        log("nativeChannelMask = " + convertChannelMaskToText(nativeChannelMask) + "\n");
                         int channelCount = Integer.bitCount(nativeChannelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
                             testOutputDeviceCombo(id, deviceType, channelCount, nativeChannelMask, channel);
