@@ -71,8 +71,8 @@ object AudioPlayer : DefaultLifecycleObserver {
     }
 
     override fun onStop(owner: LifecycleOwner) {
-        super.onStop(owner)
         setPlaybackEnabled(false)
+        super.onStop(owner)
     }
 
     private external fun startAudioStreamNative(): Int

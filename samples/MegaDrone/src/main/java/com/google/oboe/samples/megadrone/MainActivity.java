@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-        mEngineHandle = startEngine(getExclusiveCores());
         super.onResume();
+        mEngineHandle = startEngine(getExclusiveCores());
     }
 
     @Override

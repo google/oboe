@@ -54,8 +54,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        setup()
         super.onResume()
+        setup()
     }
 
     override fun onPause() {
