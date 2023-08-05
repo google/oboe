@@ -293,7 +293,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     native double getMagnitude();
     native double getMaxMagnitude();
-    native double getPhase();
 
     @Override
     protected void inflateActivity() {

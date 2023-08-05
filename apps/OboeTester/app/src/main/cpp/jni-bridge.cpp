@@ -753,8 +753,14 @@ Java_com_mobileer_oboetester_AnalyzerActivity_getResetCount(JNIEnv *env,
 // ==========================================================================
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_getGlitchCount(JNIEnv *env,
-                                                                     jobject instance) {
+                                                           jobject instance) {
     return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
+}
+
+JNIEXPORT double JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_getPhase(JNIEnv *env,
+                                                           jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getPhaseOffset();
 }
 
 JNIEXPORT jint JNICALL
@@ -794,11 +800,11 @@ Java_com_mobileer_oboetester_TestDataPathsActivity_getMaxMagnitude(JNIEnv *env,
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMaxMagnitude();
 }
 
-JNIEXPORT jdouble JNICALL
-Java_com_mobileer_oboetester_TestDataPathsActivity_getPhase(JNIEnv *env,
-                                                                          jobject instance) {
-    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
-}
+//JNIEXPORT jdouble JNICALL
+//Java_com_mobileer_oboetester_TestDataPathsActivity_getPhase(JNIEnv *env,
+//                                                                          jobject instance) {
+//    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
+//}
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_setTolerance(JNIEnv *env,

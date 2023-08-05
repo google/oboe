@@ -47,6 +47,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
     native int getStateFrameCount(int state);
     native int getGlitchCount();
+    native double getPhase();
     native double getSignalToNoiseDB();
     native double getPeakAmplitude();
     native double getSineAmplitude();
@@ -174,6 +175,7 @@ public class GlitchActivity extends AnalyzerActivity {
             message.append(String.format(Locale.getDefault(), "reset.count = %d\n", mLastResetCount - mStartResetCount));
             message.append(String.format(Locale.getDefault(), "peak.amplitude = %8.6f\n", mPeakAmplitude));
             message.append(String.format(Locale.getDefault(), "sine.amplitude = %8.6f\n", mSineAmplitude));
+            message.append(String.format(Locale.getDefault(), "input.phase = %8.6f\n", getPhase()));
             if (mLastLockedFrames > 0) {
                 message.append(String.format(Locale.getDefault(), "signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             }

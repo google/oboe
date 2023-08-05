@@ -50,6 +50,10 @@ public:
         return mMagnitude;
     }
 
+    float getPhaseOffset() const {
+        return mPhaseOffset;
+    }
+
     int32_t getGlitchCount() const {
         return mGlitchCount;
     }
@@ -124,20 +128,21 @@ public:
         result_code result = RESULT_OK;
 
         float sample = frameData[getInputChannel()];
-        float peak = mPeakFollower.process(sample);
-        mInfiniteRecording.write(sample);
 
         // Force a periodic glitch to test the detector!
-        if (mForceGlitchDuration > 0) {
+        if (mForceGlitchDurationFrames > 0) {
             if (mForceGlitchCounter == 0) {
-                ALOGE("%s: force a glitch!!", __func__);
-                mForceGlitchCounter = getSampleRate();
-            } else if (mForceGlitchCounter <= mForceGlitchDuration) {
+                ALOGE("%s: finish a glitch!!", __func__);
+                mForceGlitchCounter = kForceGlitchPeriod;
+            } else if (mForceGlitchCounter <= mForceGlitchDurationFrames) {
                 // Force an abrupt offset.
-                sample += (sample > 0.0) ? -0.5f : 0.5f;
+                sample += (sample > 0.0) ? -kForceGlitchOffset : kForceGlitchOffset;
             }
             --mForceGlitchCounter;
         }
+
+        float peak = mPeakFollower.process(sample);
+        mInfiniteRecording.write(sample);
 
         mStateFrameCounters[mState]++; // count how many frames we are in each state
 
@@ -199,7 +204,7 @@ public:
                 if (absDiff > mScaledTolerance) {
                     result = ERROR_GLITCHES;
                     onGlitchStart();
-//                    LOGI("diff glitch detected, absDiff = %g", absDiff);
+//                  LOGI("diff glitch detected, absDiff = %g", absDiff);
                 } else {
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
@@ -269,16 +274,17 @@ public:
     bool isOutputEnabled() override { return mState != STATE_IDLE; }
 
     void onGlitchStart() {
-        mGlitchCount++;
-//        ALOGD("%5d: STARTED a glitch # %d", mFrameCounter, mGlitchCount);
         mState = STATE_GLITCHING;
         mGlitchLength = 1;
         mNonGlitchCount = 0;
         mLastGlitchPosition = mInfiniteRecording.getTotalWritten();
+        ALOGD("%5d: STARTED a glitch # %d, pos = %5d",
+              mFrameCounter, mGlitchCount, (int)mLastGlitchPosition);
     }
 
     void onGlitchEnd() {
-//        ALOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
+        mGlitchCount++;
+        ALOGD("%5d: ENDED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
         mState = STATE_LOCKED;
         resetAccumulator();
     }
@@ -310,7 +316,14 @@ public:
     }
 
     int32_t getLastGlitch(float *buffer, int32_t length) {
-        return mInfiniteRecording.readFrom(buffer, mLastGlitchPosition - 32, length);
+        const int margin = 32;
+        int32_t numSamples = mInfiniteRecording.readFrom(buffer,
+                                                         mLastGlitchPosition - margin,
+                                                         length);
+        ALOGD("%s: glitch at %d, edge = %7.4f, %7.4f, %7.4f",
+              __func__, (int)mLastGlitchPosition,
+            buffer[margin - 1], buffer[margin], buffer[margin+1]);
+        return numSamples;
     }
 
 private:
@@ -350,8 +363,10 @@ private:
     int     mDownCounter = IDLE_FRAME_COUNT;
     int32_t mFrameCounter = 0;
 
-    int32_t mForceGlitchDuration = 0; // if > 0 then force a glitch for debugging
-    int32_t mForceGlitchCounter = 4 * 48000; // count down and trigger at zero
+    int32_t mForceGlitchDurationFrames = 500; // if > 0 then force a glitch for debugging
+    static constexpr int32_t kForceGlitchPeriod = 2 * 48000; // How often we glitch
+    static constexpr float   kForceGlitchOffset = 0.03f;
+    int32_t mForceGlitchCounter = kForceGlitchPeriod; // count down and trigger at zero
 
     // measure background noise continuously as a deviation from the expected signal
     double  mSumSquareSignal = 0.0;

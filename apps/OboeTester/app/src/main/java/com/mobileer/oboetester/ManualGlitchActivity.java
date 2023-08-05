@@ -19,11 +19,14 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.Locale;
+
+import kotlin.random.Random;
 
 public class ManualGlitchActivity extends GlitchActivity {
 
@@ -167,10 +170,12 @@ public class ManualGlitchActivity extends GlitchActivity {
     @Override
     protected void onGlitchDetected() {
         long now = System.currentTimeMillis();
+        Log.i(TAG,"onGlitchDetected: glitch");
         if ((now - mLastDisplayTime) > MIN_DISPLAY_PERIOD_MILLIS) {
             mLastDisplayTime = now;
             int numSamples = getGlitch(mWaveform);
             mWaveformView.setSampleData(mWaveform, 0, numSamples);
+            Log.i(TAG,"onGlitchDetected: glitch, numSamples = " + numSamples);
             mWaveformView.postInvalidate();
         }
     }
