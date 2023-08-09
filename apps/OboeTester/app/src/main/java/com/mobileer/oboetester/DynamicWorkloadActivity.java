@@ -351,7 +351,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     @Override
     public void onStopTest() {
-        mUpdateThread.stop();
+        WorkloadUpdateThread updateThread = mUpdateThread;
+        if (updateThread != null) {
+            updateThread.stop();
+        }
         updateButtons(false);
         super.onStopTest();
     }
