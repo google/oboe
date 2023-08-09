@@ -118,7 +118,7 @@ public class TestColdStartLatencyActivity extends Activity {
             boolean useLowLatency = mLowLatencyCheckBox.isChecked();
             boolean useMmap = mMmapCheckBox.isChecked();
             boolean useExclusive = mExclusiveCheckBox.isChecked();
-            log((useInput ? "IN" : "OUT")
+            Log.d(TAG,(useInput ? "IN" : "OUT")
                     + ", " + (useLowLatency ? "LOW_LATENCY" : "NOT LOW_LATENCY")
                     + ", " + (useMmap ? "MMAP" : "NOT MMAP")
                     + ", " + (useExclusive ? "EXCLUSIVE" : "SHARED"));
