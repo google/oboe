@@ -28,6 +28,7 @@
 #include "oboe/Oboe.h"
 
 #include "NativeAudioContext.h"
+#include "TestColdStartLatency.h"
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 
@@ -883,6 +884,51 @@ JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_getSleepTimeMicros(
         JNIEnv *env, jobject instance) {
     return sRoutingCrash.getSleepTimeMicros();
+}
+
+static TestColdStartLatency sColdStartLatency;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_openStream(
+        JNIEnv *env, jobject instance,
+        jboolean useInput, jboolean useLowLatency, jboolean useMmap, jboolean useExclusive) {
+    return sColdStartLatency.open(useInput, useLowLatency, useMmap, useExclusive);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_startStream(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.start();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_stopStream(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getOpenTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getOpenTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getStartTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getStartTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getColdStartTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getColdStartTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getDeviceId(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getDeviceId();
 }
 
 }

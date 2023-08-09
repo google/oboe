@@ -71,5 +71,15 @@
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchDynamicWorkloadTest"
             android:text="CPU Load" />
+
+        <Button
+            android:id="@+id/buttonColdStartLatency"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchColdStartLatencyTest"
+            android:text="Cold Start Latency" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
