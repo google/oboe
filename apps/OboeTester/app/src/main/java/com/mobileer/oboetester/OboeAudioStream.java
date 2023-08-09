@@ -294,6 +294,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
     private native float getAndResetMaxCpuLoad(int streamIndex);
 
     @Override
+    public int getAndResetCpuMask() {
+        return getAndResetCpuMask(streamIndex);
+    }
+    private native int getAndResetCpuMask(int streamIndex);
+
+    @Override
     public String getCallbackTimeStr() {
         return getCallbackTimeString();
     }

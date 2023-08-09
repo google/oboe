@@ -245,6 +245,7 @@ public abstract class AudioStreamBase {
 
     public float getCpuLoad() { return 0.0f; }
     public float getAndResetMaxCpuLoad() { return 0.0f; }
+    public int getAndResetCpuMask() { return 0; }
 
     public String getCallbackTimeStr() { return "?"; };
 

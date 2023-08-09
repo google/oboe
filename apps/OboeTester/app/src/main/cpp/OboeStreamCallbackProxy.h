@@ -209,6 +209,16 @@ public:
     }
 
     /**
+     * @return mask of the CPUs used since the last reset
+     */
+    uint32_t getAndResetCpuMask() {
+        return mCpuMask.exchange(0);
+    }
+    void orCurrentCpuMask(int cpuIndex) {
+        mCpuMask |= (1 << cpuIndex);
+    }
+
+    /**
      * @param cpuIndex
      * @return 0 on success or a negative errno
      */
@@ -220,18 +230,12 @@ public:
         return err == 0 ? 0 : -errno;
     }
 
-    int applyCpuAffinityMask(uint32_t mask) {
-        cpu_set_t cpu_set;
-        CPU_ZERO(&cpu_set);
-        int cpuCount = sysconf(_SC_NPROCESSORS_CONF);
-        for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
-            if (mask & (1 << cpuIndex)) {
-                CPU_SET(cpuIndex, &cpu_set);
-            }
-        }
-        int err = sched_setaffinity((pid_t) 0, sizeof(cpu_set_t), &cpu_set);
-        return err == 0 ? 0 : -errno;
-    }
+    /**
+     *
+     * @param mask bits for each CPU or zero for all
+     * @return
+     */
+    int applyCpuAffinityMask(uint32_t mask);
 
     void setCpuAffinityMask(uint32_t mask) {
         mCpuAffinityMask = mask;
@@ -240,7 +244,7 @@ public:
 private:
     static constexpr double    kNsToMsScaler = 0.000001;
     std::atomic<float>         mCpuLoad{0.0f};
-    std::atomic<float >        mMaxCpuLoad{0.0f};
+    std::atomic<float>         mMaxCpuLoad{0.0f};
     int64_t                    mPreviousCallbackTimeNs = 0;
     DoubleStatistics           mStatistics;
     int32_t                    mNumWorkloadVoices = 0;
@@ -255,6 +259,9 @@ private:
 
     std::atomic<uint32_t>      mCpuAffinityMask{0};
     std::atomic<uint32_t>      mPreviousMask{0};
+    std::atomic<uint32_t>      mCpuMask{0};
+    cpu_set_t                  mOriginalCpuSet;
+    bool                       mIsOriginalCpuSetValid = false;
 
 };
 

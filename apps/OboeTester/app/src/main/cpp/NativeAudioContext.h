@@ -157,6 +157,10 @@ public:
         return oboeCallbackProxy.getAndResetMaxCpuLoad();
     }
 
+    uint32_t getAndResetCpuMask() {
+        return oboeCallbackProxy.getAndResetCpuMask();
+    }
+
     std::string getCallbackTimeString() {
         return oboeCallbackProxy.getCallbackTimeString();
     }

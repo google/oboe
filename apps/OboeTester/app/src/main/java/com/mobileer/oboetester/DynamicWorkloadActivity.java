@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -53,6 +54,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mUseAltAdpfBox;
     private CheckBox mPerfHintBox;
     private boolean mDrawChartAlways = true;
+    private CheckBox mDrawAlwaysBox;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
@@ -109,6 +111,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
                 float cpuLoad = stream.getCpuLoad();
                 float maxCpuLoad = stream.getAndResetMaxCpuLoad();
+                int cpuMask = stream.getAndResetCpuMask();
                 long now = System.currentTimeMillis();
                 boolean drawChartOnce = false;
 
@@ -184,6 +187,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         + ", current = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
+                        + "\ncores = " + cpuMaskToString(cpuMask)
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload((int)(nextWorkload));
@@ -213,6 +217,31 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     }
 
+
+    /**
+     * This text will look best in a monospace font.
+     * @param cpuMask CPU core bit mask
+     * @return a text display of the selected cores like "--2-45-6-"
+     */
+    // TODO move this to some utility class
+    private String cpuMaskToString(int cpuMask) {
+        String text = "";
+        long longMask = ((long) cpuMask) & 0x0FFFFFFFFL;
+        int index = 0;
+        while (longMask != 0 || index < 8) {
+            text += ((longMask & 1) != 0) ? hexDigit(index) : "-";
+            longMask = longMask >> 1;
+            index++;
+        }
+        return text;
+    }
+
+    private char hexDigit(int n) {
+        byte x = (byte)(n & 0x0F);
+        if (x < 10) return (char)('0' + x);
+        else return (char)('A' + x);
+    }
+
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_dynamic_workload);
@@ -225,6 +254,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mAudioOutTester = addAudioOutputTester();
 
         mResultView = (TextView) findViewById(R.id.resultView);
+        mResultView.setTypeface(Typeface.MONOSPACE);
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
 
@@ -286,8 +316,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setHearWorkload(checkBox.isChecked());
         });
 
-        CheckBox drawAlwaysBox = (CheckBox) findViewById(R.id.draw_always);
-        drawAlwaysBox.setOnClickListener(buttonView -> {
+        mDrawAlwaysBox = (CheckBox) findViewById(R.id.draw_always);
+        mDrawAlwaysBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             mDrawChartAlways = checkBox.isChecked();
         });
@@ -325,6 +355,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     public void startTest(View view) {
+        // Do not draw until the benchmark stage has finished.
+        mDrawAlwaysBox.setChecked(false);
+        mDrawChartAlways = false;
         try {
             openAudio();
         } catch (IOException e) {
