@@ -24,6 +24,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
@@ -77,6 +78,7 @@ public class TestColdStartLatencyActivity extends Activity {
     }
 
     public void onStartColdStartLatencyTest(View view) {
+        keepScreenOn(true);
         stopSniffer();
         mStreamSniffer = new MyStreamSniffer();
         mStreamSniffer.start();
@@ -84,6 +86,7 @@ public class TestColdStartLatencyActivity extends Activity {
     }
 
     public void onStopColdStartLatencyTest(View view) {
+        keepScreenOn(false);
         stopSniffer();
         setButtonsEnabled(false);
     }
@@ -198,6 +201,14 @@ public class TestColdStartLatencyActivity extends Activity {
         if (mStreamSniffer != null) {
             mStreamSniffer.finish();
             mStreamSniffer = null;
+        }
+    }
+
+    protected void keepScreenOn(boolean on) {
+        if (on) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 }
