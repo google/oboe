@@ -27,13 +27,13 @@ using namespace oboe;
 int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMmap, bool
         useExclusive) {
 
-    mDataCallback = std::make_shared<MyDataCallback>(this);
+    mDataCallback = std::make_shared<MyDataCallback>();
 
     // Enable MMAP if needed
     bool wasMMapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
     AAudioExtensions::getInstance().setMMapEnabled(useMmap);
 
-    int64_t beginOpenNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    int64_t beginOpenNanos = AudioClock::getNanoseconds();
 
     AudioStreamBuilder builder;
     Result result = builder.setFormat(AudioFormat::Float)
@@ -45,7 +45,7 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
             ->setSharingMode(useExclusive ? SharingMode::Exclusive : SharingMode::Shared)
             ->openStream(mStream);
 
-    int64_t endOpenNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    int64_t endOpenNanos = AudioClock::getNanoseconds();
     int64_t actualDurationNanos = endOpenNanos - beginOpenNanos;
     mOpenTimeMicros = actualDurationNanos / NANOS_PER_MICROSECOND;
 
@@ -58,9 +58,9 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
 }
 
 int32_t TestColdStartLatency::start() {
-    mBeginStartNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    mBeginStartNanos = AudioClock::getNanoseconds();
     Result result = mStream->requestStart();
-    int64_t endStartNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    int64_t endStartNanos = AudioClock::getNanoseconds();
     int64_t actualDurationNanos = endStartNanos - mBeginStartNanos;
     mStartTimeMicros = actualDurationNanos / NANOS_PER_MICROSECOND;
     return (int32_t) result;
@@ -72,42 +72,39 @@ int32_t TestColdStartLatency::stop() {
     return (int32_t)((result1 != Result::OK) ? result1 : result2);
 }
 
+int32_t TestColdStartLatency::getColdStartTimeMicros() {
+    auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
+    if (result) {
+        auto frameTimestamp = result.value();
+        // Calculate the time that frame[0] would have been played by the speaker.
+        int64_t position = frameTimestamp.position;
+        int64_t currentTimestampNanos = frameTimestamp.timestamp;
+        double sampleRate = (double) mStream->getSampleRate();
+
+        int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
+        int64_t timeOfFrameZero = currentTimestampNanos - elapsedNanos;
+        int64_t coldStartLatencyNanos = timeOfFrameZero - mBeginStartNanos;
+        return coldStartLatencyNanos / NANOS_PER_MICROSECOND;
+    }
+    return -1; // ERROR
+}
+
 // Callback that sleeps then touches the audio buffer.
 DataCallbackResult TestColdStartLatency::MyDataCallback::onAudioReady(
         AudioStream *audioStream,
         void *audioData,
         int32_t numFrames) {
-    auto result = audioStream->getTimestamp(CLOCK_MONOTONIC);
-    if (result) {
-        auto frameTimestamp = result.value();
-        // Calculate the time that frame[0] would have been played by the speaker.
-        int64_t position = frameTimestamp.position;
-        int64_t currentTimestampNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
-        double sampleRate = (double) audioStream->getSampleRate();
-
-        int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
-        int64_t timeOfFrameZero = currentTimestampNanos - elapsedNanos;
-        int64_t coldStartLatencyNanos = timeOfFrameZero - mParent->mBeginStartNanos;
-        mParent->mColdStartTimeMicros = coldStartLatencyNanos / NANOS_PER_MICROSECOND;
-    }
-
     float *floatData = (float *) audioData;
     const int numSamples = numFrames * kChannelCount;
-    if (audioStream->getDirection() == Direction::Input) {
-        // Read buffer and write sum of samples to a member variable.
-        // We just want to touch the memory and not get optimized away by the compiler.
-        float sum = 0.0f;
-        for (int i = 0; i < numSamples; i++) {
-            sum += *floatData++;
-        }
-        mInputSum = sum;
-    } else {
+    if (audioStream->getDirection() == Direction::Output) {
         // Fill mono buffer with a sine wave.
         for (int i = 0; i < numSamples; i++) {
             *floatData++ = sinf(mPhase) * 0.2f;
-            mPhase += kPhaseIncrement;
-            // Wrap the phase around in a circle.
-            if (mPhase >= M_PI) mPhase -= 2 * M_PI;
+            if ((i % kChannelCount) == (kChannelCount - 1)) {
+                mPhase += kPhaseIncrement;
+                // Wrap the phase around in a circle.
+                if (mPhase >= M_PI) mPhase -= 2 * M_PI;
+            }
         }
     }
     return DataCallbackResult::Continue;

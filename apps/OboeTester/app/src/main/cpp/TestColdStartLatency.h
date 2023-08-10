@@ -30,16 +30,14 @@ public:
     int32_t start();
     int32_t stop();
 
+    int32_t getColdStartTimeMicros();
+
     int32_t getOpenTimeMicros() {
         return (int32_t) (mOpenTimeMicros.load());
     }
 
     int32_t getStartTimeMicros() {
         return (int32_t) (mStartTimeMicros.load());
-    }
-
-    int32_t getColdStartTimeMicros() {
-        return (int32_t) (mColdStartTimeMicros.load());
     }
 
     int32_t getDeviceId() {
@@ -57,18 +55,16 @@ private:
 
     class MyDataCallback : public oboe::AudioStreamDataCallback {    public:
 
-        MyDataCallback(TestColdStartLatency *parent): mParent(parent) {}
+        MyDataCallback() {}
 
         oboe::DataCallbackResult onAudioReady(
                 oboe::AudioStream *audioStream,
                 void *audioData,
                 int32_t numFrames) override;
     private:
-        TestColdStartLatency *mParent;
         // For sine generator.
         float mPhase = 0.0f;
         static constexpr float kPhaseIncrement = 2.0f * (float) M_PI * 440.0f / 48000.0f;
-        float mInputSum = 0.0f; // For saving input data sum to prevent over-optimization.
     };
 
     std::shared_ptr<oboe::AudioStream> mStream;

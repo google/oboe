@@ -12,13 +12,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:gravity="bottom"
-            android:text="@string/cold_start_intro" />
-
         <RadioGroup
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

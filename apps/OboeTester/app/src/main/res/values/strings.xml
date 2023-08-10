@@ -271,11 +271,7 @@
 
     <string name="channel_mask_prompt">ChannelMask:</string>
 
-    <string name="cold_start_intro">
-        Test the cold open and cold start latency.
-    </string>
-
-    <string name="close_open_prompt">, Sleep between close and open (ms)</string>
+    <string name="close_open_prompt">, Sleep before open (ms)</string>
     <string name="open_start_prompt">, Sleep between open and start (ms)</string>
     <string name="start_stabilize_prompt">, Sleep for start to stabilize (ms)</string>
     <string-array name="sleep_times">
@@ -289,6 +285,9 @@
         <item>1000</item>
         <item>2000</item>
         <item>5000</item>
+        <item>10000</item>
+        <item>20000</item>
+        <item>50000</item>
     </string-array>
 
 </resources>

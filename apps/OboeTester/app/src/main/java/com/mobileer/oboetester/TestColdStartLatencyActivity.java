@@ -34,9 +34,7 @@ import android.widget.TextView;
 import java.util.Random;
 
 /**
- * Try to crash in the native AAudio code by causing a routing change
- * while playing audio. The buffer may get deleted while we are writing to it!
- * See b/274815060
+ * Test for getting the cold start latency
  */
 public class TestColdStartLatencyActivity extends Activity {
 
@@ -104,11 +102,8 @@ public class TestColdStartLatencyActivity extends Activity {
         mOpenStartDelaySpinner.setEnabled(!running);
     }
 
-    // Change routing while the stream is playing.
-    // Keep trying until we crash.
     protected class MyStreamSniffer extends Thread {
         boolean enabled = true;
-        int routingOption = 0;
         StringBuffer statusBuffer = new StringBuffer();
         int loopCount;
 
@@ -122,32 +117,32 @@ public class TestColdStartLatencyActivity extends Activity {
                     + ", " + (useLowLatency ? "LOW_LATENCY" : "NOT LOW_LATENCY")
                     + ", " + (useMmap ? "MMAP" : "NOT MMAP")
                     + ", " + (useExclusive ? "EXCLUSIVE" : "SHARED"));
-            String startStabilizeTimeText = (String) mStartStabilizeDelaySpinner.getAdapter().getItem(
-                    mStartStabilizeDelaySpinner.getSelectedItemPosition());
-            int startSleepTimeMillis = Integer.parseInt(startStabilizeTimeText);
-            Log.d(TAG, "Sleep after start Time = " + startSleepTimeMillis + " msec");
+            String closeSleepTimeText =
+                    (String) mCloseOpenDelaySpinner.getAdapter().getItem(
+                            mCloseOpenDelaySpinner.getSelectedItemPosition());
+            int closedSleepTimeMillis = Integer.parseInt(closeSleepTimeText);
+            Log.d(TAG, "Sleep before open time = " + closedSleepTimeMillis + " msec");
             String openSleepTimeText = (String) mOpenStartDelaySpinner.getAdapter().getItem(
                     mOpenStartDelaySpinner.getSelectedItemPosition());
             int openSleepTimeMillis = Integer.parseInt(openSleepTimeText);
             Log.d(TAG, "Sleep after open Time = " + openSleepTimeMillis + " msec");
-            String closeSleepTimeText =
-                    (String) mCloseOpenDelaySpinner.getAdapter().getItem(
-                            mCloseOpenDelaySpinner.getSelectedItemPosition());
-            int closeSleepTimeMillis = Integer.parseInt(closeSleepTimeText);
-            Log.d(TAG, "Sleep after close time = " + openSleepTimeMillis + " msec");
+            String startStabilizeTimeText = (String) mStartStabilizeDelaySpinner.getAdapter().getItem(
+                    mStartStabilizeDelaySpinner.getSelectedItemPosition());
+            int startSleepTimeMillis = Integer.parseInt(startStabilizeTimeText);
+            Log.d(TAG, "Sleep after start Time = " + startSleepTimeMillis + " msec");
             while (enabled) {
                 loopCount++;
                 try {
+                    sleep(closedSleepTimeMillis);
                     openStream(useInput, useLowLatency, useMmap, useExclusive);
                     log("-------#" + loopCount + " Device Id: " + getDeviceId());
-                    log("Cold Open Latency: " + getOpenTimeMicros() / 1000 + " msec");
+                    log("open() Latency: " + getOpenTimeMicros() / 1000 + " msec");
                     sleep(openSleepTimeMillis);
                     startStream();
-                    log("Request Start Latency: " + getStartTimeMicros() / 1000 + " msec");
+                    log("requestStart() Latency: " + getStartTimeMicros() / 1000 + " msec");
                     sleep(startSleepTimeMillis);
                     log("Cold Start Latency: " + getColdStartTimeMicros() / 1000 + " msec");
                     stopStream();
-                    sleep(closeSleepTimeMillis);
                 } catch (InterruptedException e) {
                 } finally {
                     stopStream();
