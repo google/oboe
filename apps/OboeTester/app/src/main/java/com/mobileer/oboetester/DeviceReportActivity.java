@@ -42,8 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Guide the user through a series of tests plugging in and unplugging a headset.
- * Print a summary at the end of any failures.
+ * Print a report of all the available audio devices.
  */
 public class DeviceReportActivity extends Activity {
 
