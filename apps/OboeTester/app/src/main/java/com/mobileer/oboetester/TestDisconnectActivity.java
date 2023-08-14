@@ -199,7 +199,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
     private String getConfigText(StreamConfiguration config) {
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "IN")
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
-                config.getPerformanceMode())
+                        config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
                 + ", " + config.getSampleRate();
     }
@@ -211,6 +211,10 @@ public class TestDisconnectActivity extends TestAudioActivity {
 
     private void log(String text) {
         mAutomatedTestRunner.log(text);
+    }
+
+    private void flushLog() {
+        mAutomatedTestRunner.flushLog();
     }
 
     private void appendFailedSummary(String text) {
@@ -293,6 +297,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
                     + ", Dev = " + actualConfig.getDeviceId()
             );
             log(actualConfigText);
+            flushLog();
 
             stream = (isInput)
                     ? mAudioInTester.getCurrentAudioStream()
@@ -345,6 +350,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
             // Wait for Java plug count to change or stream to disconnect.
             while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
+                flushLog();
                 Thread.sleep(POLL_DURATION_MILLIS);
                 if (mPlugCount > oldPlugCount) {
                     timeoutCount = TIME_TO_FAILURE_MILLIS / POLL_DURATION_MILLIS;
@@ -355,6 +361,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
             // Wait for timeout or stream to disconnect.
             while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest && (timeoutCount > 0) &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
+                flushLog();
                 Thread.sleep(POLL_DURATION_MILLIS);
                 timeoutCount--;
                 if (timeoutCount == 0) {
@@ -417,6 +424,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
         } else {
             log(TEXT_SKIP);
         }
+        flushLog();
         // Give hardware time to settle between tests.
         Thread.sleep(1000);
         mAutomatedTestRunner.incrementTestCount();
@@ -442,20 +450,28 @@ public class TestDisconnectActivity extends TestAudioActivity {
         testConfiguration(true, performanceMode, sharingMode);
     }
 
+    private void testConfiguration(int performanceMode,
+                                   int sharingMode, int sampleRate) throws InterruptedException {
+        testConfiguration(false, performanceMode, sharingMode, sampleRate);
+        testConfiguration(true, performanceMode, sharingMode, sampleRate);
+    }
+
     @Override
     public void runTest() {
         mPlugCount = 0;
 
         // Try several different configurations.
         try {
-            testConfiguration(false, StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_EXCLUSIVE, 44100);
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_EXCLUSIVE);
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_SHARED);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_NONE,
                     StreamConfiguration.SHARING_MODE_SHARED);
+            if (NativeEngine.isMMapExclusiveSupported()){
+                testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                        StreamConfiguration.SHARING_MODE_EXCLUSIVE);
+            }
+            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_SHARED);
+            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_SHARED, 44100);
         } catch (InterruptedException e) {
             log("Test CANCELLED - INVALID!");
         } catch (Exception e) {
