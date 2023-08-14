@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -48,9 +49,13 @@ public class TestDisconnectActivity extends TestAudioActivity {
     private volatile boolean mTestFailed;
     private volatile boolean mSkipTest;
     private volatile int mPlugCount;
+    private volatile int mPlugState;
+    private volatile int mPlugMicrophone;
     private BroadcastReceiver mPluginReceiver = new PluginBroadcastReceiver();
     private Button       mFailButton;
     private Button       mSkipButton;
+    private CheckBox     mCheckBoxInputs;
+    private CheckBox     mCheckBoxOutputs;
 
     protected AutomatedTestRunner mAutomatedTestRunner;
 
@@ -59,12 +64,17 @@ public class TestDisconnectActivity extends TestAudioActivity {
     public class PluginBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            mPlugMicrophone = intent.getIntExtra("microphone", -1);
+            mPlugState = intent.getIntExtra("state", -1);
             mPlugCount++;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    String message = "Intent.HEADSET_PLUG #" + mPlugCount;
+                    String message = "HEADSET_PLUG #" + mPlugCount
+                            + ", mic = " + mPlugMicrophone
+                            + ", state = " + mPlugState;
                     mPlugTextView.setText(message);
+                    log(message);
                 }
             });
         }
@@ -85,6 +95,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
         mInstructionsTextView = (TextView) findViewById(R.id.text_instructions);
         mStatusTextView = (TextView) findViewById(R.id.text_status);
         mPlugTextView = (TextView) findViewById(R.id.text_plug_events);
+
+        mCheckBoxInputs = (CheckBox)findViewById(R.id.checkbox_disco_inputs);
+        mCheckBoxOutputs = (CheckBox)findViewById(R.id.checkbox_disco_outputs);
 
         mFailButton = (Button) findViewById(R.id.button_fail);
         mSkipButton = (Button) findViewById(R.id.button_skip);
@@ -133,19 +146,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 mStatusTextView.setText(text);
             }
         });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        this.registerReceiver(mPluginReceiver, filter);
-    }
-
-    @Override
-    public void onPause() {
-        this.unregisterReceiver(mPluginReceiver);
-        super.onPause();
     }
 
     // This should only be called from UI events such as onStop or a button press.
@@ -214,8 +214,26 @@ public class TestDisconnectActivity extends TestAudioActivity {
             return;
         }
 
+        if (!isInput && !mCheckBoxOutputs.isChecked()) {
+            return;
+        }
+        if (isInput && !mCheckBoxInputs.isChecked()) {
+            return;
+        }
+
         String actualConfigText = "none";
         mSkipTest = false;
+
+        // Try to synchronize with the current headset state, IN or OUT.
+        while (mAutomatedTestRunner.isThreadEnabled() && !mSkipTest) {
+            if (requestPlugin != (mPlugState == 0)) {
+                String message = "SYNC: " + (requestPlugin ? "UNplug" : "Plug IN") + " headset now!";
+                setInstructionsText(message);
+                Thread.sleep(POLL_DURATION_MILLIS);
+            } else {
+                break;
+            }
+        }
 
         AudioInputTester    mAudioInTester = null;
         AudioOutputTester   mAudioOutTester = null;
@@ -252,12 +270,15 @@ public class TestDisconnectActivity extends TestAudioActivity {
         Thread.sleep(SETTLING_TIME_MILLIS);
         if (!mAutomatedTestRunner.isThreadEnabled()) return;
         boolean openFailed = false;
+        boolean hasMicFailed = false;
         AudioStreamBase stream = null;
         try {
             openAudio();
             log("Actual:");
             actualConfigText = getConfigText(actualConfig)
-                    + ", " + (actualConfig.isMMap() ? "MMAP" : "Legacy");
+                    + ", " + ((actualConfig.isMMap() ? "MMAP" : "Legacy")
+                    + ", Dev = " + actualConfig.getDeviceId()
+            );
             log(actualConfigText);
 
             stream = (isInput)
@@ -317,6 +338,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
                     break;
                 }
             }
+
             // Wait for timeout or stream to disconnect.
             while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest && (timeoutCount > 0) &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
@@ -328,14 +350,22 @@ public class TestDisconnectActivity extends TestAudioActivity {
                     setStatusText("Plug detected by Java.\nCounting down to Oboe failure: " + timeoutCount);
                 }
             }
-            if (!mTestFailed) {
+
+            if (mTestFailed) {
+                // Check whether the peripheral has a microphone.
+                // Sometimes the microphones does not appear on the first HEADSET_PLUG event.
+                if (isInput && (mPlugMicrophone == 0)) {
+                    hasMicFailed = true;
+                }
+            } else {
                 int error = stream.getLastErrorCallbackResult();
                 if (error != StreamConfiguration.ERROR_DISCONNECTED) {
-                    log("onEerrorCallback error = " + error
+                    log("onErrorCallback error = " + error
                             + ", expected " + StreamConfiguration.ERROR_DISCONNECTED);
                     mTestFailed = true;
                 }
             }
+
             setStatusText(mTestFailed ? "Failed" : "Passed - detected");
         }
         updateFailSkipButton(false);
@@ -358,6 +388,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 boolean passed = !mTestFailed;
                 String resultText = requestPlugin ? "plugIN" : "UNplug";
                 resultText += ", " + (passed ? TEXT_PASS : TEXT_FAIL);
+                if (hasMicFailed) {
+                    resultText += ", Headset has no mic!";
+                }
                 log(resultText);
                 if (!passed) {
                     appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
@@ -399,6 +432,10 @@ public class TestDisconnectActivity extends TestAudioActivity {
     @Override
     public void runTest() {
         mPlugCount = 0;
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        this.registerReceiver(mPluginReceiver, filter);
+
         // Try several different configurations.
         try {
             testConfiguration(false, StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
@@ -415,6 +452,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
             log(e);
             showErrorToast("Caught " + e);
         } finally {
+            this.unregisterReceiver(mPluginReceiver);
             setInstructionsText("Test finished.");
             updateFailSkipButton(false);
         }
