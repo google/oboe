@@ -148,6 +148,19 @@ public class TestDisconnectActivity extends TestAudioActivity {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        this.registerReceiver(mPluginReceiver, filter);
+    }
+
+    @Override
+    public void onPause() {
+        this.unregisterReceiver(mPluginReceiver);
+        super.onPause();
+    }
+
     // This should only be called from UI events such as onStop or a button press.
     @Override
     public void onStopTest() {
@@ -433,9 +446,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
     public void runTest() {
         mPlugCount = 0;
 
-        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        this.registerReceiver(mPluginReceiver, filter);
-
         // Try several different configurations.
         try {
             testConfiguration(false, StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
@@ -452,7 +462,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
             log(e);
             showErrorToast("Caught " + e);
         } finally {
-            this.unregisterReceiver(mPluginReceiver);
             setInstructionsText("Test finished.");
             updateFailSkipButton(false);
         }
