@@ -223,7 +223,7 @@ public:
     int applyCpuAffinityMask(uint32_t mask) {
         cpu_set_t cpu_set;
         CPU_ZERO(&cpu_set);
-        int cpuCount = get_nprocs();
+        int cpuCount = sysconf(_SC_NPROCESSORS_CONF);
         for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
             if (mask & (1 << cpuIndex)) {
                 CPU_SET(cpuIndex, &cpu_set);

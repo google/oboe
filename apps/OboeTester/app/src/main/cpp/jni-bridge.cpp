@@ -118,7 +118,7 @@ Java_com_mobileer_oboetester_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) {
-    return get_nprocs();
+    return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 JNIEXPORT void JNICALL
