@@ -902,9 +902,9 @@ Java_com_mobileer_oboetester_TestColdStartLatencyActivity_startStream(
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_TestColdStartLatencyActivity_stopStream(
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_closeStream(
         JNIEnv *env, jobject instance) {
-    return sColdStartLatency.stop();
+    return sColdStartLatency.close();
 }
 
 JNIEXPORT jint JNICALL

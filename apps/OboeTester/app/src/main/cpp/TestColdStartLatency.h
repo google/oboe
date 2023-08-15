@@ -28,7 +28,7 @@ public:
 
     int32_t open(bool useInput, bool useLowLatency, bool useMmap, bool useExclusive);
     int32_t start();
-    int32_t stop();
+    int32_t close();
 
     int32_t getColdStartTimeMicros();
 

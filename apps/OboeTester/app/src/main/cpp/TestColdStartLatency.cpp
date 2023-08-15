@@ -66,7 +66,7 @@ int32_t TestColdStartLatency::start() {
     return (int32_t) result;
 }
 
-int32_t TestColdStartLatency::stop() {
+int32_t TestColdStartLatency::close() {
     Result result1 = mStream->requestStop();
     Result result2 = mStream->close();
     return (int32_t)((result1 != Result::OK) ? result1 : result2);
@@ -74,7 +74,7 @@ int32_t TestColdStartLatency::stop() {
 
 int32_t TestColdStartLatency::getColdStartTimeMicros() {
     int64_t position;
-    int64_t currentTimestampNanos;
+    int64_t timestampNanos;
     if (mStream->getDirection() == Direction::Output) {
         auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
         if (!result) {
@@ -83,15 +83,15 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
         auto frameTimestamp = result.value();
         // Calculate the time that frame[0] would have been played by the speaker.
         position = frameTimestamp.position;
-        currentTimestampNanos = frameTimestamp.timestamp;
+        timestampNanos = frameTimestamp.timestamp;
     } else {
         position = mStream->getFramesRead();
-        currentTimestampNanos = AudioClock::getNanoseconds();
+        timestampNanos = AudioClock::getNanoseconds();
     }
     double sampleRate = (double) mStream->getSampleRate();
 
     int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
-    int64_t timeOfFrameZero = currentTimestampNanos - elapsedNanos;
+    int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
     int64_t coldStartLatencyNanos = timeOfFrameZero - mBeginStartNanos;
     return coldStartLatencyNanos / NANOS_PER_MICROSECOND;
 }

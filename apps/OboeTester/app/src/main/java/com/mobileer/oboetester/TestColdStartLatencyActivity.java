@@ -142,10 +142,11 @@ public class TestColdStartLatencyActivity extends Activity {
                     log("requestStart() Latency: " + getStartTimeMicros() / 1000 + " msec");
                     sleep(startSleepTimeMillis);
                     log("Cold Start Latency: " + getColdStartTimeMicros() / 1000 + " msec");
-                    stopStream();
+                    closeStream();
                 } catch (InterruptedException e) {
+                    enabled = false;
                 } finally {
-                    stopStream();
+                    closeStream();
                 }
             }
         }
@@ -180,7 +181,7 @@ public class TestColdStartLatencyActivity extends Activity {
     private native int openStream(boolean useInput, boolean useLowLatency, boolean useMmap,
                                   boolean useExclusive);
     private native int startStream();
-    private native int stopStream();
+    private native int closeStream();
     private native int getOpenTimeMicros();
     private native int getStartTimeMicros();
     private native int getColdStartTimeMicros();
