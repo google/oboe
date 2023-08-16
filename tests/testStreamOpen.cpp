@@ -15,9 +15,11 @@
  */
 
 #include <gtest/gtest.h>
-#include <oboe/Oboe.h>
-#include <android/api-level.h>
 
+#include <aaudio/AAudioExtensions.h>
+#include <oboe/Oboe.h>
+
+#include <android/api-level.h>
 #ifndef __ANDROID_API_S__
 #define __ANDROID_API_S__ 31
 #endif
@@ -386,6 +388,29 @@ TEST_F(StreamOpenOutput, LowLatencyStreamHasSmallBufferSize){
         int32_t burst = mStream->getFramesPerBurst();
         ASSERT_TRUE(closeStream());
         ASSERT_LE(bufferSize, burst * 3);
+    }
+}
+
+// Make sure the parameters get copied from the child stream.
+TEST_F(StreamOpenOutput, AAudioOutputSampleRate44100FilterConfiguration) {
+    if (mBuilder.isAAudioRecommended()) {
+        mBuilder.setDirection(Direction::Output);
+        mBuilder.setPerformanceMode(PerformanceMode::LowLatency);
+        mBuilder.setSharingMode(SharingMode::Exclusive);
+        // Try to force the use of a FilterAudioStream by requesting conversion.
+        mBuilder.setSampleRate(44100);
+        mBuilder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+        ASSERT_TRUE(openStream());
+        if (getSdkVersion() >= __ANDROID_API_U__) {
+            ASSERT_LT(0, mStream->getHardwareSampleRate());
+            ASSERT_LT(0, mStream->getHardwareChannelCount());
+            ASSERT_LT(0, (int)mStream->getHardwareFormat());
+        }
+        // If MMAP is not supported then we cannot get an EXCLUSIVE mode stream.
+        if (!AAudioExtensions::getInstance().isMMapSupported()) {
+            ASSERT_NE(SharingMode::Exclusive, mStream->getSharingMode()); // IMPOSSIBLE
+        }
+        ASSERT_TRUE(closeStream());
     }
 }
 
