@@ -401,9 +401,11 @@ TEST_F(StreamOpenOutput, AAudioOutputSampleRate44100FilterConfiguration) {
         mBuilder.setSampleRate(44100);
         mBuilder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
         ASSERT_TRUE(openStream());
-        ASSERT_LT(0, mStream->getHardwareSampleRate());
-        ASSERT_LT(0, mStream->getHardwareChannelCount());
-        ASSERT_LT(0, (int)mStream->getHardwareFormat());
+        if (getSdkVersion() >= __ANDROID_API_U__) {
+            ASSERT_LT(0, mStream->getHardwareSampleRate());
+            ASSERT_LT(0, mStream->getHardwareChannelCount());
+            ASSERT_LT(0, (int)mStream->getHardwareFormat());
+        }
         // If MMAP is not supported then we cannot get an EXCLUSIVE mode stream.
         if (!AAudioExtensions::getInstance().isMMapSupported()) {
             ASSERT_NE(SharingMode::Exclusive, mStream->getSharingMode()); // IMPOSSIBLE
