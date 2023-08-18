@@ -519,6 +519,11 @@ Java_com_mobileer_oboetester_OboeAudioStream_getAndResetMaxCpuLoad(JNIEnv *env, 
     return engine.getCurrentActivity()->getAndResetMaxCpuLoad();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getAndResetCpuMask(JNIEnv *env, jobject instance, jint streamIndex) {
+    return (jint) engine.getCurrentActivity()->getAndResetCpuMask();
+}
+
 JNIEXPORT jstring JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeString(JNIEnv *env, jobject instance) {
     return env->NewStringUTF(engine.getCurrentActivity()->getCallbackTimeString().c_str());
