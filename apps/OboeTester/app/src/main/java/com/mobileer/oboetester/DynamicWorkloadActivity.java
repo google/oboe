@@ -55,6 +55,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mPerfHintBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
+    private int mCpuCount;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
@@ -187,7 +188,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         + ", current = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
-                        + "\ncores = " + cpuMaskToString(cpuMask)
+                        + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
                 stream.setWorkload((int)(nextWorkload));
@@ -221,14 +222,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     /**
      * This text will look best in a monospace font.
      * @param cpuMask CPU core bit mask
-     * @return a text display of the selected cores like "--2-45-6-"
+     * @return a text display of the selected cores like "--2-45-7"
      */
     // TODO move this to some utility class
-    private String cpuMaskToString(int cpuMask) {
+    private String cpuMaskToString(int cpuMask, int cpuCount) {
         String text = "";
         long longMask = ((long) cpuMask) & 0x0FFFFFFFFL;
         int index = 0;
-        while (longMask != 0 || index < 8) {
+        while (longMask != 0 || index < cpuCount) {
             text += ((longMask & 1) != 0) ? hexDigit(index) : "-";
             longMask = longMask >> 1;
             index++;
@@ -259,14 +260,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mStopButton = (Button) findViewById(R.id.button_stop);
 
         // Add a row of checkboxes for setting CPU affinity.
-        final int cpuCount = NativeEngine.getCpuCount();
+        mCpuCount = NativeEngine.getCpuCount();
         final int defaultCpuAffinity = 2;
         View.OnClickListener checkBoxListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Create a mack from all the checkboxes.
                 int mask = 0;
-                for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
+                for (int cpuIndex = 0; cpuIndex < mCpuCount; cpuIndex++) {
                     CheckBox checkBox = mAffinityBoxes.get(cpuIndex);
                     if (checkBox.isChecked()) {
                         mask |= (1 << cpuIndex);
@@ -276,7 +277,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             }
         };
         mAffinityLayout = (LinearLayout)  findViewById(R.id.affinityLayout);
-        for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
+        for (int cpuIndex = 0; cpuIndex < mCpuCount; cpuIndex++) {
             CheckBox checkBox = new CheckBox(DynamicWorkloadActivity.this);
             mAffinityLayout.addView(checkBox);
             mAffinityBoxes.add(checkBox);
