@@ -62,7 +62,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     // Note that these strings must match the enum result_code in LatencyAnalyzer.h
-    String stateToString(int resultCode) {
+    static String stateToString(int resultCode) {
         switch (resultCode) {
             case STATE_IDLE:
                 return "IDLE";
@@ -79,6 +79,10 @@ public class GlitchActivity extends AnalyzerActivity {
             default:
                 return "UNKNOWN";
         }
+    }
+
+    static String magnitudeToString(double magnitude) {
+        return String.format(Locale.US, "%6.4f", magnitude);
     }
 
     // Periodically query for glitches from the native detector.
@@ -195,7 +199,12 @@ public class GlitchActivity extends AnalyzerActivity {
 
         @Override
         public String getShortReport() {
-            String resultText = "#glitches = " + getLastGlitchCount()
+            String resultText = "amplitude: peak = " + magnitudeToString(mPeakAmplitude)
+                    + ", sine = " + magnitudeToString(mSineAmplitude) + "\n";
+            if (mPeakAmplitude < 0.01) {
+                resultText += "WARNING: volume is very low!\n";
+            }
+            resultText += "#glitches = " + getLastGlitchCount()
                     + ", #resets = " + getLastResetCount()
                     + ", max no glitch = " + getMaxSecondsWithNoGlitch() + " secs\n";
             resultText += String.format(Locale.getDefault(), "SNR = %5.1f db", mSignalToNoiseDB);
@@ -234,7 +243,8 @@ public class GlitchActivity extends AnalyzerActivity {
 
     /**
      * Set tolerance to deviations from expected value.
-     * The normalized value will be converted in the native code.
+     * The normalized value will be scaled by the measured magnitude
+     * of the sine wave..
      * @param tolerance normalized between 0.0 and 1.0
      */
     public native void setTolerance(float tolerance);
