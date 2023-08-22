@@ -419,10 +419,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return numPassed;
     }
 
-    protected void analyzeTestResults() {
-        if (countPassingTests() == 0) return;
-        logAnalysis("\n==== ANALYSIS ===========");
-        logAnalysis("Compare failed configuration with closest one that passed.");
+    protected void compareFailedTestsWithNearestPassingTest() {
+        logAnalysis("\n==== COMPARISON ANALYSIS ===========");
+        if (countPassingTests() == 0) {
+            logAnalysis("Comparison skipped because NO tests passed.");
+            return;
+        }
+        logAnalysis("Compare failed tests with others that passed.");
         // Analyze each failed test.
         for (TestResult testResult : mTestResults) {
             if (testResult.failed()) {

@@ -139,10 +139,10 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
                 }
             }
 
-            analyzeTestResults();
+            compareFailedTestsWithNearestPassingTest();
 
         } catch (InterruptedException e) {
-            analyzeTestResults();
+            compareFailedTestsWithNearestPassingTest();
 
         } catch (Exception e) {
             log(e.getMessage());
