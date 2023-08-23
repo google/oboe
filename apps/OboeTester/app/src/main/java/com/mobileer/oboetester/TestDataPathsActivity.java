@@ -763,8 +763,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             analyzeTestResults();
 
-            runOnUiThread(() -> keepScreenOn(false));
-
         } catch (InterruptedException e) {
             analyzeTestResults();
         } catch (Exception e) {
@@ -775,6 +773,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 mCheckBoxInputPresets.setEnabled(true);
                 mCheckBoxInputDevices.setEnabled(true);
                 mCheckBoxOutputDevices.setEnabled(true);
+                keepScreenOn(false);
             });
         }
     }
