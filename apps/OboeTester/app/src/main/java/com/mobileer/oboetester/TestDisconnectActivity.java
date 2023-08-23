@@ -458,6 +458,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
 
     @Override
     public void runTest() {
+
+        runOnUiThread(() -> keepScreenOn(true));
+
         mPlugCount = 0;
 
         // Try several different configurations.
@@ -480,6 +483,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
         } finally {
             setInstructionsText("Test finished.");
             updateFailSkipButton(false);
+            runOnUiThread(() -> keepScreenOn(false));
         }
     }
 }
