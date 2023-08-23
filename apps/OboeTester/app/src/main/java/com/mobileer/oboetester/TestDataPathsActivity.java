@@ -22,7 +22,6 @@ import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToTe
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
-import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -761,10 +760,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 testOutputDevices();
             }
 
-            analyzeTestResults();
+            compareFailedTestsWithNearestPassingTest();
 
         } catch (InterruptedException e) {
-            analyzeTestResults();
+            compareFailedTestsWithNearestPassingTest();
         } catch (Exception e) {
             log(e.getMessage());
             showErrorToast(e.getMessage());

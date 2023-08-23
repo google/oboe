@@ -53,6 +53,12 @@
         Set volume to medium-high.\n
     </string>
 
+    <string name="auto_glitch_instructions">
+        Plug in a loopback adapter.\n
+        Then set volume to about 80%.\n
+        Then press Run button.\n
+    </string>
+
     <string name="api_prompt">Choose an API</string>
     <string-array name="output_modes">
         <item>Unspecified</item>

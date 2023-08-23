@@ -288,14 +288,14 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 getOutputChannel()
         );
 
-        // The test would only be worth running if we got the configuration we requested on input or output.
+        // The test will only be worth running if we got the configuration we requested on input or output.
         String skipReason = shouldTestBeSkipped();
         boolean skipped = skipReason.length() > 0;
         boolean valid = !openFailed && !skipped;
         boolean startFailed = false;
         if (valid) {
             try {
-                startAudioTest();
+                startAudioTest();   // Start running the test in the background.
             } catch (IOException e) {
                 e.printStackTrace();
                 valid = false;
@@ -361,6 +361,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 mAutomatedTestRunner.incrementPassCount();
                 result = TEST_RESULT_PASSED;
             }
+
         }
         mAutomatedTestRunner.flushLog();
 
@@ -408,9 +409,23 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         appendFailedSummary(text + "\n");
     }
 
-    protected void analyzeTestResults() {
-        logAnalysis("\n==== ANALYSIS ===========");
-        logAnalysis("Compare failed configuration with closest one that passed.");
+    private int countPassingTests() {
+        int numPassed = 0;
+        for (TestResult other : mTestResults) {
+            if (other.passed()) {
+                numPassed++;
+            }
+        }
+        return numPassed;
+    }
+
+    protected void compareFailedTestsWithNearestPassingTest() {
+        logAnalysis("\n==== COMPARISON ANALYSIS ===========");
+        if (countPassingTests() == 0) {
+            logAnalysis("Comparison skipped because NO tests passed.");
+            return;
+        }
+        logAnalysis("Compare failed tests with others that passed.");
         // Analyze each failed test.
         for (TestResult testResult : mTestResults) {
             if (testResult.failed()) {
@@ -427,6 +442,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             }
         }
     }
+
 
     @Nullable
     private TestResult[] findClosestPassingTestResults(TestResult testResult) {
