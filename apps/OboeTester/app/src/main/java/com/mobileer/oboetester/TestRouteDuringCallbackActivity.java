@@ -66,7 +66,6 @@ public class TestRouteDuringCallbackActivity extends Activity {
 
     public void onStopRoutingTest(View view) {
         stopRoutingTest();
-        setButtonsEnabled(false);
     }
 
     private void setButtonsEnabled(boolean running) {
