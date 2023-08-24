@@ -24,6 +24,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -60,14 +61,11 @@ public class TestRouteDuringCallbackActivity extends Activity {
     }
 
     public void onStartRoutingTest(View view) {
-        stopSniffer();
-        mStreamSniffer = new MyStreamSniffer();
-        mStreamSniffer.start();
-        setButtonsEnabled(true);
+        startRoutingTest();
     }
 
     public void onStopRoutingTest(View view) {
-        stopSniffer();
+        stopRoutingTest();
         setButtonsEnabled(false);
     }
 
@@ -158,13 +156,23 @@ public class TestRouteDuringCallbackActivity extends Activity {
     @Override
     public void onPause() {
         super.onPause();
-        stopSniffer();
+        stopRoutingTest();
     }
 
-    private void stopSniffer() {
+    private void startRoutingTest() {
+        stopRoutingTest();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setButtonsEnabled(true);
+        mStreamSniffer = new MyStreamSniffer();
+        mStreamSniffer.start();
+    }
+
+    private void stopRoutingTest() {
         if (mStreamSniffer != null) {
             mStreamSniffer.finish();
             mStreamSniffer = null;
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            setButtonsEnabled(false);
         }
     }
 }
