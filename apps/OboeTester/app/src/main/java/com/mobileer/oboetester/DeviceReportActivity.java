@@ -153,7 +153,17 @@ public class DeviceReportActivity extends Activity {
             HashMap<String, UsbDevice> usbDeviceList = mUsbManager.getDeviceList();
             for (UsbDevice usbDevice : usbDeviceList.values()) {
                 report.append("\n==== USB Device ========= " + usbDevice.getDeviceId());
+                report.append("\nProduct Name       : " + usbDevice.getProductName());
+                report.append("\nProduct ID         : 0x" + Integer.toHexString(usbDevice.getProductId()));
+                report.append("\nManufacturer Name  : " + usbDevice.getManufacturerName());
+                report.append("\nVendor ID          : 0x" + Integer.toHexString(usbDevice.getVendorId()));
+                report.append("\nDevice Name        : " + usbDevice.getDeviceName());
+                report.append("\nDevice Protocol    : " + usbDevice.getDeviceProtocol());
+                report.append("\nDevice Class       : " + usbDevice.getDeviceClass());
+                report.append("\nDevice Subclass    : " + usbDevice.getDeviceSubclass());
+                report.append("\nVersion            : " + usbDevice.getVersion());
                 report.append("\n" + usbDevice);
+                report.append("\n");
             }
         } catch (Exception e) {
             Log.e(TestAudioActivity.TAG, "Caught ", e);
