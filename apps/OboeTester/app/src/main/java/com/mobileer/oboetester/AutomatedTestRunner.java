@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -232,7 +233,13 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     }
 
     // Only call from UI thread.
+    public void onTestStarted() {
+        mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    // Only call from UI thread.
     public void onTestFinished() {
+        mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         updateStartStopButtons(false);
         mShareButton.setEnabled(true);
     }
@@ -263,6 +270,12 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     @Override
     public void run() {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onTestStarted();
+            }
+        });
         logClear();
         log("=== STARTED at " + new Date());
         log(mActivity.getTestName());
