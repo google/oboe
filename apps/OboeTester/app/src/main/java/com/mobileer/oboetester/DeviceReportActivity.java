@@ -72,7 +72,7 @@ public class DeviceReportActivity extends Activity {
     MyAudioDeviceCallback mDeviceCallback = new MyAudioDeviceCallback();
     private TextView      mAutoTextView;
     private AudioManager  mAudioManager;
-    private UsbManager mUsbManager;
+    private UsbManager    mUsbManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
