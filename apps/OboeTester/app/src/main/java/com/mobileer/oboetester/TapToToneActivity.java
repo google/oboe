@@ -32,6 +32,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Toast;
@@ -297,9 +298,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
         mInputDeviceSpinner.setEnabled(false);
         mTapToToneTester.resetLatency();
         mTapToToneTester.start();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void stopTapToToneTester() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mInputDeviceSpinner.setEnabled(true);
         mTapToToneTester.stop();
     }
