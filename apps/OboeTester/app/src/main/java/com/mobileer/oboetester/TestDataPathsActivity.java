@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.CheckBox;
@@ -127,6 +128,31 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             // Do not use INPUT_PRESET_VOICE_COMMUNICATION because AEC kills the signal.
             StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
             StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
+    };
+
+    private static final int[] OUTPUT_CHANNEL_MASKS = {
+            StreamConfiguration.CHANNEL_MONO,
+            StreamConfiguration.CHANNEL_STEREO,
+            StreamConfiguration.CHANNEL_2POINT1,
+            StreamConfiguration.CHANNEL_TRI,
+            StreamConfiguration.CHANNEL_TRI_BACK,
+            StreamConfiguration.CHANNEL_3POINT1,
+            StreamConfiguration.CHANNEL_2POINT0POINT2,
+            StreamConfiguration.CHANNEL_2POINT1POINT2,
+            StreamConfiguration.CHANNEL_3POINT0POINT2,
+            StreamConfiguration.CHANNEL_3POINT1POINT2,
+            StreamConfiguration.CHANNEL_QUAD,
+            StreamConfiguration.CHANNEL_QUAD_SIDE,
+            StreamConfiguration.CHANNEL_SURROUND,
+            StreamConfiguration.CHANNEL_PENTA,
+            StreamConfiguration.CHANNEL_5POINT1,
+            StreamConfiguration.CHANNEL_5POINT1_SIDE,
+            StreamConfiguration.CHANNEL_6POINT1,
+            StreamConfiguration.CHANNEL_7POINT1,
+            StreamConfiguration.CHANNEL_5POINT1POINT2,
+            StreamConfiguration.CHANNEL_5POINT1POINT4,
+            StreamConfiguration.CHANNEL_7POINT1POINT2,
+            StreamConfiguration.CHANNEL_7POINT1POINT4,
     };
 
     @NonNull
@@ -541,20 +567,23 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                         }
                     }
                 }
-                int[] channelMasks = deviceInfo.getChannelMasks();
-                if (channelMasks.length > 0) {
-                    for (int channelMask : channelMasks) {
-                        int nativeChannelMask =
-                                convertJavaInChannelMaskToNativeChannelMask(channelMask);
-                        if (nativeChannelMask == JAVA_CHANNEL_UNDEFINED) {
-                            log("channelMask: " + channelMask + " not supported. Skipping.\n");
-                            continue;
-                        }
-                        log("nativeChannelMask = " + convertChannelMaskToText(nativeChannelMask) + "\n");
-                        int channelCount = Integer.bitCount(nativeChannelMask);
-                        for (int channel = 0; channel < channelCount; channel++) {
-                            testInputDeviceCombo(id, deviceType, channelCount, nativeChannelMask,
-                                    channel);
+
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+                    int[] channelMasks = deviceInfo.getChannelMasks();
+                    if (channelMasks.length > 0) {
+                        for (int channelMask : channelMasks) {
+                            int nativeChannelMask =
+                                    convertJavaInChannelMaskToNativeChannelMask(channelMask);
+                            if (nativeChannelMask == JAVA_CHANNEL_UNDEFINED) {
+                                log("channelMask: " + channelMask + " not supported. Skipping.\n");
+                                continue;
+                            }
+                            log("nativeChannelMask = " + convertChannelMaskToText(nativeChannelMask) + "\n");
+                            int channelCount = Integer.bitCount(nativeChannelMask);
+                            for (int channel = 0; channel < channelCount; channel++) {
+                                testInputDeviceCombo(id, deviceType, channelCount, nativeChannelMask,
+                                        channel);
+                            }
                         }
                     }
                 }
@@ -713,15 +742,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                         }
                     }
                 }
-                int[] channelMasks = deviceInfo.getChannelMasks();
-                if (channelMasks.length > 0) {
-                    for (int channelMask : channelMasks) {
-                        int nativeChannelMask =
-                                convertJavaOutChannelMaskToNativeChannelMask(channelMask);
-                        log("nativeChannelMask = " + convertChannelMaskToText(nativeChannelMask) + "\n");
-                        int channelCount = Integer.bitCount(nativeChannelMask);
+
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+                    for (int channelMask : OUTPUT_CHANNEL_MASKS) {
+                        log("channelMask = " + convertChannelMaskToText(channelMask) + "\n");
+                        int channelCount = Integer.bitCount(channelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
-                            testOutputDeviceCombo(id, deviceType, channelCount, nativeChannelMask, channel);
+                            testOutputDeviceCombo(id, deviceType, channelCount, channelMask, channel);
                         }
                     }
                 }
