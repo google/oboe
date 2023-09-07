@@ -756,7 +756,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     }
                 }
 
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2
+                        && deviceType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
                     runOnUiThread(() -> mCheckBoxAllOutputChannelMasks.setEnabled(false));
 
                     for (int channelMask : mCheckBoxAllOutputChannelMasks.isChecked() ?
