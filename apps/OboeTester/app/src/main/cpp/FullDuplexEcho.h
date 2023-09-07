@@ -21,7 +21,7 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "FullDuplexStream.h"
+#include "common/FullDuplexStream.h"
 #include "analyzer/LatencyAnalyzer.h"
 #include "InterpolatingDelayLine.h"
 

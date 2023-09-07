@@ -22,46 +22,54 @@
 
 #include "oboe/Oboe.h"
 
+#include "FormatConverterBox.h"
+
 class FullDuplexStream : public oboe::AudioStreamCallback {
 public:
     FullDuplexStream() {}
     virtual ~FullDuplexStream() = default;
 
-    void setInputStream(std::shared_ptr<oboe::AudioStream> stream) {
+    void setInputStream(oboe::AudioStream *stream) {
         mInputStream = stream;
     }
 
-    void setOutputStream(std::shared_ptr<oboe::AudioStream> stream) {
+    oboe::AudioStream *getInputStream() {
+        return mInputStream;
+    }
+
+    void setOutputStream(oboe::AudioStream *stream) {
         mOutputStream = stream;
+    }
+    oboe::AudioStream *getOutputStream() {
+        return mOutputStream;
     }
 
     virtual oboe::Result start();
 
     virtual oboe::Result stop();
 
+    oboe::ResultWithValue<int32_t>  readInput(int32_t numFrames);
+
     /**
      * Called when data is available on both streams.
-     * App should override this method.
+     * Caller should override this method.
      */
     virtual oboe::DataCallbackResult onBothStreamsReady(
-            std::shared_ptr<oboe::AudioStream> inputStream,
-            const void *inputData,
+            const float *inputData,
             int   numInputFrames,
-            std::shared_ptr<oboe::AudioStream> outputStream,
-            void *outputData,
+            float *outputData,
             int   numOutputFrames
             ) = 0;
 
     /**
      * Called by Oboe when the stream is ready to process audio.
-     * This implements the stream synchronization. App should NOT override this method.
      */
     oboe::DataCallbackResult onAudioReady(
             oboe::AudioStream *audioStream,
             void *audioData,
             int numFrames) override;
 
-    int32_t getNumInputBurstsCushion() const;
+    int32_t getMNumInputBurstsCushion() const;
 
     /**
      * Number of bursts to leave in the input buffer as a cushion.
@@ -70,7 +78,15 @@ public:
      *
      * @param mNumInputBurstsCushion
      */
-    void setNumInputBurstsCushion(int32_t numInputBurstsCushion);
+    void setMNumInputBurstsCushion(int32_t mNumInputBurstsCushion);
+
+    void setMinimumFramesBeforeRead(int32_t numFrames) {
+        mMinimumFramesBeforeRead = numFrames;
+    }
+
+    int32_t getMinimumFramesBeforeRead() const {
+        return mMinimumFramesBeforeRead;
+    }
 
 private:
 
@@ -79,7 +95,8 @@ private:
     static constexpr int32_t kNumCallbacksToDiscard = 30;
 
     // let input fill back up, usually 0 or 1
-    int32_t              mNumInputBurstsCushion = 1;
+    int32_t mNumInputBurstsCushion =  0;
+    int32_t mMinimumFramesBeforeRead = 0;
 
     // We want to reach a state where the input buffer is empty and
     // the output buffer is full.
@@ -91,11 +108,11 @@ private:
     // Discard some callbacks so the input and output reach equilibrium.
     int32_t              mCountCallbacksToDiscard = kNumCallbacksToDiscard;
 
-    std::shared_ptr<oboe::AudioStream> mInputStream;
-    std::shared_ptr<oboe::AudioStream> mOutputStream;
+    oboe::AudioStream   *mInputStream = nullptr;
+    oboe::AudioStream   *mOutputStream = nullptr;
 
-    int32_t              mBufferSize = 0;
-    std::unique_ptr<float[]> mInputBuffer;
+    std::unique_ptr<FormatConverterBox> mInputConverter;
+    std::unique_ptr<FormatConverterBox> mOutputConverter;
 };
 
 

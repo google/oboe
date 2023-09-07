@@ -102,8 +102,8 @@ oboe::Result  LiveEffectEngine::openStreams() {
     }
     warnIfNotLowLatency(mRecordingStream);
 
-    mFullDuplexPass.setInputStream(mRecordingStream);
-    mFullDuplexPass.setOutputStream(mPlayStream);
+    mFullDuplexPass.setInputStream(mRecordingStream.get());
+    mFullDuplexPass.setOutputStream(mPlayStream.get());
     return result;
 }
 

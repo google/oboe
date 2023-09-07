@@ -26,13 +26,13 @@ add_subdirectory(${OBOE_DIR} ./oboe-bin)
 add_library(liveEffect
     SHARED
         LiveEffectEngine.cpp
-        FullDuplexStream.cpp
         jni_bridge.cpp
         ${SAMPLE_ROOT_DIR}/debug-utils/trace.cpp)
 target_include_directories(liveEffect
     PRIVATE
         ${SAMPLE_ROOT_DIR}/debug-utils
-        ${OBOE_DIR}/include)
+        ${OBOE_DIR}/include
+        ${OBOE_DIR}/src)
 target_link_libraries(liveEffect
     PRIVATE
         oboe
@@ -42,5 +42,5 @@ target_link_libraries(liveEffect
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable it after done debugging.
-target_compile_options(liveEffect PRIVATE -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
+target_compile_options(liveEffect PRIVATE -Wall -Werror -std=c++17 "$<$<CONFIG:RELEASE>:-Ofast>")
 

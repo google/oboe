@@ -18,6 +18,8 @@ set (oboe_sources
     src/common/FixedBlockAdapter.cpp
     src/common/FixedBlockReader.cpp
     src/common/FixedBlockWriter.cpp
+    src/common/FormatConverterBox.cpp
+    src/common/FullDuplexStream.cpp
     src/common/LatencyTuner.cpp
     src/common/OboeExtensions.cpp
     src/common/SourceFloatCaller.cpp

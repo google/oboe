@@ -25,7 +25,7 @@
 #include "oboe/Oboe.h"
 
 #include "analyzer/PeakDetector.h"
-#include "FormatConverterBox.h"
+#include "common/FormatConverterBox.h"
 #include "MultiChannelRecording.h"
 #include "OboeTesterStreamCallback.h"
 

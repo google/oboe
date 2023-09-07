@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_FORMAT_CONVERTER_BOX_H
-#define OBOETESTER_FORMAT_CONVERTER_BOX_H
+#ifndef OBOE_FORMAT_CONVERTER_BOX_H
+#define OBOE_FORMAT_CONVERTER_BOX_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -47,13 +47,14 @@ public:
      */
     void *getOutputBuffer() {
         return (void *) mOutputBuffer.get();
-    };
+    }
+
     /**
      * @return internal buffer used to store output data
      */
     void *getInputBuffer() {
         return (void *) mInputBuffer.get();
-    };
+    }
 
     /** Convert the data from inputFormat to outputFormat
      * using both internal buffers.
@@ -99,4 +100,4 @@ private:
 };
 
 
-#endif //OBOETESTER_FORMAT_CONVERTER_BOX_H
+#endif //OBOE_FORMAT_CONVERTER_BOX_H
