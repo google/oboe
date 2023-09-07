@@ -59,6 +59,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final String KEY_USE_OUTPUT_DEVICES = "use_output_devices";
     public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
 
+    public static final String KEY_USE_ALL_OUTPUT_CHANNEL_MASKS = "use_all_output_channel_masks";
+    public static final boolean VALUE_DEFAULT_USE_ALL_OUTPUT_CHANNEL_MASKS = false;
+
     public static final String KEY_SINGLE_TEST_INDEX = "single_test_index";
     public static final int VALUE_DEFAULT_SINGLE_TEST_INDEX = -1;
 
@@ -120,6 +123,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxInputDevices;
     private CheckBox mCheckBoxOutputDevices;
+    private CheckBox mCheckBoxAllOutputChannelMasks;
 
     private static final int[] INPUT_PRESETS = {
             StreamConfiguration.INPUT_PRESET_GENERIC,
@@ -130,7 +134,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             StreamConfiguration.INPUT_PRESET_VOICE_PERFORMANCE,
     };
 
-    private static final int[] OUTPUT_CHANNEL_MASKS = {
+    private static final int[] SHORT_OUTPUT_CHANNEL_MASKS = {
+            StreamConfiguration.CHANNEL_MONO,
+            StreamConfiguration.CHANNEL_STEREO,
+            StreamConfiguration.CHANNEL_2POINT1,
+            StreamConfiguration.CHANNEL_7POINT1POINT4,
+    };
+
+    private static final int[] ALL_OUTPUT_CHANNEL_MASKS = {
             StreamConfiguration.CHANNEL_MONO,
             StreamConfiguration.CHANNEL_STEREO,
             StreamConfiguration.CHANNEL_2POINT1,
@@ -280,6 +291,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         mCheckBoxInputPresets = (CheckBox)findViewById(R.id.checkbox_paths_input_presets);
         mCheckBoxInputDevices = (CheckBox)findViewById(R.id.checkbox_paths_input_devices);
         mCheckBoxOutputDevices = (CheckBox)findViewById(R.id.checkbox_paths_output_devices);
+        mCheckBoxAllOutputChannelMasks =
+                (CheckBox)findViewById(R.id.checkbox_paths_all_output_channel_masks);
     }
 
     @Override
@@ -744,7 +757,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 }
 
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
-                    for (int channelMask : OUTPUT_CHANNEL_MASKS) {
+                    runOnUiThread(() -> mCheckBoxAllOutputChannelMasks.setEnabled(false));
+
+                    for (int channelMask : mCheckBoxAllOutputChannelMasks.isChecked() ?
+                            ALL_OUTPUT_CHANNEL_MASKS : SHORT_OUTPUT_CHANNEL_MASKS) {
                         log("channelMask = " + convertChannelMaskToText(channelMask) + "\n");
                         int channelCount = Integer.bitCount(channelMask);
                         for (int channel = 0; channel < channelCount; channel++) {
@@ -799,6 +815,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 mCheckBoxInputPresets.setEnabled(true);
                 mCheckBoxInputDevices.setEnabled(true);
                 mCheckBoxOutputDevices.setEnabled(true);
+                mCheckBoxAllOutputChannelMasks.setEnabled(true);
                 keepScreenOn(false);
             });
         }
@@ -816,6 +833,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 VALUE_DEFAULT_USE_INPUT_DEVICES);
         boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
                 VALUE_DEFAULT_USE_OUTPUT_DEVICES);
+        boolean shouldUseAllOutputChannelMasks =
+                mBundleFromIntent.getBoolean(KEY_USE_ALL_OUTPUT_CHANNEL_MASKS,
+                VALUE_DEFAULT_USE_ALL_OUTPUT_CHANNEL_MASKS);
         int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
                 VALUE_DEFAULT_SINGLE_TEST_INDEX);
 
@@ -823,6 +843,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mCheckBoxInputPresets.setChecked(shouldUseInputPresets);
             mCheckBoxInputDevices.setChecked(shouldUseInputDevices);
             mCheckBoxOutputDevices.setChecked(shouldUseOutputDevices);
+            mCheckBoxAllOutputChannelMasks.setChecked(shouldUseAllOutputChannelMasks);
             mAutomatedTestRunner.setTestIndexText(singleTestIndex);
         });
 
