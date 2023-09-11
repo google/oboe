@@ -51,14 +51,10 @@ public class GlitchActivity extends AnalyzerActivity {
     native double getPeakAmplitude();
     native double getSineAmplitude();
 
-    private GlitchSniffer mGlitchSniffer;
     protected NativeSniffer mNativeSniffer = createNativeSniffer();
 
     synchronized NativeSniffer createNativeSniffer() {
-        if (mGlitchSniffer == null) {
-            mGlitchSniffer = new GlitchSniffer();
-        }
-        return mGlitchSniffer;
+        return new GlitchSniffer();
     }
 
     // Note that these strings must match the enum result_code in LatencyAnalyzer.h
@@ -372,11 +368,11 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public double getMaxSecondsWithNoGlitch() {
-        return mGlitchSniffer.getMaxSecondsWithNoGlitch();
+        return ((GlitchSniffer)mNativeSniffer).getMaxSecondsWithNoGlitch();
     }
 
     public String getShortReport() {
-        return mGlitchSniffer.getShortReport();
+        return ((GlitchSniffer)mNativeSniffer).getShortReport();
     }
 
     @Override
