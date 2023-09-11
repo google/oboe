@@ -52,11 +52,11 @@ public class GlitchActivity extends AnalyzerActivity {
     native double getSineAmplitude();
 
     private GlitchSniffer mGlitchSniffer;
-    private NativeSniffer mNativeSniffer = createNativeSniffer();
+    protected NativeSniffer mNativeSniffer = createNativeSniffer();
 
     synchronized NativeSniffer createNativeSniffer() {
         if (mGlitchSniffer == null) {
-            mGlitchSniffer = new GlitchSniffer(this);
+            mGlitchSniffer = new GlitchSniffer();
         }
         return mGlitchSniffer;
     }
@@ -105,10 +105,6 @@ public class GlitchActivity extends AnalyzerActivity {
         private double mPeakAmplitude;
         private double mSineAmplitude;
 
-        public GlitchSniffer(Activity activity) {
-            super(activity);
-        }
-
         @Override
         public void startSniffer() {
             long now = System.currentTimeMillis();
@@ -124,7 +120,7 @@ public class GlitchActivity extends AnalyzerActivity {
             super.startSniffer();
         }
 
-        public void run() {
+        private void gatherData() {
             int state = getAnalyzerState();
             mSignalToNoiseDB = getSignalToNoiseDB();
             mPeakAmplitude = getPeakAmplitude();
@@ -168,8 +164,6 @@ public class GlitchActivity extends AnalyzerActivity {
             mLastGlitchFrames = glitchFrames;
             mLastLockedFrames = lockedFrames;
             mLastResetCount = resetCount;
-
-            reschedule();
         }
 
         private String getCurrentStatusReport() {
@@ -197,7 +191,6 @@ public class GlitchActivity extends AnalyzerActivity {
             return message.toString();
         }
 
-        @Override
         public String getShortReport() {
             String resultText = "amplitude: peak = " + magnitudeToString(mPeakAmplitude)
                     + ", sine = " + magnitudeToString(mSineAmplitude) + "\n";
@@ -214,6 +207,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
         @Override
         public void updateStatusText() {
+            gatherData();
             mLastGlitchReport = getCurrentStatusReport();
             setAnalyzerText(mLastGlitchReport);
         }
@@ -382,7 +376,7 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public String getShortReport() {
-        return mNativeSniffer.getShortReport();
+        return mGlitchSniffer.getShortReport();
     }
 
     @Override

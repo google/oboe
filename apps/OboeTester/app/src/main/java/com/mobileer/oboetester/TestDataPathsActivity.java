@@ -159,10 +159,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     // Periodically query for magnitude and phase from the native detector.
     protected class DataPathSniffer extends NativeSniffer {
 
-        public DataPathSniffer(Activity activity) {
-            super(activity);
-        }
-
         @Override
         public void startSniffer() {
             mMagnitude = -1.0;
@@ -174,8 +170,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             super.startSniffer();
         }
 
-        @Override
-        public void run() {
+        private void gatherData() {
             mMagnitude = getMagnitude();
             mMaxMagnitude = getMaxMagnitude();
             Log.d(TAG, String.format(Locale.getDefault(), "magnitude = %7.4f, maxMagnitude = %7.4f",
@@ -197,9 +192,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 mPhase = phase;
                 mPhaseCount++;
             }
-            if (mEnabled) {
-                reschedule();
-            }
         }
 
         public String getCurrentStatusReport() {
@@ -214,7 +206,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             return message.toString();
         }
 
-        @Override
         public String getShortReport() {
             return "maxMag = " + getMagnitudeText(mMaxMagnitude)
                     + ", jitter = " + getJitterText();
@@ -222,6 +213,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         @Override
         public void updateStatusText() {
+            gatherData();
             mLastGlitchReport = getCurrentStatusReport();
             runOnUiThread(() -> {
                 setAnalyzerText(mLastGlitchReport);
@@ -235,7 +227,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     NativeSniffer createNativeSniffer() {
-        return new TestDataPathsActivity.DataPathSniffer(this);
+        return new TestDataPathsActivity.DataPathSniffer();
+    }
+
+    @Override
+    public String getShortReport() {
+        return ((DataPathSniffer) mNativeSniffer).getShortReport();
     }
 
     native double getMagnitude();
