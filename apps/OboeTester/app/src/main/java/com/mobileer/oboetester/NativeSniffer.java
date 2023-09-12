@@ -16,23 +16,24 @@
 
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 
 abstract class NativeSniffer implements Runnable {
     public static final int SNIFFER_UPDATE_PERIOD_MSEC = 100;
     public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
-    private final Activity activity;
     protected Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
     protected volatile boolean mEnabled = true;
 
-    public NativeSniffer(Activity activity) {
-        this.activity = activity;
+    @Override
+    public void run() {
+        if (mEnabled && !isComplete()) {
+            updateStatusText();
+            mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
+        }
     }
 
     public void startSniffer() {
-        long now = System.currentTimeMillis();
         // Start the initial runnable task by posting through the handler
         mEnabled = true;
         mHandler.postDelayed(this, SNIFFER_UPDATE_DELAY_MSEC);
@@ -42,28 +43,19 @@ abstract class NativeSniffer implements Runnable {
         mEnabled = false;
         if (mHandler != null) {
             mHandler.removeCallbacks(this);
+            // Final update of the text.
+            mHandler.post(this);
         }
-
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                updateStatusText();
-            }
-        });
     }
 
-    public void reschedule() {
-        updateStatusText();
-        // Reschedule so this task repeats
-        if (mEnabled) {
-            mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
-        }
+    /**
+     * You can override this is if you want to control when sniffing is finished.
+     * @return true if finished
+     */
+    public boolean isComplete() {
+        return false;
     }
 
     public abstract void updateStatusText();
-
-    public String getShortReport() {
-        return "no-report";
-    }
 
 }

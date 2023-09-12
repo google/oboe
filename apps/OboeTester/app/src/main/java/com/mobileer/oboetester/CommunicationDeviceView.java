@@ -16,6 +16,7 @@
 
 package com.mobileer.oboetester;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,8 @@ import android.widget.TextView;
 
 import com.mobileer.audio_device.CommunicationDeviceSpinner;
 
+import java.util.Locale;
+
 public class CommunicationDeviceView extends LinearLayout {
 
     private AudioManager mAudioManager;
@@ -45,6 +48,14 @@ public class CommunicationDeviceView extends LinearLayout {
     private boolean mScoStateReceiverRegistered = false;
     private CommunicationDeviceSpinner mDeviceSpinner;
     private int mScoState;
+    private CommDeviceSniffer mCommDeviceSniffer = new CommDeviceSniffer();;
+
+    protected class CommDeviceSniffer extends NativeSniffer {
+        @Override
+        public void updateStatusText() {
+            showCommDeviceStatus();
+        }
+    }
 
     public CommunicationDeviceView(Context context) {
         super(context);
@@ -129,9 +140,12 @@ public class CommunicationDeviceView extends LinearLayout {
 
     public void onStart() {
         registerScoStateReceiver();
+        mCommDeviceSniffer.startSniffer();
     }
 
+
     public void onStop() {
+        mCommDeviceSniffer.stopSniffer();
         mSpeakerphoneCheckbox.setChecked(false);
         setSpeakerPhoneOn(false);
         mScoCheckbox.setChecked(false);
