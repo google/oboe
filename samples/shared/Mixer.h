@@ -52,6 +52,13 @@ public:
 
     void setChannelCount(int32_t channelCount){ mChannelCount = channelCount; }
 
+    void removeAllTracks(){
+        for (int i = 0; i < mNextFreeTrackIndex; i++){
+            mTracks[i] = nullptr;
+        }
+        mNextFreeTrackIndex = 0;
+    }
+
 private:
     float mixingBuffer[kBufferSize];
     std::array<IRenderableAudio*, kMaxTracks> mTracks;
