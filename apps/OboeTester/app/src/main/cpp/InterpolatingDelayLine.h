@@ -22,7 +22,7 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "FullDuplexStream.h"
+#include "oboe/FullDuplexStream.h"
 
 /**
  * Monophonic delay line.

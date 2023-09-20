@@ -21,11 +21,11 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "FullDuplexStream.h"
 #include "analyzer/LatencyAnalyzer.h"
+#include "FullDuplexStreamConverted.h"
 #include "InterpolatingDelayLine.h"
 
-class FullDuplexEcho : public FullDuplexStream {
+class FullDuplexEcho : public FullDuplexStreamConverted {
 public:
     FullDuplexEcho() {
         setMNumInputBurstsCushion(0);
@@ -35,7 +35,7 @@ public:
      * Called when data is available on both streams.
      * Caller should override this method.
      */
-    oboe::DataCallbackResult onBothStreamsReady(
+    oboe::DataCallbackResult onBothStreamsReadyFloat(
             const float *inputData,
             int   numInputFrames,
             float *outputData,
