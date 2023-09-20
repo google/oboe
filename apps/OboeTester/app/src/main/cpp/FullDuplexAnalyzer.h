@@ -22,10 +22,10 @@
 
 #include "oboe/Oboe.h"
 #include "analyzer/LatencyAnalyzer.h"
-#include "FullDuplexStreamConverted.h"
+#include "FullDuplexStreamWithConversion.h"
 #include "MultiChannelRecording.h"
 
-class FullDuplexAnalyzer : public FullDuplexStreamConverted {
+class FullDuplexAnalyzer : public FullDuplexStreamWithConversion {
 public:
     FullDuplexAnalyzer(LoopbackProcessor *processor)
             : mLoopbackProcessor(processor) {

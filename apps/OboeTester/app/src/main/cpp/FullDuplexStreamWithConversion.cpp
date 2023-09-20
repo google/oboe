@@ -15,9 +15,9 @@
  */
 
 #include "common/OboeDebug.h"
-#include "FullDuplexStreamConverted.h"
+#include "FullDuplexStreamWithConversion.h"
 
-oboe::Result FullDuplexStreamConverted::start() {
+oboe::Result FullDuplexStreamWithConversion::start() {
     // Determine maximum size that could possibly be called.
     int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
                          * getOutputStream()->getChannelCount();
@@ -30,7 +30,7 @@ oboe::Result FullDuplexStreamConverted::start() {
     return FullDuplexStream::start();
 }
 
-oboe::ResultWithValue<int32_t> FullDuplexStreamConverted::readInput(int32_t numFrames) {
+oboe::ResultWithValue<int32_t> FullDuplexStreamWithConversion::readInput(int32_t numFrames) {
     oboe::ResultWithValue<int32_t> result = getInputStream()->read(
             mInputConverter->getInputBuffer(),
             numFrames,
@@ -42,7 +42,7 @@ oboe::ResultWithValue<int32_t> FullDuplexStreamConverted::readInput(int32_t numF
     return result;
 }
 
-oboe::DataCallbackResult FullDuplexStreamConverted::onBothStreamsReady(
+oboe::DataCallbackResult FullDuplexStreamWithConversion::onBothStreamsReady(
         const void *inputData,
         int numInputFrames,
         void *outputData,

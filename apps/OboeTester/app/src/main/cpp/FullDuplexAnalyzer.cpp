@@ -21,7 +21,7 @@ oboe::Result  FullDuplexAnalyzer::start() {
     getLoopbackProcessor()->setSampleRate(getOutputStream()->getSampleRate());
     getLoopbackProcessor()->prepareToTest();
     mWriteReadDeltaValid = false;
-    return FullDuplexStreamConverted::start();
+    return FullDuplexStreamWithConversion::start();
 }
 
 oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(

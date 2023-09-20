@@ -23,7 +23,7 @@ oboe::Result  FullDuplexEcho::start() {
     // Use peak detector for input streams
     mNumChannels = getInputStream()->getChannelCount();
     mPeakDetectors = std::make_unique<PeakDetector[]>(mNumChannels);
-    return FullDuplexStreamConverted::start();
+    return FullDuplexStreamWithConversion::start();
 }
 
 double FullDuplexEcho::getPeakLevel(int index) {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBOETESTER_FULL_DUPLEX_STREAM_CONVERTED_H
-#define OBOETESTER_FULL_DUPLEX_STREAM_CONVERTED_H
+#ifndef OBOETESTER_FULL_DUPLEX_STREAM_WITH_CONVERSION_H
+#define OBOETESTER_FULL_DUPLEX_STREAM_WITH_CONVERSION_H
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -24,7 +24,7 @@
 #include "oboe/FullDuplexStream.h"
 #include "FormatConverterBox.h"
 
-class FullDuplexStreamConverted : public oboe::FullDuplexStream {
+class FullDuplexStreamWithConversion : public oboe::FullDuplexStream {
 public:
     /**
      * Called when data is available on both streams.
@@ -59,4 +59,4 @@ private:
 };
 
 
-#endif //OBOETESTER_FULL_DUPLEX_STREAM_CONVERTED_H
+#endif //OBOETESTER_FULL_DUPLEX_STREAM_WITH_CONVERSION_H

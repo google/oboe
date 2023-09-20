@@ -22,10 +22,10 @@
 
 #include "oboe/Oboe.h"
 #include "analyzer/LatencyAnalyzer.h"
-#include "FullDuplexStreamConverted.h"
+#include "FullDuplexStreamWithConversion.h"
 #include "InterpolatingDelayLine.h"
 
-class FullDuplexEcho : public FullDuplexStreamConverted {
+class FullDuplexEcho : public FullDuplexStreamWithConversion {
 public:
     FullDuplexEcho() {
         setMNumInputBurstsCushion(0);
