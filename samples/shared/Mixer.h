@@ -31,19 +31,19 @@ class Mixer : public IRenderableAudio {
 public:
     void renderAudio(float *audioData, int32_t numFrames) {
 
-        int numBytes = numFrames * mChannelCount;
-        if (numBytes > mBufferSize) {
-            mMixingBuffer = std::make_unique<float[]>(numBytes);
-            mBufferSize = numBytes;
+        int numSamples = numFrames * mChannelCount;
+        if (numSamples > mBufferSize) {
+            mMixingBuffer = std::make_unique<float[]>(numSamples);
+            mBufferSize = numSamples;
         }
 
         // Zero out the incoming container array
-        memset(audioData, 0, sizeof(float) * numFrames * mChannelCount);
+        memset(audioData, 0, sizeof(float) * numSamples);
 
         for (int i = 0; i < mTracks.size(); ++i) {
             mTracks[i]->renderAudio(mMixingBuffer.get(), numFrames);
 
-            for (int j = 0; j < numFrames * mChannelCount; ++j) {
+            for (int j = 0; j < numSamples; ++j) {
                 audioData[j] += mMixingBuffer[j];
             }
         }
