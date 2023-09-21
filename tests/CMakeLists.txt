@@ -28,6 +28,7 @@ add_executable(
 		testOboe
 		testAAudio.cpp
 		testFlowgraph.cpp
+		testFullDuplexStream.cpp
 		testResampler.cpp
 		testReturnStop.cpp
 		testStreamClosedMethods.cpp

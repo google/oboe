@@ -17,8 +17,6 @@
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
 
-#include "oboe/FullDuplexStream.h"
-
 class FullDuplexPass : public oboe::FullDuplexStream {
 public:
     virtual oboe::DataCallbackResult

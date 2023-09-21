@@ -36,7 +36,7 @@ namespace oboe {
  * Call start() to start both streams and stop() to stop both streams.
  *
  */
-class FullDuplexStream : public AudioStreamCallback {
+class FullDuplexStream : public AudioStreamDataCallback {
 public:
     FullDuplexStream() {}
     virtual ~FullDuplexStream() = default;
@@ -225,13 +225,10 @@ public:
                         callbackResult = DataCallbackResult::Stop;
                     } else {
                         framesRead = resultRead.value();
+                        callbackResult = onBothStreamsReady(mInputBuffer.get(), framesRead,
+                                audioData, numFrames);
                     }
                 }
-            }
-
-            if (callbackResult == DataCallbackResult::Continue) {
-                callbackResult = onBothStreamsReady(mInputBuffer.get(), framesRead,
-                                                    audioData, numFrames);
             }
         }
 

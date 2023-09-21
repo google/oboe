@@ -137,7 +137,7 @@ private:
 class OboeStreamCallbackProxy : public OboeTesterStreamCallback {
 public:
 
-    void setCallback(oboe::AudioStreamCallback *callback) {
+    void setDataCallback(oboe::AudioStreamDataCallback *callback) {
         mCallback = callback;
         setCallbackCount(0);
         mStatistics.clear();
@@ -251,7 +251,7 @@ private:
     SynthWorkload              mSynthWorkload;
     bool                       mHearWorkload = false;
 
-    oboe::AudioStreamCallback *mCallback = nullptr;
+    oboe::AudioStreamDataCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
 
     int64_t                    mCallbackCount = 0;
