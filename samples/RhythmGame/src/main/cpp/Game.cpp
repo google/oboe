@@ -136,7 +136,17 @@ DataCallbackResult Game::onAudioReady(AudioStream *oboeStream, void *audioData, 
 }
 
 void Game::onErrorAfterClose(AudioStream *oboeStream, Result error){
-    LOGE("The audio stream was closed, please restart the game. Error: %s", convertToText(error));
+    if (error == Result::ErrorDisconnected){
+        mGameState = GameState::Loading;
+        mAudioStream.reset();
+        mMixer.removeAllTracks();
+        mCurrentFrame = 0;
+        mSongPositionMs = 0;
+        mLastUpdateTime = 0;
+        start();
+    } else {
+        LOGE("Stream error: %s", convertToText(error));
+    }
 };
 
 bool Game::openStream() {
