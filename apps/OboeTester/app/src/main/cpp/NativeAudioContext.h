@@ -46,7 +46,6 @@
 
 #include "FullDuplexAnalyzer.h"
 #include "FullDuplexEcho.h"
-#include "oboe/FullDuplexStream.h"
 #include "analyzer/GlitchAnalyzer.h"
 #include "analyzer/DataPathAnalyzer.h"
 #include "InputStreamCallbackAnalyzer.h"

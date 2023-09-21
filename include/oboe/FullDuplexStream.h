@@ -24,26 +24,65 @@
 
 namespace oboe {
 
+/**
+ * FullDuplexStream can be used to synchronize an input and output stream.
+ *
+ * Callers should call onAudioReady() on when audio is ready on the output stream.
+ * When both streams are ready, onAudioReady() will call onBothStreamsReady().
+ * Callers must override onBothStreamsReady().
+ *
+ * Open an input stream and an output stream.
+ * Callers must call setInputStream() and setOutputStream().
+ * Call start() to start both streams and stop() to stop both streams.
+ *
+ */
 class FullDuplexStream : public AudioStreamCallback {
 public:
     FullDuplexStream() {}
     virtual ~FullDuplexStream() = default;
 
+    /**
+     * Sets the input stream. Calling this is mandatory.
+     *
+     * @param stream the output stream
+     */
     void setInputStream(AudioStream *stream) {
         mInputStream = stream;
     }
 
+    /**
+     * Gets the input stream
+     *
+     * @return the input stream
+     */
     AudioStream *getInputStream() {
         return mInputStream;
     }
 
+    /**
+     * Sets the output stream. Calling this is mandatory.
+     *
+     * @param stream the output stream
+     */
     void setOutputStream(AudioStream *stream) {
         mOutputStream = stream;
     }
+
+    /**
+     * Gets the output stream
+     *
+     * @return the output stream
+     */
     AudioStream *getOutputStream() {
         return mOutputStream;
     }
 
+    /**
+     * Attempts to start both streams. Please call setInputStream() and setOutputStream() before
+     * calling this function.
+     *
+     * @return result of the operation
+     */
     virtual Result start() {
         mCountCallbacksToDrain = kNumCallbacksToDrain;
         mCountInputBurstsCushion = mNumInputBurstsCushion;
@@ -64,11 +103,34 @@ public:
         return getOutputStream()->requestStart();
     }
 
+    /**
+     * Stops both streams. Returns Result::OK if neither stream had an error during close.
+     *
+     * @return result of the operation
+     */
     virtual Result stop() {
-        getOutputStream()->requestStop(); // TODO result?
-        return getInputStream()->requestStop();
+        Result outputResult = Result::OK;
+        Result inputResult = Result::OK;
+        if (getOutputStream()) {
+            outputResult = mOutputStream->requestStop();
+        }
+        if (getInputStream()) {
+            inputResult = mInputStream->requestStop();
+        }
+        if (outputResult != Result::OK) {
+            return outputResult;
+        } else {
+            return inputResult;
+        }
     }
 
+    /**
+     * Reads input from the input stream. Callers should not call this directly as this is called
+     * in onAudioReady().
+     *
+     * @param numFrames
+     * @return result of the operation
+     */
     virtual ResultWithValue<int32_t> readInput(int32_t numFrames) {
         return getInputStream()->read(mInputBuffer.get(), numFrames, 0 /* timeout */);
     }
@@ -76,6 +138,12 @@ public:
     /**
      * Called when data is available on both streams.
      * Caller should override this method.
+     *
+     * @param inputData buffer containing input data
+     * @param numInputFrames number of input frames
+     * @param outputData a place to put output data
+     * @param numInputFrames number of output frames
+     * @return DataCallbackResult::Continue or DataCallbackResult::Stop
      */
     virtual DataCallbackResult onBothStreamsReady(
             const void *inputData,
@@ -85,7 +153,16 @@ public:
             ) = 0;
 
     /**
-     * Called by Oboe when the stream is ready to process audio.
+     * Called when the output stream is ready to process audio.
+     * This in return calls onBothStreamsReady() when data is available on both streams.
+     * Callers should call this function when the output stream is ready.
+     * Callers must override onBothStreamsReady().
+     *
+     * @param audioStream pointer to the associated stream
+     * @param audioData a place to put output data
+     * @param numFrames number of frames to be processed
+     * @return DataCallbackResult::Continue or DataCallbackResult::Stop
+     *
      */
     DataCallbackResult onAudioReady(
             AudioStream *audioStream,
@@ -165,25 +242,40 @@ public:
         return callbackResult;
     }
 
-    int32_t getMNumInputBurstsCushion() const {
-        return mNumInputBurstsCushion;
-    }
-
     /**
-     * Number of bursts to leave in the input buffer as a cushion.
-     * Typically 0 for latency measurements
-     * or 1 for glitch tests.
      *
-     * @param mNumInputBurstsCushion
+     * This is a cushion between the DSP and the application processor cursors to prevent collisions.
+     * Typically 0 for latency measurements or 1 for glitch tests.
+     *
+     * @param numBursts number of bursts to leave in the input buffer as a cushion
      */
     void setMNumInputBurstsCushion(int32_t numBursts) {
         mNumInputBurstsCushion = numBursts;
     }
 
+    /**
+     * Get the number of bursts left in the input buffer as a cushion.
+     *
+     * @return number of bursts in the input buffer as a cushion
+     */
+    int32_t getMNumInputBurstsCushion() const {
+        return mNumInputBurstsCushion;
+    }
+
+    /**
+     * Minimum number of frames in the input stream buffer before calling readInput().
+     *
+     * @param numFrames number of bursts in the input buffer as a cushion
+     */
     void setMinimumFramesBeforeRead(int32_t numFrames) {
         mMinimumFramesBeforeRead = numFrames;
     }
 
+    /**
+     * Gets the minimum number of frames in the input stream buffer before calling readInput().
+     *
+     * @return minimum number of frames before reading
+     */
     int32_t getMinimumFramesBeforeRead() const {
         return mMinimumFramesBeforeRead;
     }

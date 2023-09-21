@@ -21,7 +21,6 @@
 #include <sys/types.h>
 
 #include "oboe/Oboe.h"
-#include "oboe/FullDuplexStream.h"
 #include "FormatConverterBox.h"
 
 class FullDuplexStreamWithConversion : public oboe::FullDuplexStream {
