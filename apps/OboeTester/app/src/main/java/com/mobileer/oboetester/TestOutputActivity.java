@@ -39,6 +39,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     private Spinner mOutputSignalSpinner;
     private TextView mVolumeTextView;
     private SeekBar mVolumeSeekBar;
+    private CheckBox mShouldSetStreamControlByAttributes;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -109,6 +110,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mVolumeTextView = (TextView) findViewById(R.id.textVolumeSlider);
         mVolumeSeekBar = (SeekBar) findViewById(R.id.faderVolumeSlider);
         mVolumeSeekBar.setOnSeekBarChangeListener(mVolumeChangeListener);
+
+        mShouldSetStreamControlByAttributes = (CheckBox) findViewById(R.id.enableSetStreamControlByAttributes);
     }
 
     @Override
@@ -118,6 +121,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
     public void openAudio() throws IOException {
         super.openAudio();
+        mShouldSetStreamControlByAttributes.setEnabled(false);
     }
 
     private void configureChannelBoxes(int channelCount) {
@@ -162,6 +166,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public void closeAudio() {
         configureChannelBoxes(0);
         mOutputSignalSpinner.setEnabled(true);
+        mShouldSetStreamControlByAttributes.setEnabled(true);
         super.closeAudio();
     }
 
@@ -177,6 +182,13 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         String text = (String) checkBox.getText();
         int channelIndex = Integer.parseInt(text);
         mAudioOutTester.setChannelEnabled(channelIndex, checkBox.isChecked());
+    }
+
+    @Override
+    protected void setStreamControlByAttributes(int usage, int contentType) {
+        if (mShouldSetStreamControlByAttributes.isChecked()) {
+            super.setStreamControlByAttributes(usage, contentType);
+        }
     }
 
     @Override

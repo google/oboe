@@ -604,7 +604,7 @@ abstract class TestAudioActivity extends Activity {
      * @param usage usage for the stream
      * @param contentType tupe of the stream
      */
-    private void setStreamControlByAttributes(int usage, int contentType) {
+    protected void setStreamControlByAttributes(int usage, int contentType) {
         AudioAttributes attributes = new AudioAttributes.Builder().setUsage(usage)
                 .setContentType(contentType).build();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
