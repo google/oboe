@@ -27,7 +27,8 @@ namespace oboe {
 /**
  * FullDuplexStream can be used to synchronize an input and output stream.
  *
- * Callers should call onAudioReady() on when audio is ready on the output stream.
+ * For the builder of the output stream, call setDataCallback() with this stream.
+ *
  * When both streams are ready, onAudioReady() will call onBothStreamsReady().
  * Callers must override onBothStreamsReady().
  *
@@ -138,11 +139,12 @@ public:
     /**
      * Called when data is available on both streams.
      * Caller should override this method.
+     * numInputFrames and numOutputFrames may be zero.
      *
      * @param inputData buffer containing input data
      * @param numInputFrames number of input frames
      * @param outputData a place to put output data
-     * @param numInputFrames number of output frames
+     * @param numOutputFrames number of output frames
      * @return DataCallbackResult::Continue or DataCallbackResult::Stop
      */
     virtual DataCallbackResult onBothStreamsReady(
@@ -225,10 +227,13 @@ public:
                         callbackResult = DataCallbackResult::Stop;
                     } else {
                         framesRead = resultRead.value();
-                        callbackResult = onBothStreamsReady(mInputBuffer.get(), framesRead,
-                                audioData, numFrames);
                     }
                 }
+            }
+
+            if (callbackResult == DataCallbackResult::Continue) {
+                callbackResult = onBothStreamsReady(mInputBuffer.get(), framesRead,
+                                                    audioData, numFrames);
             }
         }
 

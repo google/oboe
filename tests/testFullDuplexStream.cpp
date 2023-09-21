@@ -99,14 +99,10 @@ protected:
         mFullDuplexStream.setInputStream(nullptr);
     }
 
-    // Guarantee that there is a non-zero number of input frames for onBothStreamsReady()
-    void setMinInputFrames() {
-        mFullDuplexStream.setMinimumFramesBeforeRead(kMinInputFrames);
-    }
-
-    void sleepUntilFirstCallback() {
+    void sleepUntilFirstCallbackWithBothInputAndOutputFrames() {
         int numAttempts = 0;
-        while (mFullDuplexStream.callbackCount == 0) {
+        while (mFullDuplexStream.callbackCount == 0 || mFullDuplexStream.lastNumInputFrames == 0 ||
+                mFullDuplexStream.lastNumOutputFrames == 0) {
             numAttempts++;
             usleep(kTimeToSleepMicros);
             ASSERT_LE(numAttempts, kMaxSleepAttempts);
@@ -136,9 +132,8 @@ TEST_P(TestFullDuplexStream, VerifyFullDuplexStream) {
     const PerformanceMode outputPerformanceMode = std::get<3>(GetParam());
 
     open(inputAudioApi, inputPerformanceMode, outputAudioApi, outputPerformanceMode);
-    setMinInputFrames();
     start();
-    sleepUntilFirstCallback();
+    sleepUntilFirstCallbackWithBothInputAndOutputFrames();
     stop();
     checkFrameCount();
     close();
