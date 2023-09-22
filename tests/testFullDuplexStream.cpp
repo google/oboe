@@ -22,107 +22,95 @@
 
 using namespace oboe;
 
-class MyFullDuplexStream : public FullDuplexStream {
+static constexpr int kTimeToSleepMicros = 5 * 1000 * 1000; // 5 s
+
+using TestFullDuplexStreamParams = std::tuple<AudioApi, PerformanceMode, AudioApi, PerformanceMode>;
+
+class TestFullDuplexStream : public ::testing::Test,
+                         public ::testing::WithParamInterface<TestFullDuplexStreamParams>,
+                         public FullDuplexStream {
 public:
     DataCallbackResult onBothStreamsReady(
             const void *inputData,
             int numInputFrames,
             void *outputData,
             int numOutputFrames) override {
-        lastNumInputFrames = numInputFrames;
-        lastNumOutputFrames = numOutputFrames;
-        callbackCount++;
+        mCallbackCount++;
+        if (numInputFrames == numOutputFrames) {
+            mGoodCallbackCount++;
+        }
         return DataCallbackResult::Continue;
     }
 
-    // This is exposed publicly so that the number of callbacks can be tested.
-    std::atomic<int32_t> lastNumInputFrames{0};
-    std::atomic<int32_t> lastNumOutputFrames{0};
-    std::atomic<int32_t> callbackCount{0};
-};
-
-using TestFullDuplexStreamParams = std::tuple<AudioApi, PerformanceMode, AudioApi, PerformanceMode>;
-
-class TestFullDuplexStream : public ::testing::Test,
-                         public ::testing::WithParamInterface<TestFullDuplexStreamParams> {
-
 protected:
 
-    void SetUp(){
-        mInputBuilder.setDirection(Direction::Input);
-        mOutputBuilder.setDirection(Direction::Output);
-    }
-
-    void open(AudioApi inputAudioApi, PerformanceMode inputPerfMode,
+    void openStream(AudioApi inputAudioApi, PerformanceMode inputPerfMode,
             AudioApi outputAudioApi, PerformanceMode outputPerfMode) {
-        if (mInputBuilder.isAAudioRecommended()) {
-            mInputBuilder.setAudioApi(inputAudioApi);
-        }
-        mInputBuilder.setPerformanceMode(inputPerfMode);
-        mInputBuilder.setChannelCount(1);
-        mInputBuilder.setFormat(AudioFormat::I16);
-
-        Result r = mInputBuilder.openStream(&mInputStream);
-        ASSERT_EQ(r, Result::OK) << "Failed to open input stream " << convertToText(r);
-
+        mOutputBuilder.setDirection(Direction::Output);
         if (mOutputBuilder.isAAudioRecommended()) {
             mOutputBuilder.setAudioApi(outputAudioApi);
         }
         mOutputBuilder.setPerformanceMode(outputPerfMode);
         mOutputBuilder.setChannelCount(1);
-        mOutputBuilder.setFormat(AudioFormat::I16);
-        mOutputBuilder.setDataCallback(&mFullDuplexStream);
+        mOutputBuilder.setFormat(AudioFormat::Float);
+        mOutputBuilder.setDataCallback(this);
 
-        r = mOutputBuilder.openStream(&mOutputStream);
+        Result r = mOutputBuilder.openStream(&mOutputStream);
         ASSERT_EQ(r, Result::OK) << "Failed to open output stream " << convertToText(r);
 
-        mFullDuplexStream.setInputStream(mInputStream);
-        mFullDuplexStream.setOutputStream(mOutputStream);
+        mInputBuilder.setDirection(Direction::Input);
+        if (mInputBuilder.isAAudioRecommended()) {
+            mInputBuilder.setAudioApi(inputAudioApi);
+        }
+        mInputBuilder.setPerformanceMode(inputPerfMode);
+        mInputBuilder.setChannelCount(1);
+        mInputBuilder.setFormat(AudioFormat::Float);
+        mInputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferCapacityInFrames() * 2);
+
+        r = mInputBuilder.openStream(&mInputStream);
+        ASSERT_EQ(r, Result::OK) << "Failed to open input stream " << convertToText(r);
+
+        setInputStream(mInputStream);
+        setOutputStream(mOutputStream);
+        //setMNumInputBurstsCushion(1);
     }
 
-    void start() {
-        Result r = mFullDuplexStream.start();
+    void startStream() {
+        Result r = start();
         ASSERT_EQ(r, Result::OK) << "Failed to start streams " << convertToText(r);
     }
 
-    void stop() {
-        Result r = mFullDuplexStream.stop();
+    void stopStream() {
+        Result r = stop();
         ASSERT_EQ(r, Result::OK) << "Failed to stop streams " << convertToText(r);
     }
 
-    void close() {
+    void closeStream() {
         Result r = mOutputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close output stream " << convertToText(r);
-        mFullDuplexStream.setOutputStream(nullptr);
+        setOutputStream(nullptr);
         r = mInputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close input stream " << convertToText(r);
-        mFullDuplexStream.setInputStream(nullptr);
+        setInputStream(nullptr);
     }
 
-    void sleepUntilFirstCallbackWithBothInputAndOutputFrames() {
-        int numAttempts = 0;
-        while (mFullDuplexStream.callbackCount == 0 || mFullDuplexStream.lastNumInputFrames == 0 ||
-                mFullDuplexStream.lastNumOutputFrames == 0) {
-            numAttempts++;
-            usleep(kTimeToSleepMicros);
-            ASSERT_LE(numAttempts, kMaxSleepAttempts);
-        }
+    void checkXRuns() {
+        // Expect few xRuns with the use of full duplex stream
+        EXPECT_LT(mInputStream->getXRunCount().value(), 10);
+        EXPECT_LT(mOutputStream->getXRunCount().value(), 10);
     }
 
-    void checkFrameCount() {
-        ASSERT_GT(mFullDuplexStream.callbackCount, 0);
-        ASSERT_GT(mFullDuplexStream.lastNumInputFrames, 0);
-        ASSERT_GT(mFullDuplexStream.lastNumOutputFrames, 0);
+    void checkInputAndOutputBufferSizesMatch() {
+        // Expect the large majority of callbacks to have the same sized input and output
+        EXPECT_GE(mGoodCallbackCount, mCallbackCount * 9 / 10);
     }
 
     AudioStreamBuilder mInputBuilder;
     AudioStreamBuilder mOutputBuilder;
     AudioStream *mInputStream = nullptr;
     AudioStream *mOutputStream = nullptr;
-    MyFullDuplexStream mFullDuplexStream;
-    static constexpr int kTimeToSleepMicros = 50 * 1000; // 50 ms
-    static constexpr int kMaxSleepAttempts = 100;
-    static constexpr int kMinInputFrames = 1;
+    std::atomic<int32_t> mCallbackCount{0};
+    std::atomic<int32_t> mGoodCallbackCount{0};
 };
 
 TEST_P(TestFullDuplexStream, VerifyFullDuplexStream) {
@@ -131,12 +119,13 @@ TEST_P(TestFullDuplexStream, VerifyFullDuplexStream) {
     const AudioApi outputAudioApi = std::get<2>(GetParam());
     const PerformanceMode outputPerformanceMode = std::get<3>(GetParam());
 
-    open(inputAudioApi, inputPerformanceMode, outputAudioApi, outputPerformanceMode);
-    start();
-    sleepUntilFirstCallbackWithBothInputAndOutputFrames();
-    stop();
-    checkFrameCount();
-    close();
+    openStream(inputAudioApi, inputPerformanceMode, outputAudioApi, outputPerformanceMode);
+    startStream();
+    usleep(kTimeToSleepMicros);
+    checkXRuns();
+    checkInputAndOutputBufferSizesMatch();
+    stopStream();
+    closeStream();
 }
 
 INSTANTIATE_TEST_SUITE_P(

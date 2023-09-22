@@ -32,7 +32,9 @@ namespace oboe {
  * When both streams are ready, onAudioReady() will call onBothStreamsReady().
  * Callers must override onBothStreamsReady().
  *
- * Open an input stream and an output stream.
+ * To ensure best results, open an output stream before the input stream.
+ * Call inputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferSizeInFrames() * 2).
+ *
  * Callers must call setInputStream() and setOutputStream().
  * Call start() to start both streams and stop() to stop both streams.
  *

@@ -166,6 +166,8 @@
         <item>1024</item>
         <item>2048</item>
         <item>4096</item>
+        <item>8192</item>
+        <item>16384</item>
     </string-array>
 
     <string-array name="glitch_times">
