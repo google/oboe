@@ -185,10 +185,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     @Override
-    protected void maybeSetStreamControlByAttributes(int usage, int contentType) {
-        if (mShouldSetStreamControlByAttributes.isChecked()) {
-            super.maybeSetStreamControlByAttributes(usage, contentType);
-        }
+    protected boolean shouldSetStreamControlByAttributes() {
+        return mShouldSetStreamControlByAttributes.isChecked();
     }
 
     @Override
