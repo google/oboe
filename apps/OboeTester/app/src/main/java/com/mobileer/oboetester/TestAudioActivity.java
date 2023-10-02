@@ -583,7 +583,7 @@ abstract class TestAudioActivity extends Activity {
                 // Associate volume keys with this output stream.
                 int actualUsage = streamContext.tester.actualConfiguration.getUsage();
                 int actualContentType = streamContext.tester.actualConfiguration.getContentType();
-                setStreamControlByAttributes(actualUsage, actualContentType);
+                maybeSetStreamControlByAttributes(actualUsage, actualContentType);
             }
         }
         for (StreamContext streamContext : mStreamContexts) {
@@ -604,7 +604,7 @@ abstract class TestAudioActivity extends Activity {
      * @param usage usage for the stream
      * @param contentType tupe of the stream
      */
-    protected void setStreamControlByAttributes(int usage, int contentType) {
+    protected void maybeSetStreamControlByAttributes(int usage, int contentType) {
         AudioAttributes attributes = new AudioAttributes.Builder().setUsage(usage)
                 .setContentType(contentType).build();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
