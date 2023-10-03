@@ -66,13 +66,13 @@ protected:
         mInputBuilder.setChannelCount(1);
         mInputBuilder.setFormat(AudioFormat::Float);
         mInputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferCapacityInFrames() * 2);
+        mInputBuilder.setSampleRate(mOutputStream->getSampleRate());
 
         r = mInputBuilder.openStream(&mInputStream);
         ASSERT_EQ(r, Result::OK) << "Failed to open input stream " << convertToText(r);
 
         setInputStream(mInputStream);
         setOutputStream(mOutputStream);
-        //setMNumInputBurstsCushion(1);
     }
 
     void startStream() {

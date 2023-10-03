@@ -27,16 +27,21 @@ namespace oboe {
 /**
  * FullDuplexStream can be used to synchronize an input and output stream.
  *
- * For the builder of the output stream, call setDataCallback() with this stream.
+ * For the builder of the output stream, call setDataCallback() with this object.
  *
- * When both streams are ready, onAudioReady() will call onBothStreamsReady().
+ * When both streams are ready, onAudioReady() of the output stream will call onBothStreamsReady().
  * Callers must override onBothStreamsReady().
  *
  * To ensure best results, open an output stream before the input stream.
- * Call inputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferSizeInFrames() * 2).
+ * Call inputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferCapacityInFrames() * 2).
+ * Also, call inputBuilder.setSampleRate(mOutputStream->getSampleRate()).
  *
  * Callers must call setInputStream() and setOutputStream().
  * Call start() to start both streams and stop() to stop both streams.
+ * Caller is responsible for closing both streams.
+ *
+ * Callers should handle error callbacks for both streams.
+ * When an error callback happens for either stream, the caller should restart both streams.
  *
  */
 class FullDuplexStream : public AudioStreamDataCallback {
@@ -253,7 +258,7 @@ public:
      *
      * @param numBursts number of bursts to leave in the input buffer as a cushion
      */
-    void setMNumInputBurstsCushion(int32_t numBursts) {
+    void setNumInputBurstsCushion(int32_t numBursts) {
         mNumInputBurstsCushion = numBursts;
     }
 
@@ -262,7 +267,7 @@ public:
      *
      * @return number of bursts in the input buffer as a cushion
      */
-    int32_t getMNumInputBurstsCushion() const {
+    int32_t getNumInputBurstsCushion() const {
         return mNumInputBurstsCushion;
     }
 
