@@ -580,10 +580,13 @@ abstract class TestAudioActivity extends Activity {
                 if (sampleRate == 0) {
                     sampleRate = streamSampleRate;
                 }
-                // Associate volume keys with this output stream.
-                int actualUsage = streamContext.tester.actualConfiguration.getUsage();
-                int actualContentType = streamContext.tester.actualConfiguration.getContentType();
-                setStreamControlByAttributes(actualUsage, actualContentType);
+
+                if (shouldSetStreamControlByAttributes()) {
+                    // Associate volume keys with this output stream.
+                    int actualUsage = streamContext.tester.actualConfiguration.getUsage();
+                    int actualContentType = streamContext.tester.actualConfiguration.getContentType();
+                    setStreamControlByAttributes(actualUsage, actualContentType);
+                }
             }
         }
         for (StreamContext streamContext : mStreamContexts) {
@@ -597,6 +600,10 @@ abstract class TestAudioActivity extends Activity {
         updateEnabledWidgets();
         onStartAllContexts();
         mStreamSniffer.startStreamSniffer();
+    }
+
+    protected boolean shouldSetStreamControlByAttributes() {
+        return true;
     }
 
     /**
