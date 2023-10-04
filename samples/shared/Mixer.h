@@ -20,9 +20,6 @@
 #include <array>
 #include "IRenderableAudio.h"
 
-constexpr int32_t kBufferSize = 192*10;  // Temporary buffer is used for mixing
-constexpr uint8_t kMaxTracks = 100;
-
 /**
  * A Mixer object which sums the output from multiple tracks into a single output. The number of
  * input channels on each track must match the number of output channels (default 1=mono). This can
@@ -34,35 +31,38 @@ class Mixer : public IRenderableAudio {
 public:
     void renderAudio(float *audioData, int32_t numFrames) {
 
+        int numSamples = numFrames * mChannelCount;
+        if (numSamples > mBufferSize) {
+            mMixingBuffer = std::make_unique<float[]>(numSamples);
+            mBufferSize = numSamples;
+        }
+
         // Zero out the incoming container array
-        memset(audioData, 0, sizeof(float) * numFrames * mChannelCount);
+        memset(audioData, 0, sizeof(float) * numSamples);
 
-        for (int i = 0; i < mNextFreeTrackIndex; ++i) {
-            mTracks[i]->renderAudio(mixingBuffer, numFrames);
+        for (int i = 0; i < mTracks.size(); ++i) {
+            mTracks[i]->renderAudio(mMixingBuffer.get(), numFrames);
 
-            for (int j = 0; j < numFrames * mChannelCount; ++j) {
-                audioData[j] += mixingBuffer[j];
+            for (int j = 0; j < numSamples; ++j) {
+                audioData[j] += mMixingBuffer[j];
             }
         }
     }
 
     void addTrack(IRenderableAudio *renderer){
-        mTracks[mNextFreeTrackIndex++] = renderer;
+        mTracks.push_back(renderer);
     }
 
     void setChannelCount(int32_t channelCount){ mChannelCount = channelCount; }
 
     void removeAllTracks(){
-        for (int i = 0; i < mNextFreeTrackIndex; i++){
-            mTracks[i] = nullptr;
-        }
-        mNextFreeTrackIndex = 0;
+        mTracks.clear();
     }
 
 private:
-    float mixingBuffer[kBufferSize];
-    std::array<IRenderableAudio*, kMaxTracks> mTracks;
-    uint8_t mNextFreeTrackIndex = 0;
+    int32_t mBufferSize = 0;
+    std::unique_ptr<float[]> mMixingBuffer;
+    std::vector<IRenderableAudio*> mTracks;
     int32_t mChannelCount = 1; // Default to mono
 };
 

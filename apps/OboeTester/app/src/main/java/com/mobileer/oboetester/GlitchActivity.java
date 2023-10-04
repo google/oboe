@@ -51,18 +51,14 @@ public class GlitchActivity extends AnalyzerActivity {
     native double getPeakAmplitude();
     native double getSineAmplitude();
 
-    private GlitchSniffer mGlitchSniffer;
-    private NativeSniffer mNativeSniffer = createNativeSniffer();
+    protected NativeSniffer mNativeSniffer = createNativeSniffer();
 
     synchronized NativeSniffer createNativeSniffer() {
-        if (mGlitchSniffer == null) {
-            mGlitchSniffer = new GlitchSniffer(this);
-        }
-        return mGlitchSniffer;
+        return new GlitchSniffer();
     }
 
     // Note that these strings must match the enum result_code in LatencyAnalyzer.h
-    String stateToString(int resultCode) {
+    static String stateToString(int resultCode) {
         switch (resultCode) {
             case STATE_IDLE:
                 return "IDLE";
@@ -79,6 +75,10 @@ public class GlitchActivity extends AnalyzerActivity {
             default:
                 return "UNKNOWN";
         }
+    }
+
+    static String magnitudeToString(double magnitude) {
+        return String.format(Locale.US, "%6.4f", magnitude);
     }
 
     // Periodically query for glitches from the native detector.
@@ -101,10 +101,6 @@ public class GlitchActivity extends AnalyzerActivity {
         private double mPeakAmplitude;
         private double mSineAmplitude;
 
-        public GlitchSniffer(Activity activity) {
-            super(activity);
-        }
-
         @Override
         public void startSniffer() {
             long now = System.currentTimeMillis();
@@ -120,7 +116,7 @@ public class GlitchActivity extends AnalyzerActivity {
             super.startSniffer();
         }
 
-        public void run() {
+        private void gatherData() {
             int state = getAnalyzerState();
             mSignalToNoiseDB = getSignalToNoiseDB();
             mPeakAmplitude = getPeakAmplitude();
@@ -164,8 +160,6 @@ public class GlitchActivity extends AnalyzerActivity {
             mLastGlitchFrames = glitchFrames;
             mLastLockedFrames = lockedFrames;
             mLastResetCount = resetCount;
-
-            reschedule();
         }
 
         private String getCurrentStatusReport() {
@@ -193,9 +187,13 @@ public class GlitchActivity extends AnalyzerActivity {
             return message.toString();
         }
 
-        @Override
         public String getShortReport() {
-            String resultText = "#glitches = " + getLastGlitchCount()
+            String resultText = "amplitude: peak = " + magnitudeToString(mPeakAmplitude)
+                    + ", sine = " + magnitudeToString(mSineAmplitude) + "\n";
+            if (mPeakAmplitude < 0.01) {
+                resultText += "WARNING: volume is very low!\n";
+            }
+            resultText += "#glitches = " + getLastGlitchCount()
                     + ", #resets = " + getLastResetCount()
                     + ", max no glitch = " + getMaxSecondsWithNoGlitch() + " secs\n";
             resultText += String.format(Locale.getDefault(), "SNR = %5.1f db", mSignalToNoiseDB);
@@ -205,6 +203,7 @@ public class GlitchActivity extends AnalyzerActivity {
 
         @Override
         public void updateStatusText() {
+            gatherData();
             mLastGlitchReport = getCurrentStatusReport();
             setAnalyzerText(mLastGlitchReport);
         }
@@ -234,7 +233,8 @@ public class GlitchActivity extends AnalyzerActivity {
 
     /**
      * Set tolerance to deviations from expected value.
-     * The normalized value will be converted in the native code.
+     * The normalized value will be scaled by the measured magnitude
+     * of the sine wave..
      * @param tolerance normalized between 0.0 and 1.0
      */
     public native void setTolerance(float tolerance);
@@ -368,11 +368,11 @@ public class GlitchActivity extends AnalyzerActivity {
     }
 
     public double getMaxSecondsWithNoGlitch() {
-        return mGlitchSniffer.getMaxSecondsWithNoGlitch();
+        return ((GlitchSniffer)mNativeSniffer).getMaxSecondsWithNoGlitch();
     }
 
     public String getShortReport() {
-        return mNativeSniffer.getShortReport();
+        return ((GlitchSniffer)mNativeSniffer).getShortReport();
     }
 
     @Override

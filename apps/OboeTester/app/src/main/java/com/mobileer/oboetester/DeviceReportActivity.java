@@ -20,6 +20,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -40,10 +42,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Guide the user through a series of tests plugging in and unplugging a headset.
- * Print a summary at the end of any failures.
+ * Print a report of all the available audio devices.
  */
 public class DeviceReportActivity extends Activity {
 
@@ -70,6 +72,7 @@ public class DeviceReportActivity extends Activity {
     MyAudioDeviceCallback mDeviceCallback = new MyAudioDeviceCallback();
     private TextView      mAutoTextView;
     private AudioManager  mAudioManager;
+    private UsbManager    mUsbManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +80,7 @@ public class DeviceReportActivity extends Activity {
         setContentView(R.layout.activity_device_report);
         mAutoTextView = (TextView) findViewById(R.id.text_log_device_report);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
     }
 
     @Override
@@ -137,7 +141,36 @@ public class DeviceReportActivity extends Activity {
             report.append(item);
         }
         report.append(reportAllMicrophones());
+        report.append(reportUsbDevices());
         log(report.toString());
+    }
+
+    public String reportUsbDevices() {
+        StringBuffer report = new StringBuffer();
+        report.append("\n############################");
+        report.append("\nUsb Device Report:\n");
+        try {
+            HashMap<String, UsbDevice> usbDeviceList = mUsbManager.getDeviceList();
+            for (UsbDevice usbDevice : usbDeviceList.values()) {
+                report.append("\n==== USB Device ========= " + usbDevice.getDeviceId());
+                report.append("\nProduct Name       : " + usbDevice.getProductName());
+                report.append("\nProduct ID         : 0x" + Integer.toHexString(usbDevice.getProductId()));
+                report.append("\nManufacturer Name  : " + usbDevice.getManufacturerName());
+                report.append("\nVendor ID          : 0x" + Integer.toHexString(usbDevice.getVendorId()));
+                report.append("\nDevice Name        : " + usbDevice.getDeviceName());
+                report.append("\nDevice Protocol    : " + usbDevice.getDeviceProtocol());
+                report.append("\nDevice Class       : " + usbDevice.getDeviceClass());
+                report.append("\nDevice Subclass    : " + usbDevice.getDeviceSubclass());
+                report.append("\nVersion            : " + usbDevice.getVersion());
+                report.append("\n" + usbDevice);
+                report.append("\n");
+            }
+        } catch (Exception e) {
+            Log.e(TestAudioActivity.TAG, "Caught ", e);
+            showErrorToast(e.getMessage());
+            report.append("\nERROR: " + e.getMessage() + "\n");
+        }
+        return report.toString();
     }
 
     public String reportAllMicrophones() {

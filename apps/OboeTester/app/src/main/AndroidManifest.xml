@@ -115,6 +115,11 @@
             android:label="@string/title_dynamic_load"
             android:exported="true" />
 
+        <activity
+            android:name=".TestColdStartLatencyActivity"
+            android:label="@string/title_cold_start_latency"
+            android:exported="true" />
+
         <service
             android:name=".MidiTapTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE"

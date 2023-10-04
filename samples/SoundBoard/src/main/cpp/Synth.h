@@ -37,6 +37,7 @@ public:
 
     Synth(const int32_t sampleRate, const int32_t channelCount, const int32_t numSignals) {
         mNumSignals = numSignals;
+        mOscs = std::make_unique<SynthSound[]>(numSignals);
         float curFrequency = kOscBaseFrequency;
         float curAmplitude = kOscBaseAmplitude;
         for (int i = 0; i < numSignals; ++i) {
@@ -83,7 +84,7 @@ public:
 private:
     // Rendering objects
     int32_t mNumSignals;
-    std::array<SynthSound, kMaxTracks> mOscs;
+    std::unique_ptr<SynthSound[]> mOscs;
     Mixer mMixer;
     MonoToStereo mConverter = MonoToStereo(&mMixer);
     IRenderableAudio *mOutputStage; // This will point to either the mixer or converter, so it needs to be raw

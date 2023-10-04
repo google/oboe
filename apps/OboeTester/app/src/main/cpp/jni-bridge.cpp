@@ -28,6 +28,7 @@
 #include "oboe/Oboe.h"
 
 #include "NativeAudioContext.h"
+#include "TestColdStartLatency.h"
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 
@@ -118,7 +119,7 @@ Java_com_mobileer_oboetester_NativeEngine_areWorkaroundsEnabled(JNIEnv *env,
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) {
-    return get_nprocs();
+    return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 JNIEXPORT void JNICALL
@@ -518,6 +519,11 @@ Java_com_mobileer_oboetester_OboeAudioStream_getAndResetMaxCpuLoad(JNIEnv *env, 
     return engine.getCurrentActivity()->getAndResetMaxCpuLoad();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getAndResetCpuMask(JNIEnv *env, jobject instance, jint streamIndex) {
+    return (jint) engine.getCurrentActivity()->getAndResetCpuMask();
+}
+
 JNIEXPORT jstring JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getCallbackTimeString(JNIEnv *env, jobject instance) {
     return env->NewStringUTF(engine.getCurrentActivity()->getCallbackTimeString().c_str());
@@ -540,7 +546,8 @@ Java_com_mobileer_oboetester_OboeAudioStream_getState(JNIEnv *env, jobject insta
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         auto state = oboeStream->getState();
-        if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+        if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started
+                && state != oboe::StreamState::Disconnected) {
             oboe::Result result = oboeStream->waitForStateChange(
                     oboe::StreamState::Uninitialized,
                     &state, 0);
@@ -882,6 +889,51 @@ JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRouteDuringCallbackActivity_getSleepTimeMicros(
         JNIEnv *env, jobject instance) {
     return sRoutingCrash.getSleepTimeMicros();
+}
+
+static TestColdStartLatency sColdStartLatency;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_openStream(
+        JNIEnv *env, jobject instance,
+        jboolean useInput, jboolean useLowLatency, jboolean useMmap, jboolean useExclusive) {
+    return sColdStartLatency.open(useInput, useLowLatency, useMmap, useExclusive);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_startStream(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.start();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_closeStream(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.close();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getOpenTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getOpenTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getStartTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getStartTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getColdStartTimeMicros(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getColdStartTimeMicros();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getDeviceId(
+        JNIEnv *env, jobject instance) {
+    return sColdStartLatency.getDeviceId();
 }
 
 }

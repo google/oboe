@@ -26,9 +26,15 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
 
-    if (mCpuAffinityMask != mPreviousMask) {
-        uint32_t mask = mCpuAffinityMask;
-        applyCpuAffinityMask(mask);
+    // Record which CPU this is running on.
+    orCurrentCpuMask(sched_getcpu());
+
+    // Change affinity if app requested a change.
+    uint32_t mask = mCpuAffinityMask;
+    if (mask != mPreviousMask) {
+        int err = applyCpuAffinityMask(mask);
+        if (err != 0) {
+        }
         mPreviousMask = mask;
     }
 
@@ -68,4 +74,38 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     mPreviousCallbackTimeNs = currentTimeNanos;
 
     return callbackResult;
+}
+
+int OboeStreamCallbackProxy::applyCpuAffinityMask(uint32_t mask) {
+    int err = 0;
+    // Capture original CPU set so we can restore it.
+    if (!mIsOriginalCpuSetValid) {
+        err = sched_getaffinity((pid_t) 0,
+                                sizeof(mOriginalCpuSet),
+                                &mOriginalCpuSet);
+        if (err) {
+            LOGE("%s(0x%02X) - sched_getaffinity(), errno = %d\n", __func__, mask, errno);
+            return -errno;
+        }
+        mIsOriginalCpuSetValid = true;
+    }
+    if (mask) {
+        cpu_set_t cpu_set;
+        CPU_ZERO(&cpu_set);
+        int cpuCount = sysconf(_SC_NPROCESSORS_CONF);
+        for (int cpuIndex = 0; cpuIndex < cpuCount; cpuIndex++) {
+            if (mask & (1 << cpuIndex)) {
+                CPU_SET(cpuIndex, &cpu_set);
+            }
+        }
+        err = sched_setaffinity((pid_t) 0, sizeof(cpu_set_t), &cpu_set);
+    } else {
+        // Restore original mask.
+        err = sched_setaffinity((pid_t) 0, sizeof(mOriginalCpuSet), &mOriginalCpuSet);
+    }
+    if (err) {
+        LOGE("%s(0x%02X) - sched_setaffinity(), errno = %d\n", __func__, mask, errno);
+        return -errno;
+    }
+    return 0;
 }

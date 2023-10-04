@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onPause(){
-        super.onPause();
         native_onStop();
+        super.onPause();
     }
 
     static void setDefaultStreamValues(Context context) {

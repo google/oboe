@@ -63,7 +63,7 @@ public:
         if (mState != STATE_LOCKED
                 || mMeanSquareSignal < threshold
                 || mMeanSquareNoise < threshold) {
-            return 0.0;
+            return -999.0; // error indicator
         } else {
             double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio
             double signalToNoiseDB = 10.0 * log(signalToNoise);
@@ -204,14 +204,14 @@ public:
                     mSumSquareSignal += predicted * predicted;
                     mSumSquareNoise += diff * diff;
 
-
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
                     // Must be a multiple of the period or the calculation will not be accurate.
                     if (transformSample(sample, mInputPhase)) {
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
-                        resetAccumulator();
+                        mSumSquareNoise = 0.0;
+                        mSumSquareSignal = 0.0;
 
                         if (abs(mPhaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
@@ -286,8 +286,6 @@ public:
     // reset the sine wave detector
     void resetAccumulator() override {
         BaseSineAnalyzer::resetAccumulator();
-        mSumSquareSignal = 0.0;
-        mSumSquareNoise = 0.0;
     }
 
     void relock() {

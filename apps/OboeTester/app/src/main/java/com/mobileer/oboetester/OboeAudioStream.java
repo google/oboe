@@ -71,7 +71,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
         );
         if (result < 0) {
             streamIndex = INVALID_STREAM_INDEX;
-            throw new IOException("Open failed! result = " + result);
+            String message = "Open "
+                    + (isInput() ? "Input" : "Output")
+                    + " failed! result = " + result + ", "
+                    + StreamConfiguration.convertErrorToText(result);
+            throw new IOException(message);
         } else {
             streamIndex = result;
         }
@@ -288,6 +292,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getAndResetMaxCpuLoad(streamIndex);
     }
     private native float getAndResetMaxCpuLoad(int streamIndex);
+
+    @Override
+    public int getAndResetCpuMask() {
+        return getAndResetCpuMask(streamIndex);
+    }
+    private native int getAndResetCpuMask(int streamIndex);
 
     @Override
     public String getCallbackTimeStr() {

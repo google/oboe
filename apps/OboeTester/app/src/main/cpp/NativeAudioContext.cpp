@@ -511,7 +511,9 @@ oboe::Result ActivityTestOutput::startStreams() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
-    mVolumeRamp->setTarget(mAmplitude);
+    if (mVolumeRamp != nullptr) {
+        mVolumeRamp->setTarget(mAmplitude);
+    }
     return getOutputStream()->start();
 }
 

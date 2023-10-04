@@ -16,12 +16,12 @@
 
 package com.mobileer.oboetester;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
@@ -37,16 +37,9 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.mobileer.audio_device.CommunicationDeviceSpinner;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -587,6 +580,13 @@ abstract class TestAudioActivity extends Activity {
                 if (sampleRate == 0) {
                     sampleRate = streamSampleRate;
                 }
+
+                if (shouldSetStreamControlByAttributes()) {
+                    // Associate volume keys with this output stream.
+                    int actualUsage = streamContext.tester.actualConfiguration.getUsage();
+                    int actualContentType = streamContext.tester.actualConfiguration.getContentType();
+                    setStreamControlByAttributes(actualUsage, actualContentType);
+                }
             }
         }
         for (StreamContext streamContext : mStreamContexts) {
@@ -600,6 +600,25 @@ abstract class TestAudioActivity extends Activity {
         updateEnabledWidgets();
         onStartAllContexts();
         mStreamSniffer.startStreamSniffer();
+    }
+
+    protected boolean shouldSetStreamControlByAttributes() {
+        return true;
+    }
+
+    /**
+     * Associate the volume keys with the stream we are playing.
+     * @param usage usage for the stream
+     * @param contentType tupe of the stream
+     */
+    private void setStreamControlByAttributes(int usage, int contentType) {
+        AudioAttributes attributes = new AudioAttributes.Builder().setUsage(usage)
+                .setContentType(contentType).build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int volumeControlStream = attributes.getVolumeControlStream();
+            Log.i(TAG, "setVolumeControlStream(" + volumeControlStream + ")");
+            setVolumeControlStream(volumeControlStream);
+        }
     }
 
     /**
@@ -663,8 +682,8 @@ abstract class TestAudioActivity extends Activity {
         Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
         if (result != 0) {
-            showErrorToast("Start failed with " + result);
-            throw new IOException("startNative returned " + result);
+            showErrorToast("Start failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
+            throw new IOException("startNative returned " + result + ", " + StreamConfiguration.convertErrorToText(result));
         } else {
             onStartAllContexts();
             for (StreamContext streamContext : mStreamContexts) {
@@ -679,7 +698,7 @@ abstract class TestAudioActivity extends Activity {
     }
 
     protected void toastPauseError(int result) {
-        showErrorToast("Pause failed with " + result);
+        showErrorToast("Pause failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
     }
 
     public void pauseAudio() {
@@ -696,7 +715,7 @@ abstract class TestAudioActivity extends Activity {
     public void flushAudio() {
         int result = flushNative();
         if (result != 0) {
-            showErrorToast("flush failed with " + result);
+            showErrorToast("Flush failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_FLUSHED;
             updateEnabledWidgets();
@@ -706,7 +725,7 @@ abstract class TestAudioActivity extends Activity {
     public void stopAudio() {
         int result = stopNative();
         if (result != 0) {
-            showErrorToast("Stop failed with " + result);
+            showErrorToast("Stop failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
@@ -717,7 +736,7 @@ abstract class TestAudioActivity extends Activity {
     public void releaseAudio() {
         int result = releaseNative();
         if (result != 0) {
-            showErrorToast("release failed with " + result);
+            showErrorToast("Release failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();

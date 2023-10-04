@@ -17,6 +17,7 @@
 package com.google.oboe.samples.soundboard
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.*
 import android.util.SparseArray
 import android.view.MotionEvent
@@ -25,12 +26,18 @@ import android.view.View
 class MusicTileView(
     context: Context?,
     private val mRectangles: ArrayList<Rect>,
-    tileListener: TileListener
+    tileListener: TileListener,
+    configChangeListener: ConfigChangeListener
 ) : View(context) {
     private val mIsPressedPerRectangle: BooleanArray = BooleanArray(mRectangles.size)
     private val mPaint: Paint = Paint()
     private val mLocationsOfFingers: SparseArray<PointF> = SparseArray()
     private val mTileListener: TileListener
+    private val mConfigChangeListener : ConfigChangeListener
+
+    interface ConfigChangeListener {
+        fun onConfigurationChanged()
+    }
 
     interface TileListener {
         fun onTileOn(index: Int)
@@ -145,7 +152,13 @@ class MusicTileView(
         return true
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        mConfigChangeListener.onConfigurationChanged()
+    }
+
     init {
         mTileListener = tileListener
+        mConfigChangeListener = configChangeListener
     }
 }

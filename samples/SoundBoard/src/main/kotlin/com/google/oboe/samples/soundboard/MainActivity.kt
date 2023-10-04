@@ -18,11 +18,13 @@ package com.google.oboe.samples.soundboard
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.min
 
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     private external fun native_setDefaultStreamValues(sampleRate: Int, framesPerBurst: Int)
 
     companion object {
-        private const val DIMENSION_MIN_SIZE = 5
+        private const val DIMENSION_MIN_SIZE = 6
         private const val DIMENSION_MAX_SIZE = 8
         private var mNumColumns : Int = 0;
         private var mNumRows : Int = 0;
@@ -52,16 +54,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        setDefaultStreamValues(this)
-        calculateAndSetRectangles(this)
-        mEngineHandle = startEngine(mNumRows * mNumColumns)
-        createMusicTiles(this)
         super.onResume()
+        setup()
     }
 
     override fun onPause() {
         stopEngine(mEngineHandle)
         super.onPause()
+    }
+
+    private fun setup() {
+        setDefaultStreamValues(this)
+        calculateAndSetRectangles(this)
+        mEngineHandle = startEngine(mNumRows * mNumColumns)
+        createMusicTiles(this)
     }
 
     private fun setDefaultStreamValues(context: Context) {
@@ -75,14 +81,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun calculateAndSetRectangles(context: Context) {
-        val size = Point()
+        val width: Int
+        val height: Int
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display?.getRealSize(size)
+            width = windowManager.currentWindowMetrics.bounds.width()
+            height = windowManager.currentWindowMetrics.bounds.height()
         } else {
+            val size = Point()
             windowManager.defaultDisplay.getRealSize(size)
+            height = size.y
+            width = size.x
         }
-        val height = size.y
-        val width = size.x
+
         if (height > width) {
             mNumColumns = DIMENSION_MIN_SIZE
             mNumRows = min(DIMENSION_MIN_SIZE * height / width, DIMENSION_MAX_SIZE)
@@ -108,18 +119,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createMusicTiles(context: Context) {
-        setContentView(MusicTileView(this, mRectangles, NoteListener(mEngineHandle)))
+        setContentView(MusicTileView(this, mRectangles, NoteListener(mEngineHandle),
+                ScreenChangeListener { setup() }))
     }
 
-    fun Activity.getRealScreenSize(): Pair<Int, Int> { //<width, height>
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val size = Point()
-            display?.getRealSize(size)
-            Pair(size.x, size.y)
-        } else {
-            val size = Point()
-            windowManager.defaultDisplay.getRealSize(size)
-            Pair(size.x, size.y)
+    class ScreenChangeListener(private var mFunc: () -> Unit) : MusicTileView.ConfigChangeListener {
+        override fun onConfigurationChanged() {
+            mFunc()
+        }
+    }
 
-        }}
 }

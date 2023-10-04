@@ -43,7 +43,7 @@ public:
 
     void setMagnitude(double magnitude) {
         mMagnitude = magnitude;
-        mScaledTolerance = mMagnitude * mTolerance;
+        mScaledTolerance = mMagnitude * getTolerance();
     }
 
     double getPhaseOffset() {

@@ -15,7 +15,13 @@ package com.mobileer.audio_device;
  * limitations under the License.
  */
 
+import android.media.AudioDescriptor;
 import android.media.AudioDeviceInfo;
+import android.media.AudioProfile;
+import android.os.Build;
+
+import java.util.List;
+import java.util.Locale;
 
 public class AudioDeviceInfoConverter {
 
@@ -49,11 +55,11 @@ public class AudioDeviceInfoConverter {
 
         sb.append("\nChannel masks: ");
         int[] channelMasks = adi.getChannelMasks();
-        sb.append(intArrayToString(channelMasks));
+        sb.append(intArrayToStringHex(channelMasks));
 
         sb.append("\nChannel index masks: ");
         int[] channelIndexMasks = adi.getChannelIndexMasks();
-        sb.append(intArrayToString(channelIndexMasks));
+        sb.append(intArrayToStringHex(channelIndexMasks));
 
         sb.append("\nEncodings: ");
         int[] encodings = adi.getEncodings();
@@ -62,6 +68,36 @@ public class AudioDeviceInfoConverter {
         sb.append("\nSample Rates: ");
         int[] sampleRates = adi.getSampleRates();
         sb.append(intArrayToString(sampleRates));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            sb.append("\nAddress: ");
+            sb.append(adi.getAddress());
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            sb.append("\nEncapsulation Metadata Types: ");
+            int[] encapsulationMetadataTypes = adi.getEncapsulationMetadataTypes();
+            sb.append(intArrayToString(encapsulationMetadataTypes));
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            sb.append("\nEncapsulation Modes: ");
+            int[] encapsulationModes = adi.getEncapsulationModes();
+            sb.append(intArrayToString(encapsulationModes));
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            sb.append("\nAudio Descriptors: ");
+            List<AudioDescriptor> audioDescriptors = adi.getAudioDescriptors();
+            sb.append(audioDescriptors);
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            sb.append("\nAudio Profiles: ");
+            List<AudioProfile> audioProfiles = adi.getAudioProfiles();
+            sb.append(audioProfiles);
+        }
+
         sb.append("\n");
         return sb.toString();
     }
@@ -76,7 +112,22 @@ public class AudioDeviceInfoConverter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < integerArray.length; i++){
             sb.append(integerArray[i]);
-            if (i != integerArray.length -1) sb.append(" ");
+            if (i != integerArray.length - 1) sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts an integer array into a hexadecimal string where each int is separated by a space
+     *
+     * @param integerArray the integer array to convert to a string
+     * @return string containing all the integer values separated by spaces
+     */
+    private static String intArrayToStringHex(int[] integerArray){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < integerArray.length; i++){
+            sb.append(String.format(Locale.getDefault(), "0x%02X", integerArray[i]));
+            if (i != integerArray.length - 1) sb.append(" ");
         }
         return sb.toString();
     }

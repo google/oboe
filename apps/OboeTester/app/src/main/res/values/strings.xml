@@ -9,7 +9,7 @@
     <string name="pauseAudio">Pause</string>
     <string name="flushAudio">Flush</string>
     <string name="stopAudio">Stop</string>
-    <string name="releaseAudio">Release</string>
+    <string name="releaseAudio">Rlse</string>
     <string name="closeAudio">Close</string>
     <string name="recordAudio">Record</string>
     <string name="playAudio">Play</string>
@@ -51,6 +51,12 @@
         It works with speakers and mic\n
         or a loopback dongle.\n
         Set volume to medium-high.\n
+    </string>
+
+    <string name="auto_glitch_instructions">
+        Plug in a loopback adapter.\n
+        Then set volume to about 80%.\n
+        Then press Run button.\n
     </string>
 
     <string name="api_prompt">Choose an API</string>
@@ -227,6 +233,7 @@
     <string name="title_error_callback">Error Callback Test</string>
     <string name="title_route_during_callback">Route Callback Test</string>
     <string name="title_dynamic_load">Dynamic CPU Load</string>
+    <string name="title_cold_start_latency">Cold Start Latency</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
@@ -246,7 +253,7 @@
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
     <string name="test_datapath_instructions">Disconnect all headsets.\nIn quiet room, volume up, [START]</string>
-    <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [START]</string>
+    <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [RUN]</string>
 
     <string name="analyze">Analyze</string>
 
@@ -269,5 +276,24 @@
     </string-array>
 
     <string name="channel_mask_prompt">ChannelMask:</string>
+
+    <string name="close_open_prompt">, Sleep before open (ms)</string>
+    <string name="open_start_prompt">, Sleep between open and start (ms)</string>
+    <string name="start_stabilize_prompt">, Sleep for start to stabilize (ms)</string>
+    <string-array name="sleep_times">
+        <item>0</item>
+        <item>4</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>100</item>
+        <item>300</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>20000</item>
+        <item>50000</item>
+    </string-array>
 
 </resources>

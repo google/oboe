@@ -180,6 +180,12 @@
             android:layout_height="wrap_content"
             android:entries="@array/output_signals"
             android:prompt="@string/output_signal_prompt" />
+        <CheckBox
+            android:id="@+id/enableSetStreamControlByAttributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="SetStreamByAttr" />
     </LinearLayout>
 
     <com.mobileer.oboetester.CommunicationDeviceView

@@ -30,6 +30,25 @@
         android:textStyle="bold"
         />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/checkbox_disco_outputs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Outputs" />
+
+        <CheckBox
+            android:id="@+id/checkbox_disco_inputs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Inputs" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
