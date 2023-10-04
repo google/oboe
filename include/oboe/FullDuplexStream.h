@@ -40,8 +40,8 @@ namespace oboe {
  * Call start() to start both streams and stop() to stop both streams.
  * Caller is responsible for closing both streams.
  *
- * Callers should handle error callbacks for both streams.
- * When an error callback happens for either stream, the caller should restart both streams.
+ * Callers should handle error callbacks with setErrorCallback() for the output stream.
+ * When an error callback occurs for the output stream, the caller should restart both streams.
  *
  */
 class FullDuplexStream : public AudioStreamDataCallback {
