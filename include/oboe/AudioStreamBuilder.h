@@ -20,6 +20,7 @@
 #include "oboe/Definitions.h"
 #include "oboe/AudioStreamBase.h"
 #include "oboe/Utilities.h"
+#include "common/OboeDebug.h"
 #include "ResultWithValue.h"
 
 namespace oboe {
@@ -518,8 +519,8 @@ public:
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setCallback(AudioStreamCallback *streamCallback) {
-        LOGW("`setCallback` is deprecated, Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) and
-            setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.");
+        LOGW("`setCallback` is deprecated, Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>)" 
+        " and setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.");
         // Use the same callback object for both, dual inheritance.
         mDataCallback = streamCallback;
         mErrorCallback = streamCallback;
