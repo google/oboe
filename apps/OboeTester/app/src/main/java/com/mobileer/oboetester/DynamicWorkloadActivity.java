@@ -185,7 +185,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message =
                         "#Voices: max = " + String.format(Locale.getDefault(), "%d", (int) mWorkloadBenchmark)
-                        + ", current = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
+                        + ", now = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
                         + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)

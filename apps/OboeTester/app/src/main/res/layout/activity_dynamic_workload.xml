@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
             android:checked="true"
-            android:text="Draw Always" />
+            android:text="Scroll" />
     </LinearLayout>
 
     <HorizontalScrollView
