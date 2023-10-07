@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "FullDuplexEcho.h"
 
 oboe::Result  FullDuplexEcho::start() {

@@ -15,7 +15,7 @@
  */
 
 #include <unistd.h>
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Definitions.h"
 #include "SawPingGenerator.h"
 

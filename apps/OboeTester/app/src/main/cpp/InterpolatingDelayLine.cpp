@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "InterpolatingDelayLine.h"
 
 InterpolatingDelayLine::InterpolatingDelayLine(int32_t delaySize) {

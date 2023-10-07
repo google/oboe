@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "DataConversionFlowGraph.h"
 #include "SourceFloatCaller.h"
 #include "SourceI16Caller.h"

@@ -17,7 +17,7 @@
 #include <cstring>
 #include <sched.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "AudioStreamGateway.h"
 

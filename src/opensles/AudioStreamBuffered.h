@@ -19,7 +19,7 @@
 
 #include <cstring>
 #include <cassert>
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/FifoBuffer.h"

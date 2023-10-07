@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "FilterAudioStream.h"
 
 using namespace oboe;

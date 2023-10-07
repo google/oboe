@@ -19,7 +19,7 @@
 #include <thread>
 
 #include <oboe/AudioStream.h>
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "AudioClock.h"
 #include <oboe/Utilities.h>
 

@@ -19,7 +19,7 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "AudioInputStreamOpenSLES.h"
 #include "AudioStreamOpenSLES.h"

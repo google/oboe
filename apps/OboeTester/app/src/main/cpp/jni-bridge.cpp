@@ -24,7 +24,7 @@
 #include <thread>
 
 #include "common/AdpfWrapper.h"
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 
 #include "NativeAudioContext.h"

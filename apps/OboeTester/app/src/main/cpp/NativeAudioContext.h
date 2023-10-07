@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 
 #include "aaudio/AAudioExtensions.h"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "FullDuplexAnalyzer.h"
 
 oboe::Result  FullDuplexAnalyzer::start() {
