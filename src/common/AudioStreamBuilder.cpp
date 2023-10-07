@@ -20,7 +20,7 @@
 #include "aaudio/AAudioExtensions.h"
 #include "aaudio/AudioStreamAAudio.h"
 #include "FilterAudioStream.h"
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "opensles/AudioInputStreamOpenSLES.h"

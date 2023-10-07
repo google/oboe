@@ -18,7 +18,7 @@
 #include <cstring>
 
 #include "AudioStreamGateway.h"
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "OboeStreamCallbackProxy.h"
 #include "OboeTesterStreamCallback.h"

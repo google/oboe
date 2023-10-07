@@ -21,7 +21,7 @@
 #include <oboe/AudioStream.h>
 #include <common/AudioClock.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "AudioStreamOpenSLES.h"
 #include "OpenSLESUtilities.h"

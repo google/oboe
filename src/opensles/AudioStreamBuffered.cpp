@@ -18,7 +18,7 @@
 
 #include "oboe/Oboe.h"
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "opensles/AudioStreamBuffered.h"
 #include "common/AudioClock.h"
 

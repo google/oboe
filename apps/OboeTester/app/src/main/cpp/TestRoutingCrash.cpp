@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <aaudio/AAudioExtensions.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "common/AudioClock.h"
 #include "TestRoutingCrash.h"
 

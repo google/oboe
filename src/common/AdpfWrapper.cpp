@@ -20,7 +20,7 @@
 
 #include "AdpfWrapper.h"
 #include "AudioClock.h"
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,

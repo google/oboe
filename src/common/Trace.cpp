@@ -17,7 +17,7 @@
 #include <dlfcn.h>
 #include <cstdio>
 #include "Trace.h"
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 
 static char buffer[256];
 

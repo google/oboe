@@ -22,7 +22,7 @@
 
 #include <sys/system_properties.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "AAudioLoader.h"
 

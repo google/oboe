@@ -17,7 +17,7 @@
 #ifndef OBOE_AUDIO_SOURCE_CALLER_H
 #define OBOE_AUDIO_SOURCE_CALLER_H
 
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/Oboe.h"
 
 #include "flowgraph/FlowGraphNode.h"

@@ -20,7 +20,7 @@
 #include "oboe/Definitions.h"
 #include "oboe/AudioStreamBase.h"
 #include "oboe/Utilities.h"
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "ResultWithValue.h"
 
 namespace oboe {

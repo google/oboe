@@ -17,7 +17,7 @@
 #include <oboe/AudioStreamBuilder.h>
 #include <oboe/Oboe.h>
 
-#include "OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "QuirksManager.h"
 
 using namespace oboe;

@@ -16,7 +16,7 @@
 
 #include <dlfcn.h>
 #include <oboe/Utilities.h>
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "AAudioLoader.h"
 
 #define LIB_AAUDIO_NAME "libaaudio.so"

@@ -20,7 +20,7 @@
 #include <SLES/OpenSLES_Android.h>
 #include <common/AudioClock.h>
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "AudioOutputStreamOpenSLES.h"
 #include "AudioStreamOpenSLES.h"

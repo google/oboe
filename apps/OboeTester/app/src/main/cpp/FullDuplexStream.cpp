@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "FullDuplexStream.h"
 
 oboe::ResultWithValue<int32_t>  FullDuplexStream::readInput(int32_t numFrames) {

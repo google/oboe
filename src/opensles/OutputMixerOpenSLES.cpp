@@ -15,7 +15,7 @@
  */
 
 
-#include "common/OboeDebug.h"
+#include "oboe/OboeDebug.h"
 #include "EngineOpenSLES.h"
 #include "OpenSLESUtilities.h"
 #include "OutputMixerOpenSLES.h"
