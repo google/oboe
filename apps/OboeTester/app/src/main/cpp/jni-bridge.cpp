@@ -931,7 +931,7 @@ Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getColdStartTimeMicros
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getDeviceId(
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getAudioDeviceId(
         JNIEnv *env, jobject instance) {
     return sColdStartLatency.getDeviceId();
 }

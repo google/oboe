@@ -135,7 +135,7 @@ public class TestColdStartLatencyActivity extends Activity {
                 try {
                     sleep(closedSleepTimeMillis);
                     openStream(useInput, useLowLatency, useMmap, useExclusive);
-                    log("-------#" + loopCount + " Device Id: " + getDeviceId());
+                    log("-------#" + loopCount + " Device Id: " + getAudioDeviceId());
                     log("open() Latency: " + getOpenTimeMicros() / 1000 + " msec");
                     sleep(openSleepTimeMillis);
                     startStream();
@@ -185,7 +185,7 @@ public class TestColdStartLatencyActivity extends Activity {
     private native int getOpenTimeMicros();
     private native int getStartTimeMicros();
     private native int getColdStartTimeMicros();
-    private native int getDeviceId();
+    private native int getAudioDeviceId();
 
     @Override
     public void onPause() {
