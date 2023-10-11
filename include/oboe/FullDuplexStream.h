@@ -43,7 +43,7 @@ namespace oboe {
  * Callers should handle error callbacks with setErrorCallback() for the output stream.
  * When an error callback occurs for the output stream, Oboe will stop and close the output stream.
  * The caller is responsible for stopping and closing the input stream.
- * The caller should also reopen and restart both streams when the error callback is ErrorDisconnect.
+ * The caller should also reopen and restart both streams when the error callback is ErrorDisconnected.
  * See the LiveEffect sample as an example of this. 
  *
  */
