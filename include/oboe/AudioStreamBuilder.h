@@ -103,7 +103,6 @@ public:
      * @deprecated use `setFramesPerDataCallback` instead.
      */
     AudioStreamBuilder *setFramesPerCallback(int framesPerCallback) {
-        LOGW("`setFramesPerCallback` is deprecated, use `setFramesPerDataCallback` instead.");
         return setFramesPerDataCallback(framesPerCallback);
     }
 
@@ -456,7 +455,6 @@ public:
     * @return pointer to the builder so calls can be chained
     */
     AudioStreamBuilder *setDataCallback(AudioStreamDataCallback *dataCallback) {
-        LOGW("`setDataCallback` is deprecated, Call `setDataCallback(std::shared_ptr<AudioStreamDataCallback>)` instead.");
         mDataCallback = dataCallback;
         mSharedDataCallback = nullptr;
         return this;
@@ -498,7 +496,6 @@ public:
     * @return pointer to the builder so calls can be chained
     */
     AudioStreamBuilder *setErrorCallback(AudioStreamErrorCallback *errorCallback) {
-        LOGW("`setErrorCallback` is deprecated, Call setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.");
         mErrorCallback = errorCallback;
         mSharedErrorCallback = nullptr;
         return this;
@@ -518,8 +515,6 @@ public:
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setCallback(AudioStreamCallback *streamCallback) {
-        LOGW("`setCallback` is deprecated, Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) and
-            setErrorCallback(std::shared_ptr<AudioStreamErrorCallback>) instead.");
         // Use the same callback object for both, dual inheritance.
         mDataCallback = streamCallback;
         mErrorCallback = streamCallback;
