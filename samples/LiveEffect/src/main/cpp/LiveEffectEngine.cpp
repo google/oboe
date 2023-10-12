@@ -102,8 +102,8 @@ oboe::Result  LiveEffectEngine::openStreams() {
     }
     warnIfNotLowLatency(mRecordingStream);
 
-    mFullDuplexPass.setInputStream(mRecordingStream);
-    mFullDuplexPass.setOutputStream(mPlayStream);
+    mFullDuplexPass.setInputStream(mRecordingStream.get());
+    mFullDuplexPass.setOutputStream(mPlayStream.get());
     return result;
 }
 
@@ -235,4 +235,20 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
     LOGE("%s stream Error after close: %s",
          oboe::convertToText(oboeStream->getDirection()),
          oboe::convertToText(error));
+
+    // Stop the Full Duplex stream.
+    // Since the error callback occurs only for the output stream, close the input stream.
+    mFullDuplexPass.stop();
+    mFullDuplexPass.setOutputStream(nullptr);
+    closeStream(mRecordingStream);
+    mFullDuplexPass.setInputStream(nullptr);
+
+    // Restart the stream if the error is a disconnect.
+    if (error == oboe::Result::ErrorDisconnected) {
+        LOGI("Restarting AudioStream");
+        oboe::Result result = openStreams();
+        if (result == oboe::Result::OK) {
+            mFullDuplexPass.start();
+        }
+    }
 }

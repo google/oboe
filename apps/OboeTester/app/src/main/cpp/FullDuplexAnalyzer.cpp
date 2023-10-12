@@ -21,10 +21,10 @@ oboe::Result  FullDuplexAnalyzer::start() {
     getLoopbackProcessor()->setSampleRate(getOutputStream()->getSampleRate());
     getLoopbackProcessor()->prepareToTest();
     mWriteReadDeltaValid = false;
-    return FullDuplexStream::start();
+    return FullDuplexStreamWithConversion::start();
 }
 
-oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
+oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(
         const float *inputData,
         int   numInputFrames,
         float *outputData,
@@ -32,7 +32,7 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReady(
 
     int32_t inputStride = getInputStream()->getChannelCount();
     int32_t outputStride = getOutputStream()->getChannelCount();
-    const float *inputFloat = inputData;
+    auto *inputFloat = static_cast<const float *>(inputData);
     float *outputFloat = outputData;
 
     // Get atomic snapshot of the relative frame positions so they

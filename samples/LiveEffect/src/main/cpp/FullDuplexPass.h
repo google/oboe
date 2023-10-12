@@ -17,16 +17,12 @@
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
 
-#include "FullDuplexStream.h"
-
-class FullDuplexPass : public FullDuplexStream {
+class FullDuplexPass : public oboe::FullDuplexStream {
 public:
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
-            std::shared_ptr<oboe::AudioStream> inputStream,
             const void *inputData,
             int   numInputFrames,
-            std::shared_ptr<oboe::AudioStream> outputStream,
             void *outputData,
             int   numOutputFrames) {
         // Copy the input samples to the output with a little arbitrary gain change.
@@ -36,7 +32,7 @@ public:
         float *outputFloats = static_cast<float *>(outputData);
 
         // It also assumes the channel count for each stream is the same.
-        int32_t samplesPerFrame = outputStream->getChannelCount();
+        int32_t samplesPerFrame = getOutputStream()->getChannelCount();
         int32_t numInputSamples = numInputFrames * samplesPerFrame;
         int32_t numOutputSamples = numOutputFrames * samplesPerFrame;
 

@@ -23,7 +23,7 @@ oboe::Result  FullDuplexEcho::start() {
     // Use peak detector for input streams
     mNumChannels = getInputStream()->getChannelCount();
     mPeakDetectors = std::make_unique<PeakDetector[]>(mNumChannels);
-    return FullDuplexStream::start();
+    return FullDuplexStreamWithConversion::start();
 }
 
 double FullDuplexEcho::getPeakLevel(int index) {
@@ -37,14 +37,14 @@ double FullDuplexEcho::getPeakLevel(int index) {
     return mPeakDetectors[index].getLevel();
 }
 
-oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReady(
+oboe::DataCallbackResult FullDuplexEcho::onBothStreamsReadyFloat(
         const float *inputData,
         int   numInputFrames,
         float *outputData,
         int   numOutputFrames) {
     int32_t framesToEcho = std::min(numInputFrames, numOutputFrames);
-    float *inputFloat = (float *)inputData;
-    float *outputFloat = (float *)outputData;
+    auto *inputFloat = const_cast<float *>(inputData);
+    float *outputFloat = outputData;
     // zero out entire output array
     memset(outputFloat, 0, static_cast<size_t>(numOutputFrames)
             * static_cast<size_t>(getOutputStream()->getBytesPerFrame()));

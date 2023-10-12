@@ -469,7 +469,7 @@ void ActivityTestOutput::configureStreamGateway() {
     }
 
     if (mUseCallback) {
-        oboeCallbackProxy.setCallback(&audioStreamGateway);
+        oboeCallbackProxy.setDataCallback(&audioStreamGateway);
     }
 }
 
@@ -521,7 +521,7 @@ oboe::Result ActivityTestOutput::startStreams() {
 void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();
     if (mUseCallback) {
-        oboeCallbackProxy.setCallback(&mInputAnalyzer);
+        oboeCallbackProxy.setDataCallback(&mInputAnalyzer);
     }
     mInputAnalyzer.setRecording(mRecording.get());
 }
@@ -648,7 +648,7 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     // only output uses a callback, input is polled
     if (!isInput) {
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setCallback(mFullDuplexEcho.get());
+        oboeCallbackProxy.setDataCallback(mFullDuplexEcho.get());
     }
 }
 
@@ -670,7 +670,7 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setCallback(mFullDuplexLatency.get());
+        oboeCallbackProxy.setDataCallback(mFullDuplexLatency.get());
     }
 }
 
@@ -725,7 +725,7 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setCallback(mFullDuplexGlitches.get());
+        oboeCallbackProxy.setDataCallback(mFullDuplexGlitches.get());
     }
 }
 
@@ -748,7 +748,7 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setCallback(mFullDuplexDataPath.get());
+        oboeCallbackProxy.setDataCallback(mFullDuplexDataPath.get());
     }
 }
 
@@ -786,6 +786,6 @@ void ActivityTestDisconnect::configureAfterOpen() {
     } else if (inputStream) {
         audioStreamGateway.setAudioSink(nullptr);
     }
-    oboeCallbackProxy.setCallback(&audioStreamGateway);
+    oboeCallbackProxy.setDataCallback(&audioStreamGateway);
 }
 
