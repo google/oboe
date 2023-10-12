@@ -8,5 +8,6 @@ var searchData=
   ['flush_5',['flush',['../classoboe_1_1_audio_stream.html#a32c25c0333eab3d65ce02275ad4acb3d',1,'oboe::AudioStream']]],
   ['framesperburst_6',['FramesPerBurst',['../classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300',1,'oboe::DefaultStreamValues']]],
   ['frametimestamp_7',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]],
-  ['frontback_8',['FrontBack',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d',1,'oboe']]]
+  ['frontback_8',['FrontBack',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d',1,'oboe']]],
+  ['fullduplexstream_9',['FullDuplexStream',['../classoboe_1_1_full_duplex_stream.html',1,'oboe']]]
 ];
