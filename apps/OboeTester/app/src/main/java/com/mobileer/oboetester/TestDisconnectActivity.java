@@ -238,11 +238,14 @@ public class TestDisconnectActivity extends TestAudioActivity {
             return;
         }
 
+        updateFailSkipButton(true);
+
         String actualConfigText = "none";
         mSkipTest = false;
+        mTestFailed = false;
 
         // Try to synchronize with the current headset state, IN or OUT.
-        while (mAutomatedTestRunner.isThreadEnabled() && !mSkipTest) {
+        while (mAutomatedTestRunner.isThreadEnabled() && !mSkipTest && !mTestFailed) {
             if (requestPlugin != (mPlugState == 0)) {
                 String message = "SYNC: " + (requestPlugin ? "UNplug" : "Plug IN") + " headset now!";
                 setInstructionsText(message);
@@ -337,7 +340,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
         int oldPlugCount = mPlugCount;
         if (!openFailed && valid) {
             mTestFailed = false;
-            updateFailSkipButton(true);
             // poll until stream started
             while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest &&
                     stream.getState() == StreamConfiguration.STREAM_STATE_STARTING) {
@@ -371,22 +373,25 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 }
             }
 
-            if (mTestFailed) {
-                // Check whether the peripheral has a microphone.
-                // Sometimes the microphones does not appear on the first HEADSET_PLUG event.
-                if (isInput && (mPlugMicrophone == 0)) {
-                    hasMicFailed = true;
-                }
+            if (mSkipTest) {
+                setStatusText("Skipped");
             } else {
-                int error = stream.getLastErrorCallbackResult();
-                if (error != StreamConfiguration.ERROR_DISCONNECTED) {
-                    log("onErrorCallback error = " + error
-                            + ", expected " + StreamConfiguration.ERROR_DISCONNECTED);
-                    mTestFailed = true;
+                if (mTestFailed) {
+                    // Check whether the peripheral has a microphone.
+                    // Sometimes the microphones does not appear on the first HEADSET_PLUG event.
+                    if (isInput && (mPlugMicrophone == 0)) {
+                        hasMicFailed = true;
+                    }
+                } else {
+                    int error = stream.getLastErrorCallbackResult();
+                    if (error != StreamConfiguration.ERROR_DISCONNECTED) {
+                        log("onErrorCallback error = " + error
+                                + ", expected " + StreamConfiguration.ERROR_DISCONNECTED);
+                        mTestFailed = true;
+                    }
                 }
+                setStatusText(mTestFailed ? "Failed" : "Passed - detected");
             }
-
-            setStatusText(mTestFailed ? "Failed" : "Passed - detected");
         }
         updateFailSkipButton(false);
         setInstructionsText("Wait...");
