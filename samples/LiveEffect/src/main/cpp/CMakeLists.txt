@@ -23,11 +23,24 @@ get_filename_component(SAMPLE_ROOT_DIR
 set (OBOE_DIR ${SAMPLE_ROOT_DIR}/..)
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
 
+### [jlasecki]: INCLUDE ONNXRUNTIME ###
+
+set(LIBS_DIR ${CMAKE_SOURCE_DIR}/libs)
+
+add_library(onnxruntime SHARED IMPORTED)
+set_target_properties(
+        onnxruntime
+        PROPERTIES
+        IMPORTED_LOCATION ${LIBS_DIR}/onnxruntime/lib/${ANDROID_ABI}/libonnxruntime.so
+        INTERFACE_INCLUDE_DIRECTORIES ${LIBS_DIR}/onnxruntime/include
+)
+
 add_library(liveEffect
     SHARED
         LiveEffectEngine.cpp
         jni_bridge.cpp
         ${SAMPLE_ROOT_DIR}/debug-utils/trace.cpp)
+
 target_include_directories(liveEffect
     PRIVATE
         ${SAMPLE_ROOT_DIR}/debug-utils
@@ -37,7 +50,8 @@ target_link_libraries(liveEffect
         oboe
         android
         atomic
-        log)
+        log
+        onnxruntime)
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable it after done debugging.

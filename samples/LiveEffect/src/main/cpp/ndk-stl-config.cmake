@@ -26,7 +26,7 @@ elseif("${ANDROID_STL}" STREQUAL "gabi++_shared")
   # The GAbi++ runtime (shared).
   message(FATAL_ERROR "gabi++_shared was not configured by ndk-stl package")
 elseif("${ANDROID_STL}" STREQUAL "stlport_shared")
-  # The STLport runtime (shared).
+  # The STL port runtime (shared).
   configure_shared_stl("stlport" "stlport_shared")
 elseif("${ANDROID_STL}" STREQUAL "gnustl_shared")
   # The GNU STL (shared).
