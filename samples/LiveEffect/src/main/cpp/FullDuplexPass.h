@@ -17,8 +17,15 @@
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
 
+#include "onnxHelper.h"
+
 class FullDuplexPass : public oboe::FullDuplexStream {
+private:
+    OnnxHelper* onnxHelper;
 public:
+    FullDuplexPass() {
+        this->onnxHelper = new OnnxHelper();
+    }
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
             const void *inputData,
@@ -41,6 +48,9 @@ public:
         for (int32_t i = 0; i < samplesToProcess; i++) {
             *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
         }
+
+
+        outputFloats = this->onnxHelper->dumbProcessing(outputFloats);
 
         // If there are fewer input samples then clear the rest of the buffer.
         int32_t samplesLeft = numOutputSamples - numInputSamples;
