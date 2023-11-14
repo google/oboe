@@ -5,13 +5,15 @@
 #ifndef SAMPLES_ONNXHELPER_H
 #define SAMPLES_ONNXHELPER_H
 #include <vector>
-#include <onnxruntime_cxx_api.h> // [jlasecki]: It is actually defined so don't worry
+//#include <onnxruntime_cxx_api.h>
+#include <onnxruntime_c_api.h> // [jlasecki]: It is actually defined so don't worry
+#include <algorithm>
 
 #ifndef ORT_API_VERSION
 #define ORT_API_VERSION   17
 #endif
 
-// [jlasecki]: Inspired (mostly copied) from here: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/Snpe_EP/main.cpp
+// Inspired by this one: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/Snpe_EP/main.cpp
 class OnnxHelper {
 private:
     bool _checkStatus(OrtStatus* status) {
@@ -19,7 +21,7 @@ private:
             const char* msg = g_ort->GetErrorMessage(status);
             std::cerr << msg << std::endl;
             this->g_ort->ReleaseStatus(status);
-            throw Ort::Exception(msg, OrtErrorCode::ORT_EP_FAIL);
+            throw std::invalid_argument(msg); // TODO Change it to some other exception
         }
         return true;
     }
@@ -39,7 +41,7 @@ public:
         this->_checkStatus(this->g_ort->SetIntraOpNumThreads(this->session_options, 1));
         this->_checkStatus(this->g_ort->SetSessionGraphOptimizationLevel(this->session_options, ORT_ENABLE_BASIC));
 
-        // [jlasecki]: Leaving custom execution provider (other than cpu) for later
+        // Leaving custom execution provider (other than cpu) for later
         /* std::vector<const char*> options_keys = {"runtime", "buffer_type"};
         std::vector<const char*> options_values = {backend.c_str(), "FLOAT"};  // set to TF8 if use quantized data
 
@@ -51,23 +53,80 @@ public:
         this->_checkStatus(this->g_ort->CreateSession(env, this->model_path, session_options, &this->session));
         this->_checkStatus(this->g_ort->GetAllocatorWithDefaultOptions(&this->allocator));
 
-        CheckStatus(this->g_ort->SessionGetInputCount(session, &this->num_input_nodes));
+        this->_checkStatus(this->g_ort->SessionGetInputCount(session, &this->num_input_nodes));
     }
 
     ~OnnxHelper() {
-        delete this->env;
-        delete this->g_ort;
-        delete this->session_options;
-        delete this->session;
-        delete this->allocator;
-        delete this->model_path;
+//        delete this->env;
+//        delete this->g_ort;
+//        delete this->session_options;
+//        delete this->session;
+//        delete this->allocator;
+//        delete this->model_path;
     }
 
     float* dumbProcessing(float* input) {
         return input;
     }
 
-    float* modelProcessing(float* input) {
+    float* simpleModelProcessing(float* input, float* output, size_t length) {
+        size_t elementNum = length;
+        const int64_t shape[] = {1, (int64_t)elementNum};
+        size_t shapeLen = 2;
+
+        OrtMemoryInfo ** memoryInfo = NULL;
+        this->_checkStatus(this->g_ort->CreateCpuMemoryInfo(OrtDeviceAllocator, OrtMemTypeDefault, memoryInfo));
+
+        OrtValue ** inputTensor = NULL;
+        this->_checkStatus(this->g_ort->CreateTensorWithDataAsOrtValue(*memoryInfo,
+                                                                       input,
+                                                                       elementNum,
+                                                                       shape,
+                                                                       shapeLen,
+                                                                       ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT ,
+                                                                       inputTensor));
+
+        OrtValue ** outputTensor = NULL;
+        this->_checkStatus(this->g_ort->CreateTensorAsOrtValue(this->allocator,
+                                                               shape,
+                                                               shapeLen,
+                                                               ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+                                                               outputTensor));
+
+        this->g_ort->ReleaseMemoryInfo(*memoryInfo);
+
+        char ** inputNames = NULL;
+        char ** outputNames = NULL;
+
+        this->_checkStatus(this->g_ort->SessionGetInputName(this->session,
+                                                            elementNum,
+                                                            this->allocator,
+                                                            inputNames));
+
+        this->_checkStatus(this->g_ort->SessionGetOutputName(this->session,
+                                                             elementNum,
+                                                             this->allocator,
+                                                             outputNames));
+
+        this->_checkStatus(this->g_ort->Run(this->session,
+                                            nullptr,
+                                            inputNames,
+                                            inputTensor,
+                                            elementNum,
+                                            outputNames,
+                                            elementNum,
+                                            outputTensor));
+
+        void ** buffer = NULL;
+        this->_checkStatus(this->g_ort->GetTensorMutableData(*outputTensor, buffer));
+
+        float ** floatBuffer = (float **) buffer;
+
+        std::copy(*floatBuffer, *floatBuffer + length, output);
+
+        this->g_ort->ReleaseValue(*inputTensor);
+        this->g_ort->ReleaseValue(*outputTensor);
+
         return input;
     }
 };

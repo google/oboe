@@ -46,16 +46,24 @@ public:
         // It is possible that there may be fewer input than output samples.
         int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
         for (int32_t i = 0; i < samplesToProcess; i++) {
-            *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
+//            *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
+            *outputFloats++ = *inputFloats++;
         }
-
-
-        outputFloats = this->onnxHelper->dumbProcessing(outputFloats);
 
         // If there are fewer input samples then clear the rest of the buffer.
         int32_t samplesLeft = numOutputSamples - numInputSamples;
         for (int32_t i = 0; i < samplesLeft; i++) {
             *outputFloats++ = 0.0; // silence
+        }
+
+        size_t length = sizeof(*outputFloats);
+
+        float outputFloatsProcessed[sizeof(*outputFloats)] = {};
+
+        this->onnxHelper->simpleModelProcessing(outputFloats, outputFloatsProcessed, length);
+
+        for (int32_t i = 0; i < numOutputSamples; i++) {
+            outputFloats[i] = outputFloatsProcessed[i];
         }
 
         return oboe::DataCallbackResult::Continue;
