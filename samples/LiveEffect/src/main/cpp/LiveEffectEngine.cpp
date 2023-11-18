@@ -17,9 +17,15 @@
 #include <cassert>
 #include <logging_macros.h>
 
-#include "LiveEffectEngine.h"
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
-LiveEffectEngine::LiveEffectEngine() {
+#include "LiveEffectEngine.h"
+#include "FullDuplexPass.h"
+
+LiveEffectEngine::LiveEffectEngine(AAssetManager* manager):
+        mFullDuplexPass(manager) {
+
     assert(mOutputChannelCount == mInputChannelCount);
 }
 

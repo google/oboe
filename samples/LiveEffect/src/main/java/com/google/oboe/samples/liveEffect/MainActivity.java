@@ -33,6 +33,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.content.res.AssetManager;
+
 import com.google.oboe.samples.audio_device.AudioDeviceListEntry;
 import com.google.oboe.samples.audio_device.AudioDeviceSpinner;
 
@@ -152,7 +154,7 @@ public class MainActivity extends Activity
     @Override
     protected void onResume() {
         super.onResume();
-        LiveEffectEngine.create();
+        LiveEffectEngine.create(getAssets());
         mAAudioRecommended = LiveEffectEngine.isAAudioRecommended();
         EnableAudioApiUI(true);
         LiveEffectEngine.setAPI(apiSelection);

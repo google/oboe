@@ -16,20 +16,30 @@
 
 #include <jni.h>
 #include <logging_macros.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 #include "LiveEffectEngine.h"
 
 static const int kOboeApiAAudio = 0;
 static const int kOboeApiOpenSLES = 1;
 
 static LiveEffectEngine *engine = nullptr;
+static AAssetManager* manager = nullptr;
 
 extern "C" {
 
 JNIEXPORT jboolean JNICALL
 Java_com_google_oboe_samples_liveEffect_LiveEffectEngine_create(JNIEnv *env,
-                                                               jclass) {
+                                                               jclass,
+                                                               jobject globalAssetsManager) {
+
+
+    if (manager == nullptr) {
+        manager = AAssetManager_fromJava(env, globalAssetsManager);
+    }
+
     if (engine == nullptr) {
-        engine = new LiveEffectEngine();
+        engine = new LiveEffectEngine(manager);
     }
 
     return (engine != nullptr) ? JNI_TRUE : JNI_FALSE;

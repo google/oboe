@@ -18,13 +18,18 @@
 #define SAMPLES_FULLDUPLEXPASS_H
 
 #include "onnxHelper.h"
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 class FullDuplexPass : public oboe::FullDuplexStream {
 private:
     OnnxHelper* onnxHelper;
 public:
-    FullDuplexPass() {
-        this->onnxHelper = new OnnxHelper();
+    FullDuplexPass(AAssetManager* manager) {
+        this->onnxHelper = new OnnxHelper(manager);
+    }
+    ~FullDuplexPass() {
+        delete this->onnxHelper;
     }
     virtual oboe::DataCallbackResult
     onBothStreamsReady(
@@ -41,7 +46,7 @@ public:
         // It also assumes the channel count for each stream is the same.
         int32_t samplesPerFrame = getOutputStream()->getChannelCount();
         int32_t numInputSamples = numInputFrames * samplesPerFrame;
-        int32_t numOutputSamples = numOutputFrames * samplesPerFrame;
+        int32_t numOutputSamples = numOutputFrames * samplesPerFrame; // 648 * 2 = 1296
 
         // It is possible that there may be fewer input than output samples.
         int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
@@ -56,15 +61,15 @@ public:
             *outputFloats++ = 0.0; // silence
         }
 
-        size_t length = sizeof(*outputFloats);
+        float outputFloatsProcessed[1296] = {}; // <- numOutputSamples
 
-        float outputFloatsProcessed[sizeof(*outputFloats)] = {};
+        this->onnxHelper->simpleModelProcessing(outputFloats, outputFloatsProcessed);
 
-        this->onnxHelper->simpleModelProcessing(outputFloats, outputFloatsProcessed, length);
+//        for (int32_t i = 0; i < numOutputSamples; i++) {
+//            outputFloats[i] = outputFloatsProcessed[i];
+//        }
 
-        for (int32_t i = 0; i < numOutputSamples; i++) {
-            outputFloats[i] = outputFloatsProcessed[i];
-        }
+        outputFloats = &*outputFloatsProcessed;
 
         return oboe::DataCallbackResult::Continue;
     }
