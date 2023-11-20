@@ -194,6 +194,13 @@ public:
     *
     * This cannot be set higher than getBufferCapacity().
     *
+    * This should only be used with Output streams. It will
+    * be ignored for Input streams because they are generally kept as empty as possible.
+    *
+    * For OpenSL ES, this method only has an effect on output stream that do NOT
+    * use a callback. The blocking writes goes into a buffer in Oboe and the size of that
+    * buffer is controlled by this method.
+    *
     * @param requestedFrames requested number of frames that can be filled without blocking
     * @return the resulting buffer size in frames (obtained using value()) or an error (obtained
     * using error())
