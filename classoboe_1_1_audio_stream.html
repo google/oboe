@@ -1430,6 +1430,8 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>This can be used to adjust the latency of the buffer by changing the threshold where blocking will occur. By combining this with <a class="el" href="classoboe_1_1_audio_stream.html#a4567ddca378ba66809c119326544d556">getXRunCount()</a>, the latency can be tuned at run-time for each device.</p>
 <p>This cannot be set higher than getBufferCapacity().</p>
+<p>This should only be used with Output streams. It will be ignored for Input streams because they are generally kept as empty as possible.</p>
+<p>For OpenSL ES, this method only has an effect on output stream that do NOT use a callback. The blocking writes goes into a buffer in Oboe and the size of that buffer is controlled by this method.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">requestedFrames</td><td>requested number of frames that can be filled without blocking </td></tr>
