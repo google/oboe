@@ -114,6 +114,7 @@ There are several optional parameters for just the "data_paths" test:
     --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices. Note use of "-ez"
     --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices. Note use of "-ez"
     --ez use_all_output_channel_masks {"true", 1, "false", 0}  // Whether to test all output channel masks. Note use of "-ez". Default is false
+    --ez use_all_sample_rates {"true", 1, "false", 0}  // Whether to test all sample rates. Note use of "-ez". Default is false
     --ei single_test_index  {testId}  // Index for testing one specific test
 
 There are some optional parameters for just the "output" test:

@@ -35,6 +35,12 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="OutDev" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <CheckBox
             android:id="@+id/checkbox_paths_all_output_channel_masks"
@@ -42,6 +48,13 @@
             android:layout_height="wrap_content"
             android:checked="false"
             android:text="AllOutCMs" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_all_sample_rates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="AllSRs" />
     </LinearLayout>
 
     <TextView
