@@ -73,7 +73,7 @@ public class TestInputActivity  extends TestAudioActivity {
 
         mWorkloadView = (WorkloadView) findViewById(R.id.workload_view);
         if (mWorkloadView != null) {
-            mWorkloadView.setAudioStreamTester(mAudioInputTester);
+            mWorkloadView.setWorkloadReceiver((w) -> mAudioInputTester.setWorkload(w));
         }
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);

@@ -74,6 +74,20 @@
         <item>IN_COMMUNICATION</item>
     </string-array>
 
+    <string name="workload_prompt">High #Voices:</string>
+    <string-array name="cpuload_voices">
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+        <item>70</item>
+        <item>80</item>
+        <item>90</item>
+        <item>100</item>
+        <item>120</item>
+        <item>150</item>
+        <item>200</item>
+    </string-array>
+
     <string name="sample_rate_prompt">SRate:</string>
     <string-array name="sample_rates">
         <item>0</item>
