@@ -34,13 +34,22 @@ import java.util.Locale;
 /**
  * Demonstrate the behavior of a changing CPU load on underruns.
  * Display the workload and the callback duration in a chart.
- * Enable PerformanceHints (ADPF).
+ * Enable or disable PerformanceHints (ADPF) using a checkbox.
+ * This might boost the CPU frequency when Oboe is taking too long to compute the next buffer.
+ * ADPF docs at: https://developer.android.com/reference/android/os/PerformanceHintManager
  */
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private static final int WORKLOAD_HIGH_MIN = 30;
     private static final int WORKLOAD_HIGH_MAX = 150;
+    // When the CPU is completely saturated then the load will be above 1.0.
     public static final double LOAD_RECOVERY_HIGH = 1.0;
+    // Use a slightly lower value for going low so that the comparator has hysteresis.
     public static final double LOAD_RECOVERY_LOW = 0.95;
+
+    private static final float MARGIN_ABOVE_WORKLOAD_FOR_CPU = 1.2f;
+
+    // By default, set high workload to 70 voices, which is reasonable for most devices.
+    public static final double WORKLOAD_PROGRESS_FOR_70_VOICES = 0.53;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -58,8 +67,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mDrawAlwaysBox;
     private int mCpuCount;
 
-    private int mWorkloadLow = 0;
-    private int mWorkloadHigh = 0;
+    private static final int WORKLOAD_LOW = 1;
+    private int mWorkloadHigh; // this will get set later
     private WorkloadView mDynamicWorkloadView;
 
     // Periodically query the status of the streams.
@@ -110,9 +119,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                     case STATE_IDLE:
                         drawChartOnce = true; // clear old chart
                         mState = STATE_RUN_LOW;
+                        mLastToggleTime = now;
                         break;
                     case STATE_RUN_LOW:
-                        nextWorkload = mWorkloadLow;
+                        nextWorkload = WORKLOAD_LOW;
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_HIGH;
@@ -188,7 +198,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     private void setWorkloadHigh(int workloadHigh) {
         mWorkloadHigh = workloadHigh;
-        mWorkloadLow = Math.max(1, (int)(workloadHigh * 0.016));
     }
 
 
@@ -269,7 +278,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mMaxCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
                 0.0f, 2.0f);
         mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE,
-                0.0f, (1.2f * WORKLOAD_HIGH_MAX));
+                0.0f, (MARGIN_ABOVE_WORKLOAD_FOR_CPU * WORKLOAD_HIGH_MAX));
 
         mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
 
@@ -307,7 +316,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
             mDynamicWorkloadView.setLabel("High Workload");
             mDynamicWorkloadView.setRange(WORKLOAD_HIGH_MIN, WORKLOAD_HIGH_MAX);
-            mDynamicWorkloadView.setFaderNormalizedProgress(0.53);
+            mDynamicWorkloadView.setFaderNormalizedProgress(WORKLOAD_PROGRESS_FOR_70_VOICES);
         }
 
         updateButtons(false);
