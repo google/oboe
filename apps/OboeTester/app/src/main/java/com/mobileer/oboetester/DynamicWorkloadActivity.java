@@ -188,6 +188,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     private void setWorkloadHigh(int workloadHigh) {
         mWorkloadHigh = workloadHigh;
+        mWorkloadLow = Math.max(1, (int)(workloadHigh * 0.016));
     }
 
 

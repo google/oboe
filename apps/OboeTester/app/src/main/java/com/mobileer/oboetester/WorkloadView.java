@@ -44,7 +44,6 @@ public class WorkloadView extends LinearLayout {
     private SeekBar.OnSeekBarChangeListener mChangeListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            Log.d(TestAudioActivity.TAG, "mWorkloadHigh: progress = " + progress);
             setValueByPosition(progress);
         }
 
