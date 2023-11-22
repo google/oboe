@@ -26,7 +26,7 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     AudioOutputTester mAudioOutTester;
 
     private BufferSizeView mBufferSizeView;
-    private WorkloadView mWorkloadView;
+    protected WorkloadView mWorkloadView;
 
     @Override boolean isOutput() { return true; }
 
@@ -40,13 +40,14 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         super.findAudioCommon();
         mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
         mWorkloadView = (WorkloadView) findViewById(R.id.workload_view);
+        if (mWorkloadView != null) {
+            mWorkloadView.setWorkloadReceiver((w) -> mAudioOutTester.setWorkload(w));
+        }
     }
 
     @Override
     public AudioOutputTester addAudioOutputTester() {
-        AudioOutputTester audioOutTester = super.addAudioOutputTester();
-        mWorkloadView.setAudioStreamTester(audioOutTester);
-        return audioOutTester;
+        return super.addAudioOutputTester();
     }
 
     @Override

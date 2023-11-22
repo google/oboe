@@ -34,12 +34,22 @@ import java.util.Locale;
 /**
  * Demonstrate the behavior of a changing CPU load on underruns.
  * Display the workload and the callback duration in a chart.
- * Enable PerformanceHints (ADPF).
+ * Enable or disable PerformanceHints (ADPF) using a checkbox.
+ * This might boost the CPU frequency when Oboe is taking too long to compute the next buffer.
+ * ADPF docs at: https://developer.android.com/reference/android/os/PerformanceHintManager
  */
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
-    private static final double WORKLOAD_MAX = 500.0;
+    private static final int WORKLOAD_HIGH_MIN = 30;
+    private static final int WORKLOAD_HIGH_MAX = 150;
+    // When the CPU is completely saturated then the load will be above 1.0.
     public static final double LOAD_RECOVERY_HIGH = 1.0;
+    // Use a slightly lower value for going low so that the comparator has hysteresis.
     public static final double LOAD_RECOVERY_LOW = 0.95;
+
+    private static final float MARGIN_ABOVE_WORKLOAD_FOR_CPU = 1.2f;
+
+    // By default, set high workload to 70 voices, which is reasonable for most devices.
+    public static final double WORKLOAD_PROGRESS_FOR_70_VOICES = 0.53;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -57,34 +67,25 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mDrawAlwaysBox;
     private int mCpuCount;
 
+    private static final int WORKLOAD_LOW = 1;
+    private int mWorkloadHigh; // this will get set later
+    private WorkloadView mDynamicWorkloadView;
+
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 40;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
         public static final int SNIFFER_TOGGLE_PERIOD_MSEC = 3000;
-        public static final int REQUIRED_STABLE_MEASUREMENTS = 20;
-
-        private static final double WORKLOAD_FILTER_COEFFICIENT = 0.9;
         private static final int STATE_IDLE = 0;
-        private static final int STATE_BENCHMARK_TARGET = 1;
-        private static final int STATE_RUN_LOW = 2;
-        private static final int STATE_RUN_HIGH = 3;
+        private static final int STATE_RUN_LOW = 1;
+        private static final int STATE_RUN_HIGH = 2;
 
         private Handler mHandler;
-        private int mCount;
 
-        private double mCpuLoadBenchmark = 0.90; // Determine workload that will hit this CPU load.
-        private double mCpuLoadHigh = 0.80; // Target CPU load during HIGH cycle.
-
-        private double mWorkloadLow = 0.0;
-        private double mWorkloadHigh = 0.0;
-        private double mWorkloadCurrent = 1.0;
-        private double mWorkloadBenchmark = 0.0;
+        private int mWorkloadCurrent = 1;
 
         private int mState = STATE_IDLE;
         private long mLastToggleTime = 0;
-        private int mStableCount = 0;
-        private boolean mArmLoadMonitor = false;
         private long mRecoveryTimeBegin;
         private long mRecoveryTimeEnd;
         private long mStartTimeNanos;
@@ -93,8 +94,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             switch(state) {
                 case STATE_IDLE:
                     return "Idle";
-                case STATE_BENCHMARK_TARGET:
-                    return "Benchmarking";
                 case STATE_RUN_LOW:
                     return "low";
                 case STATE_RUN_HIGH:
@@ -108,7 +107,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         private Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                double nextWorkload = 0.0;
+                int nextWorkload = mWorkloadCurrent;
                 AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
                 float cpuLoad = stream.getCpuLoad();
                 float maxCpuLoad = stream.getAndResetMaxCpuLoad();
@@ -119,29 +118,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 switch (mState) {
                     case STATE_IDLE:
                         drawChartOnce = true; // clear old chart
-                        mState = STATE_BENCHMARK_TARGET;
-                        break;
-                    case STATE_BENCHMARK_TARGET:
-                        // prevent divide by zero
-                        double targetWorkload = (mWorkloadCurrent / Math.max(cpuLoad, 0.01)) * mCpuLoadBenchmark;
-                        targetWorkload = Math.min(WORKLOAD_MAX, targetWorkload);
-                        // low pass filter to find matching workload
-                        nextWorkload = (WORKLOAD_FILTER_COEFFICIENT * mWorkloadCurrent)
-                                + ((1.0 - WORKLOAD_FILTER_COEFFICIENT) * targetWorkload);
-                        if (Math.abs(cpuLoad - mCpuLoadBenchmark) < 0.04) {
-                            if (++mStableCount > REQUIRED_STABLE_MEASUREMENTS) {
-                                // Found the right workload.
-                                mWorkloadBenchmark = nextWorkload;
-                                mLastToggleTime = now;
-                                mState = STATE_RUN_LOW;
-                                mWorkloadLow = Math.max(1, (int)(nextWorkload * 0.02));
-                                mWorkloadHigh = (int)(nextWorkload * (mCpuLoadHigh / mCpuLoadBenchmark));
-                                mWorkloadTrace.setMax((float)(2.0 * nextWorkload));
-                            }
-                        }
+                        mState = STATE_RUN_LOW;
+                        mLastToggleTime = now;
                         break;
                     case STATE_RUN_LOW:
-                        nextWorkload = mWorkloadLow;
+                        nextWorkload = WORKLOAD_LOW;
                         if ((now - mLastToggleTime) > SNIFFER_TOGGLE_PERIOD_MSEC) {
                             mLastToggleTime = now;
                             mState = STATE_RUN_HIGH;
@@ -171,6 +152,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
                         break;
                 }
+                stream.setWorkload((int) nextWorkload);
+                mWorkloadCurrent = nextWorkload;
                 // Update chart
                 float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
                 mMultiLineChart.addX(nowMicros);
@@ -184,15 +167,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 String recoveryTimeString = (mRecoveryTimeEnd <= mRecoveryTimeBegin) ?
                         "---" : ((mRecoveryTimeEnd - mRecoveryTimeBegin) + " msec");
                 String message =
-                        "#Voices: max = " + String.format(Locale.getDefault(), "%d", (int) mWorkloadBenchmark)
-                        + ", now = " + String.format(Locale.getDefault(), "%d", (int) nextWorkload)
+                        "#Voices = " + (int) nextWorkload
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
                         + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
-                stream.setWorkload((int)(nextWorkload));
-                mWorkloadCurrent = nextWorkload;
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
@@ -202,9 +182,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             stop();
             mStartTimeNanos = System.nanoTime();
             mMultiLineChart.reset();
-            mCount = 0;
-            mStableCount = 0;
-            mState = STATE_BENCHMARK_TARGET;
+            mState = STATE_IDLE;
             mHandler = new Handler(Looper.getMainLooper());
             // Start the initial runnable task by posting through the handler
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
@@ -216,6 +194,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             }
         }
 
+    }
+
+    private void setWorkloadHigh(int workloadHigh) {
+        mWorkloadHigh = workloadHigh;
     }
 
 
@@ -259,9 +241,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
 
+        mDynamicWorkloadView = (WorkloadView) findViewById(R.id.dynamic_workload_view);
+        mWorkloadView.setVisibility(View.GONE);
+
         // Add a row of checkboxes for setting CPU affinity.
         mCpuCount = NativeEngine.getCpuCount();
-        final int defaultCpuAffinity = 2;
+        final int defaultCpuAffinityMask = 0;
         View.OnClickListener checkBoxListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -283,25 +268,26 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mAffinityBoxes.add(checkBox);
             checkBox.setText(cpuIndex + "");
             checkBox.setOnClickListener(checkBoxListener);
-            if (cpuIndex == defaultCpuAffinity) {
+            if (((1 << cpuIndex) & defaultCpuAffinityMask) != 0) {
                 checkBox.setChecked(true);
             }
         }
-        NativeEngine.setCpuAffinityMask(1 << defaultCpuAffinity);
+        NativeEngine.setCpuAffinityMask(defaultCpuAffinityMask);
 
         mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
         mMaxCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
                 0.0f, 2.0f);
         mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE,
-                0.0f, (float)WORKLOAD_MAX);
+                0.0f, (MARGIN_ABOVE_WORKLOAD_FOR_CPU * WORKLOAD_HIGH_MAX));
+
+        mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
 
         // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
-        mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
-
         mUseAltAdpfBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             setUseAlternativeAdpf(checkBox.isChecked());
+            mPerfHintBox.setEnabled(!checkBox.isChecked());
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
@@ -322,6 +308,16 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             CheckBox checkBox = (CheckBox) buttonView;
             mDrawChartAlways = checkBox.isChecked();
         });
+
+        if (mDynamicWorkloadView != null) {
+            mDynamicWorkloadView.setWorkloadReceiver((w) -> {
+                setWorkloadHigh(w);
+            });
+
+            mDynamicWorkloadView.setLabel("High Workload");
+            mDynamicWorkloadView.setRange(WORKLOAD_HIGH_MIN, WORKLOAD_HIGH_MAX);
+            mDynamicWorkloadView.setFaderNormalizedProgress(WORKLOAD_PROGRESS_FOR_70_VOICES);
+        }
 
         updateButtons(false);
         updateEnabledWidgets();
@@ -356,9 +352,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     public void startTest(View view) {
-        // Do not draw until the benchmark stage has finished.
-        mDrawAlwaysBox.setChecked(false);
-        mDrawChartAlways = false;
         try {
             openAudio();
         } catch (IOException e) {
