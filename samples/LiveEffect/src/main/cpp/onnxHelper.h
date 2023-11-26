@@ -8,7 +8,7 @@
 #include <onnxruntime_cxx_api.h>
 #include <onnxruntime_c_api.h> // [jlasecki]: It is actually defined so don't worry
 #include <algorithm>
-#import <string>
+#include "fftHelper.h"
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -17,7 +17,9 @@
 #define ORT_API_VERSION   17
 #endif
 
-#define LOG_VERBOSE(message, ...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, "MY_LOG_TAG", "[%s %s] " message, __FILE_NAME__, __func__, ##__VA_ARGS__))
+#ifndef ALOG
+#define  ALOG(...)  __android_log_print(ANDROID_LOG_INFO,"test",__VA_ARGS__)
+#endif
 
 // Inspired by this one: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/Snpe_EP/main.cpp
 class OnnxHelper {
@@ -37,13 +39,14 @@ private:
     OrtSessionOptions* session_options;
     OrtSession* session;
     OrtAllocator* allocator;
-    size_t num_input_nodes;
     AAssetManager** mgr;
     AAsset* modelAsset;
     const void * modelDataBuffer;
+//    FftHelper fftHelper;
 public:
     OnnxHelper(AAssetManager* manager) {
         this->mgr = &manager;
+//        this->fftHelper = FftHelper();
 
         this->g_ort = OrtGetApiBase()->GetApi(ORT_API_VERSION);
         this->_checkStatus(this->g_ort->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "test", &this->env));
@@ -68,41 +71,38 @@ public:
                                                                this->session_options,
                                                                &this->session));
 
-//        this->_checkStatus(this->g_ort->CreateSession(this->env, model_path, this->session_options, &this->session));
-
         this->_checkStatus(this->g_ort->GetAllocatorWithDefaultOptions(&this->allocator));
-        this->_checkStatus(this->g_ort->SessionGetInputCount(session, &this->num_input_nodes));
     }
 
     ~OnnxHelper() {
         AAsset_close(this->modelAsset);
         this->g_ort->ReleaseSession(this->session);
         this->g_ort->ReleaseSessionOptions(this->session_options);
-//        delete this->env;
-//        delete this->g_ort;
-//        delete this->session_options;
-//        delete this->session;
-//        delete this->allocator;
+        this->g_ort->ReleaseAllocator(this->allocator);
+        this->g_ort->ReleaseEnv(this->env);
+        delete this->g_ort;
+        delete this->mgr;
     }
 
     float* dumbProcessing(float* input) {
         return input;
     }
 
-    void simpleModelProcessing(float* input, float* output) {
-        const int64_t shape[] = {1296};
+    void simpleModelProcessing(float* input, size_t numSamples) {
+        if (numSamples == 0) {
+            ALOG("0 samples, skipping simpleModelProcessing");
+            return;
+        }
+
+        const int64_t shape[] = {(int64_t)numSamples};
         size_t dataLenBytes = shape[0] * sizeof(float);
         size_t shapeLen = 1;
 
-        LOG_VERBOSE("1");
 
         OrtMemoryInfo * memoryInfo = NULL;
-        LOG_VERBOSE("1.5");
         this->_checkStatus(this->g_ort->CreateCpuMemoryInfo(OrtDeviceAllocator, OrtMemTypeDefault, &memoryInfo));
 
-        LOG_VERBOSE("2");
         OrtValue * inputTensor = NULL;
-
         this->_checkStatus(this->g_ort->CreateTensorWithDataAsOrtValue(memoryInfo,
                                                                        input,
                                                                        dataLenBytes,
@@ -110,24 +110,20 @@ public:
                                                                        shapeLen,
                                                                        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT ,
                                                                        &inputTensor));
-        LOG_VERBOSE("3");
         OrtValue * outputTensor = NULL;
         this->_checkStatus(this->g_ort->CreateTensorAsOrtValue(this->allocator,
                                                                shape,
                                                                shapeLen,
                                                                ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
                                                                &outputTensor));
-        LOG_VERBOSE("4");
 
         this->g_ort->ReleaseMemoryInfo(memoryInfo);
-        LOG_VERBOSE("5");
 
         size_t inputCount = 0;
         size_t outputCount = 0;
         this->_checkStatus(this->g_ort->SessionGetInputCount(this->session, &inputCount));
         this->_checkStatus(this->g_ort->SessionGetOutputCount(this->session, &outputCount));
 
-        LOG_VERBOSE("5.5");
         char * inputNames[1] = {};
         char * outputNames[1] = {};
 
@@ -149,7 +145,6 @@ public:
             outputNames[i] = name;
         }
 
-        LOG_VERBOSE("6");
         this->_checkStatus(this->g_ort->Run(this->session,
                                             nullptr,
                                             inputNames,
@@ -159,17 +154,12 @@ public:
                                             outputCount,
                                             &outputTensor));
 
-        void * buffer = NULL;
-        LOG_VERBOSE("6.5");
+        void * buffer = NULL;;
         this->_checkStatus(this->g_ort->GetTensorMutableData(outputTensor, &buffer));
-        LOG_VERBOSE("7");
         float * floatBuffer = (float *) buffer;
-        LOG_VERBOSE("7.5");
-        std::copy(floatBuffer, floatBuffer + shape[0], output);
-        LOG_VERBOSE("8");
+        std::copy(floatBuffer, floatBuffer + shape[0], input);
         this->g_ort->ReleaseValue(inputTensor);
         this->g_ort->ReleaseValue(outputTensor);
-        LOG_VERBOSE("9");
     }
 };
 

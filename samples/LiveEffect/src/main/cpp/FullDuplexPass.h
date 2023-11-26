@@ -17,6 +17,11 @@
 #ifndef SAMPLES_FULLDUPLEXPASS_H
 #define SAMPLES_FULLDUPLEXPASS_H
 
+#ifndef ALOG
+#define  ALOG(...)  __android_log_print(ANDROID_LOG_INFO,"test",__VA_ARGS__)
+#endif
+
+//#include "fileHelper.h"
 #include "onnxHelper.h"
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -46,13 +51,15 @@ public:
         // It also assumes the channel count for each stream is the same.
         int32_t samplesPerFrame = getOutputStream()->getChannelCount();
         int32_t numInputSamples = numInputFrames * samplesPerFrame;
-        int32_t numOutputSamples = numOutputFrames * samplesPerFrame; // 648 * 2 = 1296
+        int32_t numOutputSamples = numOutputFrames * samplesPerFrame; // 2176 with emulator API 34
+
+//        ALOG("n_samples: %d", numOutputSamples);
 
         // It is possible that there may be fewer input than output samples.
         int32_t samplesToProcess = std::min(numInputSamples, numOutputSamples);
         for (int32_t i = 0; i < samplesToProcess; i++) {
-//            *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
-            *outputFloats++ = *inputFloats++;
+            *outputFloats++ = *inputFloats++ * 0.95; // do some arbitrary processing
+            //*outputFloats++ = *inputFloats++;
         }
 
         // If there are fewer input samples then clear the rest of the buffer.
@@ -61,15 +68,10 @@ public:
             *outputFloats++ = 0.0; // silence
         }
 
-        float outputFloatsProcessed[1296] = {}; // <- numOutputSamples
+//        FileHelper fileHelper = FileHelper();
+//        fileHelper.saveValue((double)numOutputSamples, "/data/data/LiveEffect/numOutputSamples.txt");
 
-        this->onnxHelper->simpleModelProcessing(outputFloats, outputFloatsProcessed);
-
-//        for (int32_t i = 0; i < numOutputSamples; i++) {
-//            outputFloats[i] = outputFloatsProcessed[i];
-//        }
-
-        outputFloats = &*outputFloatsProcessed;
+        this->onnxHelper->simpleModelProcessing(outputFloats, numOutputSamples);
 
         return oboe::DataCallbackResult::Continue;
     }

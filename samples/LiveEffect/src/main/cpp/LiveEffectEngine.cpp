@@ -22,6 +22,11 @@
 
 #include "LiveEffectEngine.h"
 #include "FullDuplexPass.h"
+#include "constants.h"
+
+#ifndef ALOG
+#define  ALOG(...)  __android_log_print(ANDROID_LOG_INFO,"test",__VA_ARGS__)
+#endif
 
 LiveEffectEngine::LiveEffectEngine(AAssetManager* manager):
         mFullDuplexPass(manager) {
@@ -126,8 +131,10 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupRecordingStreamParameters(
     // This sample uses blocking read() because we don't specify a callback
     builder->setDeviceId(mRecordingDeviceId)
         ->setDirection(oboe::Direction::Input)
-        ->setSampleRate(sampleRate)
+        ->setFramesPerDataCallback(FRAMES_PER_DATA_CALLBACK)
+        ->setSampleRate(SAMPLE_RATE)
         ->setChannelCount(mInputChannelCount);
+
     return setupCommonStreamParameters(builder);
 }
 
@@ -163,7 +170,9 @@ oboe::AudioStreamBuilder *LiveEffectEngine::setupCommonStreamParameters(
         ->setFormat(mFormat)
         ->setFormatConversionAllowed(true)
         ->setSharingMode(oboe::SharingMode::Exclusive)
-        ->setPerformanceMode(oboe::PerformanceMode::LowLatency);
+        ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+        ->setFramesPerDataCallback(FRAMES_PER_DATA_CALLBACK)
+        ->setSampleRate(SAMPLE_RATE);
     return builder;
 }
 
