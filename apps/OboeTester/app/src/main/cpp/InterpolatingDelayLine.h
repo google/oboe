@@ -21,8 +21,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "oboe/Oboe.h"
-
 /**
  * Monophonic delay line.
  */

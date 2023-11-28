@@ -45,13 +45,13 @@ public:
 
     /**
      * This will be called when the next byte is needed.
-     * @return
+     * @return next byte
      */
     virtual uint8_t onNextByte() = 0;
 
     /**
      * Generate the next floating point sample.
-     * @return
+     * @return next float
      */
     virtual float nextFloat() {
         advanceSample();
@@ -66,7 +66,6 @@ protected:
     /**
      * This will be called when a new bit is ready to be encoded.
      * It can be used to prepare the encoded samples.
-     * @param current
      */
     virtual void onNextBit(bool /* current */) {};
 

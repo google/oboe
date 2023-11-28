@@ -48,6 +48,9 @@
 
 #define LOOPBACK_RESULT_TAG  "RESULT: "
 
+// Enable or disable the optimized latency calculation.
+#define USE_FAST_LATENCY_CALCULATION 1
+
 static constexpr int32_t kDefaultSampleRate = 48000;
 static constexpr int32_t kMillisPerSecond   = 1000;  // by definition
 static constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
@@ -69,13 +72,14 @@ struct LatencyReport {
 
 static float calculateNormalizedCorrelation(const float *a,
                                              const float *b,
-                                             int windowSize) {
+                                             int windowSize,
+                                             int stride) {
     float correlation = 0.0;
     float sumProducts = 0.0;
     float sumSquares = 0.0;
 
     // Correlate a against b.
-    for (int i = 0; i < windowSize; i++) {
+    for (int i = 0; i < windowSize; i += stride) {
         float s1 = a[i];
         float s2 = b[i];
         // Use a normalized cross-correlation.
@@ -220,31 +224,45 @@ private:
     int32_t       mSampleRate = kDefaultSampleRate; // common default
 };
 
-static int measureLatencyFromPulse(AudioRecording &recorded,
-                                   AudioRecording &pulse,
-                                   LatencyReport *report) {
-
+/**
+  * Find latency using cross correlation in window of the recorded audio.
+  * The stride is used to skip over samples and reduce the CPU load.
+  */
+static int measureLatencyFromPulsePartial(AudioRecording &recorded,
+                                          int32_t recordedOffset,
+                                          int32_t recordedWindowSize,
+                                          AudioRecording &pulse,
+                                          LatencyReport *report,
+                                          int32_t stride) {
     report->reset();
 
-    int numCorrelations = recorded.size() - pulse.size();
+    if (recordedOffset + recordedWindowSize + pulse.size() > recorded.size()) {
+        ALOGE("%s() tried to correlate past end of recording, recordedOffset = %d frames\n",
+              __func__, recordedOffset);
+        return -3;
+    }
+
+    int32_t numCorrelations = recordedWindowSize / stride;
     if (numCorrelations < 10) {
-        ALOGE("%s() recording too small = %d frames\n", __func__, recorded.size());
+        ALOGE("%s() recording too small = %d frames, numCorrelations = %d\n",
+              __func__, recorded.size(), numCorrelations);
         return -1;
     }
     std::unique_ptr<float[]> correlations= std::make_unique<float[]>(numCorrelations);
 
     // Correlate pulse against the recorded data.
-    for (int i = 0; i < numCorrelations; i++) {
-        float correlation = calculateNormalizedCorrelation(&recorded.getData()[i],
+    for (int32_t i = 0; i < numCorrelations; i++) {
+        const int32_t index = (i * stride) + recordedOffset;
+        float correlation = calculateNormalizedCorrelation(&recorded.getData()[index],
                                                            &pulse.getData()[0],
-                                                           pulse.size());
+                                                           pulse.size(),
+                                                           stride);
         correlations[i] = correlation;
     }
-
     // Find highest peak in correlation array.
     float peakCorrelation = 0.0;
-    int peakIndex = -1;
-    for (int i = 0; i < numCorrelations; i++) {
+    int32_t peakIndex = -1;
+    for (int32_t i = 0; i < numCorrelations; i++) {
         float value = abs(correlations[i]);
         if (value > peakCorrelation) {
             peakCorrelation = value;
@@ -258,20 +276,63 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
 #if 0
     // Dump correlation data for charting.
     else {
-        const int margin = 50;
-        int startIndex = std::max(0, peakIndex - margin);
-        int endIndex = std::min(numCorrelations - 1, peakIndex + margin);
-        for (int index = startIndex; index < endIndex; index++) {
+        const int32_t margin = 50;
+        int32_t startIndex = std::max(0, peakIndex - margin);
+        int32_t endIndex = std::min(numCorrelations - 1, peakIndex + margin);
+        for (int32_t index = startIndex; index < endIndex; index++) {
             ALOGD("Correlation, %d, %f", index, correlations[index]);
         }
     }
 #endif
 
-    report->latencyInFrames = peakIndex;
+    report->latencyInFrames = recordedOffset + (peakIndex * stride);
     report->correlation = peakCorrelation;
 
     return 0;
 }
+
+#if USE_FAST_LATENCY_CALCULATION
+static int measureLatencyFromPulse(AudioRecording &recorded,
+                                   AudioRecording &pulse,
+                                   LatencyReport *report) {
+    const int32_t coarseStride = 16;
+    const int32_t fineWindowSize = coarseStride * 8;
+    const int32_t fineStride = 1;
+    LatencyReport courseReport;
+    courseReport.reset();
+    // Do a rough search, skipping over most of the samples.
+    int result = measureLatencyFromPulsePartial(recorded,
+                                                0, // recordedOffset,
+                                                recorded.size() - pulse.size(),
+                                                pulse,
+                                                &courseReport,
+                                                coarseStride);
+    if (result != 0) {
+        return result;
+    }
+    // Now do a fine resolution search near the coarse latency result.
+    int32_t recordedOffset = std::max(0, courseReport.latencyInFrames - (fineWindowSize / 2));
+    result = measureLatencyFromPulsePartial(recorded,
+                                            recordedOffset,
+                                            fineWindowSize,
+                                            pulse,
+                                            report,
+                                            fineStride );
+    return result;
+}
+#else
+// TODO - When we are confident of the new code we can remove this old code.
+static int measureLatencyFromPulse(AudioRecording &recorded,
+                                   AudioRecording &pulse,
+                                   LatencyReport *report) {
+    return measureLatencyFromPulsePartial(recorded,
+                                          0,
+                                          recorded.size() - pulse.size(),
+                                          pulse,
+                                          report,
+                                          1 );
+}
+#endif
 
 // ====================================================================================
 class LoopbackProcessor {
@@ -514,7 +575,7 @@ public:
                    << latencyMillis << "\n";
             report << LOOPBACK_RESULT_TAG "latency.confidence     = " << std::setw(8)
                    << getMeasuredConfidence() << "\n";
-            report << LOOPBACK_RESULT_TAG "latency.correlation     = " << std::setw(8)
+            report << LOOPBACK_RESULT_TAG "latency.correlation    = " << std::setw(8)
                    << getMeasuredCorrelation() << "\n";
         }
         mState = STATE_DONE;
