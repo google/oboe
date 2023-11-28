@@ -259,7 +259,6 @@ static int measureLatencyFromPulsePartial(AudioRecording &recorded,
                                                            stride);
         correlations[i] = correlation;
     }
-    
     // Find highest peak in correlation array.
     float peakCorrelation = 0.0;
     int32_t peakIndex = -1;
