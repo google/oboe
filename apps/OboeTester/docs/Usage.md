@@ -166,3 +166,8 @@ Lets you delete an error callback while it is used by Oboe. Targeted test for is
 
 ### Route Callback Test
 Changes the VoiceCommunication route while playing audio. Targeted test for issue #1763.
+
+### CPU Load
+This test plays a tone and alternates between low and high workloads.
+It exercises the kernel's CPU scheduler, which controls CPU frequency and core migration.
+Moredetails on the [wiki/OboeTester_DynamicCpuLoad](https://github.com/google/oboe/wiki/OboeTester_DynamicCpuLoad).
