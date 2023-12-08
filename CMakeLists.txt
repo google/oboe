@@ -45,10 +45,12 @@ set (oboe_sources
     src/flowgraph/SinkI16.cpp
     src/flowgraph/SinkI24.cpp
     src/flowgraph/SinkI32.cpp
+    src/flowgraph/SinkI8_24.cpp
     src/flowgraph/SourceFloat.cpp
     src/flowgraph/SourceI16.cpp
     src/flowgraph/SourceI24.cpp
     src/flowgraph/SourceI32.cpp
+    src/flowgraph/SourceI8_24.cpp
     src/flowgraph/resampler/IntegerRatio.cpp
     src/flowgraph/resampler/LinearResampler.cpp
     src/flowgraph/resampler/MultiChannelResampler.cpp
