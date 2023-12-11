@@ -43,9 +43,11 @@ static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
             openslStream = SL_ANDROID_STREAM_ALARM;
             break;
         case Usage::Notification:
-        case Usage::NotificationRingtone:
         case Usage::NotificationEvent:
             openslStream = SL_ANDROID_STREAM_NOTIFICATION;
+            break;
+        case Usage::NotificationRingtone:
+            openslStream = SL_ANDROID_STREAM_RING;
             break;
         case Usage::AssistanceAccessibility:
         case Usage::AssistanceNavigationGuidance:
