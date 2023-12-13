@@ -30,9 +30,10 @@
 using namespace oboe;
 
 static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
-    SLuint32 openslStream = SL_ANDROID_STREAM_MEDIA;
+    SLuint32 openslStream;
     switch(oboeUsage) {
         case Usage::Media:
+        case Usage::Game:
             openslStream = SL_ANDROID_STREAM_MEDIA;
             break;
         case Usage::VoiceCommunication:
@@ -43,18 +44,15 @@ static SLuint32 OpenSLES_convertOutputUsage(Usage oboeUsage) {
             openslStream = SL_ANDROID_STREAM_ALARM;
             break;
         case Usage::Notification:
-        case Usage::NotificationRingtone:
         case Usage::NotificationEvent:
             openslStream = SL_ANDROID_STREAM_NOTIFICATION;
+            break;
+        case Usage::NotificationRingtone:
+            openslStream = SL_ANDROID_STREAM_RING;
             break;
         case Usage::AssistanceAccessibility:
         case Usage::AssistanceNavigationGuidance:
         case Usage::AssistanceSonification:
-            openslStream = SL_ANDROID_STREAM_SYSTEM;
-            break;
-        case Usage::Game:
-            openslStream = SL_ANDROID_STREAM_MEDIA;
-            break;
         case Usage::Assistant:
         default:
             openslStream = SL_ANDROID_STREAM_SYSTEM;
