@@ -90,6 +90,10 @@ bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
 
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
     LOGW("Passing AudioStream pointer deprecated, Use openStream(std::shared_ptr<oboe::AudioStream> &stream) instead.");
+    return openStreamInternal(streamPP);
+}
+
+Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
     auto result = isValidConfig();
     if (result != Result::OK) {
         LOGW("%s() invalid config %d", __func__, result);
@@ -214,7 +218,7 @@ Result AudioStreamBuilder::openManagedStream(oboe::ManagedStream &stream) {
 Result AudioStreamBuilder::openStream(std::shared_ptr<AudioStream> &sharedStream) {
     sharedStream.reset();
     AudioStream *streamptr;
-    auto result = openStream(&streamptr);
+    auto result = openStreamInternal(&streamptr);
     if (result == Result::OK) {
         sharedStream.reset(streamptr);
         // Save a weak_ptr in the stream for use with callbacks.

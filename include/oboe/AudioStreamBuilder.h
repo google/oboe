@@ -648,6 +648,14 @@ public:
 private:
 
     /**
+     * Use this internally to implement opening with a shared_ptr.
+     *
+     * @param stream pointer to a variable to receive the stream address
+     * @return OBOE_OK if successful or a negative error code.
+     */
+    Result openStreamInternal(AudioStream **streamPP);
+
+    /**
      * @param other
      * @return true if channels, format and sample rate match
      */
