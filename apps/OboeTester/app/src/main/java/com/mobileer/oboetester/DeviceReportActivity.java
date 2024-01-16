@@ -202,7 +202,8 @@ public class DeviceReportActivity extends Activity {
         return report.toString();
     }
 
-    public void addMidiDeviceInfoToDeviceReport(MidiDeviceInfo midiDeviceInfo, StringBuffer report){
+    private void addMidiDeviceInfoToDeviceReport(MidiDeviceInfo midiDeviceInfo,
+                                                 StringBuffer report){
         report.append("\nInput Count        : " + midiDeviceInfo.getInputPortCount());
         report.append("\nOutput Count       : " + midiDeviceInfo.getOutputPortCount());
         report.append("\nType               : " + midiDeviceInfo.getType());
