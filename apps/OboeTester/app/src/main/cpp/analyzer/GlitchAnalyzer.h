@@ -191,7 +191,7 @@ public:
 //                    ALOGD("%s() mag = %f, offset = %f, prev = %f",
 //                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
                     if (mMagnitude > mThreshold) {
-                        if (abs(mPhaseOffset) < kMaxPhaseError) {
+                        if (fabs(mPhaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;
                             mConsecutiveBadFrames = 0;
 //                            ALOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
@@ -231,12 +231,15 @@ public:
                     // for drift in the DRC or AGC.
                     // Must be a multiple of the period or the calculation will not be accurate.
                     if (transformSample(sample, mInputPhase)) {
+                        // Adjust phase to account for sample rate drift.
+                        mInputPhase += mPhaseOffset;
+
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;
                         mSumSquareNoise = 0.0;
                         mSumSquareSignal = 0.0;
 
-                        if (abs(mPhaseOffset) > kMaxPhaseError) {
+                        if (fabs(mPhaseOffset) > kMaxPhaseError) {
                             result = ERROR_GLITCHES;
                             onGlitchStart();
                             ALOGD("phase glitch detected, phaseOffset = %g", mPhaseOffset);
@@ -260,7 +263,7 @@ public:
                     mConsecutiveBadFrames++;
                     mConsecutiveGoodFrames = 0;
                     mGlitchLength++;
-                    if (mGlitchLength > (2 * mSinePeriod)) {
+                    if (mGlitchLength > maxMeasurableGlitchLength()) {
                         onGlitchTerminated();
                     }
                 } else { // good frame
@@ -283,6 +286,8 @@ public:
 
         return result;
     }
+
+    int maxMeasurableGlitchLength() const { return 2 * mSinePeriod; }
 
     // advance and wrap phase
     void incrementInputPhase() {
@@ -309,6 +314,8 @@ public:
     void onGlitchTerminated() {
         mGlitchCount++;
         ALOGD("%5d: TERMINATED a glitch # %d, length = %d", mFrameCounter, mGlitchCount, mGlitchLength);
+        // We don't know how long the glitch really is so set the length to -1.
+        mGlitchLength = -1;
         mState = STATE_WAITING_FOR_LOCK;
         resetAccumulator();
     }

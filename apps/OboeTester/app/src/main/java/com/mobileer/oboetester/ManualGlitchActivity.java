@@ -188,10 +188,13 @@ public class ManualGlitchActivity extends GlitchActivity {
             mLastDisplayTime = now;
             int numSamples = getGlitch(mWaveform);
             mWaveformView.setSampleData(mWaveform, 0, numSamples);
-            int[] cursors = new int[2];
+            int glitchLength = getGlitchLength();
+            int[] cursors = new int[glitchLength > 0 ? 2 : 1];
             int startOfGlitch = getSinePeriod();
             cursors[0] = startOfGlitch;
-            cursors[1] = startOfGlitch + getGlitchLength();
+            if (glitchLength > 0) {
+                cursors[1] = startOfGlitch + getGlitchLength();
+            }
             mWaveformView.setCursorData(cursors);
             Log.i(TAG,"onGlitchDetected: glitch, numSamples = " + numSamples);
             mWaveformView.postInvalidate();
