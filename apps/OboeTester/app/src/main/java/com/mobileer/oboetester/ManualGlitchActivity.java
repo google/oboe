@@ -28,8 +28,6 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.Locale;
 
-import kotlin.random.Random;
-
 public class ManualGlitchActivity extends GlitchActivity {
 
     public static final String KEY_BUFFER_BURSTS = "buffer_bursts";

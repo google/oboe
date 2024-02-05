@@ -812,12 +812,6 @@ Java_com_mobileer_oboetester_TestDataPathsActivity_getMaxMagnitude(JNIEnv *env,
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMaxMagnitude();
 }
 
-//JNIEXPORT jdouble JNICALL
-//Java_com_mobileer_oboetester_TestDataPathsActivity_getPhase(JNIEnv *env,
-//                                                                          jobject instance) {
-//    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
-//}
-
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_setTolerance(JNIEnv *env,
                                                                    jobject instance,
