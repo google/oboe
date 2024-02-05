@@ -185,7 +185,7 @@ public:
 
 protected:
     // Try to get a prime period so the waveform plot changes every time.
-    static constexpr int32_t kTargetGlitchFrequency = 48000 / 53;
+    static constexpr int32_t kTargetGlitchFrequency = 48000 / 113;
 
     int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;

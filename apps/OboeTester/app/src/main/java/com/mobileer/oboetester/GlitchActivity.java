@@ -47,10 +47,14 @@ public class GlitchActivity extends AnalyzerActivity {
 
     native int getStateFrameCount(int state);
     native int getGlitchCount();
+
+    // Number of frames in last glitch.
+    native int getGlitchLength();
     native double getPhase();
     native double getSignalToNoiseDB();
     native double getPeakAmplitude();
     native double getSineAmplitude();
+    native int getSinePeriod();
 
     protected NativeSniffer mNativeSniffer = createNativeSniffer();
 
@@ -175,7 +179,6 @@ public class GlitchActivity extends AnalyzerActivity {
             message.append(String.format(Locale.getDefault(), "reset.count = %d\n", mLastResetCount - mStartResetCount));
             message.append(String.format(Locale.getDefault(), "peak.amplitude = %8.6f\n", mPeakAmplitude));
             message.append(String.format(Locale.getDefault(), "sine.amplitude = %8.6f\n", mSineAmplitude));
-            message.append(String.format(Locale.getDefault(), "input.phase = %8.6f\n", getPhase()));
             if (mLastLockedFrames > 0) {
                 message.append(String.format(Locale.getDefault(), "signal.noise.ratio.db = %5.1f\n", mSignalToNoiseDB));
             }
@@ -184,6 +187,7 @@ public class GlitchActivity extends AnalyzerActivity {
                 message.append(String.format(Locale.getDefault(), "time.no.glitches = %4.2f\n", mSecondsWithoutGlitches));
                 message.append(String.format(Locale.getDefault(), "max.time.no.glitches = %4.2f\n",
                         mMaxSecondsWithoutGlitches));
+                message.append(String.format(Locale.getDefault(), "glitch.length = %d\n", getGlitchLength()));
                 message.append(String.format(Locale.getDefault(), "glitch.count = %d\n", mLastGlitchCount));
             }
             return message.toString();
@@ -208,6 +212,7 @@ public class GlitchActivity extends AnalyzerActivity {
             gatherData();
             mLastGlitchReport = getCurrentStatusReport();
             setAnalyzerText(mLastGlitchReport);
+            maybeDisplayWaveform();
         }
 
         public double getMaxSecondsWithNoGlitch() {
@@ -228,6 +233,8 @@ public class GlitchActivity extends AnalyzerActivity {
     // Called on UI thread
     protected void onGlitchDetected() {
     }
+
+    protected void maybeDisplayWaveform() {}
 
     protected void setAnalyzerText(String s) {
         mAnalyzerTextView.setText(s);
@@ -258,6 +265,12 @@ public class GlitchActivity extends AnalyzerActivity {
     public int getOutputChannel() {
         return mOutputChannel;
     }
+
+    /**
+     * Set the duration of a periodic forced glitch.
+     * @param frames or zero for no glitch
+     */
+    public native void setForcedGlitchDuration(int frames);
 
     public native void setInputChannelNative(int channel);
 

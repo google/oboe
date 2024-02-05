@@ -103,6 +103,28 @@
         android:textSize="14sp"
         android:textStyle="bold" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/boxForceGlitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="false"
+            android:onClick="onForceGlitchClicked"
+            android:text="Force glitches"/>
+        <CheckBox
+            android:id="@+id/boxAutoScope"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="true"
+            android:text="Auto draw"/>
+
+    </LinearLayout>
     <com.mobileer.oboetester.WaveformView
         android:id="@+id/waveview_audio"
         android:layout_width="fill_parent"

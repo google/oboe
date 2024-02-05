@@ -106,7 +106,18 @@ public class WaveformView extends View {
         if (localData == null || mSampleCount == 0) {
             return;
         }
+
         float xScale = ((float) mCurrentWidth) / (mSampleCount - 1);
+
+        // Draw cursors.
+        if (mCursors != null) {
+            for (int i = 0; i < mCursors.length; i++) {
+                float x = mCursors[i] * xScale;
+                canvas.drawLine(x, 0, x, mCurrentHeight, mCursorPaint);
+            }
+        }
+
+        // Draw waveform.
         float x0 = 0.0f;
         if (xScale < 1.0) {
             // Draw a vertical bar for multiple samples.
@@ -134,12 +145,6 @@ public class WaveformView extends View {
                 canvas.drawLine(x0, y0, x1, y1, mWavePaint);
                 x0 = x1;
                 y0 = y1;
-            }
-        }
-        if (mCursors != null) {
-            for (int i = 0; i < mCursors.length; i++) {
-                float x = mCursors[i] * xScale;
-                canvas.drawLine(x, 0, x, mCurrentHeight, mCursorPaint);
             }
         }
     }
