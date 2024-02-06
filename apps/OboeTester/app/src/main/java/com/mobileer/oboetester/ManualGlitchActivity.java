@@ -19,6 +19,9 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -31,15 +34,19 @@ public class ManualGlitchActivity extends GlitchActivity {
     public static final int VALUE_DEFAULT_BUFFER_BURSTS = 2;
 
     public static final String KEY_TOLERANCE = "tolerance";
-    private static final float DEFAULT_TOLERANCE = 0.1f;
+    private static final float DEFAULT_TOLERANCE = 0.10f;
 
     private static final long MIN_DISPLAY_PERIOD_MILLIS = 500;
+    private static final int WAVEFORM_SIZE = 400;
 
     private TextView mTextTolerance;
     private SeekBar mFaderTolerance;
     protected ExponentialTaper mTaperTolerance;
+
+    private CheckBox mForceGlitchesBox;
+    private CheckBox mAutoScopeBox;
     private WaveformView mWaveformView;
-    private float[] mWaveform = new float[256];
+    private float[] mWaveform = new float[WAVEFORM_SIZE];
     private long mLastDisplayTime;
 
     private float   mTolerance = DEFAULT_TOLERANCE;
@@ -76,6 +83,8 @@ public class ManualGlitchActivity extends GlitchActivity {
         mFaderTolerance.setOnSeekBarChangeListener(mToleranceListener);
         setToleranceFader(DEFAULT_TOLERANCE);
 
+        mForceGlitchesBox = (CheckBox) findViewById(R.id.boxForceGlitch);
+        mAutoScopeBox = (CheckBox) findViewById(R.id.boxAutoScope);
         mWaveformView = (WaveformView) findViewById(R.id.waveview_audio);
     }
 
@@ -158,6 +167,7 @@ public class ManualGlitchActivity extends GlitchActivity {
     // Only call from UI thread.
     @Override
     public void onTestBegan() {
+        mAutoScopeBox.setChecked(true);
         mWaveformView.clearSampleData();
         mWaveformView.postInvalidate();
         super.onTestBegan();
@@ -166,19 +176,45 @@ public class ManualGlitchActivity extends GlitchActivity {
     // Called on UI thread
     @Override
     protected void onGlitchDetected() {
+        if (mAutoScopeBox.isChecked()) {
+            mAutoScopeBox.setChecked(false); // stop auto drawing of waveform
+            mLastDisplayTime = 0; // force draw first glitch
+        }
         long now = System.currentTimeMillis();
+        Log.i(TAG,"onGlitchDetected: glitch");
         if ((now - mLastDisplayTime) > MIN_DISPLAY_PERIOD_MILLIS) {
             mLastDisplayTime = now;
             int numSamples = getGlitch(mWaveform);
             mWaveformView.setSampleData(mWaveform, 0, numSamples);
+            int glitchLength = getGlitchLength();
+            int[] cursors = new int[glitchLength > 0 ? 2 : 1];
+            int startOfGlitch = getSinePeriod();
+            cursors[0] = startOfGlitch;
+            if (glitchLength > 0) {
+                cursors[1] = startOfGlitch + getGlitchLength();
+            }
+            mWaveformView.setCursorData(cursors);
+            Log.i(TAG,"onGlitchDetected: glitch, numSamples = " + numSamples);
+            mWaveformView.postInvalidate();
+        }
+    }
+    @Override
+    protected void maybeDisplayWaveform() {
+        if (!mAutoScopeBox.isChecked()) return;
+        long now = System.currentTimeMillis();
+        if ((now - mLastDisplayTime) > MIN_DISPLAY_PERIOD_MILLIS) {
+            mLastDisplayTime = now;
+            int numSamples = getRecentSamples(mWaveform);
+            mWaveformView.setSampleData(mWaveform, 0, numSamples);
+            mWaveformView.setCursorData(null);
             mWaveformView.postInvalidate();
         }
     }
 
-    private float[] getGlitchWaveform() {
-        return mWaveform;
-    }
-
     private native int getGlitch(float[] mWaveform);
+    private native int getRecentSamples(float[] mWaveform);
 
+    public void onForceGlitchClicked(View view) {
+        setForcedGlitchDuration(mForceGlitchesBox.isChecked() ? 100 : 0);
+    }
 }

@@ -753,8 +753,20 @@ Java_com_mobileer_oboetester_AnalyzerActivity_getResetCount(JNIEnv *env,
 // ==========================================================================
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_getGlitchCount(JNIEnv *env,
-                                                                     jobject instance) {
+                                                           jobject instance) {
     return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_getGlitchLength(JNIEnv *env,
+                                                           jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getGlitchLength();
+}
+
+JNIEXPORT double JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_getPhase(JNIEnv *env,
+                                                           jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getPhaseOffset();
 }
 
 JNIEXPORT jint JNICALL
@@ -782,6 +794,12 @@ Java_com_mobileer_oboetester_GlitchActivity_getSineAmplitude(JNIEnv *env,
     return engine.mActivityGlitches.getGlitchAnalyzer()->getSineAmplitude();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_getSinePeriod(JNIEnv *env,
+                                                             jobject instance) {
+    return engine.mActivityGlitches.getGlitchAnalyzer()->getSinePeriod();
+}
+
 JNIEXPORT jdouble JNICALL
 Java_com_mobileer_oboetester_TestDataPathsActivity_getMagnitude(JNIEnv *env,
                                                                           jobject instance) {
@@ -794,18 +812,21 @@ Java_com_mobileer_oboetester_TestDataPathsActivity_getMaxMagnitude(JNIEnv *env,
     return engine.mActivityDataPath.getDataPathAnalyzer()->getMaxMagnitude();
 }
 
-JNIEXPORT jdouble JNICALL
-Java_com_mobileer_oboetester_TestDataPathsActivity_getPhase(JNIEnv *env,
-                                                                          jobject instance) {
-    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
-}
-
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_setTolerance(JNIEnv *env,
                                                                    jobject instance,
                                                                    jfloat tolerance) {
     if (engine.mActivityGlitches.getGlitchAnalyzer()) {
         engine.mActivityGlitches.getGlitchAnalyzer()->setTolerance(tolerance);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_GlitchActivity_setForcedGlitchDuration(JNIEnv *env,
+                                                                  jobject instance,
+                                                                  jint frames) {
+    if (engine.mActivityGlitches.getGlitchAnalyzer()) {
+        engine.mActivityGlitches.getGlitchAnalyzer()->setForcedGlitchDuration(frames);
     }
 }
 
@@ -842,6 +863,21 @@ Java_com_mobileer_oboetester_ManualGlitchActivity_getGlitch(JNIEnv *env, jobject
     auto *analyzer = engine.mActivityGlitches.getGlitchAnalyzer();
     if (analyzer) {
         numSamples = analyzer->getLastGlitch(waveform, length);
+    }
+
+    env->ReleaseFloatArrayElements(waveform_, waveform, 0);
+    return numSamples;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_ManualGlitchActivity_getRecentSamples(JNIEnv *env, jobject instance,
+                                                            jfloatArray waveform_) {
+    float *waveform = env->GetFloatArrayElements(waveform_, nullptr);
+    jsize length = env->GetArrayLength(waveform_);
+    jsize numSamples = 0;
+    auto *analyzer = engine.mActivityGlitches.getGlitchAnalyzer();
+    if (analyzer) {
+        numSamples = analyzer->getRecentSamples(waveform, length);
     }
 
     env->ReleaseFloatArrayElements(waveform_, waveform, 0);

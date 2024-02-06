@@ -208,7 +208,7 @@ public:
     float normalize(float target) {
         float maxValue = 1.0e-9f;
         for (int i = 0; i < mFrameCounter; i++) {
-            maxValue = std::max(maxValue, abs(mData[i]));
+            maxValue = std::max(maxValue, fabsf(mData[i]));
         }
         float gain = target / maxValue;
         for (int i = 0; i < mFrameCounter; i++) {
@@ -263,7 +263,7 @@ static int measureLatencyFromPulsePartial(AudioRecording &recorded,
     float peakCorrelation = 0.0;
     int32_t peakIndex = -1;
     for (int32_t i = 0; i < numCorrelations; i++) {
-        float value = abs(correlations[i]);
+        float value = fabsf(correlations[i]);
         if (value > peakCorrelation) {
             peakCorrelation = value;
             peakIndex = i;

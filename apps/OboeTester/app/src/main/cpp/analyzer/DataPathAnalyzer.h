@@ -65,7 +65,7 @@ public:
 
         if (transformSample(sample, mOutputPhase)) {
             // Analyze magnitude and phase on every period.
-            double diff = abs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
+            double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
             if (diff < mPhaseTolerance) {
                 mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
             }

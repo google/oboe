@@ -34,6 +34,7 @@ public:
     int32_t readFrom(T *buffer, size_t position, size_t count) {
         const size_t maxPosition = mWritten.load();
         position = std::min(position, maxPosition);
+
         size_t numToRead = std::min(count, mMaxSamples);
         numToRead = std::min(numToRead, maxPosition - position);
         if (numToRead == 0) return 0;
@@ -61,7 +62,7 @@ public:
 
 private:
     std::unique_ptr<T[]> mData;
-    std::atomic<size_t>      mWritten{0};
-    const size_t             mMaxSamples;
+    std::atomic<size_t>  mWritten{0};
+    const size_t         mMaxSamples;
 };
 #endif //OBOETESTER_INFINITE_RECORDING_H
