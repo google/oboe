@@ -24,7 +24,7 @@
         android:id="@+id/text_plug_events"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="1"
+        android:lines="2"
         android:text="plug #"
         android:textSize="18sp"
         android:textStyle="bold"

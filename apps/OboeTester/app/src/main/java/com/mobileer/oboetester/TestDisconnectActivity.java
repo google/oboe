@@ -20,6 +20,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbEndpoint;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +54,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
     private volatile boolean mTestFailed;
     private volatile boolean mSkipTest;
     private volatile int mPlugCount;
+    private volatile int mUsbDeviceAttachedCount;
     private volatile int mPlugState;
     private volatile int mPlugMicrophone;
     private BroadcastReceiver mPluginReceiver = new PluginBroadcastReceiver();
@@ -64,19 +70,67 @@ public class TestDisconnectActivity extends TestAudioActivity {
     public class PluginBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            mPlugMicrophone = intent.getIntExtra("microphone", -1);
-            mPlugState = intent.getIntExtra("state", -1);
-            mPlugCount++;
+            switch (intent.getAction()) {
+                case Intent.ACTION_HEADSET_PLUG: {
+                    mPlugMicrophone = intent.getIntExtra("microphone", -1);
+                    mPlugState = intent.getIntExtra("state", -1);
+                    mPlugCount++;
+                } break;
+                case UsbManager.ACTION_USB_DEVICE_ATTACHED:
+                case UsbManager.ACTION_USB_DEVICE_DETACHED: {
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    final boolean hasAudioPlayback =
+                            containsAudioStreamingInterface(device, UsbConstants.USB_DIR_OUT);
+                    final boolean hasAudioCapture =
+                            containsAudioStreamingInterface(device, UsbConstants.USB_DIR_IN);
+                    if (hasAudioPlayback || hasAudioCapture) {
+                        mPlugState =
+                                intent.getAction() == UsbManager.ACTION_USB_DEVICE_ATTACHED ? 1 : 0;
+                        mUsbDeviceAttachedCount++;
+                        mPlugMicrophone = hasAudioCapture ? 1 : 0;
+                    }
+                } break;
+                default:
+                    break;
+            }
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     String message = "HEADSET_PLUG #" + mPlugCount
+                            + ", USB_DEVICE_DE/ATTACHED #" + mUsbDeviceAttachedCount
                             + ", mic = " + mPlugMicrophone
                             + ", state = " + mPlugState;
                     mPlugTextView.setText(message);
                     log(message);
                 }
             });
+        }
+
+        private static final int AUDIO_STREAMING_SUB_CLASS = 2;
+
+        /**
+         * Figure out if an UsbDevice contains audio input/output streaming interface or not.
+         *
+         * @param device the given UsbDevice
+         * @param direction the direction of the audio streaming interface
+         * @return true if the UsbDevice contains the audio input/output streaming interface.
+         */
+        private boolean containsAudioStreamingInterface(UsbDevice device, int direction) {
+            final int interfaceCount = device.getInterfaceCount();
+            for (int i = 0; i < interfaceCount; ++i) {
+                UsbInterface usbInterface = device.getInterface(i);
+                if (usbInterface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO
+                        && usbInterface.getInterfaceSubclass() != AUDIO_STREAMING_SUB_CLASS) {
+                    continue;
+                }
+                final int endpointCount = usbInterface.getEndpointCount();
+                for (int j = 0; j < endpointCount; ++j) {
+                    if (usbInterface.getEndpoint(j).getDirection() == direction) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 
@@ -152,6 +206,8 @@ public class TestDisconnectActivity extends TestAudioActivity {
     public void onResume() {
         super.onResume();
         IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         this.registerReceiver(mPluginReceiver, filter);
     }
 
