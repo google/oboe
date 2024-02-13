@@ -16,11 +16,15 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.StreamConfiguration.UNSPECIFIED;
 import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
 
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
@@ -40,6 +44,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected int mGapMillis = DEFAULT_GAP_MILLIS;
     private String mTestName = "";
 
+    protected AudioManager   mAudioManager;
+
     protected ArrayList<TestResult> mTestResults = new ArrayList<TestResult>();
 
     void logDeviceInfo() {
@@ -56,7 +62,12 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         mTestName = name;
     }
 
-    private static class TestDirection {
+    @Override
+    public int getDeviceId() {
+        return super.getDeviceId();
+    }
+
+    private static class TestStreamOptions {
         public final int channelUsed;
         public final int channelCount;
         public final int channelMask;
@@ -65,7 +76,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         public final int performanceMode;
         public final int sharingMode;
 
-        public TestDirection(StreamConfiguration configuration, int channelUsed) {
+        public TestStreamOptions(StreamConfiguration configuration, int channelUsed) {
             this.channelUsed = channelUsed;
             channelCount = configuration.getChannelCount();
             channelMask = configuration.getChannelMask();
@@ -75,7 +86,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             sharingMode = configuration.getSharingMode();
         }
 
-        int countDifferences(TestDirection other) {
+        int countDifferences(TestStreamOptions other) {
             int count = 0;
             count += (channelUsed != other.channelUsed) ? 1 : 0;
             count += (channelCount != other.channelCount) ? 1 : 0;
@@ -87,7 +98,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             return count;
         }
 
-        public String comparePassedDirection(String prefix, TestDirection passed) {
+        public String comparePassedDirection(String prefix, TestStreamOptions passed) {
             StringBuffer text = new StringBuffer();
             text.append(TestDataPathsActivity.comparePassedField(prefix, this, passed, "channelUsed"));
             text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "channelCount"));
@@ -111,8 +122,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     protected static class TestResult {
         final int testIndex;
-        final TestDirection input;
-        final TestDirection output;
+        final TestStreamOptions input;
+        final TestStreamOptions output;
         public final int inputPreset;
         public final int sampleRate;
         final String testName; // name or purpose of test
@@ -128,8 +139,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                           int outputChannel) {
             this.testIndex = testIndex;
             this.testName = testName;
-            input = new TestDirection(inputConfiguration, inputChannel);
-            output = new TestDirection(outputConfiguration, outputChannel);
+            input = new TestStreamOptions(inputConfiguration, inputChannel);
+            output = new TestStreamOptions(outputConfiguration, outputChannel);
             sampleRate = outputConfiguration.getSampleRate();
             this.inputPreset = inputConfiguration.getInputPreset();
         }
@@ -185,6 +196,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         mAutomatedTestRunner = findViewById(R.id.auto_test_runner);
         mAutomatedTestRunner.setActivity(this);
@@ -220,7 +232,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", SR = " + String.format(Locale.getDefault(), "%5d", config.getSampleRate())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                 config.getPerformanceMode())
-                + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
+                + ",\n  " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
                 + ", ch = " + channelText(channel, config.getChannelCount())
                 + ", cm = " + convertChannelMaskToText(config.getChannelMask());
     }
@@ -240,14 +252,41 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     // Run one test based on the requested input/output configurations.
     @Nullable
     protected TestResult testInOutConfigurations() throws InterruptedException {
-        int result = TEST_RESULT_SKIPPED;
+
+//
+//        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+//        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+//
+//        // Check to make sure the input output device types are compatible.
+//        if (requestedInConfig.getDeviceId() == UNSPECIFIED) {
+//            if (requestedOutConfig.getDeviceId() != UNSPECIFIED) {
+//                int compatibleDeviceId = findCompatibleDevice(requestedOutConfig.getDeviceId(),
+//                        true /* isInput */);
+//                requestedInConfig.setDeviceId(compatibleDeviceId);
+//            }
+//        } else if (requestedOutConfig.getDeviceId() == UNSPECIFIED) {
+//            if (requestedInConfig.getDeviceId() != UNSPECIFIED) {
+//                int compatibleDeviceId = findCompatibleDevice(requestedInConfig.getDeviceId(),
+//                        false /* isInput */);
+//                requestedOutConfig.setDeviceId(compatibleDeviceId);
+//            }
+//        }
+
+        TestResult testResult = testCurrentConfigurations();
+
+        return testResult;
+    }
+
+
+    @NonNull
+    protected TestResult testCurrentConfigurations() throws InterruptedException {
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
             return null;
         }
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
-
+        int result = 0;
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
@@ -372,8 +411,90 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             testResult.setResult(result);
             mTestResults.add(testResult);
         }
-
         return testResult;
+    }
+
+    protected AudioDeviceInfo getDeviceInfoById(int deviceId) {
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        for (AudioDeviceInfo deviceInfo : devices) {
+            if (deviceInfo.getId() == deviceId) {
+                return deviceInfo;
+            }
+        }
+        return null;
+    }
+
+    protected AudioDeviceInfo getDeviceInfoByType(int deviceType, int flags) {
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(flags);
+        for (AudioDeviceInfo deviceInfo : devices) {
+            if (deviceInfo.getType() == deviceType) {
+                return deviceInfo;
+            }
+        }
+        return null;
+    }
+
+    protected boolean isDeviceTypeMixed(int type) {
+        switch(type) {
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
+            case AudioDeviceInfo.TYPE_WIRED_HEADSET:
+            case AudioDeviceInfo.TYPE_USB_HEADSET:
+                return true;
+            case AudioDeviceInfo.TYPE_USB_DEVICE:
+            default:
+                return false;
+        }
+    }
+
+    protected int getCompatibleDeviceType(int type) {
+        int compatibleType;
+        switch(type) {
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
+                compatibleType = AudioDeviceInfo.TYPE_BUILTIN_MIC;
+                break;
+            case AudioDeviceInfo.TYPE_BUILTIN_MIC:
+                compatibleType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
+                break;
+            default:
+                compatibleType = type;
+                break;
+        }
+        return compatibleType;
+    }
+
+    /**
+     * Scan available device for one with a compatible device type for loopback testing.
+     * @return deviceId
+     */
+    private int findCompatibleDevice(int deviceId, boolean isLookingForInput) {
+        AudioDeviceInfo deviceInfo = getDeviceInfoById(deviceId);
+        if (deviceInfo == null) {
+            log("deviceInfo is NULL !!!!!!\n");
+            return UNSPECIFIED;
+        }
+        int compatibleDeviceType = getCompatibleDeviceType(deviceInfo.getType());
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(
+                isLookingForInput ? AudioManager.GET_DEVICES_INPUTS : AudioManager.GET_DEVICES_OUTPUTS);
+        for (AudioDeviceInfo candidate : devices) {
+            if (candidate.getType() == compatibleDeviceType) {
+                return candidate.getId();
+            }
+        }
+        return UNSPECIFIED;
+    }
+
+    protected AudioDeviceInfo findCompatibleDevice(AudioDeviceInfo deviceInfo, boolean isLookingForInput) {
+        int compatibleDeviceType = getCompatibleDeviceType(deviceInfo.getType());
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(
+                isLookingForInput ? AudioManager.GET_DEVICES_INPUTS : AudioManager.GET_DEVICES_OUTPUTS);
+        for (AudioDeviceInfo candidate : devices) {
+            if (candidate.getType() == compatibleDeviceType) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     protected boolean isFinishedEarly() {

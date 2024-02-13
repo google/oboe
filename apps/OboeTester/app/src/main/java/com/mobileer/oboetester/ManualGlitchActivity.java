@@ -16,12 +16,16 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -46,6 +50,11 @@ public class ManualGlitchActivity extends GlitchActivity {
     private CheckBox mForceGlitchesBox;
     private CheckBox mAutoScopeBox;
     private WaveformView mWaveformView;
+    private LinearLayout mLayoutGlitch;
+
+
+    private NumberedRadioButtons mInputChannelBoxes;
+    private NumberedRadioButtons mOutputChannelBoxes;
     private float[] mWaveform = new float[WAVEFORM_SIZE];
     private long mLastDisplayTime;
 
@@ -73,6 +82,55 @@ public class ManualGlitchActivity extends GlitchActivity {
         mTextTolerance.setText("Tolerance = " + String.format(Locale.getDefault(), "%5.3f", tolerance));
     }
 
+    static class NumberedRadioButtons {
+        LinearLayout mRow;
+        RadioButton[] mRadioButtons;
+
+        public interface SelectionListener {
+            void onSelected(int index);
+        }
+
+        NumberedRadioButtons(Context context, int numBoxes, SelectionListener listener) {
+            mRow = new LinearLayout(context);
+            mRow.setOrientation(LinearLayout.HORIZONTAL);
+            TextView textView = new TextView(context);
+            textView.setText("IN:");
+            mRow.addView(textView);
+            RadioGroup rg = new RadioGroup(context);
+            rg.setOrientation(LinearLayout.HORIZONTAL);
+            mRadioButtons = new RadioButton[numBoxes];
+            for (int i = 0; i < numBoxes; i++) {
+                mRadioButtons[i] = new RadioButton(context);
+                mRadioButtons[i].setText("" + i);
+                mRadioButtons[i].setId(i);
+                rg.addView(mRadioButtons[i]);
+            }
+            mRow.addView(rg);
+
+            //set listener to radio button group
+            rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    listener.onSelected(checkedId);
+                 }
+            });
+
+            mRadioButtons[0].setChecked(true);
+        }
+
+        public View getView() {
+            return mRow;
+        }
+
+        public void setMaxEnabled(int max) {
+            max = Math.min(max, mRadioButtons.length);
+            for (int i = 0; i < mRadioButtons.length; i++) {
+                mRadioButtons[i].setEnabled(i < max);
+            }
+            mRadioButtons[0].setChecked(true);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +144,14 @@ public class ManualGlitchActivity extends GlitchActivity {
         mForceGlitchesBox = (CheckBox) findViewById(R.id.boxForceGlitch);
         mAutoScopeBox = (CheckBox) findViewById(R.id.boxAutoScope);
         mWaveformView = (WaveformView) findViewById(R.id.waveview_audio);
+
+        mLayoutGlitch = (LinearLayout) findViewById(R.id.layoutGlitch);
+        mInputChannelBoxes = new NumberedRadioButtons(this, 8,
+                (int index) -> setInputChannel(index));
+        mLayoutGlitch.addView(mInputChannelBoxes.getView());
+        mOutputChannelBoxes = new NumberedRadioButtons(this, 8,
+                (int index) -> setOutputChannel(index));
+        mLayoutGlitch.addView(mOutputChannelBoxes.getView());
     }
 
     private void setToleranceFader(float tolerance) {
@@ -122,7 +188,12 @@ public class ManualGlitchActivity extends GlitchActivity {
 
     public void startAudioTest() throws IOException {
         super.startAudioTest();
+
         setToleranceProgress(mFaderTolerance.getProgress());
+        int inChannels = mAudioInputTester.getCurrentAudioStream().getChannelCount();
+        mInputChannelBoxes.setMaxEnabled(inChannels);
+        int outChannels = mAudioOutTester.getCurrentAudioStream().getChannelCount();
+        mOutputChannelBoxes.setMaxEnabled(outChannels);
     }
 
     @Override
