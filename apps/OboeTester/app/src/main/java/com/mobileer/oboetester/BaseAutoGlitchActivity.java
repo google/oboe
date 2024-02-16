@@ -238,7 +238,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", ID = " + String.format(Locale.getDefault(), "%2d", config.getDeviceId())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                         config.getPerformanceMode())
-                + ",\n   ch = " + channelText(channel, config.getChannelCount())
+                + ",\n     ch = " + channelText(channel, config.getChannelCount())
                 + ", cm = " + convertChannelMaskToText(config.getChannelMask());
     }
 

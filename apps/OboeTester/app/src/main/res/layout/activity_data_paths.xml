@@ -23,18 +23,18 @@
             android:text="InPre" />
 
         <CheckBox
-            android:id="@+id/checkbox_paths_input_devices"
+            android:id="@+id/checkbox_paths_all_channels"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="InDev" />
+            android:text="AllChan" />
 
         <CheckBox
-            android:id="@+id/checkbox_paths_output_devices"
+            android:id="@+id/checkbox_paths_all_sample_rates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="OutDev" />
+            android:checked="false"
+            android:text="AllSRs" />
     </LinearLayout>
 
     <LinearLayout
@@ -49,12 +49,6 @@
             android:checked="false"
             android:text="AllOutCMs" />
 
-        <CheckBox
-            android:id="@+id/checkbox_paths_all_sample_rates"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="AllSRs" />
     </LinearLayout>
 
     <TextView
