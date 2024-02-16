@@ -334,9 +334,6 @@ public class TestDisconnectActivity extends TestAudioActivity {
         requestedConfig.setPerformanceMode(perfMode);
         requestedConfig.setSharingMode(sharingMode);
         requestedConfig.setSampleRate(sampleRate);
-        if (sampleRate != 0) {
-            requestedConfig.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_MEDIUM);
-        }
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
         log("Requested:");
