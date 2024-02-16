@@ -49,5 +49,29 @@
         android:layout_marginBottom="4dp"
         android:layout_width="fill_parent"
         android:layout_height="20dp" />
+
+    <com.mobileer.oboetester.VolumeBarView
+        android:id="@+id/volumeBar4"
+        android:layout_marginBottom="4dp"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <com.mobileer.oboetester.VolumeBarView
+        android:id="@+id/volumeBar5"
+        android:layout_marginBottom="4dp"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <com.mobileer.oboetester.VolumeBarView
+        android:id="@+id/volumeBar6"
+        android:layout_marginBottom="4dp"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
+
+    <com.mobileer.oboetester.VolumeBarView
+        android:id="@+id/volumeBar7"
+        android:layout_marginBottom="4dp"
+        android:layout_width="fill_parent"
+        android:layout_height="20dp" />
 </LinearLayout>
 </ScrollView>

@@ -258,7 +258,7 @@
     <string name="average">Average</string>
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
-    <string name="test_datapath_instructions">Disconnect all headsets.\nIn quiet room, volume up, [START]</string>
+    <string name="test_datapath_instructions">Attach peripherals\nVolume up, [START]</string>
     <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [RUN]</string>
 
     <string name="analyze">Analyze</string>

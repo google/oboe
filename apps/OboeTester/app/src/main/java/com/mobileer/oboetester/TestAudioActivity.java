@@ -568,13 +568,13 @@ abstract class TestAudioActivity extends Activity {
             applyConfigurationViewsToModels();
         }
 
-        int sampleRate = 0;
+        int sampleRate = 0; // Use the OUTPUT sample rate for INPUT
 
         // Open output streams then open input streams.
         // This is so that the capacity of input stream can be expanded to
         // match the burst size of the output for full duplex.
         for (StreamContext streamContext : mStreamContexts) {
-            if (!streamContext.isInput()) {
+            if (!streamContext.isInput()) { // OUTPUT?
                 openStreamContext(streamContext);
                 int streamSampleRate = streamContext.tester.actualConfiguration.getSampleRate();
                 if (sampleRate == 0) {

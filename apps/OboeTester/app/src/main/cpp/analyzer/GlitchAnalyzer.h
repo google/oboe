@@ -228,7 +228,7 @@ public:
                     // Must be a multiple of the period or the calculation will not be accurate.
                     if (transformSample(sample, mInputPhase)) {
                         // Adjust phase to account for sample rate drift.
-                 // FIXME       mInputPhase += mPhaseOffset;
+                        mInputPhase += mPhaseOffset;
 
                         mMeanSquareNoise = mSumSquareNoise * mInverseSinePeriod;
                         mMeanSquareSignal = mSumSquareSignal * mInverseSinePeriod;

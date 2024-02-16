@@ -99,7 +99,7 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setChannelCount(inChannels);
         requestedOutConfig.setChannelCount(outChannels);
 
-        testInOutConfigurations();
+        testCurrentConfigurations();
     }
 
     private void testConfiguration(int performanceMode,

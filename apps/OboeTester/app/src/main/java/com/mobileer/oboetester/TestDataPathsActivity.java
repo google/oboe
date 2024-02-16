@@ -25,11 +25,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.CheckBox;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -146,6 +149,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxOutputDevices;
     private CheckBox mCheckBoxAllOutputChannelMasks;
     private CheckBox mCheckBoxAllSampleRates;
+    private TextView mInstructionsTextView;
 
     private static final int[] INPUT_PRESETS = {
             StreamConfiguration.INPUT_PRESET_GENERIC,
@@ -159,7 +163,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private static final int[] SHORT_OUTPUT_CHANNEL_MASKS = {
             StreamConfiguration.CHANNEL_MONO,
             StreamConfiguration.CHANNEL_STEREO,
-            StreamConfiguration.CHANNEL_2POINT1,
+            StreamConfiguration.CHANNEL_2POINT1, // TODO should this be 5.1?!
             StreamConfiguration.CHANNEL_7POINT1POINT4,
     };
 
@@ -295,6 +299,16 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    // Write to status and command view
+    private void setInstructionsText(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mInstructionsTextView.setText(text);
+            }
+        });
+    }
+
     private String getJitterText() {
         return isPhaseJitterValid() ? getMagnitudeText(getAveragePhaseError()) : "?";
     }
@@ -329,6 +343,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 (CheckBox)findViewById(R.id.checkbox_paths_all_output_channel_masks);
         mCheckBoxAllSampleRates =
                 (CheckBox)findViewById(R.id.checkbox_paths_all_sample_rates);
+
+        mInstructionsTextView = (TextView) findViewById(R.id.text_instructions);
     }
 
     @Override
@@ -355,34 +371,26 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected String shouldTestBeSkipped() {
-        String why = "";
+        String why = super.shouldTestBeSkipped();
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        // No point running the test if we don't get the data path we requested.
-        if (actualInConfig.isMMap() != requestedInConfig.isMMap()) {
-            log("Did not get requested MMap input stream");
-            why += "mmap";
-        }
-        if (actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
-            log("Did not get requested MMap output stream");
-            why += "mmap";
-        }
+
         // Did we request a device and not get that device?
         if (requestedInConfig.getDeviceId() != 0
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
-            why += ", inDev(" + requestedInConfig.getDeviceId()
-                    + "!=" + actualInConfig.getDeviceId() + ")";
+            why += "inDev(" + requestedInConfig.getDeviceId()
+                    + "!=" + actualInConfig.getDeviceId() + "),";
         }
         if (requestedOutConfig.getDeviceId() != 0
                 && (requestedOutConfig.getDeviceId() != actualOutConfig.getDeviceId())) {
             why += ", outDev(" + requestedOutConfig.getDeviceId()
-                    + "!=" + actualOutConfig.getDeviceId() + ")";
+                    + "!=" + actualOutConfig.getDeviceId() + "),";
         }
         if ((requestedInConfig.getInputPreset() != actualInConfig.getInputPreset())) {
             why += ", inPre(" + requestedInConfig.getInputPreset()
-                    + "!=" + actualInConfig.getInputPreset() + ")";
+                    + "!=" + actualInConfig.getInputPreset() + "),";
         }
         return why;
     }
@@ -488,6 +496,24 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
                     + ", jitter = " + getJitterText());
+
+            logOneLineSummary(testResult);
+            int result = testResult.result;
+            if (result == TEST_RESULT_FAILED) {
+                int id = mAudioOutTester.actualConfiguration.getDeviceId();
+                int deviceType = getDeviceInfoById(id).getType();
+                int channelCount = mAudioOutTester.actualConfiguration.getChannelCount();
+                if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                        && channelCount == 2
+                        && getOutputChannel() == 1) {
+                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
+                }
+                if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
+                        && channelCount == 2
+                        && getOutputChannel() == 0) {
+                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
+                }
+            }
         }
         return testResult;
     }
@@ -713,64 +739,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         appendSummary(oneLineSummary + "\n");
     }
 
-    void testOutputDeviceCombo(int deviceId,
-                               int deviceType,
-                               int channelCount,
-                               int channelMask,
-                               int outputChannel,
-                               int outputSampleRate,
-                               boolean mmapEnabled) throws InterruptedException {
-        String typeString = AudioDeviceInfoConverter.typeToString(deviceType);
-        if (channelMask != 0) {
-            setTestName("Test OutDev: #" + deviceId + " " + typeString
-                    + " Mask:" + channelMask + "_" + outputChannel + "/" + channelCount + "_" + outputSampleRate);
-        } else {
-            setTestName("Test InDev: #" + deviceId + " " + typeString
-                    + "_" + outputChannel + "/" + channelCount + "_" + outputSampleRate);
-        }
-
-        final int numInputChannels = 2; // TODO review, done because of mono problems on some devices
-        setupDeviceCombo(numInputChannels, 0, 0, 48000,
-                channelCount, channelMask, outputChannel, outputSampleRate);
-
-        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-        requestedOutConfig.setDeviceId(deviceId);
-        requestedOutConfig.setMMap(mmapEnabled);
-
-        mMagnitude = -1.0;
-        TestResult testResult = testCurrentConfigurations();
-        if (testResult != null) {
-            logOneLineSummary(testResult);
-            int result = testResult.result;
-            if (result == TEST_RESULT_FAILED) {
-                if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                        && channelCount == 2
-                        && outputChannel == 1) {
-                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
-                }
-                if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
-                        && channelCount == 2
-                        && outputChannel == 0) {
-                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
-                }
-            }
-        }
-    }
-
-    void testOutputDeviceCombo(int deviceId,
-                               int deviceType,
-                               int channelCount,
-                               int channelMask,
-                               int outputChannel,
-                               int outputSampleRate) throws InterruptedException {
-        if (NativeEngine.isMMapSupported()) {
-            testOutputDeviceCombo(deviceId, deviceType, channelCount, channelMask, outputChannel,
-                    outputSampleRate, true);
-        }
-        testOutputDeviceCombo(deviceId, deviceType, channelCount, channelMask, outputChannel,
-                outputSampleRate, false);
-    }
-
     void logBoth(String text) {
         log(text);
         appendSummary(text + "\n");
@@ -781,106 +749,95 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         logAnalysis(text + "\n");
     }
 
-    void testOutputDevices() throws InterruptedException {
-        logBoth("\nTest Output Devices -------");
+     private void testDeviceOutputInfo(AudioDeviceInfo outputDeviceInfo)  throws InterruptedException {
+         AudioDeviceInfo inputDeviceInfo = findCompatibleInputDevice(outputDeviceInfo.getType());
+         showDeviceInfo(outputDeviceInfo, inputDeviceInfo);
+         if (inputDeviceInfo == null) {
+             return;
+         }
 
-        AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-        int numTested = 0;
-        for (AudioDeviceInfo deviceInfo : devices) {
-            log("----\n"
-                    + AudioDeviceInfoConverter.toString(deviceInfo) + "\n");
-            if (!deviceInfo.isSink()) continue;
-            int deviceType = deviceInfo.getType();
-            if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
-                    || deviceType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE
-                    || deviceType == AudioDeviceInfo.TYPE_WIRED_HEADSET
-                    || deviceType == AudioDeviceInfo.TYPE_USB_HEADSET
-                    || deviceType == AudioDeviceInfo.TYPE_USB_DEVICE
-            ) {
-                numTested++;
-                testDeviceOutputInfo(deviceInfo);
-            } else {
-                log("Device skipped because DeviceType is not testable.");
-            }
-        }
-        if (numTested == 0) {
-            log("NO OUTPUT DEVICE FOUND!\n");
-        }
-    }
+         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+         requestedInConfig.reset();
+         requestedOutConfig.reset();
+         requestedInConfig.setDeviceId(inputDeviceInfo.getId());
+         requestedOutConfig.setDeviceId(outputDeviceInfo.getId());
 
-    private void testDeviceOutputInfo(AudioDeviceInfo outputDeviceInfo)  throws InterruptedException {
-        AudioDeviceInfo inputDeviceInfo = findCompatibleDevice( outputDeviceInfo, true);
+         testOutputChannelCounts(inputDeviceInfo, outputDeviceInfo);
+
+         runOnUiThread(() -> mCheckBoxAllSampleRates.setEnabled(false));
+         if (mCheckBoxAllSampleRates.isChecked()) {
+             for (int sampleRate : SAMPLE_RATES) {
+                 requestedInConfig.setSampleRate(sampleRate);
+                 requestedOutConfig.setSampleRate(sampleRate);
+                 testPerformancePaths();
+             }
+         }
+         requestedInConfig.setSampleRate(0);
+         requestedOutConfig.setSampleRate(0);
+
+         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2
+                 && isDeviceTypeMixed(outputDeviceInfo.getType())) {
+             runOnUiThread(() -> mCheckBoxAllOutputChannelMasks.setEnabled(false));
+
+             for (int channelMask : mCheckBoxAllOutputChannelMasks.isChecked() ?
+                     ALL_OUTPUT_CHANNEL_MASKS : SHORT_OUTPUT_CHANNEL_MASKS) {
+                 int channelCount = Integer.bitCount(channelMask);
+                 requestedOutConfig.setChannelMask(channelMask);
+                 for (int channel = 0; channel < channelCount; channel++) {
+                     setOutputChannel(channel);
+                     testPerformancePaths();
+                 }
+             }
+         }
+     }
+
+    private void showDeviceInfo(AudioDeviceInfo outputDeviceInfo, AudioDeviceInfo inputDeviceInfo) {
+        String deviceText = "OUT type = "
+                + AudioDeviceInfoConverter.typeToString(outputDeviceInfo.getType());
+
+        setInstructionsText(deviceText);
+
         if (inputDeviceInfo == null) {
-            log("ERROR - cannot find compatible device type!\n");
-            return;
+            deviceText += "ERROR - cannot find compatible device type for input!";
+        } else {
+            deviceText = "IN type = "
+                    + AudioDeviceInfoConverter.typeToString(inputDeviceInfo.getType())
+                    + "\n" + deviceText;
+            setInstructionsText(deviceText);
         }
-
-        log("=========== OUTPUT TYPE = "
-                + AudioDeviceInfoConverter.typeToString(outputDeviceInfo.getType()) + "\n");
-        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
-        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-        requestedInConfig.reset();
-        requestedOutConfig.reset();
-
-        requestedInConfig.setDeviceId(inputDeviceInfo.getId());
-        requestedOutConfig.setDeviceId(outputDeviceInfo.getId());
-
-        testOutputChannelCounts(inputDeviceInfo, outputDeviceInfo);
-/*
-        runOnUiThread(() -> mCheckBoxAllSampleRates.setEnabled(false));
-        if (mCheckBoxAllSampleRates.isChecked()) {
-            for (int sampleRate : SAMPLE_RATES) {
-                testOutputDeviceCombo(id, deviceType, 1, 0, 0, sampleRate);
-            }
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2
-                && deviceType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-            runOnUiThread(() -> mCheckBoxAllOutputChannelMasks.setEnabled(false));
-
-            for (int channelMask : mCheckBoxAllOutputChannelMasks.isChecked() ?
-                    ALL_OUTPUT_CHANNEL_MASKS : SHORT_OUTPUT_CHANNEL_MASKS) {
-                log("channelMask = " + convertChannelMaskToText(channelMask) + "\n");
-                int channelCount = Integer.bitCount(channelMask);
-                for (int channel = 0; channel < channelCount; channel++) {
-                    testOutputDeviceCombo(id, deviceType, channelCount, channelMask,
-                            channel, 48000);
-                }
-            }
-        }
- */
-    }
-
-    private boolean arrayContains(int[] a, int b) {
-        for (int c: a) {
-            if (c == b) return true;
-        }
-        return false;
     }
 
     private void testOutputChannelCounts(AudioDeviceInfo inputDeviceInfo, AudioDeviceInfo outputDeviceInfo) throws InterruptedException {
+        ArrayList<Integer> channelCountsTested =new ArrayList<Integer>();
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-        // If not channels counts reported then test mono and stereo
-        int[] inputChannelCounts = inputDeviceInfo.getChannelCounts();
+
         int[] outputChannelCounts = outputDeviceInfo.getChannelCounts();
         if (isDeviceTypeMixed(outputDeviceInfo.getType())) {
             requestedInConfig.setChannelCount(1);
             setInputChannel(0);
-            if (outputChannelCounts.length == 0) {
-                requestedOutConfig.setChannelCount(1);
-                setOutputChannel(0);
-                testPerformancePaths();
-
-                requestedOutConfig.setChannelCount(2);
-                testPerformancePaths();
-
-                setOutputChannel(1);
-                testPerformancePaths();
-            } else {
-                for (int numChannels : outputChannelCounts) {
-                    log("numChannels = " + numChannels + "\n");
+            // test mono
+            requestedOutConfig.setChannelCount(1);
+            channelCountsTested.add(1);
+            setOutputChannel(0);
+            testPerformancePaths();
+            // test stereo
+            requestedOutConfig.setChannelCount(2);
+            channelCountsTested.add(2);
+            setOutputChannel(0);
+            testPerformancePaths();
+            setOutputChannel(1);
+            testPerformancePaths();
+            // Test channels for each channelCount above 2
+            for (int numChannels : outputChannelCounts) {
+                log("numChannels = " + numChannels);
+                if (numChannels > 4) {
+                    log("numChannels forced to 4!");
+                }
+                if (!channelCountsTested.contains(numChannels)) {
                     requestedOutConfig.setChannelCount(numChannels);
+                    channelCountsTested.add(numChannels);
                     for (int channel = 0; channel < numChannels; channel++) {
                         setOutputChannel(channel);
                         testPerformancePaths();
@@ -888,33 +845,22 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 }
             }
         } else {
+            // test mono
+            testMatchingChannels(1);
+            channelCountsTested.add(1);
             // Test two matching stereo channels.
-            if (outputChannelCounts.length == 0) {
-                requestedInConfig.setChannelCount(2);
-                requestedOutConfig.setChannelCount(2);
-                setInputChannel(0);
-                setOutputChannel(0);
-                log("test matching stereo channel[0]\n");
-                testPerformancePaths();
-
-                setInputChannel(1);
-                setOutputChannel(1);
-                log("test matching stereo channel[1]\n");
-                testPerformancePaths();
-            } else {
-                // Test each matching channels for each channelCount
-                for (int numChannels : outputChannelCounts) {
-                    log("numChannels = " + numChannels + "\n");
-                    if (arrayContains(inputChannelCounts, numChannels)) {
-                        requestedInConfig.setChannelCount(numChannels);
-                        requestedOutConfig.setChannelCount(numChannels);
-                        for (int channel = 0; channel < numChannels; channel++) {
-                            setInputChannel(channel);
-                            setOutputChannel(channel);
-                            log("test matching channel = " + channel + "\n");
-                            testPerformancePaths();
-                        }
-                    }
+            testMatchingChannels(2);
+            channelCountsTested.add(2);
+            // Test matching channels for each channelCount above 2
+            for (int numChannels : outputChannelCounts) {
+                log("numChannels = " + numChannels);
+                if (numChannels > 4) {
+                    log("numChannels forced to 4!");
+                    numChannels = 4;
+                }
+                if (!channelCountsTested.contains(numChannels)) {
+                    testMatchingChannels(numChannels);
+                    channelCountsTested.add(numChannels);
                 }
             }
         }
@@ -925,6 +871,15 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setOutputChannel(0);
     }
 
+    private void testMatchingChannels(int numChannels) throws InterruptedException {
+        mAudioInputTester.requestedConfiguration.setChannelCount(numChannels);
+        mAudioOutTester.requestedConfiguration.setChannelCount(numChannels);
+        for (int channel = 0; channel < numChannels; channel++) {
+            setInputChannel(channel);
+            setOutputChannel(channel);
+            testPerformancePaths();
+        }
+    }
 
     private void testPerformancePaths() throws InterruptedException {
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
@@ -935,15 +890,17 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
         requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
 
-//        if (NativeEngine.isMMapSupported()) {
-//            requestedInConfig.setMMap(true);
-//            requestedOutConfig.setMMap(true);
-//            testCurrentConfigurations();
-//        }
-
         requestedInConfig.setMMap(false);
         requestedOutConfig.setMMap(false);
         testCurrentConfigurations();
+
+        if (NativeEngine.isMMapSupported()) {
+            requestedInConfig.setMMap(true);
+            requestedOutConfig.setMMap(true);
+            testCurrentConfigurations();
+        }
+        requestedInConfig.setMMap(false);
+        requestedOutConfig.setMMap(false);
 
         requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
         requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);

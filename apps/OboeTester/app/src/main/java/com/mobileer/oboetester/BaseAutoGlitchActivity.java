@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import static com.mobileer.oboetester.StreamConfiguration.UNSPECIFIED;
 import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
 
 import android.content.Context;
@@ -47,6 +46,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected AudioManager   mAudioManager;
 
     protected ArrayList<TestResult> mTestResults = new ArrayList<TestResult>();
+
+    public static boolean arrayContains(int[] haystack, int needle) {
+        for (int n: haystack) {
+            if (n == needle) return true;
+        }
+        return false;
+    }
 
     void logDeviceInfo() {
         log("\n############################");
@@ -228,12 +234,11 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 ? getOutputChannel() : getInputChannel();
         return ((config.getDirection() == StreamConfiguration.DIRECTION_OUTPUT) ? "OUT" : "INP")
                 + (config.isMMap() ? "-M" : "-L")
+                + "-" + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
                 + ", ID = " + String.format(Locale.getDefault(), "%2d", config.getDeviceId())
-                + ", SR = " + String.format(Locale.getDefault(), "%5d", config.getSampleRate())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
-                config.getPerformanceMode())
-                + ",\n  " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
-                + ", ch = " + channelText(channel, config.getChannelCount())
+                        config.getPerformanceMode())
+                + ",\n   ch = " + channelText(channel, config.getChannelCount())
                 + ", cm = " + convertChannelMaskToText(config.getChannelMask());
     }
 
@@ -251,34 +256,6 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
 
     // Run one test based on the requested input/output configurations.
     @Nullable
-    protected TestResult testInOutConfigurations() throws InterruptedException {
-
-//
-//        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
-//        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-//
-//        // Check to make sure the input output device types are compatible.
-//        if (requestedInConfig.getDeviceId() == UNSPECIFIED) {
-//            if (requestedOutConfig.getDeviceId() != UNSPECIFIED) {
-//                int compatibleDeviceId = findCompatibleDevice(requestedOutConfig.getDeviceId(),
-//                        true /* isInput */);
-//                requestedInConfig.setDeviceId(compatibleDeviceId);
-//            }
-//        } else if (requestedOutConfig.getDeviceId() == UNSPECIFIED) {
-//            if (requestedInConfig.getDeviceId() != UNSPECIFIED) {
-//                int compatibleDeviceId = findCompatibleDevice(requestedInConfig.getDeviceId(),
-//                        false /* isInput */);
-//                requestedOutConfig.setDeviceId(compatibleDeviceId);
-//            }
-//        }
-
-        TestResult testResult = testCurrentConfigurations();
-
-        return testResult;
-    }
-
-
-    @NonNull
     protected TestResult testCurrentConfigurations() throws InterruptedException {
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
@@ -294,6 +271,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
 
         log("Requested:");
+        log("  SR = " + requestedOutConfig.getSampleRate());
         log("  " + getConfigText(requestedInConfig));
         log("  " + getConfigText(requestedOutConfig));
 
@@ -302,6 +280,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         try {
             openAudio(); // this will fill in actualConfig
             log("Actual:");
+            log("  SR = " + actualOutConfig.getSampleRate());
             // Set output size to a level that will avoid glitches.
             AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
             int sizeFrames = outStream.getBufferCapacityInFrames() / 2;
@@ -447,50 +426,38 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
     }
 
-    protected int getCompatibleDeviceType(int type) {
-        int compatibleType;
+    protected ArrayList<Integer> getCompatibleDeviceTypes(int type) {
+        ArrayList<Integer> compatibleTypes = new ArrayList<Integer>();
         switch(type) {
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
-                compatibleType = AudioDeviceInfo.TYPE_BUILTIN_MIC;
+                compatibleTypes.add(AudioDeviceInfo.TYPE_BUILTIN_MIC);
                 break;
             case AudioDeviceInfo.TYPE_BUILTIN_MIC:
-                compatibleType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
+                compatibleTypes.add(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
+                break;
+            case AudioDeviceInfo.TYPE_USB_DEVICE:
+                compatibleTypes.add(AudioDeviceInfo.TYPE_USB_DEVICE);
+                // A USB Device is often mistaken for a headset.
+                compatibleTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
                 break;
             default:
-                compatibleType = type;
+                compatibleTypes.add(type);
                 break;
         }
-        return compatibleType;
+        return compatibleTypes;
     }
 
     /**
      * Scan available device for one with a compatible device type for loopback testing.
      * @return deviceId
      */
-    private int findCompatibleDevice(int deviceId, boolean isLookingForInput) {
-        AudioDeviceInfo deviceInfo = getDeviceInfoById(deviceId);
-        if (deviceInfo == null) {
-            log("deviceInfo is NULL !!!!!!\n");
-            return UNSPECIFIED;
-        }
-        int compatibleDeviceType = getCompatibleDeviceType(deviceInfo.getType());
-        AudioDeviceInfo[] devices = mAudioManager.getDevices(
-                isLookingForInput ? AudioManager.GET_DEVICES_INPUTS : AudioManager.GET_DEVICES_OUTPUTS);
-        for (AudioDeviceInfo candidate : devices) {
-            if (candidate.getType() == compatibleDeviceType) {
-                return candidate.getId();
-            }
-        }
-        return UNSPECIFIED;
-    }
 
-    protected AudioDeviceInfo findCompatibleDevice(AudioDeviceInfo deviceInfo, boolean isLookingForInput) {
-        int compatibleDeviceType = getCompatibleDeviceType(deviceInfo.getType());
-        AudioDeviceInfo[] devices = mAudioManager.getDevices(
-                isLookingForInput ? AudioManager.GET_DEVICES_INPUTS : AudioManager.GET_DEVICES_OUTPUTS);
+    protected AudioDeviceInfo findCompatibleInputDevice(int outputDeviceType) {
+        ArrayList<Integer> compatibleDeviceTypes = getCompatibleDeviceTypes(outputDeviceType);
+        AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
         for (AudioDeviceInfo candidate : devices) {
-            if (candidate.getType() == compatibleDeviceType) {
+            if (compatibleDeviceTypes.contains(candidate.getType())) {
                 return candidate;
             }
         }
@@ -507,14 +474,22 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
-        // No point running the test if we don't get the sharing mode we requested.
+        // No point running the test if we don't get any of the sharing modes we requested.
         if (actualInConfig.getSharingMode() != requestedInConfig.getSharingMode()
-                || actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
+                && actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
             log("Did not get requested sharing mode.");
-            why += "share";
+            why += "share,";
         }
-        // We don't skip based on performance mode because if you request LOW_LATENCY you might
-        // get a smaller burst than if you request NONE.
+        if (actualInConfig.getPerformanceMode() != requestedInConfig.getPerformanceMode()
+                && actualOutConfig.getPerformanceMode() != requestedOutConfig.getPerformanceMode()) {
+            log("Did not get requested performance mode.");
+            why += "perf,";
+        }
+        if (actualInConfig.isMMap() != requestedInConfig.isMMap()
+                && actualOutConfig.isMMap() != requestedOutConfig.isMMap()) {
+            log("Did not get requested MMAP data path.");
+            why += "mmap,";
+        }
         return why;
     }
 

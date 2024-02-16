@@ -90,11 +90,11 @@ public class ManualGlitchActivity extends GlitchActivity {
             void onSelected(int index);
         }
 
-        NumberedRadioButtons(Context context, int numBoxes, SelectionListener listener) {
+        NumberedRadioButtons(Context context, int numBoxes, SelectionListener listener, String prompt) {
             mRow = new LinearLayout(context);
             mRow.setOrientation(LinearLayout.HORIZONTAL);
             TextView textView = new TextView(context);
-            textView.setText("IN:");
+            textView.setText(prompt);
             mRow.addView(textView);
             RadioGroup rg = new RadioGroup(context);
             rg.setOrientation(LinearLayout.HORIZONTAL);
@@ -147,10 +147,10 @@ public class ManualGlitchActivity extends GlitchActivity {
 
         mLayoutGlitch = (LinearLayout) findViewById(R.id.layoutGlitch);
         mInputChannelBoxes = new NumberedRadioButtons(this, 8,
-                (int index) -> setInputChannel(index));
+                (int index) -> setInputChannel(index), "IN:");
         mLayoutGlitch.addView(mInputChannelBoxes.getView());
         mOutputChannelBoxes = new NumberedRadioButtons(this, 8,
-                (int index) -> setOutputChannel(index));
+                (int index) -> setOutputChannel(index), "OUT:");
         mLayoutGlitch.addView(mOutputChannelBoxes.getView());
     }
 
