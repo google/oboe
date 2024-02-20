@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _PLAYER_SIMIPLEMULTIPLAYER_H_
-#define _PLAYER_SIMIPLEMULTIPLAYER_H_
+#ifndef _PLAYER_SIMPLEMULTIPLAYER_H_
+#define _PLAYER_SIMPLEMULTIPLAYER_H_
 
 #include <vector>
 
@@ -114,4 +114,4 @@ private:
 };
 
 }
-#endif //_PLAYER_SIMIPLEMULTIPLAYER_H_
+#endif //_PLAYER_SIMPLEMULTIPLAYER_H_
