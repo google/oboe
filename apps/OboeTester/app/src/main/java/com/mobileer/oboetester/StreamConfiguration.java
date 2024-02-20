@@ -591,6 +591,25 @@ public class StreamConfiguration {
         }
     }
 
+    static String convertRateConversionQualityToText(int quality) {
+        switch(quality) {
+            case RATE_CONVERSION_QUALITY_NONE:
+                return "None";
+            case RATE_CONVERSION_QUALITY_FASTEST:
+                return "Fastest";
+            case RATE_CONVERSION_QUALITY_LOW:
+                return "Low";
+            case RATE_CONVERSION_QUALITY_MEDIUM:
+                return "Medium";
+            case RATE_CONVERSION_QUALITY_HIGH:
+                return "High";
+            case RATE_CONVERSION_QUALITY_BEST:
+                return "Best";
+            default:
+                return "?=" + quality;
+        }
+    }
+
     public static int convertTextToChannelMask(String text) {
         return mChannelMaskStringToIntegerMap.get(text);
     }
