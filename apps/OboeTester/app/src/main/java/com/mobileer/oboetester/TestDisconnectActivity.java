@@ -257,7 +257,8 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                         config.getPerformanceMode())
                 + ", " + StreamConfiguration.convertSharingModeToText(config.getSharingMode())
-                + ", " + config.getSampleRate();
+                + ", " + config.getSampleRate()
+                + ", SRC = " + StreamConfiguration.convertRateConversionQualityToText(config.getRateConversionQuality());
     }
 
     private void log(Exception e) {
@@ -281,6 +282,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
                                    int perfMode,
                                    int sharingMode,
                                    int sampleRate,
+                                   int sampleRateConversionQuality,
                                    boolean requestPlugin) throws InterruptedException {
         if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
             mAutomatedTestRunner.incrementTestCount();
@@ -334,8 +336,9 @@ public class TestDisconnectActivity extends TestAudioActivity {
         requestedConfig.setPerformanceMode(perfMode);
         requestedConfig.setSharingMode(sharingMode);
         requestedConfig.setSampleRate(sampleRate);
+
         if (sampleRate != 0) {
-            requestedConfig.setRateConversionQuality(StreamConfiguration.RATE_CONVERSION_QUALITY_MEDIUM);
+            requestedConfig.setRateConversionQuality(sampleRateConversionQuality);
         }
 
         log("========================== #" + mAutomatedTestRunner.getTestCount());
@@ -492,11 +495,20 @@ public class TestDisconnectActivity extends TestAudioActivity {
     }
 
     private void testConfiguration(boolean isInput, int performanceMode,
-                                   int sharingMode, int sampleRate) throws InterruptedException {
+                                   int sharingMode, int sampleRate,
+                                   int sampleRateConversionQuality) throws InterruptedException {
         boolean requestPlugin = true; // plug IN
-        testConfiguration(isInput, performanceMode, sharingMode, sampleRate, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate,
+                sampleRateConversionQuality, requestPlugin);
         requestPlugin = false; // UNplug
-        testConfiguration(isInput, performanceMode, sharingMode, sampleRate, requestPlugin);
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate,
+                sampleRateConversionQuality, requestPlugin);
+    }
+
+    private void testConfiguration(boolean isInput, int performanceMode,
+                                   int sharingMode, int sampleRate) throws InterruptedException {
+        testConfiguration(isInput, performanceMode, sharingMode, sampleRate,
+                StreamConfiguration.RATE_CONVERSION_QUALITY_NONE);
     }
 
     private void testConfiguration(boolean isInput, int performanceMode,
@@ -512,9 +524,10 @@ public class TestDisconnectActivity extends TestAudioActivity {
     }
 
     private void testConfiguration(int performanceMode,
-                                   int sharingMode, int sampleRate) throws InterruptedException {
-        testConfiguration(false, performanceMode, sharingMode, sampleRate);
-        testConfiguration(true, performanceMode, sharingMode, sampleRate);
+                                   int sharingMode, int sampleRate,
+                                   int sampleRateConversionQuality) throws InterruptedException {
+        testConfiguration(false, performanceMode, sharingMode, sampleRate, sampleRateConversionQuality);
+        testConfiguration(true, performanceMode, sharingMode, sampleRate, sampleRateConversionQuality);
     }
 
     @Override
@@ -535,7 +548,11 @@ public class TestDisconnectActivity extends TestAudioActivity {
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
                     StreamConfiguration.SHARING_MODE_SHARED);
             testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_SHARED, 44100);
+                    StreamConfiguration.SHARING_MODE_SHARED, 44100,
+                    StreamConfiguration.RATE_CONVERSION_QUALITY_NONE);
+            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
+                    StreamConfiguration.SHARING_MODE_SHARED, 44100,
+                    StreamConfiguration.RATE_CONVERSION_QUALITY_MEDIUM);
         } catch (InterruptedException e) {
             log("Test CANCELLED - INVALID!");
         } catch (Exception e) {
