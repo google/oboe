@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="AllChan" />
+            android:text="AllCh" />
 
         <CheckBox
             android:id="@+id/checkbox_paths_all_sample_rates"
@@ -43,11 +43,18 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/checkbox_paths_all_output_channel_masks"
+            android:id="@+id/checkbox_paths_in_channel_masks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="false"
-            android:text="AllOutCMs" />
+            android:text="InChMasks" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_output_channel_masks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="OutChMasks" />
 
     </LinearLayout>
 

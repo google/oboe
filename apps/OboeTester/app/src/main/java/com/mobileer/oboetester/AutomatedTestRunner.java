@@ -288,7 +288,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mFailCount = 0;
         try {
             mActivity.runTest();
-            log("Tests finished without exception.");
+            log("Tests finished.");
         } catch(Exception e) {
             log("EXCEPTION: " + e.getMessage());
         } finally {

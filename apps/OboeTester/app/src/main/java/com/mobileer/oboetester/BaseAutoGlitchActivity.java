@@ -23,7 +23,6 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
@@ -307,7 +306,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         );
 
         // The test will only be worth running if we got the configuration we requested on input or output.
-        String skipReason = shouldTestBeSkipped();
+        String skipReason = whyShouldTestBeSkipped();
         boolean skipped = skipReason.length() > 0;
         boolean valid = !openFailed && !skipped;
         boolean startFailed = false;
@@ -413,16 +412,23 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return null;
     }
 
-    protected boolean isDeviceTypeMixed(int type) {
+    /**
+     * Are outputs mixed in the air or by a loopback plug?
+     * @param type device type, eg AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+     * @return true if stereo output channels get mixed to mono input
+     */
+    protected boolean isDeviceTypeMixedForLoopback(int type) {
         switch(type) {
+            // Mixed in the air.
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE:
+            // Mixed in the loopback fun-plug.
             case AudioDeviceInfo.TYPE_WIRED_HEADSET:
             case AudioDeviceInfo.TYPE_USB_HEADSET:
                 return true;
             case AudioDeviceInfo.TYPE_USB_DEVICE:
             default:
-                return false;
+                return false; // channels are discrete
         }
     }
 
@@ -468,7 +474,12 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return false;
     }
 
-    protected String shouldTestBeSkipped() {
+    /**
+     * Figure out if a test should be skipped and return the reason.
+     *
+     * @return reason for skipping or an empty string
+     */
+    protected String whyShouldTestBeSkipped() {
         String why = "";
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
