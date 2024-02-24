@@ -171,7 +171,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             StringBuffer text = new StringBuffer();
             text.append("Compare with passed test #" + passed.testIndex + "\n");
             text.append(input.comparePassedDirection("IN", passed.input));
-            text.append(TestDataPathsActivity.comparePassedField("IN", this, passed, "inputPreset"));
+            text.append(TestDataPathsActivity.comparePassedInputPreset("IN", this, passed));
             text.append(output.comparePassedDirection("OUT", passed.output));
             text.append(TestDataPathsActivity.comparePassedField("I/O",this, passed, "sampleRate"));
 
@@ -257,11 +257,11 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     @Nullable
     protected TestResult testCurrentConfigurations() throws InterruptedException {
         mAutomatedTestRunner.incrementTestCount();
-        if ((getSingleTestIndex() >= 0) && (mAutomatedTestRunner.getTestCount() != getSingleTestIndex())) {
+        if ((getSingleTestIndex() >= 0) && (getTestCount() != getSingleTestIndex())) {
             return null;
         }
 
-        log("========================== #" + mAutomatedTestRunner.getTestCount());
+        log("========================== #" + getTestCount());
         int result = 0;
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -278,6 +278,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         boolean openFailed = false;
         try {
             openAudio(); // this will fill in actualConfig
+
             log("Actual:");
             log("  SR = " + actualOutConfig.getSampleRate());
             // Set output size to a level that will avoid glitches.
@@ -297,7 +298,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
 
         TestResult testResult = new TestResult(
-                mAutomatedTestRunner.getTestCount(),
+                getTestCount(),
                 mTestName,
                 mAudioInputTester.actualConfiguration,
                 getInputChannel(),
@@ -350,7 +351,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
 
         if (openFailed || startFailed) {
-            appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+            appendFailedSummary("------ #" + getTestCount() + "\n");
             appendFailedSummary(getConfigText(requestedInConfig) + "\n");
             appendFailedSummary(getConfigText(requestedOutConfig) + "\n");
             appendFailedSummary(reason + "\n");
@@ -368,7 +369,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             resultText += reason;
             log("  " + resultText);
             if (!passed) {
-                appendFailedSummary("------ #" + mAutomatedTestRunner.getTestCount() + "\n");
+                appendFailedSummary("------ #" + getTestCount() + "\n");
                 appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
                 appendFailedSummary("  " + getConfigText(actualOutConfig) + "\n");
                 appendFailedSummary("    " + resultText + "\n");
@@ -390,6 +391,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             mTestResults.add(testResult);
         }
         return testResult;
+    }
+
+    protected int getTestCount() {
+        return mAutomatedTestRunner.getTestCount();
     }
 
     protected AudioDeviceInfo getDeviceInfoById(int deviceId) {
@@ -426,6 +431,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             case AudioDeviceInfo.TYPE_WIRED_HEADSET:
             case AudioDeviceInfo.TYPE_USB_HEADSET:
                 return true;
+
             case AudioDeviceInfo.TYPE_USB_DEVICE:
             default:
                 return false; // channels are discrete

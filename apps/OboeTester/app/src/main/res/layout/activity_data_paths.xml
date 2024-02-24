@@ -35,12 +35,6 @@
             android:layout_height="wrap_content"
             android:checked="false"
             android:text="AllSRs" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
 
         <CheckBox
             android:id="@+id/checkbox_paths_in_channel_masks"
@@ -48,14 +42,46 @@
             android:layout_height="wrap_content"
             android:checked="false"
             android:text="InChMasks" />
+    </LinearLayout>
 
-        <CheckBox
-            android:id="@+id/checkbox_paths_output_channel_masks"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="OutChMasks:" />
+
+        <RadioGroup
+            android:id="@+id/group_ch_mask_options"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="OutChMasks" />
+            android:orientation="horizontal">
 
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_none"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="none"
+                android:checked="true"
+                />
+
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_some"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="some"
+                />
+
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="all"
+                />
+        </RadioGroup>
     </LinearLayout>
 
     <TextView
