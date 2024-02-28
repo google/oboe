@@ -18,7 +18,6 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
 import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
-import static com.mobileer.oboetester.StreamConfiguration.convertInputPresetToText;
 
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -75,6 +74,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     // The following KEYs are for old deprecated commands.
     public static final String KEY_USE_ALL_OUTPUT_CHANNEL_MASKS = "use_all_output_channel_masks";
     public static final boolean VALUE_DEFAULT_USE_ALL_OUTPUT_CHANNEL_MASKS = false;
+
+    // How many tests should be run in a specific category, eg. channel masks?
+    private static final int COVERAGE_LEVEL_NONE = 0;
+    private static final int COVERAGE_LEVEL_SOME = 1;
+    private static final int COVERAGE_LEVEL_ALL = 2;
 
     public static final String KEY_USE_INPUT_DEVICES = "use_input_devices";
     public static final boolean VALUE_DEFAULT_USE_INPUT_DEVICES = false;
@@ -139,7 +143,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxAllChannels;
     private CheckBox mCheckBoxInputChannelMasks;
-    private RadioGroup mRadioGroutOutputChannelMasks;
+    private RadioGroup mRadioGroupOutputChannelMasks;
     private RadioButton mRadioOutputChannelMasksNone;
     private RadioButton mRadioOutputChannelMasksSome;
     private RadioButton mRadioOutputChannelMasksAll;
@@ -350,7 +354,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         mInstructionsTextView = (TextView) findViewById(R.id.text_instructions);
 
-        mRadioGroutOutputChannelMasks = (RadioGroup) findViewById(R.id.group_ch_mask_options);
+        mRadioGroupOutputChannelMasks = (RadioGroup) findViewById(R.id.group_ch_mask_options);
         mRadioOutputChannelMasksNone = (RadioButton) findViewById(R.id.radio_out_ch_masks_none);
         mRadioOutputChannelMasksSome = (RadioButton) findViewById(R.id.radio_out_ch_masks_some);
         mRadioOutputChannelMasksAll = (RadioButton) findViewById(R.id.radio_out_ch_masks_all);
@@ -482,7 +486,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     private void logSection(String name) {
-        logBoth("\n#" + getTestCount() + "  ########### " + name + "\n");
+        logBoth("\n#" + (getTestCount() + 1) + "  ########### " + name + "\n");
     }
 
     private void testInputPresets() throws InterruptedException {
@@ -625,7 +629,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                  resetChannelConfigurations(requestedInConfig, requestedOutConfig);
              }
 
-             runOnUiThread(() -> mRadioGroutOutputChannelMasks.setEnabled(false));
+             runOnUiThread(() -> mRadioGroupOutputChannelMasks.setEnabled(false));
              if (!mRadioOutputChannelMasksNone.isChecked()) { // OUTPUT?
                  logSection("Output Channel Masks");
                  requestedInConfig.setChannelCount(1);
@@ -856,7 +860,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 mCheckBoxInputPresets.setEnabled(true);
                 mCheckBoxAllChannels.setEnabled(true);
                 mCheckBoxInputChannelMasks.setEnabled(true);
-                mRadioGroutOutputChannelMasks.setEnabled(true);
+                mRadioGroupOutputChannelMasks.setEnabled(true);
                 mCheckBoxAllSampleRates.setEnabled(true);
                 keepScreenOn(false);
             });
@@ -870,32 +874,33 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         configureStreamsFromBundle(mBundleFromIntent, requestedInConfig, requestedOutConfig);
 
         // These are the current supported options.
-        boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
+        final boolean shouldUseInputPresets = mBundleFromIntent.getBoolean(KEY_USE_INPUT_PRESETS,
                 VALUE_DEFAULT_USE_INPUT_PRESETS);
-        boolean shouldUseAllSampleRates =
+        final boolean shouldUseAllSampleRates =
                 mBundleFromIntent.getBoolean(KEY_USE_ALL_SAMPLE_RATES,
                         VALUE_DEFAULT_USE_ALL_SAMPLE_RATES);
 
-        int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
+        final int singleTestIndex = mBundleFromIntent.getInt(KEY_SINGLE_TEST_INDEX,
                 VALUE_DEFAULT_SINGLE_TEST_INDEX);
 
         // The old deprecated commands will get mapped to the closest new options.
-        boolean shouldUseInputDevices = mBundleFromIntent.getBoolean(KEY_USE_INPUT_DEVICES,
+        final boolean shouldUseInputDevices = mBundleFromIntent.getBoolean(KEY_USE_INPUT_DEVICES,
                 VALUE_DEFAULT_USE_INPUT_CHANNEL_MASKS);
-        boolean shouldUseInputChannelMasks =
+        final boolean shouldUseInputChannelMasks =
                 mBundleFromIntent.getBoolean(KEY_USE_INPUT_CHANNEL_MASKS,
                         shouldUseInputDevices);
 
-        boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
+        final boolean shouldUseOutputDevices = mBundleFromIntent.getBoolean(KEY_USE_OUTPUT_DEVICES,
                 VALUE_DEFAULT_USE_ALL_CHANNEL_COUNTS);
-        boolean shouldUseAllChannelCounts =
+        final boolean shouldUseAllChannelCounts =
                 mBundleFromIntent.getBoolean(KEY_USE_ALL_CHANNEL_COUNTS,
                         shouldUseOutputDevices);
 
-        boolean shouldUseAllOutputChannelMasks =
+        final boolean shouldUseAllOutputChannelMasks =
                 mBundleFromIntent.getBoolean(KEY_USE_ALL_OUTPUT_CHANNEL_MASKS,
                         VALUE_DEFAULT_USE_ALL_OUTPUT_CHANNEL_MASKS);
-        int defaultOutputChannelMasksLevel = shouldUseAllOutputChannelMasks ? 2 : 1;
+        final int defaultOutputChannelMasksLevel = shouldUseAllOutputChannelMasks
+                ? COVERAGE_LEVEL_ALL : COVERAGE_LEVEL_SOME;
         final int outputChannelMasksLevel = mBundleFromIntent.getInt(KEY_OUTPUT_CHANNEL_MASKS_LEVEL,
                 defaultOutputChannelMasksLevel);
 
@@ -906,12 +911,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mCheckBoxAllChannels.setChecked(shouldUseAllChannelCounts);
             mCheckBoxInputChannelMasks.setChecked(shouldUseInputChannelMasks);
             switch(outputChannelMasksLevel) {
-                case 2:
+                case COVERAGE_LEVEL_ALL:
                     mRadioOutputChannelMasksAll.setChecked(true);
                     break;
-                case 1:
+                case COVERAGE_LEVEL_SOME:
                     mRadioOutputChannelMasksSome.setChecked(true);
                     break;
+                case COVERAGE_LEVEL_NONE:
                 default:
                     mRadioOutputChannelMasksNone.setChecked(true);
                     break;
