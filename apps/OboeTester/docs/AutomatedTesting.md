@@ -53,7 +53,7 @@ Boolean parameters are sent using:
 
 For example:
 
-    --ez use_input_devices false
+    --ez use_input_presets false
 
 ## Parameters
 
@@ -108,14 +108,23 @@ There are several optional parameters for just the "glitch" test:
                             // input preset, default is "voicerec"
     --es in_preset          ("generic", "camcorder", "voicerec", "voicecomm", "unprocessed", "performance"}
 
-There are several optional parameters for just the "data_paths" test:
+There are several optional parameters for just the "data_paths" test. Note the  Note the use of "-ez" for the boolean parameters.
 
-    --ez use_input_presets  {"true", 1, "false", 0}  // Whether to test various input presets. Note use of "-ez"
-    --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices. Note use of "-ez"
-    --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices. Note use of "-ez"
-    --ez use_all_output_channel_masks {"true", 1, "false", 0}  // Whether to test all output channel masks. Note use of "-ez". Default is false
+    --ez use_input_presets  {"true", 1, "false", 0}  // Whether to test various input presets.
     --ez use_all_sample_rates {"true", 1, "false", 0}  // Whether to test all sample rates. Note use of "-ez". Default is false
     --ei single_test_index  {testId}  // Index for testing one specific test
+
+These parameters were used with the "data_paths" test prior to v2.5.11.
+
+    --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices.
+    --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices.
+    --ez use_all_output_channel_masks {"true", 1, "false", 0}  // Whether to test all output channel masks. Default is false
+
+These parameters were used with the "data_paths" test starting with v2.5.11.
+
+    --ez use_input_channel_masks {"true", 1, "false", 0}  // Whether to test the reported input channel MASKS. Default is false.
+    --ez use_all_channel_counts {"true", 1, "false", 0}   // Whether to test all the supported channel COUNTS. Default is true.
+    --ei output_channel_masks_level {0, 1, 2}    // Whether to test NONE=0, SOME=1, or ALL=3 channel masks. Default is false.
 
 There are some optional parameters for just the "output" test:
 
