@@ -54,10 +54,6 @@ public:
         return mSinePeriod;
     }
 
-    float getPhaseOffset() const {
-        return mPhaseOffset;
-    }
-
     int32_t getGlitchCount() const {
         return mGlitchCount;
     }
@@ -188,8 +184,8 @@ public:
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
                     setMagnitude(calculateMagnitudePhase(&mPhaseOffset));
-//                    ALOGD("%s() mag = %f, offset = %f, prev = %f",
-//                            __func__, mMagnitude, mPhaseOffset, mPreviousPhaseOffset);
+                    ALOGD("%s() mag = %f, mPhaseOffset = %f",
+                            __func__, mMagnitude, mPhaseOffset);
                     if (mMagnitude > mThreshold) {
                         if (fabs(mPhaseOffset) < kMaxPhaseError) {
                             mState = STATE_LOCKED;

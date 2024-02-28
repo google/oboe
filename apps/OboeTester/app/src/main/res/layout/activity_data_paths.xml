@@ -23,31 +23,11 @@
             android:text="InPre" />
 
         <CheckBox
-            android:id="@+id/checkbox_paths_input_devices"
+            android:id="@+id/checkbox_paths_all_channels"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="InDev" />
-
-        <CheckBox
-            android:id="@+id/checkbox_paths_output_devices"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="OutDev" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <CheckBox
-            android:id="@+id/checkbox_paths_all_output_channel_masks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="AllOutCMs" />
+            android:text="AllCh" />
 
         <CheckBox
             android:id="@+id/checkbox_paths_all_sample_rates"
@@ -55,6 +35,53 @@
             android:layout_height="wrap_content"
             android:checked="false"
             android:text="AllSRs" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_in_channel_masks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="InChMasks" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="OutChMasks:" />
+
+        <RadioGroup
+            android:id="@+id/group_ch_mask_options"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_none"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="none"
+                android:checked="true"
+                />
+
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_some"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="some"
+                />
+
+            <RadioButton
+                android:id="@+id/radio_out_ch_masks_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="all"
+                />
+        </RadioGroup>
     </LinearLayout>
 
     <TextView

@@ -37,7 +37,8 @@ import java.io.IOException;
 public class TestInputActivity  extends TestAudioActivity {
 
     protected AudioInputTester mAudioInputTester;
-    private static final int NUM_VOLUME_BARS = 4;
+    // Note that this must match the number of volume bars defined in the layout file.
+    private static final int NUM_VOLUME_BARS = 8;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
     private InputMarginView mInputMarginView;
     private int mInputMarginBursts = 0;
@@ -64,6 +65,10 @@ public class TestInputActivity  extends TestAudioActivity {
         mVolumeBars[1] = (VolumeBarView) findViewById(R.id.volumeBar1);
         mVolumeBars[2] = (VolumeBarView) findViewById(R.id.volumeBar2);
         mVolumeBars[3] = (VolumeBarView) findViewById(R.id.volumeBar3);
+        mVolumeBars[4] = (VolumeBarView) findViewById(R.id.volumeBar4);
+        mVolumeBars[5] = (VolumeBarView) findViewById(R.id.volumeBar5);
+        mVolumeBars[6] = (VolumeBarView) findViewById(R.id.volumeBar6);
+        mVolumeBars[7] = (VolumeBarView) findViewById(R.id.volumeBar7);
 
         mInputMarginView = (InputMarginView) findViewById(R.id.input_margin_view);
 

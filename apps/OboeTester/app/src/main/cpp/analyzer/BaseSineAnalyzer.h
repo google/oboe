@@ -46,6 +46,7 @@ public:
     }
 
     double getPhaseOffset() {
+        ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
         return mPhaseOffset;
     }
 
@@ -129,7 +130,6 @@ public:
         double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
         if (phasePtr != nullptr) {
             double phase = atan2(cosMean, sinMean);
-
             *phasePtr = phase;
         }
         return magnitude;
@@ -153,6 +153,7 @@ public:
         if (mFramesAccumulated == mSinePeriod) {
             const double coefficient = 0.1;
             double magnitude = calculateMagnitudePhase(&mPhaseOffset);
+            ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
             // One pole averaging filter.
             setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
             resetAccumulator();
