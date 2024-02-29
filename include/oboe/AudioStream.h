@@ -629,7 +629,7 @@ protected:
      * This may be called internally at the end of a callback.
      * @param numFrames passed to the callback
      */
-    virtual void endPerformanceHintInCallback(int32_t numFrames) {}
+    virtual void endPerformanceHintInCallback(int32_t /*numFrames*/) {}
 
     /**
      * This will be called when the stream is closed just in case performance hints were enabled.
