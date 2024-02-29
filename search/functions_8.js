@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['onaudioready_0',['onAudioReady',['../classoboe_1_1_audio_stream_data_callback.html#ad8a3a9f609df5fd3a5d885cbe1b2204d',1,'oboe::AudioStreamDataCallback::onAudioReady()'],['../classoboe_1_1_full_duplex_stream.html#af53f54d840dda15c790cddbcff64c6fb',1,'oboe::FullDuplexStream::onAudioReady()'],['../classoboe_1_1_stabilized_callback.html#ad447e12ebf732cf151655c1fbaf58a49',1,'oboe::StabilizedCallback::onAudioReady()']]],
+  ['onaudioready_0',['onAudioReady',['../classoboe_1_1_audio_stream_data_callback.html#ad8a3a9f609df5fd3a5d885cbe1b2204d',1,'oboe::AudioStreamDataCallback::onAudioReady()'],['../classoboe_1_1_full_duplex_stream.html#ab0cd2c67294a5a1b1080e2f265266b84',1,'oboe::FullDuplexStream::onAudioReady()'],['../classoboe_1_1_stabilized_callback.html#ad447e12ebf732cf151655c1fbaf58a49',1,'oboe::StabilizedCallback::onAudioReady()']]],
   ['onbothstreamsready_1',['onBothStreamsReady',['../classoboe_1_1_full_duplex_stream.html#a961f02bbfdd9821a0271e8895a5949b8',1,'oboe::FullDuplexStream']]],
   ['ondefaultcallback_2',['onDefaultCallback',['../classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe',1,'oboe::AudioStream']]],
   ['onerror_3',['onError',['../classoboe_1_1_audio_stream_error_callback.html#a5ad4b8936746ecbb2160a9389b117fc3',1,'oboe::AudioStreamErrorCallback']]],
