@@ -520,11 +520,17 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     private void onChannelCountSpinnerSelected() {
-        mIsChannelMaskLastSelected = false;
+        if (mChannelCountSpinner.getSelectedItemPosition() != 0) {
+            mChannelMaskSpinner.setSelection(0); // Override the previous channel mask selection
+            mIsChannelMaskLastSelected = false;
+        }
     }
 
     private void onChannelMaskSpinnerSelected() {
-        mIsChannelMaskLastSelected = true;
+        if (mChannelMaskSpinner.getSelectedItemPosition() != 0) {
+            mChannelCountSpinner.setSelection(0); // Override the previous channel count selection
+            mIsChannelMaskLastSelected = true;
+        }
     }
 
     private void onRequestAudioEffectClicked(boolean isChecked) {
