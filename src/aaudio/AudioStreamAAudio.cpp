@@ -528,7 +528,7 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/
         if (result == DataCallbackResult::Stop) {
             LOGD("Oboe callback returned DataCallbackResult::Stop");
         } else {
-            LOGE("Oboe callback returned unexpected value = %d", result);
+            LOGE("Oboe callback returned unexpected value. Error: %s", oboe::convertToText(result));
         }
 
         // Returning Stop caused various problems before S. See #1230

@@ -96,7 +96,7 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
 Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
     auto result = isValidConfig();
     if (result != Result::OK) {
-        LOGW("%s() invalid config %d", __func__, result);
+        LOGW("%s() invalid config. Error %s", __func__, oboe::convertToText(result));
         return result;
     }
 
