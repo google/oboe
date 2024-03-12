@@ -45,6 +45,10 @@ public:
         mScaledTolerance = mMagnitude * getTolerance();
     }
 
+    /**
+     *
+     * @return valid phase or kPhaseInvalid=-999
+     */
     double getPhaseOffset() {
         ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
         return mPhaseOffset;
@@ -129,7 +133,18 @@ public:
         double cosMean = mCosAccumulator / mFramesAccumulated;
         double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
         if (phasePtr != nullptr) {
-            double phase = atan2(cosMean, sinMean);
+            double phase;
+            if (magnitude < kMinValidMagnitude) {
+                phase = kPhaseInvalid;
+                ALOGD("%s() mag very low! sinMean = %7.5f, cosMean = %7.5f",
+                      __func__, sinMean, cosMean);
+            } else {
+                phase = atan2(cosMean, sinMean);
+                if (phase == 0.0) {
+                    ALOGD("%s() phase zero! sinMean = %7.5f, cosMean = %7.5f",
+                          __func__, sinMean, cosMean);
+                }
+            }
             *phasePtr = phase;
         }
         return magnitude;
@@ -153,9 +168,12 @@ public:
         if (mFramesAccumulated == mSinePeriod) {
             const double coefficient = 0.1;
             double magnitude = calculateMagnitudePhase(&mPhaseOffset);
-            ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
-            // One pole averaging filter.
-            setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
+
+            ALOGD("%s(), phaseOffset = %f\n", __func__, mPhaseOffset);
+            if (mPhaseOffset != kPhaseInvalid) {
+                // One pole averaging filter.
+                setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
+            }
             resetAccumulator();
             return true;
         } else {
@@ -195,7 +213,9 @@ protected:
     double  mOutputAmplitude = 0.75;
     // If this jumps around then we are probably just hearing noise.
     double  mPhaseOffset = 0.0;
+    static constexpr double kPhaseInvalid = -999.0;
     double  mMagnitude = 0.0;
+    static constexpr double kMinValidMagnitude = 2.0 / (1 << 16);
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;
     double  mCosAccumulator = 0.0;

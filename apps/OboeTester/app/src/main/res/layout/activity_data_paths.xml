@@ -16,18 +16,18 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/checkbox_paths_input_presets"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="InPre" />
-
-        <CheckBox
             android:id="@+id/checkbox_paths_all_channels"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="AllCh" />
+
+        <CheckBox
+            android:id="@+id/checkbox_paths_input_presets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="InPre" />
 
         <CheckBox
             android:id="@+id/checkbox_paths_all_sample_rates"

@@ -78,7 +78,8 @@ public class WaveformView extends View {
         mCurrentWidth = w;
         mCurrentHeight = h;
         mOffsetY = 0.5f * h;
-        mScaleY = 0.0f - mOffsetY;
+        // Scale down so that we can see the top of the waveforms if they are clipped.
+        mScaleY = 0.95f * (0.0f - mOffsetY);
     }
 
     public String getMessage() {
