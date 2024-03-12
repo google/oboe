@@ -211,8 +211,16 @@ protected:
     double  mPhaseIncrement = 0.0;
     double  mOutputPhase = 0.0;
     double  mOutputAmplitude = 0.75;
+    // This is the phase offset between the output sine wave and the recorded
+    // signal at the tuned frequency.
     // If this jumps around then we are probably just hearing noise.
+    // Noise can cause the magnitude to be high but mPhaseOffset will be pretty random.
+    // If we are tracking a sine wave then mPhaseOffset should be consistent.
     double  mPhaseOffset = 0.0;
+    // kPhaseInvalid indicates that the phase measurement cannot be used.
+    // We were seeing times when a magnitude of zero was causing atan2(s,c) to
+    // return a phase of zero, which looked valid to Java. This is a way of passing
+    // an error code back to Java as a single value to avoid race conditions.
     static constexpr double kPhaseInvalid = -999.0;
     double  mMagnitude = 0.0;
     static constexpr double kMinValidMagnitude = 2.0 / (1 << 16);
