@@ -128,7 +128,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                                                                   actualSourceFramesPerCallback);
                 break;
             default:
-                LOGE("%s() Unsupported source caller format = %s", __func__, oboe::convertToText(sourceFormat));
+                LOGE("%s() Unsupported source caller format = %d", __func__, static_cast<int>(sourceFormat));
                 return Result::ErrorIllegalArgument;
         }
         mSourceCaller->setStream(sourceStream);
@@ -150,7 +150,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
                 mSource = std::make_unique<SourceI32>(sourceChannelCount);
                 break;
             default:
-                LOGE("%s() Unsupported source format = %s", __func__, oboe::convertToText(sourceFormat));
+                LOGE("%s() Unsupported source format = %d", __func__, static_cast<int>(sourceFormat));
                 return Result::ErrorIllegalArgument;
         }
         if (isInput) {
@@ -226,7 +226,7 @@ Result DataConversionFlowGraph::configure(AudioStream *sourceStream, AudioStream
             mSink = std::make_unique<SinkI32>(sinkChannelCount);
             break;
         default:
-            LOGE("%s() Unsupported sink format = %s", __func__, oboe::convertToText(sinkFormat));
+            LOGE("%s() Unsupported sink format = %d", __func__, static_cast<int>(sinkFormat));
             return Result::ErrorIllegalArgument;;
     }
     lastOutput->connect(&mSink->input);
