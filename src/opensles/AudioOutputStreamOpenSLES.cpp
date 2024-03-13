@@ -372,7 +372,7 @@ Result AudioOutputStreamOpenSLES::requestFlush_l() {
     } else {
         SLresult slResult = (*mSimpleBufferQueueInterface)->Clear(mSimpleBufferQueueInterface);
         if (slResult != SL_RESULT_SUCCESS){
-            LOGW("Failed to clear buffer queue. OpenSLES error: %d", result);
+            LOGW("Failed to clear buffer queue. OpenSLES error: %s", getSLErrStr(slResult));
             result = Result::ErrorInternal;
         }
     }
