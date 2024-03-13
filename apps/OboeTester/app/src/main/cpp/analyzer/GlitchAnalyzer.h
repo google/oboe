@@ -75,7 +75,7 @@ public:
         } else {
             double signalToNoise = mMeanSquareSignal / mMeanSquareNoise; // power ratio
             double signalToNoiseDB = 10.0 * log(signalToNoise);
-            if (signalToNoiseDB < MIN_SNR_DB) {
+            if (signalToNoiseDB < static_cast<float>(MIN_SNR_DB)) {
                 setResult(ERROR_VOLUME_TOO_LOW);
             }
             return signalToNoiseDB;

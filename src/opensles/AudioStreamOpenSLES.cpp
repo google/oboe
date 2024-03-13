@@ -72,8 +72,8 @@ Result AudioStreamOpenSLES::open() {
 
     // OpenSL ES only supports I16 and Float
     if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
-        LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %d",
-             __func__, mFormat);
+        LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %s",
+             __func__, oboe::convertToText(mFormat));
         return Result::ErrorInvalidFormat;
     }
 
@@ -422,7 +422,7 @@ bool AudioStreamOpenSLES::processBufferCallback(SLAndroidSimpleBufferQueueItf bq
         LOGD("Oboe callback returned Stop");
         shouldStopStream = true;
     } else {
-        LOGW("Oboe callback returned unexpected value = %d", result);
+        LOGW("Oboe callback returned unexpected value = %d", static_cast<int>(result));
         shouldStopStream = true;
     }
     if (shouldStopStream) {
