@@ -45,6 +45,10 @@ public:
         mScaledTolerance = mMagnitude * getTolerance();
     }
 
+    /**
+     *
+     * @return valid phase or kPhaseInvalid=-999
+     */
     double getPhaseOffset() {
         ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
         return mPhaseOffset;
@@ -129,7 +133,18 @@ public:
         double cosMean = mCosAccumulator / mFramesAccumulated;
         double magnitude = 2.0 * sqrt((sinMean * sinMean) + (cosMean * cosMean));
         if (phasePtr != nullptr) {
-            double phase = atan2(cosMean, sinMean);
+            double phase;
+            if (magnitude < kMinValidMagnitude) {
+                phase = kPhaseInvalid;
+                ALOGD("%s() mag very low! sinMean = %7.5f, cosMean = %7.5f",
+                      __func__, sinMean, cosMean);
+            } else {
+                phase = atan2(cosMean, sinMean);
+                if (phase == 0.0) {
+                    ALOGD("%s() phase zero! sinMean = %7.5f, cosMean = %7.5f",
+                          __func__, sinMean, cosMean);
+                }
+            }
             *phasePtr = phase;
         }
         return magnitude;
@@ -153,9 +168,12 @@ public:
         if (mFramesAccumulated == mSinePeriod) {
             const double coefficient = 0.1;
             double magnitude = calculateMagnitudePhase(&mPhaseOffset);
-            ALOGD("%s(), mPhaseOffset = %f\n", __func__, mPhaseOffset);
-            // One pole averaging filter.
-            setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
+
+            ALOGD("%s(), phaseOffset = %f\n", __func__, mPhaseOffset);
+            if (mPhaseOffset != kPhaseInvalid) {
+                // One pole averaging filter.
+                setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
+            }
             resetAccumulator();
             return true;
         } else {
@@ -193,9 +211,19 @@ protected:
     double  mPhaseIncrement = 0.0;
     double  mOutputPhase = 0.0;
     double  mOutputAmplitude = 0.75;
+    // This is the phase offset between the output sine wave and the recorded
+    // signal at the tuned frequency.
     // If this jumps around then we are probably just hearing noise.
+    // Noise can cause the magnitude to be high but mPhaseOffset will be pretty random.
+    // If we are tracking a sine wave then mPhaseOffset should be consistent.
     double  mPhaseOffset = 0.0;
+    // kPhaseInvalid indicates that the phase measurement cannot be used.
+    // We were seeing times when a magnitude of zero was causing atan2(s,c) to
+    // return a phase of zero, which looked valid to Java. This is a way of passing
+    // an error code back to Java as a single value to avoid race conditions.
+    static constexpr double kPhaseInvalid = -999.0;
     double  mMagnitude = 0.0;
+    static constexpr double kMinValidMagnitude = 2.0 / (1 << 16);
     int32_t mFramesAccumulated = 0;
     double  mSinAccumulator = 0.0;
     double  mCosAccumulator = 0.0;

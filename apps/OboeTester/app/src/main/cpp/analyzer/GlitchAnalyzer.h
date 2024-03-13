@@ -183,17 +183,20 @@ public:
                 mFramesAccumulated++;
                 // Must be a multiple of the period or the calculation will not be accurate.
                 if (mFramesAccumulated == mSinePeriod * PERIODS_NEEDED_FOR_LOCK) {
-                    setMagnitude(calculateMagnitudePhase(&mPhaseOffset));
-                    ALOGD("%s() mag = %f, mPhaseOffset = %f",
-                            __func__, mMagnitude, mPhaseOffset);
-                    if (mMagnitude > mThreshold) {
-                        if (fabs(mPhaseOffset) < kMaxPhaseError) {
-                            mState = STATE_LOCKED;
-                            mConsecutiveBadFrames = 0;
+                    double magnitude = calculateMagnitudePhase(&mPhaseOffset);
+                    if (mPhaseOffset != kPhaseInvalid) {
+                        setMagnitude(magnitude);
+                        ALOGD("%s() mag = %f, mPhaseOffset = %f",
+                              __func__, magnitude, mPhaseOffset);
+                        if (mMagnitude > mThreshold) {
+                            if (fabs(mPhaseOffset) < kMaxPhaseError) {
+                                mState = STATE_LOCKED;
+                                mConsecutiveBadFrames = 0;
 //                            ALOGD("%5d: switch to STATE_LOCKED", mFrameCounter);
+                            }
+                            // Adjust mInputPhase to match measured phase
+                            mInputPhase += mPhaseOffset;
                         }
-                        // Adjust mInputPhase to match measured phase
-                        mInputPhase += mPhaseOffset;
                     }
                     resetAccumulator();
                 }

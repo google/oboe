@@ -214,7 +214,6 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected void appendFailedSummary(String text) {
         mAutomatedTestRunner.appendFailedSummary(text);
     }
-
     protected void appendSummary(String text) {
         mAutomatedTestRunner.appendSummary(text);
     }
