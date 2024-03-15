@@ -27,9 +27,9 @@ If you don't use git then just download the Zip archive.
 ## Build and Run OboeTester
 
 1. Launch Android Studio
-2. Clock Open from the File menu and browse to the "oboe/apps/OboeTester" folder. Select that folder.
+2. Click Open from the File menu and browse to the "oboe/apps/OboeTester" folder. Select that folder.
 3. Wait about a minute for the project to load.
 4. Connect an Android phone to your computer using a USB cable.
 5. Look at your phone. You may need to give permission to use ADB on your phone.
 5. Select "Run App" from the "Run" menu.
-6. OboeTester should build and then appear on your computer.
+6. OboeTester should build and then appear on your Android phone.
