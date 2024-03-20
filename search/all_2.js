@@ -3,7 +3,7 @@ var searchData=
   ['calculatedefaultdelaybeforeclosemillis_0',['calculateDefaultDelayBeforeCloseMillis',['../classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f',1,'oboe::AudioStream']]],
   ['calculatelatencymillis_1',['calculateLatencyMillis',['../classoboe_1_1_audio_stream.html#a3caa2803064eafd217ef86b282d249da',1,'oboe::AudioStream']]],
   ['camcorder_2',['Camcorder',['../namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe',1,'oboe']]],
-  ['channelcount_3',['ChannelCount',['../classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d',1,'oboe::DefaultStreamValues::ChannelCount'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029',1,'oboe::ChannelCount']]],
+  ['channelcount_3',['channelcount',['../classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d',1,'oboe::DefaultStreamValues::ChannelCount'],['../namespaceoboe.html#a522e6806948369987639a0d1df03c029',1,'oboe::ChannelCount']]],
   ['channelmask_4',['ChannelMask',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33',1,'oboe']]],
   ['close_5',['close',['../classoboe_1_1_audio_stream.html#a9c8ea30e30e513766d5e996c370eb8d8',1,'oboe::AudioStream']]],
   ['closeperformancehint_6',['closePerformanceHint',['../classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184',1,'oboe::AudioStream']]],
