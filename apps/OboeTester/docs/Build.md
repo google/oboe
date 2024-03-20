@@ -32,4 +32,4 @@ If you don't use git then just download the Zip archive.
 4. Connect an Android phone to your computer using a USB cable.
 5. Look at your phone. You may need to give permission to use ADB on your phone.
 5. Select "Run App" from the "Run" menu.
-6. OboeTester should build and then appear on your Android phone.
+6. OboeTester should build and then appear on your Android device.
