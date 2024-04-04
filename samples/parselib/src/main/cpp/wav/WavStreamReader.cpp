@@ -52,11 +52,10 @@ int WavStreamReader::getSampleEncoding() {
                 return AudioEncoding::PCM_16;
 
             case 24:
-                // TODO - Support 24-bit WAV data
-                return AudioEncoding::INVALID; // for now
+                return AudioEncoding::PCM_24;
 
             default:
-                return AudioEncoding::INVALID;
+                return AudioEncoding::PCM_32;
         }
     } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
         return AudioEncoding::PCM_IEEEFLOAT;

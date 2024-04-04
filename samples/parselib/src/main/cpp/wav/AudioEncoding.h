@@ -27,6 +27,8 @@ public:
     static const int PCM_16 = 0;
     static const int PCM_8 = 1;
     static const int PCM_IEEEFLOAT = 2;
+    static const int PCM_24 = 3;
+    static const int PCM_32 = 4;
 };
 
 } // namespace parselib
