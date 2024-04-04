@@ -54,8 +54,11 @@ int WavStreamReader::getSampleEncoding() {
             case 24:
                 return AudioEncoding::PCM_24;
 
-            default:
+            case 32:
                 return AudioEncoding::PCM_32;
+
+            default:
+                return AudioEncoding::INVALID;
         }
     } else if (mFmtChunk->mEncodingId == WavFmtChunkHeader::ENCODING_IEEE_FLOAT) {
         return AudioEncoding::PCM_IEEEFLOAT;
