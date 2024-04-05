@@ -52,8 +52,10 @@ int WavStreamReader::getSampleEncoding() {
                 return AudioEncoding::PCM_16;
 
             case 24:
-                // TODO - Support 24-bit WAV data
-                return AudioEncoding::INVALID; // for now
+                return AudioEncoding::PCM_24;
+
+            case 32:
+                return AudioEncoding::PCM_32;
 
             default:
                 return AudioEncoding::INVALID;
