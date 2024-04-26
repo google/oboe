@@ -137,7 +137,6 @@ For example, a complete command for a "latency" test might be:
         --ei buffer_bursts 2 \
         --ef volume 0.8 \
         --es volume_type music \
-        --ei buffer_bursts 2 \
         --ei out_channels 1 \
         --es out_usage game \
         --es file latency20230608.txt
