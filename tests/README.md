@@ -20,7 +20,9 @@ To test this on Mac or Linux enter:
     echo $ANDROID_NDK
     cmake --version
 
-They may already be set. If not, then this may work on Mac OS:
+They may already be set. If so then skip to "Running the Tests" below.
+
+If not, then this may work on Mac OS:
 
     export ANDROID_HOME=$HOME/Library/Android/sdk
     
@@ -28,7 +30,7 @@ or this may work on Linux:
 
     export ANDROID_HOME=$HOME/Android/Sdk
     
-Now we need to determine the latest installed version of the NDK. Enter:
+Tadb rooto determine the latest installed version of the NDK. Enter:
     
     ls $ANDROID_HOME/ndk
     
@@ -52,7 +54,7 @@ To run the tests, enter:
     cd tests
     ./run_tests.sh
     
-You may need to enter \<control-c\> to exit the script.
+When the tests finish, you may need to enter \<control-c\> to exit the script.
 
 If you get this error:
 
@@ -60,6 +62,9 @@ If you get this error:
         INSTALL_FAILED_UPDATE_INCOMPATIBLE: Package com.google.oboe.tests.unittestrunner
         signatures do not match previously installed version; ignoring!
 
-then uninstall the app "UnitTestRunner" from the Android device.
+then uninstall the app "UnitTestRunner" from the Android device. Or try:
+
+    adb root
+    adb remount -R
 
 See `run_tests.sh` for more documentation
