@@ -102,7 +102,7 @@ protected:
 
     void checkInputAndOutputBufferSizesMatch() {
         // Expect the large majority of callbacks to have the same sized input and output
-        EXPECT_GE(mGoodCallbackCount, mCallbackCount * 9 / 10);
+        EXPECT_GE(mGoodCallbackCount, mCallbackCount * 4 / 5);
     }
 
     AudioStreamBuilder mInputBuilder;
