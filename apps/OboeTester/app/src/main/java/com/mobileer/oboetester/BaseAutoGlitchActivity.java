@@ -80,6 +80,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         public final int mmapUsed;
         public final int performanceMode;
         public final int sharingMode;
+        public final int sessionId;
 
         public TestStreamOptions(StreamConfiguration configuration, int channelUsed) {
             this.channelUsed = channelUsed;
@@ -89,6 +90,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             mmapUsed = configuration.isMMap() ? 1 : 0;
             performanceMode = configuration.getPerformanceMode();
             sharingMode = configuration.getSharingMode();
+            sessionId = configuration.getSessionId();
         }
 
         int countDifferences(TestStreamOptions other) {
@@ -100,6 +102,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             count += (mmapUsed != other.mmapUsed) ? 1 : 0;
             count += (performanceMode != other.performanceMode) ? 1 : 0;
             count += (sharingMode != other.sharingMode) ? 1 : 0;
+            count += (sessionId != other.sessionId) ? 1 : 0;
             return count;
         }
 
@@ -112,6 +115,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "mmapUsed"));
             text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "performanceMode"));
             text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "sharingMode"));
+            text.append(TestDataPathsActivity.comparePassedField(prefix,this, passed, "sessionId"));
             return text.toString();
         }
         @Override
@@ -236,6 +240,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 + ", ID = " + String.format(Locale.getDefault(), "%2d", config.getDeviceId())
                 + ", Perf = " + StreamConfiguration.convertPerformanceModeToText(
                         config.getPerformanceMode())
+                + ((config.getSessionId() > 0) ? (", sessionId = " + config.getSessionId()) : "")
                 + ",\n     ch = " + channelText(channel, config.getChannelCount())
                 + ", cm = " + convertChannelMaskToText(config.getChannelMask());
     }
