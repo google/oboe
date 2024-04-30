@@ -19,12 +19,13 @@
 
 oboe::Result FullDuplexStreamWithConversion::start() {
     // Determine maximum size that could possibly be called.
-    int32_t bufferSize = getOutputStream()->getBufferCapacityInFrames()
-                         * getOutputStream()->getChannelCount();
-    mInputConverter = std::make_unique<FormatConverterBox>(bufferSize,
+    int32_t maxFrames = getOutputStream()->getBufferCapacityInFrames();
+    int32_t inputBufferSize = maxFrames * getInputStream()->getChannelCount();
+    int32_t outputBufferSize = maxFrames * getOutputStream()->getChannelCount();
+    mInputConverter = std::make_unique<FormatConverterBox>(inputBufferSize,
                                                            getInputStream()->getFormat(),
                                                            oboe::AudioFormat::Float);
-    mOutputConverter = std::make_unique<FormatConverterBox>(bufferSize,
+    mOutputConverter = std::make_unique<FormatConverterBox>(outputBufferSize,
                                                             oboe::AudioFormat::Float,
                                                             getOutputStream()->getFormat());
     return FullDuplexStream::start();
