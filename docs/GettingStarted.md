@@ -1,4 +1,7 @@
 # Adding Oboe to your project
+
+Oboe is a C++ library. So your Android Studio project will need to [support native C++ code](https://developer.android.com/studio/projects/add-native-code).
+
 There are two ways use Oboe in your Android Studio project: 
 
 1) **Use the Oboe pre-built library binaries and headers**. Use this approach if you just want to use a stable version of the Oboe library in your project.
@@ -17,6 +20,10 @@ Add the oboe dependency to your app's `build.gradle` file. Replace "X.X.X" with 
         implementation 'com.google.oboe:oboe:X.X.X'
     }
 
+For `build.gradle.kts` add parentheses:
+
+        implementation("com.google.oboe:oboe:X.X.X")
+
 Also enable prefab by adding:
 
     android {
@@ -24,6 +31,10 @@ Also enable prefab by adding:
             prefab true
         }
     }
+
+For `build.gradle.kts` add an equal sign:
+
+            prefab = true
     
 Include and link to oboe by updating your `CMakeLists.txt`: 
 
@@ -51,9 +62,13 @@ Configure your app to use the shared STL by updating your `app/build.gradle`:
                 cmake {
                     arguments "-DANDROID_STL=c++_shared"
                 }
-	        }
+            }
         }
     }
+
+For `app/build.gradle.kts` add parentheses:
+
+          arguments("-DANDROID_STL=c++_shared")
 
 ## Option 2) Building from source
 
