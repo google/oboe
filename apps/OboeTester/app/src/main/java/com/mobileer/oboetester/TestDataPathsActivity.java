@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFromBundle;
+import static com.mobileer.oboetester.StreamConfiguration.UNSPECIFIED;
 import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
 
 import android.app.Instrumentation;
@@ -37,6 +38,8 @@ import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -572,6 +575,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
          requestedOutConfig.setDeviceId(outputDeviceInfo.getId());
          resetChannelConfigurations(requestedInConfig, requestedOutConfig);
 
+         testBug_270535408(inputDeviceInfo, outputDeviceInfo);
+
          if (mCheckBoxAllChannels.isChecked()) {
              runOnUiThread(() -> mCheckBoxAllChannels.setEnabled(false));
              testOutputChannelCounts(inputDeviceInfo, outputDeviceInfo);
@@ -695,7 +700,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     private void testOutputChannelCounts(AudioDeviceInfo inputDeviceInfo, AudioDeviceInfo outputDeviceInfo) throws InterruptedException {
         logSection("Output Channel Counts");
-        ArrayList<Integer> channelCountsTested =new ArrayList<Integer>();
+        ArrayList<Integer> channelCountsTested = new ArrayList<Integer>();
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
@@ -764,6 +769,26 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             setInputChannel(channel);
             setOutputChannel(channel);
             testPerformancePaths();
+        }
+    }
+
+    // b/270535408 | no input when channels=3 and sessionId is allocated
+    private void testBug_270535408(AudioDeviceInfo inputDeviceInfo,
+                                   AudioDeviceInfo outputDeviceInfo) throws InterruptedException {
+        int[] inputChannelCounts = inputDeviceInfo.getChannelCounts();
+        if (findLargestChannelCount(inputChannelCounts) >= 3) {
+            logSection("Bug 270535408, 3ch + SessionId");
+            StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+            StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+            requestedInConfig.setChannelCount(3);
+            requestedInConfig.setSessionId(AudioManager.AUDIO_SESSION_ID_GENERATE);
+            requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
+            requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
+            testCurrentConfigurations();
+            // Now test without a sessionId so we have a passing test to compare with.
+            requestedInConfig.setSessionId(-1); // AAUDIO_SESSION_ID_NONE
+            testCurrentConfigurations();
+            requestedInConfig.setChannelCount(UNSPECIFIED);
         }
     }
 
