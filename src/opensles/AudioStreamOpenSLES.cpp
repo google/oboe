@@ -16,13 +16,12 @@
 #include <cassert>
 #include <android/log.h>
 
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
 #include <oboe/AudioStream.h>
 #include <common/AudioClock.h>
 
 #include "common/OboeDebug.h"
 #include "oboe/AudioStreamBuilder.h"
+#include "EngineOpenSLES.h"
 #include "AudioStreamOpenSLES.h"
 #include "OpenSLESUtilities.h"
 
@@ -442,8 +441,9 @@ static void bqCallbackGlue(SLAndroidSimpleBufferQueueItf bq, void *context) {
 
 SLresult AudioStreamOpenSLES::registerBufferQueueCallback() {
     // The BufferQueue
-    SLresult result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                                &mSimpleBufferQueueInterface);
+    SLresult result = (*mObjectInterface)->GetInterface(mObjectInterface,
+            EngineOpenSLES::getInstance().getIidAndroidSimpleBufferQueue(),
+            &mSimpleBufferQueueInterface);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("get buffer queue interface:%p result:%s",
              mSimpleBufferQueueInterface,

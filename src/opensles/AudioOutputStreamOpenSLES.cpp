@@ -16,8 +16,6 @@
 
 #include <cassert>
 
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
 #include <common/AudioClock.h>
 
 #include "common/OboeDebug.h"
@@ -180,8 +178,8 @@ Result AudioOutputStreamOpenSLES::open() {
 
     // Configure the stream.
     result = (*mObjectInterface)->GetInterface(mObjectInterface,
-                                               SL_IID_ANDROIDCONFIGURATION,
-                                               (void *)&configItf);
+            EngineOpenSLES::getInstance().getIidAndroidConfiguration(),
+            (void *)&configItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGW("%s() GetInterface(SL_IID_ANDROIDCONFIGURATION) failed with %s",
              __func__, getSLErrStr(result));
@@ -207,7 +205,9 @@ Result AudioOutputStreamOpenSLES::open() {
         goto error;
     }
 
-    result = (*mObjectInterface)->GetInterface(mObjectInterface, SL_IID_PLAY, &mPlayInterface);
+    result = (*mObjectInterface)->GetInterface(mObjectInterface,
+                                               EngineOpenSLES::getInstance().getIidPlay(),
+                                               &mPlayInterface);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("GetInterface PLAY result:%s", getSLErrStr(result));
         goto error;

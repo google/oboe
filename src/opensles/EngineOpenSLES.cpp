@@ -15,6 +15,7 @@
  */
 
 #include <dlfcn.h>
+
 #include "common/OboeDebug.h"
 #include "EngineOpenSLES.h"
 #include "OpenSLESUtilities.h"
@@ -24,40 +25,77 @@ using namespace oboe;
 // OpenSL ES is deprecated in SDK 30.
 // So we use custom dynamic linking to access the library.
 #define LIB_OPENSLES_NAME "libOpenSLES.so"
-typedef SLresult  (*prototype_slCreateEngine)(
-        SLObjectItf             *pEngine,
-        SLuint32                numOptions,
-        const SLEngineOption    *pEngineOptions,
-        SLuint32                numInterfaces,
-        const SLInterfaceID     *pInterfaceIds,
-        const SLboolean         *pInterfaceRequired
-);
-static prototype_slCreateEngine gFunction_slCreateEngine = nullptr;
-static void *gLibOpenSlesLibraryHandle = nullptr;
-
-// Load the OpenSL ES library and the one primary entry point.
-// @return true if linked OK
-static bool linkOpenSLES() {
-    if (gLibOpenSlesLibraryHandle == nullptr && gFunction_slCreateEngine == nullptr) {
-        // Use RTLD_NOW to avoid the unpredictable behavior that RTLD_LAZY can cause.
-        // Also resolving all the links now will prevent a run-time penalty later.
-        gLibOpenSlesLibraryHandle = dlopen(LIB_OPENSLES_NAME, RTLD_NOW);
-        if (gLibOpenSlesLibraryHandle == nullptr) {
-            LOGE("linkOpenSLES() could not find " LIB_OPENSLES_NAME);
-        } else {
-            gFunction_slCreateEngine = (prototype_slCreateEngine) dlsym(
-                    gLibOpenSlesLibraryHandle,
-                    "slCreateEngine");
-            LOGD("linkOpenSLES(): dlsym(%s) returned %p", "slCreateEngine",
-                 gFunction_slCreateEngine);
-        }
-    }
-    return gFunction_slCreateEngine != nullptr;
-}
 
 EngineOpenSLES &EngineOpenSLES::getInstance() {
     static EngineOpenSLES sInstance;
     return sInstance;
+}
+
+// Satisfy extern in OpenSLES.h
+// These are required because of b/337360630, which was causing
+// Oboe to have link failures if libOpenSLES.so was not available.
+SL_API const SLInterfaceID SL_IID_ENGINE = nullptr;
+SL_API const SLInterfaceID SL_IID_ANDROIDSIMPLEBUFFERQUEUE = nullptr;
+SL_API const SLInterfaceID SL_IID_ANDROIDCONFIGURATION = nullptr;
+SL_API const SLInterfaceID SL_IID_RECORD = nullptr;
+SL_API const SLInterfaceID SL_IID_BUFFERQUEUE = nullptr;
+SL_API const SLInterfaceID SL_IID_VOLUME = nullptr;
+SL_API const SLInterfaceID SL_IID_PLAY = nullptr;
+
+// Load the OpenSL ES library and the one primary entry point.
+// @return true if linked OK
+bool EngineOpenSLES::linkOpenSLES() {
+    if (mLibOpenSlesLibraryHandle == nullptr && mFunction_slCreateEngine == nullptr) {
+        // Use RTLD_NOW to avoid the unpredictable behavior that RTLD_LAZY can cause.
+        // Also resolving all the links now will prevent a run-time penalty later.
+        mLibOpenSlesLibraryHandle = dlopen(LIB_OPENSLES_NAME, RTLD_NOW);
+        if (mLibOpenSlesLibraryHandle == nullptr) {
+            LOGE("linkOpenSLES() could not find " LIB_OPENSLES_NAME);
+        } else {
+            mFunction_slCreateEngine = (prototype_slCreateEngine) dlsym(
+                    mLibOpenSlesLibraryHandle,
+                    "slCreateEngine");
+            LOGD("%s(): dlsym(%s) returned %p", __func__,
+                 "slCreateEngine", mFunction_slCreateEngine);
+            if (mFunction_slCreateEngine == nullptr) {
+                LOGE("%s(): dlsym(slCreateEngine) returned null, not found!", __func__);
+                return false;
+            }
+
+            // Load IID interfaces.
+            LOCAL_SL_IID_ENGINE = getIidPointer("SL_IID_ENGINE");
+            if (LOCAL_SL_IID_ENGINE == nullptr) return false;
+            LOCAL_SL_IID_ANDROIDSIMPLEBUFFERQUEUE = getIidPointer(
+                    "SL_IID_ANDROIDSIMPLEBUFFERQUEUE");
+            if (LOCAL_SL_IID_ANDROIDSIMPLEBUFFERQUEUE == nullptr) return false;
+            LOCAL_SL_IID_ANDROIDCONFIGURATION = getIidPointer(
+                    "SL_IID_ANDROIDCONFIGURATION");
+            if (LOCAL_SL_IID_ANDROIDCONFIGURATION == nullptr) return false;
+            LOCAL_SL_IID_RECORD = getIidPointer("SL_IID_RECORD");
+            if (LOCAL_SL_IID_RECORD == nullptr) return false;
+            LOCAL_SL_IID_BUFFERQUEUE = getIidPointer("SL_IID_BUFFERQUEUE");
+            if (LOCAL_SL_IID_BUFFERQUEUE == nullptr) return false;
+            LOCAL_SL_IID_VOLUME = getIidPointer("SL_IID_VOLUME");
+            if (LOCAL_SL_IID_VOLUME == nullptr) return false;
+            LOCAL_SL_IID_PLAY = getIidPointer("SL_IID_PLAY");
+            if (LOCAL_SL_IID_PLAY == nullptr) return false;
+        }
+    }
+    return true;
+}
+
+// A symbol like SL_IID_PLAY is a pointer to a structure.
+// The dlsym() function returns the address of the pointer, not the structure.
+// The get the address of the structure we have to dereference the pointer.
+SLInterfaceID EngineOpenSLES::getIidPointer(const char *symbolName) {
+    SLInterfaceID *iid_address = (SLInterfaceID *) dlsym(
+            mLibOpenSlesLibraryHandle,
+            symbolName);
+    if (iid_address == nullptr) {
+        LOGE("%s(): dlsym(%s) returned null, not found!", __func__, symbolName);
+        return (SLInterfaceID) nullptr;
+    }
+    return *iid_address; // Get address of the structure.
 }
 
 SLresult EngineOpenSLES::open() {
@@ -72,7 +110,7 @@ SLresult EngineOpenSLES::open() {
         };
 
         // create engine
-        result = (*gFunction_slCreateEngine)(&mEngineObject, 0, NULL, 0, NULL, NULL);
+        result = (*mFunction_slCreateEngine)(&mEngineObject, 0, NULL, 0, NULL, NULL);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("EngineOpenSLES - slCreateEngine() result:%s", getSLErrStr(result));
             goto error;
@@ -86,7 +124,9 @@ SLresult EngineOpenSLES::open() {
         }
 
         // get the engine interface, which is needed in order to create other objects
-        result = (*mEngineObject)->GetInterface(mEngineObject, SL_IID_ENGINE, &mEngineInterface);
+        result = (*mEngineObject)->GetInterface(mEngineObject,
+                                                EngineOpenSLES::getInstance().getIidEngine(),
+                                                &mEngineInterface);
         if (SL_RESULT_SUCCESS != result) {
             LOGE("EngineOpenSLES - GetInterface() engine result:%s", getSLErrStr(result));
             goto error;
@@ -119,8 +159,8 @@ SLresult EngineOpenSLES::createAudioPlayer(SLObjectItf *objectItf,
                                            SLDataSource *audioSource,
                                            SLDataSink *audioSink) {
 
-    const SLInterfaceID ids[] = {SL_IID_BUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
-    const SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    SLInterfaceID ids[] = {LOCAL_SL_IID_BUFFERQUEUE, LOCAL_SL_IID_ANDROIDCONFIGURATION};
+    SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
     return (*mEngineInterface)->CreateAudioPlayer(mEngineInterface, objectItf, audioSource,
                                                   audioSink,
@@ -131,8 +171,9 @@ SLresult EngineOpenSLES::createAudioRecorder(SLObjectItf *objectItf,
                                              SLDataSource *audioSource,
                                              SLDataSink *audioSink) {
 
-    const SLInterfaceID ids[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION };
-    const SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    SLInterfaceID ids[] = {LOCAL_SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                           LOCAL_SL_IID_ANDROIDCONFIGURATION };
+    SLboolean reqs[] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
     return (*mEngineInterface)->CreateAudioRecorder(mEngineInterface, objectItf, audioSource,
                                                     audioSink,
