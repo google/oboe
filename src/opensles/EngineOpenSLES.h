@@ -73,9 +73,19 @@ private:
 
     SLInterfaceID getIidPointer(const char *symbolName);
 
+    /**
+     * Close the OpenSL ES engine.
+     * This must be called under mLock
+     */
+    void close_l();
+
     std::mutex             mLock;
     int32_t                mOpenCount = 0;
 
+    static constexpr int32_t kLinkStateUninitialized = 0;
+    static constexpr int32_t kLinkStateGood = 1;
+    static constexpr int32_t kLinkStateBad = 2;
+    int32_t                mDynamicLinkState = kLinkStateUninitialized;
     SLObjectItf            mEngineObject = nullptr;
     SLEngineItf            mEngineInterface = nullptr;
 

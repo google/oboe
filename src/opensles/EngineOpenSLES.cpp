@@ -42,15 +42,28 @@ SL_API const SLInterfaceID SL_IID_BUFFERQUEUE = nullptr;
 SL_API const SLInterfaceID SL_IID_VOLUME = nullptr;
 SL_API const SLInterfaceID SL_IID_PLAY = nullptr;
 
+static const char *getSafeDlerror() {
+    static const char *defaultMessage = "not found?";
+    char *errorMessage = dlerror();
+    return (errorMessage == nullptr) ? defaultMessage : errorMessage;
+}
+
 // Load the OpenSL ES library and the one primary entry point.
 // @return true if linked OK
 bool EngineOpenSLES::linkOpenSLES() {
-    if (mLibOpenSlesLibraryHandle == nullptr && mFunction_slCreateEngine == nullptr) {
+    if (mDynamicLinkState == kLinkStateBad) {
+        LOGE("%s(), OpenSL ES not available, based on previous link failure.", __func__);
+    } else if (mDynamicLinkState == kLinkStateUninitialized) {
+        // Set to BAD now in case we return because of an error.
+        // This is safe form race conditions because this function is always called
+        // under mLock amd the state is only accessed from this function.
+        mDynamicLinkState = kLinkStateBad;
         // Use RTLD_NOW to avoid the unpredictable behavior that RTLD_LAZY can cause.
         // Also resolving all the links now will prevent a run-time penalty later.
         mLibOpenSlesLibraryHandle = dlopen(LIB_OPENSLES_NAME, RTLD_NOW);
         if (mLibOpenSlesLibraryHandle == nullptr) {
-            LOGE("linkOpenSLES() could not find " LIB_OPENSLES_NAME);
+            LOGE("%s() could not dlopen(%s), %s", __func__, LIB_OPENSLES_NAME, getSafeDlerror());
+            return false;
         } else {
             mFunction_slCreateEngine = (prototype_slCreateEngine) dlsym(
                     mLibOpenSlesLibraryHandle,
@@ -58,7 +71,7 @@ bool EngineOpenSLES::linkOpenSLES() {
             LOGD("%s(): dlsym(%s) returned %p", __func__,
                  "slCreateEngine", mFunction_slCreateEngine);
             if (mFunction_slCreateEngine == nullptr) {
-                LOGE("%s(): dlsym(slCreateEngine) returned null, not found!", __func__);
+                LOGE("%s(): dlsym(slCreateEngine) returned null, %s", __func__, getSafeDlerror());
                 return false;
             }
 
@@ -79,20 +92,22 @@ bool EngineOpenSLES::linkOpenSLES() {
             if (LOCAL_SL_IID_VOLUME == nullptr) return false;
             LOCAL_SL_IID_PLAY = getIidPointer("SL_IID_PLAY");
             if (LOCAL_SL_IID_PLAY == nullptr) return false;
+
+            mDynamicLinkState = kLinkStateGood;
         }
     }
-    return true;
+    return (mDynamicLinkState == kLinkStateGood);
 }
 
 // A symbol like SL_IID_PLAY is a pointer to a structure.
 // The dlsym() function returns the address of the pointer, not the structure.
-// The get the address of the structure we have to dereference the pointer.
+// To get the address of the structure we have to dereference the pointer.
 SLInterfaceID EngineOpenSLES::getIidPointer(const char *symbolName) {
     SLInterfaceID *iid_address = (SLInterfaceID *) dlsym(
             mLibOpenSlesLibraryHandle,
             symbolName);
     if (iid_address == nullptr) {
-        LOGE("%s(): dlsym(%s) returned null, not found!", __func__, symbolName);
+        LOGE("%s(): dlsym(%s) returned null, %s", __func__, symbolName, getSafeDlerror());
         return (SLInterfaceID) nullptr;
     }
     return *iid_address; // Get address of the structure.
@@ -136,12 +151,17 @@ SLresult EngineOpenSLES::open() {
     return result;
 
 error:
-    close();
+    close_l();
     return result;
 }
 
 void EngineOpenSLES::close() {
     std::lock_guard<std::mutex> lock(mLock);
+    close_l();
+}
+
+// This must be called under mLock
+void EngineOpenSLES::close_l() {
     if (--mOpenCount == 0) {
         if (mEngineObject != nullptr) {
             (*mEngineObject)->Destroy(mEngineObject);
