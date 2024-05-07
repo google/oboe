@@ -35,7 +35,7 @@ protected:
     bool openStream(Direction direction) {
         usleep(100 * 1000);
         mBuilder.setDirection(direction);
-        Result r = mBuilder.openStream(&mStream);
+        Result r = mBuilder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         if (r != Result::OK)
             return false;
@@ -125,7 +125,7 @@ protected:
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
     static constexpr int kTimeoutInNanos = 500 * kNanosPerMillisecond;
 
 };

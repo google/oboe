@@ -34,7 +34,7 @@ protected:
     bool openStream(Direction direction, PerformanceMode perfMode) {
         mBuilder.setDirection(direction);
         mBuilder.setPerformanceMode(perfMode);
-        Result r = mBuilder.openStream(&mStream);
+        Result r = mBuilder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         if (r != Result::OK)
             return false;
@@ -45,7 +45,7 @@ protected:
     }
 
     bool openStream(AudioStreamBuilder &builder) {
-        Result r = builder.openStream(&mStream);
+        Result r = builder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         return (r == Result::OK);
     }
@@ -72,7 +72,8 @@ protected:
         EXPECT_EQ(r, Result::OK);
         EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
-        AudioStream *str = mStream;
+        std::shared_ptr<AudioStream> str = mStream;
+
         std::thread stopper([str] {
             usleep(200 * 1000);
             str->requestStop();
@@ -97,7 +98,8 @@ protected:
         EXPECT_EQ(r, Result::OK);
         EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
-        AudioStream *str = mStream;
+        std::shared_ptr<AudioStream> str = mStream;
+
         std::thread closer([str] {
             usleep(200 * 1000);
             str->close();
@@ -115,7 +117,7 @@ protected:
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
     static constexpr int kTimeoutInNanos = 100 * kNanosPerMillisecond;
 
 };

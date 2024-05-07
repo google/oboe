@@ -31,7 +31,7 @@ class StreamClosedReturnValues : public ::testing::Test {
 protected:
 
     bool openStream() {
-        Result r = mBuilder.openStream(&mStream);
+        Result r = mBuilder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         return (r == Result::OK);
     }
@@ -89,7 +89,7 @@ protected:
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream       *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
 
 };
 
