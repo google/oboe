@@ -257,6 +257,7 @@ public class DeviceReportActivity extends Activity {
         return report.toString();
     }
 
+    @TargetApi(Build.VERSION_CODES.S)
     public String reportMediaCodecs() {
         StringBuffer report = new StringBuffer();
         report.append("\n############################");
@@ -275,7 +276,7 @@ public class DeviceReportActivity extends Activity {
                 }
                 report.append("\nIs Encoder             : " + mediaCodecInfo.isEncoder());
                 report.append("\nSupported Types        : " + Arrays.toString(mediaCodecInfo.getSupportedTypes()));
-                for(String type : mediaCodecInfo.getSupportedTypes()){
+                for(String type : mediaCodecInfo.getSupportedTypes()) {
                     MediaCodecInfo.CodecCapabilities codecCapabilities =
                             mediaCodecInfo.getCapabilitiesForType(type);
                     MediaCodecInfo.AudioCapabilities audioCapabilities =
@@ -289,10 +290,12 @@ public class DeviceReportActivity extends Activity {
                         }
                         report.append("\nMax Input Channel Count: " + audioCapabilities.getMaxInputChannelCount());
                         report.append("\nSupported Sample Rate Ranges: " + Arrays.toString(audioCapabilities.getSupportedSampleRateRanges()));
-                        report.append("\nSupported Sample Rates: " + Arrays.toString(audioCapabilities.getSupportedSampleRates()));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            // Avoid bug b/122116282
+                            report.append("\nSupported Sample Rates: " + Arrays.toString(audioCapabilities.getSupportedSampleRates()));
+                        }
                     }
                     report.append("\nIs Encoder             : " + mediaCodecInfo.isEncoder());
-
                 }
                 report.append("\n");
             }
