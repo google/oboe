@@ -54,7 +54,7 @@ protected:
     void TearDown() override;
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
 };
 
 void StreamReturnStop::TearDown() {
@@ -79,7 +79,7 @@ TEST_P(StreamReturnStop, VerifyStreamReturnStop) {
         mBuilder.setAudioApi(audioApi);
     }
     mStream = nullptr;
-    Result r = mBuilder.openStream(&mStream);
+    Result r = mBuilder.openStream(mStream);
     ASSERT_EQ(r, Result::OK) << "Failed to open stream. " << convertToText(r);
 
     // Start and stop several times.

@@ -39,7 +39,7 @@ protected:
     static constexpr int PROCESS_TIME_SECONDS = 5;
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
 };
 
 void StreamFramesProcessed::TearDown() {
@@ -62,7 +62,7 @@ TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
             ->setSharingMode(SharingMode::Exclusive)
             ->setDataCallback(callback);
     mStream = nullptr;
-    Result r = mBuilder.openStream(&mStream);
+    Result r = mBuilder.openStream(mStream);
     ASSERT_EQ(r, Result::OK) << "Failed to open stream." << convertToText(r);
 
     r = mStream->start();

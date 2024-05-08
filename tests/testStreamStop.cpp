@@ -42,7 +42,7 @@ protected:
         mBuilder.setPerformanceMode(perfMode);
         mBuilder.setChannelCount(1);
         mBuilder.setFormat(AudioFormat::I16);
-        Result r = mBuilder.openStream(&mStream);
+        Result r = mBuilder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         if (r != Result::OK)
             return false;
@@ -53,7 +53,7 @@ protected:
     }
 
     bool openStream(AudioStreamBuilder &builder) {
-        Result r = builder.openStream(&mStream);
+        Result r = builder.openStream(mStream);
         EXPECT_EQ(r, Result::OK) << "Failed to open stream " << convertToText(r);
         return (r == Result::OK);
     }
@@ -66,7 +66,7 @@ protected:
         EXPECT_EQ(r, Result::OK);
         EXPECT_EQ(next, StreamState::Started) << "next = " << convertToText(next);
 
-        AudioStream *str = mStream;
+        std::shared_ptr<AudioStream> str = mStream;
 
         int16_t buffer[kFramesToWrite] = {};
 
@@ -94,7 +94,7 @@ protected:
     }
 
     AudioStreamBuilder mBuilder;
-    AudioStream *mStream = nullptr;
+    std::shared_ptr<AudioStream> mStream;
     static constexpr int kTimeoutInNanos = 1000 * kNanosPerMillisecond;
     static constexpr int64_t kMicroSecondsPerSecond = 1000000;
     static constexpr int kFramesToWrite = 10000;
