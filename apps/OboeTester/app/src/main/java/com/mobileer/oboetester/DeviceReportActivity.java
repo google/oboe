@@ -256,7 +256,7 @@ public class DeviceReportActivity extends Activity {
         report.append(AudioQueryTools.getAudioPropertyReport());
         return report.toString();
     }
-    
+
     public String reportMediaCodecs() {
         StringBuffer report = new StringBuffer();
         report.append("\n############################");
