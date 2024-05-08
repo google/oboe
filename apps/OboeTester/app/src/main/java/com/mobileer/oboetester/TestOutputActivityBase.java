@@ -16,10 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.media.audiofx.Equalizer;
-import android.media.audiofx.PresetReverb;
-import android.util.Log;
-
 import java.io.IOException;
 
 abstract class TestOutputActivityBase extends TestAudioActivity {

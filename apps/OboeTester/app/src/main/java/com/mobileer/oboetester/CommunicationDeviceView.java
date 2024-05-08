@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,8 +33,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mobileer.audio_device.CommunicationDeviceSpinner;
-
-import java.util.Locale;
 
 public class CommunicationDeviceView extends LinearLayout {
 

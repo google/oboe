@@ -16,14 +16,15 @@
 
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 
-public class TestErrorCallbackActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class TestErrorCallbackActivity extends AppCompatActivity {
 
     private TextView mStatusDeleteCallback;
     // This must match the value in TestErrorCallback.h

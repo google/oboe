@@ -18,7 +18,6 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.TestAudioActivity.TAG;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -29,6 +28,8 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.Random;
 
 /**
@@ -36,7 +37,7 @@ import java.util.Random;
  * while playing audio. The buffer may get deleted while we are writing to it!
  * See b/274815060
  */
-public class TestRouteDuringCallbackActivity extends Activity {
+public class TestRouteDuringCallbackActivity extends AppCompatActivity {
 
     private TextView mStatusView;
     private MyStreamSniffer mStreamSniffer;

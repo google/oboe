@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -36,7 +35,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,7 @@ import java.util.Locale;
 /**
  * Base class for other Activities.
  */
-abstract class TestAudioActivity extends Activity {
+abstract class TestAudioActivity extends AppCompatActivity {
     public static final String TAG = "OboeTester";
 
     protected static final int FADER_PROGRESS_MAX = 1000;

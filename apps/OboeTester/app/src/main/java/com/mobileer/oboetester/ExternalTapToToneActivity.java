@@ -1,21 +1,19 @@
 package com.mobileer.oboetester;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 
 /**
  * Measure the tap-to-tone latency for other apps or devices.
  */
-public class ExternalTapToToneActivity extends Activity {
+public class ExternalTapToToneActivity extends AppCompatActivity {
     private static final String TAG = "OboeTester";
 
     protected TapToToneTester mTapToToneTester;
