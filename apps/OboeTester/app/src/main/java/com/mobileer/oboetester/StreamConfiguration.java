@@ -16,8 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.content.res.Resources;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

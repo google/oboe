@@ -20,13 +20,11 @@ import static com.mobileer.oboetester.IntentBasedTestSupport.configureStreamsFro
 import static com.mobileer.oboetester.StreamConfiguration.UNSPECIFIED;
 import static com.mobileer.oboetester.StreamConfiguration.convertChannelMaskToText;
 
-import android.app.Instrumentation;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -38,8 +36,6 @@ import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 /**

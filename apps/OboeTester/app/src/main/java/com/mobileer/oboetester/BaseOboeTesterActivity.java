@@ -17,18 +17,19 @@
 package com.mobileer.oboetester;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 /**
  * Support requesting RECORD_AUDIO permission.
  */
 
-public abstract class BaseOboeTesterActivity extends Activity
+public abstract class BaseOboeTesterActivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 938355;
@@ -103,4 +104,5 @@ public abstract class BaseOboeTesterActivity extends Activity
     private void beginTestThatRequiresRecording() {
         launchTestActivity(mTestClass);
     }
+
 }

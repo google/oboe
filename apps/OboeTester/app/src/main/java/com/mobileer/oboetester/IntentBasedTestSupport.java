@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 

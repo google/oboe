@@ -17,7 +17,6 @@
 package com.mobileer.oboetester;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
@@ -38,6 +37,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ import java.util.Set;
 /**
  * Print a report of all the available audio devices.
  */
-public class DeviceReportActivity extends Activity {
+public class DeviceReportActivity extends AppCompatActivity {
 
     class MyAudioDeviceCallback extends AudioDeviceCallback {
         private HashMap<Integer, AudioDeviceInfo> mDevices

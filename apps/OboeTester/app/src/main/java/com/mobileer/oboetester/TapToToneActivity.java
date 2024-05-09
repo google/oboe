@@ -16,7 +16,8 @@
 
 package com.mobileer.oboetester;
 
-import android.Manifest;
+import static com.mobileer.oboetester.MidiTapTester.NoteListener;
+
 import android.content.pm.PackageManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -28,12 +29,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -45,8 +43,6 @@ import com.mobileer.miditools.MidiTools;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-
-import static com.mobileer.oboetester.MidiTapTester.NoteListener;
 
 public class TapToToneActivity extends TestOutputActivityBase {
     // Names from obsolete version of Oboetester.

@@ -18,7 +18,6 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.TestAudioActivity.TAG;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -31,12 +30,12 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.Random;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Test for getting the cold start latency
  */
-public class TestColdStartLatencyActivity extends Activity {
+public class TestColdStartLatencyActivity extends AppCompatActivity {
 
     private TextView mStatusView;
     private MyStreamSniffer mStreamSniffer;
