@@ -202,6 +202,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         mBundleFromIntent = intent.getExtras();
     }
 

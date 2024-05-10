@@ -131,6 +131,7 @@ public class MainActivity extends BaseOboeTesterActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         saveIntentBundleForLaterProcessing(intent);
     }
 
