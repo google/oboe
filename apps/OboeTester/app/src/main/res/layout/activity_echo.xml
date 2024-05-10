@@ -117,7 +117,6 @@
             android:text="@string/echo_instructions"
             android:textSize="14sp"
             android:textStyle="bold" />
-≈
     </LinearLayout>
 
 </ScrollView>
