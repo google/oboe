@@ -491,6 +491,10 @@ builder.setDataCallback(myCallback);
 builder.setPerformanceMode(PerformanceMode::LowLatency);
 ```
 
+### Setting the Sample Rate Conversion Quality
+
+If your streams use different sample rates to the hardware device sample rates then you may experience additional latency in your streams. This is due to the fact the audio buffer must be resampled to/from the the hardware format to your desired software format. This latency can be particularly large if the Sample Rate Conversion Quality is left to the default setting of `oboe::SampleRateConversionQuality::None` as system level APIs (or the hardware itself) will handle the resampling which is MUCH slower and will not be reported as part of the `calculateLatencyMillis()` value. To rectify this (particularly important for the input stream), you should set the following when constructing your stream - `setSampleRateConversionQuality(oboe::SampleRateConversionQuality::Fastest)`.
+
 ## Thread safety
 
 The Oboe API is not completely [thread safe](https://en.wikipedia.org/wiki/Thread_safety).
