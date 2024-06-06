@@ -556,7 +556,7 @@ public:
      *
      * If you do the conversion in Oboe then you might still get a low latency stream.
      *
-     * Default is SampleRateConversionQuality::None
+     * Default is SampleRateConversionQuality::Medium
      */
     AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
         mSampleRateConversionQuality = quality;
