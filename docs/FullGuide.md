@@ -228,9 +228,6 @@ In API 31, the following APIs were added:
   The default, if you do not call this function, is a random package in the calling uid.
 * `setAttributionTag(std::string attributionTag)` - Declare the attribution tag of the context creating the stream.
   Attribution can be used in complex apps to logically separate parts of the app.
-* `setChannelMask(oboe::ChannelMask)` - Requests a specific channel mask. The number of channels may be
-  different than setChannelCount. The last called will be respected if this function and setChannelCount()
-  are called.
 
 In API 32, the following APIs were added:
 * `setIsContentSpatialized(bool isContentSpatialized)` - Marks that the content is already spatialized
