@@ -991,6 +991,7 @@ std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_error_callbac
 </table>
 </div><div class="memdoc">
 <p>Specifies an object to handle error related callbacks from the underlying API. This can occur when a stream is disconnected because a headset is plugged in or unplugged. It can also occur if the audio service fails or if an exclusive stream is stolen by another stream.</p>
+<p>Note that error callbacks will only be called when a data callback has been specified and the stream is started. If you are not using a data callback then the read(), write() and requestStart() methods will return errors if the stream is disconnected.</p>
 <p><b>Important: See <a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> for restrictions on what may be called from the callback methods.</b></p>
 <p><b>When an error callback occurs, the associated stream must be stopped and closed in a separate thread.</b></p>
 <p>We pass a shared_ptr so that the errorCallback object cannot be deleted before the stream is deleted. If the stream was created using a shared_ptr then the stream cannot be deleted before the error callback has finished running.</p>
