@@ -336,7 +336,11 @@ If you need to be informed when an audio device is disconnected, write a class
 which extends `AudioStreamErrorCallback` and then register your class using `builder.setErrorCallback(yourCallbackClass)`. It is recommended to pass a shared_ptr.
 If you register a callback, then it will automatically close the stream in a separate thread if the stream is disconnected.
 
-Your callback can implement the following methods (called in a separate thread): 
+Note that error callbacks will only be called when a data callback has been specified
+and the stream is started. If you are not using a data callback then the read(), write()
+and requestStart() methods will return errors if the stream is disconnected.
+     
+Your error callback can implement the following methods (called in a separate thread): 
 
 * `onErrorBeforeClose(stream, error)` - called when the stream has been disconnected but not yet closed,
   so you can still reference the underlying stream (e.g.`getXRunCount()`).
