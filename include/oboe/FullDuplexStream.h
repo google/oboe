@@ -53,12 +53,29 @@ public:
     virtual ~FullDuplexStream() = default;
 
     /**
+     * Sets the input stream.
+     *
+     * @deprecated Call setInputStream(std::shared_ptr<AudioStream> &stream) instead.
+     * @param stream the output stream
+     */
+    void setInputStream(AudioStream *stream) {
+        mInputStream = std::shared_ptr<AudioStream>(stream);
+    }
+
+    /**
      * Sets the input stream. Calling this is mandatory.
      *
      * @param stream the output stream
      */
-    void setInputStream(AudioStream *stream) {
+    void setInputStream(std::shared_ptr<AudioStream> &stream) {
         mInputStream = stream;
+    }
+
+    /**
+     * Releases the shared pointer of the input stream.
+     */
+    void releaseInputStream() {
+        mInputStream = nullptr;
     }
 
     /**
@@ -67,7 +84,17 @@ public:
      * @return the input stream
      */
     AudioStream *getInputStream() {
-        return mInputStream;
+        return mInputStream.get();
+    }
+
+    /**
+     * Sets the output stream.
+     *
+     * @deprecated Call seOutputStream(std::shared_ptr<AudioStream> &stream) instead.
+     * @param stream the output stream
+     */
+    void setOutputStream(AudioStream *stream) {
+        mOutputStream = std::shared_ptr<AudioStream>(stream);
     }
 
     /**
@@ -75,8 +102,15 @@ public:
      *
      * @param stream the output stream
      */
-    void setOutputStream(AudioStream *stream) {
+    void setOutputStream(std::shared_ptr<AudioStream> &stream) {
         mOutputStream = stream;
+    }
+
+    /**
+     * Releases the shared pointer of the output stream.
+     */
+    void releaseOutputStream() {
+        mOutputStream = nullptr;
     }
 
     /**
@@ -85,7 +119,7 @@ public:
      * @return the output stream
      */
     AudioStream *getOutputStream() {
-        return mOutputStream;
+        return mOutputStream.get();
     }
 
     /**
@@ -312,8 +346,8 @@ private:
     // Discard some callbacks so the input and output reach equilibrium.
     int32_t              mCountCallbacksToDiscard = kNumCallbacksToDiscard;
 
-    AudioStream   *mInputStream = nullptr;
-    AudioStream   *mOutputStream = nullptr;
+    std::shared_ptr<AudioStream> mInputStream = nullptr;
+    std::shared_ptr<AudioStream> mOutputStream = nullptr;
 
     int32_t              mBufferSize = 0;
     std::unique_ptr<float[]> mInputBuffer;

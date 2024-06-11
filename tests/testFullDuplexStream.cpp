@@ -55,7 +55,7 @@ protected:
         mOutputBuilder.setFormat(AudioFormat::Float);
         mOutputBuilder.setDataCallback(this);
 
-        Result r = mOutputBuilder.openStream(&mOutputStream);
+        Result r = mOutputBuilder.openStream(mOutputStream);
         ASSERT_EQ(r, Result::OK) << "Failed to open output stream " << convertToText(r);
 
         mInputBuilder.setDirection(Direction::Input);
@@ -68,7 +68,7 @@ protected:
         mInputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferCapacityInFrames() * 2);
         mInputBuilder.setSampleRate(mOutputStream->getSampleRate());
 
-        r = mInputBuilder.openStream(&mInputStream);
+        r = mInputBuilder.openStream(mInputStream);
         ASSERT_EQ(r, Result::OK) << "Failed to open input stream " << convertToText(r);
 
         setInputStream(mInputStream);
@@ -88,10 +88,10 @@ protected:
     void closeStream() {
         Result r = mOutputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close output stream " << convertToText(r);
-        setOutputStream(nullptr);
+        releaseOutputStream();
         r = mInputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close input stream " << convertToText(r);
-        setInputStream(nullptr);
+        releaseInputStream();
     }
 
     void checkXRuns() {
@@ -107,8 +107,8 @@ protected:
 
     AudioStreamBuilder mInputBuilder;
     AudioStreamBuilder mOutputBuilder;
-    AudioStream *mInputStream = nullptr;
-    AudioStream *mOutputStream = nullptr;
+    std::shared_ptr<AudioStream> mInputStream = nullptr;
+    std::shared_ptr<AudioStream> mOutputStream = nullptr;
     std::atomic<int32_t> mCallbackCount{0};
     std::atomic<int32_t> mGoodCallbackCount{0};
 };
