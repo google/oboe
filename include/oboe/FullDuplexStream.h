@@ -90,7 +90,7 @@ public:
     /**
      * Sets the output stream.
      *
-     * @deprecated Call seOutputStream(std::shared_ptr<AudioStream> &stream) instead.
+     * @deprecated Call setOutputStream(std::shared_ptr<AudioStream> &stream) instead.
      * @param stream the output stream
      */
     void setOutputStream(AudioStream *stream) {
