@@ -117,7 +117,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
     // Do we need to make a child stream and convert.
     if (conversionNeeded) {
         AudioStream *tempStream;
-        result = childBuilder.openStream(&tempStream);
+        result = childBuilder.openStreamInternal(&tempStream);
         if (result != Result::OK) {
             return result;
         }
@@ -144,7 +144,9 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
 
             // Use childStream in a FilterAudioStream.
             LOGI("%s() create a FilterAudioStream for data conversion.", __func__);
-            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
+            std::shared_ptr<AudioStream> childStream(tempStream);
+            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, childStream);
+            childStream->setWeakThis(childStream);
             result = filterStream->configureFlowGraph();
             if (result !=  Result::OK) {
                 filterStream->close();
