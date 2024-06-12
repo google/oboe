@@ -54,7 +54,7 @@ public:
      */
     explicit AudioStream(const AudioStreamBuilder &builder);
 
-    virtual ~AudioStream() = default;
+    virtual ~AudioStream();
 
     /**
      * Open a stream based on the current settings.
