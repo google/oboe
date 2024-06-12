@@ -609,14 +609,13 @@ public:
     }
 
     /**
-     * Create and open a stream object based on the current settings.
-     *
-     * The caller owns the pointer to the AudioStream object
-     * and must delete it when finished.
+     * WARNING - this method has been disabled and will fail.
+     * Opening a stream using this method led to crashes so
+     * it is no longer available.
      *
      * @deprecated Use openStream(std::shared_ptr<oboe::AudioStream> &stream) instead.
      * @param stream pointer to a variable to receive the stream address
-     * @return OBOE_OK if successful or a negative error code
+     * @return Result::ErrorUnavailable
      */
     Result openStream(AudioStream **stream);
 
@@ -633,15 +632,13 @@ public:
     Result openStream(std::shared_ptr<oboe::AudioStream> &stream);
 
     /**
-     * Create and open a ManagedStream object based on the current builder state.
-     *
-     * The caller must create a unique ptr, and pass by reference so it can be
-     * modified to point to an opened stream. The caller owns the unique ptr,
-     * and it will be automatically closed and deleted when going out of scope.
+     * WARNING - this method has been disabled and will fail.
+     * Opening a stream using this method led to crashes so
+     * it is no longer available.
      *
      * @deprecated Use openStream(std::shared_ptr<oboe::AudioStream> &stream) instead.
      * @param stream Reference to the ManagedStream (uniqueptr) used to keep track of stream
-     * @return OBOE_OK if successful or a negative error code.
+     * @return Result::ErrorUnavailable
      */
     Result openManagedStream(ManagedStream &stream);
 
@@ -653,13 +650,14 @@ private:
      * @param stream pointer to a variable to receive the stream address
      * @return OBOE_OK if successful or a negative error code.
      */
-    Result openStreamInternal(AudioStream **streamPP);
+    Result openStreamInternal(std::shared_ptr<oboe::AudioStream> &stream);
 
     /**
      * @param other
      * @return true if channels, format and sample rate match
      */
     bool isCompatible(AudioStreamBase &other);
+
 
     /**
      * Create an AudioStream object. The AudioStream must be opened before use.

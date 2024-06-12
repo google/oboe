@@ -38,7 +38,8 @@ public:
      *
      * @param builder containing all the stream's attributes
      */
-    FilterAudioStream(const AudioStreamBuilder &builder, AudioStream *childStream)
+    FilterAudioStream(const AudioStreamBuilder &builder,
+                      std::shared_ptr<AudioStream> childStream)
     : AudioStream(builder)
     , mChildStream(childStream) {
         // Intercept the callback if used.
@@ -65,10 +66,6 @@ public:
     }
 
     virtual ~FilterAudioStream() = default;
-
-    AudioStream *getChildStream() const {
-        return mChildStream.get();
-    }
 
     Result configureFlowGraph();
 
@@ -216,7 +213,7 @@ public:
 
 private:
 
-    std::unique_ptr<AudioStream>             mChildStream; // this stream wraps the child stream
+    std::shared_ptr<AudioStream>             mChildStream;
     std::unique_ptr<DataConversionFlowGraph> mFlowGraph; // for converting data
     std::unique_ptr<uint8_t[]>               mBlockingBuffer; // temp buffer for write()
     double                                   mRateScaler = 1.0; // ratio parent/child sample rates

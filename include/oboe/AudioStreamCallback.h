@@ -162,6 +162,8 @@ public:
      *
      * This callback could be used to reopen a new stream on another device.
      *
+     * Do NOT delete the audioStream. It is managed by a shared_ptr.
+     *
      * @param audioStream pointer to the associated stream
      * @param error
      */

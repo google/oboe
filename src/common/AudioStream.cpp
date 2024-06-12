@@ -30,6 +30,12 @@ namespace oboe {
  */
 AudioStream::AudioStream(const AudioStreamBuilder &builder)
         : AudioStreamBase(builder) {
+    LOGD("Constructor for AudioStream at %p", this);
+}
+
+AudioStream::~AudioStream() {
+    // This is to help debug use after free bugs.
+    LOGD("Destructor for AudioStream at %p", this);
 }
 
 Result AudioStream::close() {
