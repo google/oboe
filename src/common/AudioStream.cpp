@@ -119,8 +119,12 @@ Result AudioStream::start(int64_t timeoutNanoseconds)
     Result result = requestStart();
     if (result != Result::OK) return result;
     if (timeoutNanoseconds <= 0) return result;
-    return waitForStateTransition(StreamState::Starting,
+    result = waitForStateTransition(StreamState::Starting,
                                   StreamState::Started, timeoutNanoseconds);
+    if (result != Result::OK) {
+        LOGE("AudioStream::%s() timed out before moving from STARTING to STARTED", __func__);
+    }
+    return result;
 }
 
 Result AudioStream::pause(int64_t timeoutNanoseconds)

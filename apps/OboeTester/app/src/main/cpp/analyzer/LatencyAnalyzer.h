@@ -56,7 +56,7 @@ static constexpr int32_t kMillisPerSecond   = 1000;  // by definition
 static constexpr int32_t kMaxLatencyMillis  = 1000;  // arbitrary and generous
 
 struct LatencyReport {
-    int32_t latencyInFrames = 0.0;
+    int32_t latencyInFrames = 0;
     double correlation = 0.0;
 
     void reset() {
