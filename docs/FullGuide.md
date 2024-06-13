@@ -53,6 +53,9 @@ Oboe permits these sample formats:
 | :------------ | :---------- | :---- |
 | I16 | int16_t | common 16-bit samples, [Q0.15 format](https://source.android.com/devices/audio/data_formats#androidFormats) |
 | Float | float | -1.0 to +1.0 |
+| I24 | N/A | 24-bit samples packed into 3 bytes, [Q0.23 format](https://source.android.com/devices/audio/data_formats#androidFormats). Added in API 31 |
+| I32 | int32_t | common 32-bit samples, [Q0.31 format](https://source.android.com/devices/audio/data_formats#androidFormats). Added in API 31 |
+| IEC61937 | N/A | compressed audio wrapped in IEC61937 for HDMI or S/PDIF passthrough. Added in API 34 |
 
 Oboe might perform sample conversion on its own. For example, if an app is writing AudioFormat::Float data but the HAL uses AudioFormat::I16, Oboe might convert the samples automatically. Conversion can happen in either direction. If your app processes audio input, it is wise to verify the input format and be prepared to convert data if necessary, as in this example:
 
@@ -115,7 +118,7 @@ The following properties are guaranteed to be set. However, if these properties
 are unspecified, a default value will still be set, and should be queried by the 
 appropriate accessor.
 
-* framesPerCallback
+* framesPerDataCallback
 * sampleRate
 * channelCount
 * format
@@ -154,6 +157,13 @@ Oboe or the underlyng API will limit the size between zero and the buffer capaci
 It may also be limited further to reduce glitching on particular devices.
 This feature is not supported when using a callback with OpenSL ES.
 
+The following properties are helpful for older devices to achieve optimal results.
+
+* `setChannelConversionAllowed()` enables channel conversions. This is false by default.
+* `setFormatConversionAllowed()` enables format conversions. This is false by default.
+* `setSampleRateConversionQuality()` enables sample rate conversions.
+  This defaults to SampleRateConversionQuality::Medium.
+
 Many of the stream's properties may vary (whether or not you set
 them) depending on the capabilities of the audio device and the Android device on 
 which it's running. If you need to know these values then you must query them using 
@@ -178,10 +188,17 @@ builder setting:
 | `setChannelCount()` | `getChannelCount()` |
 | `setFormat()` | `getFormat()` |
 | `setBufferCapacityInFrames()` | `getBufferCapacityInFrames()` |
-| `setFramesPerCallback()` | `getFramesPerCallback()` |
+| `setFramesPerDataCallback()` | `getFramesPerDataCallback()` |
 |  --  | `getFramesPerBurst()` |
 | `setDeviceId()` (not respected on OpenSLES) | `getDeviceId()` |
 | `setAudioApi()` (mainly for debugging) | `getAudioApi()` |
+| `setChannelConversionAllowed()` | `isChannelConversionAllowed()` |
+| `setFormatConversionAllowed()` | `setFormatConversionAllowed()` |
+| `setSampleRateConversionQuality` | `getSampleRateConversionQuality()` |
+
+### AAudio specific AudioStreamBuilder fields
+
+Some AudioStreamBuilder fields are only applied to AAudio
 
 The following AudioStreamBuilder fields were added in API 28 to
 specify additional information about the AudioStream to the device. Currently, 
@@ -197,8 +214,34 @@ it is set to VoiceRecognition, which is optimized for low latency.
   by the stream.
 * `setInputPreset(oboe::InputPreset inputPreset)` - The recording configuration
   for an audio input.
-* `setSessionId(SessionId sessionId)` - Allocate SessionID to connect to the
+* `setSessionId(oboe::SessionId sessionId)` - Allocate SessionID to connect to the
   Java AudioEffects API.
+
+In API 29, `setAllowedCapturePolicy(oboe::AllowedCapturePolicy allowedCapturePolicy)` was added.
+This specifies whether this stream audio may or may not be captured by other apps or the system.
+
+In API 30, `setPrivacySensitiveMode(oboe::PrivacySensitiveMode privacySensitiveMode)` was added.
+Concurrent capture is not permitted for privacy sensitive input streams.
+
+In API 31, the following APIs were added:
+* `setPackageName(std::string packageName)` - Declare the name of the package creating the stream.
+  The default, if you do not call this function, is a random package in the calling uid.
+* `setAttributionTag(std::string attributionTag)` - Declare the attribution tag of the context creating the stream.
+  Attribution can be used in complex apps to logically separate parts of the app.
+
+In API 32, the following APIs were added:
+* `setIsContentSpatialized(bool isContentSpatialized)` - Marks that the content is already spatialized
+  to prevent double-processing.
+* `setSpatializationBehavior(oboe::SpatializationBehavior spatializationBehavior)` - Marks what the default
+  spatialization behavior should be.
+* `setChannelMask(oboe::ChannelMask)` - Requests a specific channel mask. The number of channels may be
+  different than setChannelCount. The last called will be respected if this function and setChannelCount()
+  are called.
+
+In API 34, the following APIs were added to streams to get properties of the hardware.
+* `getHardwareChannelCount()`
+* `getHardwareSampleRate()`
+* `getHardwareFormat()`
 
 
 ## Using an audio stream
