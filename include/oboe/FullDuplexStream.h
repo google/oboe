@@ -72,13 +72,6 @@ public:
     }
 
     /**
-     * Releases the shared pointer of the input stream.
-     */
-    void releaseInputStream() {
-        mInputStream = nullptr;
-    }
-
-    /**
      * Gets the input stream
      *
      * @return the input stream
@@ -104,13 +97,6 @@ public:
      */
     void setOutputStream(std::shared_ptr<AudioStream> &stream) {
         mOutputStream = stream;
-    }
-
-    /**
-     * Releases the shared pointer of the output stream.
-     */
-    void releaseOutputStream() {
-        mOutputStream = nullptr;
     }
 
     /**

@@ -88,10 +88,8 @@ protected:
     void closeStream() {
         Result r = mOutputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close output stream " << convertToText(r);
-        releaseOutputStream();
         r = mInputStream->close();
         ASSERT_EQ(r, Result::OK) << "Failed to close input stream " << convertToText(r);
-        releaseInputStream();
     }
 
     void checkXRuns() {
