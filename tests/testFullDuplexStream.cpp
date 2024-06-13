@@ -105,8 +105,8 @@ protected:
 
     AudioStreamBuilder mInputBuilder;
     AudioStreamBuilder mOutputBuilder;
-    std::shared_ptr<AudioStream> mInputStream = nullptr;
-    std::shared_ptr<AudioStream> mOutputStream = nullptr;
+    std::shared_ptr<AudioStream> mInputStream;
+    std::shared_ptr<AudioStream> mOutputStream;
     std::atomic<int32_t> mCallbackCount{0};
     std::atomic<int32_t> mGoodCallbackCount{0};
 };
