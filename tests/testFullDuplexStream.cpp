@@ -71,8 +71,8 @@ protected:
         r = mInputBuilder.openStream(mInputStream);
         ASSERT_EQ(r, Result::OK) << "Failed to open input stream " << convertToText(r);
 
-        setInputStream(mInputStream);
-        setOutputStream(mOutputStream);
+        setSharedInputStream(mInputStream);
+        setSharedOutputStream(mOutputStream);
     }
 
     void startStream() {

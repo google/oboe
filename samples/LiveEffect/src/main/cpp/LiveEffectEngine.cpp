@@ -100,8 +100,8 @@ oboe::Result  LiveEffectEngine::openStreams() {
     warnIfNotLowLatency(mRecordingStream);
 
     mDuplexStream = std::make_unique<FullDuplexPass>();
-    mDuplexStream->setInputStream(mRecordingStream);
-    mDuplexStream->setOutputStream(mPlayStream);
+    mDuplexStream->setSharedInputStream(mRecordingStream);
+    mDuplexStream->setSharedOutputStream(mPlayStream);
     mDuplexStream->start();
     return result;
 }
