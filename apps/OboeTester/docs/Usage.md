@@ -170,4 +170,4 @@ Changes the VoiceCommunication route while playing audio. Targeted test for issu
 ### CPU Load
 This test plays a tone and alternates between low and high workloads.
 It exercises the kernel's CPU scheduler, which controls CPU frequency and core migration.
-Moredetails on the [wiki/OboeTester_DynamicCpuLoad](https://github.com/google/oboe/wiki/OboeTester_DynamicCpuLoad).
+More details on the [wiki/OboeTester_DynamicCpuLoad](https://github.com/google/oboe/wiki/OboeTester_DynamicCpuLoad).
