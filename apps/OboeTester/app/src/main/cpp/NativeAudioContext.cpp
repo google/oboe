@@ -248,7 +248,7 @@ int ActivityContext::open(jint nativeApi,
 
         createRecording();
 
-        finishOpen(isInput, oboeStream.get());
+        finishOpen(isInput, oboeStream);
     }
 
     if (!mUseCallback) {
@@ -652,11 +652,11 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     }
 }
 
-void ActivityEcho::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityEcho::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexEcho->setInputStream(oboeStream);
+        mFullDuplexEcho->setSharedInputStream(oboeStream);
     } else {
-        mFullDuplexEcho->setOutputStream(oboeStream);
+        mFullDuplexEcho->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -674,12 +674,13 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     }
 }
 
-void ActivityRoundTripLatency::finishOpen(bool isInput, AudioStream *oboeStream) {
+void ActivityRoundTripLatency::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream>
+        &oboeStream) {
     if (isInput) {
-        mFullDuplexLatency->setInputStream(oboeStream);
+        mFullDuplexLatency->setSharedInputStream(oboeStream);
         mFullDuplexLatency->setRecording(mRecording.get());
     } else {
-        mFullDuplexLatency->setOutputStream(oboeStream);
+        mFullDuplexLatency->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -729,12 +730,12 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
 }
 
-void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityGlitches::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexGlitches->setInputStream(oboeStream);
+        mFullDuplexGlitches->setSharedInputStream(oboeStream);
         mFullDuplexGlitches->setRecording(mRecording.get());
     } else {
-        mFullDuplexGlitches->setOutputStream(oboeStream);
+        mFullDuplexGlitches->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -752,12 +753,12 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
 }
 
-void ActivityDataPath::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityDataPath::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexDataPath->setInputStream(oboeStream);
+        mFullDuplexDataPath->setSharedInputStream(oboeStream);
         mFullDuplexDataPath->setRecording(mRecording.get());
     } else {
-        mFullDuplexDataPath->setOutputStream(oboeStream);
+        mFullDuplexDataPath->setSharedOutputStream(oboeStream);
     }
 }
 

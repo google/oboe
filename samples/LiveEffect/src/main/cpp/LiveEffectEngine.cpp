@@ -47,11 +47,9 @@ bool LiveEffectEngine::setEffectOn(bool isOn) {
         if (isOn) {
             success = openStreams() == oboe::Result::OK;
             if (success) {
-                mFullDuplexPass.start();
                 mIsEffectOn = isOn;
             }
         } else {
-            mFullDuplexPass.stop();
             closeStreams();
             mIsEffectOn = isOn;
        }
@@ -68,11 +66,10 @@ void LiveEffectEngine::closeStreams() {
     * which would cause the app to crash since the recording stream would be
     * null.
     */
+    mDuplexStream->stop();
     closeStream(mPlayStream);
-    mFullDuplexPass.setOutputStream(nullptr);
-
     closeStream(mRecordingStream);
-    mFullDuplexPass.setInputStream(nullptr);
+    mDuplexStream.reset();
 }
 
 oboe::Result  LiveEffectEngine::openStreams() {
@@ -102,8 +99,10 @@ oboe::Result  LiveEffectEngine::openStreams() {
     }
     warnIfNotLowLatency(mRecordingStream);
 
-    mFullDuplexPass.setInputStream(mRecordingStream.get());
-    mFullDuplexPass.setOutputStream(mPlayStream.get());
+    mDuplexStream = std::make_unique<FullDuplexPass>();
+    mDuplexStream->setSharedInputStream(mRecordingStream);
+    mDuplexStream->setSharedOutputStream(mPlayStream);
+    mDuplexStream->start();
     return result;
 }
 
@@ -208,7 +207,7 @@ void LiveEffectEngine::warnIfNotLowLatency(std::shared_ptr<oboe::AudioStream> &s
  */
 oboe::DataCallbackResult LiveEffectEngine::onAudioReady(
     oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    return mFullDuplexPass.onAudioReady(oboeStream, audioData, numFrames);
+    return mDuplexStream->onAudioReady(oboeStream, audioData, numFrames);
 }
 
 /**
@@ -236,19 +235,11 @@ void LiveEffectEngine::onErrorAfterClose(oboe::AudioStream *oboeStream,
          oboe::convertToText(oboeStream->getDirection()),
          oboe::convertToText(error));
 
-    // Stop the Full Duplex stream.
-    // Since the error callback occurs only for the output stream, close the input stream.
-    mFullDuplexPass.stop();
-    mFullDuplexPass.setOutputStream(nullptr);
-    closeStream(mRecordingStream);
-    mFullDuplexPass.setInputStream(nullptr);
+    closeStreams();
 
     // Restart the stream if the error is a disconnect.
     if (error == oboe::Result::ErrorDisconnected) {
         LOGI("Restarting AudioStream");
-        oboe::Result result = openStreams();
-        if (result == oboe::Result::OK) {
-            mFullDuplexPass.start();
-        }
+        openStreams();
     }
 }

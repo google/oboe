@@ -57,11 +57,10 @@ protected:
     }
 
     bool closeStream() {
-        if (mStream != nullptr){
+        if (mStream){
           Result r = mStream->close();
           EXPECT_EQ(r, Result::OK) << "Failed to close stream. " << convertToText(r);
           usleep(500 * 1000); // give previous stream time to settle
-          mStream = nullptr;
           return (r == Result::OK);
         } else {
           return true;
