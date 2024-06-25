@@ -81,5 +81,15 @@
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchColdStartLatencyTest"
             android:text="Cold Start Latency" />
+
+        <Button
+            android:id="@+id/buttonRapidCycle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchRapidCycleTest"
+            android:text="Rapid Cycle" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
