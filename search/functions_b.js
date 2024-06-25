@@ -37,12 +37,14 @@ var searchData=
   ['setsamplerate_34',['setSampleRate',['../classoboe_1_1_audio_stream_builder.html#a6feb4e35bc16f52bf77f182476878ada',1,'oboe::AudioStreamBuilder']]],
   ['setsamplerateconversionquality_35',['setSampleRateConversionQuality',['../classoboe_1_1_audio_stream_builder.html#a0c98d21da654da6d197b004d29d8499c',1,'oboe::AudioStreamBuilder']]],
   ['setsessionid_36',['setSessionId',['../classoboe_1_1_audio_stream_builder.html#a3bf1b45f0640202169bcf680375c1956',1,'oboe::AudioStreamBuilder']]],
-  ['setsharingmode_37',['setSharingMode',['../classoboe_1_1_audio_stream_builder.html#ab4dc9896119889ce8a51dc79b7ab3997',1,'oboe::AudioStreamBuilder']]],
-  ['setspatializationbehavior_38',['setSpatializationBehavior',['../classoboe_1_1_audio_stream_builder.html#a3cd03a8839d40310a6bba0b6b0cb1af1',1,'oboe::AudioStreamBuilder']]],
-  ['setusage_39',['setUsage',['../classoboe_1_1_audio_stream_builder.html#a8a6b7732c57b469f794d54721c2c901a',1,'oboe::AudioStreamBuilder']]],
-  ['setworkaroundsenabled_40',['setWorkaroundsEnabled',['../classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b',1,'oboe::OboeGlobals']]],
-  ['setwritecounter_41',['setWriteCounter',['../classoboe_1_1_fifo_buffer.html#a6057b41cb5a15129d813f66a23efda83',1,'oboe::FifoBuffer']]],
-  ['sleepbeforeclose_42',['sleepBeforeClose',['../classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b',1,'oboe::AudioStream']]],
-  ['start_43',['start',['../classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21',1,'oboe::AudioStream::start()'],['../classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d',1,'oboe::FullDuplexStream::start()']]],
-  ['stop_44',['stop',['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()'],['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()']]]
+  ['setsharedinputstream_37',['setSharedInputStream',['../classoboe_1_1_full_duplex_stream.html#af2e86fea8312dccf86654c1022111a49',1,'oboe::FullDuplexStream']]],
+  ['setsharedoutputstream_38',['setSharedOutputStream',['../classoboe_1_1_full_duplex_stream.html#adb589cf009bc475504ac80735e69d57e',1,'oboe::FullDuplexStream']]],
+  ['setsharingmode_39',['setSharingMode',['../classoboe_1_1_audio_stream_builder.html#ab4dc9896119889ce8a51dc79b7ab3997',1,'oboe::AudioStreamBuilder']]],
+  ['setspatializationbehavior_40',['setSpatializationBehavior',['../classoboe_1_1_audio_stream_builder.html#a3cd03a8839d40310a6bba0b6b0cb1af1',1,'oboe::AudioStreamBuilder']]],
+  ['setusage_41',['setUsage',['../classoboe_1_1_audio_stream_builder.html#a8a6b7732c57b469f794d54721c2c901a',1,'oboe::AudioStreamBuilder']]],
+  ['setworkaroundsenabled_42',['setWorkaroundsEnabled',['../classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b',1,'oboe::OboeGlobals']]],
+  ['setwritecounter_43',['setWriteCounter',['../classoboe_1_1_fifo_buffer.html#a6057b41cb5a15129d813f66a23efda83',1,'oboe::FifoBuffer']]],
+  ['sleepbeforeclose_44',['sleepBeforeClose',['../classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b',1,'oboe::AudioStream']]],
+  ['start_45',['start',['../classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21',1,'oboe::AudioStream::start()'],['../classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d',1,'oboe::FullDuplexStream::start()']]],
+  ['stop_46',['stop',['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()'],['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()']]]
 ];

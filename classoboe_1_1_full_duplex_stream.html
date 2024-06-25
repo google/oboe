@@ -96,10 +96,14 @@ Inheritance diagram for oboe::FullDuplexStream:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ac6b591c1c67c172142ddc1ee9110c34f" id="r_ac6b591c1c67c172142ddc1ee9110c34f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#ac6b591c1c67c172142ddc1ee9110c34f">setInputStream</a> (<a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *<a class="el" href="classoboe_1_1_result_with_value.html">stream</a>)</td></tr>
 <tr class="separator:ac6b591c1c67c172142ddc1ee9110c34f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2e86fea8312dccf86654c1022111a49" id="r_af2e86fea8312dccf86654c1022111a49"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#af2e86fea8312dccf86654c1022111a49">setSharedInputStream</a> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt; &amp;<a class="el" href="classoboe_1_1_result_with_value.html">stream</a>)</td></tr>
+<tr class="separator:af2e86fea8312dccf86654c1022111a49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d186771d48153b052aaf6153d1100e2" id="r_a9d186771d48153b052aaf6153d1100e2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#a9d186771d48153b052aaf6153d1100e2">getInputStream</a> ()</td></tr>
 <tr class="separator:a9d186771d48153b052aaf6153d1100e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ae77eb79e7e9f41f5177ad563feeb8a" id="r_a5ae77eb79e7e9f41f5177ad563feeb8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#a5ae77eb79e7e9f41f5177ad563feeb8a">setOutputStream</a> (<a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *<a class="el" href="classoboe_1_1_result_with_value.html">stream</a>)</td></tr>
 <tr class="separator:a5ae77eb79e7e9f41f5177ad563feeb8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb589cf009bc475504ac80735e69d57e" id="r_adb589cf009bc475504ac80735e69d57e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#adb589cf009bc475504ac80735e69d57e">setSharedOutputStream</a> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt; &amp;<a class="el" href="classoboe_1_1_result_with_value.html">stream</a>)</td></tr>
+<tr class="separator:adb589cf009bc475504ac80735e69d57e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a862b63796cff2203d2f68b728273c8a7" id="r_a862b63796cff2203d2f68b728273c8a7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#a862b63796cff2203d2f68b728273c8a7">getOutputStream</a> ()</td></tr>
 <tr class="separator:a862b63796cff2203d2f68b728273c8a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb3d085fd0b9fef2b7a392093016462d" id="r_adb3d085fd0b9fef2b7a392093016462d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_result_with_value.html">virtual</a> <a class="el" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d">start</a> ()</td></tr>
@@ -154,8 +158,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Gets the input stream</p>
-<dl class="section return"><dt>Returns</dt><dd>the input stream </dd></dl>
+<p>Gets the current input stream. This function tries to return the shared input stream if it is set before the raw input stream.</p>
+<dl class="section return"><dt>Returns</dt><dd>pointer to an output stream or nullptr. </dd></dl>
 
 </div>
 </div>
@@ -235,8 +239,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Gets the output stream</p>
-<dl class="section return"><dt>Returns</dt><dd>the output stream </dd></dl>
+<p>Gets the current output stream. This function tries to return the shared output stream if it is set before the raw output stream.</p>
+<dl class="section return"><dt>Returns</dt><dd>pointer to an output stream or nullptr. </dd></dl>
 
 </div>
 </div>
@@ -408,7 +412,8 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Sets the input stream. Calling this is mandatory.</p>
+<p>Sets the input stream.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>Call <a class="el" href="classoboe_1_1_full_duplex_stream.html#af2e86fea8312dccf86654c1022111a49">setSharedInputStream(std::shared_ptr&lt;AudioStream&gt; &amp;stream)</a> instead. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">stream</td><td>the output stream </td></tr>
@@ -497,6 +502,73 @@ Public Member Functions</h2></td></tr>
           <td class="memname"><a class="el" href="classoboe_1_1_result_with_value.html">void</a> oboe::FullDuplexStream::setOutputStream </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> *&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Sets the output stream.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated:</a></b></dt><dd>Call <a class="el" href="classoboe_1_1_full_duplex_stream.html#adb589cf009bc475504ac80735e69d57e">setSharedOutputStream(std::shared_ptr&lt;AudioStream&gt; &amp;stream)</a> instead. </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>the output stream </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af2e86fea8312dccf86654c1022111a49" name="af2e86fea8312dccf86654c1022111a49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2e86fea8312dccf86654c1022111a49">&#9670;&#160;</a></span>setSharedInputStream()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_result_with_value.html">void</a> oboe::FullDuplexStream::setSharedInputStream </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Sets the input stream. Calling this is mandatory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>the output stream </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adb589cf009bc475504ac80735e69d57e" name="adb589cf009bc475504ac80735e69d57e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb589cf009bc475504ac80735e69d57e">&#9670;&#160;</a></span>setSharedOutputStream()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_result_with_value.html">void</a> oboe::FullDuplexStream::setSharedOutputStream </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>stream</em></td><td>)</td>
           <td></td>
         </tr>
