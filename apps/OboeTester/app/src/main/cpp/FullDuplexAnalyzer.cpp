@@ -45,10 +45,13 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(
     (void) getLoopbackProcessor()->process(inputFloat, inputStride, numInputFrames,
                                    outputFloat, outputStride, numOutputFrames);
 
-    // write the first channel of output and input to the stereo recorder
+    // Save data for later analysis or for writing to a WAVE file.
     if (mRecording != nullptr) {
         float buffer[2];
         int numBoth = std::min(numInputFrames, numOutputFrames);
+        // Offset to the selected channels that we are analyzing.
+        inputFloat += getLoopbackProcessor()->getInputChannel();
+        outputFloat += getLoopbackProcessor()->getOutputChannel();
         for (int i = 0; i < numBoth; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;
