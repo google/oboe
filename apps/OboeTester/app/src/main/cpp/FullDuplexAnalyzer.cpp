@@ -57,13 +57,14 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(
             mRecording->write(buffer, 1);
         }
         // Handle mismatch in numFrames.
-        buffer[0] = 0.0f; // gap in output
+        const float gapMarker = -0.9f; // Recognizable value so we can tell underruns from DSP gaps.
+        buffer[0] = gapMarker; // gap in output
         for (int i = numBoth; i < numInputFrames; i++) {
             buffer[1] = *inputFloat;
             inputFloat += inputStride;
             mRecording->write(buffer, 1);
         }
-        buffer[1] = 0.0f; // gap in input
+        buffer[1] = gapMarker; // gap in input
         for (int i = numBoth; i < numOutputFrames; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;
