@@ -104,40 +104,47 @@
             android:name=".ExtraTestsActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:label="@string/title_extra_tests" />
+            android:label="@string/title_extra_tests"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ExternalTapToToneActivity"
             android:label="@string/title_external_tap"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestPlugLatencyActivity"
             android:label="@string/title_plug_latency"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestErrorCallbackActivity"
             android:label="@string/title_error_callback"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".TestRouteDuringCallbackActivity"
             android:label="@string/title_route_during_callback"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".DynamicWorkloadActivity"
             android:label="@string/title_dynamic_load"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".TestColdStartLatencyActivity"
             android:label="@string/title_cold_start_latency"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".MidiTapTester"
