@@ -58,22 +58,6 @@ public:
         return mMagnitude;
     }
 
-    void setInputChannel(int inputChannel) {
-        mInputChannel = inputChannel;
-    }
-
-    int getInputChannel() const {
-        return mInputChannel;
-    }
-
-    void setOutputChannel(int outputChannel) {
-        mOutputChannel = outputChannel;
-    }
-
-    int getOutputChannel() const {
-        return mOutputChannel;
-    }
-
     void setNoiseAmplitude(double noiseAmplitude) {
         mNoiseAmplitude = noiseAmplitude;
     }
@@ -113,7 +97,7 @@ public:
             // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
         }
         for (int i = 0; i < channelCount; i++) {
-            frameData[i] = (i == mOutputChannel) ? output : 0.0f;
+            frameData[i] = (i == getOutputChannel()) ? output : 0.0f;
         }
         return RESULT_OK;
     }
@@ -232,8 +216,6 @@ protected:
     InfiniteRecording<float> mInfiniteRecording;
 
 private:
-    int32_t mInputChannel = 0;
-    int32_t mOutputChannel = 0;
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
 
     float mNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
