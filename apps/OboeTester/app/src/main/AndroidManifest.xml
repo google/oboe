@@ -117,6 +117,12 @@
             android:label="@string/title_cold_start_latency"
             android:exported="true" />
 
+        <activity
+            android:name=".TestRapidCycleActivity"
+            android:label="@string/title_rapid_cycle"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:exported="true" />
+
         <service
             android:name=".MidiTapTester"
             android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE"

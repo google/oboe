@@ -251,7 +251,7 @@ Result AudioOutputStreamOpenSLES::close() {
 
 Result AudioOutputStreamOpenSLES::setPlayState_l(SLuint32 newState) {
 
-    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
+    LOGD("AudioOutputStreamOpenSLES::%s(%d) called", __func__, newState);
     Result result = Result::OK;
 
     if (mPlayInterface == nullptr){
@@ -268,7 +268,7 @@ Result AudioOutputStreamOpenSLES::setPlayState_l(SLuint32 newState) {
 }
 
 Result AudioOutputStreamOpenSLES::requestStart() {
-    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
+    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
 
     mLock.lock();
     StreamState initialState = getState();
@@ -318,7 +318,7 @@ Result AudioOutputStreamOpenSLES::requestStart() {
 }
 
 Result AudioOutputStreamOpenSLES::requestPause() {
-    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
+    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
     std::lock_guard<std::mutex> lock(mLock);
     return requestPause_l();
 }
@@ -361,7 +361,7 @@ Result AudioOutputStreamOpenSLES::requestFlush() {
 }
 
 Result AudioOutputStreamOpenSLES::requestFlush_l() {
-    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
+    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
     if (getState() == StreamState::Closed) {
         return Result::ErrorClosed;
     }
@@ -385,7 +385,7 @@ Result AudioOutputStreamOpenSLES::requestStop() {
 }
 
 Result AudioOutputStreamOpenSLES::requestStop_l() {
-    LOGD("AudioOutputStreamOpenSLES(): %s() called", __func__);
+    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
 
     StreamState initialState = getState();
     switch (initialState) {

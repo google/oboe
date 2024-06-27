@@ -22,9 +22,11 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Environment;
 
 import androidx.annotation.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -377,13 +379,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
                 appendFailedSummary("  " + getConfigText(actualOutConfig) + "\n");
                 appendFailedSummary("    " + resultText + "\n");
+                saveRecordingAsWave();
                 mAutomatedTestRunner.incrementFailCount();
                 result = TEST_RESULT_FAILED;
             } else {
                 mAutomatedTestRunner.incrementPassCount();
                 result = TEST_RESULT_PASSED;
             }
-
         }
         mAutomatedTestRunner.flushLog();
 
@@ -395,6 +397,17 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             mTestResults.add(testResult);
         }
         return testResult;
+    }
+
+    private void saveRecordingAsWave() {
+        File recordingDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        File waveFile = new File(recordingDir, String.format("glitch_%03d.wav", getTestCount()));
+        int saveResult = saveWaveFile(waveFile.getAbsolutePath());
+        if (saveResult > 0) {
+            appendFailedSummary("Saved in " + waveFile.getAbsolutePath() + "\n");
+        } else {
+            appendFailedSummary("saveWaveFile() returned " + saveResult + "\n");
+        }
     }
 
     protected int getTestCount() {
