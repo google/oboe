@@ -979,24 +979,22 @@ Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getAudioDeviceId(
     return sColdStartLatency.getDeviceId();
 }
 
-}
-
-
 static TestRapidCycle sRapidCycle;
 
-extern "C"
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRapidCycleActivity_startRapidCycleTest(JNIEnv *env, jobject thiz,
                                                                         jboolean use_open_sl) {
     return sRapidCycle.start(use_open_sl);
 }
-extern "C"
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRapidCycleActivity_stopRapidCycleTest(JNIEnv *env, jobject thiz) {
     return sRapidCycle.stop();
 }
-extern "C"
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRapidCycleActivity_getCycleCount(JNIEnv *env, jobject thiz) {
     return sRapidCycle.getCycleCount();
 }
+
+} // extern "C"
