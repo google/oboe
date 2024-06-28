@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.AudioQueryTools.getSystemProperty;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -111,7 +113,8 @@ public class MainActivity extends BaseOboeTesterActivity {
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
-        mBuildTextView.setText(Build.DISPLAY);
+        mBuildTextView.setText(Build.DISPLAY
+                + "\n" + getSystemProperty("ro.build.date"));
 
         saveIntentBundleForLaterProcessing(getIntent());
     }
