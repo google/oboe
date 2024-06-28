@@ -160,6 +160,7 @@ public class AudioQueryTools {
         report.append(getSystemPropertyLine("ro.board.platform"));
         report.append(getSystemPropertyLine("ro.build.changelist"));
         report.append(getSystemPropertyLine("ro.build.description"));
+        report.append(getSystemPropertyLine("ro.build.date"));
         return report.toString();
     }
 }
