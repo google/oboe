@@ -212,7 +212,7 @@ Result AudioInputStreamOpenSLES::close() {
     LOGD("AudioInputStreamOpenSLES::%s()", __func__);
     std::lock_guard<std::mutex> lock(mLock);
     Result result = Result::OK;
-    if (getState() == StreamState::Closed){
+    if (getState() == StreamState::Closed) {
         result = Result::ErrorClosed;
     } else {
         (void) requestStop_l();
