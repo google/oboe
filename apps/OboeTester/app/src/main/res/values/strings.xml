@@ -274,9 +274,8 @@
     </string>
 
     <string name="rapid_cycle_intro">
-        Maybe cause a crash by rapidly\n
-        opening, starting, stopping and\n
-        closing streams.
+        Maybe cause a crash or hang by rapidly\n
+        opening, starting, and closing streams.\n
     </string>
 
     <string-array name="conversion_qualities">

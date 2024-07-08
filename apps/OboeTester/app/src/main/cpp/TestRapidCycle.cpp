@@ -23,7 +23,7 @@
 
 using namespace oboe;
 
-// open start start an Oboe stream
+// start a thread to cycle through stream tests
 int32_t TestRapidCycle::start(bool useOpenSL) {
     mThreadEnabled = true;
     mCycleCount = 0;
@@ -69,10 +69,10 @@ int32_t TestRapidCycle::oneCycle(bool useOpenSL) {
     int32_t durationMicros = (int32_t)(drand48() * kMaxSleepMicros);
     LOGD("TestRapidCycle::oneCycle() - Sleep for %d micros", durationMicros);
     usleep(durationMicros);
-    LOGD("TestRapidCycle::oneCycle() - Woke up, stop stream");
-    oboe::Result result1 =  mStream->requestStop();
-    oboe::Result result2 =   mStream->close();
-    return (int32_t)((result1 != oboe::Result::OK) ? result1 : result2);
+    LOGD("TestRapidCycle::oneCycle() - Woke up, close stream");
+    mDataCallback->returnStop = true;
+    result = mStream->close();
+    return (int32_t) result;
 }
 
 // Callback that sleeps then touches the audio buffer.
@@ -85,8 +85,13 @@ DataCallbackResult TestRapidCycle::MyDataCallback::onAudioReady(
 
     // Fill buffer with white noise.
     for (int i = 0; i < numSamples; i++) {
-        floatData[i] = ((float)drand48() - 0.5f) * 2 * 0.1f;
+        floatData[i] = ((float) drand48() - 0.5f) * 2 * 0.1f;
     }
-
-    return oboe::DataCallbackResult::Continue;
+    usleep(500); // half a millisecond
+    if (returnStop) {
+        usleep(20 * 1000);
+        return DataCallbackResult::Stop;
+    } else {
+        return DataCallbackResult::Continue;
+    }
 }
