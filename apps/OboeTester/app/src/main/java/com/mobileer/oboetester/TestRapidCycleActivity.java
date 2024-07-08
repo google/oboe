@@ -79,13 +79,18 @@ public class TestRapidCycleActivity extends AppCompatActivity {
 
         @Override
         public void run() {
+            int lastCycleCount = -1;
             boolean useOpenSL = mApiOpenSLButton.isChecked();
             startRapidCycleTest(useOpenSL);
             try {
                 while (enabled) {
                     statusBuffer = new StringBuffer();
                     sleep(100);
-                    log("#" + getCycleCount() + " open/close cycles\n");
+                    int cycleCount = getCycleCount();
+                    if (cycleCount > lastCycleCount) { // reduce spam
+                        log("#" + cycleCount + " open/close cycles\n");
+                        lastCycleCount = cycleCount;
+                    }
                 }
             } catch (InterruptedException e) {
             } finally {

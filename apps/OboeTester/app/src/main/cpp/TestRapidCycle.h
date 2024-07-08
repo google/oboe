@@ -50,6 +50,8 @@ private:
                 oboe::AudioStream *audioStream,
                 void *audioData,
                 int32_t numFrames) override;
+
+        bool returnStop = false;
     };
 
     std::shared_ptr<oboe::AudioStream> mStream;
