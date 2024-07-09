@@ -124,6 +124,9 @@ public class MainActivity extends Activity
         });
 
         LiveEffectEngine.setDefaultStreamValues(this);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        onStartTest();
     }
 
     private void EnableAudioApiUI(boolean enable) {
@@ -146,22 +149,33 @@ public class MainActivity extends Activity
     @Override
     protected void onStart() {
         super.onStart();
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        onStopTest();
+        super.onDestroy();
+    }
+
+    private void onStartTest() {
         LiveEffectEngine.create();
         mAAudioRecommended = LiveEffectEngine.isAAudioRecommended();
         EnableAudioApiUI(true);
         LiveEffectEngine.setAPI(apiSelection);
     }
-    @Override
-    protected void onPause() {
+
+    private void onStopTest() {
         stopEffect();
         LiveEffectEngine.delete();
-        super.onPause();
     }
 
     public void toggleEffect() {
