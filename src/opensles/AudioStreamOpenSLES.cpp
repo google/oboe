@@ -66,9 +66,6 @@ SLuint32 AudioStreamOpenSLES::getDefaultByteOrder() {
 }
 
 Result AudioStreamOpenSLES::open() {
-
-    LOGI("AudioStreamOpenSLES::open() chans=%d, rate=%d", mChannelCount, mSampleRate);
-
     // OpenSL ES only supports I16 and Float
     if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
         LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %s",

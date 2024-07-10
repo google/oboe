@@ -31,6 +31,7 @@ add_executable(
 		testFullDuplexStream.cpp
 		testResampler.cpp
 		testReturnStop.cpp
+		testReturnStopDeadlock.cpp
 		testStreamClosedMethods.cpp
 		testStreamFramesProcessed.cpp
 		testStreamOpen.cpp
