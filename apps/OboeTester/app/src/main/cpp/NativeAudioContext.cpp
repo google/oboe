@@ -426,6 +426,8 @@ void ActivityTestOutput::configureAfterOpen() {
     mTriangleOscillator.output.connect(&(mExponentialShape.input));
     {
         double frequency = 330.0;
+        // Go up by a minor third or a perfect fourth just intoned interval.
+        const float interval = (mChannelCount > 8) ? (6.0f / 5.0f) : (4.0f / 3.0f);
         for (int i = 0; i < mChannelCount; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
@@ -434,7 +436,7 @@ void ActivityTestOutput::configureAfterOpen() {
             sawtoothOscillators[i].frequency.setValue(frequency);
             sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
 
-            frequency *= 4.0 / 3.0; // each wave is at a higher frequency
+            frequency *= interval; // each wave is at a higher frequency
             setChannelEnabled(i, true);
         }
     }
