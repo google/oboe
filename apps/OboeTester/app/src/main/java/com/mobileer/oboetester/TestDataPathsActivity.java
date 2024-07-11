@@ -295,7 +295,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     + "\nphase = " + getMagnitudeText(mPhase)
                     + ", jitter = " + getJitterText()
                     + ", #" + mPhaseCount
-                    + "\n");
+                    + "\n"
+                    + mAutomatedTestRunner.getPassFailReport()
+                    + "\n"
+            );
             return message.toString();
         }
 
