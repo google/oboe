@@ -28,7 +28,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class AudioForegroundService extends Service {
-    private static final String TAG = "AudioForegroundService";
+    private static final String TAG = "OboeTester";
     public static final String ACTION_START = "ACTION_START";
     public static final String ACTION_STOP = "ACTION_STOP";
 
