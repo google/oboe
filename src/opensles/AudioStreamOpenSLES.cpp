@@ -363,6 +363,7 @@ SLresult AudioStreamOpenSLES::updateStreamParameters(SLAndroidConfigurationItf c
 
 // This is called under mLock.
 Result AudioStreamOpenSLES::close_l() {
+    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
     if (mState == StreamState::Closed) {
         return Result::ErrorClosed;
     }
@@ -371,17 +372,23 @@ Result AudioStreamOpenSLES::close_l() {
 
     onBeforeDestroy();
 
-    if (mObjectInterface != nullptr) {
-        (*mObjectInterface)->Destroy(mObjectInterface);
-        mObjectInterface = nullptr;
+    // Mark as CLOSED before we unlock for the join.
+    // This will prevent other threads from trying to close().
+    setState(StreamState::Closed);
+
+    SLObjectItf  tempObjectInterface = mObjectInterface;
+    mObjectInterface = nullptr;
+    if (tempObjectInterface != nullptr) {
+        // Temporarily unlock so we can join() the callback thread.
+        mLock.unlock();
+        (*tempObjectInterface)->Destroy(tempObjectInterface); // Will join the callback!
+        mLock.lock();
     }
 
     onAfterDestroy();
 
     mSimpleBufferQueueInterface = nullptr;
     EngineOpenSLES::getInstance().close();
-
-    setState(StreamState::Closed);
 
     return Result::OK;
 }

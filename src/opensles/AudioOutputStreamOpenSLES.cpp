@@ -235,7 +235,7 @@ Result AudioOutputStreamOpenSLES::close() {
     LOGD("AudioOutputStreamOpenSLES::%s()", __func__);
     std::lock_guard<std::mutex> lock(mLock);
     Result result = Result::OK;
-    if (getState() == StreamState::Closed){
+    if (getState() == StreamState::Closed) {
         result = Result::ErrorClosed;
     } else {
         (void) requestPause_l();
@@ -250,7 +250,6 @@ Result AudioOutputStreamOpenSLES::close() {
 }
 
 Result AudioOutputStreamOpenSLES::setPlayState_l(SLuint32 newState) {
-
     LOGD("AudioOutputStreamOpenSLES::%s(%d) called", __func__, newState);
     Result result = Result::OK;
 
@@ -385,9 +384,8 @@ Result AudioOutputStreamOpenSLES::requestStop() {
 }
 
 Result AudioOutputStreamOpenSLES::requestStop_l() {
-    LOGD("AudioOutputStreamOpenSLES::%s() called", __func__);
-
     StreamState initialState = getState();
+    LOGD("AudioOutputStreamOpenSLES::%s() called, initialState = %d", __func__, initialState);
     switch (initialState) {
         case StreamState::Stopping:
         case StreamState::Stopped:
