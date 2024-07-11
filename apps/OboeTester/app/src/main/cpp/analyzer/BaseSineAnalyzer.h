@@ -75,12 +75,21 @@ public:
     }
 
     // advance and wrap phase
+    void incrementInputPhase() {
+        mInputPhase += mPhaseIncrement;
+        if (mInputPhase > M_PI) {
+            mInputPhase -= (2.0 * M_PI);
+        }
+    }
+
+    // advance and wrap phase
     void incrementOutputPhase() {
         mOutputPhase += mPhaseIncrement;
         if (mOutputPhase > M_PI) {
             mOutputPhase -= (2.0 * M_PI);
         }
     }
+
 
     /**
      * @param frameData upon return, contains the reference sine wave
@@ -142,11 +151,12 @@ public:
      * @param referencePhase
      * @return true if magnitude and phase updated
      */
-    bool transformSample(float sample, float referencePhase) {
-        // Track incoming signal and slowly adjust magnitude to account
-        // for drift in the DRC or AGC.
-        mSinAccumulator += static_cast<double>(sample) * sinf(referencePhase);
-        mCosAccumulator += static_cast<double>(sample) * cosf(referencePhase);
+    bool transformSample(float sample) {
+        // Compare incoming signal with the reference input sine wave.
+        mSinAccumulator += static_cast<double>(sample) * sinf(mInputPhase);
+        mCosAccumulator += static_cast<double>(sample) * cosf(mInputPhase);
+        incrementInputPhase();
+
         mFramesAccumulated++;
         // Must be a multiple of the period or the calculation will not be accurate.
         if (mFramesAccumulated == mSinePeriod) {
@@ -181,6 +191,7 @@ public:
     void prepareToTest() override {
         LoopbackProcessor::prepareToTest();
         mSinePeriod = getSampleRate() / kTargetGlitchFrequency;
+        mInputPhase = 0.0f;
         mOutputPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
         mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
@@ -193,9 +204,13 @@ protected:
     int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
     double  mPhaseIncrement = 0.0;
+    // Use two sine wave phases, input and output.
+    // This is because the number of input and output samples may differ
+    // in a callback and the output frame count may advance ahead of the input, or visa versa.
+    double  mInputPhase = 0.0;
     double  mOutputPhase = 0.0;
     double  mOutputAmplitude = 0.75;
-    // This is the phase offset between the output sine wave and the recorded
+    // This is the phase offset between the mInputPhase sine wave and the recorded
     // signal at the tuned frequency.
     // If this jumps around then we are probably just hearing noise.
     // Noise can cause the magnitude to be high but mPhaseOffset will be pretty random.
