@@ -16,6 +16,9 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -237,6 +240,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStart();
         }
+        enableForegroundService(true);
     }
 
     protected void resetConfiguration() {
@@ -300,6 +304,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (!isBackgroundEnabled()) {
             Log.i(TAG, "onStop() called so stop the test =========================");
             onStopTest();
+            enableForegroundService(false);
         }
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStop();
@@ -312,9 +317,19 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (isBackgroundEnabled()) {
             Log.i(TAG, "onDestroy() called so stop the test =========================");
             onStopTest();
+            enableForegroundService(false);
         }
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
+    }
+
+    public void enableForegroundService(boolean enabled) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            String action = enabled ? ACTION_START : ACTION_STOP;
+            Intent serviceIntent = new Intent(action, null, this,
+                    AudioForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
     }
 
     protected void updateEnabledWidgets() {
