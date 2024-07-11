@@ -63,7 +63,7 @@ public:
         float sample = frameData[getInputChannel()];
         mInfiniteRecording.write(sample);
 
-        if (transformSample(sample, mOutputPhase)) {
+        if (transformSample(sample)) {
             // Analyze magnitude and phase on every period.
             if (mPhaseOffset != kPhaseInvalid) {
                 double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));

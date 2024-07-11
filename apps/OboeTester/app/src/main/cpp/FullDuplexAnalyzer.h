@@ -29,10 +29,6 @@ class FullDuplexAnalyzer : public FullDuplexStreamWithConversion {
 public:
     FullDuplexAnalyzer(LoopbackProcessor *processor)
             : mLoopbackProcessor(processor) {
-        // If we are measuring glitches then we should set this >1 to avoid input underruns.
-        // Underruns are more common when doing sample rate conversion because of the variable
-        // callback sizes.
-        setNumInputBurstsCushion(3);
     }
 
     /**

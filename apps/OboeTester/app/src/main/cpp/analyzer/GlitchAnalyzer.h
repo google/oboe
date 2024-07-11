@@ -229,7 +229,7 @@ public:
                     // Track incoming signal and slowly adjust magnitude to account
                     // for drift in the DRC or AGC.
                     // Must be a multiple of the period or the calculation will not be accurate.
-                    if (transformSample(sample, mInputPhase)) {
+                    if (transformSample(sample)) {
                         // Adjust phase to account for sample rate drift.
                         mInputPhase += mPhaseOffset;
 
@@ -249,7 +249,6 @@ public:
                         }
                     }
                 }
-                incrementInputPhase();
             } break;
 
             case STATE_GLITCHING: {
@@ -287,14 +286,6 @@ public:
     }
 
     int maxMeasurableGlitchLength() const { return 2 * mSinePeriod; }
-
-    // advance and wrap phase
-    void incrementInputPhase() {
-        mInputPhase += mPhaseIncrement;
-        if (mInputPhase > M_PI) {
-            mInputPhase -= (2.0 * M_PI);
-        }
-    }
 
     bool isOutputEnabled() override { return mState != STATE_IDLE; }
 
@@ -399,7 +390,6 @@ private:
     sine_state_t  mState = STATE_IDLE;
     int64_t       mLastGlitchPosition;
 
-    double  mInputPhase = 0.0;
     double  mMaxGlitchDelta = 0.0;
     int32_t mGlitchCount = 0;
     int32_t mConsecutiveBadFrames = 0;
