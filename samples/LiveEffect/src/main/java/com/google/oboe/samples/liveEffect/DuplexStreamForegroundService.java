@@ -60,9 +60,9 @@ public class DuplexStreamForegroundService extends Service {
                     NotificationManager.IMPORTANCE_NONE));
 
             return new Notification.Builder(this, "all")
-                    .setContentTitle("Recording audio")
-                    .setContentText("recording...")
-                    .setSmallIcon(R.drawable.balance_seekbar)
+                    .setContentTitle("Playing/recoding audio")
+                    .setContentText("playing/recording...")
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .build();
         }
         return null;
@@ -81,7 +81,7 @@ public class DuplexStreamForegroundService extends Service {
                 }
                 break;
             case ACTION_STOP:
-                Log.i(TAG, "Receive STOP_RECORD" + intent.getExtras());
+                Log.i(TAG, "Receive ACTION_STOP" + intent.getExtras());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     stopForeground(STOP_FOREGROUND_REMOVE);
                 }
