@@ -94,19 +94,16 @@ Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
 }
 
 Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
-    static bool versionLogged = false;
-
     auto result = isValidConfig();
     if (result != Result::OK) {
         LOGW("%s() invalid config. Error %s", __func__, oboe::convertToText(result));
         return result;
     }
 
-    if (!versionLogged) {
-        LOGI("%s() %s -------- %s --------",
-             __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
-         versionLogged = true;
-    }
+#ifndef OBOE_SUPPRESS_LOG_SPAM
+    LOGI("%s() %s -------- %s --------",
+         __func__, getDirection() == Direction::Input ? "INPUT" : "OUTPUT", getVersionText());
+#endif
 
     if (streamPP == nullptr) {
         return Result::ErrorNull;
