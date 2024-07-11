@@ -66,8 +66,9 @@ SLuint32 AudioStreamOpenSLES::getDefaultByteOrder() {
 }
 
 Result AudioStreamOpenSLES::open() {
-
+#ifndef OBOE_SUPPRESS_LOG_SPAM
     LOGI("AudioStreamOpenSLES::open() chans=%d, rate=%d", mChannelCount, mSampleRate);
+#endif
 
     // OpenSL ES only supports I16 and Float
     if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
