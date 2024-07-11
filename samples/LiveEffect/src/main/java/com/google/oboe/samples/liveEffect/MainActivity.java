@@ -16,8 +16,11 @@
 
 package com.google.oboe.samples.liveEffect;
 
+import static com.google.oboe.samples.liveEffect.DuplexStreamForegroundService.ACTION_START;
+
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
@@ -126,6 +129,12 @@ public class MainActivity extends Activity
         LiveEffectEngine.setDefaultStreamValues(this);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_START, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
+
         onStartTest();
     }
 
@@ -163,6 +172,12 @@ public class MainActivity extends Activity
     @Override
     protected void onDestroy() {
         onStopTest();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_START, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
         super.onDestroy();
     }
 
