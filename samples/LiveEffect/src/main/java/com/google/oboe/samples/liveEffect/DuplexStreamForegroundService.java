@@ -60,7 +60,7 @@ public class DuplexStreamForegroundService extends Service {
                     NotificationManager.IMPORTANCE_NONE));
 
             return new Notification.Builder(this, "all")
-                    .setContentTitle("Playing/recoding audio")
+                    .setContentTitle("Playing/recording audio")
                     .setContentText("playing/recording...")
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .build();
