@@ -48,8 +48,8 @@ public class AudioForegroundService extends Service {
                     NotificationManager.IMPORTANCE_NONE));
 
             return new Notification.Builder(this, "all")
-                    .setContentTitle("Recording audio")
-                    .setContentText("recording...")
+                    .setContentTitle("Playing/recoding audio")
+                    .setContentText("playing/recording...")
                     .setSmallIcon(R.drawable.ic_notification)
                     .build();
         }
@@ -69,7 +69,7 @@ public class AudioForegroundService extends Service {
                 }
                 break;
             case ACTION_STOP:
-                Log.i(TAG, "Receive STOP_RECORD" + intent.getExtras());
+                Log.i(TAG, "Receive ACTION_STOP" + intent.getExtras());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     stopForeground(STOP_FOREGROUND_REMOVE);
                 }
