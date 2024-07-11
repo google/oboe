@@ -28,20 +28,6 @@ public class DuplexStreamForegroundService extends Service {
     public static final String ACTION_START = "ACTION_START";
     public static final String ACTION_STOP = "ACTION_STOP";
 
-    public void startForegroundService1() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            startForeground(1, buildNotification(),
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
-        }
-    }
-
-    public void stopForegroundService() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            stopForeground(STOP_FOREGROUND_REMOVE);
-        }
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         // We don't provide binding, so return null
