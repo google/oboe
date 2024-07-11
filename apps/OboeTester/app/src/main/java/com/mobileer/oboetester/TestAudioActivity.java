@@ -100,6 +100,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
+    private static boolean mForegroundServiceEnabled;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -186,6 +187,14 @@ abstract class TestAudioActivity extends AppCompatActivity {
         return mBackgroundEnabled;
     }
 
+    public static void setForegroundServiceEnabled(boolean enabled) {
+        mForegroundServiceEnabled = enabled;
+    }
+
+    public static boolean isForegroundServiceEnabled() {
+        return mForegroundServiceEnabled;
+    }
+
     public void onStreamClosed() {
     }
 
@@ -240,7 +249,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStart();
         }
-        enableForegroundService(true);
+        if (isForegroundServiceEnabled()) {
+            enableForegroundService(true);
+        }
     }
 
     protected void resetConfiguration() {
@@ -304,7 +315,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (!isBackgroundEnabled()) {
             Log.i(TAG, "onStop() called so stop the test =========================");
             onStopTest();
-            enableForegroundService(false);
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStop();
@@ -317,7 +330,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (isBackgroundEnabled()) {
             Log.i(TAG, "onDestroy() called so stop the test =========================");
             onStopTest();
-            enableForegroundService(false);
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
