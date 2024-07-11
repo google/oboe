@@ -17,6 +17,7 @@
 package com.google.oboe.samples.liveEffect;
 
 import static com.google.oboe.samples.liveEffect.DuplexStreamForegroundService.ACTION_START;
+import static com.google.oboe.samples.liveEffect.DuplexStreamForegroundService.ACTION_STOP;
 
 import android.Manifest;
 import android.app.Activity;
@@ -174,7 +175,7 @@ public class MainActivity extends Activity
         onStopTest();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent serviceIntent = new Intent(ACTION_START, null, this,
+            Intent serviceIntent = new Intent(ACTION_STOP, null, this,
                     DuplexStreamForegroundService.class);
             startForegroundService(serviceIntent);
         }
