@@ -16,8 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
-import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
 import static com.mobileer.oboetester.AudioQueryTools.getSystemProperty;
 
 import android.content.Context;
