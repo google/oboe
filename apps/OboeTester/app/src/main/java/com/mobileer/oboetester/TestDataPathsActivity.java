@@ -474,17 +474,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             int result = testResult.result;
             if (result == TEST_RESULT_FAILED) {
                 int id = mAudioOutTester.actualConfiguration.getDeviceId();
-                int deviceType = getDeviceInfoById(id).getType();
                 int channelCount = mAudioOutTester.actualConfiguration.getChannelCount();
-                if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                        && channelCount == 2
-                        && getOutputChannel() == 1) {
-                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
-                }
-                if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
-                        && channelCount == 2
-                        && getOutputChannel() == 0) {
-                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
+                AudioDeviceInfo info = getDeviceInfoById(id);
+                if (info != null) {
+                    int deviceType = getDeviceInfoById(id).getType();
+                    if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                            && channelCount == 2
+                            && getOutputChannel() == 1) {
+                        testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
+                    }
+                    if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
+                            && channelCount == 2
+                            && getOutputChannel() == 0) {
+                        testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
+                    }
                 }
             }
         }
