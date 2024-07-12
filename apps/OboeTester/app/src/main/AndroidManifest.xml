@@ -21,6 +21,9 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -138,6 +141,12 @@
             <meta-data
                 android:name="android.media.midi.MidiDeviceService"
                 android:resource="@xml/service_device_info" />
+        </service>
+
+        <service
+            android:name=".AudioForegroundService"
+            android:foregroundServiceType="mediaPlayback|microphone"
+            android:exported="false">
         </service>
 
         <provider

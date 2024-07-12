@@ -16,6 +16,9 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -97,6 +100,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
+    private static boolean mForegroundServiceEnabled;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -183,6 +187,14 @@ abstract class TestAudioActivity extends AppCompatActivity {
         return mBackgroundEnabled;
     }
 
+    public static void setForegroundServiceEnabled(boolean enabled) {
+        mForegroundServiceEnabled = enabled;
+    }
+
+    public static boolean isForegroundServiceEnabled() {
+        return mForegroundServiceEnabled;
+    }
+
     public void onStreamClosed() {
     }
 
@@ -236,6 +248,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         // TODO Use LifeCycleObserver instead of this.
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStart();
+        }
+        if (isForegroundServiceEnabled()) {
+            enableForegroundService(true);
         }
     }
 
@@ -300,6 +315,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (!isBackgroundEnabled()) {
             Log.i(TAG, "onStop() called so stop the test =========================");
             onStopTest();
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStop();
@@ -312,9 +330,21 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (isBackgroundEnabled()) {
             Log.i(TAG, "onDestroy() called so stop the test =========================");
             onStopTest();
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
+    }
+
+    public void enableForegroundService(boolean enabled) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            String action = enabled ? ACTION_START : ACTION_STOP;
+            Intent serviceIntent = new Intent(action, null, this,
+                    AudioForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
     }
 
     protected void updateEnabledWidgets() {

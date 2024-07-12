@@ -60,6 +60,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private Bundle mBundleFromIntent;
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
+    private CheckBox mForegroundServiceCheckBox;
     private static String mVersionText;
 
     @Override
@@ -111,6 +112,7 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(false);
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
+        mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY
@@ -149,16 +151,19 @@ public class MainActivity extends BaseOboeTesterActivity {
         }
         Intent intent = getTestIntent(mBundleFromIntent);
         if (intent != null) {
-            setBackgroundFromIntent();
+            setTogglesFromIntent();
             startActivity(intent);
         }
         mBundleFromIntent = null;
     }
 
-    private void setBackgroundFromIntent() {
+    private void setTogglesFromIntent() {
         boolean backgroundEnabled = mBundleFromIntent.getBoolean(
                 IntentBasedTestSupport.KEY_BACKGROUND, false);
         TestAudioActivity.setBackgroundEnabled(backgroundEnabled);
+        boolean foregroundServiceEnabled = mBundleFromIntent.getBoolean(
+                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, false);
+        TestAudioActivity.setBackgroundEnabled(foregroundServiceEnabled);
     }
 
     private Intent getTestIntent(Bundle bundle) {
@@ -255,6 +260,7 @@ public class MainActivity extends BaseOboeTesterActivity {
 
         NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
+        TestAudioActivity.setForegroundServiceEnabled(mForegroundServiceCheckBox.isChecked());
     }
 
     @Override
