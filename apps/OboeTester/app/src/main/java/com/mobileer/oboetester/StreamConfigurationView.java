@@ -51,6 +51,7 @@ public class StreamConfigurationView extends LinearLayout {
 
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
+    private TextView mActualDeviceIdView;
 
     private TextView mActualMMapView;
     private CheckBox mRequestedMMapView;
@@ -193,6 +194,8 @@ public class StreamConfigurationView extends LinearLayout {
         mNativeApiSpinner.setSelection(StreamConfiguration.NATIVE_API_UNSPECIFIED);
 
         mActualNativeApiView = (TextView) findViewById(R.id.actualNativeApi);
+
+        mActualDeviceIdView = (TextView) findViewById(R.id.actualDeviceId);
 
         mChannelConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
 
@@ -446,6 +449,9 @@ public class StreamConfigurationView extends LinearLayout {
 
         value = actualConfiguration.getNativeApi();
         mActualNativeApiView.setText(StreamConfiguration.convertNativeApiToText(value));
+
+        value = actualConfiguration.getDeviceId();
+        mActualDeviceIdView.setText(String.valueOf(value));
 
         mActualMMapView.setText(yesOrNo(actualConfiguration.isMMap()));
         int sharingMode = actualConfiguration.getSharingMode();
