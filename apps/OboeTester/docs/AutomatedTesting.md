@@ -78,6 +78,7 @@ There are some optional parameter in common for all tests:
     --es volume_type        {"accessibility", "alarm", "dtmf", "music", "notification", "ring", "system", "voice_call"}
                             Stream type for the setStreamVolume() call. Default is "music".
     --ez background         {"true", 1, "false", 0} // if true then Oboetester will continue to run in the background
+    --ez foreground_service {"true", 1, "false", 0} // if true then Oboetester will ask for record/play permissions via a foreground service
 
 There are several optional parameters in common for glitch, latency, input, and output tests:
 
