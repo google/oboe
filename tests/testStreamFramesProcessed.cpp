@@ -51,9 +51,9 @@ void StreamFramesProcessed::TearDown() {
 TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
     const Direction direction = std::get<0>(GetParam());
     const int32_t sampleRate = std::get<1>(GetParam());
-    const bool useSampleRateConversion = std::get<2>(GetParam());
+    const bool useOboeSampleRateConversion = std::get<2>(GetParam());
 
-    SampleRateConversionQuality srcQuality = useSampleRateConversion ?
+    SampleRateConversionQuality srcQuality = useOboeSampleRateConversion ?
             SampleRateConversionQuality::Medium : SampleRateConversionQuality::None;
 
     AudioStreamDataCallback *callback = new FramesProcessedCallback();
