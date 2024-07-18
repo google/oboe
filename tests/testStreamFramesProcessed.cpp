@@ -56,7 +56,7 @@ TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
     mBuilder.setDirection(direction)
             ->setFormat(AudioFormat::I16)
             ->setSampleRate(sampleRate)
-            ->setSampleRateConversionQuality(SampleRateConversionQuality::Medium)
+            ->setSampleRateConversionQuality(SampleRateConversionQuality::None)
             ->setPerformanceMode(PerformanceMode::LowLatency)
             ->setSharingMode(SharingMode::Exclusive)
             ->setDataCallback(callback);
