@@ -282,7 +282,7 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
              "is not supported on OpenSLES streams running on pre-Android N-MR1 versions.");
     }
     // Content Type
-    if (mContentType != ContentType::Music) {
+    if (static_cast<const int32_t>(mContentType) != kUnspecified) {
         LOGW("ContentType [AudioStreamBuilder::setContentType()] "
              "is not supported on OpenSLES streams.");
     }
@@ -305,9 +305,26 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
              "is not supported on OpenSLES streams.");
     }
 
+    if (mIsContentSpatialized) {
+        LOGW("Boolean [AudioStreamBuilder::setIsContentSpatialized()] "
+             "is not supported on OpenSLES streams.");
+    }
+
     // Allowed Capture Policy
     if (mAllowedCapturePolicy != AllowedCapturePolicy::Unspecified) {
         LOGW("AllowedCapturePolicy [AudioStreamBuilder::setAllowedCapturePolicy()] "
+             "is not supported on OpenSLES streams.");
+    }
+
+    // Package Name
+    if (!mPackageName.empty()) {
+        LOGW("PackageName [AudioStreamBuilder::setPackageName()] "
+             "is not supported on OpenSLES streams.");
+    }
+
+    // Attribution Tag
+    if (!mAttributionTag.empty()) {
+        LOGW("AttributionTag [AudioStreamBuilder::setAttributionTag()] "
              "is not supported on OpenSLES streams.");
     }
 }
