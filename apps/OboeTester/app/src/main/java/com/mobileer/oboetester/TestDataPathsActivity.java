@@ -143,7 +143,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mPhaseErrorSum;
     private double mPhaseErrorCount;
 
-    private boolean skipRemainingTests;
+    private boolean mSkipRemainingTests;
 
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxAllChannels;
@@ -405,13 +405,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
             why += "inDev(" + requestedInConfig.getDeviceId()
                     + "!=" + actualInConfig.getDeviceId() + "),";
-            skipRemainingTests = true; // the device must have been unplugged
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if (requestedOutConfig.getDeviceId() != 0
                 && (requestedOutConfig.getDeviceId() != actualOutConfig.getDeviceId())) {
             why += ", outDev(" + requestedOutConfig.getDeviceId()
                     + "!=" + actualOutConfig.getDeviceId() + "),";
-            skipRemainingTests = true; // the device must have been unplugged
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if ((requestedInConfig.getInputPreset() != actualInConfig.getInputPreset())) {
             why += ", inPre(" + requestedInConfig.getInputPreset()
@@ -472,7 +472,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected TestResult testCurrentConfigurations() throws InterruptedException {
-        if (skipRemainingTests) {
+        if (mSkipRemainingTests) {
             throw new DeviceUnpluggedException();
         }
         TestResult testResult = super.testCurrentConfigurations();
@@ -884,11 +884,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             runOnUiThread(() -> keepScreenOn(true));
 
-            skipRemainingTests = false;
+            mSkipRemainingTests = false;
             try {
                 testOutputDeviceTypes();
             } catch(DeviceUnpluggedException e) {
-                log("remaining tests were skipped, " + e.getMessage());
+                log("Remaining tests were skipped, " + e.getMessage());
             }
 
             compareFailedTestsWithNearestPassingTest();
