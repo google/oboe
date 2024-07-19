@@ -143,6 +143,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mPhaseErrorSum;
     private double mPhaseErrorCount;
 
+    private boolean mSkipRemainingTests;
+
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxAllChannels;
     private CheckBox mCheckBoxInputChannelMasks;
@@ -403,11 +405,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
             why += "inDev(" + requestedInConfig.getDeviceId()
                     + "!=" + actualInConfig.getDeviceId() + "),";
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if (requestedOutConfig.getDeviceId() != 0
                 && (requestedOutConfig.getDeviceId() != actualOutConfig.getDeviceId())) {
             why += ", outDev(" + requestedOutConfig.getDeviceId()
                     + "!=" + actualOutConfig.getDeviceId() + "),";
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if ((requestedInConfig.getInputPreset() != actualInConfig.getInputPreset())) {
             why += ", inPre(" + requestedInConfig.getInputPreset()
@@ -468,6 +472,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected TestResult testCurrentConfigurations() throws InterruptedException {
+        if (mSkipRemainingTests) {
+            throw new DeviceUnpluggedException();
+        }
         TestResult testResult = super.testCurrentConfigurations();
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
@@ -858,6 +865,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    class DeviceUnpluggedException extends RuntimeException {
+        public DeviceUnpluggedException() {
+            super("Device was unplugged.");
+        }
+    }
+
     @Override
     public void runTest() {
         try {
@@ -871,7 +884,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             runOnUiThread(() -> keepScreenOn(true));
 
-            testOutputDeviceTypes();
+            mSkipRemainingTests = false;
+            try {
+                testOutputDeviceTypes();
+            } catch(DeviceUnpluggedException e) {
+                log("Remaining tests were skipped, " + e.getMessage());
+            }
 
             compareFailedTestsWithNearestPassingTest();
 
