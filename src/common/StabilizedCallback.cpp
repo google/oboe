@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "oboe/StabilizedCallback.h"
-#include "common/AudioClock.h"
 #include "common/Trace.h"
+#include "oboe/AudioClock.h"
+#include "oboe/StabilizedCallback.h"
 
 constexpr int32_t kLoadGenerationStepSizeNanos = 20000;
 constexpr float kPercentageOfCallbackToUse = 0.8;

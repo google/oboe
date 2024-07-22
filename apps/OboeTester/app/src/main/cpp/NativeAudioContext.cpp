@@ -27,7 +27,7 @@
 #endif // DEBUG_CLOSE_RACE
 #include <vector>
 
-#include <common/AudioClock.h>
+#include "oboe/AudioClock.h"
 #include "util/WaveFileWriter.h"
 
 #include "NativeAudioContext.h"

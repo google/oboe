@@ -27,6 +27,7 @@ include_directories(
 add_executable(
 		testOboe
 		testAAudio.cpp
+		testAudioClock.cpp
 		testFlowgraph.cpp
 		testFullDuplexStream.cpp
 		testResampler.cpp

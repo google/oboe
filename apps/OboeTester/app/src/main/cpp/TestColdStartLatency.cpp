@@ -18,7 +18,7 @@
 #include <aaudio/AAudioExtensions.h>
 
 #include "common/OboeDebug.h"
-#include "common/AudioClock.h"
+#include "oboe/AudioClock.h"
 #include "TestColdStartLatency.h"
 #include "OboeTools.h"
 
