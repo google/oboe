@@ -18,9 +18,9 @@
 #include <pthread.h>
 #include <thread>
 
-#include <oboe/AudioClock.h>
-#include <oboe/AudioStream.h>
-#include <oboe/Utilities.h>
+#include "oboe/AudioClock.h"
+#include "oboe/AudioStream.h"
+#include "oboe/Utilities.h"
 #include "OboeDebug.h"
 
 namespace oboe {
