@@ -154,6 +154,10 @@ public class DeviceReportActivity extends AppCompatActivity {
         log(report.toString());
     }
 
+    String toHex4(int n) {
+        return String.format("0x%04X", n);
+    }
+
     public String reportUsbDevices() {
         StringBuffer report = new StringBuffer();
         report.append("\n############################");
@@ -163,9 +167,9 @@ public class DeviceReportActivity extends AppCompatActivity {
             for (UsbDevice usbDevice : usbDeviceList.values()) {
                 report.append("\n==== USB Device ========= " + usbDevice.getDeviceId());
                 report.append("\nProduct Name       : " + usbDevice.getProductName());
-                report.append("\nProduct ID         : 0x" + Integer.toHexString(usbDevice.getProductId()));
+                report.append("\nProduct ID         : " + toHex4(usbDevice.getProductId()));
                 report.append("\nManufacturer Name  : " + usbDevice.getManufacturerName());
-                report.append("\nVendor ID          : 0x" + Integer.toHexString(usbDevice.getVendorId()));
+                report.append("\nVendor ID          : " + toHex4(usbDevice.getVendorId()));
                 report.append("\nDevice Name        : " + usbDevice.getDeviceName());
                 report.append("\nDevice Protocol    : " + usbDevice.getDeviceProtocol());
                 report.append("\nDevice Class       : " + usbDevice.getDeviceClass());
