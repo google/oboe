@@ -36,6 +36,7 @@ TEST(TestAudioClock, GetNanosecondsMonotonic) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
     usleep(kSleepTimeMicroSec);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
@@ -45,6 +46,7 @@ TEST(TestAudioClock, GetNanosecondsRealtime) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
     usleep(kSleepTimeMicroSec);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
@@ -54,6 +56,7 @@ TEST(TestAudioClock, SleepUntilNanoTimeMonotonic) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
     AudioClock::sleepUntilNanoTime(startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond, CLOCK_MONOTONIC);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
@@ -63,6 +66,7 @@ TEST(TestAudioClock, SleepUntilNanoTimeRealtime) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
     AudioClock::sleepUntilNanoTime(startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond, CLOCK_REALTIME);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
@@ -72,6 +76,7 @@ TEST(TestAudioClock, SleepForNanosMonotonic) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
     AudioClock::sleepForNanos(kSleepTimeMicroSec * kNanosPerMicrosecond, CLOCK_MONOTONIC);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_MONOTONIC);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
@@ -81,6 +86,7 @@ TEST(TestAudioClock, SleepForNanosRealtime) {
     int64_t startNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
     AudioClock::sleepForNanos(kSleepTimeMicroSec * kNanosPerMicrosecond, CLOCK_REALTIME);
     int64_t endNanos = AudioClock::getNanoseconds(CLOCK_REALTIME);
+    ASSERT_GT(endNanos, startNanos + kSleepTimeMicroSec * kNanosPerMicrosecond);
     ASSERT_NEAR(endNanos - startNanos, kSleepTimeMicroSec * kNanosPerMicrosecond,
             kSleepTimeMicroSec * kNanosPerMicrosecond * kTolerance);
 }
