@@ -28,7 +28,7 @@ public:
     }
 };
 
-using StreamFramesProcessedParams = std::tuple<Direction, int32_t>;
+using StreamFramesProcessedParams = std::tuple<Direction, int32_t, bool>;
 
 class StreamFramesProcessed : public ::testing::Test,
                               public ::testing::WithParamInterface<StreamFramesProcessedParams> {
@@ -51,12 +51,16 @@ void StreamFramesProcessed::TearDown() {
 TEST_P(StreamFramesProcessed, VerifyFramesProcessed) {
     const Direction direction = std::get<0>(GetParam());
     const int32_t sampleRate = std::get<1>(GetParam());
+    const bool useOboeSampleRateConversion = std::get<2>(GetParam());
+
+    SampleRateConversionQuality srcQuality = useOboeSampleRateConversion ?
+            SampleRateConversionQuality::Medium : SampleRateConversionQuality::None;
 
     AudioStreamDataCallback *callback = new FramesProcessedCallback();
     mBuilder.setDirection(direction)
             ->setFormat(AudioFormat::I16)
             ->setSampleRate(sampleRate)
-            ->setSampleRateConversionQuality(SampleRateConversionQuality::Medium)
+            ->setSampleRateConversionQuality(srcQuality)
             ->setPerformanceMode(PerformanceMode::LowLatency)
             ->setSharingMode(SharingMode::Exclusive)
             ->setDataCallback(callback);
@@ -79,11 +83,17 @@ INSTANTIATE_TEST_CASE_P(
         StreamFramesProcessedTest,
         StreamFramesProcessed,
         ::testing::Values(
-                StreamFramesProcessedParams({Direction::Output, 8000}),
-                StreamFramesProcessedParams({Direction::Output, 44100}),
-                StreamFramesProcessedParams({Direction::Output, 96000}),
-                StreamFramesProcessedParams({Direction::Input, 8000}),
-                StreamFramesProcessedParams({Direction::Input, 44100}),
-                StreamFramesProcessedParams({Direction::Input, 96000})
+                StreamFramesProcessedParams({Direction::Output, 8000, true}),
+                StreamFramesProcessedParams({Direction::Output, 44100, true}),
+                StreamFramesProcessedParams({Direction::Output, 96000, true}),
+                StreamFramesProcessedParams({Direction::Input, 8000, true}),
+                StreamFramesProcessedParams({Direction::Input, 44100, true}),
+                StreamFramesProcessedParams({Direction::Input, 96000, true}),
+                StreamFramesProcessedParams({Direction::Output, 8000, false}),
+                StreamFramesProcessedParams({Direction::Output, 44100, false}),
+                StreamFramesProcessedParams({Direction::Output, 96000, false}),
+                StreamFramesProcessedParams({Direction::Input, 8000, false}),
+                StreamFramesProcessedParams({Direction::Input, 44100, false}),
+                StreamFramesProcessedParams({Direction::Input, 96000, false})
                 )
         );
