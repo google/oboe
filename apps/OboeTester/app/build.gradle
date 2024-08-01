@@ -30,6 +30,7 @@ android {
             path "CMakeLists.txt"
         }
     }
+    namespace 'com.mobileer.oboetester'
 }
 
 dependencies {
