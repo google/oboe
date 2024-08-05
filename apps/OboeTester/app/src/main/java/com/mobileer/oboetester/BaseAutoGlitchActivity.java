@@ -466,8 +466,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 compatibleTypes.add(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
                 break;
             case AudioDeviceInfo.TYPE_USB_DEVICE:
+            case AudioDeviceInfo.TYPE_USB_HEADSET:
+                // USB Device and Headset are often mistaken for each other.
                 compatibleTypes.add(AudioDeviceInfo.TYPE_USB_DEVICE);
-                // A USB Device is often mistaken for a headset.
                 compatibleTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
                 break;
             default:
