@@ -45,6 +45,8 @@ var searchData=
   ['setworkaroundsenabled_42',['setWorkaroundsEnabled',['../classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b',1,'oboe::OboeGlobals']]],
   ['setwritecounter_43',['setWriteCounter',['../classoboe_1_1_fifo_buffer.html#a6057b41cb5a15129d813f66a23efda83',1,'oboe::FifoBuffer']]],
   ['sleepbeforeclose_44',['sleepBeforeClose',['../classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b',1,'oboe::AudioStream']]],
-  ['start_45',['start',['../classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21',1,'oboe::AudioStream::start()'],['../classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d',1,'oboe::FullDuplexStream::start()']]],
-  ['stop_46',['stop',['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()'],['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()']]]
+  ['sleepfornanos_45',['sleepForNanos',['../classoboe_1_1_audio_clock.html#acb3b78ed36bde7209c6ab9f96504aa86',1,'oboe::AudioClock']]],
+  ['sleepuntilnanotime_46',['sleepUntilNanoTime',['../classoboe_1_1_audio_clock.html#a37e5b60143ca51bad9ac787858b4931a',1,'oboe::AudioClock']]],
+  ['start_47',['start',['../classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21',1,'oboe::AudioStream::start()'],['../classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d',1,'oboe::FullDuplexStream::start()']]],
+  ['stop_48',['stop',['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()'],['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()']]]
 ];
