@@ -18,10 +18,10 @@
 #include <pthread.h>
 #include <thread>
 
-#include <oboe/AudioStream.h>
+#include "oboe/AudioClock.h"
+#include "oboe/AudioStream.h"
+#include "oboe/Utilities.h"
 #include "OboeDebug.h"
-#include "AudioClock.h"
-#include <oboe/Utilities.h>
 
 namespace oboe {
 

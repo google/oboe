@@ -16,10 +16,9 @@
 #include <cassert>
 #include <android/log.h>
 
-#include <oboe/AudioStream.h>
-#include <common/AudioClock.h>
-
 #include "common/OboeDebug.h"
+#include "oboe/AudioClock.h"
+#include "oboe/AudioStream.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "EngineOpenSLES.h"
 #include "AudioStreamOpenSLES.h"

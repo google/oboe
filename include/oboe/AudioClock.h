@@ -23,7 +23,6 @@
 
 namespace oboe {
 
-// TODO: Move this class into the public headers because it is useful when calculating stream latency
 class AudioClock {
 public:
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC) {
