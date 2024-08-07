@@ -455,6 +455,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
     }
 
+    /**
+     * @param type
+     * @return list of compatible device types in preferred order
+     */
     protected ArrayList<Integer> getCompatibleDeviceTypes(int type) {
         ArrayList<Integer> compatibleTypes = new ArrayList<Integer>();
         switch(type) {
@@ -466,9 +470,14 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 compatibleTypes.add(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
                 break;
             case AudioDeviceInfo.TYPE_USB_DEVICE:
+                // Give priority to an exact match of DEVICE.
                 compatibleTypes.add(AudioDeviceInfo.TYPE_USB_DEVICE);
-                // A USB Device is often mistaken for a headset.
                 compatibleTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
+                break;
+            case AudioDeviceInfo.TYPE_USB_HEADSET:
+                // Give priority to an exact match of HEADSET.
+                compatibleTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
+                compatibleTypes.add(AudioDeviceInfo.TYPE_USB_DEVICE);
                 break;
             default:
                 compatibleTypes.add(type);
@@ -485,9 +494,12 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected AudioDeviceInfo findCompatibleInputDevice(int outputDeviceType) {
         ArrayList<Integer> compatibleDeviceTypes = getCompatibleDeviceTypes(outputDeviceType);
         AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
-        for (AudioDeviceInfo candidate : devices) {
-            if (compatibleDeviceTypes.contains(candidate.getType())) {
-                return candidate;
+        // Scan the compatible types in order of preference.
+        for (int compatibleType : compatibleDeviceTypes) {
+            for (AudioDeviceInfo candidate : devices) {
+                if (candidate.getType() == compatibleType) {
+                    return candidate;
+                }
             }
         }
         return null;
