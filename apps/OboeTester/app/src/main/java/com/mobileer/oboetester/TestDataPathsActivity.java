@@ -676,7 +676,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setInstructionsText(deviceText);
 
         if (inputDeviceInfo == null) {
-            deviceText += "\nERROR - cannot find compatible device type for input!";
+            deviceText += "\nERROR - no compatible input device!";
         } else {
             deviceText = "IN: type = "
                     + AudioDeviceInfoConverter.typeToString(inputDeviceInfo.getType())
