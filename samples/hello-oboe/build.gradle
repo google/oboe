@@ -30,6 +30,7 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
+    namespace 'com.google.oboe.samples.hellooboe'
 }
 
 dependencies {

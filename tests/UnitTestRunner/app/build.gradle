@@ -20,6 +20,7 @@ android {
             path file('../../CMakeLists.txt')
         }
     }
+    namespace 'com.google.oboe.tests.unittestrunner'
 }
 
 dependencies {

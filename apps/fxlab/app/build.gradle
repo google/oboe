@@ -18,15 +18,13 @@ apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 
-apply plugin: 'kotlin-android-extensions'
-
 apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 34
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     defaultConfig {
         applicationId "com.mobileer.androidfxlab"
@@ -45,12 +43,12 @@ android {
     externalNativeBuild {
         cmake {
             path "./CMakeLists.txt"
-            version "3.10.2"
         }
     }
     dataBinding {
         enabled = true
     }
+    namespace 'com.mobileer.androidfxlab'
 }
 
 dependencies {

@@ -53,6 +53,7 @@ add_library(hello-oboe SHARED
 
 # Specify the libraries needed for hello-oboe
 target_link_libraries(hello-oboe android log oboe)
+target_link_options(hello-oboe PRIVATE "-Wl,-z,max-page-size=16384")
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.

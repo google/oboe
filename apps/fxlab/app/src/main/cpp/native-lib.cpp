@@ -16,6 +16,7 @@
 
 #include <jni.h>
 
+#include <cassert>
 #include <string>
 #include <functional>
 #include <utility>

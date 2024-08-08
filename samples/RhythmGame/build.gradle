@@ -59,6 +59,7 @@ android {
         }
         */
     }
+    namespace 'com.google.oboe.samples.rhythmgame'
 }
 
 dependencies {
