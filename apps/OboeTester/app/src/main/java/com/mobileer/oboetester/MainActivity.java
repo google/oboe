@@ -100,7 +100,7 @@ public class MainActivity extends BaseOboeTesterActivity {
             int oboePatch = oboeVersion & 0xFF;
             mVersionText = getString(R.string.app_name_version,
                     pinfo.versionCode, pinfo.versionName,
-                    oboeMajor, oboeMinor, oboePatch);
+                    oboeMajor, oboeMinor, oboePatch) + " 16KB pages";
             mVersionTextView.setText(mVersionText);
         } catch (PackageManager.NameNotFoundException e) {
             mVersionTextView.setText(e.getMessage());
