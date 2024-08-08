@@ -33,4 +33,5 @@ include_directories(
 
 # link to oboe
 target_link_libraries(oboetester log oboe atomic)
+target_link_options(oboetester PRIVATE "-Wl,-z,max-page-size=16384")
 
