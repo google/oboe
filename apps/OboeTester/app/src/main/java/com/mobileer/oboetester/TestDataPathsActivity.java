@@ -708,12 +708,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     private void testOutputChannelCounts(AudioDeviceInfo inputDeviceInfo, AudioDeviceInfo outputDeviceInfo) throws InterruptedException {
+        final int maxOutputChannelsToTest = 4; // takes too long
         logSection("Output Channel Counts");
         ArrayList<Integer> channelCountsTested = new ArrayList<Integer>();
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
         int[] outputChannelCounts = outputDeviceInfo.getChannelCounts();
+        // Are the output channels mixed together in the air or in a loopback plug?
         if (isDeviceTypeMixedForLoopback(outputDeviceInfo.getType())) {
             requestedInConfig.setChannelCount(1);
             setInputChannel(0);
@@ -729,22 +731,30 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             testPerformancePaths();
             setOutputChannel(1);
             testPerformancePaths();
+
             // Test channels for each channelCount above 2
             for (int numChannels : outputChannelCounts) {
-                log("numChannels = " + numChannels);
-                if (numChannels > 4) {
-                    log("numChannels forced to 4!");
-                }
-                if (!channelCountsTested.contains(numChannels)) {
-                    requestedOutConfig.setChannelCount(numChannels);
-                    channelCountsTested.add(numChannels);
-                    for (int channel = 0; channel < numChannels; channel++) {
-                        setOutputChannel(channel);
-                        testPerformancePaths();
+                if (numChannels > maxOutputChannelsToTest) {
+                    log("skip numChannels = " + numChannels);
+                } else {
+                    if (!channelCountsTested.contains(numChannels)) {
+                        log("--- test numChannels = " + numChannels);
+                        requestedOutConfig.setChannelCount(numChannels);
+                        channelCountsTested.add(numChannels);
+                        for (int channel = 0; channel < numChannels; channel++) {
+                            setOutputChannel(channel);
+                            testPerformancePaths();
+                        }
                     }
                 }
+
             }
         } else {
+            // This device does not mix so we have to match the input and output channel indices.
+            // Find the maximum number of input channels.
+            int[] inputChannelCounts = inputDeviceInfo.getChannelCounts();
+            int maxInputChannels = findLargestChannelCount(inputChannelCounts);
+            int maxInputChannelsToTest = Math.min(maxOutputChannelsToTest, maxInputChannels);
             // test mono
             testMatchingChannels(1);
             channelCountsTested.add(1);
@@ -753,14 +763,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             channelCountsTested.add(2);
             // Test matching channels for each channelCount above 2
             for (int numChannels : outputChannelCounts) {
-                log("numChannels = " + numChannels);
-                if (numChannels > 4) {
-                    log("numChannels forced to 4!");
-                    numChannels = 4;
-                }
-                if (!channelCountsTested.contains(numChannels)) {
-                    testMatchingChannels(numChannels);
-                    channelCountsTested.add(numChannels);
+                if (numChannels > maxInputChannelsToTest) {
+                    log("skip numChannels = " + numChannels + " because > #inputs");
+                } else {
+                    if (!channelCountsTested.contains(numChannels)) {
+                        log("--- test numChannels = " + numChannels);
+                        testMatchingChannels(numChannels);
+                        channelCountsTested.add(numChannels);
+                    }
                 }
             }
         }
