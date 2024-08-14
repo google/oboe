@@ -38,6 +38,7 @@ target_link_libraries(liveEffect
         android
         atomic
         log)
+target_link_options(liveEffect PRIVATE "-Wl,-z,max-page-size=16384")
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable it after done debugging.

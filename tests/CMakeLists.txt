@@ -44,3 +44,4 @@ add_executable(
         )
 
 target_link_libraries(testOboe gtest oboe)
+target_link_options(testOboe PRIVATE "-Wl,-z,max-page-size=16384")

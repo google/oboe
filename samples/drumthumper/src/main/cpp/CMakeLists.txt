@@ -71,3 +71,4 @@ target_link_libraries( # Specifies the target library.
         # Links the target library to the log library
         # included in the NDK.
         log)
+target_link_options(drumthumper PRIVATE "-Wl,-z,max-page-size=16384")
