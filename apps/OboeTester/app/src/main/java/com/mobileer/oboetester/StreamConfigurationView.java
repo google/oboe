@@ -90,7 +90,6 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualSessionIdView;
     private CheckBox mRequestAudioEffect;
 
-    private TextView mStreamInfoView;
     private TextView mStreamStatusView;
     private TextView mOptionExpander;
     private String mHideSettingsText;
@@ -318,8 +317,6 @@ public class StreamConfigurationView extends LinearLayout {
         mActualContentTypeView = (TextView) findViewById(R.id.actualContentType);
         mContentTypeSpinner = (Spinner) findViewById(R.id.spinnerContentType);
 
-        mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
-
         mStreamStatusView = (TextView) findViewById(R.id.statusView);
 
         mDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.devices_spinner);
@@ -484,26 +481,6 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getChannelMask();
         mActualChannelMaskView.setText(StreamConfiguration.convertChannelMaskToText(value));
         mActualCapacityView.setText(actualConfiguration.getBufferCapacityInFrames() + "");
-
-        boolean isMMap = actualConfiguration.isMMap();
-
-        String msg = "";
-        msg += "burst = " + actualConfiguration.getFramesPerBurst();
-        msg += ", devID = " + actualConfiguration.getDeviceId();
-        msg += ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy");
-        msg += (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "");
-
-        int hardwareChannelCount = actualConfiguration.getHardwareChannelCount();
-        int hardwareSampleRate = actualConfiguration.getHardwareSampleRate();
-        int hardwareFormat = actualConfiguration.getHardwareFormat();
-        msg += "\nHW: #ch=" + (hardwareChannelCount ==
-                StreamConfiguration.UNSPECIFIED ? "?" : hardwareChannelCount);
-        msg += ", SR=" + (hardwareSampleRate ==
-                StreamConfiguration.UNSPECIFIED ? "?" : hardwareSampleRate);
-        msg += ", format=" + (hardwareFormat == StreamConfiguration.UNSPECIFIED ?
-               "?" : StreamConfiguration.convertFormatToText(hardwareFormat));
-
-        mStreamInfoView.setText(msg);
 
         mHideableView.requestLayout();
     }

@@ -161,6 +161,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native void setHearWorkload(int streamIndex, boolean checked);
 
+    @Override
     public int getNativeApi() {
         return getNativeApi(streamIndex);
     }
@@ -172,77 +173,92 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native int getFramesPerBurst(int streamIndex);
 
+    @Override
     public int getSharingMode() {
         return getSharingMode(streamIndex);
     }
     private native int getSharingMode(int streamIndex);
 
+    @Override
     public int getPerformanceMode() {
         return getPerformanceMode(streamIndex);
     }
     private native int getPerformanceMode(int streamIndex);
 
+    @Override
     public int getInputPreset() {
         return getInputPreset(streamIndex);
     }
     private native int getInputPreset(int streamIndex);
 
+    @Override
     public int getSampleRate() {
         return getSampleRate(streamIndex);
     }
     private native int getSampleRate(int streamIndex);
 
+    @Override
     public int getFormat() {
         return getFormat(streamIndex);
     }
     private native int getFormat(int streamIndex);
 
+    @Override
     public int getUsage() {
         return getUsage(streamIndex);
     }
     private native int getUsage(int streamIndex);
 
+    @Override
     public int getContentType() {
         return getContentType(streamIndex);
     }
     private native int getContentType(int streamIndex);
 
+    @Override
     public int getChannelCount() {
         return getChannelCount(streamIndex);
     }
     private native int getChannelCount(int streamIndex);
 
+    @Override
     public int getChannelMask() {
         return getChannelMask(streamIndex);
     }
     private native int getChannelMask(int streamIndex);
 
+    @Override
     public int getHardwareChannelCount() {
         return getHardwareChannelCount(streamIndex);
     }
     private native int getHardwareChannelCount(int streamIndex);
 
+    @Override
     public int getHardwareSampleRate() {
         return getHardwareSampleRate(streamIndex);
     }
     private native int getHardwareSampleRate(int streamIndex);
 
+    @Override
     public int getHardwareFormat() {
         return getHardwareFormat(streamIndex);
     }
     private native int getHardwareFormat(int streamIndex);
 
+    @Override
     public int getDeviceId() {
         return getDeviceId(streamIndex);
     }
     private native int getDeviceId(int streamIndex);
 
+    @Override
     public int getSessionId() {
         return getSessionId(streamIndex);
     }
     private native int getSessionId(int streamIndex);
 
 
+    @Override
     public boolean isMMap() {
         return isMMap(streamIndex);
     }

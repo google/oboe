@@ -217,6 +217,8 @@ public abstract class AudioStreamBase {
         return mActualStreamConfiguration.getSampleRate();
     }
 
+    public abstract int getNativeApi();
+
     public int getFramesPerBurst() {
         return mActualStreamConfiguration.getFramesPerBurst();
     }
@@ -255,4 +257,29 @@ public abstract class AudioStreamBase {
 
     public abstract int getXRunCount();
 
+    public abstract int getSharingMode();
+
+    public abstract int getPerformanceMode();
+
+    public abstract int getInputPreset();
+
+    public abstract int getFormat();
+
+    public abstract int getUsage();
+
+    public abstract int getContentType();
+
+    public abstract int getChannelMask();
+
+    public abstract int getHardwareChannelCount();
+
+    public abstract int getHardwareSampleRate();
+
+    public abstract int getHardwareFormat();
+
+    public abstract int getDeviceId();
+
+    public abstract int getSessionId();
+
+    public abstract boolean isMMap();
 }
