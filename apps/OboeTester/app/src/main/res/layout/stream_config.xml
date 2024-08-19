@@ -330,14 +330,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8sp"
-                android:text="Automatic Gain Control" />
+                android:text="AGC" />
 
             <CheckBox
                 android:id="@+id/checkBoxAcousticEchoCanceler"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8sp"
-                android:text="Acoustic Echo Canceler" />
+                android:text="AEC" />
+
+            <CheckBox
+                android:id="@+id/checkBoxNoiseSuppressor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="NoNoise" />
 
         </LinearLayout>
 
