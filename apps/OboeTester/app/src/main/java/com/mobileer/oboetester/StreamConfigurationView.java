@@ -590,6 +590,7 @@ public class StreamConfigurationView extends LinearLayout {
                     Log.e(TAG, String.format(Locale.getDefault(), "Could not create AcousticEchoCanceler"));
                 }
             }
+
             // If AGC is not available, the checkbox will be disabled in initializeViews().
             if (mAutomaticGainControlCheckBox.isEnabled()) {
                 mAutomaticGainControl = AutomaticGainControl.create(sessionId);
@@ -602,7 +603,8 @@ public class StreamConfigurationView extends LinearLayout {
                     Log.e(TAG, String.format(Locale.getDefault(), "Could not create AutomaticGainControl"));
                 }
             }
-            // If AEC is not available, the checkbox will be disabled in initializeViews().
+
+            // If Noise Suppressor is not available, the checkbox will be disabled in initializeViews().
             if (mNoiseSuppressorCheckBox.isEnabled()) {
                 mNoiseSuppressor = NoiseSuppressor.create(sessionId);
                 if (mNoiseSuppressor != null) {
