@@ -69,6 +69,16 @@ public class AudioQueryTools {
                 + packageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST));
         report.append("\nUSB Accessory Feature: "
                 + packageManager.hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY));
+        report.append("\nBluetooth Feature    : "
+                + packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH));
+        report.append("\nBluetooth LE Feature : "
+                + packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE));
+        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+            report.append("\nTelecom Feature      : "
+                    + packageManager.hasSystemFeature(PackageManager.FEATURE_TELECOM));
+            report.append("\nTelephonyCall Feature: "
+                    + packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING));
+        }
         return report.toString();
     }
 
