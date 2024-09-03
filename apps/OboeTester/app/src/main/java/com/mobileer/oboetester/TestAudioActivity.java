@@ -142,7 +142,23 @@ abstract class TestAudioActivity extends AppCompatActivity {
                         // Handler runs this on the main UI thread.
                         int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
                         status.framesPerCallback = getFramesPerCallback();
+                        boolean isMMap = streamContext.tester.getCurrentAudioStream().isMMap();
                         String msg = "";
+                        msg += "burst = " + streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
+                        msg += ", devID = " + streamContext.tester.getCurrentAudioStream().getDeviceId();
+                        msg += ", " + (streamContext.tester.getCurrentAudioStream().isMMap() ? "MMAP" : "Legacy");
+                        msg += (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(streamContext.tester.getCurrentAudioStream().getSharingMode()) : "");
+
+                        int hardwareChannelCount = streamContext.tester.getCurrentAudioStream().getHardwareChannelCount();
+                        int hardwareSampleRate = streamContext.tester.getCurrentAudioStream().getHardwareSampleRate();
+                        int hardwareFormat = streamContext.tester.getCurrentAudioStream().getHardwareFormat();
+                        msg += "\nHW: #ch=" + (hardwareChannelCount ==
+                                StreamConfiguration.UNSPECIFIED ? "?" : hardwareChannelCount);
+                        msg += ", SR=" + (hardwareSampleRate ==
+                                StreamConfiguration.UNSPECIFIED ? "?" : hardwareSampleRate);
+                        msg += ", format=" + (hardwareFormat == StreamConfiguration.UNSPECIFIED ?
+                            "?" : StreamConfiguration.convertFormatToText(hardwareFormat)) + "\n";
+
                         msg += "timestamp.latency = " + latencyStatistics.dump() + "\n";
                         msg += status.dump(framesPerBurst);
                         streamContext.configurationView.setStatusText(msg);
