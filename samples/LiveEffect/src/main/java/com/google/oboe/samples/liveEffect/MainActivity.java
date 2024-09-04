@@ -130,6 +130,10 @@ public class MainActivity extends Activity
         LiveEffectEngine.setDefaultStreamValues(this);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
+        if (!isRecordPermissionGranted()){
+            requestRecordPermission();
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Intent serviceIntent = new Intent(ACTION_START, null, this,
                     DuplexStreamForegroundService.class);
