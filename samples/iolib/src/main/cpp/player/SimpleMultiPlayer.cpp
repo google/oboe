@@ -85,11 +85,14 @@ bool SimpleMultiPlayer::openStream() {
     // we will resample source data to device rate, so take default sample rate
     builder.setDataCallback(mDataCallback);
     builder.setErrorCallback(mErrorCallback);
-    builder.setPerformanceMode(PerformanceMode::LowLatency);
+    builder.setPerformanceMode(mPerformanceMode);
     builder.setSharingMode(SharingMode::Exclusive);
-    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+//    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 
+    bool wasMMapEnabled = OboeExtensions::isMMapEnabled();
+    OboeExtensions::setMMapEnabled(mMMapEnabled);
     Result result = builder.openStream(mAudioStream);
+    OboeExtensions::setMMapEnabled(wasMMapEnabled);
     if (result != Result::OK){
         __android_log_print(
                 ANDROID_LOG_ERROR,
@@ -119,7 +122,7 @@ bool SimpleMultiPlayer::startStream() {
     int tryCount = 0;
     while (tryCount < 3) {
         bool wasOpenSuccessful = true;
-        // Assume that apenStream() was called successfully before startStream() call.
+        // Assume that openStream() was called successfully before startStream() call.
         if (tryCount > 0) {
             usleep(20 * 1000); // Sleep between tries to give the system time to settle.
             wasOpenSuccessful = openStream(); // Try to open the stream again after the first try.

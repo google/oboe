@@ -68,6 +68,22 @@ public:
     void setGain(int index, float gain);
     float getGain(int index);
 
+    oboe::PerformanceMode getPerformanceMode() const {
+        return mPerformanceMode;
+    }
+
+    void setPerformanceMode(oboe::PerformanceMode performanceMode) {
+        mPerformanceMode = performanceMode;
+    }
+
+    bool isMMapEnabled() const {
+        return mMMapEnabled;
+    }
+
+    void setMMapEnabled(bool enabled) {
+        mMMapEnabled = enabled;
+    }
+
 private:
     class MyDataCallback : public oboe::AudioStreamDataCallback {
     public:
@@ -101,6 +117,10 @@ private:
     // Playback Audio attributes
     int32_t mChannelCount;
     int32_t mSampleRate;
+    oboe::PerformanceMode mPerformanceMode = oboe::PerformanceMode::LowLatency;
+
+private:
+    bool mMMapEnabled = false;
 
     // Sample Data
     int32_t mNumSampleBuffers;

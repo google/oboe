@@ -135,6 +135,8 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_clearOu
  */
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
     sDTPlayer.resetAll();
+    sDTPlayer.teardownAudioStream();
+    usleep(40 * 1000); // give samples time to stop
     if (sDTPlayer.openStream() && sDTPlayer.startStream()){
         __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");
     } else {
@@ -160,6 +162,18 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_setGain
 JNIEXPORT jfloat JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_getGain(
         JNIEnv *env, jobject thiz, jint index) {
     return sDTPlayer.getGain(index);
+}
+
+JNIEXPORT void JNICALL
+Java_com_plausiblesoftware_drumthumper_DrumPlayer_setLatencyMode(JNIEnv *env, jobject thiz,
+                                                                 jint latencyMode) {
+    const int LATENCY_LOW_MMAP = 0; // Must match definitions in DrumPlayer.java
+    const int LATENCY_NORMAL = 2;
+    sDTPlayer.setMMapEnabled(latencyMode == LATENCY_LOW_MMAP);
+    sDTPlayer.setPerformanceMode(
+            (latencyMode == LATENCY_NORMAL)
+            ? oboe::PerformanceMode::None
+            : oboe::PerformanceMode::LowLatency);
 }
 
 #ifdef __cplusplus
