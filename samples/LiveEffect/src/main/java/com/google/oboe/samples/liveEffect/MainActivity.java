@@ -134,12 +134,6 @@ public class MainActivity extends Activity
             requestRecordPermission();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent serviceIntent = new Intent(ACTION_START, null, this,
-                    DuplexStreamForegroundService.class);
-            startForegroundService(serviceIntent);
-        }
-
         onStartTest();
     }
 
@@ -209,11 +203,6 @@ public class MainActivity extends Activity
 
     private void startEffect() {
         Log.d(TAG, "Attempting to start");
-
-        if (!isRecordPermissionGranted()){
-            requestRecordPermission();
-            return;
-        }
 
         boolean success = LiveEffectEngine.setEffectOn(true);
         if (success) {
@@ -290,9 +279,15 @@ public class MainActivity extends Activity
                     getString(R.string.need_record_audio_permission),
                     Toast.LENGTH_SHORT)
                     .show();
+            EnableAudioApiUI(false);
+            toggleEffectButton.setEnabled(false);
         } else {
-            // Permission was granted, start live effect
-            toggleEffect();
+            // Permission was granted, start foreground service.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Intent serviceIntent = new Intent(ACTION_START, null, this,
+                        DuplexStreamForegroundService.class);
+                startForegroundService(serviceIntent);
+            }
         }
     }
 }
