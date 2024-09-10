@@ -135,14 +135,20 @@ After that, simply press the share button and you should be able to email this t
 
 ### Data Paths
 
-This checks for dead speaker and mic channels, dead Input Presets and other audio data path problems.
+This checks for dead channels, broken Input Presets and other audio data path problems.
 
 1. Tap "DATA PATHS" button.
-1. Unplug or disconnect any headphones.
+1. Connect an analog or USB loopback adapter if desired.
 1. Set volume to medium high.
-1. Place the phone on a table in a quiet room and hit START.
-1. Wait a few minutes, quietly, for the test to complete. You will hear some sine tones.
+1. Place the phone on a table and hit START.
+2. If you are testing the speaker/mic combination then the room must be quiet. You will hear some sine tones.
+1. Wait a few minutes, quietly, for the test to complete.
 1. You will get a report at the end that you can SHARE by GMail or Drive.
+
+When a subtest fails it will write a WAV file of the recorded audio to storage. You can pull the file from the Android device and
+view it using Audacity of other audio editor. For example, if test #7 failed, enter:
+
+    adb pull /storage/emulated/0/Android/data/com.mobileer.oboetester/files/Music/glitch_007.wav ~/.
 
 ### External Tap-to-Tone
 
