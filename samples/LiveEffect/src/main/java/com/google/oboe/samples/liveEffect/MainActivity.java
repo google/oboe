@@ -132,6 +132,8 @@ public class MainActivity extends Activity
 
         if (!isRecordPermissionGranted()){
             requestRecordPermission();
+        } else {
+            startForegroundService();
         }
 
         onStartTest();
@@ -260,6 +262,14 @@ public class MainActivity extends Activity
         statusText.setText(R.string.status_warning);
     }
 
+    private void startForegroundService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_START, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -283,11 +293,7 @@ public class MainActivity extends Activity
             toggleEffectButton.setEnabled(false);
         } else {
             // Permission was granted, start foreground service.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Intent serviceIntent = new Intent(ACTION_START, null, this,
-                        DuplexStreamForegroundService.class);
-                startForegroundService(serviceIntent);
-            }
+            startForegroundService();
         }
     }
 }
