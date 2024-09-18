@@ -130,10 +130,10 @@ public class MainActivity extends Activity
         LiveEffectEngine.setDefaultStreamValues(this);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent serviceIntent = new Intent(ACTION_START, null, this,
-                    DuplexStreamForegroundService.class);
-            startForegroundService(serviceIntent);
+        if (!isRecordPermissionGranted()){
+            requestRecordPermission();
+        } else {
+            startForegroundService();
         }
 
         onStartTest();
@@ -206,11 +206,6 @@ public class MainActivity extends Activity
     private void startEffect() {
         Log.d(TAG, "Attempting to start");
 
-        if (!isRecordPermissionGranted()){
-            requestRecordPermission();
-            return;
-        }
-
         boolean success = LiveEffectEngine.setEffectOn(true);
         if (success) {
             statusText.setText(R.string.status_playing);
@@ -267,6 +262,14 @@ public class MainActivity extends Activity
         statusText.setText(R.string.status_warning);
     }
 
+    private void startForegroundService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_START, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -286,9 +289,11 @@ public class MainActivity extends Activity
                     getString(R.string.need_record_audio_permission),
                     Toast.LENGTH_SHORT)
                     .show();
+            EnableAudioApiUI(false);
+            toggleEffectButton.setEnabled(false);
         } else {
-            // Permission was granted, start live effect
-            toggleEffect();
+            // Permission was granted, start foreground service.
+            startForegroundService();
         }
     }
 }
