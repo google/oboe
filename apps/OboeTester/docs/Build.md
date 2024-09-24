@@ -10,7 +10,7 @@ Then use Android Studio (3.3 or above) to build the app in this "apps/OboeTester
 
 ## Requirements
 
-* AndroidStudio
+* Android Studio
 * Android device or emulator
 * git installed on your computer (optional)
 * USB cable to connect your computer and your phone
