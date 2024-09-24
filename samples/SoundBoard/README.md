@@ -37,7 +37,7 @@ The compiler optimization flag `-Ofast` can be found in [CMakeLists.txt](CMakeLi
 
 Each SynthSound is a series of 5 Oscillators, creating a pleasant sounding note when combined.
 
-There are 30 notes, corresponding to G3 to C6, moving left to right, top to bottom.
+The number of notes depends on the shape of the screen, with G3 being the first note.
 
 In order to determine whether a note should be played, MusicTileView demonstrates how to keep track of where each finger is.
 
