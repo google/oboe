@@ -46,6 +46,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_DATA_PATHS = "data_paths";
     public static final String VALUE_TEST_NAME_OUTPUT = "output";
     public static final String VALUE_TEST_NAME_INPUT = "input";
+    public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
 
     static {
         // Must match name in CMakeLists.txt
@@ -184,6 +185,9 @@ public class MainActivity extends BaseOboeTesterActivity {
                 intent.putExtras(bundle);
             } else if (VALUE_TEST_NAME_OUTPUT.equals(testName)) {
                 intent = new Intent(this, TestOutputActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_CPU_LOAD.equals(testName)) {
+                intent = new Intent(this, DynamicWorkloadActivity.class);
                 intent.putExtras(bundle);
             }
         }

@@ -859,7 +859,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
             int framesPerBurst = streamTester.getCurrentAudioStream().getFramesPerBurst();
             status.framesPerCallback = getFramesPerCallback();
             report.append("timestamp.latency = " + latencyStatistics.dump() + "\n");
-            report.append(status.dump(framesPerBurst));
+            // TODO The following report is not in a name=value format!
+            // report.append(status.dump(framesPerBurst));
         }
 
         return report.toString();
