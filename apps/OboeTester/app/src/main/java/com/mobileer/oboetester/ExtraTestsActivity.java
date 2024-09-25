@@ -16,7 +16,7 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     }
 
     public void onLaunchExternalTapTest(View view) {
-        launchTestThatRequiresRecordingPermissions(ExternalTapToToneActivity.class);
+        launchTestThatDoesRecording(ExternalTapToToneActivity.class);
     }
 
     public void onLaunchPlugLatencyTest(View view) {
@@ -28,7 +28,7 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     }
 
     public void onLaunchRouteDuringCallbackTest(View view) {
-        launchTestThatRequiresRecordingPermissions(TestRouteDuringCallbackActivity.class);
+        launchTestThatDoesRecording(TestRouteDuringCallbackActivity.class);
     }
 
     public void onLaunchDynamicWorkloadTest(View view) {

@@ -87,7 +87,7 @@ public abstract class BaseOboeTesterActivity extends AppCompatActivity
     /**
      * If needed, request recording permission before running test.
      */
-    protected void launchTestThatRequiresRecordingPermissions(Class clazz) {
+    protected void launchTestThatDoesRecording(Class clazz) {
         mTestClass = clazz;
         if (isRecordPermissionGranted()) {
             beginTestThatRequiresRecording();
