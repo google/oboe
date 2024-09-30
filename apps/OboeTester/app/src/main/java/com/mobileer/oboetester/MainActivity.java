@@ -206,61 +206,49 @@ public class MainActivity extends BaseOboeTesterActivity {
     }
 
     public void onLaunchTestOutput(View view) {
-        if (mForegroundServiceCheckBox.isChecked()) {
-            launchTestThatRequiresRecordingPermissions(TestOutputActivity.class);
-        } else {
-            launchTestActivity(TestOutputActivity.class);
-        }
+        launchTestActivity(TestOutputActivity.class);
     }
 
     public void onLaunchTestInput(View view) {
-        launchTestThatRequiresRecordingPermissions(TestInputActivity.class);
+        launchTestThatDoesRecording(TestInputActivity.class);
     }
 
     public void onLaunchTapToTone(View view) {
-        launchTestThatRequiresRecordingPermissions(TapToToneActivity.class);
+        launchTestThatDoesRecording(TapToToneActivity.class);
     }
 
     public void onLaunchRecorder(View view) {
-        launchTestThatRequiresRecordingPermissions(RecorderActivity.class);
+        launchTestThatDoesRecording(RecorderActivity.class);
     }
 
     public void onLaunchEcho(View view) {
-        launchTestThatRequiresRecordingPermissions(EchoActivity.class);
+        launchTestThatDoesRecording(EchoActivity.class);
     }
 
     public void onLaunchRoundTripLatency(View view) {
-        launchTestThatRequiresRecordingPermissions(RoundTripLatencyActivity.class);
+        launchTestThatDoesRecording(RoundTripLatencyActivity.class);
     }
 
     public void onLaunchManualGlitchTest(View view) {
-        launchTestThatRequiresRecordingPermissions(ManualGlitchActivity.class);
+        launchTestThatDoesRecording(ManualGlitchActivity.class);
     }
 
-    public void onLaunchAutoGlitchTest(View view) { launchTestThatRequiresRecordingPermissions(AutomatedGlitchActivity.class); }
+    public void onLaunchAutoGlitchTest(View view) { launchTestThatDoesRecording(AutomatedGlitchActivity.class); }
 
     public void onLaunchTestDisconnect(View view) {
-        launchTestThatRequiresRecordingPermissions(TestDisconnectActivity.class);
+        launchTestThatDoesRecording(TestDisconnectActivity.class);
     }
 
     public void onLaunchTestDataPaths(View view) {
-        launchTestThatRequiresRecordingPermissions(TestDataPathsActivity.class);
+        launchTestThatDoesRecording(TestDataPathsActivity.class);
     }
 
     public void onLaunchTestDeviceReport(View view)  {
-        if (mForegroundServiceCheckBox.isChecked()) {
-            launchTestThatRequiresRecordingPermissions(DeviceReportActivity.class);
-        } else {
-            launchTestActivity(DeviceReportActivity.class);
-        }
+        launchTestActivity(DeviceReportActivity.class);
     }
 
     public void onLaunchExtratests(View view) {
-        if (mForegroundServiceCheckBox.isChecked()) {
-            launchTestThatRequiresRecordingPermissions(ExtraTestsActivity.class);
-        } else {
-            launchTestActivity(ExtraTestsActivity.class);
-        }
+        launchTestActivity(ExtraTestsActivity.class);
     }
 
     private void applyUserOptions() {

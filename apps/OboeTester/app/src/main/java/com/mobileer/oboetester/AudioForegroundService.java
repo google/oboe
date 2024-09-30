@@ -61,15 +61,15 @@ public class AudioForegroundService extends Service {
         Log.i(TAG, "Receive onStartCommand" + intent);
         switch (intent.getAction()) {
             case ACTION_START:
-                Log.i(TAG, "Receive ACTION_START" + intent.getExtras());
+                Log.i(TAG, "Receive ACTION_START " + intent.getExtras());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    startForeground(1, buildNotification(),
-                            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                                    | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+                    int serviceTypes = intent.getIntExtra("service_types", 0);
+                    Log.i(TAG, "ServiceTypes: " + serviceTypes);
+                    startForeground(1, buildNotification(), serviceTypes);
                 }
                 break;
             case ACTION_STOP:
-                Log.i(TAG, "Receive ACTION_STOP" + intent.getExtras());
+                Log.i(TAG, "Receive ACTION_STOP " + intent.getExtras());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     stopForeground(STOP_FOREGROUND_REMOVE);
                 }

@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -195,6 +196,41 @@ abstract class TestAudioActivity extends AppCompatActivity {
         return mForegroundServiceEnabled;
     }
 
+    public int getServiceType() {
+        switch(getActivityType()) {
+            case ACTIVITY_TEST_OUTPUT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            case ACTIVITY_TEST_INPUT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_TAP_TO_TONE:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_RECORD_PLAY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_ECHO:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_RT_LATENCY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_GLITCHES:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_TEST_DISCONNECT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DATA_PATHS:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DYNAMIC_WORKLOAD:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            default:
+                Log.i(TAG, "getServiceType() called on unknown activity type " + getActivityType());
+                return 0;
+        }
+    }
+
     public void onStreamClosed() {
     }
 
@@ -343,6 +379,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
             String action = enabled ? ACTION_START : ACTION_STOP;
             Intent serviceIntent = new Intent(action, null, this,
                     AudioForegroundService.class);
+            serviceIntent.putExtra("service_types", getServiceType());
             startForegroundService(serviceIntent);
         }
     }
