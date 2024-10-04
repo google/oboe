@@ -62,7 +62,7 @@
             android:layout_weight="1"
             android:onClick="onMeasure"
             android:text="@string/measure"
-            android:textSize="12sp" />
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/button_average"
@@ -71,7 +71,17 @@
             android:layout_height="wrap_content"
             android:onClick="onAverage"
             android:text="@string/average"
-            android:textSize="12sp" />
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/button_scan"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:onClick="onScan"
+            android:text="@string/scan"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/button_cancel"
@@ -81,7 +91,7 @@
             android:enabled="false"
             android:onClick="onCancel"
             android:text="@string/cancel"
-            android:textSize="12sp" />
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/button_share"
@@ -90,7 +100,7 @@
             android:layout_height="wrap_content"
             android:onClick="onShareFile"
             android:text="@string/share"
-            android:textSize="12sp" />
+            android:textSize="10sp" />
     </LinearLayout>
 
     <com.mobileer.oboetester.CommunicationDeviceView

@@ -47,17 +47,49 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private TextView mAnalyzerView;
     private Button   mMeasureButton;
     private Button   mAverageButton;
+    private Button   mScanButton;
     private Button   mCancelButton;
     private Button   mShareButton;
     private boolean  mHasRecording = false;
 
     private int     mBufferBursts = -1;
+    private int     mOutputBufferCapacityInBursts = -1;
+    private int     mOutputFramesPerBurst;
+    private int     mActualBufferBursts;
+
     private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
 
     DoubleStatistics mTimestampLatencyStats = new DoubleStatistics(); // for single measurement
 
+    protected abstract class MultipleLatencyTestRunner {
+        final static int AVERAGE_TEST_DELAY_MSEC = 1000; // arbitrary
+        boolean mActive;
+        String  mLastReport = "";
+
+        abstract String onAnalyserDone();
+
+        public abstract void start();
+
+        public void clear() {
+            mActive = false;
+            mLastReport = "";
+        }
+
+        public void cancel() {
+            mActive = false;
+        }
+
+        public boolean isActive() {
+            return mActive;
+        }
+
+        public String getLastReport() {
+            return mLastReport;
+        }
+    }
+
     // Run the test several times and report the average latency.
-    protected class AverageLatencyTestRunner {
+    protected class AverageLatencyTestRunner extends MultipleLatencyTestRunner {
         private final static int AVERAGE_TEST_DELAY_MSEC = 1000; // arbitrary
         private static final int GOOD_RUNS_REQUIRED = 5; // arbitrary
         private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
@@ -66,14 +98,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         DoubleStatistics mLatencies = new DoubleStatistics();
         DoubleStatistics mConfidences = new DoubleStatistics();
         DoubleStatistics mTimestampLatencies = new DoubleStatistics(); // for multiple measurements
-        private boolean mActive;
-        private String  mLastReport = "";
 
         private int getGoodCount() {
             return mLatencies.count();
         }
 
         // Called on UI thread.
+        @Override
         String onAnalyserDone() {
             String message;
             boolean reschedule = false;
@@ -155,6 +186,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
 
         // Called on UI thread.
+        @Override
         public void start() {
             mLatencies = new DoubleStatistics();
             mConfidences = new DoubleStatistics();
@@ -165,24 +197,187 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             measureSingleLatency();
         }
 
-        public void clear() {
-            mActive = false;
-            mLastReport = "";
-        }
-
-        public void cancel() {
-            mActive = false;
-        }
-
-        public boolean isActive() {
-            return mActive;
-        }
-
-        public String getLastReport() {
-            return mLastReport;
-        }
     }
     AverageLatencyTestRunner mAverageLatencyTestRunner = new AverageLatencyTestRunner();
+    MultipleLatencyTestRunner mCurrentLatencyTestRunner = mAverageLatencyTestRunner;
+
+    // Run the test with various buffer sizes to detect DSP MMAP position errors.
+    protected class ScanLatencyTestRunner extends MultipleLatencyTestRunner {
+        private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
+        private int mBadCount = 0; // number of bad measurements
+        private int mLowBufferBursts = -1;
+        private int mLowBufferLatency = -1;
+        private int mMiddleBufferBursts = -1;
+        private int mMiddleBufferLatency = -1;
+        private int mHighBufferBursts = -1;
+        private int mHighBufferLatency = -1;
+        private String mSubMessage = "---";
+
+        private static final int STATE_IDLE = 0;
+        private static final int STATE_MEASURE_LOW = 1;
+        private static final int STATE_MEASURE_HIGH = 2;
+        private static final int STATE_MEASURE_MIDDLE = 3;
+        private static final int STATE_DONE = 4;
+        private int mState = STATE_IDLE;
+        // Called on UI thread.
+        @Override
+        String onAnalyserDone() {
+            String message;
+            boolean reschedule = true;
+            boolean allGood = false;
+            mSubMessage = "unknown";
+            if (!mActive) {
+                message = "";
+                reschedule = false;
+            } else if (getMeasuredResult() != 0) {
+                mBadCount++;
+                if (mBadCount > MAX_BAD_RUNS_ALLOWED) {
+                    cancel();
+                    reschedule = false;
+                    updateButtons(false);
+                    message = "averaging cancelled due to error\n";
+                } else {
+                    message = "skipping this bad run, "
+                            + mBadCount + " of " + MAX_BAD_RUNS_ALLOWED + " max\n";
+                    reschedule = true;
+                }
+            } else {
+                int latencyFrames = getMeasuredLatency();
+                double confidence = getMeasuredConfidence();
+                switch (mState) {
+                    case STATE_MEASURE_LOW:
+                        mLowBufferLatency = latencyFrames;
+                        mLowBufferBursts = mActualBufferBursts;
+                        // Now we measure the high side.
+                        mHighBufferBursts = mOutputBufferCapacityInBursts;
+                        mBufferBursts = mHighBufferBursts;
+                        mSubMessage = "low buffer";
+                        mState = STATE_MEASURE_HIGH;
+                        break;
+                    case STATE_MEASURE_HIGH:
+                        mHighBufferLatency = latencyFrames;
+                        mHighBufferBursts = mActualBufferBursts;
+                        mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
+                        mBufferBursts = mMiddleBufferBursts;
+                        mSubMessage = "high buffer";
+                        mState = STATE_MEASURE_MIDDLE;
+                        break;
+                    case STATE_MEASURE_MIDDLE:
+                        mMiddleBufferLatency = latencyFrames;
+                        mMiddleBufferBursts = mActualBufferBursts;
+                        // Check to see which side is bad.
+                        if (confidence < 0.5) {
+                            // We may have landed on the DSP so we got a scrambled result.
+                            reschedule = false;
+                            mSubMessage = "on top of DSP!";
+                            mState = STATE_DONE;
+                        } else if (!isLatencyLinear(mLowBufferBursts,
+                                mLowBufferLatency,
+                                mMiddleBufferBursts,
+                                mMiddleBufferLatency)) {
+                            // bottom half was bad so subdivide it
+                            mHighBufferBursts = mMiddleBufferBursts;
+                            mHighBufferLatency = mMiddleBufferLatency;
+                            mSubMessage = "low half not linear";
+                        } else if (!isLatencyLinear(mMiddleBufferBursts,
+                                mMiddleBufferLatency,
+                                mHighBufferBursts,
+                                mHighBufferLatency)) {
+                            // top half was bad so subdivide it
+                            mLowBufferBursts = mMiddleBufferBursts;
+                            mLowBufferLatency = mMiddleBufferLatency;
+                            mSubMessage = "high half not linear";
+                        } else {
+                            // Both sides are linear so we are good.
+                            allGood = true;
+                            reschedule = false;
+                            mSubMessage = "both halves are linear";
+                            mState = STATE_DONE;
+                        }
+                        if (reschedule) {
+                            if ((mHighBufferBursts - mLowBufferBursts) <= 1) {
+                                allGood = false;
+                                reschedule = false;
+                                mSubMessage = "ERROR - DSP reading between "
+                                        + mLowBufferBursts + " and "
+                                        + mHighBufferBursts + " bursts!";
+                            } else {
+                                mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
+                                mBufferBursts = mMiddleBufferBursts;
+                                //mSubMessage = "subdivide to " + mMiddleBufferBursts;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                if (allGood) {
+                    // Close enough.
+                    reschedule = false;
+                    mSubMessage = "PASS - no discontinuity";
+                }
+                message = reportResults();
+            }
+            if (reschedule) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        measureSingleLatency();
+                    }
+                }, AVERAGE_TEST_DELAY_MSEC);
+            } else {
+                mActive = false;
+                updateButtons(false);
+            }
+            return message;
+        }
+
+        private boolean isLatencyLinear(int bufferBursts1, int bufferLatency1,
+                                        int bufferBursts2, int bufferLatency2) {
+            int bufferFrames1 = bufferBursts1 * mOutputFramesPerBurst;
+            int bufferFrames2 = bufferBursts2 * mOutputFramesPerBurst;
+            int expectedLatencyDifference = bufferFrames2 - bufferFrames1;
+            int actualLatencyDifference = bufferLatency2 - bufferLatency1;
+            double deviation = Math.abs(expectedLatencyDifference - actualLatencyDifference)
+                    / (double) expectedLatencyDifference;
+            return deviation < 0.2;
+        }
+
+        private String reportResults() {
+            String message;
+            message = "buffer.bursts.low = " + mLowBufferBursts + "\n";
+            message += "latency.frames.low = " + mLowBufferLatency + "\n";
+            message += "buffer.bursts.middle = " + mMiddleBufferBursts + "\n";
+            message += "latency.frames.middle = " + mMiddleBufferLatency + "\n";
+            message += "buffer.bursts.high = " + mHighBufferBursts + "\n";
+            message += "latency.frames.high = " + mHighBufferLatency + "\n";
+            message += "buffer.capacity.bursts = " + mOutputBufferCapacityInBursts + "\n";
+            message += "buffer.bursts.actual = " + mActualBufferBursts + "\n";
+            message += mSubMessage + "\n";
+            message += "\n"; // mark end of average report
+            mLastReport = message;
+            return message;
+        }
+
+        // Called on UI thread.
+        @Override
+        public void start() {
+            mBadCount = 0;
+            mState = STATE_MEASURE_LOW;
+            mLowBufferBursts = 2;
+            mMiddleBufferBursts = -1;
+            mHighBufferBursts = -1;
+            mLowBufferLatency = -1;
+            mMiddleBufferLatency = -1;
+            mHighBufferLatency = -1;
+            mBufferBursts = mLowBufferBursts;
+            mActive = true;
+            mLastReport = "";
+            measureSingleLatency();
+        }
+    }
+    ScanLatencyTestRunner mScanLatencyTestRunner = new ScanLatencyTestRunner();
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
@@ -206,8 +401,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
                 String message;
                 if (isAnalyzerDone()) {
-                    if (mAverageLatencyTestRunner.isActive()) {
-                        message = mAverageLatencyTestRunner.onAnalyserDone();
+                    if (mCurrentLatencyTestRunner.isActive()) {
+                        message = mCurrentLatencyTestRunner.onAnalyserDone();
                     } else {
                         message = getResultString();
                     }
@@ -256,7 +451,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         int resetCount = getResetCount();
         String message = String.format(Locale.getDefault(), "progress = %d\nstate = %d\n#resets = %d\n",
                 progress, state, resetCount);
-        message += mAverageLatencyTestRunner.getLastReport();
+        message += mCurrentLatencyTestRunner.getLastReport();
         return message;
     }
 
@@ -347,6 +542,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         super.onCreate(savedInstanceState);
         mMeasureButton = (Button) findViewById(R.id.button_measure);
         mAverageButton = (Button) findViewById(R.id.button_average);
+        mScanButton = (Button) findViewById(R.id.button_scan);
         mCancelButton = (Button) findViewById(R.id.button_cancel);
         mShareButton = (Button) findViewById(R.id.button_share);
         mShareButton.setEnabled(false);
@@ -358,7 +554,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         mBufferSizeView.setFaderNormalizedProgress(0.0); // for lowest latency
 
         mCommunicationDeviceView = (CommunicationDeviceView) findViewById(R.id.comm_device_view);
-
     }
 
     @Override
@@ -395,14 +590,15 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     }
 
     public void onMeasure(View view) {
-        mAverageLatencyTestRunner.clear();
+        mCurrentLatencyTestRunner.clear();
         measureSingleLatency();
     }
 
     void updateButtons(boolean running) {
-        boolean busy = running || mAverageLatencyTestRunner.isActive();
+        boolean busy = running || mCurrentLatencyTestRunner.isActive();
         mMeasureButton.setEnabled(!busy);
         mAverageButton.setEnabled(!busy);
+        mScanButton.setEnabled(!busy);
         mCancelButton.setEnabled(running);
         mShareButton.setEnabled(!busy && mHasRecording);
     }
@@ -410,10 +606,12 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private void measureSingleLatency() {
         try {
             openAudio();
+            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
+            mOutputFramesPerBurst = stream.getFramesPerBurst();
+            mOutputBufferCapacityInBursts = stream.getBufferCapacityInFrames() / mOutputFramesPerBurst ;
             if (mBufferBursts >= 0) {
-                AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-                int framesPerBurst = stream.getFramesPerBurst();
-                stream.setBufferSizeInFrames(framesPerBurst * mBufferBursts);
+                int actualBufferSizeInFrames = stream.setBufferSizeInFrames(mOutputFramesPerBurst * mBufferBursts);
+                mActualBufferBursts = actualBufferSizeInFrames / mOutputFramesPerBurst;
                 // override buffer size fader
                 mBufferSizeView.setEnabled(false);
                 mBufferBursts = -1;
@@ -428,11 +626,17 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     }
 
     public void onAverage(View view) {
-        mAverageLatencyTestRunner.start();
+        mCurrentLatencyTestRunner = mAverageLatencyTestRunner;
+        mCurrentLatencyTestRunner.start();
+    }
+
+    public void onScan(View view) {
+        mCurrentLatencyTestRunner = mScanLatencyTestRunner;
+        mCurrentLatencyTestRunner.start();
     }
 
     public void onCancel(View view) {
-        mAverageLatencyTestRunner.cancel();
+        mCurrentLatencyTestRunner.cancel();
         stopAudioTest();
     }
 

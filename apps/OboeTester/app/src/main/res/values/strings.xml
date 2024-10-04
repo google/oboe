@@ -15,6 +15,7 @@
     <string name="playAudio">Play</string>
     <string name="measure">Measure</string>
     <string name="cancel">Cancel</string>
+    <string name="scan">Scan</string>
     <string name="clear">Clear</string>
     <string name="clear_comm">clearCommunicationDevice()</string>
     <string name="runTest">Run</string>
