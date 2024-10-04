@@ -299,8 +299,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         mPerfHintBox.setOnClickListener(buttonView -> {
                 CheckBox checkBox = (CheckBox) buttonView;
-                setPerformanceHintEnabled(checkBox.isChecked());
-                mUseAltAdpfBox.setEnabled(!checkBox.isChecked());
+                mShouldUseADPF = checkBox.isChecked();
+                setPerformanceHintEnabled(mShouldUseADPF);
+                mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
         });
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
