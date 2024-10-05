@@ -53,6 +53,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private boolean  mHasRecording = false;
 
     private int     mBufferBursts = -1;
+    private int     mInputBufferCapacityInBursts = -1;
+    private int     mInputFramesPerBurst;
     private int     mOutputBufferCapacityInBursts = -1;
     private int     mOutputFramesPerBurst;
     private int     mActualBufferBursts;
@@ -202,6 +204,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     MultipleLatencyTestRunner mCurrentLatencyTestRunner = mAverageLatencyTestRunner;
 
     protected static class BinaryDiscontinuityFinder {
+        public static final double MAX_ALLOWED_DEVIATION = 0.2;
         // Run the test with various buffer sizes to detect DSP MMAP position errors.
         private int mLowBufferBursts = 2;
         private int mLowBufferLatency = -1;
@@ -252,7 +255,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     // Now we measure the high side.
                     mHighBufferBursts = capacityInBursts;
                     nextBursts = mHighBufferBursts;
-                    mMessage = "low buffer";
+                    mMessage = "check low size";
                     mState = STATE_MEASURE_HIGH;
                     break;
                 case STATE_MEASURE_HIGH:
@@ -260,7 +263,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     mHighBufferBursts = actualBufferBursts;
                     mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
                     nextBursts = mMiddleBufferBursts;
-                    mMessage = "high buffer";
+                    mMessage = "check high size";
                     mState = STATE_MEASURE_MIDDLE;
                     break;
                 case STATE_MEASURE_MIDDLE:
@@ -303,7 +306,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 if (nextBursts < 0) {
                     if ((mHighBufferBursts - mLowBufferBursts) <= 1) {
                         result = RESULT_DISCONTINUITY;
-                        mMessage = "ERROR - DSP reading between "
+                        mMessage = "ERROR - DSP position error between "
                                 + mLowBufferBursts + " and "
                                 + mHighBufferBursts + " bursts!";
                     } else {
@@ -321,7 +324,6 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             return result;
         }
 
-
         private boolean isLatencyLinear(int bufferBursts1, int bufferLatency1,
                                         int bufferBursts2, int bufferLatency2) {
             int bufferFrames1 = bufferBursts1 * mFramesPerBurst;
@@ -330,7 +332,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             int actualLatencyDifference = bufferLatency2 - bufferLatency1;
             double deviation = Math.abs(expectedLatencyDifference - actualLatencyDifference)
                     / (double) expectedLatencyDifference;
-            return deviation < 0.2;
+            return deviation < MAX_ALLOWED_DEVIATION;
         }
 
         private String reportResults(String prefix) {
@@ -350,15 +352,18 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     protected class ScanLatencyTestRunner extends MultipleLatencyTestRunner {
         BinaryDiscontinuityFinder inputFinder;
         BinaryDiscontinuityFinder outputFinder;
-        String mSubMessage = "--";
         private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
         private int mBadCount = 0; // number of bad measurements
+
+        private static final int STATE_SCANNING_OUTPUT = 0;
+        private static final int STATE_SCANNING_INPUT = 1;
+        private static final int STATE_DONE = 2;
+        private int mState = STATE_SCANNING_OUTPUT;
 
         // Called on UI thread.
         @Override
         String onAnalyserDone() {
             int result = BinaryDiscontinuityFinder.RESULT_OK;
-            mSubMessage = "unknown";
             String message = "message";
 
             if (!mActive) {
@@ -376,35 +381,62 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     result = mActualBufferBursts;
                 }
             } else {
-                outputFinder.setFramesPerBurst(mOutputFramesPerBurst);
-                result = outputFinder.onAnalyserDone(getMeasuredLatency(),
-                        getMeasuredConfidence(),
-                        mActualBufferBursts,
-                        mOutputBufferCapacityInBursts);
+                switch (mState) {
+                    case STATE_SCANNING_OUTPUT:
+                        outputFinder.setFramesPerBurst(mOutputFramesPerBurst);
+                        result = outputFinder.onAnalyserDone(getMeasuredLatency(),
+                                getMeasuredConfidence(),
+                                mActualBufferBursts,
+                                mOutputBufferCapacityInBursts);
+                        mBufferBursts = result;
+                        break;
+                    case STATE_SCANNING_INPUT:
+                        inputFinder.setFramesPerBurst(mInputFramesPerBurst);
+                        result = inputFinder.onAnalyserDone(getMeasuredLatency(),
+                                getMeasuredConfidence(),
+                                mInputMarginBursts,
+                                mInputBufferCapacityInBursts);
+                        mInputMarginBursts = Math.min(result, mInputBufferCapacityInBursts - 1);
+                        break;
+                }
             }
 
             if (result > 0) {
-                mBufferBursts = result;
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        measureSingleLatency();
-                    }
-                }, AVERAGE_TEST_DELAY_MSEC);
+                runAnotherTest();
             } else {
-                mActive = false;
-                updateButtons(false);
+                mBufferBursts = -1;
+                mInputMarginBursts = 0;
+                switch (mState) {
+                    case STATE_SCANNING_OUTPUT:
+                        mState = STATE_SCANNING_INPUT;
+                        runAnotherTest();
+                        break;
+                    case STATE_SCANNING_INPUT:
+                        mActive = false;
+                        updateButtons(false);
+                        mState = STATE_DONE;
+                        break;
+                }
             }
             message = reportResults();
             return message;
         }
 
+        private void runAnotherTest() {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    measureSingleLatency();
+                }
+            }, AVERAGE_TEST_DELAY_MSEC);
+        }
+
         private String reportResults() {
             String message;
+//            message += "buffer.capacity.bursts = " + mOutputBufferCapacityInBursts + "\n";
+//            message += "buffer.bursts.actual = " + mActualBufferBursts + "\n";
             message = outputFinder.reportResults("output.");
-            message += "buffer.capacity.bursts = " + mOutputBufferCapacityInBursts + "\n";
-            message += "buffer.bursts.actual = " + mActualBufferBursts + "\n";
-            message += mSubMessage + "\n";
+            message += inputFinder.reportResults("input.");
             message += "\n"; // mark end of average report
             mLastReport = message;
             return message;
@@ -416,6 +448,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             mBadCount = 0;
             inputFinder = new BinaryDiscontinuityFinder();
             outputFinder = new BinaryDiscontinuityFinder();
+            mState = STATE_SCANNING_OUTPUT;
             mBufferBursts = 2;
             mActive = true;
             mLastReport = "";
@@ -651,16 +684,21 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private void measureSingleLatency() {
         try {
             openAudio();
-            AudioStreamBase stream = mAudioOutTester.getCurrentAudioStream();
-            mOutputFramesPerBurst = stream.getFramesPerBurst();
-            mOutputBufferCapacityInBursts = stream.getBufferCapacityInFrames() / mOutputFramesPerBurst ;
+            AudioStreamBase outputStream = mAudioOutTester.getCurrentAudioStream();
+            mOutputFramesPerBurst = outputStream.getFramesPerBurst();
+            mOutputBufferCapacityInBursts = outputStream.getBufferCapacityInFrames() / mOutputFramesPerBurst ;
+            AudioStreamBase inputStream = mAudioInputTester.getCurrentAudioStream();
+            mInputFramesPerBurst = inputStream.getFramesPerBurst();
+            mInputBufferCapacityInBursts = inputStream.getBufferCapacityInFrames() / mInputFramesPerBurst ;
+
             if (mBufferBursts >= 0) {
-                int actualBufferSizeInFrames = stream.setBufferSizeInFrames(mOutputFramesPerBurst * mBufferBursts);
+                int actualBufferSizeInFrames = outputStream.setBufferSizeInFrames(mOutputFramesPerBurst * mBufferBursts);
                 mActualBufferBursts = actualBufferSizeInFrames / mOutputFramesPerBurst;
                 // override buffer size fader
                 mBufferSizeView.setEnabled(false);
                 mBufferBursts = -1;
             }
+
             startAudio();
             mTimestampLatencyStats  = new DoubleStatistics();
             mLatencySniffer.startSniffer();
