@@ -51,6 +51,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     // By default, set high workload to 70 voices, which is reasonable for most devices.
     public static final double WORKLOAD_PROGRESS_FOR_70_VOICES = 0.53;
 
+    public static final String KEY_USE_ADPF = "use_adpf";
+    public static final boolean VALUE_DEFAULT_USE_ADPF = false;
+    public static final String KEY_SCROLL_GRAPHICS = "scroll_graphics";
+    public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
+
     private Button mStopButton;
     private Button mStartButton;
     private TextView mResultView;
@@ -66,6 +71,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private int mCpuCount;
+    private boolean mShouldUseADPF;
 
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
@@ -293,8 +299,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         mPerfHintBox.setOnClickListener(buttonView -> {
                 CheckBox checkBox = (CheckBox) buttonView;
-                setPerformanceHintEnabled(checkBox.isChecked());
-                mUseAltAdpfBox.setEnabled(!checkBox.isChecked());
+                mShouldUseADPF = checkBox.isChecked();
+                setPerformanceHintEnabled(mShouldUseADPF);
+                mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
         });
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
@@ -352,6 +359,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     public void startTest(View view) {
+        startTest();
+    }
+
+    private void startTest() {
         try {
             openAudio();
         } catch (IOException e) {
@@ -384,5 +395,56 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         }
         updateButtons(false);
         super.onStopTest();
+    }
+
+
+    @Override
+    public void startTestUsingBundle() {
+        try {
+            StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+            IntentBasedTestSupport.configureOutputStreamFromBundle(mBundleFromIntent, requestedOutConfig);
+
+            // Specific options.
+            mShouldUseADPF = mBundleFromIntent.getBoolean(KEY_USE_ADPF,
+                    VALUE_DEFAULT_USE_ADPF);
+            mDrawChartAlways =
+                    mBundleFromIntent.getBoolean(KEY_SCROLL_GRAPHICS,
+                            VALUE_DEFAULT_SCROLL_GRAPHICS);
+
+            startTest();
+
+            runOnUiThread(() -> {
+                mPerfHintBox.setChecked(mShouldUseADPF);
+                setPerformanceHintEnabled(mShouldUseADPF);
+                mDrawAlwaysBox.setChecked(mDrawChartAlways);
+            });
+
+            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
+            if (durationSeconds > 0) {
+                // Schedule the end of the test.
+                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        stopAutomaticTest();
+                    }
+                }, durationSeconds * 1000);
+            }
+        } catch (Exception e) {
+            showErrorToast(e.getMessage());
+        } finally {
+            mBundleFromIntent = null;
+        }
+    }
+
+    void stopAutomaticTest() {
+        String report = getCommonTestReport();
+        AudioStreamBase outputStream =mAudioOutTester.getCurrentAudioStream();
+        report += "out.xruns = " + outputStream.getXRunCount() + "\n";
+        report += "use.adpf = " + (mShouldUseADPF ? "yes" : "no") + "\n";
+        report += "scroll.graphics = " + (mDrawChartAlways ? "yes" : "no") + "\n";
+        onStopTest();
+        maybeWriteTestResult(report);
+        mTestRunningByIntent = false;
     }
 }
