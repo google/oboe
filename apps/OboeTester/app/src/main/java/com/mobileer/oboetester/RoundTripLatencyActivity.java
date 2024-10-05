@@ -201,125 +201,190 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     AverageLatencyTestRunner mAverageLatencyTestRunner = new AverageLatencyTestRunner();
     MultipleLatencyTestRunner mCurrentLatencyTestRunner = mAverageLatencyTestRunner;
 
-    // Run the test with various buffer sizes to detect DSP MMAP position errors.
-    protected class ScanLatencyTestRunner extends MultipleLatencyTestRunner {
-        private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
-        private int mBadCount = 0; // number of bad measurements
-        private int mLowBufferBursts = -1;
+    protected static class BinaryDiscontinuityFinder {
+        // Run the test with various buffer sizes to detect DSP MMAP position errors.
+        private int mLowBufferBursts = 2;
         private int mLowBufferLatency = -1;
         private int mMiddleBufferBursts = -1;
         private int mMiddleBufferLatency = -1;
         private int mHighBufferBursts = -1;
         private int mHighBufferLatency = -1;
-        private String mSubMessage = "---";
+        private String mMessage = "---";
 
-        private static final int STATE_IDLE = 0;
         private static final int STATE_MEASURE_LOW = 1;
         private static final int STATE_MEASURE_HIGH = 2;
         private static final int STATE_MEASURE_MIDDLE = 3;
         private static final int STATE_DONE = 4;
-        private int mState = STATE_IDLE;
+        private int mState = STATE_MEASURE_LOW;
+        private int mFramesPerBurst;
+
+        public static final int RESULT_OK = 0;
+        public static final int RESULT_DISCONTINUITY = -1; // DSP is reading from the wrong place.
+        public static final int RESULT_ERROR = -2; // Could not measure latency
+        public static final int RESULT_UNDEFINED = -3; // Could not measure latency
+
+        public int getFramesPerBurst() {
+            return mFramesPerBurst;
+        }
+
+        public String getMessage() {
+            return mMessage;
+        }
+        public void setFramesPerBurst(int framesPerBurst) {
+            mFramesPerBurst = framesPerBurst;
+        }
+
+        /**
+         * @return positive number of bursts or a RESULT code
+         */
+        int onAnalyserDone(int latencyFrames,
+                           double confidence,
+                           int actualBufferBursts,
+                           int capacityInBursts
+        ) {
+            int result = RESULT_UNDEFINED;
+            mMessage = "analyzing";
+            int nextBursts = -1;
+            switch (mState) {
+                case STATE_MEASURE_LOW:
+                    mLowBufferLatency = latencyFrames;
+                    mLowBufferBursts = actualBufferBursts;
+                    // Now we measure the high side.
+                    mHighBufferBursts = capacityInBursts;
+                    nextBursts = mHighBufferBursts;
+                    mMessage = "low buffer";
+                    mState = STATE_MEASURE_HIGH;
+                    break;
+                case STATE_MEASURE_HIGH:
+                    mHighBufferLatency = latencyFrames;
+                    mHighBufferBursts = actualBufferBursts;
+                    mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
+                    nextBursts = mMiddleBufferBursts;
+                    mMessage = "high buffer";
+                    mState = STATE_MEASURE_MIDDLE;
+                    break;
+                case STATE_MEASURE_MIDDLE:
+                    mMiddleBufferLatency = latencyFrames;
+                    mMiddleBufferBursts = actualBufferBursts;
+                    // Check to see which side is bad.
+                    if (confidence < 0.5) {
+                        // We may have landed on the DSP so we got a scrambled result.
+                        result = RESULT_DISCONTINUITY;
+                        mMessage = "on top of DSP!";
+                        mState = STATE_DONE;
+                    } else if (!isLatencyLinear(mLowBufferBursts,
+                            mLowBufferLatency,
+                            mMiddleBufferBursts,
+                            mMiddleBufferLatency)) {
+                        // bottom half was bad so subdivide it
+                        mHighBufferBursts = mMiddleBufferBursts;
+                        mHighBufferLatency = mMiddleBufferLatency;
+                        mMessage = "low half not linear";
+                    } else if (!isLatencyLinear(mMiddleBufferBursts,
+                            mMiddleBufferLatency,
+                            mHighBufferBursts,
+                            mHighBufferLatency)) {
+                        // top half was bad so subdivide it
+                        mLowBufferBursts = mMiddleBufferBursts;
+                        mLowBufferLatency = mMiddleBufferLatency;
+                        mMessage = "high half not linear";
+                    } else {
+                        // Both sides are linear so we are good.
+                        result = RESULT_OK;
+                        mMessage = "both halves are linear";
+                        mState = STATE_DONE;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            if (result == RESULT_UNDEFINED) {
+                if (nextBursts < 0) {
+                    if ((mHighBufferBursts - mLowBufferBursts) <= 1) {
+                        result = RESULT_DISCONTINUITY;
+                        mMessage = "ERROR - DSP reading between "
+                                + mLowBufferBursts + " and "
+                                + mHighBufferBursts + " bursts!";
+                    } else {
+                        // Subdivide the remaining search space.
+                        mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
+                        result = mMiddleBufferBursts;
+                    }
+                } else {
+                    result = nextBursts;
+                }
+            } else if (result == RESULT_OK) {
+                mMessage = "PASS - no discontinuity";
+            }
+            mMessage += ", " + result;
+            return result;
+        }
+
+
+        private boolean isLatencyLinear(int bufferBursts1, int bufferLatency1,
+                                        int bufferBursts2, int bufferLatency2) {
+            int bufferFrames1 = bufferBursts1 * mFramesPerBurst;
+            int bufferFrames2 = bufferBursts2 * mFramesPerBurst;
+            int expectedLatencyDifference = bufferFrames2 - bufferFrames1;
+            int actualLatencyDifference = bufferLatency2 - bufferLatency1;
+            double deviation = Math.abs(expectedLatencyDifference - actualLatencyDifference)
+                    / (double) expectedLatencyDifference;
+            return deviation < 0.2;
+        }
+
+        private String reportResults(String prefix) {
+            String message;
+            message = prefix + "buffer.bursts.low = " + mLowBufferBursts + "\n";
+            message += prefix + "latency.frames.low = " + mLowBufferLatency + "\n";
+//            message += prefix + "buffer.bursts.middle = " + mMiddleBufferBursts + "\n";
+//            message += prefix + "latency.frames.middle = " + mMiddleBufferLatency + "\n";
+            message += prefix + "buffer.bursts.high = " + mHighBufferBursts + "\n";
+            message += prefix + "latency.frames.high = " + mHighBufferLatency + "\n";
+            message += mMessage + "\n";
+            message += "\n"; // mark end of report
+            return message;
+        }
+    }
+
+    protected class ScanLatencyTestRunner extends MultipleLatencyTestRunner {
+        BinaryDiscontinuityFinder inputFinder;
+        BinaryDiscontinuityFinder outputFinder;
+        String mSubMessage = "--";
+        private static final int MAX_BAD_RUNS_ALLOWED = 5; // arbitrary
+        private int mBadCount = 0; // number of bad measurements
+
         // Called on UI thread.
         @Override
         String onAnalyserDone() {
-            String message;
-            boolean reschedule = true;
-            boolean allGood = false;
+            int result = BinaryDiscontinuityFinder.RESULT_OK;
             mSubMessage = "unknown";
+            String message = "message";
+
             if (!mActive) {
                 message = "";
-                reschedule = false;
             } else if (getMeasuredResult() != 0) {
                 mBadCount++;
                 if (mBadCount > MAX_BAD_RUNS_ALLOWED) {
                     cancel();
-                    reschedule = false;
+                    result = BinaryDiscontinuityFinder.RESULT_ERROR;
                     updateButtons(false);
                     message = "averaging cancelled due to error\n";
                 } else {
                     message = "skipping this bad run, "
                             + mBadCount + " of " + MAX_BAD_RUNS_ALLOWED + " max\n";
-                    reschedule = true;
+                    result = mActualBufferBursts;
                 }
             } else {
-                int latencyFrames = getMeasuredLatency();
-                double confidence = getMeasuredConfidence();
-                switch (mState) {
-                    case STATE_MEASURE_LOW:
-                        mLowBufferLatency = latencyFrames;
-                        mLowBufferBursts = mActualBufferBursts;
-                        // Now we measure the high side.
-                        mHighBufferBursts = mOutputBufferCapacityInBursts;
-                        mBufferBursts = mHighBufferBursts;
-                        mSubMessage = "low buffer";
-                        mState = STATE_MEASURE_HIGH;
-                        break;
-                    case STATE_MEASURE_HIGH:
-                        mHighBufferLatency = latencyFrames;
-                        mHighBufferBursts = mActualBufferBursts;
-                        mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
-                        mBufferBursts = mMiddleBufferBursts;
-                        mSubMessage = "high buffer";
-                        mState = STATE_MEASURE_MIDDLE;
-                        break;
-                    case STATE_MEASURE_MIDDLE:
-                        mMiddleBufferLatency = latencyFrames;
-                        mMiddleBufferBursts = mActualBufferBursts;
-                        // Check to see which side is bad.
-                        if (confidence < 0.5) {
-                            // We may have landed on the DSP so we got a scrambled result.
-                            reschedule = false;
-                            mSubMessage = "on top of DSP!";
-                            mState = STATE_DONE;
-                        } else if (!isLatencyLinear(mLowBufferBursts,
-                                mLowBufferLatency,
-                                mMiddleBufferBursts,
-                                mMiddleBufferLatency)) {
-                            // bottom half was bad so subdivide it
-                            mHighBufferBursts = mMiddleBufferBursts;
-                            mHighBufferLatency = mMiddleBufferLatency;
-                            mSubMessage = "low half not linear";
-                        } else if (!isLatencyLinear(mMiddleBufferBursts,
-                                mMiddleBufferLatency,
-                                mHighBufferBursts,
-                                mHighBufferLatency)) {
-                            // top half was bad so subdivide it
-                            mLowBufferBursts = mMiddleBufferBursts;
-                            mLowBufferLatency = mMiddleBufferLatency;
-                            mSubMessage = "high half not linear";
-                        } else {
-                            // Both sides are linear so we are good.
-                            allGood = true;
-                            reschedule = false;
-                            mSubMessage = "both halves are linear";
-                            mState = STATE_DONE;
-                        }
-                        if (reschedule) {
-                            if ((mHighBufferBursts - mLowBufferBursts) <= 1) {
-                                allGood = false;
-                                reschedule = false;
-                                mSubMessage = "ERROR - DSP reading between "
-                                        + mLowBufferBursts + " and "
-                                        + mHighBufferBursts + " bursts!";
-                            } else {
-                                mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
-                                mBufferBursts = mMiddleBufferBursts;
-                                //mSubMessage = "subdivide to " + mMiddleBufferBursts;
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                if (allGood) {
-                    // Close enough.
-                    reschedule = false;
-                    mSubMessage = "PASS - no discontinuity";
-                }
-                message = reportResults();
+                outputFinder.setFramesPerBurst(mOutputFramesPerBurst);
+                result = outputFinder.onAnalyserDone(getMeasuredLatency(),
+                        getMeasuredConfidence(),
+                        mActualBufferBursts,
+                        mOutputBufferCapacityInBursts);
             }
-            if (reschedule) {
+
+            if (result > 0) {
+                mBufferBursts = result;
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -330,28 +395,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 mActive = false;
                 updateButtons(false);
             }
+            message = reportResults();
             return message;
-        }
-
-        private boolean isLatencyLinear(int bufferBursts1, int bufferLatency1,
-                                        int bufferBursts2, int bufferLatency2) {
-            int bufferFrames1 = bufferBursts1 * mOutputFramesPerBurst;
-            int bufferFrames2 = bufferBursts2 * mOutputFramesPerBurst;
-            int expectedLatencyDifference = bufferFrames2 - bufferFrames1;
-            int actualLatencyDifference = bufferLatency2 - bufferLatency1;
-            double deviation = Math.abs(expectedLatencyDifference - actualLatencyDifference)
-                    / (double) expectedLatencyDifference;
-            return deviation < 0.2;
         }
 
         private String reportResults() {
             String message;
-            message = "buffer.bursts.low = " + mLowBufferBursts + "\n";
-            message += "latency.frames.low = " + mLowBufferLatency + "\n";
-            message += "buffer.bursts.middle = " + mMiddleBufferBursts + "\n";
-            message += "latency.frames.middle = " + mMiddleBufferLatency + "\n";
-            message += "buffer.bursts.high = " + mHighBufferBursts + "\n";
-            message += "latency.frames.high = " + mHighBufferLatency + "\n";
+            message = outputFinder.reportResults("output.");
             message += "buffer.capacity.bursts = " + mOutputBufferCapacityInBursts + "\n";
             message += "buffer.bursts.actual = " + mActualBufferBursts + "\n";
             message += mSubMessage + "\n";
@@ -364,14 +414,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         @Override
         public void start() {
             mBadCount = 0;
-            mState = STATE_MEASURE_LOW;
-            mLowBufferBursts = 2;
-            mMiddleBufferBursts = -1;
-            mHighBufferBursts = -1;
-            mLowBufferLatency = -1;
-            mMiddleBufferLatency = -1;
-            mHighBufferLatency = -1;
-            mBufferBursts = mLowBufferBursts;
+            inputFinder = new BinaryDiscontinuityFinder();
+            outputFinder = new BinaryDiscontinuityFinder();
+            mBufferBursts = 2;
             mActive = true;
             mLastReport = "";
             measureSingleLatency();
