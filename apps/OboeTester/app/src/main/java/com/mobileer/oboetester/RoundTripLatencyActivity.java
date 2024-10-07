@@ -58,6 +58,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     private int     mOutputBufferCapacityInBursts = -1;
     private int     mOutputFramesPerBurst;
     private int     mActualBufferBursts;
+    private boolean mOutputIsMMapExclusive;
+    private boolean mInputIsMMapExclusive;
 
     private Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
 
@@ -203,6 +205,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
     AverageLatencyTestRunner mAverageLatencyTestRunner = new AverageLatencyTestRunner();
     MultipleLatencyTestRunner mCurrentLatencyTestRunner = mAverageLatencyTestRunner;
 
+    /**
+     * Search for a discontinuity in latency based on a number of bursts.
+     * Use binary subdivision search algorithm.
+     */
     protected static class BinaryDiscontinuityFinder {
         public static final double MAX_ALLOWED_DEVIATION = 0.2;
         // Run the test with various buffer sizes to detect DSP MMAP position errors.
@@ -230,11 +236,12 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             return mFramesPerBurst;
         }
 
-        public String getMessage() {
-            return mMessage;
-        }
         public void setFramesPerBurst(int framesPerBurst) {
             mFramesPerBurst = framesPerBurst;
+        }
+
+        public String getMessage() {
+            return mMessage;
         }
 
         /**
@@ -243,11 +250,15 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         int onAnalyserDone(int latencyFrames,
                            double confidence,
                            int actualBufferBursts,
-                           int capacityInBursts
-        ) {
+                           int capacityInBursts,
+                           boolean isMMapExclusive) {
             int result = RESULT_UNDEFINED;
             mMessage = "analyzing";
             int nextBursts = -1;
+            if (!isMMapExclusive) {
+                mMessage = "skipped, not MMAP Exclusive";
+                return RESULT_OK;
+            }
             switch (mState) {
                 case STATE_MEASURE_LOW:
                     mLowBufferLatency = latencyFrames;
@@ -255,16 +266,25 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     // Now we measure the high side.
                     mHighBufferBursts = capacityInBursts;
                     nextBursts = mHighBufferBursts;
-                    mMessage = "check low size";
+                    mMessage = "checked low bufferSize";
                     mState = STATE_MEASURE_HIGH;
                     break;
                 case STATE_MEASURE_HIGH:
+                    mMessage = "checked high bufferSize";
                     mHighBufferLatency = latencyFrames;
                     mHighBufferBursts = actualBufferBursts;
-                    mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
-                    nextBursts = mMiddleBufferBursts;
-                    mMessage = "check high size";
-                    mState = STATE_MEASURE_MIDDLE;
+                    if (measureLatencyLinearity(mLowBufferBursts,
+                            mLowBufferLatency,
+                            mHighBufferBursts,
+                            mHighBufferLatency) > MAX_ALLOWED_DEVIATION) {
+                        mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
+                        nextBursts = mMiddleBufferBursts;
+                        mState = STATE_MEASURE_MIDDLE;
+                    } else {
+                        result = RESULT_OK;
+                        mMessage = "DSP position looks good";
+                        mState = STATE_DONE;
+                    }
                     break;
                 case STATE_MEASURE_MIDDLE:
                     mMiddleBufferLatency = latencyFrames;
@@ -275,27 +295,28 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                         result = RESULT_DISCONTINUITY;
                         mMessage = "on top of DSP!";
                         mState = STATE_DONE;
-                    } else if (!isLatencyLinear(mLowBufferBursts,
-                            mLowBufferLatency,
-                            mMiddleBufferBursts,
-                            mMiddleBufferLatency)) {
-                        // bottom half was bad so subdivide it
-                        mHighBufferBursts = mMiddleBufferBursts;
-                        mHighBufferLatency = mMiddleBufferLatency;
-                        mMessage = "low half not linear";
-                    } else if (!isLatencyLinear(mMiddleBufferBursts,
-                            mMiddleBufferLatency,
-                            mHighBufferBursts,
-                            mHighBufferLatency)) {
-                        // top half was bad so subdivide it
-                        mLowBufferBursts = mMiddleBufferBursts;
-                        mLowBufferLatency = mMiddleBufferLatency;
-                        mMessage = "high half not linear";
-                    } else {
-                        // Both sides are linear so we are good.
-                        result = RESULT_OK;
-                        mMessage = "both halves are linear";
-                        mState = STATE_DONE;
+                    } else  {
+                        double deviationLow = measureLatencyLinearity(
+                                mLowBufferBursts,
+                                mLowBufferLatency,
+                                mMiddleBufferBursts,
+                                mMiddleBufferLatency);
+                        double deviationHigh = measureLatencyLinearity(
+                                mMiddleBufferBursts,
+                                mMiddleBufferLatency,
+                                mHighBufferBursts,
+                                mHighBufferLatency);
+                        if (deviationLow >= deviationHigh) {
+                            // bottom half was bad so subdivide it
+                            mHighBufferBursts = mMiddleBufferBursts;
+                            mHighBufferLatency = mMiddleBufferLatency;
+                            mMessage = "low half not linear";
+                        } else {
+                            // top half was bad so subdivide it
+                            mLowBufferBursts = mMiddleBufferBursts;
+                            mLowBufferLatency = mMiddleBufferLatency;
+                            mMessage = "high half not linear";
+                        }
                     }
                     break;
                 default:
@@ -320,31 +341,26 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             } else if (result == RESULT_OK) {
                 mMessage = "PASS - no discontinuity";
             }
-            mMessage += ", " + result;
             return result;
         }
 
-        private boolean isLatencyLinear(int bufferBursts1, int bufferLatency1,
-                                        int bufferBursts2, int bufferLatency2) {
+        private double measureLatencyLinearity(int bufferBursts1, int bufferLatency1,
+                                                int bufferBursts2, int bufferLatency2) {
             int bufferFrames1 = bufferBursts1 * mFramesPerBurst;
             int bufferFrames2 = bufferBursts2 * mFramesPerBurst;
             int expectedLatencyDifference = bufferFrames2 - bufferFrames1;
             int actualLatencyDifference = bufferLatency2 - bufferLatency1;
-            double deviation = Math.abs(expectedLatencyDifference - actualLatencyDifference)
+            return Math.abs(expectedLatencyDifference - actualLatencyDifference)
                     / (double) expectedLatencyDifference;
-            return deviation < MAX_ALLOWED_DEVIATION;
         }
 
         private String reportResults(String prefix) {
             String message;
             message = prefix + "buffer.bursts.low = " + mLowBufferBursts + "\n";
             message += prefix + "latency.frames.low = " + mLowBufferLatency + "\n";
-//            message += prefix + "buffer.bursts.middle = " + mMiddleBufferBursts + "\n";
-//            message += prefix + "latency.frames.middle = " + mMiddleBufferLatency + "\n";
             message += prefix + "buffer.bursts.high = " + mHighBufferBursts + "\n";
             message += prefix + "latency.frames.high = " + mHighBufferLatency + "\n";
-            message += mMessage + "\n";
-            message += "\n"; // mark end of report
+            message += prefix + "result = " + mMessage + "\n";
             return message;
         }
     }
@@ -364,17 +380,17 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         @Override
         String onAnalyserDone() {
             int result = BinaryDiscontinuityFinder.RESULT_OK;
-            String message = "message";
+            String message = "";
 
             if (!mActive) {
-                message = "";
+                message = "done";
             } else if (getMeasuredResult() != 0) {
                 mBadCount++;
                 if (mBadCount > MAX_BAD_RUNS_ALLOWED) {
                     cancel();
                     result = BinaryDiscontinuityFinder.RESULT_ERROR;
                     updateButtons(false);
-                    message = "averaging cancelled due to error\n";
+                    message = "scanning cancelled due to error, " + mBadCount + " bad runs\n";
                 } else {
                     message = "skipping this bad run, "
                             + mBadCount + " of " + MAX_BAD_RUNS_ALLOWED + " max\n";
@@ -387,16 +403,21 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                         result = outputFinder.onAnalyserDone(getMeasuredLatency(),
                                 getMeasuredConfidence(),
                                 mActualBufferBursts,
-                                mOutputBufferCapacityInBursts);
+                                mOutputBufferCapacityInBursts,
+                                mOutputIsMMapExclusive);
                         mBufferBursts = result;
+
                         break;
                     case STATE_SCANNING_INPUT:
                         inputFinder.setFramesPerBurst(mInputFramesPerBurst);
                         result = inputFinder.onAnalyserDone(getMeasuredLatency(),
                                 getMeasuredConfidence(),
                                 mInputMarginBursts,
-                                mInputBufferCapacityInBursts);
+                                mInputBufferCapacityInBursts,
+                                mInputIsMMapExclusive);
+                        mBufferBursts = 2;
                         mInputMarginBursts = Math.min(result, mInputBufferCapacityInBursts - 1);
+
                         break;
                 }
             }
@@ -418,7 +439,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                         break;
                 }
             }
-            message = reportResults();
+            message += reportResults();
             return message;
         }
 
@@ -432,12 +453,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         }
 
         private String reportResults() {
-            String message;
-//            message += "buffer.capacity.bursts = " + mOutputBufferCapacityInBursts + "\n";
-//            message += "buffer.bursts.actual = " + mActualBufferBursts + "\n";
-            message = outputFinder.reportResults("output.");
+            String message = "test = check MMAP DSP position\n";
+            message += outputFinder.reportResults("output.");
+            message += "\n"; // separator between in/out
             message += inputFinder.reportResults("input.");
-            message += "\n"; // mark end of average report
             mLastReport = message;
             return message;
         }
@@ -459,9 +478,10 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
 
     // Periodically query the status of the stream.
     protected class LatencySniffer {
-        private int counter = 0;
+        private int mCounter = 0;
         public static final int SNIFFER_UPDATE_PERIOD_MSEC = 150;
         public static final int SNIFFER_UPDATE_DELAY_MSEC = 300;
+        public static final int SNIFFER_MAX_COUNTER = 30 * 1000 / SNIFFER_UPDATE_PERIOD_MSEC;
 
         // Display status info for the stream.
         private Runnable runnableCode = new Runnable() {
@@ -488,21 +508,24 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     if (resultFile != null) {
                         message = "result.file = " + resultFile.getAbsolutePath() + "\n" + message;
                     }
+                } else if (mCounter > SNIFFER_MAX_COUNTER) {
+                    message = getProgressText();
+                    message += convertStateToString(getAnalyzerState()) + "\n";
+                    message += "TIMEOUT after " + mCounter + " loops!\n";
                 } else {
                     message = getProgressText();
-                    message += "please wait... " + counter + "\n";
+                    message += "please wait... " + mCounter + "\n";
                     message += convertStateToString(getAnalyzerState()) + "\n";
-
                     // Repeat this runnable code block again.
                     mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
                 }
                 setAnalyzerText(message);
-                counter++;
+                mCounter++;
             }
         };
 
         private void startSniffer() {
-            counter = 0;
+            mCounter = 0;
             // Start the initial runnable task by posting through the handler
             mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_DELAY_MSEC);
         }
@@ -676,7 +699,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         boolean busy = running || mCurrentLatencyTestRunner.isActive();
         mMeasureButton.setEnabled(!busy);
         mAverageButton.setEnabled(!busy);
-        mScanButton.setEnabled(!busy);
+        mScanButton.setEnabled(!busy && NativeEngine.isMMapExclusiveSupported());
         mCancelButton.setEnabled(running);
         mShareButton.setEnabled(!busy && mHasRecording);
     }
@@ -687,9 +710,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             AudioStreamBase outputStream = mAudioOutTester.getCurrentAudioStream();
             mOutputFramesPerBurst = outputStream.getFramesPerBurst();
             mOutputBufferCapacityInBursts = outputStream.getBufferCapacityInFrames() / mOutputFramesPerBurst ;
+            mOutputIsMMapExclusive = mAudioOutTester.actualConfiguration.getSharingMode()
+                    == StreamConfiguration.SHARING_MODE_EXCLUSIVE;
             AudioStreamBase inputStream = mAudioInputTester.getCurrentAudioStream();
             mInputFramesPerBurst = inputStream.getFramesPerBurst();
             mInputBufferCapacityInBursts = inputStream.getBufferCapacityInFrames() / mInputFramesPerBurst ;
+            mInputIsMMapExclusive = mAudioInputTester.actualConfiguration.getSharingMode()
+                    == StreamConfiguration.SHARING_MODE_EXCLUSIVE;
 
             if (mBufferBursts >= 0) {
                 int actualBufferSizeInFrames = outputStream.setBufferSizeInFrames(mOutputFramesPerBurst * mBufferBursts);
