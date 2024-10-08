@@ -24,6 +24,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.RadioButton
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -159,12 +160,42 @@ class DrumThumperActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // UI
+        setContentView(R.layout.drumthumper_activity)
+
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+        val mRadioLatency0 = findViewById<View>(R.id.latencyMode0) as RadioButton
+        mRadioLatency0.setOnClickListener(View.OnClickListener { view ->
+            onLatencyRadioButtonClicked(view, 0)
+        })
+
+        val mRadioLatency1 = findViewById<View>(R.id.latencyMode1) as RadioButton?
+        if (mRadioLatency1 != null) {
+            mRadioLatency1.setOnClickListener(View.OnClickListener { view ->
+                onLatencyRadioButtonClicked(view, 1)
+            })
+        }
+
+        val mRadioLatency2 = findViewById<View>(R.id.latencyMode2) as RadioButton?
+        if (mRadioLatency2 != null) {
+            mRadioLatency2.setOnClickListener(View.OnClickListener { view ->
+                onLatencyRadioButtonClicked(view, 2)
+            })
+        }
+    }
+
+    private fun onLatencyRadioButtonClicked(view: View, mode: Int) {
+        val checked = (view as RadioButton).isChecked
+        if (!checked) return
+        mDrumPlayer.setLatencyMode(mode)
+        mDrumPlayer.restartStream()
     }
 
     override fun onStart() {
         super.onStart()
+
+        mDrumPlayer.setLatencyMode(DrumPlayer.LATENCY_LOW_MMAP)
 
         mDrumPlayer.setupAudioStream()
 
@@ -179,9 +210,6 @@ class DrumThumperActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-
-        // UI
-        setContentView(R.layout.drumthumper_activity)
 
         // "Kick" drum
         findViewById<TriggerPad>(R.id.kickPad).addListener(this)
