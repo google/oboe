@@ -319,10 +319,11 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     }
     MyOboeOutputStream outStream;
     WaveFileWriter writer(&outStream);
-
+    // You must setup the format before the first write().
     writer.setFrameRate(mSampleRate);
     writer.setSamplesPerFrame(mRecording->getChannelCount());
     writer.setBitsPerSample(24);
+    writer.setFrameCount(mRecording->getSizeInFrames());
     float buffer[mRecording->getChannelCount()];
     // Read samples from start to finish.
     mRecording->rewind();

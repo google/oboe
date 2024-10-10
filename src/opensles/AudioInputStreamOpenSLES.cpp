@@ -106,7 +106,7 @@ Result AudioInputStreamOpenSLES::open() {
             SL_DATAFORMAT_PCM,       // formatType
             static_cast<SLuint32>(mChannelCount),           // numChannels
             static_cast<SLuint32>(mSampleRate * kMillisPerSecond), // milliSamplesPerSec
-            bitsPerSample,                      // bitsPerSample
+            bitsPerSample,                      // mBitsPerSample
             bitsPerSample,                      // containerSize;
             channelCountToChannelMask(mChannelCount), // channelMask
             getDefaultByteOrder(),

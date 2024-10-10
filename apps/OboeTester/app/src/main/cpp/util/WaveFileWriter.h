@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <stdio.h>
+#include <algorithm>
 
 class WaveFileOutputStream {
 public:
@@ -57,6 +58,10 @@ public:
     }
 
     /**
+     * Set the number of frames per second, also known as "sample rate".
+     *
+     * If you call this then it must be called before the first write().
+     *
      * @param frameRate default is 44100
      */
     void setFrameRate(int32_t frameRate) {
@@ -68,25 +73,49 @@ public:
     }
 
     /**
+     * Set the size of one frame.
      * For stereo, set this to 2. Default is mono = 1.
-     * Also known as ChannelCount
+     * Also known as ChannelCount.
+     *
+     * If you call this then it must be called before the first write().
+     *
+     * @param samplesPerFrame is 2 for stereo or 1 for mono
      */
     void setSamplesPerFrame(int32_t samplesPerFrame) {
         mSamplesPerFrame = samplesPerFrame;
+    }
+
+    /**
+     * Sets the number of frames in the file.
+     *
+     * If you do not know the final number of frames then that is OK.
+     * Just do not call this method and the RIFF and DATA chunk sizes
+     * will default to INT32_MAX. That is technically invalid WAV format
+     * but is common practice.
+     *
+     * If you call this then it must be called before the first write().
+     * @param frameCount number of frames to be written
+     */
+    void setFrameCount(int32_t frameCount) {
+        mFrameCount = frameCount;
     }
 
     int32_t getSamplesPerFrame() const {
         return mSamplesPerFrame;
     }
 
-    /** Only 16 or 24 bit samples supported at the moment. Default is 16. */
+    /** Only 16 or 24 bit samples supported at the moment. Default is 16.
+     *
+     * If you call this then it must be called before the first write().
+     * @param bits number of bits in a PCM sample
+     */
     void setBitsPerSample(int32_t bits) {
         assert((bits == 16) || (bits == 24));
-        bitsPerSample = bits;
+        mBitsPerSample = bits;
     }
 
     int32_t getBitsPerSample() const {
-        return bitsPerSample;
+        return mBitsPerSample;
     }
 
     void close() {
@@ -139,13 +168,16 @@ private:
      */
     void writeRiffHeader();
 
+    int32_t getDataSizeInBytes();
+
     static constexpr int WAVE_FORMAT_PCM = 1;
     WaveFileOutputStream *mOutputStream = nullptr;
     int32_t mFrameRate = 48000;
     int32_t mSamplesPerFrame = 1;
-    int32_t bitsPerSample = 16;
-    int32_t bytesWritten = 0;
-    bool headerWritten = false;
+    int32_t mFrameCount = 0; // 0 for unknown
+    int32_t mBitsPerSample = 16;
+    int32_t mBytesWritten = 0;
+    bool mHeaderWritten = false;
     static constexpr int32_t PCM24_MIN = -(1 << 23);
     static constexpr int32_t PCM24_MAX = (1 << 23) - 1;
 
