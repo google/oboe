@@ -66,7 +66,7 @@ void WaveFileWriter::writeFormatChunk() {
 int32_t WaveFileWriter::getDataSizeInBytes() {
     if (mFrameCount <= 0) return INT32_MAX;
     int64_t dataSize = ((int64_t)mFrameCount) * mSamplesPerFrame * mBitsPerSample / 8;
-    return (int32_t)std::max(dataSize, (int64_t)INT32_MAX);
+    return (int32_t)std::min(dataSize, (int64_t)INT32_MAX);
 }
 
 void WaveFileWriter::writeDataChunkHeader() {
