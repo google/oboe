@@ -42,7 +42,7 @@ public class TestInputActivity  extends TestAudioActivity {
     private static final int NUM_VOLUME_BARS = 8;
     private VolumeBarView[] mVolumeBars = new VolumeBarView[NUM_VOLUME_BARS];
     private InputMarginView mInputMarginView;
-    private int mInputMarginBursts = 0;
+    int mInputMarginBursts = 0;
     private WorkloadView mWorkloadView;
 
     public native void setMinimumFramesBeforeRead(int frames);
