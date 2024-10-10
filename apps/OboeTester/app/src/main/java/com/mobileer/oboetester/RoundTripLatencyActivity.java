@@ -227,6 +227,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private int mState = STATE_MEASURE_LOW;
         private int mFramesPerBurst;
 
+        public static final int RESULT_CONTINUE= 1;
         public static final int RESULT_OK = 0;
         public static final int RESULT_DISCONTINUITY = -1; // DSP is reading from the wrong place.
         public static final int RESULT_ERROR = -2; // Could not measure latency
@@ -244,28 +245,35 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
             return mMessage;
         }
 
+        public static class Result {
+            public int code = RESULT_UNDEFINED;
+            public int numBursts = -1;
+        }
+
         /**
-         * @return positive number of bursts or a RESULT code
+         * @return Result object with number of bursts and a RESULT code
          */
-        int onAnalyserDone(int latencyFrames,
+        Result onAnalyserDone(int latencyFrames,
                            double confidence,
                            int actualBufferBursts,
                            int capacityInBursts,
                            boolean isMMapExclusive) {
-            int result = RESULT_UNDEFINED;
+            Result result = new Result();
             mMessage = "analyzing";
-            int nextBursts = -1;
             if (!isMMapExclusive) {
                 mMessage = "skipped, not MMAP Exclusive";
-                return RESULT_OK;
+                result.code = RESULT_OK;
+                return result;
             }
+            result.code = RESULT_CONTINUE;
             switch (mState) {
                 case STATE_MEASURE_LOW:
                     mLowBufferLatency = latencyFrames;
                     mLowBufferBursts = actualBufferBursts;
                     // Now we measure the high side.
                     mHighBufferBursts = capacityInBursts;
-                    nextBursts = mHighBufferBursts;
+                    result.code = RESULT_CONTINUE;
+                    result.numBursts = mHighBufferBursts;
                     mMessage = "checked low bufferSize";
                     mState = STATE_MEASURE_HIGH;
                     break;
@@ -277,11 +285,9 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                             mLowBufferLatency,
                             mHighBufferBursts,
                             mHighBufferLatency) > MAX_ALLOWED_DEVIATION) {
-                        mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
-                        nextBursts = mMiddleBufferBursts;
                         mState = STATE_MEASURE_MIDDLE;
                     } else {
-                        result = RESULT_OK;
+                        result.code = RESULT_OK;
                         mMessage = "DSP position looks good";
                         mState = STATE_DONE;
                     }
@@ -292,7 +298,7 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     // Check to see which side is bad.
                     if (confidence < 0.5) {
                         // We may have landed on the DSP so we got a scrambled result.
-                        result = RESULT_DISCONTINUITY;
+                        result.code = RESULT_DISCONTINUITY;
                         mMessage = "on top of DSP!";
                         mState = STATE_DONE;
                     } else  {
@@ -323,22 +329,20 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                     break;
             }
 
-            if (result == RESULT_UNDEFINED) {
-                if (nextBursts < 0) {
+            if (result.code == RESULT_CONTINUE) {
+                if (mState == STATE_MEASURE_MIDDLE) {
                     if ((mHighBufferBursts - mLowBufferBursts) <= 1) {
-                        result = RESULT_DISCONTINUITY;
+                        result.code = RESULT_DISCONTINUITY;
                         mMessage = "ERROR - DSP position error between "
                                 + mLowBufferBursts + " and "
                                 + mHighBufferBursts + " bursts!";
                     } else {
                         // Subdivide the remaining search space.
                         mMiddleBufferBursts = (mHighBufferBursts + mLowBufferBursts) / 2;
-                        result = mMiddleBufferBursts;
+                        result.numBursts = mMiddleBufferBursts;
                     }
-                } else {
-                    result = nextBursts;
                 }
-            } else if (result == RESULT_OK) {
+            } else if (result.code == RESULT_OK) {
                 mMessage = "PASS - no discontinuity";
             }
             return result;
@@ -376,10 +380,14 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
         private static final int STATE_DONE = 2;
         private int mState = STATE_SCANNING_OUTPUT;
 
-        // Called on UI thread.
+        // Called on UI thread after each single latency measurement is complete.
+        // It decides whether the series is complete or more measurements are needed.
+        // If more measurements are needed then it sets mBufferBursts for Output or mInputMarginBursts for Input
+        // It keeps moving the low and high sizes until it bounds the discontinuity within a single burst.
         @Override
         String onAnalyserDone() {
-            int result = BinaryDiscontinuityFinder.RESULT_OK;
+            BinaryDiscontinuityFinder.Result result = new BinaryDiscontinuityFinder.Result();
+            result.code = BinaryDiscontinuityFinder.RESULT_OK;
             String message = "";
 
             if (!mActive) {
@@ -388,13 +396,13 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                 mBadCount++;
                 if (mBadCount > MAX_BAD_RUNS_ALLOWED) {
                     cancel();
-                    result = BinaryDiscontinuityFinder.RESULT_ERROR;
+                    result.code = BinaryDiscontinuityFinder.RESULT_ERROR;
                     updateButtons(false);
                     message = "scanning cancelled due to error, " + mBadCount + " bad runs\n";
                 } else {
                     message = "skipping this bad run, "
                             + mBadCount + " of " + MAX_BAD_RUNS_ALLOWED + " max\n";
-                    result = mActualBufferBursts;
+                    result.numBursts = mActualBufferBursts;
                 }
             } else {
                 switch (mState) {
@@ -405,8 +413,8 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                                 mActualBufferBursts,
                                 mOutputBufferCapacityInBursts,
                                 mOutputIsMMapExclusive);
-                        mBufferBursts = result;
-
+                        mBufferBursts = result.numBursts;
+                        mInputMarginBursts = 0;
                         break;
                     case STATE_SCANNING_INPUT:
                         inputFinder.setFramesPerBurst(mInputFramesPerBurst);
@@ -415,20 +423,22 @@ public class RoundTripLatencyActivity extends AnalyzerActivity {
                                 mInputMarginBursts,
                                 mInputBufferCapacityInBursts,
                                 mInputIsMMapExclusive);
-                        mBufferBursts = 2;
-                        mInputMarginBursts = Math.min(result, mInputBufferCapacityInBursts - 1);
-
+                        mBufferBursts = -1;
+                        mInputMarginBursts = Math.min(result.numBursts,
+                                mInputBufferCapacityInBursts - 1);
                         break;
                 }
             }
 
-            if (result > 0) {
+            if (result.code == BinaryDiscontinuityFinder.RESULT_CONTINUE) {
                 runAnotherTest();
             } else {
+                // We finished one series.
                 mBufferBursts = -1;
                 mInputMarginBursts = 0;
                 switch (mState) {
                     case STATE_SCANNING_OUTPUT:
+                        // Finished an output series to start an input series.
                         mState = STATE_SCANNING_INPUT;
                         runAnotherTest();
                         break;
