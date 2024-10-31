@@ -34,8 +34,8 @@ EngineOpenSLES &EngineOpenSLES::getInstance() {
 // Satisfy extern in OpenSLES.h
 // These are required because of b/337360630, which was causing
 // Oboe to have link failures if libOpenSLES.so was not available.
-// If you are statically linking Oboe and libOpenSLES.so is a shared library,
-// if you observe crashes, you can pass DO_NOT_DEFINE_OPENSL_ES_CONSTANTS to cmake.
+// If you are statically linking Oboe and libOpenSLES.so is a shared library
+// and you observe crashes, you can pass DO_NOT_DEFINE_OPENSL_ES_CONSTANTS to cmake.
 #ifndef DO_NOT_DEFINE_OPENSL_ES_CONSTANTS
 SL_API const SLInterfaceID SL_IID_ENGINE = nullptr;
 SL_API const SLInterfaceID SL_IID_ANDROIDSIMPLEBUFFERQUEUE = nullptr;
