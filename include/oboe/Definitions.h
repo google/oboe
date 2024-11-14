@@ -152,6 +152,41 @@ namespace oboe {
         * Available since API 34 (U).
         */
         IEC61937 = 5, // AAUDIO_FORMAT_IEC61937
+
+        /**
+         * This format is used for audio compressed in MP3 format.
+         */
+        MP3 = 6, // AAUDIO_FORMAT_MP3
+
+        /**
+         * This format is used for audio compressed in AAC LC format.
+         */
+        AAC_LC, // AAUDIO_FORMAT_AAC_LC
+
+        /**
+         * This format is used for audio compressed in AAC HE V1 format.
+         */
+        AAC_HE_V1, // AAUDIO_FORMAT_AAC_HE_V1,
+
+        /**
+         * This format is used for audio compressed in AAC HE V2 format.
+         */
+        AAC_HE_V2, // AAUDIO_FORMAT_AAC_HE_V2
+
+        /**
+         * This format is used for audio compressed in AAC ELD format.
+         */
+        AAC_ELD, // AAUDIO_FORMAT_AAC_ELD
+
+        /**
+         * This format is used for audio compressed in AAC XHE format.
+         */
+        AAC_XHE, // AAUDIO_FORMAT_AAC_XHE
+
+        /**
+         * This format is used for audio compressed in OPUS.
+         */
+        OPUS, // AAUDIO_FORMAT_OPUS
     };
 
     /**
@@ -246,6 +281,14 @@ namespace oboe {
          * Reducing latency is most important.
          */
         LowLatency = 12, // AAUDIO_PERFORMANCE_MODE_LOW_LATENCY
+
+        /**
+         * Extending battery life is more important than low latency.
+         *
+         * This mode is not supported in input streams.
+         * This mode will play through the offloaded audio path to save battery life.
+         */
+        POWER_SAVING_OFFLOADED = 13, // AAUDIO_PERFORMANCE_MODE_POWER_SAVING_OFFLOADED
     };
 
     /**

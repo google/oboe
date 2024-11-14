@@ -72,6 +72,13 @@ typedef uint32_t aaudio_channel_mask_t;
 typedef int32_t aaudio_spatialization_behavior_t;
 #endif
 
+#if __NDK_MAJOR__ < 36
+// Defined in W
+typedef void (*AAudioStream_presentationEndCallback)(
+        AAudioStream* stream,
+        void* userData);
+#endif
+
 #ifndef __ANDROID_API_Q__
 #define __ANDROID_API_Q__ 29
 #endif
@@ -124,6 +131,7 @@ class AAudioLoader {
     // H = cHar
     // U = uint32_t
     // O = bOol
+    // R = pResentation end callback
 
     typedef int32_t  (*signature_I_PPB)(AAudioStreamBuilder **builder);
 
@@ -157,6 +165,10 @@ class AAudioLoader {
                                           AAudioStream_errorCallback,
                                           void *);
 
+    typedef void (*signature_V_PBPRPV)(AAudioStreamBuilder *,
+                                       AAudioStream_presentationEndCallback,
+                                       void *);
+
     typedef aaudio_format_t (*signature_F_PS)(AAudioStream *stream);
 
     typedef int32_t (*signature_I_PSPVIL)(AAudioStream *, void *, int32_t, int64_t);
@@ -176,6 +188,7 @@ class AAudioLoader {
     typedef int32_t (*signature_I_II)(int32_t, int32_t);
     typedef int32_t (*signature_I_I)(int32_t);
     typedef int32_t (*signature_I)();
+    typedef int32_t (*signature_I_PSII)(AAudioStream *, int32_t, int32_t);
 
     static AAudioLoader* getInstance(); // singleton
 
@@ -224,6 +237,7 @@ class AAudioLoader {
 
     signature_V_PBPDPV  builder_setDataCallback = nullptr;
     signature_V_PBPEPV  builder_setErrorCallback = nullptr;
+    signature_V_PBPRPV  builder_setPresentationEndCallback = nullptr;
 
     signature_I_PB      builder_delete = nullptr;
 
@@ -279,11 +293,17 @@ class AAudioLoader {
     signature_I_PS   stream_getHardwareSampleRate = nullptr;
     signature_F_PS   stream_getHardwareFormat = nullptr;
 
+
     signature_I_II   aaudio_getPlatformMMapPolicy = nullptr;
     signature_I_II   aaudio_getPlatformMMapExclusivePolicy = nullptr;
     signature_I_I    aaudio_setMMapPolicy = nullptr;
     signature_I      aaudio_getMMapPolicy = nullptr;
     signature_O_PS   stream_isMMapUsed = nullptr;
+
+    signature_I_PSII stream_setOffloadDelayPadding = nullptr;
+    signature_I_PS   stream_getOffloadDelay = nullptr;
+    signature_I_PS   stream_getOffloadPadding = nullptr;
+    signature_I_PS   stream_setOffloadEndOfStream = nullptr;
 
   private:
     AAudioLoader() {}
@@ -313,6 +333,8 @@ class AAudioLoader {
     signature_I_II      load_I_II(const char *name);
     signature_I_I       load_I_I(const char *name);
     signature_I         load_I(const char *name);
+    signature_V_PBPRPV  load_V_PBPRPV(const char *name);
+    signature_I_PSII    load_I_PSII(const char *name);
 
     void *mLibHandle = nullptr;
 };
