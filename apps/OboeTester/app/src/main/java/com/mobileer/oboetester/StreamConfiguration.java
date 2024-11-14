@@ -54,6 +54,7 @@ public class StreamConfiguration {
     public static final int PERFORMANCE_MODE_NONE = 10; // must match AAUDIO
     public static final int PERFORMANCE_MODE_POWER_SAVING = 11; // must match AAUDIO
     public static final int PERFORMANCE_MODE_LOW_LATENCY = 12; // must match AAUDIO
+    public static final int PERFORMANCE_MODE_POWER_SAVING_OFFLOAD = 13; // must match AAUDIO
 
     public static final int RATE_CONVERSION_QUALITY_NONE = 0; // must match Oboe
     public static final int RATE_CONVERSION_QUALITY_FASTEST = 1; // must match Oboe
@@ -401,6 +402,8 @@ public class StreamConfiguration {
                 return "PS";
             case PERFORMANCE_MODE_LOW_LATENCY:
                 return "LL";
+            case PERFORMANCE_MODE_POWER_SAVING_OFFLOAD:
+                return "PSO";
             default:
                 return "??";
         }

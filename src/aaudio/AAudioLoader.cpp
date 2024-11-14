@@ -43,6 +43,7 @@ AAudioLoader* AAudioLoader::getInstance() {
 }
 
 int AAudioLoader::open() {
+    LOGD("flamme sdk version=%d", getSdkVersion());
     if (mLibHandle != nullptr) {
         return 0;
     }
@@ -100,6 +101,10 @@ int AAudioLoader::open() {
         builder_setChannelMask = load_V_PBU("AAudioStreamBuilder_setChannelMask");
         builder_setIsContentSpatialized = load_V_PBO("AAudioStreamBuilder_setIsContentSpatialized");
         builder_setSpatializationBehavior = load_V_PBI("AAudioStreamBuilder_setSpatializationBehavior");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_W__) {
+        builder_setPresentationEndCallback = load_V_PBPRPV("AAudioStreamBuilder_setPresentationEndCallback");
     }
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
@@ -175,6 +180,14 @@ int AAudioLoader::open() {
         stream_getHardwareChannelCount = load_I_PS("AAudioStream_getHardwareChannelCount");
         stream_getHardwareSampleRate = load_I_PS("AAudioStream_getHardwareSampleRate");
         stream_getHardwareFormat = load_F_PS("AAudioStream_getHardwareFormat");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_W__) {
+        LOGD("flamme version greater than w");
+        stream_setOffloadDelayPadding = load_I_PSII("AAudioStream_setOffloadDelayPadding");
+        stream_getOffloadDelay = load_I_PS("AAudioStream_getOffloadDelay");
+        stream_getOffloadPadding = load_I_PS("AAudioStream_getOffloadPadding");
+        stream_setOffloadEndOfStream = load_I_PS("AAudioStream_setOffloadEndOfStream");
     }
 
     return 0;
@@ -304,6 +317,18 @@ AAudioLoader::signature_V_PBO AAudioLoader::load_V_PBO(const char *functionName)
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_V_PBO>(proc);
+}
+
+AAudioLoader::signature_V_PBPRPV AAudioLoader::load_V_PBPRPV(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBPRPV>(proc);
+}
+
+AAudioLoader::signature_I_PSII AAudioLoader::load_I_PSII(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSII>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t
