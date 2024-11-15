@@ -75,11 +75,15 @@ public:
      */
     void reportActualDuration(int64_t actualDurationNanos);
 
+    void reportWorkload(int32_t appWorkload);
+
 private:
     std::mutex               mLock;
     APerformanceHintSession* mHintSession = nullptr;
     int64_t                  mBeginCallbackNanos = 0;
     static bool              sUseAlternativeHack;
+    int32_t                  mPreviousWorkload = 0;
+    int32_t                  mPreviousDuration = 0;
 };
 
 #endif //SYNTHMARK_ADPF_WRAPPER_H

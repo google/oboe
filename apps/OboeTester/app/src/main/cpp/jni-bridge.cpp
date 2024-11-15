@@ -124,10 +124,17 @@ Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) 
 }
 
 JNIEXPORT void JNICALL
-        Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
+Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
                                                                      jclass type,
                                                                      jint mask) {
     engine.getCurrentActivity()->setCpuAffinityMask(mask);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_NativeEngine_setWorkloadReportingEnabled(JNIEnv *env,
+                                                             jclass type,
+                                                             jboolean enabled) {
+    engine.getCurrentActivity()->setWorkloadReportingEnabled(enabled);
 }
 
 JNIEXPORT jint JNICALL

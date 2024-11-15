@@ -68,6 +68,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private MultiLineChart.Trace mWorkloadTrace;
     private CheckBox mUseAltAdpfBox;
     private CheckBox mPerfHintBox;
+    private CheckBox mWorkloadReportBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private int mCpuCount;
@@ -287,6 +288,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 0.0f, (MARGIN_ABOVE_WORKLOAD_FOR_CPU * WORKLOAD_HIGH_MAX));
 
         mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
+        mWorkloadReportBox = (CheckBox) findViewById(R.id.enable_workload_report);
 
         // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
@@ -302,6 +304,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mShouldUseADPF = checkBox.isChecked();
                 setPerformanceHintEnabled(mShouldUseADPF);
                 mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
+        });
+
+        mWorkloadReportBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            setWorkloadReportingEnabled(checkBox.isChecked());
         });
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
@@ -336,7 +343,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     private void setPerformanceHintEnabled(boolean checked) {
-      mAudioOutTester.getCurrentAudioStream().setPerformanceHintEnabled(checked);
+        mAudioOutTester.getCurrentAudioStream().setPerformanceHintEnabled(checked);
+    }
+
+    private void setWorkloadReportingEnabled(boolean enabled) {
+        NativeEngine.setWorkloadReportingEnabled(enabled);
     }
 
     private void updateButtons(boolean running) {
