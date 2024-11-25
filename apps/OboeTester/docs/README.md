@@ -9,8 +9,8 @@ It can also be run as part of an [automated test using Intents](AutomatedTesting
 ## Install OboeTester
 
 You have two options:
-1) Download OboeTester from [Play Store](https://play.google.com/store/apps/details?id=com.mobileer.oboetester)
-2) OR [Build latest OboeTester using Android Studio](Build.md)
+1) Download OboeTester from the [Play Store](https://play.google.com/store/apps/details?id=com.mobileer.oboetester)
+2) OR [build the latest version of OboeTester using Android Studio](Build.md)
 
 ## [How to Use OboeTester Interactively](Usage.md)
 
