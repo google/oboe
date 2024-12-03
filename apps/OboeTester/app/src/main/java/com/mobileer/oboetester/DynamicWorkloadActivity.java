@@ -53,6 +53,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     public static final String KEY_USE_ADPF = "use_adpf";
     public static final boolean VALUE_DEFAULT_USE_ADPF = false;
+    public static final String KEY_USE_WORKLOAD = "use_workload";
+    public static final boolean VALUE_DEFAULT_USE_WORKLOAD = false;
     public static final String KEY_SCROLL_GRAPHICS = "scroll_graphics";
     public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
 
@@ -68,10 +70,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private MultiLineChart.Trace mWorkloadTrace;
     private CheckBox mUseAltAdpfBox;
     private CheckBox mPerfHintBox;
+    private CheckBox mWorkloadReportBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private int mCpuCount;
     private boolean mShouldUseADPF;
+    private boolean mShouldUseWorkloadReporting;
 
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
@@ -287,6 +291,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 0.0f, (MARGIN_ABOVE_WORKLOAD_FOR_CPU * WORKLOAD_HIGH_MAX));
 
         mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
+        mWorkloadReportBox = (CheckBox) findViewById(R.id.enable_workload_report);
 
         // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
@@ -302,7 +307,15 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mShouldUseADPF = checkBox.isChecked();
                 setPerformanceHintEnabled(mShouldUseADPF);
                 mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
+                mWorkloadReportBox.setEnabled(mShouldUseADPF);
         });
+
+        mWorkloadReportBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mShouldUseWorkloadReporting = checkBox.isChecked();
+            setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
+        });
+        mWorkloadReportBox.setEnabled(mShouldUseADPF);
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
         hearWorkloadBox.setOnClickListener(buttonView -> {
@@ -336,13 +349,18 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     }
 
     private void setPerformanceHintEnabled(boolean checked) {
-      mAudioOutTester.getCurrentAudioStream().setPerformanceHintEnabled(checked);
+        mAudioOutTester.getCurrentAudioStream().setPerformanceHintEnabled(checked);
+    }
+
+    private void setWorkloadReportingEnabled(boolean enabled) {
+        NativeEngine.setWorkloadReportingEnabled(enabled);
     }
 
     private void updateButtons(boolean running) {
         mStartButton.setEnabled(!running);
         mStopButton.setEnabled(running);
         mPerfHintBox.setEnabled(running);
+        mWorkloadReportBox.setEnabled(running);
     }
 
     private void postResult(final String text) {
@@ -407,6 +425,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             // Specific options.
             mShouldUseADPF = mBundleFromIntent.getBoolean(KEY_USE_ADPF,
                     VALUE_DEFAULT_USE_ADPF);
+            mShouldUseWorkloadReporting = mBundleFromIntent.getBoolean(KEY_USE_WORKLOAD,
+                    VALUE_DEFAULT_USE_WORKLOAD);
             mDrawChartAlways =
                     mBundleFromIntent.getBoolean(KEY_SCROLL_GRAPHICS,
                             VALUE_DEFAULT_SCROLL_GRAPHICS);
@@ -416,6 +436,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             runOnUiThread(() -> {
                 mPerfHintBox.setChecked(mShouldUseADPF);
                 setPerformanceHintEnabled(mShouldUseADPF);
+                mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
+                setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
             });
 
@@ -442,6 +464,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         AudioStreamBase outputStream =mAudioOutTester.getCurrentAudioStream();
         report += "out.xruns = " + outputStream.getXRunCount() + "\n";
         report += "use.adpf = " + (mShouldUseADPF ? "yes" : "no") + "\n";
+        report += "use.workload = " + (mShouldUseWorkloadReporting ? "yes" : "no") + "\n";
         report += "scroll.graphics = " + (mDrawChartAlways ? "yes" : "no") + "\n";
         onStopTest();
         maybeWriteTestResult(report);

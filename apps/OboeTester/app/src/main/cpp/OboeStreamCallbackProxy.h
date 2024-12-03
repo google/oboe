@@ -241,6 +241,10 @@ public:
         mCpuAffinityMask = mask;
     }
 
+    void setWorkloadReportingEnabled(bool enabled) {
+        mWorkloadReportingEnabled = enabled;
+    }
+
 private:
     static constexpr double    kNsToMsScaler = 0.000001;
     std::atomic<float>         mCpuLoad{0.0f};
@@ -250,6 +254,7 @@ private:
     int32_t                    mNumWorkloadVoices = 0;
     SynthWorkload              mSynthWorkload;
     bool                       mHearWorkload = false;
+    bool                       mWorkloadReportingEnabled = false;
 
     oboe::AudioStreamDataCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;

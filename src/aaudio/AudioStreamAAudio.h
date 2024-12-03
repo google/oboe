@@ -100,6 +100,14 @@ public:
         mAdpfOpenAttempted = false;
     }
 
+    oboe::Result reportWorkload(int32_t appWorkload) override {
+        if (!isPerformanceHintEnabled()) {
+            return oboe::Result::ErrorInvalidState;
+        }
+        mAdpfWrapper.reportWorkload(appWorkload);
+        return oboe::Result::OK;
+    }
+
 protected:
     static void internalErrorCallback(
             AAudioStream *stream,

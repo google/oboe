@@ -59,13 +59,14 @@ For example:
 
 There are two required parameters for all tests:
 
-    --es test {latency, glitch, data_paths, input, output}
+    --es test {latency, glitch, data_paths, input, output, cpu_load}
             The "latency" test will perform a Round Trip Latency test.
             It will request EXCLUSIVE mode for minimal latency.
             The "glitch" test will perform a single Glitch test.
             The "data_paths" test will verify input and output streams in many possible configurations.
             The "input" test will open and start an input stream.
             The "output" test will open and start an output stream.
+            The "cpu_load" test will run the CPU LOAD activity.
 
     --es file {name of resulting file}
 
@@ -125,11 +126,17 @@ These parameters were used with the "data_paths" test prior to v2.5.11.
 
     --ez use_input_devices  {"true", 1, "false", 0}  // Whether to test various input devices.
     --ez use_output_devices {"true", 1, "false", 0}  // Whether to test various output devices.
-    --ez use_all_output_channel_masks {"true", 1, "false", 0}  // Whether to test all output channel masks. Default is false
+    --ez use_all_output_channel_masks {"true", 1, "false", 0}  // Whether to test all output channel masks. Default is false.
 
 There are some optional parameters for just the "output" test:
 
     --es signal_type        {sine, sawtooth, freq_sweep, pitch_sweep, white_noise} // type of sound to play, default is sine
+
+There are some optional parameters for just the "cpu_load" test:
+
+    --ez use_adpf         {true, false} // if true, use work boost from performance hints. Default is false.
+    --ez use_workload     {true, false} // if true and using ADPF then report workload changes. Default is false.
+    --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
 
 For example, a complete command for a "latency" test might be:
 

@@ -300,6 +300,10 @@ public:
         oboeCallbackProxy.setCpuAffinityMask(mask);
     }
 
+    void setWorkloadReportingEnabled(bool enabled) {
+        oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
+    }
+
 protected:
     std::shared_ptr<oboe::AudioStream> getInputStream();
     std::shared_ptr<oboe::AudioStream> getOutputStream();
