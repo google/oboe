@@ -543,14 +543,23 @@ public:
     }
 
     /**
-     * If you have called setPerformanceHintEnabled(true) then you can give
-     * the performance manager more information about your workload.
+     * Use this to give the performance manager more information about your workload.
      * You can call this at the beginning of the callback when you figure
      * out what your workload will be.
+     *
+     * Call this if (1) you have called setPerformanceHintEnabled(true), and
+     * (2) you have a varying workload, and
+     * (3) you hear glitches when your workload suddenly increases.
+     *
+     * This might happen when you go from a single note to a big chord on a synthesizer.
      *
      * The workload can be in your own units. If you are synthesizing music
      * then the workload could be the number of active voices.
      * If your app is a game then it could be the number of sound effects.
+     * The units are arbitrary. They just have to be proportional to
+     * the estimated computational load. For example, if some of your voices take 20%
+     * more computation than a basic voice then assign 6 units to the complex voice
+     * and 5 units to the basic voice.
      *
      * The performance hint code can use this as an advance warning that the callback duration
      * will probably increase. Rather than wait for the long duration and possibly under-run,

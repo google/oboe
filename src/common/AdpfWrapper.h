@@ -83,7 +83,7 @@ private:
     int64_t                  mBeginCallbackNanos = 0;
     static bool              sUseAlternativeHack;
     int32_t                  mPreviousWorkload = 0;
-    int32_t                  mPreviousDuration = 0;
+    double                   mNanosPerWorkloadUnit = 0.0;
 };
 
 #endif //SYNTHMARK_ADPF_WRAPPER_H
