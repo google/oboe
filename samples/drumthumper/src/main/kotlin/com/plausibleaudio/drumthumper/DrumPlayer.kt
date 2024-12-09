@@ -45,6 +45,10 @@ class DrumPlayer {
         val PAN_HIHATOPEN: Float = -1.0f     // Hard Left
         val PAN_HIHATCLOSED: Float = -1.0f   // Hard Left
 
+        val LATENCY_LOW_MMAP = 0
+        val LATENCY_LOW_LEGACY = 1
+        val LATENCY_NORMAL = 2
+
         // Logging Tag
         val TAG: String = "DrumPlayer"
     }
@@ -111,4 +115,6 @@ class DrumPlayer {
     external fun clearOutputReset()
 
     external fun restartStream()
+
+    external fun setLatencyMode(latncyMode: Int)
 }
