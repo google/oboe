@@ -29,6 +29,11 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     // Record which CPU this is running on.
     orCurrentCpuMask(sched_getcpu());
 
+    // Tell ADPF in advance what our workload will be.
+    if (mWorkloadReportingEnabled) {
+        audioStream->reportWorkload(mNumWorkloadVoices);
+    }
+
     // Change affinity if app requested a change.
     uint32_t mask = mCpuAffinityMask;
     if (mask != mPreviousMask) {
