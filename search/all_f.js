@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['quad_0',['Quad',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824',1,'oboe']]],
-  ['quadside_1',['QuadSide',['../namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb',1,'oboe']]]
+  ['text_0',['Text',['../structoboe_1_1_version.html#a2c86e578b827fbca5f40c460a7754503',1,'oboe::Version']]],
+  ['tune_1',['tune',['../classoboe_1_1_latency_tuner.html#ad2be756965e6a9af3114008eda892174',1,'oboe::LatencyTuner']]]
 ];

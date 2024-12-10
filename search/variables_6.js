@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['samplerate_0',['SampleRate',['../classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1',1,'oboe::DefaultStreamValues']]]
+  ['text_0',['Text',['../structoboe_1_1_version.html#a2c86e578b827fbca5f40c460a7754503',1,'oboe::Version']]]
 ];

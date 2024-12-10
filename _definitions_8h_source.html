@@ -107,21 +107,20 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment">// Oboe needs to be able to build on old NDKs so we use hard coded constants.</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">// The correctness of these constants is verified in &quot;aaudio/AAudioLoader.cpp&quot;.</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceoboe.html">oboe</a> {</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">namespace </span>oboe {</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">   31</a></span>    <span class="keyword">constexpr</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a> = 0;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keyword">constexpr</span> int32_t kUnspecified = 0;</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="comment">// TODO: Investigate using std::chrono</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="namespaceoboe.html#aedef0759ae3622b6f0324799bcbdebf0">   37</a></span>    <span class="keyword">constexpr</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int64_t</a> <a class="code hl_variable" href="namespaceoboe.html#aedef0759ae3622b6f0324799bcbdebf0">kNanosPerMicrosecond</a> =    1000;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">constexpr</span> int64_t kNanosPerMicrosecond =    1000;</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a831e887150474c087170679eaca8672b">   42</a></span>    <span class="keyword">constexpr</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int64_t</a> <a class="code hl_variable" href="namespaceoboe.html#a831e887150474c087170679eaca8672b">kNanosPerMillisecond</a> =    <a class="code hl_variable" href="namespaceoboe.html#aedef0759ae3622b6f0324799bcbdebf0">kNanosPerMicrosecond</a> * 1000;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">constexpr</span> int64_t kNanosPerMillisecond =    kNanosPerMicrosecond * 1000;</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="namespaceoboe.html#ad1bb9f5626cec20d3a052a8721959873">   47</a></span>    <span class="keyword">constexpr</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int64_t</a> <a class="code hl_variable" href="namespaceoboe.html#ad1bb9f5626cec20d3a052a8721959873">kMillisPerSecond</a> =        1000;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keyword">constexpr</span> int64_t kMillisPerSecond =        1000;</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">   52</a></span>    <span class="keyword">constexpr</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int64_t</a> <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a> =         <a class="code hl_variable" href="namespaceoboe.html#a831e887150474c087170679eaca8672b">kNanosPerMillisecond</a> * <a class="code hl_variable" href="namespaceoboe.html#ad1bb9f5626cec20d3a052a8721959873">kMillisPerSecond</a>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">constexpr</span> int64_t kNanosPerSecond =         kNanosPerMillisecond * kMillisPerSecond;</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="foldopen" id="foldopen00057" data-start="{" data-end="};">
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">   57</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">StreamState</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_stream_state_t</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keyword">enum class</span> StreamState : int32_t { <span class="comment">// aaudio_stream_state_t</span></div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        Uninitialized = 0, <span class="comment">// AAUDIO_STREAM_STATE_UNINITIALIZED,</span></div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>        Unknown = 1, <span class="comment">// AAUDIO_STREAM_STATE_UNKNOWN,</span></div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>        Open = 2, <span class="comment">// AAUDIO_STREAM_STATE_OPEN,</span></div>
@@ -137,47 +136,39 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>        Closed = 12, <span class="comment">// AAUDIO_STREAM_STATE_CLOSED,</span></div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>        Disconnected = 13, <span class="comment">// AAUDIO_STREAM_STATE_DISCONNECTED,</span></div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    };</div>
-</div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
-<div class="foldopen" id="foldopen00077" data-start="{" data-end="};">
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="namespaceoboe.html#af2147500089212955498a08ef2edb5ae">   77</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#af2147500089212955498a08ef2edb5ae">Direction</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_direction_t</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keyword">enum class</span> Direction : int32_t { <span class="comment">// aaudio_direction_t</span></div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea29c2c02a361c9d7028472e5d92cd4a54">Output</a> = 0, <span class="comment">// AAUDIO_DIRECTION_OUTPUT,</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        Output = 0, <span class="comment">// AAUDIO_DIRECTION_OUTPUT,</span></div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5">Input</a> = 1, <span class="comment">// AAUDIO_DIRECTION_INPUT,</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        Input = 1, <span class="comment">// AAUDIO_DIRECTION_INPUT,</span></div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    };</div>
-</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="foldopen" id="foldopen00093" data-start="{" data-end="};">
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">   93</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">AudioFormat</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_format_t</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b">Invalid</a> = -1, <span class="comment">// AAUDIO_FORMAT_INVALID,</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keyword">enum class</span> AudioFormat : int32_t { <span class="comment">// aaudio_format_t</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        Invalid = -1, <span class="comment">// AAUDIO_FORMAT_INVALID,</span></div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = 0, <span class="comment">// AAUDIO_FORMAT_UNSPECIFIED,</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        Unspecified = 0, <span class="comment">// AAUDIO_FORMAT_UNSPECIFIED,</span></div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d">I16</a> = 1, <span class="comment">// AAUDIO_FORMAT_PCM_I16,</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        I16 = 1, <span class="comment">// AAUDIO_FORMAT_PCM_I16,</span></div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a22ae0e2b89e5e3d477f988cc36d3272b">Float</a> = 2, <span class="comment">// AAUDIO_FORMAT_PCM_FLOAT,</span></div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>        Float = 2, <span class="comment">// AAUDIO_FORMAT_PCM_FLOAT,</span></div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6acd843ec248d0b4cac64ece9662ce5c72">I24</a> = 3, <span class="comment">// AAUDIO_FORMAT_PCM_I24_PACKED</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>        I24 = 3, <span class="comment">// AAUDIO_FORMAT_PCM_I24_PACKED</span></div>
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b">I32</a> = 4, <span class="comment">// AAUDIO_FORMAT_PCM_I32</span></div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        I32 = 4, <span class="comment">// AAUDIO_FORMAT_PCM_I32</span></div>
 <div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb">IEC61937</a> = 5, <span class="comment">// AAUDIO_FORMAT_IEC61937</span></div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>        IEC61937 = 5, <span class="comment">// AAUDIO_FORMAT_IEC61937</span></div>
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    };</div>
-</div>
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
-<div class="foldopen" id="foldopen00160" data-start="{" data-end="};">
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno"><a class="line" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">  160</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">DataCallbackResult</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_data_callback_result_t</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>    <span class="keyword">enum class</span> DataCallbackResult : int32_t { <span class="comment">// aaudio_data_callback_result_t</span></div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>        <span class="comment">// Indicates to the caller that the callbacks should continue.</span></div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>        Continue = 0, <span class="comment">// AAUDIO_CALLBACK_RESULT_CONTINUE,</span></div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>        <span class="comment">// Indicates to the caller that the callbacks should stop immediately.</span></div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>        Stop = 1, <span class="comment">// AAUDIO_CALLBACK_RESULT_STOP,</span></div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    };</div>
-</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span> </div>
-<div class="foldopen" id="foldopen00172" data-start="{" data-end="};">
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">  172</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">Result</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_result_t</span></div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keyword">enum class</span> Result : int32_t { <span class="comment">// aaudio_result_t</span></div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>        OK = 0, <span class="comment">// AAUDIO_OK</span></div>
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>        ErrorBase = -900, <span class="comment">// AAUDIO_ERROR_BASE,</span></div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>        ErrorDisconnected = -899, <span class="comment">// AAUDIO_ERROR_DISCONNECTED,</span></div>
@@ -209,129 +200,109 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>        Reserved10,</div>
 <div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>        ErrorClosed = -869,</div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    };</div>
-</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
-<div class="foldopen" id="foldopen00208" data-start="{" data-end="};">
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a8330247b25429953a08354f41834d520">  208</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a8330247b25429953a08354f41834d520">SharingMode</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_sharing_mode_t</span></div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    <span class="keyword">enum class</span> SharingMode : int32_t { <span class="comment">// aaudio_sharing_mode_t</span></div>
 <div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a8330247b25429953a08354f41834d520a2ef50b4c466304dc6ac77bac8a779971">Exclusive</a> = 0, <span class="comment">// AAUDIO_SHARING_MODE_EXCLUSIVE,</span></div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>        Exclusive = 0, <span class="comment">// AAUDIO_SHARING_MODE_EXCLUSIVE,</span></div>
 <div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a8330247b25429953a08354f41834d520aa6156ea9d66fef24e87e841fbabf7cca">Shared</a> = 1, <span class="comment">// AAUDIO_SHARING_MODE_SHARED,</span></div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>        Shared = 1, <span class="comment">// AAUDIO_SHARING_MODE_SHARED,</span></div>
 <div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>    };</div>
-</div>
 <div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span> </div>
-<div class="foldopen" id="foldopen00233" data-start="{" data-end="};">
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184">  233</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184">PerformanceMode</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_performance_mode_t</span></div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    <span class="keyword">enum class</span> PerformanceMode : int32_t { <span class="comment">// aaudio_performance_mode_t</span></div>
 <div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span> </div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = 10, <span class="comment">// AAUDIO_PERFORMANCE_MODE_NONE,</span></div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>        None = 10, <span class="comment">// AAUDIO_PERFORMANCE_MODE_NONE,</span></div>
 <div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span> </div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184abbad080463ed11f9d77797c04aa1e5b1">PowerSaving</a> = 11, <span class="comment">// AAUDIO_PERFORMANCE_MODE_POWER_SAVING,</span></div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>        PowerSaving = 11, <span class="comment">// AAUDIO_PERFORMANCE_MODE_POWER_SAVING,</span></div>
 <div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184a611907b5ab1865515c35357efa41a9b9">LowLatency</a> = 12, <span class="comment">// AAUDIO_PERFORMANCE_MODE_LOW_LATENCY</span></div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>        LowLatency = 12, <span class="comment">// AAUDIO_PERFORMANCE_MODE_LOW_LATENCY</span></div>
 <div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    };</div>
-</div>
 <div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span> </div>
-<div class="foldopen" id="foldopen00254" data-start="{" data-end="};">
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6">  254</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6">AudioApi</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>    <span class="keyword">enum class</span> AudioApi : int32_t {</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        Unspecified = kUnspecified,</div>
 <div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6a24e758ea9c1e842ef71cc8ff8b63fa9b">OpenSLES</a>,</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        OpenSLES,</div>
 <div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span> </div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6a99780b1e8d754eb42abed0ca5253e55b">AAudio</a></div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>        AAudio</div>
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>    };</div>
-</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
-<div class="foldopen" id="foldopen00279" data-start="{" data-end="};">
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">  279</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">SampleRateConversionQuality</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a>,</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e">Fastest</a>,</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef">Low</a>,</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5">Medium</a>,</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35">High</a>,</div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd">Best</a>,</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>    <span class="keyword">enum class</span> SampleRateConversionQuality : int32_t {</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        None,</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>        Fastest,</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>        Low,</div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        Medium,</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        High,</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>        Best,</div>
 <div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    };</div>
-</div>
 <div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
-<div class="foldopen" id="foldopen00316" data-start="{" data-end="};">
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">  316</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">Usage</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_usage_t</span></div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74">Media</a> =  1, <span class="comment">// AAUDIO_USAGE_MEDIA</span></div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>    <span class="keyword">enum class</span> Usage : int32_t { <span class="comment">// aaudio_usage_t</span></div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        Media =  1, <span class="comment">// AAUDIO_USAGE_MEDIA</span></div>
 <div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span> </div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">VoiceCommunication</a> = 2, <span class="comment">// AAUDIO_USAGE_VOICE_COMMUNICATION</span></div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        VoiceCommunication = 2, <span class="comment">// AAUDIO_USAGE_VOICE_COMMUNICATION</span></div>
 <div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span> </div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a404f62633744bf4da0c6a27a2b78ce74">VoiceCommunicationSignalling</a> = 3, <span class="comment">// AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING</span></div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>        VoiceCommunicationSignalling = 3, <span class="comment">// AAUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING</span></div>
 <div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a46c4c4d980dfe025ae5b35aa0011dde4">Alarm</a> = 4, <span class="comment">// AAUDIO_USAGE_ALARM</span></div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>        Alarm = 4, <span class="comment">// AAUDIO_USAGE_ALARM</span></div>
 <div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span> </div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a96d008db67fc0b5551a926842bbb6a71">Notification</a> = 5, <span class="comment">// AAUDIO_USAGE_NOTIFICATION</span></div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>        Notification = 5, <span class="comment">// AAUDIO_USAGE_NOTIFICATION</span></div>
 <div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span> </div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a4e7a4b08274d472394b740a20d3bbdaf">NotificationRingtone</a> = 6, <span class="comment">// AAUDIO_USAGE_NOTIFICATION_RINGTONE</span></div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>        NotificationRingtone = 6, <span class="comment">// AAUDIO_USAGE_NOTIFICATION_RINGTONE</span></div>
 <div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span> </div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f">NotificationEvent</a> = 10, <span class="comment">// AAUDIO_USAGE_NOTIFICATION_EVENT</span></div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>        NotificationEvent = 10, <span class="comment">// AAUDIO_USAGE_NOTIFICATION_EVENT</span></div>
 <div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span> </div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a639ffd54516c1a84a288a363c9469df8">AssistanceAccessibility</a> = 11, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY</span></div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>        AssistanceAccessibility = 11, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_ACCESSIBILITY</span></div>
 <div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span> </div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0ade058a1314f9a8504593259ff4f21a1e">AssistanceNavigationGuidance</a> = 12, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE</span></div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>        AssistanceNavigationGuidance = 12, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE</span></div>
 <div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span> </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a1ce57a0572748beebfc0c664ca1077e7">AssistanceSonification</a> = 13, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_SONIFICATION</span></div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        AssistanceSonification = 13, <span class="comment">// AAUDIO_USAGE_ASSISTANCE_SONIFICATION</span></div>
 <div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a63d72051e901c069f8aa1b32aa0c43bb">Game</a> = 14, <span class="comment">// AAUDIO_USAGE_GAME</span></div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>        Game = 14, <span class="comment">// AAUDIO_USAGE_GAME</span></div>
 <div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span> </div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a9b1363da9503dbd4142c0274a88e8d4b">Assistant</a> = 16, <span class="comment">// AAUDIO_USAGE_ASSISTANT</span></div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>        Assistant = 16, <span class="comment">// AAUDIO_USAGE_ASSISTANT</span></div>
 <div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    };</div>
-</div>
 <div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
 <div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
-<div class="foldopen" id="foldopen00392" data-start="{" data-end="};">
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604b">  392</a></span>    <span class="keyword">enum</span> <a class="code hl_enumeration" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604b">ContentType</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_content_type_t</span></div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    <span class="keyword">enum</span> ContentType : int32_t { <span class="comment">// aaudio_content_type_t</span></div>
 <div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span> </div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba3dc48a4b4619aa4edd1da7b937b4dcd1">  397</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba3dc48a4b4619aa4edd1da7b937b4dcd1">Speech</a> = 1, <span class="comment">// AAUDIO_CONTENT_TYPE_SPEECH</span></div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>        Speech = 1, <span class="comment">// AAUDIO_CONTENT_TYPE_SPEECH</span></div>
 <div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span> </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517">  402</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517">Music</a> = 2, <span class="comment">// AAUDIO_CONTENT_TYPE_MUSIC</span></div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        Music = 2, <span class="comment">// AAUDIO_CONTENT_TYPE_MUSIC</span></div>
 <div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span> </div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1">  407</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1">Movie</a> = 3, <span class="comment">// AAUDIO_CONTENT_TYPE_MOVIE</span></div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>        Movie = 3, <span class="comment">// AAUDIO_CONTENT_TYPE_MOVIE</span></div>
 <div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span> </div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba0885eef555037e94a7cf39fe683c2799">  413</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba0885eef555037e94a7cf39fe683c2799">Sonification</a> = 4, <span class="comment">// AAUDIO_CONTENT_TYPE_SONIFICATION</span></div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>        Sonification = 4, <span class="comment">// AAUDIO_CONTENT_TYPE_SONIFICATION</span></div>
 <div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>    };</div>
-</div>
 <div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span> </div>
-<div class="foldopen" id="foldopen00425" data-start="{" data-end="};">
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06">  425</a></span>    <span class="keyword">enum</span> <a class="code hl_enumeration" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06">InputPreset</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> { <span class="comment">// aaudio_input_preset_t</span></div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544">  429</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544">Generic</a> = 1, <span class="comment">// AAUDIO_INPUT_PRESET_GENERIC</span></div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>    <span class="keyword">enum</span> InputPreset : int32_t { <span class="comment">// aaudio_input_preset_t</span></div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>        Generic = 1, <span class="comment">// AAUDIO_INPUT_PRESET_GENERIC</span></div>
 <div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span> </div>
-<div class="line"><a id="l00434" name="l00434"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe">  434</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe">Camcorder</a> = 5, <span class="comment">// AAUDIO_INPUT_PRESET_CAMCORDER</span></div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>        Camcorder = 5, <span class="comment">// AAUDIO_INPUT_PRESET_CAMCORDER</span></div>
 <div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span> </div>
-<div class="line"><a id="l00439" name="l00439"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc">  439</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc">VoiceRecognition</a> = 6, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_RECOGNITION</span></div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span>        VoiceRecognition = 6, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_RECOGNITION</span></div>
 <div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span> </div>
-<div class="line"><a id="l00444" name="l00444"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">  444</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">VoiceCommunication</a> = 7, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION</span></div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span>        VoiceCommunication = 7, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION</span></div>
 <div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span> </div>
-<div class="line"><a id="l00451" name="l00451"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">  451</a></span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">Unprocessed</a> = 9, <span class="comment">// AAUDIO_INPUT_PRESET_UNPROCESSED</span></div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span>        Unprocessed = 9, <span class="comment">// AAUDIO_INPUT_PRESET_UNPROCESSED</span></div>
 <div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span> </div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">  458</a></span>         <a class="code hl_enumvalue" href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">VoicePerformance</a> = 10, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_PERFORMANCE</span></div>
+<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>         VoicePerformance = 10, <span class="comment">// AAUDIO_INPUT_PRESET_VOICE_PERFORMANCE</span></div>
 <div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span> </div>
 <div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>    };</div>
-</div>
 <div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span> </div>
-<div class="foldopen" id="foldopen00467" data-start="{" data-end="};">
-<div class="line"><a id="l00467" name="l00467"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">  467</a></span>    <span class="keyword">enum</span> <a class="code hl_enumeration" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">SessionId</a> {</div>
-<div class="line"><a id="l00473" name="l00473"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">  473</a></span>         <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = -1, <span class="comment">// AAUDIO_SESSION_ID_NONE</span></div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>    <span class="keyword">enum</span> SessionId {</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>         None = -1, <span class="comment">// AAUDIO_SESSION_ID_NONE</span></div>
 <div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span> </div>
-<div class="line"><a id="l00482" name="l00482"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">  482</a></span>         <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">Allocate</a> = 0, <span class="comment">// AAUDIO_SESSION_ID_ALLOCATE</span></div>
+<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>         Allocate = 0, <span class="comment">// AAUDIO_SESSION_ID_ALLOCATE</span></div>
 <div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>    };</div>
-</div>
 <div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span> </div>
-<div class="foldopen" id="foldopen00495" data-start="{" data-end="};">
-<div class="line"><a id="l00495" name="l00495"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029">  495</a></span>    <span class="keyword">enum</span> <a class="code hl_enumeration" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029">ChannelCount</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
-<div class="line"><a id="l00499" name="l00499"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">  499</a></span>      <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>    <span class="keyword">enum</span> ChannelCount : int32_t {</div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>      Unspecified = kUnspecified,</div>
 <div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span> </div>
-<div class="line"><a id="l00504" name="l00504"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">  504</a></span>      <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">Mono</a> = 1,</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>      Mono = 1,</div>
 <div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span> </div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">  509</a></span>      <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">Stereo</a> = 2,</div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>      Stereo = 2,</div>
 <div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>    };</div>
-</div>
 <div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span> </div>
-<div class="foldopen" id="foldopen00526" data-start="{" data-end="};">
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno"><a class="line" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">  526</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">ChannelMask</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">uint32_t</a> { <span class="comment">// aaudio_channel_mask_t</span></div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>    <span class="keyword">enum class</span> ChannelMask : uint32_t { <span class="comment">// aaudio_channel_mask_t</span></div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>        Unspecified = kUnspecified,</div>
 <div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>        FrontLeft = 1 &lt;&lt; 0,</div>
 <div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>        FrontRight = 1 &lt;&lt; 1,</div>
 <div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>        FrontCenter = 1 &lt;&lt; 2,</div>
@@ -359,78 +330,78 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        FrontWideLeft = 1 &lt;&lt; 24,</div>
 <div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        FrontWideRight = 1 &lt;&lt; 25,</div>
 <div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span> </div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">Mono</a> = FrontLeft,</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        Mono = FrontLeft,</div>
 <div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span> </div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">Stereo</a> = FrontLeft |</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        Stereo = FrontLeft |</div>
 <div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>                 FrontRight,</div>
 <div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span> </div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1">CM2Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        CM2Point1 = FrontLeft |</div>
 <div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>                    FrontRight |</div>
 <div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>                    LowFrequency,</div>
 <div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span> </div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3">Tri</a> = FrontLeft |</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>        Tri = FrontLeft |</div>
 <div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>              FrontRight |</div>
 <div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>              FrontCenter,</div>
 <div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span> </div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8">TriBack</a> = FrontLeft |</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        TriBack = FrontLeft |</div>
 <div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>                  FrontRight |</div>
 <div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>                  BackCenter,</div>
 <div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span> </div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6">CM3Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        CM3Point1 = FrontLeft |</div>
 <div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>                    FrontRight |</div>
 <div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>                    FrontCenter |</div>
 <div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>                    LowFrequency,</div>
 <div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span> </div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">CM2Point0Point2</a> = FrontLeft |</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>        CM2Point0Point2 = FrontLeft |</div>
 <div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>                          FrontRight |</div>
 <div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>                          TopSideLeft |</div>
 <div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>                          TopSideRight,</div>
 <div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1">CM2Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">CM2Point0Point2</a> |</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>        CM2Point1Point2 = CM2Point0Point2 |</div>
 <div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>                          LowFrequency,</div>
 <div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span> </div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">CM3Point0Point2</a> = FrontLeft |</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>        CM3Point0Point2 = FrontLeft |</div>
 <div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>                          FrontRight |</div>
 <div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>                          FrontCenter |</div>
 <div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>                          TopSideLeft |</div>
 <div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>                          TopSideRight,</div>
 <div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span> </div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452">CM3Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">CM3Point0Point2</a> |</div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>        CM3Point1Point2 = CM3Point0Point2 |</div>
 <div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>                          LowFrequency,</div>
 <div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span> </div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">Quad</a> = FrontLeft |</div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        Quad = FrontLeft |</div>
 <div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>               FrontRight |</div>
 <div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>               BackLeft |</div>
 <div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>               BackRight,</div>
 <div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span> </div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb">QuadSide</a> = FrontLeft |</div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>        QuadSide = FrontLeft |</div>
 <div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                   FrontRight |</div>
 <div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>                   SideLeft |</div>
 <div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>                   SideRight,</div>
 <div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span> </div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c">Surround</a> = FrontLeft |</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        Surround = FrontLeft |</div>
 <div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>                   FrontRight |</div>
 <div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>                   FrontCenter |</div>
 <div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>                   BackCenter,</div>
 <div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span> </div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0">Penta</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">Quad</a> |</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>        Penta = Quad |</div>
 <div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>                FrontCenter,</div>
 <div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span> </div>
-<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>        CM5Point1 = FrontLeft |</div>
 <div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>                    FrontRight |</div>
 <div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>                    FrontCenter |</div>
 <div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>                    LowFrequency |</div>
 <div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>                    BackLeft |</div>
 <div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>                    BackRight,</div>
 <div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span> </div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f">CM5Point1Side</a> = FrontLeft |</div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>        CM5Point1Side = FrontLeft |</div>
 <div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>                        FrontRight |</div>
 <div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>                        FrontCenter |</div>
 <div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>                        LowFrequency |</div>
 <div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>                        SideLeft |</div>
 <div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>                        SideRight,</div>
 <div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span> </div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f">CM6Point1</a> = FrontLeft |</div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        CM6Point1 = FrontLeft |</div>
 <div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>                    FrontRight |</div>
 <div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>                    FrontCenter |</div>
 <div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>                    LowFrequency |</div>
@@ -438,73 +409,66 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>                    BackRight |</div>
 <div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>                    BackCenter,</div>
 <div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span> </div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>        CM7Point1 = CM5Point1 |</div>
 <div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>                    SideLeft |</div>
 <div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>                    SideRight,</div>
 <div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span> </div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909">CM5Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>        CM5Point1Point2 = CM5Point1 |</div>
 <div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>                          TopSideLeft |</div>
 <div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>                          TopSideRight,</div>
 <div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span> </div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad">CM5Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">CM5Point1</a> |</div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>        CM5Point1Point4 = CM5Point1 |</div>
 <div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>                          TopFrontLeft |</div>
 <div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>                          TopFrontRight |</div>
 <div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>                          TopBackLeft |</div>
 <div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>                          TopBackRight,</div>
 <div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span> </div>
-<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97">CM7Point1Point2</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> |</div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>        CM7Point1Point2 = CM7Point1 |</div>
 <div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>                          TopSideLeft |</div>
 <div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>                          TopSideRight,</div>
 <div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span> </div>
-<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">CM7Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">CM7Point1</a> |</div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>        CM7Point1Point4 = CM7Point1 |</div>
 <div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>                          TopFrontLeft |</div>
 <div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>                          TopFrontRight |</div>
 <div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>                          TopBackLeft |</div>
 <div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>                          TopBackRight,</div>
 <div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span> </div>
-<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">CM9Point1Point4</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">CM7Point1Point4</a> |</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>        CM9Point1Point4 = CM7Point1Point4 |</div>
 <div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>                          FrontWideLeft |</div>
 <div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>                          FrontWideRight,</div>
 <div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span> </div>
-<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508">CM9Point1Point6</a> = <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">CM9Point1Point4</a> |</div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        CM9Point1Point6 = CM9Point1Point4 |</div>
 <div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>                          TopSideLeft |</div>
 <div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>                          TopSideRight,</div>
 <div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span> </div>
-<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d">FrontBack</a> = FrontCenter |</div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        FrontBack = FrontCenter |</div>
 <div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>                    BackCenter,</div>
 <div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>    };</div>
-</div>
 <div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span> </div>
-<div class="foldopen" id="foldopen00748" data-start="{" data-end="};">
-<div class="line"><a id="l00748" name="l00748"></a><span class="lineno"><a class="line" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">  748</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">SpatializationBehavior</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>    <span class="keyword">enum class</span> SpatializationBehavior : int32_t {</div>
 <div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span> </div>
-<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        Unspecified = kUnspecified,</div>
 <div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span> </div>
-<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">Auto</a> = 1,</div>
+<div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>        Auto = 1,</div>
 <div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span> </div>
-<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">Never</a> = 2,</div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>        Never = 2,</div>
 <div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    };</div>
-</div>
 <div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span> </div>
-<div class="foldopen" id="foldopen00775" data-start="{" data-end="};">
-<div class="line"><a id="l00775" name="l00775"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">  775</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">PrivacySensitiveMode</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span>    <span class="keyword">enum class</span> PrivacySensitiveMode : int32_t {</div>
 <div class="line"><a id="l00776" name="l00776"></a><span class="lineno">  776</span> </div>
-<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
+<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span>        Unspecified = kUnspecified,</div>
 <div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span> </div>
-<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">Disabled</a> = 1,</div>
+<div class="line"><a id="l00786" name="l00786"></a><span class="lineno">  786</span>        Disabled = 1,</div>
 <div class="line"><a id="l00787" name="l00787"></a><span class="lineno">  787</span> </div>
-<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">Enabled</a> = 2,</div>
+<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>        Enabled = 2,</div>
 <div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span>    };</div>
-</div>
 <div class="line"><a id="l00793" name="l00793"></a><span class="lineno">  793</span> </div>
-<div class="foldopen" id="foldopen00802" data-start="{" data-end="};">
-<div class="line"><a id="l00802" name="l00802"></a><span class="lineno"><a class="line" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">  802</a></span>    <span class="keyword">enum class</span> <a class="code hl_enumeration" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">AllowedCapturePolicy</a> : <a class="code hl_class" href="classoboe_1_1_result_with_value.html">int32_t</a> {</div>
-<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">Unspecified</a> = <a class="code hl_variable" href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">kUnspecified</a>,</div>
-<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">All</a> = 1,</div>
-<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">System</a> = 2,</div>
-<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>        <a class="code hl_enumvalue" href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">None</a> = 3,</div>
+<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span>    <span class="keyword">enum class</span> AllowedCapturePolicy : int32_t {</div>
+<div class="line"><a id="l00807" name="l00807"></a><span class="lineno">  807</span>        Unspecified = kUnspecified,</div>
+<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>        All = 1,</div>
+<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span>        System = 2,</div>
+<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>        None = 3,</div>
 <div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span>    };</div>
-</div>
 <div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span> </div>
 <div class="foldopen" id="foldopen00855" data-start="{" data-end="};">
 <div class="line"><a id="l00855" name="l00855"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html">  855</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a> {</div>
@@ -553,104 +517,6 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclassoboe_1_1_oboe_globals_html"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html">oboe::OboeGlobals</a></div><div class="ttdef"><b>Definition</b> Definitions.h:876</div></div>
 <div class="ttc" id="aclassoboe_1_1_oboe_globals_html_af2b8af764c5a5e6fc007b7725117303b"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals::setWorkaroundsEnabled</a></div><div class="ttdeci">static void setWorkaroundsEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> Definitions.h:888</div></div>
 <div class="ttc" id="aclassoboe_1_1_result_with_value_html"><div class="ttname"><a href="classoboe_1_1_result_with_value.html">oboe::ResultWithValue</a></div><div class="ttdef"><b>Definition</b> ResultWithValue.h:47</div></div>
-<div class="ttc" id="anamespaceoboe_html"><div class="ttname"><a href="namespaceoboe.html">oboe</a></div><div class="ttdef"><b>Definition</b> AudioClock.h:24</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0">oboe::Usage</a></div><div class="ttdeci">Usage</div><div class="ttdef"><b>Definition</b> Definitions.h:316</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a089240b5380dbd12f1eac0ec258a3b2f">oboe::Usage::NotificationEvent</a></div><div class="ttdeci">@ NotificationEvent</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a1ce57a0572748beebfc0c664ca1077e7"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a1ce57a0572748beebfc0c664ca1077e7">oboe::Usage::AssistanceSonification</a></div><div class="ttdeci">@ AssistanceSonification</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a3b563524fdb17b4a86590470d40bef74">oboe::Usage::Media</a></div><div class="ttdeci">@ Media</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a404f62633744bf4da0c6a27a2b78ce74"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a404f62633744bf4da0c6a27a2b78ce74">oboe::Usage::VoiceCommunicationSignalling</a></div><div class="ttdeci">@ VoiceCommunicationSignalling</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a46c4c4d980dfe025ae5b35aa0011dde4"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a46c4c4d980dfe025ae5b35aa0011dde4">oboe::Usage::Alarm</a></div><div class="ttdeci">@ Alarm</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a4e7a4b08274d472394b740a20d3bbdaf"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a4e7a4b08274d472394b740a20d3bbdaf">oboe::Usage::NotificationRingtone</a></div><div class="ttdeci">@ NotificationRingtone</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a639ffd54516c1a84a288a363c9469df8"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a639ffd54516c1a84a288a363c9469df8">oboe::Usage::AssistanceAccessibility</a></div><div class="ttdeci">@ AssistanceAccessibility</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a63d72051e901c069f8aa1b32aa0c43bb"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a63d72051e901c069f8aa1b32aa0c43bb">oboe::Usage::Game</a></div><div class="ttdeci">@ Game</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a96d008db67fc0b5551a926842bbb6a71"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a96d008db67fc0b5551a926842bbb6a71">oboe::Usage::Notification</a></div><div class="ttdeci">@ Notification</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0a9b1363da9503dbd4142c0274a88e8d4b"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0a9b1363da9503dbd4142c0274a88e8d4b">oboe::Usage::Assistant</a></div><div class="ttdeci">@ Assistant</div></div>
-<div class="ttc" id="anamespaceoboe_html_a104ee8396c173fefac429759ea3c21a0ade058a1314f9a8504593259ff4f21a1e"><div class="ttname"><a href="namespaceoboe.html#a104ee8396c173fefac429759ea3c21a0ade058a1314f9a8504593259ff4f21a1e">oboe::Usage::AssistanceNavigationGuidance</a></div><div class="ttdeci">@ AssistanceNavigationGuidance</div></div>
-<div class="ttc" id="anamespaceoboe_html_a1068781f3920654b1bfd7ed136468184"><div class="ttname"><a href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184">oboe::PerformanceMode</a></div><div class="ttdeci">PerformanceMode</div><div class="ttdef"><b>Definition</b> Definitions.h:233</div></div>
-<div class="ttc" id="anamespaceoboe_html_a1068781f3920654b1bfd7ed136468184a611907b5ab1865515c35357efa41a9b9"><div class="ttname"><a href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184a611907b5ab1865515c35357efa41a9b9">oboe::PerformanceMode::LowLatency</a></div><div class="ttdeci">@ LowLatency</div></div>
-<div class="ttc" id="anamespaceoboe_html_a1068781f3920654b1bfd7ed136468184abbad080463ed11f9d77797c04aa1e5b1"><div class="ttname"><a href="namespaceoboe.html#a1068781f3920654b1bfd7ed136468184abbad080463ed11f9d77797c04aa1e5b1">oboe::PerformanceMode::PowerSaving</a></div><div class="ttdeci">@ PowerSaving</div></div>
-<div class="ttc" id="anamespaceoboe_html_a2a3cec6f021c1a324df60273710c604b"><div class="ttname"><a href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604b">oboe::ContentType</a></div><div class="ttdeci">ContentType</div><div class="ttdef"><b>Definition</b> Definitions.h:392</div></div>
-<div class="ttc" id="anamespaceoboe_html_a2a3cec6f021c1a324df60273710c604ba0885eef555037e94a7cf39fe683c2799"><div class="ttname"><a href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba0885eef555037e94a7cf39fe683c2799">oboe::Sonification</a></div><div class="ttdeci">@ Sonification</div><div class="ttdef"><b>Definition</b> Definitions.h:413</div></div>
-<div class="ttc" id="anamespaceoboe_html_a2a3cec6f021c1a324df60273710c604ba3dc48a4b4619aa4edd1da7b937b4dcd1"><div class="ttname"><a href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba3dc48a4b4619aa4edd1da7b937b4dcd1">oboe::Speech</a></div><div class="ttdeci">@ Speech</div><div class="ttdef"><b>Definition</b> Definitions.h:397</div></div>
-<div class="ttc" id="anamespaceoboe_html_a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1"><div class="ttname"><a href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604ba8b3b366178c2b7b1688bca6cd33758b1">oboe::Movie</a></div><div class="ttdeci">@ Movie</div><div class="ttdef"><b>Definition</b> Definitions.h:407</div></div>
-<div class="ttc" id="anamespaceoboe_html_a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517"><div class="ttname"><a href="namespaceoboe.html#a2a3cec6f021c1a324df60273710c604bac156fcc7b29059305cef26f3904d4517">oboe::Music</a></div><div class="ttdeci">@ Music</div><div class="ttdef"><b>Definition</b> Definitions.h:402</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06">oboe::InputPreset</a></div><div class="ttdeci">InputPreset</div><div class="ttdef"><b>Definition</b> Definitions.h:425</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a0ba6f369e7f8a700c14afe2992290544">oboe::Generic</a></div><div class="ttdeci">@ Generic</div><div class="ttdef"><b>Definition</b> Definitions.h:429</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a1862e72c9730c448fbec6f61a5d8234d">oboe::VoiceCommunication</a></div><div class="ttdeci">@ VoiceCommunication</div><div class="ttdef"><b>Definition</b> Definitions.h:444</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06a6e8ef178769235d18b44fe2bb5ab33fe">oboe::Camcorder</a></div><div class="ttdeci">@ Camcorder</div><div class="ttdef"><b>Definition</b> Definitions.h:434</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06acad9424158aefae0af7975901b11d85f">oboe::Unprocessed</a></div><div class="ttdeci">@ Unprocessed</div><div class="ttdef"><b>Definition</b> Definitions.h:451</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06ad19edec0a23e435c774bf3bbcf1d999c">oboe::VoicePerformance</a></div><div class="ttdeci">@ VoicePerformance</div><div class="ttdef"><b>Definition</b> Definitions.h:458</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc"><div class="ttname"><a href="namespaceoboe.html#a4477ed232b02e2694d9309baf55a8f06af6e440b4e9edf49afe18aa4be77be6fc">oboe::VoiceRecognition</a></div><div class="ttdeci">@ VoiceRecognition</div><div class="ttdef"><b>Definition</b> Definitions.h:439</div></div>
-<div class="ttc" id="anamespaceoboe_html_a486512e787b609c80ba4436f23929af1"><div class="ttname"><a href="namespaceoboe.html#a486512e787b609c80ba4436f23929af1">oboe::Result</a></div><div class="ttdeci">Result</div><div class="ttdef"><b>Definition</b> Definitions.h:172</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9fa"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9fa">oboe::PrivacySensitiveMode</a></div><div class="ttdeci">PrivacySensitiveMode</div><div class="ttdef"><b>Definition</b> Definitions.h:775</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faa00d23a76e43b46dae9ec7aa9dcbebb32">oboe::PrivacySensitiveMode::Enabled</a></div><div class="ttdeci">@ Enabled</div></div>
-<div class="ttc" id="anamespaceoboe_html_a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241"><div class="ttname"><a href="namespaceoboe.html#a4a0eebf27bb53b62c1c136d5a9d0f9faab9f5c797ebbf55adccdd8539a65a0241">oboe::PrivacySensitiveMode::Disabled</a></div><div class="ttdeci">@ Disabled</div></div>
-<div class="ttc" id="anamespaceoboe_html_a522e6806948369987639a0d1df03c029"><div class="ttname"><a href="namespaceoboe.html#a522e6806948369987639a0d1df03c029">oboe::ChannelCount</a></div><div class="ttdeci">ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:495</div></div>
-<div class="ttc" id="anamespaceoboe_html_a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba"><div class="ttname"><a href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a534e646333ca7568317b171ea96b89ba">oboe::Stereo</a></div><div class="ttdeci">@ Stereo</div><div class="ttdef"><b>Definition</b> Definitions.h:509</div></div>
-<div class="ttc" id="anamespaceoboe_html_a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79"><div class="ttname"><a href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a8be103218645e121b51078620f452c79">oboe::Mono</a></div><div class="ttdeci">@ Mono</div><div class="ttdef"><b>Definition</b> Definitions.h:504</div></div>
-<div class="ttc" id="anamespaceoboe_html_a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76"><div class="ttname"><a href="namespaceoboe.html#a522e6806948369987639a0d1df03c029a946257a568f77c12df4fc4c49125da76">oboe::Unspecified</a></div><div class="ttdeci">@ Unspecified</div><div class="ttdef"><b>Definition</b> Definitions.h:499</div></div>
-<div class="ttc" id="anamespaceoboe_html_a5752250c10e96179e3618d7f72937eaf"><div class="ttname"><a href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eaf">oboe::SessionId</a></div><div class="ttdeci">SessionId</div><div class="ttdef"><b>Definition</b> Definitions.h:467</div></div>
-<div class="ttc" id="anamespaceoboe_html_a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f"><div class="ttname"><a href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa58c518b26e83ea48393a76f6c9ecb51f">oboe::None</a></div><div class="ttdeci">@ None</div><div class="ttdef"><b>Definition</b> Definitions.h:473</div></div>
-<div class="ttc" id="anamespaceoboe_html_a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123"><div class="ttname"><a href="namespaceoboe.html#a5752250c10e96179e3618d7f72937eafa8485ca716c8cd4aafee372fd7028c123">oboe::Allocate</a></div><div class="ttdeci">@ Allocate</div><div class="ttdef"><b>Definition</b> Definitions.h:482</div></div>
-<div class="ttc" id="anamespaceoboe_html_a5948466b593c4eab65f7025846a39f51"><div class="ttname"><a href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">oboe::kNanosPerSecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerSecond</div><div class="ttdef"><b>Definition</b> Definitions.h:52</div></div>
-<div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9a"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9a">oboe::AllowedCapturePolicy</a></div><div class="ttdeci">AllowedCapturePolicy</div><div class="ttdef"><b>Definition</b> Definitions.h:802</div></div>
-<div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aaa45da96d0bf6575970f2d27af22be28a">oboe::AllowedCapturePolicy::System</a></div><div class="ttdeci">@ System</div></div>
-<div class="ttc" id="anamespaceoboe_html_a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680"><div class="ttname"><a href="namespaceoboe.html#a74be6aa00698ae73f6eff21f47f9fa9aab1c94ca2fbc3e78fc30069c8d0f01680">oboe::AllowedCapturePolicy::All</a></div><div class="ttdeci">@ All</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1d"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1d">oboe::SampleRateConversionQuality</a></div><div class="ttdeci">SampleRateConversionQuality</div><div class="ttdef"><b>Definition</b> Definitions.h:279</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da28d0edd045e05cf5af64e35ae0c4c6ef">oboe::SampleRateConversionQuality::Low</a></div><div class="ttdeci">@ Low</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da655d20c1ca69519ca647684edbb2db35">oboe::SampleRateConversionQuality::High</a></div><div class="ttdeci">@ High</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da68ef004de6166492c1d668eb8efe09bd">oboe::SampleRateConversionQuality::Best</a></div><div class="ttdeci">@ Best</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da87f8a6ab85c9ced3702b4ea641ad4bb5">oboe::SampleRateConversionQuality::Medium</a></div><div class="ttdeci">@ Medium</div></div>
-<div class="ttc" id="anamespaceoboe_html_a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e"><div class="ttname"><a href="namespaceoboe.html#a82f3720eba7654aceb7282be36f9ff1da90fd7fdf6f41406a75e5265b9583bb4e">oboe::SampleRateConversionQuality::Fastest</a></div><div class="ttdeci">@ Fastest</div></div>
-<div class="ttc" id="anamespaceoboe_html_a831e887150474c087170679eaca8672b"><div class="ttname"><a href="namespaceoboe.html#a831e887150474c087170679eaca8672b">oboe::kNanosPerMillisecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerMillisecond</div><div class="ttdef"><b>Definition</b> Definitions.h:42</div></div>
-<div class="ttc" id="anamespaceoboe_html_a8330247b25429953a08354f41834d520"><div class="ttname"><a href="namespaceoboe.html#a8330247b25429953a08354f41834d520">oboe::SharingMode</a></div><div class="ttdeci">SharingMode</div><div class="ttdef"><b>Definition</b> Definitions.h:208</div></div>
-<div class="ttc" id="anamespaceoboe_html_a8330247b25429953a08354f41834d520a2ef50b4c466304dc6ac77bac8a779971"><div class="ttname"><a href="namespaceoboe.html#a8330247b25429953a08354f41834d520a2ef50b4c466304dc6ac77bac8a779971">oboe::SharingMode::Exclusive</a></div><div class="ttdeci">@ Exclusive</div></div>
-<div class="ttc" id="anamespaceoboe_html_a8330247b25429953a08354f41834d520aa6156ea9d66fef24e87e841fbabf7cca"><div class="ttname"><a href="namespaceoboe.html#a8330247b25429953a08354f41834d520aa6156ea9d66fef24e87e841fbabf7cca">oboe::SharingMode::Shared</a></div><div class="ttdeci">@ Shared</div></div>
-<div class="ttc" id="anamespaceoboe_html_a89fa2ce046723764618c29db737917f6"><div class="ttname"><a href="namespaceoboe.html#a89fa2ce046723764618c29db737917f6">oboe::StreamState</a></div><div class="ttdeci">StreamState</div><div class="ttdef"><b>Definition</b> Definitions.h:57</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92972414867c81d5974cb2ed7abefbf6"><div class="ttname"><a href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6">oboe::AudioApi</a></div><div class="ttdeci">AudioApi</div><div class="ttdef"><b>Definition</b> Definitions.h:254</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92972414867c81d5974cb2ed7abefbf6a24e758ea9c1e842ef71cc8ff8b63fa9b"><div class="ttname"><a href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6a24e758ea9c1e842ef71cc8ff8b63fa9b">oboe::AudioApi::OpenSLES</a></div><div class="ttdeci">@ OpenSLES</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92972414867c81d5974cb2ed7abefbf6a99780b1e8d754eb42abed0ca5253e55b"><div class="ttname"><a href="namespaceoboe.html#a92972414867c81d5974cb2ed7abefbf6a99780b1e8d754eb42abed0ca5253e55b">oboe::AudioApi::AAudio</a></div><div class="ttdeci">@ AAudio</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6">oboe::AudioFormat</a></div><div class="ttdeci">AudioFormat</div><div class="ttdef"><b>Definition</b> Definitions.h:93</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6a22ae0e2b89e5e3d477f988cc36d3272b"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a22ae0e2b89e5e3d477f988cc36d3272b">oboe::AudioFormat::Float</a></div><div class="ttdeci">@ Float</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6a4bbb8f967da6d1a610596d7257179c2b">oboe::AudioFormat::Invalid</a></div><div class="ttdeci">@ Invalid</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6abcd774f891b5f9df7099f3ea75dadf8d">oboe::AudioFormat::I16</a></div><div class="ttdeci">@ I16</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6acd843ec248d0b4cac64ece9662ce5c72"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6acd843ec248d0b4cac64ece9662ce5c72">oboe::AudioFormat::I24</a></div><div class="ttdeci">@ I24</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ad878ea6016bfe01729548bf442de5a8b">oboe::AudioFormat::I32</a></div><div class="ttdeci">@ I32</div></div>
-<div class="ttc" id="anamespaceoboe_html_a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb"><div class="ttname"><a href="namespaceoboe.html#a92afc593e856571aacbfd02e57075df6ade7c45fd0e5099082b3ae0eefa543deb">oboe::AudioFormat::IEC61937</a></div><div class="ttdeci">@ IEC61937</div></div>
-<div class="ttc" id="anamespaceoboe_html_ab0772052200184e514082eaa89be7905"><div class="ttname"><a href="namespaceoboe.html#ab0772052200184e514082eaa89be7905">oboe::kUnspecified</a></div><div class="ttdeci">constexpr int32_t kUnspecified</div><div class="ttdef"><b>Definition</b> Definitions.h:31</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33">oboe::ChannelMask</a></div><div class="ttdeci">ChannelMask</div><div class="ttdef"><b>Definition</b> Definitions.h:526</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a07f4007061685e2226655aa378b0e0af">oboe::ChannelMask::CM9Point1Point4</a></div><div class="ttdeci">@ CM9Point1Point4</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a0a1c6ccd01026daade0dcf79af7473f8">oboe::ChannelMask::TriBack</a></div><div class="ttdeci">@ TriBack</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a2a5584997a99043ea066ab2f49fb6909">oboe::ChannelMask::CM5Point1Point2</a></div><div class="ttdeci">@ CM5Point1Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a33a0d7bc9c67b8f5a572fc047825975d">oboe::ChannelMask::FrontBack</a></div><div class="ttdeci">@ FrontBack</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a428ea67d6ee5702028ad01753503828c">oboe::ChannelMask::Surround</a></div><div class="ttdeci">@ Surround</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4b2558ae8b2d99f51d2709dd8f9e05f1">oboe::ChannelMask::CM2Point1</a></div><div class="ttdeci">@ CM2Point1</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a4fd3675e32a02658efdab9cb0f187d6f">oboe::ChannelMask::CM5Point1Side</a></div><div class="ttdeci">@ CM5Point1Side</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a53653ffce7e2b04e3b09889f4a2aed97">oboe::ChannelMask::CM7Point1Point2</a></div><div class="ttdeci">@ CM7Point1Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a5bf292d6b06cd5a22e47d227ec856feb">oboe::ChannelMask::QuadSide</a></div><div class="ttdeci">@ QuadSide</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a77ca2d536fb72423bf11990c674aa67f">oboe::ChannelMask::CM6Point1</a></div><div class="ttdeci">@ CM6Point1</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33a800b16d56d61fbfcc4b08419f54e3329">oboe::ChannelMask::CM3Point0Point2</a></div><div class="ttdeci">@ CM3Point0Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa6972132346dda881c0617e35175e4d6">oboe::ChannelMask::CM3Point1</a></div><div class="ttdeci">@ CM3Point1</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aa7041a7e1c46f301840b0ae8b98b36f0">oboe::ChannelMask::Penta</a></div><div class="ttdeci">@ Penta</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab14da2a8692e297249249059122fadec">oboe::ChannelMask::CM7Point1</a></div><div class="ttdeci">@ CM7Point1</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab50ee619c974fe82be0c8a57ebbb5936">oboe::ChannelMask::CM5Point1</a></div><div class="ttdeci">@ CM5Point1</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ab8c4c2cd6e0f11e2fbb894caeaeccef3">oboe::ChannelMask::Tri</a></div><div class="ttdeci">@ Tri</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acabb9a9dc93ab19dffb2673f80059452">oboe::ChannelMask::CM3Point1Point2</a></div><div class="ttdeci">@ CM3Point1Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acb4f803d85984bf807260ddb59379570">oboe::ChannelMask::CM7Point1Point4</a></div><div class="ttdeci">@ CM7Point1Point4</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33acfe8aaae837229d9e78bd9ad531d33ad">oboe::ChannelMask::CM5Point1Point4</a></div><div class="ttdeci">@ CM5Point1Point4</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae69299bfd95bbc81a3d7b311d32d70bb">oboe::ChannelMask::CM2Point0Point2</a></div><div class="ttdeci">@ CM2Point0Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33ae9017664588010860a92ceb5f8fcb824">oboe::ChannelMask::Quad</a></div><div class="ttdeci">@ Quad</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33afd7a2884a61005b5fd0461a33776e508">oboe::ChannelMask::CM9Point1Point6</a></div><div class="ttdeci">@ CM9Point1Point6</div></div>
-<div class="ttc" id="anamespaceoboe_html_ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1"><div class="ttname"><a href="namespaceoboe.html#ac9c3eaf42351943995479b742f8a8d33aff87098ba16e33f49d4a867911fa9db1">oboe::ChannelMask::CM2Point1Point2</a></div><div class="ttdeci">@ CM2Point1Point2</div></div>
-<div class="ttc" id="anamespaceoboe_html_ad1bb9f5626cec20d3a052a8721959873"><div class="ttname"><a href="namespaceoboe.html#ad1bb9f5626cec20d3a052a8721959873">oboe::kMillisPerSecond</a></div><div class="ttdeci">constexpr int64_t kMillisPerSecond</div><div class="ttdef"><b>Definition</b> Definitions.h:47</div></div>
-<div class="ttc" id="anamespaceoboe_html_aedef0759ae3622b6f0324799bcbdebf0"><div class="ttname"><a href="namespaceoboe.html#aedef0759ae3622b6f0324799bcbdebf0">oboe::kNanosPerMicrosecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerMicrosecond</div><div class="ttdef"><b>Definition</b> Definitions.h:37</div></div>
-<div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5ae"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5ae">oboe::Direction</a></div><div class="ttdeci">Direction</div><div class="ttdef"><b>Definition</b> Definitions.h:77</div></div>
-<div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5aea29c2c02a361c9d7028472e5d92cd4a54"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea29c2c02a361c9d7028472e5d92cd4a54">oboe::Direction::Output</a></div><div class="ttdeci">@ Output</div></div>
-<div class="ttc" id="anamespaceoboe_html_af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5"><div class="ttname"><a href="namespaceoboe.html#af2147500089212955498a08ef2edb5aea324118a6721dd6b8a9b9f4e327df2bf5">oboe::Direction::Input</a></div><div class="ttdeci">@ Input</div></div>
-<div class="ttc" id="anamespaceoboe_html_af85fc9910a287df6c5df0ed396bb75cd"><div class="ttname"><a href="namespaceoboe.html#af85fc9910a287df6c5df0ed396bb75cd">oboe::DataCallbackResult</a></div><div class="ttdeci">DataCallbackResult</div><div class="ttdef"><b>Definition</b> Definitions.h:160</div></div>
-<div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7a"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7a">oboe::SpatializationBehavior</a></div><div class="ttdeci">SpatializationBehavior</div><div class="ttdef"><b>Definition</b> Definitions.h:748</div></div>
-<div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa06b9281e396db002010bde1de57262eb">oboe::SpatializationBehavior::Auto</a></div><div class="ttdeci">@ Auto</div></div>
-<div class="ttc" id="anamespaceoboe_html_afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c"><div class="ttname"><a href="namespaceoboe.html#afbe6ae96ea5b5dc74b746353e757bb7aa6e7b34fa59e1bd229b207892956dc41c">oboe::SpatializationBehavior::Never</a></div><div class="ttdeci">@ Never</div></div>
 <div class="ttc" id="astructoboe_1_1_frame_timestamp_html"><div class="ttname"><a href="structoboe_1_1_frame_timestamp.html">oboe::FrameTimestamp</a></div><div class="ttdef"><b>Definition</b> Definitions.h:871</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

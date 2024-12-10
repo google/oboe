@@ -12,6 +12,5 @@ var searchData=
   ['operator_20bool_9',['operator bool',['../classoboe_1_1_result_with_value.html#ae32b1953b777af7d1d0c94862ca39986',1,'oboe::ResultWithValue']]],
   ['operator_20result_10',['operator Result',['../classoboe_1_1_result_with_value.html#af62107817c0bc76047e6b655a78504ba',1,'oboe::ResultWithValue']]],
   ['operator_21_11',['operator!',['../classoboe_1_1_result_with_value.html#a2dbc8b09ead8b073a78af95b4b0186e3',1,'oboe::ResultWithValue']]],
-  ['operator_3c_3c_12',['operator&lt;&lt;',['../namespaceoboe.html#a075bf0f168aa22ef0a0120216eba2100',1,'oboe']]],
-  ['operator_3d_13',['operator=',['../classoboe_1_1_audio_stream_base.html#ae533f8ef40a16538156222fbb37fb6a0',1,'oboe::AudioStreamBase']]]
+  ['operator_3d_12',['operator=',['../classoboe_1_1_audio_stream_base.html#ae533f8ef40a16538156222fbb37fb6a0',1,'oboe::AudioStreamBase']]]
 ];

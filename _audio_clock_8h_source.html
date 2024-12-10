@@ -105,8 +105,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;ctime&gt;</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;oboe/Definitions.h&quot;</span></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="foldopen" id="foldopen00024" data-start="{" data-end="}">
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="namespaceoboe.html">   24</a></span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceoboe.html">oboe</a> {</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">namespace </span>oboe {</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
 <div class="foldopen" id="foldopen00026" data-start="{" data-end="};">
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_clock.html">   26</a></span><span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_audio_clock.html">AudioClock</a> {</div>
@@ -117,14 +116,14 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        <span class="keywordflow">if</span> (result &lt; 0) {</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>            <span class="keywordflow">return</span> result;</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        }</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordflow">return</span> (time.tv_sec * <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a>) + time.tv_nsec;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordflow">return</span> (time.tv_sec * kNanosPerSecond) + time.tv_nsec;</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    }</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="foldopen" id="foldopen00045" data-start="{" data-end="}">
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_clock.html#a37e5b60143ca51bad9ac787858b4931a">   45</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classoboe_1_1_audio_clock.html#a37e5b60143ca51bad9ac787858b4931a">sleepUntilNanoTime</a>(int64_t nanoTime, clockid_t clockId = CLOCK_MONOTONIC) {</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        <span class="keyword">struct </span>timespec time;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        time.tv_sec = nanoTime / <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a>;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        time.tv_nsec = nanoTime - (time.tv_sec * <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a>);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        time.tv_sec = nanoTime / kNanosPerSecond;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        time.tv_nsec = nanoTime - (time.tv_sec * kNanosPerSecond);</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> 0 - clock_nanosleep(clockId, TIMER_ABSTIME, &amp;time, NULL);</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    }</div>
 </div>
@@ -133,8 +132,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_clock.html#acb3b78ed36bde7209c6ab9f96504aa86">   61</a></span>    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classoboe_1_1_audio_clock.html#acb3b78ed36bde7209c6ab9f96504aa86">sleepForNanos</a>(int64_t nanoseconds, clockid_t clockId = CLOCK_REALTIME) {</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>        <span class="keywordflow">if</span> (nanoseconds &gt; 0) {</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>            <span class="keyword">struct </span>timespec time;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>            time.tv_sec = nanoseconds / <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a>;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>            time.tv_nsec = nanoseconds - (time.tv_sec * <a class="code hl_variable" href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">kNanosPerSecond</a>);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>            time.tv_sec = nanoseconds / kNanosPerSecond;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>            time.tv_nsec = nanoseconds - (time.tv_sec * kNanosPerSecond);</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>            <span class="keywordflow">return</span> 0 - clock_nanosleep(clockId, 0, &amp;time, NULL);</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        }</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>        <span class="keywordflow">return</span> 0;</div>
@@ -144,14 +143,11 @@ $(document).ready(function() { init_codefold(0); });
 </div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>} <span class="comment">// namespace oboe</span></div>
-</div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">#endif </span><span class="comment">//OBOE_AUDIO_CLOCK_H</span></div>
 <div class="ttc" id="aclassoboe_1_1_audio_clock_html"><div class="ttname"><a href="classoboe_1_1_audio_clock.html">oboe::AudioClock</a></div><div class="ttdef"><b>Definition</b> AudioClock.h:26</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_clock_html_a37e5b60143ca51bad9ac787858b4931a"><div class="ttname"><a href="classoboe_1_1_audio_clock.html#a37e5b60143ca51bad9ac787858b4931a">oboe::AudioClock::sleepUntilNanoTime</a></div><div class="ttdeci">static int sleepUntilNanoTime(int64_t nanoTime, clockid_t clockId=CLOCK_MONOTONIC)</div><div class="ttdef"><b>Definition</b> AudioClock.h:45</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_clock_html_acb3b78ed36bde7209c6ab9f96504aa86"><div class="ttname"><a href="classoboe_1_1_audio_clock.html#acb3b78ed36bde7209c6ab9f96504aa86">oboe::AudioClock::sleepForNanos</a></div><div class="ttdeci">static int sleepForNanos(int64_t nanoseconds, clockid_t clockId=CLOCK_REALTIME)</div><div class="ttdef"><b>Definition</b> AudioClock.h:61</div></div>
-<div class="ttc" id="anamespaceoboe_html"><div class="ttname"><a href="namespaceoboe.html">oboe</a></div><div class="ttdef"><b>Definition</b> AudioClock.h:24</div></div>
-<div class="ttc" id="anamespaceoboe_html_a5948466b593c4eab65f7025846a39f51"><div class="ttname"><a href="namespaceoboe.html#a5948466b593c4eab65f7025846a39f51">oboe::kNanosPerSecond</a></div><div class="ttdeci">constexpr int64_t kNanosPerSecond</div><div class="ttdef"><b>Definition</b> Definitions.h:52</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
