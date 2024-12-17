@@ -26,8 +26,6 @@
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStreamBase.h"
 
-/** WARNING - UNDER CONSTRUCTION - THIS API WILL CHANGE. */
-
 namespace oboe {
 
 /**
@@ -517,18 +515,18 @@ public:
      *
      * The flag will be checked in the Oboe data callback. If it transitions from false to true
      * then the PerformanceHint feature will be started.
-     * This only needs to be called once.
+     * This only needs to be called once for each stream.
      *
      * You may want to enable this if you have a dynamically changing workload
-     * and you notice that you are getting underruns and glitches when your workload increases.
+     * and you notice that you are getting under-runs and glitches when your workload increases.
      * This might happen, for example, if you suddenly go from playing one note to
      * ten notes on a synthesizer.
      *
-     * Try the CPU Load test in OboeTester if you would like to experiment with this interactively.
+     * Try the "CPU Load" test in OboeTester if you would like to experiment with this interactively.
      *
      * On some devices, this may be implemented using the "ADPF" library.
      *
-     * @param enabled true if you would like a performance boost
+     * @param enabled true if you would like a performance boost, default is false
      */
     void setPerformanceHintEnabled(bool enabled) {
         mPerformanceHintEnabled = enabled;
@@ -542,6 +540,36 @@ public:
      */
     bool isPerformanceHintEnabled() {
         return mPerformanceHintEnabled;
+    }
+
+    /**
+     * Use this to give the performance manager more information about your workload.
+     * You can call this at the beginning of the callback when you figure
+     * out what your workload will be.
+     *
+     * Call this if (1) you have called setPerformanceHintEnabled(true), and
+     * (2) you have a varying workload, and
+     * (3) you hear glitches when your workload suddenly increases.
+     *
+     * This might happen when you go from a single note to a big chord on a synthesizer.
+     *
+     * The workload can be in your own units. If you are synthesizing music
+     * then the workload could be the number of active voices.
+     * If your app is a game then it could be the number of sound effects.
+     * The units are arbitrary. They just have to be proportional to
+     * the estimated computational load. For example, if some of your voices take 20%
+     * more computation than a basic voice then assign 6 units to the complex voice
+     * and 5 units to the basic voice.
+     *
+     * The performance hint code can use this as an advance warning that the callback duration
+     * will probably increase. Rather than wait for the long duration and possibly under-run,
+     * we can boost the CPU immediately before we start doing the calculations.
+     *
+     * @param appWorkload workload in application units, such as number of voices
+     * @return OK or an error such as ErrorInvalidState if the PerformanceHint was not enabled.
+     */
+    virtual oboe::Result reportWorkload(int32_t appWorkload) {
+        return oboe::Result::ErrorUnimplemented;
     }
 
 protected:

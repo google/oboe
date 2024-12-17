@@ -6,8 +6,8 @@ android {
         applicationId = "com.mobileer.oboetester"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 84
-        versionName "2.6.0"
+        versionCode 91
+        versionName "2.7.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -30,6 +30,7 @@ android {
             path "CMakeLists.txt"
         }
     }
+    namespace 'com.mobileer.oboetester'
 }
 
 dependencies {

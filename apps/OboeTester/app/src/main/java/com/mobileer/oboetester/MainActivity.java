@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.AudioQueryTools.getSystemProperty;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -44,6 +46,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_DATA_PATHS = "data_paths";
     public static final String VALUE_TEST_NAME_OUTPUT = "output";
     public static final String VALUE_TEST_NAME_INPUT = "input";
+    public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
 
     static {
         // Must match name in CMakeLists.txt
@@ -58,6 +61,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private Bundle mBundleFromIntent;
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
+    private CheckBox mForegroundServiceCheckBox;
     private static String mVersionText;
 
     @Override
@@ -109,9 +113,11 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(false);
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
+        mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
-        mBuildTextView.setText(Build.DISPLAY);
+        mBuildTextView.setText(Build.DISPLAY
+                + "\n" + getSystemProperty("ro.build.date"));
 
         saveIntentBundleForLaterProcessing(getIntent());
     }
@@ -146,16 +152,19 @@ public class MainActivity extends BaseOboeTesterActivity {
         }
         Intent intent = getTestIntent(mBundleFromIntent);
         if (intent != null) {
-            setBackgroundFromIntent();
+            setTogglesFromIntent();
             startActivity(intent);
         }
         mBundleFromIntent = null;
     }
 
-    private void setBackgroundFromIntent() {
+    private void setTogglesFromIntent() {
         boolean backgroundEnabled = mBundleFromIntent.getBoolean(
                 IntentBasedTestSupport.KEY_BACKGROUND, false);
         TestAudioActivity.setBackgroundEnabled(backgroundEnabled);
+        boolean foregroundServiceEnabled = mBundleFromIntent.getBoolean(
+                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, false);
+        TestAudioActivity.setBackgroundEnabled(foregroundServiceEnabled);
     }
 
     private Intent getTestIntent(Bundle bundle) {
@@ -176,6 +185,9 @@ public class MainActivity extends BaseOboeTesterActivity {
                 intent.putExtras(bundle);
             } else if (VALUE_TEST_NAME_OUTPUT.equals(testName)) {
                 intent = new Intent(this, TestOutputActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_CPU_LOAD.equals(testName)) {
+                intent = new Intent(this, DynamicWorkloadActivity.class);
                 intent.putExtras(bundle);
             }
         }
@@ -252,6 +264,7 @@ public class MainActivity extends BaseOboeTesterActivity {
 
         NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
+        TestAudioActivity.setForegroundServiceEnabled(mForegroundServiceCheckBox.isChecked());
     }
 
     @Override

@@ -17,10 +17,10 @@
 #include "WaveFileWriter.h"
 
 void WaveFileWriter::WaveFileWriter::write(float value) {
-    if (!headerWritten) {
+    if (!mHeaderWritten) {
         writeHeader();
     }
-    if (bitsPerSample == 24) {
+    if (mBitsPerSample == 24) {
         writePCM24(value);
     } else {
         writePCM16(value);
@@ -46,7 +46,7 @@ void WaveFileWriter::writeShortLittle(int16_t n) {
 }
 
 void WaveFileWriter::writeFormatChunk() {
-    int32_t bytesPerSample = (bitsPerSample + 7) / 8;
+    int32_t bytesPerSample = (mBitsPerSample + 7) / 8;
 
     writeByte('f');
     writeByte('m');
@@ -60,7 +60,13 @@ void WaveFileWriter::writeFormatChunk() {
     writeIntLittle(mFrameRate * mSamplesPerFrame * bytesPerSample);
     // block align
     writeShortLittle((int16_t) (mSamplesPerFrame * bytesPerSample));
-    writeShortLittle((int16_t) bitsPerSample);
+    writeShortLittle((int16_t) mBitsPerSample);
+}
+
+int32_t WaveFileWriter::getDataSizeInBytes() {
+    if (mFrameCount <= 0) return INT32_MAX;
+    int64_t dataSize = ((int64_t)mFrameCount) * mSamplesPerFrame * mBitsPerSample / 8;
+    return (int32_t)std::min(dataSize, (int64_t)INT32_MAX);
 }
 
 void WaveFileWriter::writeDataChunkHeader() {
@@ -68,22 +74,20 @@ void WaveFileWriter::writeDataChunkHeader() {
     writeByte('a');
     writeByte('t');
     writeByte('a');
-    // Maximum size is not strictly correct but is commonly used
-    // when we do not know the final size.
-    writeIntLittle(INT32_MAX);
+    writeIntLittle(getDataSizeInBytes());
 }
 
 void WaveFileWriter::writeHeader() {
     writeRiffHeader();
     writeFormatChunk();
     writeDataChunkHeader();
-    headerWritten = true;
+    mHeaderWritten = true;
 }
 
 // Write lower 8 bits. Upper bits ignored.
 void WaveFileWriter::writeByte(uint8_t b) {
     mOutputStream->write(b);
-    bytesWritten += 1;
+    mBytesWritten += 1;
 }
 
 void WaveFileWriter::writePCM24(float value) {
@@ -124,7 +128,11 @@ void WaveFileWriter::writeRiffHeader() {
     writeByte('F');
     // Maximum size is not strictly correct but is commonly used
     // when we do not know the final size.
-    writeIntLittle(INT32_MAX);
+    const int kExtraHeaderBytes = 36;
+    int32_t dataSize = getDataSizeInBytes();
+    writeIntLittle((dataSize > (INT32_MAX - kExtraHeaderBytes))
+            ? INT32_MAX
+            : dataSize + kExtraHeaderBytes);
     writeByte('W');
     writeByte('A');
     writeByte('V');

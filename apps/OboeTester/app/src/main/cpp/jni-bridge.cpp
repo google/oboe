@@ -31,6 +31,7 @@
 #include "TestColdStartLatency.h"
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
+#include "TestRapidCycle.h"
 
 static NativeAudioContext engine;
 
@@ -123,10 +124,17 @@ Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) 
 }
 
 JNIEXPORT void JNICALL
-        Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
+Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
                                                                      jclass type,
                                                                      jint mask) {
     engine.getCurrentActivity()->setCpuAffinityMask(mask);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_NativeEngine_setWorkloadReportingEnabled(JNIEnv *env,
+                                                             jclass type,
+                                                             jboolean enabled) {
+    engine.getCurrentActivity()->setWorkloadReportingEnabled(enabled);
 }
 
 JNIEXPORT jint JNICALL
@@ -978,4 +986,22 @@ Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getAudioDeviceId(
     return sColdStartLatency.getDeviceId();
 }
 
+static TestRapidCycle sRapidCycle;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRapidCycleActivity_startRapidCycleTest(JNIEnv *env, jobject thiz,
+                                                                        jboolean use_open_sl) {
+    return sRapidCycle.start(use_open_sl);
 }
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRapidCycleActivity_stopRapidCycleTest(JNIEnv *env, jobject thiz) {
+    return sRapidCycle.stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestRapidCycleActivity_getCycleCount(JNIEnv *env, jobject thiz) {
+    return sRapidCycle.getCycleCount();
+}
+
+} // extern "C"

@@ -300,6 +300,10 @@ public:
         oboeCallbackProxy.setCpuAffinityMask(mask);
     }
 
+    void setWorkloadReportingEnabled(bool enabled) {
+        oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
+    }
+
 protected:
     std::shared_ptr<oboe::AudioStream> getInputStream();
     std::shared_ptr<oboe::AudioStream> getOutputStream();
@@ -311,7 +315,7 @@ protected:
                                                              SECONDS_TO_RECORD * mSampleRate);
     }
 
-    virtual void finishOpen(bool isInput, oboe::AudioStream *oboeStream) {}
+    virtual void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {}
 
     virtual oboe::Result startStreams() = 0;
 
@@ -544,7 +548,7 @@ public:
     }
 
 protected:
-    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+    void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) override;
 
 private:
     std::unique_ptr<FullDuplexEcho>   mFullDuplexEcho{};
@@ -616,7 +620,7 @@ public:
     jdouble measureTimestampLatency();
 
 protected:
-    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+    void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) override;
 
 private:
     std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexLatency{};
@@ -658,7 +662,7 @@ public:
     }
 
 protected:
-    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+    void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) override;
 
 private:
     std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexGlitches{};
@@ -700,7 +704,7 @@ public:
     }
 
 protected:
-    void finishOpen(bool isInput, oboe::AudioStream *oboeStream) override;
+    void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) override;
 
 private:
     std::unique_ptr<FullDuplexAnalyzer>   mFullDuplexDataPath{};

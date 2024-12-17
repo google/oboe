@@ -22,6 +22,7 @@ import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.AutomaticGainControl;
 import android.media.audiofx.BassBoost;
 import android.media.audiofx.LoudnessEnhancer;
+import android.media.audiofx.NoiseSuppressor;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,6 +52,7 @@ public class StreamConfigurationView extends LinearLayout {
 
     protected Spinner mNativeApiSpinner;
     private TextView mActualNativeApiView;
+    private TextView mActualDeviceIdView;
 
     private TextView mActualMMapView;
     private CheckBox mRequestedMMapView;
@@ -99,7 +101,11 @@ public class StreamConfigurationView extends LinearLayout {
     private LinearLayout mOutputEffectsLayout;
 
     private CheckBox mAutomaticGainControlCheckBox;
+    private CharSequence mAutomaticGainControlText;
     private CheckBox mAcousticEchoCancelerCheckBox;
+    private CharSequence mAcousticEchoCancelerText;
+    private CheckBox mNoiseSuppressorCheckBox;
+    private CharSequence mNoiseSuppressorText;
     private TextView mBassBoostTextView;
     private SeekBar mBassBoostSeekBar;
     private TextView mLoudnessEnhancerTextView;
@@ -111,8 +117,9 @@ public class StreamConfigurationView extends LinearLayout {
 
     private BassBoost mBassBoost;
     private LoudnessEnhancer mLoudnessEnhancer;
-    private AcousticEchoCanceler mAcousticEchoCanceler;
     private AutomaticGainControl mAutomaticGainControl;
+    private AcousticEchoCanceler mAcousticEchoCanceler;
+    private NoiseSuppressor mNoiseSuppressor;
 
     // Create an anonymous implementation of OnClickListener
     private View.OnClickListener mToggleListener = new View.OnClickListener() {
@@ -194,6 +201,8 @@ public class StreamConfigurationView extends LinearLayout {
 
         mActualNativeApiView = (TextView) findViewById(R.id.actualNativeApi);
 
+        mActualDeviceIdView = (TextView) findViewById(R.id.actualDeviceId);
+
         mChannelConversionBox = (CheckBox) findViewById(R.id.checkChannelConversion);
 
         mFormatConversionBox = (CheckBox) findViewById(R.id.checkFormatConversion);
@@ -226,13 +235,18 @@ public class StreamConfigurationView extends LinearLayout {
 
         mAutomaticGainControlCheckBox = (CheckBox) findViewById(R.id.checkBoxAutomaticGainControl);
         mAcousticEchoCancelerCheckBox = (CheckBox) findViewById(R.id.checkBoxAcousticEchoCanceler);
+        mNoiseSuppressorCheckBox = (CheckBox) findViewById(R.id.checkBoxNoiseSuppressor);
         mBassBoostTextView = (TextView) findViewById(R.id.textBassBoost);
         mBassBoostSeekBar = (SeekBar) findViewById(R.id.seekBarBassBoost);
         mLoudnessEnhancerTextView = (TextView) findViewById(R.id.textLoudnessEnhancer);
         mLoudnessEnhancerSeekBar = (SeekBar) findViewById(R.id.seekBarLoudnessEnhancer);
 
         mAutomaticGainControlCheckBox.setEnabled(AutomaticGainControl.isAvailable());
+        mAutomaticGainControlText = mAutomaticGainControlCheckBox.getText();
         mAcousticEchoCancelerCheckBox.setEnabled(AcousticEchoCanceler.isAvailable());
+        mAcousticEchoCancelerText = mAcousticEchoCancelerCheckBox.getText();
+        mNoiseSuppressorCheckBox.setEnabled(NoiseSuppressor.isAvailable());
+        mNoiseSuppressorText = mNoiseSuppressorCheckBox.getText();
 
         mBassBoostSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -271,6 +285,11 @@ public class StreamConfigurationView extends LinearLayout {
         mAcousticEchoCancelerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 onAcousticEchoCancelerCheckBoxChanged(isChecked);
+            }
+        });
+        mNoiseSuppressorCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onNoiseSuppressorCheckBoxChanged(isChecked);
             }
         });
 
@@ -447,6 +466,9 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getNativeApi();
         mActualNativeApiView.setText(StreamConfiguration.convertNativeApiToText(value));
 
+        value = actualConfiguration.getDeviceId();
+        mActualDeviceIdView.setText(String.valueOf(value));
+
         mActualMMapView.setText(yesOrNo(actualConfiguration.isMMap()));
         int sharingMode = actualConfiguration.getSharingMode();
         boolean isExclusive = (sharingMode == StreamConfiguration.SHARING_MODE_EXCLUSIVE);
@@ -560,18 +582,38 @@ public class StreamConfigurationView extends LinearLayout {
             if (mAcousticEchoCancelerCheckBox.isEnabled()) {
                 mAcousticEchoCanceler = AcousticEchoCanceler.create(sessionId);
                 if (mAcousticEchoCanceler != null) {
+                    boolean wasOn = mAcousticEchoCanceler.getEnabled();
+                    String text = mAcousticEchoCancelerText + "(" + (wasOn ? "Y" : "N") + ")";
+                    mAcousticEchoCancelerCheckBox.setText(text);
                     mAcousticEchoCanceler.setEnabled(mAcousticEchoCancelerCheckBox.isChecked());
                 } else {
                     Log.e(TAG, String.format(Locale.getDefault(), "Could not create AcousticEchoCanceler"));
                 }
             }
+
             // If AGC is not available, the checkbox will be disabled in initializeViews().
             if (mAutomaticGainControlCheckBox.isEnabled()) {
                 mAutomaticGainControl = AutomaticGainControl.create(sessionId);
                 if (mAutomaticGainControl != null) {
+                    boolean wasOn = mAutomaticGainControl.getEnabled();
+                    String text = mAutomaticGainControlText + "(" + (wasOn ? "Y" : "N") + ")";
+                    mAutomaticGainControlCheckBox.setText(text);
                     mAutomaticGainControl.setEnabled(mAutomaticGainControlCheckBox.isChecked());
                 } else {
                     Log.e(TAG, String.format(Locale.getDefault(), "Could not create AutomaticGainControl"));
+                }
+            }
+
+            // If Noise Suppressor is not available, the checkbox will be disabled in initializeViews().
+            if (mNoiseSuppressorCheckBox.isEnabled()) {
+                mNoiseSuppressor = NoiseSuppressor.create(sessionId);
+                if (mNoiseSuppressor != null) {
+                    boolean wasOn = mNoiseSuppressor.getEnabled();
+                    String text = mNoiseSuppressorText + "(" + (wasOn ? "Y" : "N") + ")";
+                    mNoiseSuppressorCheckBox.setText(text);
+                    mNoiseSuppressor.setEnabled(mNoiseSuppressorCheckBox.isChecked());
+                } else {
+                    Log.e(TAG, String.format(Locale.getDefault(), "Could not create NoiseSuppressor"));
                 }
             }
         }
@@ -600,6 +642,12 @@ public class StreamConfigurationView extends LinearLayout {
     private void onAcousticEchoCancelerCheckBoxChanged(boolean isChecked) {
         if (mAcousticEchoCancelerCheckBox.isEnabled() && mAcousticEchoCanceler != null) {
             mAcousticEchoCanceler.setEnabled(isChecked);
+        }
+    }
+
+    private void onNoiseSuppressorCheckBoxChanged(boolean isChecked) {
+        if (mNoiseSuppressorCheckBox.isEnabled() && mNoiseSuppressor != null) {
+            mNoiseSuppressor.setEnabled(isChecked);
         }
     }
 }

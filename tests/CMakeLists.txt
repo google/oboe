@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # This may work on Linux.
 # set(ANDROID_NDK $ENV{HOME}/Android/sdk/ndk-bundle)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++17 -DOBOE_SUPPRESS_LOG_SPAM")
 
 # Include GoogleTest library
 set(GOOGLETEST_ROOT ${ANDROID_NDK}/sources/third_party/googletest)
@@ -27,10 +27,12 @@ include_directories(
 add_executable(
 		testOboe
 		testAAudio.cpp
+		testAudioClock.cpp
 		testFlowgraph.cpp
 		testFullDuplexStream.cpp
 		testResampler.cpp
 		testReturnStop.cpp
+		testReturnStopDeadlock.cpp
 		testStreamClosedMethods.cpp
 		testStreamFramesProcessed.cpp
 		testStreamOpen.cpp
@@ -42,3 +44,4 @@ add_executable(
         )
 
 target_link_libraries(testOboe gtest oboe)
+target_link_options(testOboe PRIVATE "-Wl,-z,max-page-size=16384")

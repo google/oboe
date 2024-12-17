@@ -16,10 +16,14 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
+import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -97,6 +101,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private int mSampleRate;
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
+    private static boolean mForegroundServiceEnabled;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -183,6 +188,49 @@ abstract class TestAudioActivity extends AppCompatActivity {
         return mBackgroundEnabled;
     }
 
+    public static void setForegroundServiceEnabled(boolean enabled) {
+        mForegroundServiceEnabled = enabled;
+    }
+
+    public static boolean isForegroundServiceEnabled() {
+        return mForegroundServiceEnabled;
+    }
+
+    public int getServiceType() {
+        switch(getActivityType()) {
+            case ACTIVITY_TEST_OUTPUT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            case ACTIVITY_TEST_INPUT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_TAP_TO_TONE:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_RECORD_PLAY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_ECHO:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_RT_LATENCY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_GLITCHES:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_TEST_DISCONNECT:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DATA_PATHS:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DYNAMIC_WORKLOAD:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            default:
+                Log.i(TAG, "getServiceType() called on unknown activity type " + getActivityType());
+                return 0;
+        }
+    }
+
     public void onStreamClosed() {
     }
 
@@ -236,6 +284,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         // TODO Use LifeCycleObserver instead of this.
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStart();
+        }
+        if (isForegroundServiceEnabled()) {
+            enableForegroundService(true);
         }
     }
 
@@ -300,6 +351,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (!isBackgroundEnabled()) {
             Log.i(TAG, "onStop() called so stop the test =========================");
             onStopTest();
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         if (mCommunicationDeviceView != null) {
             mCommunicationDeviceView.onStop();
@@ -312,9 +366,22 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (isBackgroundEnabled()) {
             Log.i(TAG, "onDestroy() called so stop the test =========================");
             onStopTest();
+            if (isForegroundServiceEnabled()) {
+                enableForegroundService(false);
+            }
         }
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
+    }
+
+    public void enableForegroundService(boolean enabled) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            String action = enabled ? ACTION_START : ACTION_STOP;
+            Intent serviceIntent = new Intent(action, null, this,
+                    AudioForegroundService.class);
+            serviceIntent.putExtra("service_types", getServiceType());
+            startForegroundService(serviceIntent);
+        }
     }
 
     protected void updateEnabledWidgets() {
@@ -829,7 +896,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
             int framesPerBurst = streamTester.getCurrentAudioStream().getFramesPerBurst();
             status.framesPerCallback = getFramesPerCallback();
             report.append("timestamp.latency = " + latencyStatistics.dump() + "\n");
-            report.append(status.dump(framesPerBurst));
+            // TODO The following report is not in a name=value format!
+            // report.append(status.dump(framesPerBurst));
         }
 
         return report.toString();

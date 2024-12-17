@@ -41,6 +41,13 @@
             android:text="ADPF" />
 
         <CheckBox
+            android:id="@+id/enable_workload_report"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="Wkload" />
+
+        <CheckBox
             android:id="@+id/use_alternative_adpf"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -143,6 +143,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mPhaseErrorSum;
     private double mPhaseErrorCount;
 
+    private boolean mSkipRemainingTests;
+
     private CheckBox mCheckBoxInputPresets;
     private CheckBox mCheckBoxAllChannels;
     private CheckBox mCheckBoxInputChannelMasks;
@@ -295,7 +297,10 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                     + "\nphase = " + getMagnitudeText(mPhase)
                     + ", jitter = " + getJitterText()
                     + ", #" + mPhaseCount
-                    + "\n");
+                    + "\n"
+                    + mAutomatedTestRunner.getPassFailReport()
+                    + "\n"
+            );
             return message.toString();
         }
 
@@ -400,11 +405,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 && (requestedInConfig.getDeviceId() != actualInConfig.getDeviceId())) {
             why += "inDev(" + requestedInConfig.getDeviceId()
                     + "!=" + actualInConfig.getDeviceId() + "),";
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if (requestedOutConfig.getDeviceId() != 0
                 && (requestedOutConfig.getDeviceId() != actualOutConfig.getDeviceId())) {
             why += ", outDev(" + requestedOutConfig.getDeviceId()
                     + "!=" + actualOutConfig.getDeviceId() + "),";
+            mSkipRemainingTests = true; // the device must have been unplugged
         }
         if ((requestedInConfig.getInputPreset() != actualInConfig.getInputPreset())) {
             why += ", inPre(" + requestedInConfig.getInputPreset()
@@ -465,6 +472,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     @Override
     protected TestResult testCurrentConfigurations() throws InterruptedException {
+        if (mSkipRemainingTests) {
+            throw new DeviceUnpluggedException();
+        }
         TestResult testResult = super.testCurrentConfigurations();
         if (testResult != null) {
             testResult.addComment("mag = " + TestDataPathsActivity.getMagnitudeText(mMagnitude)
@@ -474,17 +484,20 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             int result = testResult.result;
             if (result == TEST_RESULT_FAILED) {
                 int id = mAudioOutTester.actualConfiguration.getDeviceId();
-                int deviceType = getDeviceInfoById(id).getType();
                 int channelCount = mAudioOutTester.actualConfiguration.getChannelCount();
-                if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                        && channelCount == 2
-                        && getOutputChannel() == 1) {
-                    testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
-                }
-                if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
-                        && channelCount == 2
-                        && getOutputChannel() == 0) {
-                    testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
+                AudioDeviceInfo info = getDeviceInfoById(id);
+                if (info != null) {
+                    int deviceType = getDeviceInfoById(id).getType();
+                    if (deviceType == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                            && channelCount == 2
+                            && getOutputChannel() == 1) {
+                        testResult.addComment("Maybe EARPIECE does not mix stereo to mono!");
+                    }
+                    if (deviceType == TYPE_BUILTIN_SPEAKER_SAFE
+                            && channelCount == 2
+                            && getOutputChannel() == 0) {
+                        testResult.addComment("Maybe SPEAKER_SAFE dropped channel zero!");
+                    }
                 }
             }
         }
@@ -663,7 +676,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         setInstructionsText(deviceText);
 
         if (inputDeviceInfo == null) {
-            deviceText += "ERROR - cannot find compatible device type for input!";
+            deviceText += "\nERROR - no compatible input device!";
         } else {
             deviceText = "IN: type = "
                     + AudioDeviceInfoConverter.typeToString(inputDeviceInfo.getType())
@@ -695,12 +708,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     private void testOutputChannelCounts(AudioDeviceInfo inputDeviceInfo, AudioDeviceInfo outputDeviceInfo) throws InterruptedException {
+        final int maxOutputChannelsToTest = 4; // takes too long
         logSection("Output Channel Counts");
         ArrayList<Integer> channelCountsTested = new ArrayList<Integer>();
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
         int[] outputChannelCounts = outputDeviceInfo.getChannelCounts();
+        // Are the output channels mixed together in the air or in a loopback plug?
         if (isDeviceTypeMixedForLoopback(outputDeviceInfo.getType())) {
             requestedInConfig.setChannelCount(1);
             setInputChannel(0);
@@ -716,22 +731,30 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             testPerformancePaths();
             setOutputChannel(1);
             testPerformancePaths();
+
             // Test channels for each channelCount above 2
             for (int numChannels : outputChannelCounts) {
-                log("numChannels = " + numChannels);
-                if (numChannels > 4) {
-                    log("numChannels forced to 4!");
-                }
-                if (!channelCountsTested.contains(numChannels)) {
-                    requestedOutConfig.setChannelCount(numChannels);
-                    channelCountsTested.add(numChannels);
-                    for (int channel = 0; channel < numChannels; channel++) {
-                        setOutputChannel(channel);
-                        testPerformancePaths();
+                if (numChannels > maxOutputChannelsToTest) {
+                    log("skip numChannels = " + numChannels);
+                } else {
+                    if (!channelCountsTested.contains(numChannels)) {
+                        log("--- test numChannels = " + numChannels);
+                        requestedOutConfig.setChannelCount(numChannels);
+                        channelCountsTested.add(numChannels);
+                        for (int channel = 0; channel < numChannels; channel++) {
+                            setOutputChannel(channel);
+                            testPerformancePaths();
+                        }
                     }
                 }
+
             }
         } else {
+            // This device does not mix so we have to match the input and output channel indices.
+            // Find the maximum number of input channels.
+            int[] inputChannelCounts = inputDeviceInfo.getChannelCounts();
+            int maxInputChannels = findLargestChannelCount(inputChannelCounts);
+            int maxInputChannelsToTest = Math.min(maxOutputChannelsToTest, maxInputChannels);
             // test mono
             testMatchingChannels(1);
             channelCountsTested.add(1);
@@ -740,14 +763,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             channelCountsTested.add(2);
             // Test matching channels for each channelCount above 2
             for (int numChannels : outputChannelCounts) {
-                log("numChannels = " + numChannels);
-                if (numChannels > 4) {
-                    log("numChannels forced to 4!");
-                    numChannels = 4;
-                }
-                if (!channelCountsTested.contains(numChannels)) {
-                    testMatchingChannels(numChannels);
-                    channelCountsTested.add(numChannels);
+                if (numChannels > maxInputChannelsToTest) {
+                    log("skip numChannels = " + numChannels + " because > #inputs");
+                } else {
+                    if (!channelCountsTested.contains(numChannels)) {
+                        log("--- test numChannels = " + numChannels);
+                        testMatchingChannels(numChannels);
+                        channelCountsTested.add(numChannels);
+                    }
                 }
             }
         }
@@ -852,6 +875,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
+    class DeviceUnpluggedException extends RuntimeException {
+        public DeviceUnpluggedException() {
+            super("Device was unplugged.");
+        }
+    }
+
     @Override
     public void runTest() {
         try {
@@ -865,7 +894,12 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             runOnUiThread(() -> keepScreenOn(true));
 
-            testOutputDeviceTypes();
+            mSkipRemainingTests = false;
+            try {
+                testOutputDeviceTypes();
+            } catch(DeviceUnpluggedException e) {
+                log("Remaining tests were skipped, " + e.getMessage());
+            }
 
             compareFailedTestsWithNearestPassingTest();
 

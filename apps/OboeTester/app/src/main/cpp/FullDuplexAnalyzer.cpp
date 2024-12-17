@@ -45,10 +45,13 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(
     (void) getLoopbackProcessor()->process(inputFloat, inputStride, numInputFrames,
                                    outputFloat, outputStride, numOutputFrames);
 
-    // write the first channel of output and input to the stereo recorder
+    // Save data for later analysis or for writing to a WAVE file.
     if (mRecording != nullptr) {
         float buffer[2];
         int numBoth = std::min(numInputFrames, numOutputFrames);
+        // Offset to the selected channels that we are analyzing.
+        inputFloat += getLoopbackProcessor()->getInputChannel();
+        outputFloat += getLoopbackProcessor()->getOutputChannel();
         for (int i = 0; i < numBoth; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;
@@ -57,13 +60,14 @@ oboe::DataCallbackResult FullDuplexAnalyzer::onBothStreamsReadyFloat(
             mRecording->write(buffer, 1);
         }
         // Handle mismatch in numFrames.
-        buffer[0] = 0.0f; // gap in output
+        const float gapMarker = -0.9f; // Recognizable value so we can tell underruns from DSP gaps.
+        buffer[0] = gapMarker; // gap in output
         for (int i = numBoth; i < numInputFrames; i++) {
             buffer[1] = *inputFloat;
             inputFloat += inputStride;
             mRecording->write(buffer, 1);
         }
-        buffer[1] = 0.0f; // gap in input
+        buffer[1] = gapMarker; // gap in input
         for (int i = numBoth; i < numOutputFrames; i++) {
             buffer[0] = *outputFloat;
             outputFloat += outputStride;

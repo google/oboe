@@ -428,10 +428,41 @@ public:
         reset();
     }
 
+    /**
+     * Some analyzers may only look at one channel.
+     * You can optionally specify that channel here.
+     *
+     * @param inputChannel
+     */
+    void setInputChannel(int inputChannel) {
+        mInputChannel = inputChannel;
+    }
+
+    int getInputChannel() const {
+        return mInputChannel;
+    }
+
+    /**
+     * Some analyzers may only generate one channel.
+     * You can optionally specify that channel here.
+     *
+     * @param outputChannel
+     */
+    void setOutputChannel(int outputChannel) {
+        mOutputChannel = outputChannel;
+    }
+
+    int getOutputChannel() const {
+        return mOutputChannel;
+    }
+
 protected:
     int32_t   mResetCount = 0;
 
 private:
+
+    int32_t mInputChannel = 0;
+    int32_t mOutputChannel = 0;
     int32_t mSampleRate = kDefaultSampleRate;
     int32_t mResult = 0;
 };

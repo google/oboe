@@ -16,8 +16,12 @@
 
 package com.google.oboe.samples.liveEffect;
 
+import static com.google.oboe.samples.liveEffect.DuplexStreamForegroundService.ACTION_START;
+import static com.google.oboe.samples.liveEffect.DuplexStreamForegroundService.ACTION_STOP;
+
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Build;
@@ -124,6 +128,15 @@ public class MainActivity extends Activity
         });
 
         LiveEffectEngine.setDefaultStreamValues(this);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        if (!isRecordPermissionGranted()){
+            requestRecordPermission();
+        } else {
+            startForegroundService();
+        }
+
+        onStartTest();
     }
 
     private void EnableAudioApiUI(boolean enable) {
@@ -146,22 +159,39 @@ public class MainActivity extends Activity
     @Override
     protected void onStart() {
         super.onStart();
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        onStopTest();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_STOP, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
+        super.onDestroy();
+    }
+
+    private void onStartTest() {
         LiveEffectEngine.create();
         mAAudioRecommended = LiveEffectEngine.isAAudioRecommended();
         EnableAudioApiUI(true);
         LiveEffectEngine.setAPI(apiSelection);
     }
-    @Override
-    protected void onPause() {
+
+    private void onStopTest() {
         stopEffect();
         LiveEffectEngine.delete();
-        super.onPause();
     }
 
     public void toggleEffect() {
@@ -175,11 +205,6 @@ public class MainActivity extends Activity
 
     private void startEffect() {
         Log.d(TAG, "Attempting to start");
-
-        if (!isRecordPermissionGranted()){
-            requestRecordPermission();
-            return;
-        }
 
         boolean success = LiveEffectEngine.setEffectOn(true);
         if (success) {
@@ -237,6 +262,14 @@ public class MainActivity extends Activity
         statusText.setText(R.string.status_warning);
     }
 
+    private void startForegroundService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent serviceIntent = new Intent(ACTION_START, null, this,
+                    DuplexStreamForegroundService.class);
+            startForegroundService(serviceIntent);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -256,9 +289,11 @@ public class MainActivity extends Activity
                     getString(R.string.need_record_audio_permission),
                     Toast.LENGTH_SHORT)
                     .show();
+            EnableAudioApiUI(false);
+            toggleEffectButton.setEnabled(false);
         } else {
-            // Permission was granted, start live effect
-            toggleEffect();
+            // Permission was granted, start foreground service.
+            startForegroundService();
         }
     }
 }

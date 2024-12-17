@@ -51,6 +51,7 @@ function build_oboe {
         -DANDROID_ABI=${ABI} \
         -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${STAGING_DIR}/lib/${ABI} \
         -DANDROID_PLATFORM=android-${MINIMUM_API_LEVEL}\
+        -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
         ${CMAKE_ARGS}
 
   pushd ${ABI_BUILD_DIR}

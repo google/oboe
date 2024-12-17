@@ -60,8 +60,8 @@ else()
     set (TARGET_LIBS ${TARGET_LIBS} mediandk)
 endif()
 
-target_link_libraries( native-lib ${TARGET_LIBS} )
-
+target_link_libraries(native-lib ${TARGET_LIBS} )
+target_link_options(native-lib PRIVATE "-Wl,-z,max-page-size=16384")
 
 # Set the path to the Oboe directory.
 set (OBOE_DIR ../..)

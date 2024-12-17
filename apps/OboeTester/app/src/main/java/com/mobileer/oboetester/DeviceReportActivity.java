@@ -140,6 +140,7 @@ public class DeviceReportActivity extends AppCompatActivity {
                 .append(", ").append(Build.PRODUCT).append("\n");
 
         report.append(reportExtraDeviceInfo());
+        report.append("\n");
 
         for (AudioDeviceInfo deviceInfo : devices) {
             report.append("\n==== Device =================== " + deviceInfo.getId() + "\n");

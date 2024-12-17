@@ -203,13 +203,23 @@
         app:layout_constraintTop_toBottomOf="@+id/boxEnableWorkarounds" />
 
 
+    <CheckBox
+        android:id="@+id/boxEnableForegroundService"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:checked="false"
+        android:text="enable foreground service"
+        app:layout_constraintStart_toStartOf="@+id/boxEnableBackground"
+        app:layout_constraintTop_toBottomOf="@+id/boxEnableBackground" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Mode:"
         app:layout_constraintBaseline_toBaselineOf="@+id/spinnerAudioMode"
-        app:layout_constraintStart_toStartOf="@+id/boxEnableBackground" />
+        app:layout_constraintStart_toStartOf="@+id/boxEnableForegroundService" />
 
     <Spinner
         android:id="@+id/spinnerAudioMode"
@@ -218,7 +228,7 @@
         android:entries="@array/audio_modes"
         android:prompt="@string/audio_mode_prompt"
         app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toBottomOf="@+id/boxEnableBackground" />
+        app:layout_constraintTop_toBottomOf="@+id/boxEnableForegroundService" />
 
     <TextView
         android:id="@+id/deviceView"
@@ -231,9 +241,9 @@
 
     <TextView
         android:id="@+id/text_build_info"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="1dp"
+        android:lines="3"
         android:ems="10"
         android:text="V?"
         app:layout_constraintEnd_toEndOf="@+id/callbackSize"

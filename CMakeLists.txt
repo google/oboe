@@ -95,7 +95,11 @@ target_compile_options(oboe
 # Enable logging of D,V for debug builds
 target_compile_definitions(oboe PUBLIC $<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>)
 
+option(OBOE_DO_NOT_DEFINE_OPENSL_ES_CONSTANTS "Do not define OpenSLES constants" OFF)
+target_compile_definitions(oboe PRIVATE $<$<BOOL:${OBOE_DO_NOT_DEFINE_OPENSL_ES_CONSTANTS}>:DO_NOT_DEFINE_OPENSL_ES_CONSTANTS=1>)
+
 target_link_libraries(oboe PRIVATE log OpenSLES)
+target_link_options(oboe PRIVATE "-Wl,-z,max-page-size=16384")
 
 # When installing oboe put the libraries in the lib/<ABI> folder e.g. lib/arm64-v8a
 install(TARGETS oboe

@@ -27,7 +27,7 @@
 #endif // DEBUG_CLOSE_RACE
 #include <vector>
 
-#include <common/AudioClock.h>
+#include "oboe/AudioClock.h"
 #include "util/WaveFileWriter.h"
 
 #include "NativeAudioContext.h"
@@ -248,7 +248,7 @@ int ActivityContext::open(jint nativeApi,
 
         createRecording();
 
-        finishOpen(isInput, oboeStream.get());
+        finishOpen(isInput, oboeStream);
     }
 
     if (!mUseCallback) {
@@ -319,10 +319,11 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     }
     MyOboeOutputStream outStream;
     WaveFileWriter writer(&outStream);
-
+    // You must setup the format before the first write().
     writer.setFrameRate(mSampleRate);
     writer.setSamplesPerFrame(mRecording->getChannelCount());
     writer.setBitsPerSample(24);
+    writer.setFrameCount(mRecording->getSizeInFrames());
     float buffer[mRecording->getChannelCount()];
     // Read samples from start to finish.
     mRecording->rewind();
@@ -426,6 +427,8 @@ void ActivityTestOutput::configureAfterOpen() {
     mTriangleOscillator.output.connect(&(mExponentialShape.input));
     {
         double frequency = 330.0;
+        // Go up by a minor third or a perfect fourth just intoned interval.
+        const float interval = (mChannelCount > 8) ? (6.0f / 5.0f) : (4.0f / 3.0f);
         for (int i = 0; i < mChannelCount; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
@@ -434,7 +437,7 @@ void ActivityTestOutput::configureAfterOpen() {
             sawtoothOscillators[i].frequency.setValue(frequency);
             sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
 
-            frequency *= 4.0 / 3.0; // each wave is at a higher frequency
+            frequency *= interval; // each wave is at a higher frequency
             setChannelEnabled(i, true);
         }
     }
@@ -652,11 +655,11 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     }
 }
 
-void ActivityEcho::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityEcho::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexEcho->setInputStream(oboeStream);
+        mFullDuplexEcho->setSharedInputStream(oboeStream);
     } else {
-        mFullDuplexEcho->setOutputStream(oboeStream);
+        mFullDuplexEcho->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -674,12 +677,13 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     }
 }
 
-void ActivityRoundTripLatency::finishOpen(bool isInput, AudioStream *oboeStream) {
+void ActivityRoundTripLatency::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream>
+        &oboeStream) {
     if (isInput) {
-        mFullDuplexLatency->setInputStream(oboeStream);
+        mFullDuplexLatency->setSharedInputStream(oboeStream);
         mFullDuplexLatency->setRecording(mRecording.get());
     } else {
-        mFullDuplexLatency->setOutputStream(oboeStream);
+        mFullDuplexLatency->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -729,12 +733,12 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
 }
 
-void ActivityGlitches::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityGlitches::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexGlitches->setInputStream(oboeStream);
+        mFullDuplexGlitches->setSharedInputStream(oboeStream);
         mFullDuplexGlitches->setRecording(mRecording.get());
     } else {
-        mFullDuplexGlitches->setOutputStream(oboeStream);
+        mFullDuplexGlitches->setSharedOutputStream(oboeStream);
     }
 }
 
@@ -752,12 +756,12 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     }
 }
 
-void ActivityDataPath::finishOpen(bool isInput, oboe::AudioStream *oboeStream) {
+void ActivityDataPath::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
     if (isInput) {
-        mFullDuplexDataPath->setInputStream(oboeStream);
+        mFullDuplexDataPath->setSharedInputStream(oboeStream);
         mFullDuplexDataPath->setRecording(mRecording.get());
     } else {
-        mFullDuplexDataPath->setOutputStream(oboeStream);
+        mFullDuplexDataPath->setSharedOutputStream(oboeStream);
     }
 }
 
