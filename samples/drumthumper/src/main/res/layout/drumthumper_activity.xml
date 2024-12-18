@@ -508,4 +508,49 @@
         android:layout_height="wrap_content"
         android:text="Hide/Show Mix Controls"
         android:id="@+id/mixCtrlBtn"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:text="Latency:" />
+
+        <RadioGroup
+            android:id="@+id/latencyModeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/latencyMode0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:textSize="20sp"
+                android:text="MMAP"
+                />
+
+            <RadioButton
+                android:id="@+id/latencyMode1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="Legacy"
+                />
+
+            <RadioButton
+                android:id="@+id/latencyMode2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="None"
+                />
+        </RadioGroup>
+    </LinearLayout>
 </LinearLayout>

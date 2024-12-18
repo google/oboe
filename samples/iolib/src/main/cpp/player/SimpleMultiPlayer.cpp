@@ -85,11 +85,14 @@ bool SimpleMultiPlayer::openStream() {
     // we will resample source data to device rate, so take default sample rate
     builder.setDataCallback(mDataCallback);
     builder.setErrorCallback(mErrorCallback);
-    builder.setPerformanceMode(PerformanceMode::LowLatency);
+    builder.setPerformanceMode(mPerformanceMode);
     builder.setSharingMode(SharingMode::Exclusive);
-    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+//    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 
+    bool wasMMapEnabled = OboeExtensions::isMMapEnabled();
+    OboeExtensions::setMMapEnabled(mMMapEnabled);
     Result result = builder.openStream(mAudioStream);
+    OboeExtensions::setMMapEnabled(wasMMapEnabled);
     if (result != Result::OK){
         __android_log_print(
                 ANDROID_LOG_ERROR,
