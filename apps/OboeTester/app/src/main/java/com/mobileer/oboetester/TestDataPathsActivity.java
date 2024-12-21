@@ -87,7 +87,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
 
 
-    public static final int DURATION_SECONDS = 3;
+    public static final int DURATION_SECONDS = 4;
     private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
     private final static int MAX_SINE_FREQUENCY = 1000;
     private final static int TYPICAL_SAMPLE_RATE = 48000;
