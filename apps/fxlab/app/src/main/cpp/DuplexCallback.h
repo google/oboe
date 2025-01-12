@@ -43,10 +43,6 @@ public:
         std::fill(outputData, outputData + numFrames * outputChannelCount, 0);
         oboe::ResultWithValue<int32_t> result = inRef.read(inputBuffer.get(), numFrames, 0);
         int32_t framesRead = result.value();
-        if (!result) {
-            inRef.requestStop();
-            return oboe::DataCallbackResult::Stop;
-        }
         if (mSpinUpCallbacks > 0 && framesRead > 0) {
             mSpinUpCallbacks--;
             return oboe::DataCallbackResult::Continue;
