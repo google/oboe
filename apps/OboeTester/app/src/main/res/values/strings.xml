@@ -309,4 +309,14 @@
         <item>50000</item>
     </string-array>
 
+    <string name="game_state_mode_prompt">Game State Mode:</string>
+    <string-array name="game_state_modes">
+        <item>UNKNOWN</item>
+        <item>NONE</item>
+        <item>GAMEPLAY_INTERRUPTIBLE</item>
+        <item>GAMEPLAY_UNINTERRUPTIBLE</item>
+        <item>CONTENT</item>
+    </string-array>
+    <string name="actual_game_mode">Actual Game Mode :</string>
+
 </resources>
