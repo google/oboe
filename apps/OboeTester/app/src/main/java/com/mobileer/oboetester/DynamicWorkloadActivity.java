@@ -40,7 +40,7 @@ import java.util.Locale;
  */
 public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private static final int WORKLOAD_HIGH_MIN = 30;
-    private static final int WORKLOAD_HIGH_MAX = 150;
+    private static final int WORKLOAD_HIGH_MAX = 1500;
     // When the CPU is completely saturated then the load will be above 1.0.
     public static final double LOAD_RECOVERY_HIGH = 1.0;
     // Use a slightly lower value for going low so that the comparator has hysteresis.

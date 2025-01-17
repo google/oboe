@@ -251,7 +251,7 @@ private:
     std::atomic<float>         mMaxCpuLoad{0.0f};
     int64_t                    mPreviousCallbackTimeNs = 0;
     DoubleStatistics           mStatistics;
-    int32_t                    mNumWorkloadVoices = 0;
+    std::atomic<int32_t>       mNumWorkloadVoices{0};
     SynthWorkload              mSynthWorkload;
     bool                       mHearWorkload = false;
     bool                       mWorkloadReportingEnabled = false;
