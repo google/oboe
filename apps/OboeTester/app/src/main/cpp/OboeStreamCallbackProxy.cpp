@@ -25,13 +25,14 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         int numFrames) {
     oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
     int64_t startTimeNanos = getNanoseconds();
+    int32_t numWorkloadVoices = mNumWorkloadVoices;
 
     // Record which CPU this is running on.
     orCurrentCpuMask(sched_getcpu());
 
     // Tell ADPF in advance what our workload will be.
     if (mWorkloadReportingEnabled) {
-        audioStream->reportWorkload(mNumWorkloadVoices);
+        audioStream->reportWorkload(numWorkloadVoices);
     }
 
     // Change affinity if app requested a change.
@@ -54,8 +55,8 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
     }
 
-    mSynthWorkload.onCallback(mNumWorkloadVoices);
-    if (mNumWorkloadVoices > 0) {
+    mSynthWorkload.onCallback(numWorkloadVoices);
+    if (numWorkloadVoices > 0) {
         // Render into the buffer or discard the synth voices.
         float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
                         ? static_cast<float *>(audioData) : nullptr;
