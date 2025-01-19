@@ -16,16 +16,25 @@
 
 package com.mobileer.oboetester;
 
+import android.app.GameManager;
+import android.app.GameState;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,6 +89,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
     private WorkloadView mDynamicWorkloadView;
+
+    private GameManager mGameManager;
+    private Spinner mGameStateModeSpinner;
+    private CheckBox mGameStateIsLoadingBox;
+    private TextView mActualGameModeView;
 
     // Periodically query the status of the streams.
     protected class WorkloadUpdateThread {
@@ -183,6 +197,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)
                         + "\nRecovery = " + recoveryTimeString;
                 postResult(message);
+
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if (mGameManager != null) {
+                            mActualGameModeView.setText(convertGameModeToText(mGameManager.getGameMode()));
+                        }
+                    }
+                });
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
@@ -339,6 +361,29 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mDynamicWorkloadView.setFaderNormalizedProgress(WORKLOAD_PROGRESS_FOR_70_VOICES);
         }
 
+        mGameStateModeSpinner = (Spinner) findViewById(R.id.spinner_game_state_mode);
+        mGameStateIsLoadingBox = (CheckBox) findViewById(R.id.checkbox_is_loading);
+        mActualGameModeView = (TextView) findViewById(R.id.actual_game_mode);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mGameManager = getApplicationContext().getSystemService(GameManager.class);
+
+            mGameStateModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    setGameMode();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                    // no-op
+                }
+            });
+
+            mGameStateIsLoadingBox.setOnClickListener(buttonView -> {
+                setGameMode();
+            });
+        }
+
         updateButtons(false);
         updateEnabledWidgets();
         hideSettingsViews(); // make more room
@@ -469,5 +514,83 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         onStopTest();
         maybeWriteTestResult(report);
         mTestRunningByIntent = false;
+    }
+
+    void setGameMode() {
+        if (mGameManager != null) {
+            int gameStateMode = convertTextToGameStateMode(mGameStateModeSpinner.getSelectedItem().toString());
+            boolean gameStateIsLoading = mGameStateIsLoadingBox.isChecked();
+            GameState gameState = new GameState(gameStateIsLoading, gameStateMode);
+            mGameManager.setGameState(gameState);
+        }
+    }
+
+    public static String convertGameStateModeToText(int gameStateMode) {
+        switch (gameStateMode) {
+            case GameState.MODE_UNKNOWN:
+                return "UNKNOWN";
+            case GameState.MODE_NONE:
+                return "NONE";
+            case GameState.MODE_GAMEPLAY_INTERRUPTIBLE:
+                return "GAMEPLAY_INTERRUPTIBLE";
+            case GameState.MODE_GAMEPLAY_UNINTERRUPTIBLE:
+                return "GAMEPLAY_UNINTERRUPTIBLE";
+            case GameState.MODE_CONTENT:
+                return "CONTENT";
+            default:
+                return "?=" + gameStateMode;
+        }
+    }
+
+    public static int convertTextToGameStateMode(String text) {
+        switch (text) {
+            case "UNKNOWN":
+                return GameState.MODE_UNKNOWN;
+            case "NONE":
+                return GameState.MODE_NONE;
+            case "GAMEPLAY_INTERRUPTIBLE":
+                return GameState.MODE_GAMEPLAY_INTERRUPTIBLE;
+            case "GAMEPLAY_UNINTERRUPTIBLE":
+                return GameState.MODE_GAMEPLAY_UNINTERRUPTIBLE;
+            case "CONTENT":
+                return GameState.MODE_CONTENT;
+            default:
+                return -1;
+        }
+    }
+
+    public static String convertGameModeToText(int gameMode)
+    {
+        switch (gameMode) {
+            case GameManager.GAME_MODE_UNSUPPORTED:
+                return "UNSUPPORTED";
+            case GameManager.GAME_MODE_STANDARD:
+                return "STANDARD";
+            case GameManager.GAME_MODE_PERFORMANCE:
+                return "PERFORMANCE";
+            case GameManager.GAME_MODE_BATTERY:
+                return "BATTERY";
+            case GameManager.GAME_MODE_CUSTOM:
+                return "CUSTOM";
+            default:
+                return "?=" + gameMode;
+        }
+    }
+
+    public static int convertTextToGameMode(String text) {
+        switch (text) {
+            case "UNSUPPORTED":
+                return GameManager.GAME_MODE_UNSUPPORTED;
+            case "STANDARD":
+                return GameManager.GAME_MODE_STANDARD;
+            case "PERFORMANCE":
+                return GameManager.GAME_MODE_PERFORMANCE;
+            case "BATTERY":
+                return GameManager.GAME_MODE_BATTERY;
+            case "CUSTOM":
+                return GameManager.GAME_MODE_CUSTOM;
+            default:
+                return -1;
+        }
     }
 }
