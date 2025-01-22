@@ -21,6 +21,7 @@
 #include "oboe/AudioClock.h"
 #include "AdpfWrapper.h"
 #include "OboeDebug.h"
+#include "Trace.h"
 
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,
@@ -64,6 +65,9 @@ static int loadAphFunctions() {
     }
 
     gAPerformanceHintBindingInitialized = true;
+
+    Trace::initialize();
+
     return 0;
 }
 
@@ -95,6 +99,9 @@ int AdpfWrapper::open(pid_t threadId,
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
     //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
     std::lock_guard<std::mutex> lock(mLock);
+    Trace::beginSection("reportActualDuration");
+    Trace::setCounter("actualDurationNanos", actualDurationNanos);
+    Trace::endSection();
     if (mHintSession != nullptr) {
         gAPH_reportActualWorkDurationFn(mHintSession, actualDurationNanos);
     }
