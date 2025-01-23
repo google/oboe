@@ -19,18 +19,24 @@
 
 #include <cstdint>
 
-class Trace {
+namespace oboe {
 
-public:
-    static void beginSection(const char *format, ...);
-    static void endSection();
-    static void setCounter(const char *counterName, int64_t counterValue);
-    static void initialize();
+    class Trace {
 
-private:
-    static bool mIsTracingSupported;
-    static bool mIsSetCounterSupported;
-    static bool mIsTracingEnabled;
-};
+    public:
+        static void beginSection(const char *format, ...);
 
+        static void endSection();
+
+        static void setCounter(const char *counterName, int64_t counterValue);
+
+        static void initialize();
+
+    private:
+        static bool mIsTracingEnabled;
+        static bool mIsSetCounterSupported;
+        static bool mHasErrorBeenShown;
+    };
+
+}
 #endif //OBOE_TRACE_H

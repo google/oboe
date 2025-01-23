@@ -19,6 +19,8 @@
 #include "Trace.h"
 #include "OboeDebug.h"
 
+using namespace oboe;
+
 static char buffer[256];
 
 // Tracing functions
@@ -38,33 +40,32 @@ typedef void *(*fp_ATrace_setCounter)(const char *counterName, int64_t counterVa
 
 typedef bool *(*fp_ATrace_isEnabled)(void);
 
-bool Trace::mIsTracingSupported = false;
-bool Trace::mIsSetCounterSupported = false;
 bool Trace::mIsTracingEnabled = false;
+bool Trace::mIsSetCounterSupported = false;
+bool Trace::mHasErrorBeenShown = false;
 
 void Trace::beginSection(const char *format, ...){
-    if (mIsTracingSupported) {
-        if (mIsTracingEnabled) {
-            va_list va;
-            va_start(va, format);
-            vsprintf(buffer, format, va);
-            ATrace_beginSection(buffer);
-            va_end(va);
-        }
-    } else {
+    if (mIsTracingEnabled) {
+        va_list va;
+        va_start(va, format);
+        vsprintf(buffer, format, va);
+        ATrace_beginSection(buffer);
+        va_end(va);
+    } else if (!mHasErrorBeenShown) {
         LOGE("Tracing is either not initialized (call Trace::initialize()) "
              "or not supported on this device");
+        mHasErrorBeenShown = true;
     }
 }
 
 void Trace::endSection() {
-    if (mIsTracingSupported && mIsTracingEnabled) {
+    if (mIsTracingEnabled) {
         ATrace_endSection();
     }
 }
 
 void Trace::setCounter(const char *counterName, int64_t counterValue) {
-    if (mIsSetCounterSupported && mIsTracingEnabled) {
+    if (mIsSetCounterSupported) {
         ATrace_setCounter(counterName, counterValue);
     }
 }
@@ -90,12 +91,12 @@ void Trace::initialize() {
                 reinterpret_cast<fp_ATrace_isEnabled >(
                         dlsym(lib, "ATrace_isEnabled"));
 
-        if (ATrace_beginSection != nullptr && ATrace_endSection != nullptr && ATrace_isEnabled != nullptr){
-            mIsTracingEnabled = ATrace_isEnabled();
-            LOGD("Trace::initialize isEnabled: %d", mIsTracingEnabled);
-            mIsTracingSupported = true;
+        if (ATrace_beginSection != nullptr && ATrace_endSection != nullptr && ATrace_isEnabled != nullptr && ATrace_isEnabled()){
+            mIsTracingEnabled = true;
             if (ATrace_setCounter != nullptr) {
                 mIsSetCounterSupported = true;
+            } else {
+                LOGE("setCounter not supported");
             }
         }
     }

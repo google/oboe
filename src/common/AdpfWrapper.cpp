@@ -23,6 +23,8 @@
 #include "OboeDebug.h"
 #include "Trace.h"
 
+using namespace oboe;
+
 typedef APerformanceHintManager* (*APH_getManager)();
 typedef APerformanceHintSession* (*APH_createSession)(APerformanceHintManager*, const int32_t*,
                                                       size_t, int64_t);
