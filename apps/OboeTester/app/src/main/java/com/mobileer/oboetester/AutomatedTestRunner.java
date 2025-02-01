@@ -38,6 +38,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     private int          mTestCount;
     private int          mPassCount;
     private int          mFailCount;
+    private int          mSkipCount;
     private TestAudioActivity  mActivity;
 
     private Thread            mAutoThread;
@@ -143,6 +144,9 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
     }
     public void incrementPassCount() {
         mPassCount++;
+    }
+    public void incrementSkipCount() {
+        mSkipCount++;
     }
     public void incrementTestCount() {
         mTestCount++;
@@ -288,6 +292,7 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
         mTestCount = 0;
         mPassCount = 0;
         mFailCount = 0;
+        mSkipCount = 0;
         try {
             mActivity.runTest();
             log("Tests finished.");
@@ -328,11 +333,9 @@ public  class AutomatedTestRunner extends LinearLayout implements Runnable {
 
     @NonNull
     public String getPassFailReport() {
-        int skipped = mTestCount - (mPassCount + mFailCount);
-        String passFailReport = mPassCount + " passed. "
+        return  mPassCount + " passed. "
                 + mFailCount + " failed. "
-                + skipped + " skipped. ";
-        return passFailReport;
+                + mSkipCount + " skipped. ";
     }
 
 }
