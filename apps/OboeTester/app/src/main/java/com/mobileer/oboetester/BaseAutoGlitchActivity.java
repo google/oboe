@@ -264,6 +264,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
     protected TestResult testCurrentConfigurations() throws InterruptedException {
         mAutomatedTestRunner.incrementTestCount();
         if ((getSingleTestIndex() >= 0) && (getTestCount() != getSingleTestIndex())) {
+            mAutomatedTestRunner.incrementSkipCount();
             return null;
         }
 
@@ -364,6 +365,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             mAutomatedTestRunner.incrementFailCount();
         } else if (skipped) {
             log(TEXT_SKIP + " - " + skipReason);
+            mAutomatedTestRunner.incrementSkipCount();
         } else {
             log("Result:");
             reason += didTestFail();
