@@ -103,10 +103,10 @@ void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
     std::lock_guard<std::mutex> lock(mLock);
     Trace::beginSection("reportActualDuration");
     Trace::setCounter("actualDurationNanos", actualDurationNanos);
-    Trace::endSection();
     if (mHintSession != nullptr) {
         gAPH_reportActualWorkDurationFn(mHintSession, actualDurationNanos);
     }
+    Trace::endSection();
 }
 
 void AdpfWrapper::close() {
