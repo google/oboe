@@ -12,12 +12,12 @@ var searchData=
   ['setchannelcount_9',['setChannelCount',['../classoboe_1_1_audio_stream_builder.html#a19c5a429d688d56078fe1a0349959910',1,'oboe::AudioStreamBuilder']]],
   ['setchannelmask_10',['setChannelMask',['../classoboe_1_1_audio_stream_builder.html#a0e664fa3bddd4c1035d05ae7e7e5fedd',1,'oboe::AudioStreamBuilder']]],
   ['setcontenttype_11',['setContentType',['../classoboe_1_1_audio_stream_builder.html#ad664622f078c3d112bde19f9482e53e1',1,'oboe::AudioStreamBuilder']]],
-  ['setdatacallback_12',['setdatacallback',['../classoboe_1_1_audio_stream_builder.html#ada00b0f26a49d1cc42c7d3f2f54c4cb9',1,'oboe::AudioStreamBuilder::setDataCallback(AudioStreamDataCallback *dataCallback)'],['../classoboe_1_1_audio_stream_builder.html#a7ed0f1370b322b9216e05fefd8f03e06',1,'oboe::AudioStreamBuilder::setDataCallback(std::shared_ptr&lt; AudioStreamDataCallback &gt; sharedDataCallback)']]],
+  ['setdatacallback_12',['setDataCallback',['../classoboe_1_1_audio_stream_builder.html#a7ed0f1370b322b9216e05fefd8f03e06',1,'oboe::AudioStreamBuilder::setDataCallback(std::shared_ptr&lt; AudioStreamDataCallback &gt; sharedDataCallback)'],['../classoboe_1_1_audio_stream_builder.html#ada00b0f26a49d1cc42c7d3f2f54c4cb9',1,'oboe::AudioStreamBuilder::setDataCallback(AudioStreamDataCallback *dataCallback)']]],
   ['setdatacallbackenabled_13',['setDataCallbackEnabled',['../classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba',1,'oboe::AudioStream']]],
   ['setdelaybeforeclosemillis_14',['setDelayBeforeCloseMillis',['../classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd',1,'oboe::AudioStream']]],
   ['setdeviceid_15',['setDeviceId',['../classoboe_1_1_audio_stream_builder.html#a69c0a23e7ef57bced029ef2193cfe741',1,'oboe::AudioStreamBuilder']]],
   ['setdirection_16',['setDirection',['../classoboe_1_1_audio_stream_builder.html#aac514acd59b71fc3860bf6fb9631ba6e',1,'oboe::AudioStreamBuilder']]],
-  ['seterrorcallback_17',['seterrorcallback',['../classoboe_1_1_audio_stream_builder.html#a828645e7172eb08b91a9d2b6233776ac',1,'oboe::AudioStreamBuilder::setErrorCallback(std::shared_ptr&lt; AudioStreamErrorCallback &gt; sharedErrorCallback)'],['../classoboe_1_1_audio_stream_builder.html#a25b7a33be321404664a88a8fe9127e14',1,'oboe::AudioStreamBuilder::setErrorCallback(AudioStreamErrorCallback *errorCallback)']]],
+  ['seterrorcallback_17',['setErrorCallback',['../classoboe_1_1_audio_stream_builder.html#a828645e7172eb08b91a9d2b6233776ac',1,'oboe::AudioStreamBuilder::setErrorCallback(std::shared_ptr&lt; AudioStreamErrorCallback &gt; sharedErrorCallback)'],['../classoboe_1_1_audio_stream_builder.html#a25b7a33be321404664a88a8fe9127e14',1,'oboe::AudioStreamBuilder::setErrorCallback(AudioStreamErrorCallback *errorCallback)']]],
   ['setformat_18',['setFormat',['../classoboe_1_1_audio_stream_builder.html#abe374fcde14760f9cac7412be50327e2',1,'oboe::AudioStreamBuilder']]],
   ['setformatconversionallowed_19',['setFormatConversionAllowed',['../classoboe_1_1_audio_stream_builder.html#aa30150d2d0b3c925b545646962dffca0',1,'oboe::AudioStreamBuilder']]],
   ['setframespercallback_20',['setFramesPerCallback',['../classoboe_1_1_audio_stream_builder.html#a206266d7d6c66ff5065fe0cfcc4ba436',1,'oboe::AudioStreamBuilder']]],
@@ -50,6 +50,6 @@ var searchData=
   ['sleepuntilnanotime_47',['sleepUntilNanoTime',['../classoboe_1_1_audio_clock.html#a37e5b60143ca51bad9ac787858b4931a',1,'oboe::AudioClock']]],
   ['stabilizedcallback_48',['StabilizedCallback',['../classoboe_1_1_stabilized_callback.html',1,'oboe']]],
   ['start_49',['start',['../classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21',1,'oboe::AudioStream::start()'],['../classoboe_1_1_full_duplex_stream.html#adb3d085fd0b9fef2b7a392093016462d',1,'oboe::FullDuplexStream::start()']]],
-  ['stop_50',['stop',['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()'],['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()']]],
+  ['stop_50',['stop',['../classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3',1,'oboe::AudioStream::stop()'],['../classoboe_1_1_full_duplex_stream.html#a640f1dff706aa69433b647ac5b91af0a',1,'oboe::FullDuplexStream::stop()']]],
   ['streamdeleterfunctor_51',['StreamDeleterFunctor',['../structoboe_1_1_stream_deleter_functor.html',1,'oboe']]]
 ];
