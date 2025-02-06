@@ -222,7 +222,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint st
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env, jobject, jboolean enabled) {
-    AdpfWrapper::setUseAlternative(enabled);
+    oboe::AdpfWrapper::setUseAlternative(enabled);
 }
 
 JNIEXPORT jint JNICALL
