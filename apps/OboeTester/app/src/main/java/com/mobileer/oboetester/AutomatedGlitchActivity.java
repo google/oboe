@@ -29,13 +29,7 @@ import android.widget.Spinner;
  */
 public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
 
-    private Spinner mDurationSpinner;
-
     // Test with these configurations.
-    private static final int[] PERFORMANCE_MODES = {
-            StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-            StreamConfiguration.PERFORMANCE_MODE_NONE
-    };
     private static final int[] SAMPLE_RATES = { 48000, 44100, 16000 };
     private static final int MONO = 1;
     private static final int STEREO = 2;
@@ -63,8 +57,8 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDurationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);
-        mDurationSpinner.setOnItemSelectedListener(new DurationSpinnerListener());
+        Spinner durationSpinner = (Spinner) findViewById(R.id.spinner_glitch_duration);
+        durationSpinner.setOnItemSelectedListener(new DurationSpinnerListener());
 
         setAnalyzerText(getString(R.string.auto_glitch_instructions));
     }
@@ -74,9 +68,7 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
         return "AutoGlitch";
     }
 
-    private void testConfiguration(int perfMode,
-                                   int sharingMode,
-                                   int sampleRate,
+    private void testConfiguration(int sampleRate,
                                    int inChannels,
                                    int outChannels) throws InterruptedException {
 
@@ -87,30 +79,18 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
         requestedInConfig.reset();
         requestedOutConfig.reset();
 
-        requestedInConfig.setPerformanceMode(perfMode);
-        requestedOutConfig.setPerformanceMode(perfMode);
-
-        requestedInConfig.setSharingMode(sharingMode);
-        requestedOutConfig.setSharingMode(sharingMode);
-
         requestedInConfig.setSampleRate(sampleRate);
         requestedOutConfig.setSampleRate(sampleRate);
 
         requestedInConfig.setChannelCount(inChannels);
         requestedOutConfig.setChannelCount(outChannels);
 
-        testCurrentConfigurations();
+        testPerformancePaths();
     }
 
-    private void testConfiguration(int performanceMode,
-                                   int sharingMode,
-                                   int sampleRate) throws InterruptedException {
-        testConfiguration(performanceMode,
-                sharingMode,
-                sampleRate, MONO, STEREO);
-        testConfiguration(performanceMode,
-                sharingMode,
-                sampleRate, STEREO, MONO);
+    private void testConfiguration(int sampleRate) throws InterruptedException {
+        testConfiguration(sampleRate, MONO, STEREO);
+        testConfiguration(sampleRate, STEREO, MONO);
     }
 
     @Override
@@ -121,22 +101,11 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
             mTestResults.clear();
 
             // Test with STEREO on both input and output.
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_EXCLUSIVE,
-                    UNSPECIFIED, STEREO, STEREO);
-
-            // Test EXCLUSIVE mode with a configuration most likely to work.
-            testConfiguration(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY,
-                    StreamConfiguration.SHARING_MODE_EXCLUSIVE,
-                    UNSPECIFIED);
+            testConfiguration(UNSPECIFIED, STEREO, STEREO);
 
             // Test various combinations.
-            for (int perfMode : PERFORMANCE_MODES) {
-                for (int sampleRate : SAMPLE_RATES) {
-                    testConfiguration(perfMode,
-                            StreamConfiguration.SHARING_MODE_SHARED,
-                            sampleRate);
-                }
+            for (int sampleRate : SAMPLE_RATES) {
+                testConfiguration(sampleRate);
             }
 
             compareFailedTestsWithNearestPassingTest();
