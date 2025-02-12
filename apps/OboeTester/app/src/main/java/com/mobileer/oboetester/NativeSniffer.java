@@ -24,17 +24,16 @@ abstract class NativeSniffer implements Runnable {
     public static final int SNIFFER_UPDATE_DELAY_MSEC = 200;
     protected Handler mHandler = new Handler(Looper.getMainLooper()); // UI thread
     protected volatile boolean mEnabled = true;
-    protected volatile boolean mEnableFinalUpdate = false;
 
     @Override
     public void run() {
-        if ((mEnabled || mEnableFinalUpdate) && !isComplete()) {
+        if (!isComplete()) {
             updateStatusText();
-            if (mEnableFinalUpdate) {
-                mEnableFinalUpdate = false;
-            } else {
-                mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
-            }
+        }
+
+        // When this is no longer enabled, stop calling run.
+        if (mEnabled) {
+            mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
         }
     }
 
@@ -47,7 +46,6 @@ abstract class NativeSniffer implements Runnable {
     public void stopSniffer() {
         mEnabled = false;
         if (mHandler != null) {
-            mEnableFinalUpdate = true;
             mHandler.removeCallbacks(this);
             // Final update of the text.
             mHandler.post(this);
