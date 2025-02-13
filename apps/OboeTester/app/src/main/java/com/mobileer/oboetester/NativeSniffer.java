@@ -27,8 +27,12 @@ abstract class NativeSniffer implements Runnable {
 
     @Override
     public void run() {
-        if (mEnabled && !isComplete()) {
+        if (!isComplete()) {
             updateStatusText();
+        }
+
+        // When this is no longer enabled, stop calling run.
+        if (mEnabled) {
             mHandler.postDelayed(this, SNIFFER_UPDATE_PERIOD_MSEC);
         }
     }
