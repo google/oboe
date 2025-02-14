@@ -221,6 +221,18 @@ public abstract class AudioStreamBase {
         return mActualStreamConfiguration.getFramesPerBurst();
     }
 
+    public int getHardwareChannelCount() {
+        return mActualStreamConfiguration.getHardwareChannelCount();
+    }
+
+    public int getHardwareSampleRate() {
+        return mActualStreamConfiguration.getHardwareSampleRate();
+    }
+
+    public int getHardwareFormat() {
+        return mActualStreamConfiguration.getHardwareFormat();
+    }
+
     public int getBufferCapacityInFrames() {
         return mBufferSizeInFrames;
     }
