@@ -17,15 +17,26 @@
 #ifndef OBOE_TRACE_H
 #define OBOE_TRACE_H
 
-class Trace {
+#include <cstdint>
 
-public:
-    static void beginSection(const char *format, ...);
-    static void endSection();
-    static void initialize();
+namespace oboe {
 
-private:
-    static bool mIsTracingSupported;
-};
+    class Trace {
 
+    public:
+        static void beginSection(const char *format, ...);
+
+        static void endSection();
+
+        static void setCounter(const char *counterName, int64_t counterValue);
+
+        static void initialize();
+
+    private:
+        static bool mIsTracingEnabled;
+        static bool mIsSetCounterSupported;
+        static bool mHasErrorBeenShown;
+    };
+
+}
 #endif //OBOE_TRACE_H
