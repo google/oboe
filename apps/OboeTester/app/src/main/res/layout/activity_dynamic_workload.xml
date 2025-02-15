@@ -13,17 +13,8 @@
 
     <include layout="@layout/merge_audio_simple" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:lines="1"
-        android:text="CPUs:"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -53,6 +44,18 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
             android:text="Alt ADPF" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
         <CheckBox
             android:id="@+id/hear_workload"
@@ -68,6 +71,64 @@
             android:layout_marginRight="8sp"
             android:checked="true"
             android:text="Scroll" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_state_mode_prompt" />
+
+        <Spinner
+            android:id="@+id/spinner_game_state_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/game_state_modes"
+            android:prompt="@string/game_state_mode_prompt" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+        <CheckBox
+            android:id="@+id/checkbox_is_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:checked="false"
+            android:text="Is Loading" />
+
+        <TextView
+            android:id="@+id/actual_game_mode_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/actual_game_mode" />
+
+        <TextView
+            android:id="@+id/actual_game_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\?" />
     </LinearLayout>
 
     <HorizontalScrollView
