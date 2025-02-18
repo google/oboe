@@ -251,6 +251,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return ("burst=" + stream.getFramesPerBurst()
                 + ", size=" + stream.getBufferSizeInFrames()
                 + ", cap=" + stream.getBufferCapacityInFrames()
+                + "\n     HW: sr=" + stream.getHardwareSampleRate()
+                + ", ch=" + stream.getHardwareChannelCount()
+                + ", fmt=" + (stream.getHardwareFormat() == StreamConfiguration.UNSPECIFIED ?
+                "?" : StreamConfiguration.convertFormatToText(stream.getHardwareFormat()))
         );
     }
 
@@ -295,9 +299,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             outStream.setBufferSizeInFrames(sizeFrames);
             AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
             log("  " + getConfigText(actualInConfig));
-            log("      " + getStreamText(inStream));
+            log("     " + getStreamText(inStream));
             log("  " + getConfigText(actualOutConfig));
-            log("      " + getStreamText(outStream));
+            log("     " + getStreamText(outStream));
         } catch (Exception e) {
             openFailed = true;
             log(e.getMessage());
