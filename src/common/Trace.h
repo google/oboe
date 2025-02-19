@@ -21,22 +21,25 @@
 
 namespace oboe {
 
-    class Trace {
+/**
+ * Wrapper for tracing use with Perfetto
+ */
+class Trace {
 
-    public:
-        static void beginSection(const char *format, ...);
+public:
+    static void beginSection(const char *format, ...);
 
-        static void endSection();
+    static void endSection();
 
-        static void setCounter(const char *counterName, int64_t counterValue);
+    static void setCounter(const char *counterName, int64_t counterValue);
 
-        static void initialize();
+    static void initialize();
 
-    private:
-        static bool mIsTracingEnabled;
-        static bool mIsSetCounterSupported;
-        static bool mHasErrorBeenShown;
-    };
+private:
+    static bool mIsTracingEnabled;
+    static bool mIsSetCounterSupported;
+    static bool mHasErrorBeenShown;
+};
 
 }
 #endif //OBOE_TRACE_H

@@ -91,7 +91,8 @@ void Trace::initialize() {
                 reinterpret_cast<fp_ATrace_isEnabled >(
                         dlsym(lib, "ATrace_isEnabled"));
 
-        if (ATrace_beginSection != nullptr && ATrace_endSection != nullptr && ATrace_isEnabled != nullptr && ATrace_isEnabled()){
+        if (ATrace_beginSection != nullptr && ATrace_endSection != nullptr
+                && ATrace_isEnabled != nullptr && ATrace_isEnabled()) {
             mIsTracingEnabled = true;
             if (ATrace_setCounter != nullptr) {
                 mIsSetCounterSupported = true;
