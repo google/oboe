@@ -336,12 +336,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+            mSustainedPerformanceModeBox = (CheckBox) findViewById(R.id.sustained_perf_mode);
             if (powerManager.isSustainedPerformanceModeSupported()) {
-                mSustainedPerformanceModeBox = (CheckBox) findViewById(R.id.sustained_perf_mode);
                 mSustainedPerformanceModeBox.setOnClickListener(buttonView -> {
                     CheckBox checkBox = (CheckBox) buttonView;
                     getWindow().setSustainedPerformanceMode(checkBox.isChecked());
                 });
+            } else {
+                mSustainedPerformanceModeBox.setEnabled(false);
             }
         }
 
