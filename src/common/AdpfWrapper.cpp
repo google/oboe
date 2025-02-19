@@ -110,13 +110,13 @@ void AdpfWrapper::close() {
 
 void AdpfWrapper::onBeginCallback() {
     if (isOpen()) {
-        mBeginCallbackNanos = oboe::AudioClock::getNanoseconds(CLOCK_REALTIME);
+        mBeginCallbackNanos = oboe::AudioClock::getNanoseconds();
     }
 }
 
 void AdpfWrapper::onEndCallback(double durationScaler) {
     if (isOpen()) {
-        int64_t endCallbackNanos = oboe::AudioClock::getNanoseconds(CLOCK_REALTIME);
+        int64_t endCallbackNanos = oboe::AudioClock::getNanoseconds();
         int64_t actualDurationNanos = endCallbackNanos - mBeginCallbackNanos;
         int64_t scaledDurationNanos = static_cast<int64_t>(actualDurationNanos * durationScaler);
         reportActualDuration(scaledDurationNanos);
