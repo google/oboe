@@ -16,11 +16,15 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -73,6 +77,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mWorkloadReportBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
+    private CheckBox mSustainedPerformanceModeBox;
     private int mCpuCount;
     private boolean mShouldUseADPF;
     private boolean mShouldUseWorkloadReporting;
@@ -328,6 +333,19 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             CheckBox checkBox = (CheckBox) buttonView;
             mDrawChartAlways = checkBox.isChecked();
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+            mSustainedPerformanceModeBox = (CheckBox) findViewById(R.id.sustained_perf_mode);
+            if (powerManager.isSustainedPerformanceModeSupported()) {
+                mSustainedPerformanceModeBox.setOnClickListener(buttonView -> {
+                    CheckBox checkBox = (CheckBox) buttonView;
+                    getWindow().setSustainedPerformanceMode(checkBox.isChecked());
+                });
+            } else {
+                mSustainedPerformanceModeBox.setEnabled(false);
+            }
+        }
 
         if (mDynamicWorkloadView != null) {
             mDynamicWorkloadView.setWorkloadReceiver((w) -> {
