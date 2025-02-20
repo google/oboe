@@ -183,7 +183,6 @@ int AAudioLoader::open() {
     }
 
     if (getSdkVersion() >= __ANDROID_API_W__) {
-        LOGD("flamme version greater than w");
         stream_setOffloadDelayPadding = load_I_PSII("AAudioStream_setOffloadDelayPadding");
         stream_getOffloadDelay = load_I_PS("AAudioStream_getOffloadDelay");
         stream_getOffloadPadding = load_I_PS("AAudioStream_getOffloadPadding");
