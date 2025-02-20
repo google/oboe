@@ -24,66 +24,69 @@
 #include <unistd.h>
 #include <mutex>
 
-struct APerformanceHintManager;
-struct APerformanceHintSession;
+namespace oboe {
 
-typedef struct APerformanceHintManager APerformanceHintManager;
-typedef struct APerformanceHintSession APerformanceHintSession;
+    struct APerformanceHintManager;
+    struct APerformanceHintSession;
 
-class AdpfWrapper {
-public:
-     /**
-      * Create an ADPF session that can be used to boost performance.
-      * @param threadId
-      * @param targetDurationNanos - nominal period of isochronous task
-      * @return zero or negative error
-      */
-    int open(pid_t threadId,
-             int64_t targetDurationNanos);
+    typedef struct APerformanceHintManager APerformanceHintManager;
+    typedef struct APerformanceHintSession APerformanceHintSession;
 
-    bool isOpen() const {
-        return (mHintSession != nullptr);
-    }
+    class AdpfWrapper {
+    public:
+        /**
+         * Create an ADPF session that can be used to boost performance.
+         * @param threadId
+         * @param targetDurationNanos - nominal period of isochronous task
+         * @return zero or negative error
+         */
+        int open(pid_t threadId,
+                 int64_t targetDurationNanos);
 
-    void close();
+        bool isOpen() const {
+            return (mHintSession != nullptr);
+        }
 
-    /**
-     * Call this at the beginning of the callback that you are measuring.
-     */
-    void onBeginCallback();
+        void close();
 
-    /**
-     * Call this at the end of the callback that you are measuring.
-     * It is OK to skip this if you have a short callback.
-     */
-    void onEndCallback(double durationScaler);
+        /**
+         * Call this at the beginning of the callback that you are measuring.
+         */
+        void onBeginCallback();
 
-    /**
-     * For internal use only!
-     * This is a hack for communicating with experimental versions of ADPF.
-     * @param enabled
-     */
-    static void setUseAlternative(bool enabled) {
-        sUseAlternativeHack = enabled;
-    }
+        /**
+         * Call this at the end of the callback that you are measuring.
+         * It is OK to skip this if you have a short callback.
+         */
+        void onEndCallback(double durationScaler);
 
-    /**
-     * Report the measured duration of a callback.
-     * This is normally called by onEndCallback().
-     * You may want to call this directly in order to give an advance hint of a jump in workload.
-     * @param actualDurationNanos
-     */
-    void reportActualDuration(int64_t actualDurationNanos);
+        /**
+         * For internal use only!
+         * This is a hack for communicating with experimental versions of ADPF.
+         * @param enabled
+         */
+        static void setUseAlternative(bool enabled) {
+            sUseAlternativeHack = enabled;
+        }
 
-    void reportWorkload(int32_t appWorkload);
+        /**
+         * Report the measured duration of a callback.
+         * This is normally called by onEndCallback().
+         * You may want to call this directly in order to give an advance hint of a jump in workload.
+         * @param actualDurationNanos
+         */
+        void reportActualDuration(int64_t actualDurationNanos);
 
-private:
-    std::mutex               mLock;
-    APerformanceHintSession* mHintSession = nullptr;
-    int64_t                  mBeginCallbackNanos = 0;
-    static bool              sUseAlternativeHack;
-    int32_t                  mPreviousWorkload = 0;
-    double                   mNanosPerWorkloadUnit = 0.0;
-};
+        void reportWorkload(int32_t appWorkload);
 
+    private:
+        std::mutex mLock;
+        APerformanceHintSession *mHintSession = nullptr;
+        int64_t mBeginCallbackNanos = 0;
+        static bool sUseAlternativeHack;
+        int32_t mPreviousWorkload = 0;
+        double mNanosPerWorkloadUnit = 0.0;
+    };
+
+}
 #endif //SYNTHMARK_ADPF_WRAPPER_H
