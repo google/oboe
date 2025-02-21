@@ -811,36 +811,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         }
     }
 
-    private void testPerformancePaths() throws InterruptedException {
-        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
-        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
-
-        requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
-        requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
-
-        // Legacy NONE
-        requestedInConfig.setMMap(false);
-        requestedOutConfig.setMMap(false);
-        requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
-        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
-        testCurrentConfigurations();
-
-        // Legacy LOW_LATENCY
-        requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
-        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
-        testCurrentConfigurations();
-
-        // MMAP LowLatency
-        if (NativeEngine.isMMapSupported()) {
-            requestedInConfig.setMMap(true);
-            requestedOutConfig.setMMap(true);
-            testCurrentConfigurations();
-        }
-        requestedInConfig.setMMap(false);
-        requestedOutConfig.setMMap(false);
-
-    }
-
     private void testOutputDeviceTypes()  throws InterruptedException {
         // Determine which output device type to test based on priorities.
         AudioDeviceInfo info = getDeviceInfoByType(AudioDeviceInfo.TYPE_USB_DEVICE,
