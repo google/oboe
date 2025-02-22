@@ -38,6 +38,7 @@ namespace oboe {
 
 typedef struct AAudioStreamStruct         AAudioStream;
 
+// The output device type collection must be updated if there is any new added output device type
 const static std::set<DeviceType> ALL_OUTPUT_DEVICE_TYPES = {
         DeviceType::BuiltinEarpiece,
         DeviceType::BuiltinSpeaker,
@@ -68,6 +69,7 @@ const static std::set<DeviceType> ALL_OUTPUT_DEVICE_TYPES = {
         DeviceType::BleBroadcast,
 };
 
+// The input device type collection must be updated if there is any new added input device type
 const static std::set<DeviceType> ALL_INPUT_DEVICE_TYPES = {
         DeviceType::BuiltinMic,
         DeviceType::BluetoothSco,
@@ -142,10 +144,12 @@ public:
      * @return 0 or a negative error code
      */
     int32_t setMMapEnabled(bool enabled) {
+        // The API for setting mmap policy is on public after API level 36.
         if (mLibLoader->aaudio_setMMapPolicy != nullptr) {
             return mLibLoader->aaudio_setMMapPolicy(
                     static_cast<aaudio_policy_t>(enabled ? MMapPolicy::Auto : MMapPolicy::Never));
         }
+        // When there is no public API, fallback to loading the symbol from hidden API.
         if (loadSymbols()) return AAUDIO_ERROR_UNAVAILABLE;
         if (mAAudio_setMMapPolicy == nullptr) return false;
         return mAAudio_setMMapPolicy(
@@ -153,11 +157,14 @@ public:
     }
 
     bool isMMapEnabled() {
+        // The API for getting mmap policy is on public after API level 36.
+        // Use it when it is available.
         if (mLibLoader->aaudio_getMMapPolicy != nullptr) {
             MMapPolicy policy = static_cast<MMapPolicy>(mLibLoader->aaudio_getMMapPolicy());
             return policy == MMapPolicy::Unspecified
                     ? mMMapSupported : isPolicyEnabled(static_cast<int32_t>(policy));
         }
+        // When there is no public API, fallback to loading the symbol from hidden API.
         if (loadSymbols()) return false;
         if (mAAudio_getMMapPolicy == nullptr) return false;
         int32_t policy = mAAudio_getMMapPolicy();
