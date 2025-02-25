@@ -127,7 +127,7 @@ public:
     }
 
     bool isMMapUsed(AAudioStream *aaudioStream) {
-        if (mLibLoader->stream_isMMapUsed != nullptr) {
+        if (mLibLoader != nullptr && mLibLoader->stream_isMMapUsed != nullptr) {
             return mLibLoader->stream_isMMapUsed(aaudioStream);
         }
         if (loadSymbols()) return false;
@@ -144,8 +144,8 @@ public:
      * @return 0 or a negative error code
      */
     int32_t setMMapEnabled(bool enabled) {
-        // The API for setting mmap policy is on public after API level 36.
-        if (mLibLoader->aaudio_setMMapPolicy != nullptr) {
+        // The API for setting mmap policy is public after API level 36.
+        if (mLibLoader != nullptr && mLibLoader->aaudio_setMMapPolicy != nullptr) {
             return mLibLoader->aaudio_setMMapPolicy(
                     static_cast<aaudio_policy_t>(enabled ? MMapPolicy::Auto : MMapPolicy::Never));
         }
@@ -157,9 +157,9 @@ public:
     }
 
     bool isMMapEnabled() {
-        // The API for getting mmap policy is on public after API level 36.
+        // The API for getting mmap policy is public after API level 36.
         // Use it when it is available.
-        if (mLibLoader->aaudio_getMMapPolicy != nullptr) {
+        if (mLibLoader != nullptr && mLibLoader->aaudio_getMMapPolicy != nullptr) {
             MMapPolicy policy = static_cast<MMapPolicy>(mLibLoader->aaudio_getMMapPolicy());
             return policy == MMapPolicy::Unspecified
                     ? mMMapSupported : isPolicyEnabled(static_cast<int32_t>(policy));
@@ -254,14 +254,12 @@ private:
             return 0;
         }
 
-        AAudioLoader *libLoader = AAudioLoader::getInstance();
-        int openResult = libLoader->open();
-        if (openResult != 0) {
+        if (mLibLoader == nullptr || mLibLoader->open() != 0) {
             LOGD("%s() could not open " LIB_AAUDIO_NAME, __func__);
             return AAUDIO_ERROR_UNAVAILABLE;
         }
 
-        void *libHandle = AAudioLoader::getInstance()->getLibHandle();
+        void *libHandle = mLibLoader->getLibHandle();
         if (libHandle == nullptr) {
             LOGE("%s() could not find " LIB_AAUDIO_NAME, __func__);
             return AAUDIO_ERROR_UNAVAILABLE;

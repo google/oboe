@@ -837,7 +837,8 @@ namespace oboe {
     /**
      * Audio device type.
      *
-     * Note that these match the device types defined in android/media/AudioDeviceInfo.java.
+     * Note that these match the device types defined in android/media/AudioDeviceInfo.java
+     * and the definitions of AAudio_DeviceType in AAudio.h.
      *
      * Added in API level 36 for AAudio.
      */
@@ -1030,7 +1031,6 @@ namespace oboe {
          */
         Always
     };
-    typedef int32_t aaudio_policy_t;
 
     /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
