@@ -17,6 +17,7 @@
 #ifndef NATIVEOBOE_MULTICHANNEL_RECORDING_H
 #define NATIVEOBOE_MULTICHANNEL_RECORDING_H
 
+#include <algorithm>
 #include <memory.h>
 #include <unistd.h>
 #include <sys/types.h>

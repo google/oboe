@@ -25,6 +25,7 @@
 #include <math.h>
 #include "SynthTools.h"
 #include "DifferentiatedParabola.h"
+#include "SawtoothOscillator.h"
 
 namespace marksynth {
 /**

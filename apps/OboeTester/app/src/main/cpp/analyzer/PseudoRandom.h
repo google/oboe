@@ -18,7 +18,7 @@
 #ifndef ANALYZER_PSEUDORANDOM_H
 #define ANALYZER_PSEUDORANDOM_H
 
-#include <cctype>
+#include <cstdint>
 
 class PseudoRandom {
 public:

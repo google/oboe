@@ -23,6 +23,7 @@
 
 #include <cstdint>
 #include <math.h>
+#include "SawtoothOscillator.h"
 #include "SynthTools.h"
 
 namespace marksynth {
