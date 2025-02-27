@@ -92,8 +92,8 @@ typedef int32_t aaudio_spatialization_behavior_t;
 #define __ANDROID_API_U__ 34
 #endif
 
-#ifndef __ANDROID_API_W__
-#define __ANDROID_API_W__ 36
+#ifndef __ANDROID_API_B__
+#define __ANDROID_API_B__ 36
 #endif
 
 #if __NDK_MAJOR__ < 28

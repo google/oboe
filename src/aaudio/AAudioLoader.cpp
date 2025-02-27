@@ -177,7 +177,7 @@ int AAudioLoader::open() {
         stream_getHardwareFormat = load_F_PS("AAudioStream_getHardwareFormat");
     }
 
-    if (getSdkVersion() >= __ANDROID_API_W__) {
+    if (getSdkVersion() >= __ANDROID_API_B__) {
         aaudio_getPlatformMMapPolicy = load_I_II("AAudio_getPlatformMMapPolicy");
         aaudio_getPlatformMMapExclusivePolicy = load_I_II("AAudio_getPlatformMMapExclusivePolicy");
         aaudio_setMMapPolicy = load_I_I("AAudio_setMMapPolicy");
