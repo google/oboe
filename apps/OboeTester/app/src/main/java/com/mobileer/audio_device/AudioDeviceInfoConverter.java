@@ -17,6 +17,8 @@ package com.mobileer.audio_device;
 
 import android.media.AudioDescriptor;
 import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
+import android.media.AudioMixerAttributes;
 import android.media.AudioProfile;
 import android.os.Build;
 
@@ -31,7 +33,7 @@ public class AudioDeviceInfoConverter {
      * @param adi The AudioDeviceInfo object to be converted to a String
      * @return String containing all the information from the AudioDeviceInfo object
      */
-    public static String toString(AudioDeviceInfo adi){
+    public static String toString(AudioManager audioManager, AudioDeviceInfo adi){
 
         StringBuilder sb = new StringBuilder();
         sb.append("Id: ");
@@ -74,28 +76,35 @@ public class AudioDeviceInfoConverter {
             sb.append(adi.getAddress());
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             sb.append("\nEncapsulation Metadata Types: ");
             int[] encapsulationMetadataTypes = adi.getEncapsulationMetadataTypes();
             sb.append(intArrayToString(encapsulationMetadataTypes));
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             sb.append("\nEncapsulation Modes: ");
             int[] encapsulationModes = adi.getEncapsulationModes();
             sb.append(intArrayToString(encapsulationModes));
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             sb.append("\nAudio Descriptors: ");
             List<AudioDescriptor> audioDescriptors = adi.getAudioDescriptors();
             sb.append(audioDescriptors);
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             sb.append("\nAudio Profiles: ");
             List<AudioProfile> audioProfiles = adi.getAudioProfiles();
             sb.append(audioProfiles);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            sb.append("\nSupported Mixer Attributes: ");
+            List<AudioMixerAttributes> audioMixerAttributes =
+                    audioManager.getSupportedMixerAttributes(adi);
+            sb.append(audioMixerAttributes);
         }
 
         sb.append("\n");

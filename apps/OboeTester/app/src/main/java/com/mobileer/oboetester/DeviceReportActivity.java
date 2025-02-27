@@ -144,7 +144,7 @@ public class DeviceReportActivity extends AppCompatActivity {
 
         for (AudioDeviceInfo deviceInfo : devices) {
             report.append("\n==== Device =================== " + deviceInfo.getId() + "\n");
-            String item = AudioDeviceInfoConverter.toString(deviceInfo);
+            String item = AudioDeviceInfoConverter.toString(mAudioManager, deviceInfo);
             report.append(item);
         }
         report.append(reportAllMicrophones());
