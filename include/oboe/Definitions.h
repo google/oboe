@@ -835,6 +835,204 @@ namespace oboe {
     };
 
     /**
+     * Audio device type.
+     *
+     * Note that these match the device types defined in android/media/AudioDeviceInfo.java
+     * and the definitions of AAudio_DeviceType in AAudio.h.
+     *
+     * Added in API level 36 for AAudio.
+     */
+    enum class DeviceType : int32_t {
+        /**
+         * A device type describing the attached earphone speaker.
+         */
+        BuiltinEarpiece = 1,
+
+        /**
+         * A device type describing the speaker system (i.e. a mono speaker or stereo speakers)
+         * built in a device.
+         */
+        BuiltinSpeaker = 2,
+
+        /**
+         * A device type describing a headset, which is the combination of a headphones and
+         * microphone.
+         */
+        WiredHeadset = 3,
+
+        /**
+         * A device type describing a pair of wired headphones.
+         */
+        WiredHeadphones = 4,
+
+        /**
+         * A device type describing an analog line-level connection.
+         */
+        LineAnalog = 5,
+
+        /**
+         * A device type describing a digital line connection (e.g. SPDIF).
+         */
+        LineDigital = 6,
+
+        /**
+         * A device type describing a Bluetooth device typically used for telephony.
+         */
+        BluetoothSco = 7,
+
+        /**
+         * A device type describing a Bluetooth device supporting the A2DP profile.
+         */
+        BluetoothA2dp = 8,
+
+        /**
+         * A device type describing an HDMI connection .
+         */
+        Hdmi = 9,
+
+        /**
+         * A device type describing the Audio Return Channel of an HDMI connection.
+         */
+        HdmiArc = 10,
+
+        /**
+         * A device type describing a USB audio device.
+         */
+        UsbDevice = 11,
+
+        /**
+         * A device type describing a USB audio device in accessory mode.
+         */
+        UsbAccessory = 12,
+
+        /**
+         * A device type describing the audio device associated with a dock.
+         */
+        Dock = 13,
+
+        /**
+         * A device type associated with the transmission of audio signals over FM.
+         */
+        FM = 14,
+
+        /**
+         * A device type describing the microphone(s) built in a device.
+         */
+        BuiltinMic = 15,
+
+        /**
+         * A device type for accessing the audio content transmitted over FM.
+         */
+        FMTuner = 16,
+
+        /**
+         * A device type for accessing the audio content transmitted over the TV tuner system.
+         */
+        TVTuner = 17,
+
+        /**
+         * A device type describing the transmission of audio signals over the telephony network.
+         */
+        Telephony = 18,
+
+        /**
+         * A device type describing the auxiliary line-level connectors.
+         */
+        AuxLine = 19,
+
+        /**
+         * A device type connected over IP.
+         */
+        IP = 20,
+
+        /**
+         * A type-agnostic device used for communication with external audio systems.
+         */
+        Bus = 21,
+
+        /**
+         * A device type describing a USB audio headset.
+         */
+        UsbHeadset = 22,
+
+        /**
+         * A device type describing a Hearing Aid.
+         */
+        HearingAid = 23,
+
+        /**
+         * A device type describing the speaker system (i.e. a mono speaker or stereo speakers)
+         * built in a device, that is specifically tuned for outputting sounds like notifications
+         * and alarms (i.e. sounds the user couldn't necessarily anticipate).
+         * <p>Note that this physical audio device may be the same as {@link #TYPE_BUILTIN_SPEAKER}
+         * but is driven differently to safely accommodate the different use case.</p>
+         */
+        BuiltinSpeakerSafe = 24,
+
+        /**
+         * A device type for rerouting audio within the Android framework between mixes and
+         * system applications.
+         */
+        RemoteSubmix = 25,
+        /**
+         * A device type describing a Bluetooth Low Energy (BLE) audio headset or headphones.
+         * Headphones are grouped with headsets when the device is a sink:
+         * the features of headsets and headphones with regard to playback are the same.
+         */
+        BleHeadset = 26,
+
+        /**
+         * A device type describing a Bluetooth Low Energy (BLE) audio speaker.
+         */
+        BleSpeaker = 27,
+
+        /**
+         * A device type describing the Enhanced Audio Return Channel of an HDMI connection.
+         */
+        HdmiEarc = 29,
+
+        /**
+         * A device type describing a Bluetooth Low Energy (BLE) broadcast group.
+         */
+        BleBroadcast = 30,
+
+        /**
+         * A device type describing the audio device associated with a dock using an
+         * analog connection.
+         */
+        DockAnalog = 31
+    };
+
+    /**
+     * MMAP policy is defined to describe how aaudio MMAP will be used.
+     *
+     * Added in API level 36.
+     */
+    enum class MMapPolicy : int32_t {
+        /**
+         * When MMAP policy is not specified or the querying API is not supported.
+         */
+        Unspecified = kUnspecified,
+
+        /**
+         * AAudio MMAP is disabled and never used.
+         */
+        Never = 1,
+
+        /**
+         * AAudio MMAP support depends on device's availability. It will be used
+         * when it is possible or fallback to the normal path, where the audio data
+         * will be delivered via audio framework data pipeline.
+         */
+        Auto,
+
+        /**
+         * AAudio MMAP must be used or fail.
+         */
+        Always
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:

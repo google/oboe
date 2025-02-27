@@ -92,6 +92,16 @@ typedef int32_t aaudio_spatialization_behavior_t;
 #define __ANDROID_API_U__ 34
 #endif
 
+#ifndef __ANDROID_API_B__
+#define __ANDROID_API_B__ 36
+#endif
+
+#if __NDK_MAJOR__ < 28
+// These were defined in W
+typedef int32_t AAudio_DeviceType;
+typedef int32_t aaudio_policy_t;
+#endif
+
 namespace oboe {
 
 /**
@@ -162,6 +172,10 @@ class AAudioLoader {
     typedef bool    (*signature_O_PS)(AAudioStream *);
 
     typedef uint32_t (*signature_U_PS)(AAudioStream *);
+
+    typedef int32_t (*signature_I_II)(int32_t, int32_t);
+    typedef int32_t (*signature_I_I)(int32_t);
+    typedef int32_t (*signature_I)();
 
     static AAudioLoader* getInstance(); // singleton
 
@@ -265,6 +279,12 @@ class AAudioLoader {
     signature_I_PS   stream_getHardwareSampleRate = nullptr;
     signature_F_PS   stream_getHardwareFormat = nullptr;
 
+    signature_I_II   aaudio_getPlatformMMapPolicy = nullptr;
+    signature_I_II   aaudio_getPlatformMMapExclusivePolicy = nullptr;
+    signature_I_I    aaudio_setMMapPolicy = nullptr;
+    signature_I      aaudio_getMMapPolicy = nullptr;
+    signature_O_PS   stream_isMMapUsed = nullptr;
+
   private:
     AAudioLoader() {}
     ~AAudioLoader();
@@ -290,6 +310,9 @@ class AAudioLoader {
     signature_V_PBU     load_V_PBU(const char *name);
     signature_U_PS      load_U_PS(const char *name);
     signature_V_PBO     load_V_PBO(const char *name);
+    signature_I_II      load_I_II(const char *name);
+    signature_I_I       load_I_I(const char *name);
+    signature_I         load_I(const char *name);
 
     void *mLibHandle = nullptr;
 };
