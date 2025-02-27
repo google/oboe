@@ -107,7 +107,6 @@ public class AudioDeviceInfoConverter {
             sb.append(audioMixerAttributes);
         }
 
-
         sb.append("\n");
         return sb.toString();
     }
