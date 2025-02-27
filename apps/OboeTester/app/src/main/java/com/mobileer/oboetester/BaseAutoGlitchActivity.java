@@ -405,6 +405,35 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return testResult;
     }
 
+    void testPerformancePaths() throws InterruptedException {
+        StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
+        StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
+
+        requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
+        requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
+
+        // Legacy NONE
+        requestedInConfig.setMMap(false);
+        requestedOutConfig.setMMap(false);
+        requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
+        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_NONE);
+        testCurrentConfigurations();
+
+        // Legacy LOW_LATENCY
+        requestedInConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
+        requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
+        testCurrentConfigurations();
+
+        // MMAP LowLatency
+        if (NativeEngine.isMMapSupported()) {
+            requestedInConfig.setMMap(true);
+            requestedOutConfig.setMMap(true);
+            testCurrentConfigurations();
+        }
+        requestedInConfig.setMMap(false);
+        requestedOutConfig.setMMap(false);
+    }
+
     private void saveRecordingAsWave() {
         File recordingDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         File waveFile = new File(recordingDir, String.format("glitch_%03d.wav", getTestCount()));
