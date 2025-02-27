@@ -17,6 +17,7 @@
 #ifndef OBOETESTER_TEST_ERROR_CALLBACK_H
 #define OBOETESTER_TEST_ERROR_CALLBACK_H
 
+#include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include <thread>
 

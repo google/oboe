@@ -18,7 +18,7 @@
 #define ANALYZER_ROUNDED_MANCHESTER_ENCODER_H
 
 #include <math.h>
-#include <memory.h>
+#include <memory>
 #include <stdlib.h>
 #include "ManchesterEncoder.h"
 
