@@ -430,10 +430,10 @@ void ActivityTestOutput::configureAfterOpen() {
         // Go up by a minor third or a perfect fourth just intoned interval.
         const float interval = (mChannelCount > 8) ? (6.0f / 5.0f) : (4.0f / 3.0f);
         for (int i = 0; i < mChannelCount; i++) {
-            sineOscillators[i].setSampleRate(outputStream->getSampleRate());
+            sineOscillators[i].setSampleRate(outputStream->getSampleRate() / mChannelCount);
             sineOscillators[i].frequency.setValue(frequency);
             sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
-            sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate());
+            sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate() / mChannelCount);
             sawtoothOscillators[i].frequency.setValue(frequency);
             sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
 
