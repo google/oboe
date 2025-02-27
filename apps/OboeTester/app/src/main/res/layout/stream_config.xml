@@ -261,6 +261,28 @@
 
             </TableRow>
 
+            <TableRow
+                android:id="@+id/rowSpatializationBehavior">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/spatialization_behavior_prompt"/>
+
+                <Spinner
+                    android:id="@+id/spinnerSpatializationBehavior"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/spatialization_behaviors" />
+
+                <TextView
+                    android:id="@+id/actualSpatializationBehavior"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
+
         </TableLayout>
 
         <LinearLayout
