@@ -43,7 +43,6 @@ AAudioLoader* AAudioLoader::getInstance() {
 }
 
 int AAudioLoader::open() {
-    LOGD("flamme sdk version=%d", getSdkVersion());
     if (mLibHandle != nullptr) {
         return 0;
     }
@@ -189,7 +188,6 @@ int AAudioLoader::open() {
         aaudio_getMMapPolicy = load_I("AAudio_getMMapPolicy");
         stream_isMMapUsed = load_O_PS("AAudioStream_isMMapUsed");
 
-        LOGD("flamme version greater than w");
         stream_setOffloadDelayPadding = load_I_PSII("AAudioStream_setOffloadDelayPadding");
         stream_getOffloadDelay = load_I_PS("AAudioStream_getOffloadDelay");
         stream_getOffloadPadding = load_I_PS("AAudioStream_getOffloadPadding");
