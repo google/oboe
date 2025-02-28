@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write # Add write permission for contents
+  contents: write
 
 jobs:
   build:
