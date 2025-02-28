@@ -67,7 +67,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getFormatConversionAllowed(),
                 requestedConfiguration.getRateConversionQuality(),
                 requestedConfiguration.isMMap(),
-                isInput()
+                isInput(),
+                requestedConfiguration.getSpatializationBehavior()
         );
         if (result < 0) {
             streamIndex = INVALID_STREAM_INDEX;
@@ -100,6 +101,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setHardwareChannelCount(getHardwareChannelCount());
         actualConfiguration.setHardwareSampleRate(getHardwareSampleRate());
         actualConfiguration.setHardwareFormat(getHardwareFormat());
+        actualConfiguration.setSpatializationBehavior(getSpatializationBehavior());
     }
 
     private native int openNative(
@@ -120,7 +122,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
             boolean formatConversionAllowed,
             int rateConversionQuality,
             boolean isMMap,
-            boolean isInput);
+            boolean isInput,
+            int spatializationBehavior);
 
     @Override
     public void close() {
@@ -186,6 +189,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getInputPreset(streamIndex);
     }
     private native int getInputPreset(int streamIndex);
+
+    public int getSpatializationBehavior() {
+        return getSpatializationBehavior(streamIndex);
+    }
+    private native int getSpatializationBehavior(int streamIndex);
 
     public int getSampleRate() {
         return getSampleRate(streamIndex);

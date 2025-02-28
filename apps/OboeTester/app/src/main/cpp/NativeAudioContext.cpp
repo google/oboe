@@ -169,7 +169,8 @@ int ActivityContext::open(jint nativeApi,
                           jboolean formatConversionAllowed,
                           jint rateConversionQuality,
                           jboolean isMMap,
-                          jboolean isInput) {
+                          jboolean isInput,
+                          jint spatializationBehavior) {
 
     oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
     switch (nativeApi) {
@@ -210,6 +211,7 @@ int ActivityContext::open(jint nativeApi,
             ->setChannelConversionAllowed(channelConversionAllowed)
             ->setFormatConversionAllowed(formatConversionAllowed)
             ->setSampleRateConversionQuality((oboe::SampleRateConversionQuality) rateConversionQuality)
+            ->setSpatializationBehavior((oboe::SpatializationBehavior) spatializationBehavior)
             ;
     if (channelMask != (jint) oboe::ChannelMask::Unspecified) {
         // Set channel mask when it is specified.

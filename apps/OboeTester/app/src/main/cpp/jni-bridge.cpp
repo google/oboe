@@ -59,7 +59,8 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jboolean formatConversionAllowed,
                                                        jint rateConversionQuality,
                                                        jboolean isMMap,
-                                                       jboolean isInput);
+                                                       jboolean isInput,
+                                                       jint spatializationBehavior);
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint);
 
@@ -157,7 +158,8 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jboolean formatConversionAllowed,
         jint rateConversionQuality,
         jboolean isMMap,
-        jboolean isInput) {
+        jboolean isInput,
+        jint spatializationBehavior) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d", sampleRate);
 
     return (jint) engine.getCurrentActivity()->open(nativeApi,
@@ -177,7 +179,8 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
                                                     formatConversionAllowed,
                                                     rateConversionQuality,
                                                     isMMap,
-                                                    isInput);
+                                                    isInput,
+                                                    spatializationBehavior);
 }
 
 JNIEXPORT jint JNICALL
@@ -335,6 +338,17 @@ Java_com_mobileer_oboetester_OboeAudioStream_getInputPreset(
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = (jint) oboeStream->getInputPreset();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getSpatializationBehavior(
+        JNIEnv *env, jobject, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getSpatializationBehavior();
     }
     return result;
 }

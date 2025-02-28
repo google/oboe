@@ -109,6 +109,7 @@ public:
      * @param rateConversionQuality
      * @param isMMap
      * @param isInput
+     * @param spatializationBehavior
      * @return stream ID
      */
     int open(jint nativeApi,
@@ -128,7 +129,8 @@ public:
              jboolean formatConversionAllowed,
              jint rateConversionQuality,
              jboolean isMMap,
-             jboolean isInput);
+             jboolean isInput,
+             jint spatializationBehavior);
 
     oboe::Result release();
 

@@ -137,6 +137,13 @@
         <item>Sonification</item>
     </string-array>
 
+    <string name="spatialization_behavior_prompt">Spatialization:</string>
+    <string-array name="spatialization_behaviors">
+        <item>Unspecified</item>
+        <item>Auto</item>
+        <item>Never</item>
+    </string-array>
+
     <string name="channel_count_prompt">Channels:</string>
     <string-array name="channel_counts">
         <item>0</item>
