@@ -572,6 +572,22 @@ public:
         return oboe::Result::ErrorUnimplemented;
     }
 
+    virtual oboe::Result setOffloadDelayPadding(int32_t delayInFrames, int32_t paddingInFrames) {
+        return Result::ErrorUnimplemented;
+    }
+
+    virtual ResultWithValue<int32_t> getOffloadDelay() {
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
+    }
+
+    virtual ResultWithValue<int32_t> getOffloadPadding() {
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
+    }
+
+    virtual oboe::Result setOffloadEndOfStream() {
+        return Result::ErrorUnimplemented;
+    }
+
 protected:
 
     /**
