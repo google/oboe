@@ -432,10 +432,10 @@ void ActivityTestOutput::configureAfterOpen() {
         for (int i = 0; i < mChannelCount; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
-            sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE);
+            sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE / mChannelCount);
             sawtoothOscillators[i].setSampleRate(outputStream->getSampleRate());
             sawtoothOscillators[i].frequency.setValue(frequency);
-            sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH);
+            sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH / mChannelCount);
 
             frequency *= interval; // each wave is at a higher frequency
             setChannelEnabled(i, true);
