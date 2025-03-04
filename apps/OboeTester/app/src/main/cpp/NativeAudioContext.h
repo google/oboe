@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "common/OboeDebug.h"
+#include "common/Trace.h"
 #include "oboe/Oboe.h"
 
 #include "aaudio/AAudioExtensions.h"
@@ -169,6 +170,7 @@ public:
 
     void setWorkload(int32_t workload) {
         oboeCallbackProxy.setWorkload(workload);
+        oboe::Trace::getInstance().setCounter("Workload", workload);
     }
 
     void setHearWorkload(bool enabled) {
