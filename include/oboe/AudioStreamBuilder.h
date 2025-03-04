@@ -506,6 +506,30 @@ public:
     }
 
     /**
+     * Specifies an object to handle data presentation related callbacks from the underlying API.
+     * This can occur when all data queued in the audio system for an offload stream has been
+     * played.
+     *
+     * Note that presentation callbacks will only be called when a data callback has been specified
+     * and the stream is started.
+     *
+     * <strong>Important: See AudioStreamCallback for restrictions on what may be called
+     * from the callback methods.</strong>
+     *
+     * We pass a shared_ptr so that the presentationCallback object cannot be deleted before the
+     * stream is deleted. If the stream was created using a shared_ptr then the stream cannot be
+     * deleted before the presentation callback has finished running.
+     *
+     * @param sharedPresentationCallback
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setPresentationCallback(
+            std::shared_ptr<AudioStreamPresentationCallback> sharedPresentationCallback) {
+        mSharedPresentationCallback = sharedPresentationCallback;
+        return this;
+    }
+
+    /**
      * Specifies an object to handle data or error related callbacks from the underlying API.
      *
      * This is the equivalent of calling both setDataCallback() and setErrorCallback().
