@@ -101,7 +101,7 @@ static void oboe_aaudio_error_thread_proc_shared(std::shared_ptr<AudioStream> sh
 static void oboe_aaudio_presentation_thread_proc_common(AudioStreamAAudio *oboeStream) {
     auto presentationCallback = oboeStream->getPresentationCallback();
     if (presentationCallback == nullptr) return; // should be impossible
-    presentationCallback->onPresentationEnd(oboeStream);
+    presentationCallback->onPresentationEnded(oboeStream);
 }
 
 // Callback thread for raw pointers

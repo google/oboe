@@ -287,6 +287,8 @@ namespace oboe {
          *
          * This mode is not supported in input streams.
          * This mode will play through the offloaded audio path to save battery life.
+         * With the offload playback, the default data callback size will be large and it
+         * allows data feeding thread to sleep longer time after sending enough data.
          */
         POWER_SAVING_OFFLOADED = 13, // AAUDIO_PERFORMANCE_MODE_POWER_SAVING_OFFLOADED
     };

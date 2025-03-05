@@ -187,7 +187,7 @@ public:
      *
      * @param audioStream pointer to the associated stream
      */
-    virtual void onPresentationEnd(AudioStream* /* audioStream */) {}
+    virtual void onPresentationEnded(AudioStream* /* audioStream */) {}
 };
 
 /**
