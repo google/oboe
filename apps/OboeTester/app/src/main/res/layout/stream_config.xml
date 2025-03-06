@@ -326,17 +326,25 @@
             android:orientation="horizontal">
 
             <CheckBox
-                android:id="@+id/requestAudioEffect"
+                android:id="@+id/requestSessionId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10sp"
-                android:text="Effect" />
+                android:text="Session Id" />
 
             <TextView
                 android:id="@+id/sessionId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="12sp"
                 android:text="\?" />
+
+            <CheckBox
+                android:id="@+id/requestAudioEffect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10sp"
+                android:text="Effect" />
 
         </LinearLayout>
 

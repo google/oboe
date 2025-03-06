@@ -94,6 +94,7 @@ public class StreamConfigurationView extends LinearLayout {
     private AudioDeviceSpinner mDeviceSpinner;
     private TextView mActualSessionIdView;
     private CheckBox mRequestAudioEffect;
+    private CheckBox mRequestSessionId;
 
     private TextView mStreamInfoView;
     private TextView mStreamStatusView;
@@ -224,6 +225,7 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestedExclusiveView.setEnabled(mmapExclusiveSupported);
         mRequestedExclusiveView.setChecked(mmapExclusiveSupported);
 
+        mRequestSessionId = (CheckBox) findViewById(R.id.requestSessionId);
         mActualSessionIdView = (TextView) findViewById(R.id.sessionId);
         mRequestAudioEffect = (CheckBox) findViewById(R.id.requestAudioEffect);
 
@@ -443,7 +445,7 @@ public class StreamConfigurationView extends LinearLayout {
         config.setSharingMode(mRequestedExclusiveView.isChecked()
                 ? StreamConfiguration.SHARING_MODE_EXCLUSIVE
                 : StreamConfiguration.SHARING_MODE_SHARED);
-        config.setSessionId(mRequestAudioEffect.isChecked()
+        config.setSessionId(mRequestSessionId.isChecked()
                 ? StreamConfiguration.SESSION_ID_ALLOCATE
                 : StreamConfiguration.SESSION_ID_NONE);
 
@@ -469,6 +471,7 @@ public class StreamConfigurationView extends LinearLayout {
         mSampleRateSpinner.setEnabled(enabled);
         mRateConversionQualitySpinner.setEnabled(enabled);
         mDeviceSpinner.setEnabled(enabled);
+        mRequestSessionId.setEnabled(enabled);
         mRequestAudioEffect.setEnabled(enabled);
     }
 
@@ -573,13 +576,16 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     private void onRequestAudioEffectClicked(boolean isChecked) {
-        if (isChecked){
+        if (isChecked) {
+            mRequestSessionId.setEnabled(false);
+            mRequestSessionId.setChecked(true);
             if (misOutput) {
                 mOutputEffectsLayout.setVisibility(VISIBLE);
             } else {
                 mInputEffectsLayout.setVisibility(VISIBLE);
             }
         } else {
+            mRequestSessionId.setEnabled(true);
             if (misOutput) {
                 mOutputEffectsLayout.setVisibility(GONE);
             } else {
@@ -589,6 +595,9 @@ public class StreamConfigurationView extends LinearLayout {
     }
 
     public void setupEffects(int sessionId) {
+        if (!mRequestAudioEffect.isChecked()) {
+            return;
+        }
         if (misOutput) {
             mBassBoost = new BassBoost(0, sessionId);
             mBassBoost.setStrength((short) mBassBoostSeekBar.getProgress());
