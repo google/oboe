@@ -98,6 +98,28 @@ static void oboe_aaudio_error_thread_proc_shared(std::shared_ptr<AudioStream> sh
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
+static void oboe_aaudio_presentation_thread_proc_common(AudioStreamAAudio *oboeStream) {
+    auto presentationCallback = oboeStream->getPresentationCallback();
+    if (presentationCallback == nullptr) return; // should be impossible
+    presentationCallback->onPresentationEnded(oboeStream);
+}
+
+// Callback thread for raw pointers
+static void oboe_aaudio_presentation_thread_proc(AudioStreamAAudio *oboeStream) {
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    oboe_aaudio_presentation_thread_proc_common(oboeStream);
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
+}
+
+// Callback thread for shared pointers
+static void oboe_aaudio_presentation_end_thread_proc_shared(
+        std::shared_ptr<AudioStream> sharedStream) {
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
+    oboe_aaudio_presentation_thread_proc_common(oboeStream);
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
+}
+
 namespace oboe {
 
 /*
@@ -357,6 +379,13 @@ Result AudioStreamAAudio::open() {
     }
     // Else if the data callback is not being used then the write method will return an error
     // and the app can stop and close the stream.
+
+    if (isPresentationCallbackSpecified() &&
+        mLibLoader->builder_setPresentationEndCallback != nullptr) {
+        mLibLoader->builder_setPresentationEndCallback(aaudioBuilder,
+                                                       internalPresentationEndCallback,
+                                                       this);
+    }
 
     // ============= OPEN THE STREAM ================
     {
@@ -875,6 +904,81 @@ bool AudioStreamAAudio::isMMapUsed() {
     } else {
         return false;
     }
+}
+
+// static
+// Static method for the presentation end callback.
+// We use a method so we can access protected methods on the stream.
+// Launch a thread to handle the error.
+// That other thread can safely stop, close and delete the stream.
+void AudioStreamAAudio::internalPresentationEndCallback(AAudioStream *stream, void *userData) {
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+
+    // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
+    std::shared_ptr<AudioStream> sharedStream = oboeStream->lockWeakThis();
+
+    if (stream != oboeStream->getUnderlyingStream()) {
+        LOGW("%s() stream already closed or closing", __func__); // might happen if there are bugs
+    } else if (sharedStream) {
+        // Handle error on a separate thread using shared pointer.
+        std::thread t(oboe_aaudio_presentation_end_thread_proc_shared, sharedStream);
+        t.detach();
+    } else {
+        // Handle error on a separate thread.
+        std::thread t(oboe_aaudio_presentation_thread_proc, oboeStream);
+        t.detach();
+    }
+}
+
+Result AudioStreamAAudio::setOffloadDelayPadding(
+        int32_t delayInFrames, int32_t paddingInFrames) {
+    if (mLibLoader->stream_setOffloadDelayPadding == nullptr) {
+        return Result::ErrorUnimplemented;
+    }
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        return Result::ErrorClosed;
+    }
+    return static_cast<Result>(
+            mLibLoader->stream_setOffloadDelayPadding(stream, delayInFrames, paddingInFrames));
+}
+
+ResultWithValue<int32_t> AudioStreamAAudio::getOffloadDelay() {
+    if (mLibLoader->stream_getOffloadDelay == nullptr) {
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
+    }
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        return Result::ErrorClosed;
+    }
+    return ResultWithValue<int32_t>::createBasedOnSign(mLibLoader->stream_getOffloadDelay(stream));
+}
+
+ResultWithValue<int32_t> AudioStreamAAudio::getOffloadPadding() {
+    if (mLibLoader->stream_getOffloadPadding == nullptr) {
+        return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
+    }
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
+    }
+    return ResultWithValue<int32_t>::createBasedOnSign(
+            mLibLoader->stream_getOffloadPadding(stream));
+}
+
+Result AudioStreamAAudio::setOffloadEndOfStream() {
+    if (mLibLoader->stream_setOffloadEndOfStream == nullptr) {
+        return Result::ErrorUnimplemented;
+    }
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        return ResultWithValue<int32_t>(Result::ErrorClosed);
+    }
+    return static_cast<Result>(mLibLoader->stream_setOffloadEndOfStream(stream));
 }
 
 } // namespace oboe
