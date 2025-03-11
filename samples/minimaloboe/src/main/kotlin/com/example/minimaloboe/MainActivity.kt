@@ -31,13 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.minimaloboe.ui.theme.SamplesTheme
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalLifecycleComposeApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,23 +57,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@ExperimentalLifecycleComposeApi
 @Composable
 fun MainControls() {
     val playerState by AudioPlayer.playerState.collectAsStateWithLifecycle()
     MainControls(playerState, AudioPlayer::setPlaybackEnabled)
 }
 
-@ExperimentalLifecycleComposeApi
 @Composable
 fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit) {
 
     Column {
-
         val isPlaying = playerState is PlayerState.Started
-
         Text(text = "Minimal Oboe!")
-
         Row {
             Button(
                 onClick = { setPlaybackEnabled(true) },
@@ -101,12 +94,10 @@ fun MainControls(playerState: PlayerState, setPlaybackEnabled: (Boolean) -> Unit
                         "Unknown. Result = " + playerState.resultCode
                     }
                 }
-
         Text(uiStatusMessage)
     }
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {

@@ -20,14 +20,12 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlin.coroutines.CoroutineContext
 
 object AudioPlayer : DefaultLifecycleObserver {
 
@@ -35,7 +33,6 @@ object AudioPlayer : DefaultLifecycleObserver {
     // player is ever destroyed (for example, if it was no longer a singleton and had multiple
     // instances) any jobs would also be cancelled.
     private val coroutineScope = CoroutineScope(Dispatchers.Default) + Job()
-
     private var _playerState = MutableStateFlow<PlayerState>(PlayerState.NoResultYet)
     val playerState = _playerState.asStateFlow()
 
