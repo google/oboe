@@ -96,11 +96,11 @@ typedef int32_t aaudio_spatialization_behavior_t;
 #define __ANDROID_API_B__ 36
 #endif
 
-#if __NDK_MAJOR__ < 28
-// These were defined in W
-typedef int32_t AAudio_DeviceType;
+#if __NDK_MAJOR__ < 29
+// These was defined in W
 typedef int32_t aaudio_policy_t;
 #endif
+typedef int32_t AAudio_DeviceType_t; // This is different because AAudio_DeviceType is an enum type
 
 namespace oboe {
 

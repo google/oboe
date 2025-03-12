@@ -185,7 +185,7 @@ public:
             return MMapPolicy::Unspecified;
         }
         return static_cast<MMapPolicy>(mLibLoader->aaudio_getPlatformMMapPolicy(
-                static_cast<AAudio_DeviceType>(deviceType),
+                static_cast<AAudio_DeviceType_t>(deviceType),
                 static_cast<aaudio_direction_t>(direction)));
     }
 
@@ -195,7 +195,7 @@ public:
             return MMapPolicy::Unspecified;
         }
         return static_cast<MMapPolicy>(mLibLoader->aaudio_getPlatformMMapExclusivePolicy(
-                static_cast<AAudio_DeviceType>(deviceType),
+                static_cast<AAudio_DeviceType_t>(deviceType),
                 static_cast<aaudio_direction_t>(direction)));
     }
 
