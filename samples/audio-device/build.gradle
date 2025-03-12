@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 34
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
+        compileSdkVersion 35
     }
     buildTypes {
         release {
@@ -12,9 +12,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt')
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_18
+        targetCompatibility JavaVersion.VERSION_18
+    }
     namespace 'com.google.oboe.samples.audio_device'
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.0.0-rc02'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
 }
