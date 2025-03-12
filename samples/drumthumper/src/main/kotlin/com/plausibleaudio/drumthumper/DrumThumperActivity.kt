@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.plausiblesoftware.drumthumper
 
 import android.content.Context
@@ -133,14 +149,14 @@ class DrumThumperActivity : AppCompatActivity(),
     private fun showMixControls(show : Boolean) {
         mMixControlsShowing = show
         val showFlag = if (mMixControlsShowing) View.VISIBLE else View.GONE
-        findViewById<LinearLayout>(R.id.kickMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.snareMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.hihatOpenMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.hihatClosedMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.midTomMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.lowTomMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.rideMixControls).visibility = showFlag
-        findViewById<LinearLayout>(R.id.crashMixControls).visibility = showFlag
+        findViewById<LinearLayout>(R.id.kickMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.snareMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.hihatOpenMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.hihatClosedMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.midTomMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.lowTomMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.rideMixControls).setVisibility(showFlag)
+        findViewById<LinearLayout>(R.id.crashMixControls).setVisibility(showFlag)
 
         findViewById<Button>(R.id.mixCtrlBtn).text =
                 if (mMixControlsShowing) "Hide Mix Controls" else "Show Mix Controls"
@@ -281,7 +297,7 @@ class DrumThumperActivity : AppCompatActivity(),
     // SeekBar.OnSeekBarChangeListener
     //
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        when (seekBar?.id) {
+        when (seekBar!!.id) {
             // BASSDRUM
             R.id.kickGain -> mDrumPlayer.setGain(DrumPlayer.BASSDRUM, gainPosToGainVal(progress))
             R.id.kickPan -> mDrumPlayer.setPan(DrumPlayer.BASSDRUM, panPosToPanVal(progress))
