@@ -569,10 +569,13 @@ public:
      * @return OK or an error such as ErrorInvalidState if the PerformanceHint was not enabled.
      */
     virtual oboe::Result reportWorkload(int32_t appWorkload) {
+        std::ignore = appWorkload;
         return oboe::Result::ErrorUnimplemented;
     }
 
     virtual oboe::Result setOffloadDelayPadding(int32_t delayInFrames, int32_t paddingInFrames) {
+        std::ignore = delayInFrames;
+        std::ignore = paddingInFrames;
         return Result::ErrorUnimplemented;
     }
 
