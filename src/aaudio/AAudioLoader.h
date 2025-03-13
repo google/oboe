@@ -62,8 +62,11 @@ typedef int32_t aaudio_session_id_t;
 #include <aaudio/AAudio.h>
 #endif
 
-#ifndef __NDK_MAJOR__
+#ifdef __NDK_MAJOR__
+#define OBOE_USING_NDK 1
+#else
 #define __NDK_MAJOR__ 0
+#define OBOE_USING_NDK 0
 #endif
 
 #if __NDK_MAJOR__ < 24
@@ -72,8 +75,8 @@ typedef uint32_t aaudio_channel_mask_t;
 typedef int32_t aaudio_spatialization_behavior_t;
 #endif
 
-#if __NDK_MAJOR__ < 36
-// Defined in W
+#if OBOE_USING_NDK && __NDK_MAJOR__ < 29
+// Defined in Android B
 typedef void (*AAudioStream_presentationEndCallback)(
         AAudioStream* stream,
         void* userData);
@@ -103,8 +106,8 @@ typedef void (*AAudioStream_presentationEndCallback)(
 #define __ANDROID_API_B__ 36
 #endif
 
-#if __NDK_MAJOR__ < 28
-// These were defined in W
+#if OBOE_USING_NDK && __NDK_MAJOR__ < 29
+// These were defined in Android B
 typedef int32_t AAudio_DeviceType;
 typedef int32_t aaudio_policy_t;
 #endif

@@ -550,7 +550,7 @@ AAudioLoader::signature_I_PSII AAudioLoader::load_I_PSII(const char *functionNam
 
 // The aaudio device type and aaudio policy were added in NDK 28,
 // which is the first version to support Android W (API 36).
-#if __NDK_MAJOR__ >= 28
+#if __NDK_MAJOR__ >= 29
 
     ASSERT_INT32(AAudio_DeviceType);
     static_assert((int32_t)DeviceType::BuiltinEarpiece == AAUDIO_DEVICE_BUILTIN_EARPIECE, ERRMSG);
