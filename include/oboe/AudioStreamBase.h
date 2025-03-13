@@ -122,6 +122,14 @@ public:
     }
 
     /**
+     * For internal use only.
+     * @return the presentation callback object for this stream, if set.
+     */
+    std::shared_ptr<AudioStreamPresentationCallback> getPresentationCallback() const {
+        return mSharedPresentationCallback;
+    }
+
+    /**
      * @return true if a data callback was set for this stream
      */
     bool isDataCallbackSpecified() const {
@@ -135,6 +143,13 @@ public:
      */
     bool isErrorCallbackSpecified() const {
         return mErrorCallback != nullptr;
+    }
+
+    /**
+     * @return true if a presentation callback was set for this stream
+     */
+    bool isPresentationCallbackSpecified() const {
+        return mSharedPresentationCallback != nullptr;
     }
 
     /**
@@ -243,6 +258,8 @@ protected:
     /** The callback which will be fired when an error or a disconnect occurs. **/
     AudioStreamErrorCallback       *mErrorCallback = nullptr;
     std::shared_ptr<AudioStreamErrorCallback> mSharedErrorCallback;
+
+    std::shared_ptr<AudioStreamPresentationCallback> mSharedPresentationCallback;
 
     /** Number of audio frames which will be requested in each callback */
     int32_t                         mFramesPerCallback = kUnspecified;

@@ -191,6 +191,7 @@
         <item>NONE</item>
         <item>POWER_SAVING</item>
         <item>LOW_LATENCY</item>
+        <item>POWER_SAVING_OFFLOAD</item>
     </string-array>
 
     <!--Must match SignalType in NativeAudioContext.h-->

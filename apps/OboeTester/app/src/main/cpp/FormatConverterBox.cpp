@@ -43,6 +43,14 @@ FormatConverterBox::FormatConverterBox(int32_t maxSamples,
         case oboe::AudioFormat::Unspecified:
             mSource = std::make_unique<oboe::flowgraph::SourceFloat>(1);
             break;
+        case oboe::AudioFormat::MP3:
+        case oboe::AudioFormat::AAC_LC:
+        case oboe::AudioFormat::AAC_HE_V1:
+        case oboe::AudioFormat::AAC_HE_V2:
+        case oboe::AudioFormat::AAC_ELD:
+        case oboe::AudioFormat::AAC_XHE:
+        case oboe::AudioFormat::OPUS:
+            break;
     }
 
     mSink.reset();
@@ -61,6 +69,14 @@ FormatConverterBox::FormatConverterBox(int32_t maxSamples,
         case oboe::AudioFormat::Invalid:
         case oboe::AudioFormat::Unspecified:
             mSink = std::make_unique<oboe::flowgraph::SinkFloat>(1);
+            break;
+        case oboe::AudioFormat::MP3:
+        case oboe::AudioFormat::AAC_LC:
+        case oboe::AudioFormat::AAC_HE_V1:
+        case oboe::AudioFormat::AAC_HE_V2:
+        case oboe::AudioFormat::AAC_ELD:
+        case oboe::AudioFormat::AAC_XHE:
+        case oboe::AudioFormat::OPUS:
             break;
     }
 

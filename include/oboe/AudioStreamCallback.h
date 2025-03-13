@@ -170,6 +170,27 @@ public:
 };
 
 /**
+ * AudioStreamPresentationCallback defines a callback interface for
+ * being notified when a data presentation event is filed.
+ *
+ * It is used with AudioStreamBuilder::setPresentationCallback().
+ */
+class AudioStreamPresentationCallback {
+public:
+    virtual ~AudioStreamPresentationCallback() = default;
+
+    /**
+     * This will be called when all the buffers of an offloaded
+     * stream that were queued in the audio system (e.g. the
+     * combination of the Android audio framework and the device's
+     * audio hardware) have been played.
+     *
+     * @param audioStream pointer to the associated stream
+     */
+    virtual void onPresentationEnded(AudioStream* /* audioStream */) {}
+};
+
+/**
  * AudioStreamCallback defines a callback interface for:
  *
  * 1) moving data to/from an audio stream using `onAudioReady`

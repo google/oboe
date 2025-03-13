@@ -102,6 +102,10 @@ int AAudioLoader::open() {
         builder_setSpatializationBehavior = load_V_PBI("AAudioStreamBuilder_setSpatializationBehavior");
     }
 
+    if (getSdkVersion() >= __ANDROID_API_B__) {
+        builder_setPresentationEndCallback = load_V_PBPRPV("AAudioStreamBuilder_setPresentationEndCallback");
+    }
+
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
 
 
@@ -183,6 +187,11 @@ int AAudioLoader::open() {
         aaudio_setMMapPolicy = load_I_I("AAudio_setMMapPolicy");
         aaudio_getMMapPolicy = load_I("AAudio_getMMapPolicy");
         stream_isMMapUsed = load_O_PS("AAudioStream_isMMapUsed");
+
+        stream_setOffloadDelayPadding = load_I_PSII("AAudioStream_setOffloadDelayPadding");
+        stream_getOffloadDelay = load_I_PS("AAudioStream_getOffloadDelay");
+        stream_getOffloadPadding = load_I_PS("AAudioStream_getOffloadPadding");
+        stream_setOffloadEndOfStream = load_I_PS("AAudioStream_setOffloadEndOfStream");
     }
 
     return 0;
@@ -330,6 +339,18 @@ AAudioLoader::signature_I AAudioLoader::load_I(const char *functionName) {
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_I>(proc);
+}
+
+AAudioLoader::signature_V_PBPRPV AAudioLoader::load_V_PBPRPV(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBPRPV>(proc);
+}
+
+AAudioLoader::signature_I_PSII AAudioLoader::load_I_PSII(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSII>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t
