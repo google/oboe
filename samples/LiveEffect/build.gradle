@@ -34,6 +34,7 @@ android {
         }
     }
     namespace 'com.google.oboe.samples.liveEffect'
+    ndkVersion '29.0.13113456 rc1'
 }
 
 dependencies {
