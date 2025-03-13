@@ -217,4 +217,8 @@ float SimpleMultiPlayer::getGain(int index) {
     return mSampleSources[index]->getGain();
 }
 
+void SimpleMultiPlayer::setLoopMode(int index, bool isLoopMode) {
+    mSampleSources[index]->setLoopMode(isLoopMode);
+}
+
 }

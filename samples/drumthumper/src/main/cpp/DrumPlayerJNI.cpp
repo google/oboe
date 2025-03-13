@@ -162,6 +162,11 @@ JNIEXPORT jfloat JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_getGa
     return sDTPlayer.getGain(index);
 }
 
+JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_setLoopMode(
+        JNIEnv *env, jobject thiz, jint  index, jboolean isLoopMode) {
+    sDTPlayer.setLoopMode(index, isLoopMode);
+}
+
 #ifdef __cplusplus
 }
 #endif

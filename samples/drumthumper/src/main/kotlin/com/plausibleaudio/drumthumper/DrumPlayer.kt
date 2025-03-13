@@ -107,6 +107,8 @@ class DrumPlayer {
     external fun setGain(index: Int, gain: Float)
     external fun getGain(index: Int): Float
 
+    external fun setLoopMode(index: Int, isLoopMode: Boolean)
+
     external fun getOutputReset() : Boolean
     external fun clearOutputReset()
 

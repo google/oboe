@@ -50,6 +50,21 @@ class DrumThumperActivity : AppCompatActivity(),
 
     private var mMixControlsShowing = false
 
+    // Store the loop mode states for each drum
+    private val mLoopModes = mutableMapOf(
+        DrumPlayer.BASSDRUM to false,
+        DrumPlayer.SNAREDRUM to false,
+        DrumPlayer.CRASHCYMBAL to false,
+        DrumPlayer.RIDECYMBAL to false,
+        DrumPlayer.MIDTOM to false,
+        DrumPlayer.LOWTOM to false,
+        DrumPlayer.HIHATOPEN to false,
+        DrumPlayer.HIHATCLOSED to false
+    )
+
+    // Store the button references
+    private val mLoopButtons = mutableMapOf<Int, Button>()
+
     init {
         // Load the library containing the a native code including the JNI  functions
         System.loadLibrary("drumthumper")
@@ -160,7 +175,6 @@ class DrumThumperActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
 
         mAudioMgr = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
     }
 
     override fun onStart() {
@@ -186,34 +200,50 @@ class DrumThumperActivity : AppCompatActivity(),
         // "Kick" drum
         findViewById<TriggerPad>(R.id.kickPad).addListener(this)
         connectMixSliders(R.id.kickPan, R.id.kickGain, DrumPlayer.BASSDRUM)
+        mLoopButtons[DrumPlayer.BASSDRUM] = findViewById(R.id.kickLoopBtn)
+        mLoopButtons[DrumPlayer.BASSDRUM]?.setOnClickListener(this)
 
         // Snare drum
         findViewById<TriggerPad>(R.id.snarePad).addListener(this)
         connectMixSliders(R.id.snarePan, R.id.snareGain, DrumPlayer.SNAREDRUM)
+        mLoopButtons[DrumPlayer.SNAREDRUM] = findViewById(R.id.snareLoopBtn)
+        mLoopButtons[DrumPlayer.SNAREDRUM]?.setOnClickListener(this)
 
         // Mid tom
         findViewById<TriggerPad>(R.id.midTomPad).addListener(this)
         connectMixSliders(R.id.midTomPan, R.id.midTomGain, DrumPlayer.MIDTOM)
+        mLoopButtons[DrumPlayer.MIDTOM] = findViewById(R.id.midTomLoopBtn)
+        mLoopButtons[DrumPlayer.MIDTOM]?.setOnClickListener(this)
 
         // Low tom
         findViewById<TriggerPad>(R.id.lowTomPad).addListener(this)
         connectMixSliders(R.id.lowTomPan, R.id.lowTomGain, DrumPlayer.LOWTOM)
+        mLoopButtons[DrumPlayer.LOWTOM] = findViewById(R.id.lowTomLoopBtn)
+        mLoopButtons[DrumPlayer.LOWTOM]?.setOnClickListener(this)
 
         // Open hihat
         findViewById<TriggerPad>(R.id.hihatOpenPad).addListener(this)
         connectMixSliders(R.id.hihatOpenPan, R.id.hihatOpenGain, DrumPlayer.HIHATOPEN)
+        mLoopButtons[DrumPlayer.HIHATOPEN] = findViewById(R.id.hihatOpenLoopBtn)
+        mLoopButtons[DrumPlayer.HIHATOPEN]?.setOnClickListener(this)
 
         // Closed hihat
         findViewById<TriggerPad>(R.id.hihatClosedPad).addListener(this)
         connectMixSliders(R.id.hihatClosedPan, R.id.hihatClosedGain, DrumPlayer.HIHATCLOSED)
+        mLoopButtons[DrumPlayer.HIHATCLOSED] = findViewById(R.id.hihatClosedLoopBtn)
+        mLoopButtons[DrumPlayer.HIHATCLOSED]?.setOnClickListener(this)
 
         // Ride cymbal
         findViewById<TriggerPad>(R.id.ridePad).addListener(this)
         connectMixSliders(R.id.ridePan, R.id.rideGain, DrumPlayer.RIDECYMBAL)
+        mLoopButtons[DrumPlayer.RIDECYMBAL] = findViewById(R.id.rideLoopBtn)
+        mLoopButtons[DrumPlayer.RIDECYMBAL]?.setOnClickListener(this)
 
         // Crash cymbal
         findViewById<TriggerPad>(R.id.crashPad).addListener(this)
         connectMixSliders(R.id.crashPan, R.id.crashGain, DrumPlayer.CRASHCYMBAL)
+        mLoopButtons[DrumPlayer.CRASHCYMBAL] = findViewById(R.id.crashLoopBtn)
+        mLoopButtons[DrumPlayer.CRASHCYMBAL]?.setOnClickListener(this)
 
         findViewById<Button>(R.id.mixCtrlBtn).setOnClickListener(this)
         showMixControls(false)
@@ -310,7 +340,26 @@ class DrumThumperActivity : AppCompatActivity(),
     }
 
     override fun onClick(v: View?) {
-        showMixControls(!mMixControlsShowing)
+        when (v?.id) {
+            R.id.mixCtrlBtn -> showMixControls(!mMixControlsShowing)
+            R.id.kickLoopBtn -> handleLoopButtonClick(DrumPlayer.BASSDRUM)
+            R.id.snareLoopBtn -> handleLoopButtonClick(DrumPlayer.SNAREDRUM)
+            R.id.midTomLoopBtn -> handleLoopButtonClick(DrumPlayer.MIDTOM)
+            R.id.lowTomLoopBtn -> handleLoopButtonClick(DrumPlayer.LOWTOM)
+            R.id.hihatOpenLoopBtn -> handleLoopButtonClick(DrumPlayer.HIHATOPEN)
+            R.id.hihatClosedLoopBtn -> handleLoopButtonClick(DrumPlayer.HIHATCLOSED)
+            R.id.rideLoopBtn -> handleLoopButtonClick(DrumPlayer.RIDECYMBAL)
+            R.id.crashLoopBtn -> handleLoopButtonClick(DrumPlayer.CRASHCYMBAL)
+        }
     }
 
+    private fun handleLoopButtonClick(drumIndex: Int) {
+        // Toggle the loop mode
+        mLoopModes[drumIndex] = !mLoopModes[drumIndex]!!
+        mDrumPlayer.setLoopMode(drumIndex, mLoopModes[drumIndex]!!)
+
+        // Update the button appearance
+        val button = mLoopButtons[drumIndex]
+        button?.setTextColor(if (mLoopModes[drumIndex]!!) getColor(R.color.red) else getColor(R.color.black))
+    }
 }

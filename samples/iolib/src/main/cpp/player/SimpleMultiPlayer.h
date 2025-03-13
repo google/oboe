@@ -68,6 +68,8 @@ public:
     void setGain(int index, float gain);
     float getGain(int index);
 
+    void setLoopMode(int index, bool isLoopMode);
+
 private:
     class MyDataCallback : public oboe::AudioStreamDataCallback {
     public:
