@@ -50,7 +50,7 @@ DataCallbackResult SimpleMultiPlayer::MyDataCallback::onAudioReady(AudioStream *
     }
 
     memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>
-            (mParent->mChannelCount) * sizeof(float));
+        (mParent->mChannelCount) * sizeof(float));
 
     // OneShotSampleSource* sources = mSampleSources.get();
     for(int32_t index = 0; index < mParent->mNumSampleBuffers; index++) {
@@ -89,12 +89,13 @@ bool SimpleMultiPlayer::openStream(PerformanceMode performanceMode) {
     // we will resample source data to device rate, so take default sample rate
     builder.setDataCallback(mDataCallback);
 
-    builder.setFormat(AudioFormat::I16);
+    builder.setFormat(AudioFormat::Float);
     builder.setSampleRate(48000);
 
     builder.setErrorCallback(mErrorCallback);
     builder.setPresentationCallback(mPresentationCallback);
     builder.setPerformanceMode(performanceMode);
+    builder.setFramesPerDataCallback(128);
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
 

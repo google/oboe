@@ -1,5 +1,7 @@
 package com.example.powerplay
 
+import AudioForegroundService
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -99,6 +101,9 @@ class MainActivity : ComponentActivity() {
     private fun setUpPowerPlayAudioPlayer() {
         player = PowerPlayAudioPlayer()
         player.setupAudioStream()
+
+        val serviceIntent = Intent(this, AudioForegroundService::class.java)
+        startForegroundService(serviceIntent)
     }
 
     /***
@@ -115,7 +120,7 @@ class MainActivity : ComponentActivity() {
         }
         LaunchedEffect(pagerState.currentPage) {
             playingSongIndex.intValue = pagerState.currentPage
-            //player.seekTo(pagerState.currentPage, 0)
+            // player.seekTo(pagerState.currentPage, 0)
         }
 
 //        LaunchedEffect(player.currentMediaItemIndex) {
@@ -172,8 +177,6 @@ class MainActivity : ComponentActivity() {
             val configuration = LocalConfiguration.current
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-
                 /***
                  * Animated texts includes song name and its artist
                  * Animates when the song is switching
@@ -272,6 +275,10 @@ class MainActivity : ComponentActivity() {
                         icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
                         size = 100.dp,
                         onClick = {
+                            if (player.getPlayerStateLive().value == PlayerState.Initialized) {
+                                player.startAudioStream()
+                            }
+
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> player.startPlaying(playingSongIndex.intValue)

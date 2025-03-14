@@ -55,7 +55,6 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
 
     // TODO - Dynamically Set Performance Mode
     sDTPlayer.setupAudioStream(channels, oboe::PerformanceMode::POWER_SAVING_OFFLOADED);
-    sDTPlayer.startStream();
 }
 
 /**
