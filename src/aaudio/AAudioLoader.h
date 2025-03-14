@@ -103,7 +103,7 @@ typedef void (*AAudioStream_presentationEndCallback)(
 #define __ANDROID_API_B__ 36
 #endif
 
-#if __NDK_MAJOR__ < 28
+#if __NDK_MAJOR__ < 30
 // These were defined in W
 typedef int32_t AAudio_DeviceType;
 typedef int32_t aaudio_policy_t;
