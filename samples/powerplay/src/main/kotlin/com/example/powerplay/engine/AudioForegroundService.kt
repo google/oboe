@@ -1,3 +1,5 @@
+package com.example.powerplay.engine
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,8 +10,6 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.powerplay.MainActivity
@@ -65,7 +65,8 @@ class AudioForegroundService : Service() {
 
     private fun createNotification(): Notification {
         val channelId = createNotificationChannel()
-        val notificationIntent = Intent(this, MainActivity::class.java) // Replace with your main activity
+        val notificationIntent =
+            Intent(this, MainActivity::class.java) // Replace with your main activity
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -87,7 +88,8 @@ class AudioForegroundService : Service() {
         val channelName = "Audio Playback"
         val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(channelId, channelName, importance)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
         return channelId
     }

@@ -1,6 +1,5 @@
 package com.example.powerplay
 
-import AudioForegroundService
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -65,6 +64,7 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.powerplay.engine.AudioForegroundService
 import com.example.powerplay.engine.PlayerState
 import com.example.powerplay.engine.PowerPlayAudioPlayer
 import com.example.powerplay.ui.theme.MusicPlayerTheme
@@ -81,10 +82,13 @@ import com.example.powerplay.ui.theme.MusicPlayerTheme
 class MainActivity : ComponentActivity() {
 
     private lateinit var player: PowerPlayAudioPlayer
+    private lateinit var serviceIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpPowerPlayAudioPlayer()
+
+        serviceIntent = Intent(this, AudioForegroundService::class.java)
 
         setContent {
             MusicPlayerTheme {
@@ -101,9 +105,6 @@ class MainActivity : ComponentActivity() {
     private fun setUpPowerPlayAudioPlayer() {
         player = PowerPlayAudioPlayer()
         player.setupAudioStream()
-
-        val serviceIntent = Intent(this, AudioForegroundService::class.java)
-        startForegroundService(serviceIntent)
     }
 
     /***
@@ -276,6 +277,8 @@ class MainActivity : ComponentActivity() {
                         size = 100.dp,
                         onClick = {
                             if (player.getPlayerStateLive().value == PlayerState.Initialized) {
+                                startForegroundService(serviceIntent)
+
                                 player.startAudioStream()
                             }
 
@@ -284,7 +287,8 @@ class MainActivity : ComponentActivity() {
                                 false -> player.startPlaying(playingSongIndex.intValue)
                             }
 
-                            isPlaying.value = player.getPlayerStateLive().value == PlayerState.Playing
+                            isPlaying.value =
+                                player.getPlayerStateLive().value == PlayerState.Playing
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(icon = R.drawable.ic_next, size = 40.dp, onClick = {
