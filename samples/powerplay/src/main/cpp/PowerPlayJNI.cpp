@@ -58,7 +58,6 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
     sDTPlayer.startStream();
 }
 
-
 /**
  * Native (JNI) implementation of PowerPlayAudioEngine.startAudioStreamNative()
  */

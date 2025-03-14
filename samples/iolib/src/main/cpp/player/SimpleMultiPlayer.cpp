@@ -88,7 +88,12 @@ bool SimpleMultiPlayer::openStream(PerformanceMode performanceMode) {
     builder.setChannelCount(mChannelCount);
     // we will resample source data to device rate, so take default sample rate
     builder.setDataCallback(mDataCallback);
+
+    builder.setFormat(AudioFormat::I16);
+    builder.setSampleRate(48000);
+
     builder.setErrorCallback(mErrorCallback);
+    builder.setPresentationCallback(mPresentationCallback);
     builder.setPerformanceMode(performanceMode);
     builder.setSharingMode(SharingMode::Exclusive);
     builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
