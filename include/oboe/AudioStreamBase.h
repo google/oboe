@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
 
