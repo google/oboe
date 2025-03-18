@@ -284,6 +284,7 @@ public class StreamConfiguration {
     private int mBufferCapacityInFrames;
     private int mChannelCount;
     private int mDeviceId;
+    private int[] mDeviceIds;
     private int mSessionId;
     private int mDirection; // does not get reset
     private int mFormat;
@@ -341,6 +342,7 @@ public class StreamConfiguration {
         mChannelCount = UNSPECIFIED;
         mChannelMask = UNSPECIFIED;
         mDeviceId = UNSPECIFIED;
+        mDeviceIds = new int[0];
         mSessionId = -1;
         mFormat = AUDIO_FORMAT_PCM_FLOAT;
         mSampleRate = UNSPECIFIED;
@@ -647,6 +649,7 @@ public class StreamConfiguration {
                 convertNativeApiToText(getNativeApi()).toLowerCase(Locale.getDefault())));
         message.append(String.format(Locale.getDefault(), "%s.rate = %d\n", prefix, mSampleRate));
         message.append(String.format(Locale.getDefault(), "%s.device = %d\n", prefix, mDeviceId));
+        message.append(String.format(Locale.getDefault(), "%s.devices = %s\n", prefix, convertDeviceIdsToText(mDeviceIds)));
         message.append(String.format(Locale.getDefault(), "%s.mmap = %s\n", prefix, isMMap() ? "yes" : "no"));
         message.append(String.format(Locale.getDefault(), "%s.rate.conversion.quality = %d\n", prefix, mRateConversionQuality));
         message.append(String.format(Locale.getDefault(), "%s.hardware.channels = %d\n", prefix, mHardwareChannelCount));
@@ -775,6 +778,14 @@ public class StreamConfiguration {
         this.mDeviceId = deviceId;
     }
 
+    public int[] getDeviceIds() {
+        return mDeviceIds;
+    }
+
+    public void setDeviceIds(int[] deviceIds) {
+        this.mDeviceIds = deviceIds;
+    }
+
     public int getSessionId() {
         return mSessionId;
     }
@@ -896,5 +907,20 @@ public class StreamConfiguration {
             default:
                 return "?=" + error;
         }
+    }
+
+    public static String convertDeviceIdsToText(int[] deviceIds) {
+        if (deviceIds == null || deviceIds.length == 0) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < deviceIds.length; i++) {
+            sb.append(deviceIds[i]);
+            if (i < deviceIds.length - 1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 }

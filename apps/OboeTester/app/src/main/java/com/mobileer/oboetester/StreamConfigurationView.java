@@ -482,8 +482,9 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getNativeApi();
         mActualNativeApiView.setText(StreamConfiguration.convertNativeApiToText(value));
 
-        value = actualConfiguration.getDeviceId();
-        mActualDeviceIdView.setText(String.valueOf(value));
+        String deviceIds = StreamConfiguration.convertDeviceIdsToText(
+                actualConfiguration.getDeviceIds());
+        mActualDeviceIdView.setText(deviceIds);
 
         mActualMMapView.setText(yesOrNo(actualConfiguration.isMMap()));
         int sharingMode = actualConfiguration.getSharingMode();
@@ -525,7 +526,7 @@ public class StreamConfigurationView extends LinearLayout {
 
         String msg = "";
         msg += "burst = " + actualConfiguration.getFramesPerBurst();
-        msg += ", devID = " + actualConfiguration.getDeviceId();
+        msg += ", devIDs = " + deviceIds;
         msg += ", " + (actualConfiguration.isMMap() ? "MMAP" : "Legacy");
         msg += (isMMap ? ", " + StreamConfiguration.convertSharingModeToText(sharingMode) : "");
 

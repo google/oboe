@@ -105,6 +105,18 @@ public:
      */
     int32_t getDeviceId() const { return mDeviceId; }
 
+    std::vector<int32_t> getDeviceIds() const {
+        if (!mDeviceIds.empty()) {
+            return mDeviceIds;
+        }
+        // If the API does not support getting device ids, create it from the device id.
+        std::vector<int32_t> deviceIds;
+        if (mDeviceId != kUnspecified) {
+            deviceIds.push_back(mDeviceId);
+        }
+        return deviceIds;
+    }
+
     /**
      * For internal use only.
      * @return the data callback object for this stream, if set.
@@ -325,6 +337,8 @@ protected:
     bool                            mFormatConversionAllowed = false;
     // Control whether and how Oboe can convert sample rates to achieve optimal results.
     SampleRateConversionQuality     mSampleRateConversionQuality = SampleRateConversionQuality::Medium;
+
+    std::vector<int32_t>            mDeviceIds;
 
     /** Validate stream parameters that might not be checked in lower layers */
     virtual Result isValidConfig() {

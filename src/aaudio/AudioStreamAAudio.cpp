@@ -468,6 +468,8 @@ Result AudioStreamAAudio::open() {
         mHardwareFormat = static_cast<AudioFormat>(mLibLoader->stream_getHardwareFormat(mAAudioStream));
     }
 
+    updateDeviceIds();
+
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
             static_cast<int>(mBufferCapacityInFrames));
@@ -979,6 +981,46 @@ Result AudioStreamAAudio::setOffloadEndOfStream() {
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
     return static_cast<Result>(mLibLoader->stream_setOffloadEndOfStream(stream));
+}
+
+void AudioStreamAAudio::updateDeviceIds() {
+    if (mLibLoader->stream_getDeviceIds == nullptr) {
+        return;
+    }
+    int deviceIdSize = 0;
+
+    // Query to get the size
+    {
+        std::vector<int32_t> tempDeviceIds; // Use a temporary vector
+        // Pass a nullptr as data on the first call
+        aaudio_result_t getDeviceIdResult =
+                mLibLoader->stream_getDeviceIds(mAAudioStream, tempDeviceIds.data(), &deviceIdSize);
+        if (getDeviceIdResult != AAUDIO_ERROR_OUT_OF_RANGE) {
+            LOGE("stream_getDeviceIds did not return AAUDIO_ERROR_OUT_OF_RANGE. Error: %d",
+                 static_cast<int>(getDeviceIdResult));
+            return;
+        }
+        if (deviceIdSize <= 0) {
+            LOGE("stream_getDeviceIds did not return correct size. Size: %d",
+                 static_cast<int>(deviceIdSize));
+            return;
+        }
+    }
+
+    // Query with the correct size
+    {
+        std::vector<int32_t> deviceIds(deviceIdSize); // Allocate vector with correct size
+        aaudio_result_t getDeviceIdResult =
+                mLibLoader->stream_getDeviceIds(mAAudioStream, deviceIds.data(), &deviceIdSize);
+        if (getDeviceIdResult != AAUDIO_OK) {
+            LOGE("stream_getDeviceIds did not return AAUDIO_OK. Error: %d",
+                 static_cast<int>(getDeviceIdResult));
+        }
+
+        mDeviceIds.clear();
+        // Copy from deviceIds to mDeviceIds
+        mDeviceIds.insert(mDeviceIds.end(), deviceIds.begin(), deviceIds.end());
+    }
 }
 
 } // namespace oboe

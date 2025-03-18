@@ -92,6 +92,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setChannelCount(getChannelCount());
         actualConfiguration.setChannelMask(getChannelMask());
         actualConfiguration.setDeviceId(getDeviceId());
+        actualConfiguration.setDeviceIds(getDeviceIds());
         actualConfiguration.setSessionId(getSessionId());
         actualConfiguration.setFormat(getFormat());
         actualConfiguration.setMMap(isMMap());
@@ -244,6 +245,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return getDeviceId(streamIndex);
     }
     private native int getDeviceId(int streamIndex);
+
+    public int[] getDeviceIds() {
+        return getDeviceIds(streamIndex);
+    }
+    private native int[] getDeviceIds(int streamIndex);
 
     public int getSessionId() {
         return getSessionId(streamIndex);

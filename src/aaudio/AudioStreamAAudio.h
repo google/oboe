@@ -149,6 +149,8 @@ private:
      */
     void launchStopThread();
 
+    void updateDeviceIds();
+
 private:
 
     std::atomic<bool>    mCallbackThreadEnabled;
