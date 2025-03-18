@@ -568,14 +568,12 @@ public:
      * @param appWorkload workload in application units, such as number of voices
      * @return OK or an error such as ErrorInvalidState if the PerformanceHint was not enabled.
      */
-    virtual oboe::Result reportWorkload(int32_t appWorkload) {
-        std::ignore = appWorkload;
+    virtual oboe::Result reportWorkload([[maybe_unused]] int32_t appWorkload) {
         return oboe::Result::ErrorUnimplemented;
     }
 
-    virtual oboe::Result setOffloadDelayPadding(int32_t delayInFrames, int32_t paddingInFrames) {
-        std::ignore = delayInFrames;
-        std::ignore = paddingInFrames;
+    virtual oboe::Result setOffloadDelayPadding([[maybe_unused]] int32_t delayInFrames,
+                                                [[maybe_unused]] int32_t paddingInFrames) {
         return Result::ErrorUnimplemented;
     }
 
