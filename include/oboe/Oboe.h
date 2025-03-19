@@ -20,7 +20,10 @@
 /**
  * \mainpage API reference
  *
- * All documentation is found in the <a href="namespaceoboe.html">oboe namespace section</a>
+ * See our <a href="https://github.com/google/oboe/blob/main/docs/FullGuide.md">guide</a> on Github
+ * for a guide on Oboe.
+ *
+ * Click the classes tab to see the reference for various Oboe functions.
  *
  */
 
