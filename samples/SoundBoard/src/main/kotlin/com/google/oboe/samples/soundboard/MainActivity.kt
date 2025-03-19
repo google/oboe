@@ -24,6 +24,8 @@ import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.min
@@ -82,18 +84,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun calculateAndSetRectangles(context: Context) {
-        val width: Int
-        val height: Int
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val size = Point()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            width = windowManager.currentWindowMetrics.bounds.width()
-            height = windowManager.currentWindowMetrics.bounds.height()
+            val windowMetrics = windowManager.currentWindowMetrics
+            val windowInsets = windowMetrics.windowInsets
+            val insets = windowInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.navigationBars() or WindowInsets.Type.statusBars())
+            val width = windowMetrics.bounds.width() - insets.left - insets.right
+            val height = windowMetrics.bounds.height() - insets.top - insets.bottom
+            size.set(width, height)
         } else {
-            val size = Point()
-            windowManager.defaultDisplay.getRealSize(size)
-            height = size.y
-            width = size.x
+            display.getSize(size) // Use getSize to exclude navigation bar if visible
         }
+
+        val width = size.x
+        val height = size.y
 
         if (height > width) {
             mNumColumns = DIMENSION_MIN_SIZE
