@@ -181,7 +181,8 @@ int AAudioLoader::open() {
         stream_getHardwareFormat = load_F_PS("AAudioStream_getHardwareFormat");
     }
 
-    if (getSdkVersion() >= __ANDROID_API_B__) {
+    // TODO: Remove pre-release check after Android B release
+    if (getSdkVersion() >= __ANDROID_API_B__ || isAtLeastPreReleaseCodename("Baklava")) {
         aaudio_getPlatformMMapPolicy = load_I_II("AAudio_getPlatformMMapPolicy");
         aaudio_getPlatformMMapExclusivePolicy = load_I_II("AAudio_getPlatformMMapExclusivePolicy");
         aaudio_setMMapPolicy = load_I_I("AAudio_setMMapPolicy");
@@ -192,6 +193,8 @@ int AAudioLoader::open() {
         stream_getOffloadDelay = load_I_PS("AAudioStream_getOffloadDelay");
         stream_getOffloadPadding = load_I_PS("AAudioStream_getOffloadPadding");
         stream_setOffloadEndOfStream = load_I_PS("AAudioStream_setOffloadEndOfStream");
+
+        stream_getDeviceIds = load_I_PSPIPI("AAudioStream_getDeviceIds");
     }
 
     return 0;
@@ -351,6 +354,12 @@ AAudioLoader::signature_I_PSII AAudioLoader::load_I_PSII(const char *functionNam
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_I_PSII>(proc);
+}
+
+AAudioLoader::signature_I_PSPIPI AAudioLoader::load_I_PSPIPI(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSPIPI>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t

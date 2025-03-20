@@ -29,7 +29,7 @@ using namespace oboe;
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
     // OpenSL ES does not support device IDs. So overwrite value from builder.
-    mDeviceId = kUnspecified;
+    mDeviceIds.clear();
     // OpenSL ES does not support session IDs. So overwrite value from builder.
     mSessionId = SessionId::None;
 }
@@ -265,7 +265,7 @@ void AudioStreamOpenSLES::logUnsupportedAttributes() {
     // only report if changed from the default
 
     // Device ID
-    if (mDeviceId != kUnspecified) {
+    if (!mDeviceIds.empty()) {
         LOGW("Device ID [AudioStreamBuilder::setDeviceId()] "
              "is not supported on OpenSLES streams.");
     }
