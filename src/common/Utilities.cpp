@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <set>
 #include <sstream>
 
 #ifdef __ANDROID__
@@ -342,6 +343,15 @@ bool isAtLeastPreReleaseCodename(const std::string& codename) {
 
 int getChannelCountFromChannelMask(ChannelMask channelMask) {
     return __builtin_popcount(static_cast<uint32_t>(channelMask));
+}
+
+
+std::set<AudioFormat> COMPRESSED_FORMATS = {
+        AudioFormat::MP3, AudioFormat::AAC_LC, AudioFormat::AAC_HE_V1, AudioFormat::AAC_HE_V2,
+        AudioFormat::AAC_ELD, AudioFormat::AAC_XHE, AudioFormat::OPUS
+};
+bool isCompressedFormat(AudioFormat format) {
+    return COMPRESSED_FORMATS.count(format) != 0;
 }
 
 }// namespace oboe
