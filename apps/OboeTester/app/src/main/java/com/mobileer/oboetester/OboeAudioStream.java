@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import androidx.annotation.Nullable;
+
 import java.io.IOException;
 
 /**
@@ -249,7 +251,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public int[] getDeviceIds() {
         return getDeviceIds(streamIndex);
     }
-    private native int[] getDeviceIds(int streamIndex);
+    @Nullable private native int[] getDeviceIds(int streamIndex);
 
     public int getSessionId() {
         return getSessionId(streamIndex);

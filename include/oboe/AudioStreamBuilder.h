@@ -344,7 +344,10 @@ public:
      * @return pointer to the builder so calls can be chained
      */
     AudioStreamBuilder *setDeviceId(int32_t deviceId) {
-        mDeviceId = deviceId;
+        mDeviceIds.clear();
+        if (deviceId != kUnspecified) {
+            mDeviceIds.push_back(deviceId);
+        }
         return this;
     }
 

@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -284,7 +286,7 @@ public class StreamConfiguration {
     private int mBufferCapacityInFrames;
     private int mChannelCount;
     private int mDeviceId;
-    private int[] mDeviceIds;
+    @Nullable private int[] mDeviceIds;
     private int mSessionId;
     private int mDirection; // does not get reset
     private int mFormat;
@@ -911,16 +913,18 @@ public class StreamConfiguration {
 
     public static String convertDeviceIdsToText(int[] deviceIds) {
         if (deviceIds == null || deviceIds.length == 0) {
-            return "";
+            return "[]";
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("[");
         for (int i = 0; i < deviceIds.length; i++) {
             sb.append(deviceIds[i]);
             if (i < deviceIds.length - 1) {
                 sb.append(",");
             }
         }
+        sb.append("]");
         return sb.toString();
     }
 }

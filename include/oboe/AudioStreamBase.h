@@ -104,18 +104,12 @@ public:
     /**
      * @return the device ID of the stream.
      */
-    int32_t getDeviceId() const { return mDeviceId; }
+    int32_t getDeviceId() const {
+        return mDeviceIds.empty() ? kUnspecified :  mDeviceIds[0];
+    }
 
     std::vector<int32_t> getDeviceIds() const {
-        if (!mDeviceIds.empty()) {
-            return mDeviceIds;
-        }
-        // If the API does not support getting device ids, create it from the device id.
-        std::vector<int32_t> deviceIds;
-        if (mDeviceId != kUnspecified) {
-            deviceIds.push_back(mDeviceId);
-        }
-        return deviceIds;
+        return mDeviceIds;
     }
 
     /**
@@ -280,8 +274,6 @@ protected:
     int32_t                         mChannelCount = kUnspecified;
     /** Stream sample rate */
     int32_t                         mSampleRate = kUnspecified;
-    /** Stream audio device ID */
-    int32_t                         mDeviceId = kUnspecified;
     /** Stream buffer capacity specified as a number of audio frames */
     int32_t                         mBufferCapacityInFrames = kUnspecified;
     /** Stream buffer size specified as a number of audio frames */

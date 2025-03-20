@@ -485,7 +485,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_getDeviceIds(
 
         return result;
     }
-    return env->NewIntArray(0);
+    return nullptr;
 }
 
 JNIEXPORT jint JNICALL
