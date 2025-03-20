@@ -990,24 +990,29 @@ void AudioStreamAAudio::updateDeviceIds() {
         if (deviceId != kUnspecified) {
             mDeviceIds.push_back(deviceId);
         }
+    } else {
+        // Allocate a temp vector with 16 elements. This should be enough to cover all cases.
+        // Please file a bug on Oboe if you discover that this returns AAUDIO_ERROR_OUT_OF_RANGE.
+        // When AAUDIO_ERROR_OUT_OF_RANGE is returned, the actual size will be still returned as the
+        // value of deviceIdSize but deviceIds will be empty.
+        int deviceIdSize = 16;
+        std::vector<int32_t> deviceIds(deviceIdSize);
+        aaudio_result_t getDeviceIdResult =
+                mLibLoader->stream_getDeviceIds(mAAudioStream, deviceIds.data(), &deviceIdSize);
+        if (getDeviceIdResult != AAUDIO_OK) {
+            LOGE("stream_getDeviceIds did not return AAUDIO_OK. Error: %d",
+                 static_cast<int>(getDeviceIdResult));
+        }
+
+        mDeviceIds.clear();
+        for (int i = 0; i < deviceIdSize; i++) {
+            mDeviceIds.push_back(deviceIds[i]);
+        }
     }
 
-    // Allocate a temp vector with 16 elements. This should be enough to cover all cases.
-    // Please file a bug on Oboe if you discover that this returns AAUDIO_ERROR_OUT_OF_RANGE.
-    // When AAUDIO_ERROR_OUT_OF_RANGE is returned, the actual size will be still returned as the
-    // value of deviceIdSize but deviceIds will be empty.
-    int deviceIdSize = 16;
-    std::vector<int32_t> deviceIds(deviceIdSize);
-    aaudio_result_t getDeviceIdResult =
-            mLibLoader->stream_getDeviceIds(mAAudioStream, deviceIds.data(), &deviceIdSize);
-    if (getDeviceIdResult != AAUDIO_OK) {
-        LOGE("stream_getDeviceIds did not return AAUDIO_OK. Error: %d",
-             static_cast<int>(getDeviceIdResult));
-    }
-
-    mDeviceIds.clear();
-    for (int i = 0; i < deviceIdSize; i++) {
-        mDeviceIds.push_back(deviceIds[i]);
+    // This should not happen in most cases. Please file a bug on Oboe if you see this happening.
+    if (mDeviceIds.empty()) {
+        LOGW("updateDeviceIds() returns an empty array.");
     }
 }
 
