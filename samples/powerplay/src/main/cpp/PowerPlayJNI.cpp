@@ -165,8 +165,8 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_re
  * Native (JNI) implementation of DrumPlayer.trigger()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject, jint index) {
-    sDTPlayer.triggerDown(index);
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject, jint index, jboolean offload) {
+    sDTPlayer.triggerDown(index, offload ? oboe::PerformanceMode::POWER_SAVING_OFFLOADED : oboe::PerformanceMode::LowLatency);
 }
 
 /**

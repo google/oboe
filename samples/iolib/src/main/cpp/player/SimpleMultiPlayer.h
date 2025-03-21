@@ -33,10 +33,10 @@ class SimpleMultiPlayer  {
 public:
     SimpleMultiPlayer();
 
-    void setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
+    void setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode);
     void teardownAudioStream();
 
-    bool openStream(oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
+    bool openStream(oboe::PerformanceMode performanceMode);
     bool startStream();
 
     int getSampleRate() { return mSampleRate; }
@@ -54,7 +54,7 @@ public:
      */
     void unloadSampleData();
 
-    void triggerDown(int32_t index);
+    void triggerDown(int32_t index, oboe::PerformanceMode performanceMode);
     void triggerUp(int32_t index);
 
     void resetAll();

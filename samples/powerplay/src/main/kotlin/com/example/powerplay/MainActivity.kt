@@ -37,6 +37,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -117,6 +118,9 @@ class MainActivity : ComponentActivity() {
         val pagerState = rememberPagerState(pageCount = { playList.count() })
         val playingSongIndex = remember {
             mutableIntStateOf(0)
+        }
+        val offload = remember {
+            mutableStateOf(true)
         }
         LaunchedEffect(pagerState.currentPage) {
             playingSongIndex.intValue = pagerState.currentPage
@@ -262,6 +266,26 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Enable PCM Offload"
+                    )
+                    Checkbox(
+                        checked = offload.value,
+                        onCheckedChange = {
+                            offload.value = it
+                            player.teardownAudioStream()
+                                          },
+                        enabled = !isPlaying.value
+                    )
+                }
+
+                Text(
+                    if (offload.value) "Performance Mode: PCM Offload" else "Performance Mode: Low Latency"
+                )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -275,13 +299,9 @@ class MainActivity : ComponentActivity() {
                         icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
                         size = 100.dp,
                         onClick = {
-                            if (player.getPlayerStateLive().value == PlayerState.Initialized) {
-                                player.startAudioStream()
-                            }
-
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
-                                false -> player.startPlaying(playingSongIndex.intValue)
+                                false -> player.startPlaying(playingSongIndex.intValue, offload.value)
                             }
 
                             isPlaying.value = player.getPlayerStateLive().value == PlayerState.Playing
@@ -495,22 +515,10 @@ class MainActivity : ComponentActivity() {
     private fun getPlayList(): List<Music> {
         return listOf(
             Music(
-                name = "Sky Piano",
-                artist = "Jojo Oboe",
+                name = "Chemical Reaction",
+                artist = "Momo Oboe",
                 cover = R.drawable.album_art_1,
                 fileName = "song1.wav",
-            ),
-            Music(
-                name = "Everyday Normal Guy 2",
-                artist = "James Audio",
-                cover = R.drawable.album_art_2,
-                fileName = "song2.wav"
-            ),
-            Music(
-                name = "Lose Yourself",
-                artist = "Frequency",
-                cover = R.drawable.album_art_3,
-                fileName = "song3.wav",
             ),
         )
     }

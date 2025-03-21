@@ -31,15 +31,8 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         _playerState.update { PlayerState.Initialized }
     }
 
-    fun startAudioStream() {
-        startAudioStreamNative()
-
-        // TODO - Handle real response from native code
-        _playerState.update { PlayerState.StreamStarted }
-    }
-
-    fun startPlaying(index: Int) {
-        startPlayingNative(index)
+    fun startPlaying(index: Int, offload: Boolean) {
+        startPlayingNative(index, offload)
 
         // TODO - Handle real response from native code
         _playerState.update { PlayerState.Playing }
@@ -87,7 +80,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun clearOutputResetNative()
     private external fun restartStreamNative(enablePCMOffload: Boolean)
     private external fun setLoopingNative(index: Int, looping: Boolean)
-    private external fun startPlayingNative(index: Int)
+    private external fun startPlayingNative(index: Int, mode: Boolean)
     private external fun stopPlayingNative(index: Int)
 
     /**
