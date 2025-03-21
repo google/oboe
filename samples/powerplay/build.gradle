@@ -17,6 +17,14 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+                arguments '-DANDROID_STL=c++_static'
+                // armeabi and mips are deprecated in NDK r16 so we don't want to build for them
+                abiFilters 'arm64-v8a', 'x86', 'x86_64'
+            }
+        }
     }
     buildTypes {
         release {

@@ -1,6 +1,5 @@
 package com.example.powerplay
 
-import AudioForegroundService
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -299,12 +298,17 @@ class MainActivity : ComponentActivity() {
                         icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
                         size = 100.dp,
                         onClick = {
+                            if (player.getPlayerStateLive().value == PlayerState.Initialized) {
+                                startForegroundService(serviceIntent)
+                            }
+
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> player.startPlaying(playingSongIndex.intValue, offload.value)
                             }
 
-                            isPlaying.value = player.getPlayerStateLive().value == PlayerState.Playing
+                            isPlaying.value =
+                                player.getPlayerStateLive().value == PlayerState.Playing
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(icon = R.drawable.ic_next, size = 40.dp, onClick = {
