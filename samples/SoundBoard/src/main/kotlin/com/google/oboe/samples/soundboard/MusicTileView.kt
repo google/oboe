@@ -22,14 +22,16 @@ import android.graphics.*
 import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 
 class MusicTileView(
     context: Context?,
-    private val mRectangles: ArrayList<Rect>,
+    private val mTiles: ArrayList<Rect>,
+    private val mBorders: ArrayList<Rect>,
     tileListener: TileListener,
     configChangeListener: ConfigChangeListener
 ) : View(context) {
-    private val mIsPressedPerRectangle: BooleanArray = BooleanArray(mRectangles.size)
+    private val mIsPressedPerRectangle: BooleanArray = BooleanArray(mTiles.size)
     private val mPaint: Paint = Paint()
     private val mLocationsOfFingers: SparseArray<PointF> = SparseArray()
     private val mTileListener: TileListener
@@ -45,8 +47,8 @@ class MusicTileView(
     }
 
     private fun getIndexFromLocation(pointF: PointF): Int {
-        for (i in mRectangles.indices) {
-            if (pointF.x > mRectangles[i].left && pointF.x < mRectangles[i].right && pointF.y > mRectangles[i].top && pointF.y < mRectangles[i].bottom) {
+        for (i in mTiles.indices) {
+            if (pointF.x > mTiles[i].left && pointF.x < mTiles[i].right && pointF.y > mTiles[i].top && pointF.y < mTiles[i].bottom) {
                 return i
             }
         }
@@ -54,20 +56,25 @@ class MusicTileView(
     }
 
     override fun onDraw(canvas: Canvas) {
-        for (i in mRectangles.indices) {
+        for (i in mTiles.indices) {
             mPaint.style = Paint.Style.FILL
             if (mIsPressedPerRectangle[i]) {
-                mPaint.color = Color.rgb(128, 0, 0)
+                mPaint.color = ContextCompat.getColor(context, R.color.colorPrimary)
             } else {
                 mPaint.color = Color.BLACK
             }
-            canvas.drawRect(mRectangles[i], mPaint)
+            canvas.drawRect(mTiles[i], mPaint)
 
-            // border
+            // white border
             mPaint.style = Paint.Style.STROKE
             mPaint.strokeWidth = 10f
             mPaint.color = Color.WHITE
-            canvas.drawRect(mRectangles[i], mPaint)
+            canvas.drawRect(mTiles[i], mPaint)
+        }
+        for (i in mBorders.indices) {
+            mPaint.style = Paint.Style.FILL
+            mPaint.color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
+            canvas.drawRect(mBorders[i], mPaint)
         }
     }
 
@@ -82,7 +89,7 @@ class MusicTileView(
                 // Create an array to check for finger changes as multiple fingers may be on the
                 // same tile. This two-pass algorithm records the overall difference before changing
                 // the actual tiles.
-                val notesChangedBy = IntArray(mRectangles.size)
+                val notesChangedBy = IntArray(mTiles.size)
                 run {
                     val size = event.pointerCount
                     var i = 0
@@ -108,7 +115,7 @@ class MusicTileView(
 
                 // Now go through the rectangles to see if they have changed
                 var i = 0
-                while (i < mRectangles.size) {
+                while (i < mTiles.size) {
                     if (notesChangedBy[i] > 0) {
                         mIsPressedPerRectangle[i] = true
                         mTileListener.onTileOn(i)
