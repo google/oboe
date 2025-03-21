@@ -1,6 +1,10 @@
 package com.example.powerplay
 
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,10 +39,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -66,6 +73,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -83,12 +91,30 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var player: PowerPlayAudioPlayer
     private lateinit var serviceIntent: Intent
+    private var isOffloadSupported: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpPowerPlayAudioPlayer()
 
+        val format = AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+            .build()
+
+        val attributes =
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+
         serviceIntent = Intent(this, AudioForegroundService::class.java)
+        isOffloadSupported = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            AudioManager.isOffloadedPlaybackSupported(format, attributes)
+        } else {
+            false
+        }
 
         setContent {
             MusicPlayerTheme {
@@ -129,8 +155,9 @@ class MainActivity : ComponentActivity() {
             mutableIntStateOf(0)
         }
         val offload = remember {
-            mutableStateOf(true)
+            mutableIntStateOf(0)
         }
+
         LaunchedEffect(pagerState.currentPage) {
             playingSongIndex.intValue = pagerState.currentPage
             // player.seekTo(pagerState.currentPage, 0)
@@ -275,25 +302,55 @@ class MainActivity : ComponentActivity() {
 //                        )
 //                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "Enable PCM Offload"
-                    )
-                    Checkbox(
-                        checked = offload.value,
-                        onCheckedChange = {
-                            offload.value = it
-                            player.teardownAudioStream()
-                        },
-                        enabled = !isPlaying.value
-                    )
-                }
-
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    if (offload.value) "Performance Mode: PCM Offload" else "Performance Mode: Low Latency"
+                    "Performance Modes"
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Column {
+                    val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
+                    if (isOffloadSupported) radioOptions.add("PCM Offload")
+
+                    val (selectedOption, onOptionSelected) = remember {
+                        mutableStateOf(radioOptions[0])
+                    }
+                    radioOptions.forEachIndexed { index, text ->
+                        Row(
+                            Modifier
+                                .height(32.dp)
+                                .selectable(
+                                    selected = (text == selectedOption),
+                                    onClick = {
+                                        onOptionSelected(text)
+                                        offload.intValue = index
+                                        player.teardownAudioStream()
+                                    },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (text == selectedOption),
+                                onClick = null, // null recommended for accessibility with screen readers
+                                enabled = !isPlaying.value
+                            )
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    when (offload.intValue) {
+                        0 -> "Performance Mode: None"
+                        1 -> "Performance Mode: Low Latency"
+                        2 -> "Performance Mode: Power Saving"
+                        else -> "Performance Mode: PCM Offload"
+                    }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
@@ -314,7 +371,10 @@ class MainActivity : ComponentActivity() {
 
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
-                                false -> player.startPlaying(playingSongIndex.intValue, offload.value)
+                                false -> player.startPlaying(
+                                    playingSongIndex.intValue,
+                                    offload.intValue
+                                )
                             }
 
                             isPlaying.value =
@@ -499,7 +559,6 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
-
 
     /***
      * Convert the millisecond to String text

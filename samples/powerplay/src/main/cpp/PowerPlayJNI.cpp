@@ -54,7 +54,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "setupAudioStreamNative()");
 
     // TODO - Dynamically Set Performance Mode
-    sDTPlayer.setupAudioStream(channels, oboe::PerformanceMode::POWER_SAVING_OFFLOADED);
+    sDTPlayer.setupAudioStream(channels, oboe::PerformanceMode::None);
 }
 
 /**
@@ -125,7 +125,8 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_un
 /**
  * Native (JNI) implementation of DrumPlayer.getOutputReset()
  */
-JNIEXPORT jboolean JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
+JNIEXPORT jboolean JNICALL
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
         JNIEnv *,
         jobject
 ) {
@@ -135,7 +136,8 @@ JNIEXPORT jboolean JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlaye
 /**
  * Native (JNI) implementation of DrumPlayer.clearOutputReset()
  */
-JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
+JNIEXPORT void JNICALL
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
         JNIEnv *,
         jobject
 ) {
@@ -143,37 +145,26 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_cl
 }
 
 /**
- * Native (JNI) implementation of DrumPlayer.restartStream()
+ * Native (JNI) implementation of DrumPlayer.trigger()
  */
-JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_restartStreamNative(
-        JNIEnv *,
-        jobject,
-        jboolean enablePCMOffload
-) {
-    sDTPlayer.resetAll();
-    auto success = sDTPlayer.openStream(
-            enablePCMOffload ? PerformanceMode::POWER_SAVING_OFFLOADED : PerformanceMode::LowLatency);
-    if (!success && sDTPlayer.startStream()) {
-        __android_log_print(ANDROID_LOG_INFO, TAG,
-                            "restart stream successful, starting stream");
-        return;
-    }
-    __android_log_print(ANDROID_LOG_ERROR, TAG, "openStream failed");
+JNIEXPORT void JNICALL
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject,
+                                                                          jint index,
+                                                                          jint offload) {
+    auto performanceMode =
+            offload == 0 ? PerformanceMode::None
+                         : offload == 1 ? PerformanceMode::LowLatency
+                         : offload == 2 ? PerformanceMode::PowerSaving
+                                        : PerformanceMode::POWER_SAVING_OFFLOADED;
+    sDTPlayer.triggerDown(index, performanceMode);
 }
 
 /**
  * Native (JNI) implementation of DrumPlayer.trigger()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject, jint index, jboolean offload) {
-    sDTPlayer.triggerDown(index, offload ? oboe::PerformanceMode::POWER_SAVING_OFFLOADED : oboe::PerformanceMode::LowLatency);
-}
-
-/**
- * Native (JNI) implementation of DrumPlayer.trigger()
- */
-JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv *env, jobject, jint index) {
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv *env, jobject,
+                                                                         jint index) {
     sDTPlayer.triggerUp(index);
 }
 
@@ -181,7 +172,8 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv 
  * Native (JNI) implementation of DrumPlayer.trigger()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(JNIEnv *env, jobject, jint index,
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(JNIEnv *env, jobject,
+                                                                        jint index,
                                                                         jboolean looping) {
     sDTPlayer.setLoopMode(index, looping);
 }
