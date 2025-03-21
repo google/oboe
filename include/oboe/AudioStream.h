@@ -25,6 +25,7 @@
 #include "oboe/ResultWithValue.h"
 #include "oboe/AudioStreamBuilder.h"
 #include "oboe/AudioStreamBase.h"
+#include "oboe/Utilities.h"
 
 namespace oboe {
 
@@ -242,13 +243,19 @@ public:
      * and the sample format. For example, a 2 channel floating point stream will have
      * 2 * 4 = 8 bytes per frame.
      *
+     * Note for compressed formats, bytes per frames is treated as 1 by convention.
+     *
      * @return number of bytes in each audio frame.
      */
-    int32_t getBytesPerFrame() const { return mChannelCount * getBytesPerSample(); }
+    int32_t getBytesPerFrame() const {
+        return isCompressedFormat(mFormat) ? 1 : mChannelCount * getBytesPerSample(); }
 
     /**
      * Get the number of bytes per sample. This is calculated using the sample format. For example,
      * a stream using 16-bit integer samples will have 2 bytes per sample.
+     *
+     * Note for compressed formats, they may not have a fixed bytes per frame. In that case,
+     * this method will return 0 for compressed format.
      *
      * @return the number of bytes per sample.
      */
