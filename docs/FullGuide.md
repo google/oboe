@@ -56,6 +56,13 @@ Oboe permits these sample formats:
 | I24 | N/A | 24-bit samples packed into 3 bytes, [Q0.23 format](https://source.android.com/devices/audio/data_formats#androidFormats). Added in API 31 |
 | I32 | int32_t | common 32-bit samples, [Q0.31 format](https://source.android.com/devices/audio/data_formats#androidFormats). Added in API 31 |
 | IEC61937 | N/A | compressed audio wrapped in IEC61937 for HDMI or S/PDIF passthrough. Added in API 34 |
+| MP3 | N/A | compressed audio format in MP3 format. Added in API36 |
+| AAC_LC | N/A | compressed audio format in AAC LC format. Added in API 36 |
+| AAC_HE_V1 | N/A | compressed audio format in AAC HE V1 format. Added in API 36 |
+| AAC_HE_V2 | N/A | compressed audio format in AAC HE V2 format. Added in API 36 |
+| AAC_ELD | N/A | compressed audio format in AAC ELD format. Added in API 36 |
+| AAC_XHE | N/A | compressed audio format in AAC XHE format. Added in API 36 |
+| OPUS | N/A | compressed audio format in OPUS format. Added in API 36 |
 
 Oboe might perform sample conversion on its own. For example, if an app is writing AudioFormat::Float data but the HAL uses AudioFormat::I16, Oboe might convert the samples automatically. Conversion can happen in either direction. If your app processes audio input, it is wise to verify the input format and be prepared to convert data if necessary, as in this example:
 

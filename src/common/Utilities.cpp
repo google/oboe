@@ -70,6 +70,17 @@ int32_t convertFormatToSizeInBytes(AudioFormat format) {
         case AudioFormat::IEC61937:
             size = sizeof(int16_t);
             break;
+        case AudioFormat::MP3:
+        case AudioFormat::AAC_LC:
+        case AudioFormat::AAC_HE_V1:
+        case AudioFormat::AAC_HE_V2:
+        case AudioFormat::AAC_ELD:
+        case AudioFormat::AAC_XHE:
+        case AudioFormat::OPUS:
+            // For compressed formats, set the size per sample as 0 as they may not have
+            // fix size per sample.
+            size = 0;
+            break;
         default:
             break;
     }
@@ -111,6 +122,13 @@ const char *convertToText<AudioFormat>(AudioFormat format) {
         case AudioFormat::I24:          return "I24";
         case AudioFormat::I32:          return "I32";
         case AudioFormat::IEC61937:     return "IEC61937";
+        case AudioFormat::MP3:          return "MP3";
+        case AudioFormat::AAC_LC:       return "AAC_LC";
+        case AudioFormat::AAC_HE_V1:    return "AAC_HE_V1";
+        case AudioFormat::AAC_HE_V2:    return "AAC_HE_V2";
+        case AudioFormat::AAC_ELD:      return "AAC_ELD";
+        case AudioFormat::AAC_XHE:      return "AAC_XHE";
+        case AudioFormat::OPUS:         return "OPUS";
         default:                        return "Unrecognized format";
     }
 }
