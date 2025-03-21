@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.powerplay.engine.AudioForegroundService
 import com.example.powerplay.engine.PlayerState
 import com.example.powerplay.engine.PowerPlayAudioPlayer
 import com.example.powerplay.ui.theme.MusicPlayerTheme
@@ -81,10 +82,13 @@ import com.example.powerplay.ui.theme.MusicPlayerTheme
 class MainActivity : ComponentActivity() {
 
     private lateinit var player: PowerPlayAudioPlayer
+    private lateinit var serviceIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpPowerPlayAudioPlayer()
+
+        serviceIntent = Intent(this, AudioForegroundService::class.java)
 
         setContent {
             MusicPlayerTheme {
@@ -96,6 +100,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player.stopPlaying(0)
+        player.teardownAudioStream()
     }
 
     private fun setUpPowerPlayAudioPlayer() {
@@ -277,7 +287,7 @@ class MainActivity : ComponentActivity() {
                         onCheckedChange = {
                             offload.value = it
                             player.teardownAudioStream()
-                                          },
+                        },
                         enabled = !isPlaying.value
                     )
                 }
