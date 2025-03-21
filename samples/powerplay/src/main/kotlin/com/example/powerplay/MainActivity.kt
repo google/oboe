@@ -241,39 +241,39 @@ class MainActivity : ComponentActivity() {
                         .padding(horizontal = 32.dp),
                 ) {
 
-                    TrackSlider(
-                        value = sliderPosition.longValue.toFloat(),
-                        onValueChange = {
-                            sliderPosition.longValue = it.toLong()
-                        },
-                        onValueChangeFinished = {
-                            currentPosition.longValue = sliderPosition.longValue
-                            //player.seekTo(sliderPosition.longValue)
-                        },
-                        songDuration = totalDuration.longValue.toFloat()
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-
-                        Text(
-                            text = (currentPosition.longValue).convertToText(),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp),
-                            color = Color.Black,
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
-
-                        val remainTime = totalDuration.longValue - currentPosition.longValue
-                        Text(
-                            text = if (remainTime >= 0) remainTime.convertToText() else "",
-                            modifier = Modifier
-                                .padding(8.dp),
-                            color = Color.Black,
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
-                    }
+//                    TrackSlider(
+//                        value = sliderPosition.longValue.toFloat(),
+//                        onValueChange = {
+//                            sliderPosition.longValue = it.toLong()
+//                        },
+//                        onValueChangeFinished = {
+//                            currentPosition.longValue = sliderPosition.longValue
+//                            //player.seekTo(sliderPosition.longValue)
+//                        },
+//                        songDuration = totalDuration.longValue.toFloat()
+//                    )
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                    ) {
+//
+//                        Text(
+//                            text = (currentPosition.longValue).convertToText(),
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(8.dp),
+//                            color = Color.Black,
+//                            style = TextStyle(fontWeight = FontWeight.Bold)
+//                        )
+//
+//                        val remainTime = totalDuration.longValue - currentPosition.longValue
+//                        Text(
+//                            text = if (remainTime >= 0) remainTime.convertToText() else "",
+//                            modifier = Modifier
+//                                .padding(8.dp),
+//                            color = Color.Black,
+//                            style = TextStyle(fontWeight = FontWeight.Bold)
+//                        )
+//                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -300,9 +300,9 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ControlButton(icon = R.drawable.ic_previous, size = 40.dp, onClick = {
-                        //player.seekToPreviousMediaItem()
-                    })
+//                    ControlButton(icon = R.drawable.ic_previous, size = 40.dp, onClick = {
+//                        //player.seekToPreviousMediaItem()
+//                    })
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(
                         icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
@@ -321,9 +321,9 @@ class MainActivity : ComponentActivity() {
                                 player.getPlayerStateLive().value == PlayerState.Playing
                         })
                     Spacer(modifier = Modifier.width(20.dp))
-                    ControlButton(icon = R.drawable.ic_next, size = 40.dp, onClick = {
-                        //player.seekToNextMediaItem()
-                    })
+//                    ControlButton(icon = R.drawable.ic_next, size = 40.dp, onClick = {
+//                        //player.seekToNextMediaItem()
+//                    })
                 }
             }
         }
