@@ -254,7 +254,7 @@ public:
      * Get the number of bytes per sample. This is calculated using the sample format. For example,
      * a stream using 16-bit integer samples will have 2 bytes per sample.
      *
-     * Note for compressed formats, they may not have a fixed bytes per frame. In that case,
+     * Note for compressed formats, they may not have a fixed bytes per sample. In that case,
      * this method will return 0 for compressed format.
      *
      * @return the number of bytes per sample.
