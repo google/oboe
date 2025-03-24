@@ -756,6 +756,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 </table>
 </div><div class="memdoc">
 <p>Get the number of bytes in each audio frame. This is calculated using the channel count and the sample format. For example, a 2 channel floating point stream will have 2 * 4 = 8 bytes per frame.</p>
+<p>Note for compressed formats, bytes per frames is treated as 1 by convention.</p>
 <dl class="section return"><dt>Returns</dt><dd>number of bytes in each audio frame. </dd></dl>
 
 </div>
@@ -775,6 +776,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
       </table>
 </div><div class="memdoc">
 <p>Get the number of bytes per sample. This is calculated using the sample format. For example, a stream using 16-bit integer samples will have 2 bytes per sample.</p>
+<p>Note for compressed formats, they may not have a fixed bytes per sample. In that case, this method will return 0 for compressed format.</p>
 <dl class="section return"><dt>Returns</dt><dd>the number of bytes per sample. </dd></dl>
 
 </div>
