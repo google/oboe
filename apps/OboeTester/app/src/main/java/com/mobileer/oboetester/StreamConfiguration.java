@@ -44,6 +44,7 @@ public class StreamConfiguration {
     public static final int AUDIO_FORMAT_PCM_24 = 3; // must match AAUDIO
     public static final int AUDIO_FORMAT_PCM_32 = 4; // must match AAUDIO
     public static final int AUDIO_FORMAT_IEC61937 = 5; // must match AAUDIO
+    public static final int AUDIO_FORMAT_MP3 = 6; // must match AAUDIO
 
     public static final int DIRECTION_OUTPUT = 0; // must match AAUDIO
     public static final int DIRECTION_INPUT = 1; // must match AAUDIO
@@ -274,6 +275,10 @@ public class StreamConfiguration {
             CHANNEL_9POINT1POINT6,
             CHANNEL_FRONT_BACK
     };
+
+    public static boolean isCompressedFormat(int format) {
+        return format == AUDIO_FORMAT_MP3;
+    }
 
     private static HashMap<String,Integer> mUsageStringToIntegerMap;
     private static HashMap<String,Integer> mContentTypeStringToIntegerMap;
@@ -525,6 +530,8 @@ public class StreamConfiguration {
                 return "Float";
             case AUDIO_FORMAT_IEC61937:
                 return "IEC61937";
+            case AUDIO_FORMAT_MP3:
+                return "MP3";
             default:
                 return "Invalid";
         }

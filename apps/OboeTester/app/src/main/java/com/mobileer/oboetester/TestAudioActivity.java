@@ -45,6 +45,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -81,6 +84,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
     public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
+
+    private static final int MP3_RES_ID = R.raw.sine441stereo;
+    private static final AudioConfig MP3_FILE_CONFIG =
+            new AudioConfig(44100 /*sampleRate*/, StreamConfiguration.AUDIO_FORMAT_MP3,
+                    StreamConfiguration.CHANNEL_STEREO, 2 /*channelCount*/);
 
     private int mAudioState = AUDIO_STATE_CLOSED;
 
@@ -656,6 +664,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
                     int actualContentType = streamContext.tester.actualConfiguration.getContentType();
                     setStreamControlByAttributes(actualUsage, actualContentType);
                 }
+
+                if (streamContext.tester.actualConfiguration.getFormat() ==
+                        StreamConfiguration.AUDIO_FORMAT_MP3) {
+                    setupMp3BufferFromFile();
+                }
             }
         }
         for (StreamContext streamContext : mStreamContexts) {
@@ -711,6 +724,14 @@ abstract class TestAudioActivity extends AppCompatActivity {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
 
+        if (requestedConfig.getFormat() == StreamConfiguration.AUDIO_FORMAT_MP3 &&
+                (requestedConfig.getDirection() != StreamConfiguration.DIRECTION_OUTPUT ||
+                        requestedConfig.getChannelMask() != MP3_FILE_CONFIG.mChannelMask ||
+                        requestedConfig.getSampleRate() != MP3_FILE_CONFIG.mSampleRate)) {
+            showErrorToast("MP3 format uses builtin 44.1kHz mono mp3 file for playback");
+            return;
+        }
+
         streamContext.tester.open(); // OPEN the stream
 
         mSampleRate = actualConfig.getSampleRate();
@@ -742,6 +763,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
     protected native void setActivityType(int activityType);
 
     private native int getFramesPerCallback();
+
+    private native void setupMemoryBuffer(byte[] buffer, int offset, int length);
 
     public native void setUseAlternativeAdpf(boolean enabled);
 
@@ -915,5 +938,35 @@ abstract class TestAudioActivity extends AppCompatActivity {
             mResultFileName = null;
         }
         return fileWritten;
+    }
+
+    void setupMp3BufferFromFile() {
+        try {
+            InputStream inputStream = this.getResources().openRawResource(MP3_RES_ID);
+            final int length = inputStream.available();
+            byte[] buffer = new byte[length];
+            int readLength = inputStream.read(buffer, 0 /*off*/, length);
+            inputStream.close();
+            Log.i(TAG, "Total file length=" + length + ", read length=" + readLength);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            setupMemoryBuffer(byteBuffer.array(), 0, readLength);
+        } catch (Exception e) {
+            showErrorToast("Failed to load mp3 file " + e.getMessage());
+        }
+    }
+
+    private static class AudioConfig {
+        public int mSampleRate;
+        public int mFormat;
+        public int mChannelMask;
+        public int mChannelCount;
+
+        public AudioConfig(int sampleRate, int format, int channelMask, int channelCount) {
+            mSampleRate = sampleRate;
+            mFormat = format;
+            mChannelMask = channelMask;
+            mChannelCount = channelCount;
+        }
     }
 }
