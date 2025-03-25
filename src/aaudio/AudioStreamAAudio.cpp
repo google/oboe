@@ -298,7 +298,7 @@ Result AudioStreamAAudio::open() {
     } else {
         mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
     }
-    mLibLoader->builder_setDeviceId(aaudioBuilder, mDeviceId);
+    mLibLoader->builder_setDeviceId(aaudioBuilder, getDeviceId());
     mLibLoader->builder_setDirection(aaudioBuilder, static_cast<aaudio_direction_t>(mDirection));
     mLibLoader->builder_setFormat(aaudioBuilder, static_cast<aaudio_format_t>(mFormat));
     mLibLoader->builder_setSampleRate(aaudioBuilder, mSampleRate);
@@ -403,7 +403,6 @@ Result AudioStreamAAudio::open() {
     }
 
     // Query and cache the stream properties
-    mDeviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
     mChannelCount = mLibLoader->stream_getChannelCount(mAAudioStream);
     mSampleRate = mLibLoader->stream_getSampleRate(mAAudioStream);
     mFormat = static_cast<AudioFormat>(mLibLoader->stream_getFormat(mAAudioStream));
@@ -467,6 +466,8 @@ Result AudioStreamAAudio::open() {
     if (mLibLoader->stream_getHardwareFormat != nullptr) {
         mHardwareFormat = static_cast<AudioFormat>(mLibLoader->stream_getHardwareFormat(mAAudioStream));
     }
+
+    updateDeviceIds();
 
     LOGD("AudioStreamAAudio.open() format=%d, sampleRate=%d, capacity = %d",
             static_cast<int>(mFormat), static_cast<int>(mSampleRate),
@@ -979,6 +980,43 @@ Result AudioStreamAAudio::setOffloadEndOfStream() {
         return ResultWithValue<int32_t>(Result::ErrorClosed);
     }
     return static_cast<Result>(mLibLoader->stream_setOffloadEndOfStream(stream));
+}
+
+void AudioStreamAAudio::updateDeviceIds() {
+    // If stream_getDeviceIds is not supported, use stream_getDeviceId.
+    if (mLibLoader->stream_getDeviceIds == nullptr) {
+        mDeviceIds.clear();
+        int32_t deviceId = mLibLoader->stream_getDeviceId(mAAudioStream);
+        if (deviceId != kUnspecified) {
+            mDeviceIds.push_back(deviceId);
+        }
+    } else {
+        // Allocate a temp vector with 16 elements. This should be enough to cover all cases.
+        // Please file a bug on Oboe if you discover that this returns AAUDIO_ERROR_OUT_OF_RANGE.
+        // When AAUDIO_ERROR_OUT_OF_RANGE is returned, the actual size will be still returned as the
+        // value of deviceIdSize but deviceIds will be empty.
+
+        static constexpr int kDefaultDeviceIdSize = 16;
+        int deviceIdSize = kDefaultDeviceIdSize;
+        std::vector<int32_t> deviceIds(deviceIdSize);
+        aaudio_result_t getDeviceIdResult =
+                mLibLoader->stream_getDeviceIds(mAAudioStream, deviceIds.data(), &deviceIdSize);
+        if (getDeviceIdResult != AAUDIO_OK) {
+            LOGE("stream_getDeviceIds did not return AAUDIO_OK. Error: %d",
+                    static_cast<int>(getDeviceIdResult));
+            return;
+        }
+
+        mDeviceIds.clear();
+        for (int i = 0; i < deviceIdSize; i++) {
+            mDeviceIds.push_back(deviceIds[i]);
+        }
+    }
+
+    // This should not happen in most cases. Please file a bug on Oboe if you see this happening.
+    if (mDeviceIds.empty()) {
+        LOGW("updateDeviceIds() returns an empty array.");
+    }
 }
 
 } // namespace oboe

@@ -459,6 +459,29 @@ Java_com_mobileer_oboetester_OboeAudioStream_getDeviceId(
     return result;
 }
 
+JNIEXPORT jintArray JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getDeviceIds(
+        JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        std::vector<int32_t> deviceIds = oboeStream->getDeviceIds();
+        jsize length = deviceIds.size();
+        jintArray result = env->NewIntArray(length);
+
+        if (result == nullptr) {
+            return nullptr;
+        }
+
+        if (length > 0) {
+            env->SetIntArrayRegion(result, 0, length,
+                                   reinterpret_cast<jint*>(deviceIds.data()));
+        }
+
+        return result;
+    }
+    return nullptr;
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getSessionId(
         JNIEnv *env, jobject, jint streamIndex) {

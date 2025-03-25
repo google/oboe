@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
 
@@ -103,7 +104,13 @@ public:
     /**
      * @return the device ID of the stream.
      */
-    int32_t getDeviceId() const { return mDeviceId; }
+    int32_t getDeviceId() const {
+        return mDeviceIds.empty() ? kUnspecified :  mDeviceIds[0];
+    }
+
+    std::vector<int32_t> getDeviceIds() const {
+        return mDeviceIds;
+    }
 
     /**
      * For internal use only.
@@ -267,8 +274,6 @@ protected:
     int32_t                         mChannelCount = kUnspecified;
     /** Stream sample rate */
     int32_t                         mSampleRate = kUnspecified;
-    /** Stream audio device ID */
-    int32_t                         mDeviceId = kUnspecified;
     /** Stream buffer capacity specified as a number of audio frames */
     int32_t                         mBufferCapacityInFrames = kUnspecified;
     /** Stream buffer size specified as a number of audio frames */
@@ -325,6 +330,8 @@ protected:
     bool                            mFormatConversionAllowed = false;
     // Control whether and how Oboe can convert sample rates to achieve optimal results.
     SampleRateConversionQuality     mSampleRateConversionQuality = SampleRateConversionQuality::Medium;
+
+    std::vector<int32_t>            mDeviceIds;
 
     /** Validate stream parameters that might not be checked in lower layers */
     virtual Result isValidConfig() {
