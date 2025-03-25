@@ -472,16 +472,10 @@ Java_com_mobileer_oboetester_OboeAudioStream_getDeviceIds(
             return nullptr;
         }
 
-        jint* elements = env->GetIntArrayElements(result, nullptr);
-        if (elements == nullptr) {
-            return result;
+        if (length > 0) {
+            env->SetIntArrayRegion(result, 0, length,
+                                   reinterpret_cast<jint*>(deviceIds.data()));
         }
-
-        for (jsize i = 0; i < length; ++i) {
-            elements[i] = deviceIds[i];
-        }
-
-        env->ReleaseIntArrayElements(result, elements, 0);
 
         return result;
     }

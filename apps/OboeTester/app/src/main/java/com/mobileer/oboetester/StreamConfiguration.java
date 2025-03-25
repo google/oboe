@@ -16,9 +16,12 @@
 
 package com.mobileer.oboetester;
 
+import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -916,15 +919,12 @@ public class StreamConfiguration {
             return "[]";
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = 0; i < deviceIds.length; i++) {
-            sb.append(deviceIds[i]);
-            if (i < deviceIds.length - 1) {
-                sb.append(",");
-            }
+        List<String> deviceIdStrings = new ArrayList<>();
+        for (int deviceId : deviceIds) {
+            deviceIdStrings.add(String.valueOf(deviceId));
         }
-        sb.append("]");
-        return sb.toString();
+
+        String joinedIds = TextUtils.join(",", deviceIdStrings);
+        return "[" + joinedIds + "]";
     }
 }

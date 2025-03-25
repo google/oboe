@@ -995,13 +995,16 @@ void AudioStreamAAudio::updateDeviceIds() {
         // Please file a bug on Oboe if you discover that this returns AAUDIO_ERROR_OUT_OF_RANGE.
         // When AAUDIO_ERROR_OUT_OF_RANGE is returned, the actual size will be still returned as the
         // value of deviceIdSize but deviceIds will be empty.
-        int deviceIdSize = 16;
+
+        static constexpr int kDefaultDeviceIdSize = 16;
+        int deviceIdSize = kDefaultDeviceIdSize;
         std::vector<int32_t> deviceIds(deviceIdSize);
         aaudio_result_t getDeviceIdResult =
                 mLibLoader->stream_getDeviceIds(mAAudioStream, deviceIds.data(), &deviceIdSize);
         if (getDeviceIdResult != AAUDIO_OK) {
             LOGE("stream_getDeviceIds did not return AAUDIO_OK. Error: %d",
-                 static_cast<int>(getDeviceIdResult));
+                    static_cast<int>(getDeviceIdResult));
+            return;
         }
 
         mDeviceIds.clear();
