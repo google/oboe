@@ -138,6 +138,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2ddb935de0e24dd7ae8e2cfbecac9fdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a093057d625bc896864b959974c265f21" id="r_a093057d625bc896864b959974c265f21"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a093057d625bc896864b959974c265f21">getDeviceId</a> () const</td></tr>
 <tr class="separator:a093057d625bc896864b959974c265f21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09f1bb95625469d682b15c90fb7d0d6b" id="r_a09f1bb95625469d682b15c90fb7d0d6b"><td class="memItemLeft" align="right" valign="top"><a id="a09f1bb95625469d682b15c90fb7d0d6b" name="a09f1bb95625469d682b15c90fb7d0d6b"></a>
+std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getDeviceIds</b> () const</td></tr>
+<tr class="separator:a09f1bb95625469d682b15c90fb7d0d6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d2b0c8664fb85f0425bf081d02bda63" id="r_a1d2b0c8664fb85f0425bf081d02bda63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1d2b0c8664fb85f0425bf081d02bda63">getDataCallback</a> () const</td></tr>
 <tr class="separator:a1d2b0c8664fb85f0425bf081d02bda63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75eca223a8e8793f47d23f42b89acfab" id="r_a75eca223a8e8793f47d23f42b89acfab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75eca223a8e8793f47d23f42b89acfab">getErrorCallback</a> () const</td></tr>
@@ -207,8 +210,6 @@ std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_presentation_
 <tr class="separator:a5ff460bac9d14dfeac4eeddfcbb6e206"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a998885bb6c4f37e145f4626ad4177dea" id="r_a998885bb6c4f37e145f4626ad4177dea"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a998885bb6c4f37e145f4626ad4177dea">mSampleRate</a> = kUnspecified</td></tr>
 <tr class="separator:a998885bb6c4f37e145f4626ad4177dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23dafa12fb1a6242b088ebd5a52798c8" id="r_a23dafa12fb1a6242b088ebd5a52798c8"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a23dafa12fb1a6242b088ebd5a52798c8">mDeviceId</a> = kUnspecified</td></tr>
-<tr class="separator:a23dafa12fb1a6242b088ebd5a52798c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac81d4719b350f8138aad1af38f0873b6" id="r_ac81d4719b350f8138aad1af38f0873b6"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac81d4719b350f8138aad1af38f0873b6">mBufferCapacityInFrames</a> = kUnspecified</td></tr>
 <tr class="separator:ac81d4719b350f8138aad1af38f0873b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b65595d26d1eae1b8ce9925a5b98f6a" id="r_a3b65595d26d1eae1b8ce9925a5b98f6a"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b65595d26d1eae1b8ce9925a5b98f6a">mBufferSizeInFrames</a> = kUnspecified</td></tr>
@@ -258,6 +259,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mFormatConversionAllo
 <tr class="memitem:a2dd35a6f009f36172838260144218f6d" id="r_a2dd35a6f009f36172838260144218f6d"><td class="memItemLeft" align="right" valign="top"><a id="a2dd35a6f009f36172838260144218f6d" name="a2dd35a6f009f36172838260144218f6d"></a>
 SampleRateConversionQuality&#160;</td><td class="memItemRight" valign="bottom"><b>mSampleRateConversionQuality</b> = SampleRateConversionQuality::Medium</td></tr>
 <tr class="separator:a2dd35a6f009f36172838260144218f6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9fee9195456698c101834a78e0cab45" id="r_af9fee9195456698c101834a78e0cab45"><td class="memItemLeft" align="right" valign="top"><a id="af9fee9195456698c101834a78e0cab45" name="af9fee9195456698c101834a78e0cab45"></a>
+std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mDeviceIds</b></td></tr>
+<tr class="separator:af9fee9195456698c101834a78e0cab45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class containing parameters for audio streams and builders. </p>
@@ -1362,29 +1366,6 @@ SampleRateConversionQuality&#160;</td><td class="memItemRight" valign="bottom"><
 </table>
 </div><div class="memdoc">
 <p>The callback which will be fired when new data is ready to be read/written. </p>
-
-</div>
-</div>
-<a id="a23dafa12fb1a6242b088ebd5a52798c8" name="a23dafa12fb1a6242b088ebd5a52798c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a23dafa12fb1a6242b088ebd5a52798c8">&#9670;&#160;</a></span>mDeviceId</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int32_t oboe::AudioStreamBase::mDeviceId = kUnspecified</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Stream audio device ID </p>
 
 </div>
 </div>
