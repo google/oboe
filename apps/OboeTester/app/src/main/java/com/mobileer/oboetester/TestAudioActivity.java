@@ -728,7 +728,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
                 (requestedConfig.getDirection() != StreamConfiguration.DIRECTION_OUTPUT ||
                         requestedConfig.getChannelMask() != MP3_FILE_CONFIG.mChannelMask ||
                         requestedConfig.getSampleRate() != MP3_FILE_CONFIG.mSampleRate)) {
-            showErrorToast("MP3 format uses builtin 44.1kHz mono mp3 file for playback");
+            showErrorToast("MP3 format uses builtin 44.1kHz stereo mp3 file for playback, " +
+                           "the requested configuration must be 44.1kHz stereo when format is MP3");
             return;
         }
 

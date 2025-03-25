@@ -167,7 +167,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     }
 
     public void closeAudio() {
-        configureChannelBoxes(0 /*channelCount*/, false /*channelCount*/);
+        configureChannelBoxes(0 /*channelCount*/, false /*shouldDisable*/);
         mOutputSignalSpinner.setEnabled(true);
         mShouldSetStreamControlByAttributes.setEnabled(true);
         super.closeAudio();
