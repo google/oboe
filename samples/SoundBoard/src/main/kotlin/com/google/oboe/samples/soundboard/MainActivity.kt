@@ -24,6 +24,8 @@ import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.min
@@ -38,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         private const val DIMENSION_MAX_SIZE = 8
         private var mNumColumns : Int = 0;
         private var mNumRows : Int = 0;
-        private var mRectangles = ArrayList<Rect>()
+        private var mTiles = ArrayList<Rect>()
+        private var mBorders = ArrayList<Rect>()
 
         private var mEngineHandle: Long = 0
 
@@ -81,18 +84,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun calculateAndSetRectangles(context: Context) {
-        val width: Int
-        val height: Int
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val size = Point()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            width = windowManager.currentWindowMetrics.bounds.width()
-            height = windowManager.currentWindowMetrics.bounds.height()
+            val windowMetrics = windowManager.currentWindowMetrics
+            val windowInsets = windowMetrics.windowInsets
+            val insets = windowInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.navigationBars() or WindowInsets.Type.statusBars())
+            val width = windowMetrics.bounds.width() - insets.left - insets.right
+            val height = windowMetrics.bounds.height() - insets.top - insets.bottom
+            size.set(width, height)
         } else {
-            val size = Point()
-            windowManager.defaultDisplay.getRealSize(size)
-            height = size.y
-            width = size.x
+            display.getSize(size) // Use getSize to exclude navigation bar if visible
         }
+
+        val width = size.x
+        val height = size.y
 
         if (height > width) {
             mNumColumns = DIMENSION_MIN_SIZE
@@ -103,8 +112,9 @@ class MainActivity : AppCompatActivity() {
         }
         val tileLength = min(height / mNumRows, width / mNumColumns)
         val xStartLocation = (width - tileLength * mNumColumns) / 2
-        val yStartLocation = 0
-        mRectangles = ArrayList<Rect>()
+        val yStartLocation = (height - tileLength * mNumRows) / 2
+
+        mTiles = ArrayList<Rect>()
         for (i in 0 until mNumRows) {
             for (j in 0 until mNumColumns) {
                 val rectangle = Rect(
@@ -113,13 +123,23 @@ class MainActivity : AppCompatActivity() {
                     xStartLocation + j * tileLength + tileLength,
                     yStartLocation + i * tileLength + tileLength
                 )
-                mRectangles.add(rectangle)
+                mTiles.add(rectangle)
             }
         }
+
+        mBorders = ArrayList<Rect>()
+        // Top border
+        mBorders.add(Rect(0, 0, width, yStartLocation))
+        // Bottom border
+        mBorders.add(Rect(0, yStartLocation + tileLength * mNumRows, width, height))
+        // Left border
+        mBorders.add(Rect(0, 0, xStartLocation, height))
+        // Right border
+        mBorders.add(Rect(xStartLocation + tileLength * mNumColumns, 0, width, height))
     }
 
     private fun createMusicTiles(context: Context) {
-        setContentView(MusicTileView(this, mRectangles, NoteListener(mEngineHandle),
+        setContentView(MusicTileView(this, mTiles, mBorders, NoteListener(mEngineHandle),
                 ScreenChangeListener { setup() }))
     }
 
