@@ -40,6 +40,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     private TextView mVolumeTextView;
     private SeekBar mVolumeSeekBar;
     private CheckBox mShouldSetStreamControlByAttributes;
+    private boolean mShouldDisableForCompressedFormat = false;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -99,7 +100,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox13);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox14);
         mChannelBoxes[ic++] = (CheckBox) findViewById(R.id.channelBox15);
-        configureChannelBoxes(0);
+        configureChannelBoxes(0 /*channelCount*/, false /*shouldDisable*/);
 
         mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
@@ -122,12 +123,14 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public void openAudio() throws IOException {
         super.openAudio();
         mShouldSetStreamControlByAttributes.setEnabled(false);
+        mShouldDisableForCompressedFormat = StreamConfiguration.isCompressedFormat(
+                mAudioOutTester.getCurrentAudioStream().getFormat());
     }
 
-    private void configureChannelBoxes(int channelCount) {
+    private void configureChannelBoxes(int channelCount, boolean shouldDisable) {
         for (int i = 0; i < mChannelBoxes.length; i++) {
             mChannelBoxes[i].setChecked(i < channelCount);
-            mChannelBoxes[i].setEnabled(i < channelCount);
+            mChannelBoxes[i].setEnabled(!shouldDisable && (i < channelCount));
         }
     }
 
@@ -146,25 +149,25 @@ public final class TestOutputActivity extends TestOutputActivityBase {
 
 
     public void stopAudio() {
-        configureChannelBoxes(0);
-        mOutputSignalSpinner.setEnabled(true);
+        configureChannelBoxes(0 /*channelCount*/, mShouldDisableForCompressedFormat);
+        mOutputSignalSpinner.setEnabled(!mShouldDisableForCompressedFormat);
         super.stopAudio();
     }
 
     public void pauseAudio() {
-        configureChannelBoxes(0);
-        mOutputSignalSpinner.setEnabled(true);
+        configureChannelBoxes(0 /*channelCount*/, mShouldDisableForCompressedFormat);
+        mOutputSignalSpinner.setEnabled(!mShouldDisableForCompressedFormat);
         super.pauseAudio();
     }
 
     public void releaseAudio() {
-        configureChannelBoxes(0);
+        configureChannelBoxes(0 /*channelCount*/, false /*shouldDisable*/);
         mOutputSignalSpinner.setEnabled(true);
         super.releaseAudio();
     }
 
     public void closeAudio() {
-        configureChannelBoxes(0);
+        configureChannelBoxes(0 /*channelCount*/, false /*shouldDisable*/);
         mOutputSignalSpinner.setEnabled(true);
         mShouldSetStreamControlByAttributes.setEnabled(true);
         super.closeAudio();
@@ -173,7 +176,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     public void startAudio() throws IOException {
         super.startAudio();
         int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
-        configureChannelBoxes(channelCount);
+        configureChannelBoxes(channelCount, mShouldDisableForCompressedFormat);
         mOutputSignalSpinner.setEnabled(false);
     }
 

@@ -28,6 +28,7 @@
 
 #include "aaudio/AAudioExtensions.h"
 #include "AudioStreamGateway.h"
+#include "SinkMemoryDirect.h"
 
 #include "flowunits/ImpulseOscillator.h"
 #include "flowgraph/ManyToMultiConverter.h"
@@ -306,6 +307,9 @@ public:
         oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
     }
 
+    virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
+                                   [[maybe_unused]] int length) {}
+
 protected:
     std::shared_ptr<oboe::AudioStream> getInputStream();
     std::shared_ptr<oboe::AudioStream> getOutputStream();
@@ -451,6 +455,8 @@ public:
         }
     }
 
+    void setupMemoryBuffer(std::unique_ptr<uint8_t[]>& buffer, int length) final;
+
 protected:
     SignalType                       mSignalType = SignalType::Sine;
 
@@ -474,6 +480,7 @@ protected:
     std::shared_ptr<oboe::flowgraph::SinkI16>     mSinkI16;
     std::shared_ptr<oboe::flowgraph::SinkI24>     mSinkI24;
     std::shared_ptr<oboe::flowgraph::SinkI32>     mSinkI32;
+    std::shared_ptr<SinkMemoryDirect>             mSinkMemoryDirect;
 };
 
 /**

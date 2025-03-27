@@ -209,6 +209,10 @@ public abstract class AudioStreamBase {
 
     public abstract void close();
 
+    public int getFormat() {
+        return mActualStreamConfiguration.getFormat();
+    }
+
     public int getChannelCount() {
         return mActualStreamConfiguration.getChannelCount();
     }

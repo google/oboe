@@ -171,7 +171,6 @@ int ActivityContext::open(jint nativeApi,
                           jboolean isMMap,
                           jboolean isInput,
                           jint spatializationBehavior) {
-
     oboe::AudioApi audioApi = oboe::AudioApi::Unspecified;
     switch (nativeApi) {
         case NATIVE_MODE_UNSPECIFIED:
@@ -365,6 +364,7 @@ void ActivityTestOutput::close(int32_t streamIndex) {
     mSinkI16.reset();
     mSinkI24.reset();
     mSinkI32.reset();
+    mSinkMemoryDirect.reset();
 }
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
@@ -413,6 +413,9 @@ void ActivityTestOutput::configureAfterOpen() {
     mSinkI16 = std::make_shared<SinkI16>(mChannelCount);
     mSinkI24 = std::make_shared<SinkI24>(mChannelCount);
     mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
+    static constexpr int COMPRESSED_FORMAT_BYTES_PER_FRAME = 1;
+    mSinkMemoryDirect = std::make_shared<SinkMemoryDirect>(
+            mChannelCount, COMPRESSED_FORMAT_BYTES_PER_FRAME);
 
     mTriangleOscillator.setSampleRate(outputStream->getSampleRate());
     mTriangleOscillator.frequency.setValue(1.0/kSweepPeriod);
@@ -457,6 +460,7 @@ void ActivityTestOutput::configureAfterOpen() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
+    mSinkMemoryDirect->pullReset();
 
     configureStreamGateway();
 }
@@ -471,6 +475,8 @@ void ActivityTestOutput::configureStreamGateway() {
         audioStreamGateway.setAudioSink(mSinkI32);
     } else if (outputStream->getFormat() == oboe::AudioFormat::Float) {
         audioStreamGateway.setAudioSink(mSinkFloat);
+    } else if (outputStream->getFormat() == oboe::AudioFormat::MP3) {
+        audioStreamGateway.setAudioSink(mSinkMemoryDirect);
     }
 
     if (mUseCallback) {
@@ -516,10 +522,17 @@ oboe::Result ActivityTestOutput::startStreams() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
+    mSinkMemoryDirect->pullReset();
     if (mVolumeRamp != nullptr) {
         mVolumeRamp->setTarget(mAmplitude);
     }
     return getOutputStream()->start();
+}
+
+void ActivityTestOutput::setupMemoryBuffer(std::unique_ptr<uint8_t[]> &buffer, int length) {
+    if (mSinkMemoryDirect != nullptr) {
+        mSinkMemoryDirect->setupMemoryBuffer(buffer, length);
+    }
 }
 
 // ======================================================================= ActivityTestInput
