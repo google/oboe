@@ -50,7 +50,6 @@ android {
         }
     }
     namespace 'com.google.oboe.samples.soundboard'
-    ndkVersion '29.0.13113456 rc1'
 }
 
 dependencies {
