@@ -26,7 +26,7 @@
 #include <algorithm>
 #include <iostream>
 #include <unistd.h> // For CPU affinity
-#include "../synth/Synthesizer.h"
+#include "SynthWorkload.h"
 
 class AudioWorkloadTest : oboe::AudioStreamDataCallback {
 public:
@@ -36,25 +36,6 @@ public:
         int64_t finishTimeNs;
         int32_t xRunCount;
         int32_t cpuIndex;
-    };
-
-    class SynthWorkload {
-    public:
-        SynthWorkload() = default;
-        SynthWorkload(int onFrames, int offFrames);
-        void onCallback(double workload);
-        void renderStereo(float *buffer, int numFrames);
-
-    private:
-        marksynth::Synthesizer   mSynth;
-        static constexpr int     kDummyBufferSizeInFrames = 32;
-        std::unique_ptr<float[]> mDummyStereoBuffer = std::make_unique<float[]>(
-                kDummyBufferSizeInFrames * 2);
-        double                   mPreviousWorkload = 1.0;
-        bool                     mAreNotesOn = false;
-        int                      mCountdown = 0;
-        int                      mOnFrames = (int) (0.2 * 48000);
-        int                      mOffFrames = (int) (0.3 * 48000);
     };
 
     AudioWorkloadTest();
