@@ -33,6 +33,8 @@
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 #include "TestRapidCycle.h"
+#include "cpu/AudioWorkloadTest.h"
+#include "cpu/AudioWorkloadTestRunner.h"
 
 static NativeAudioContext engine;
 
@@ -1050,6 +1052,172 @@ Java_com_mobileer_oboetester_TestRapidCycleActivity_stopRapidCycleTest(JNIEnv *e
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestRapidCycleActivity_getCycleCount(JNIEnv *env, jobject thiz) {
     return sRapidCycle.getCycleCount();
+}
+
+static AudioWorkloadTest sAudioWorkload;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_open(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.open();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getFramesPerBurst(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getFramesPerBurst();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getSampleRate(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getSampleRate();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getBufferSizeInFrames(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getBufferSizeInFrames();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobject thiz,
+        jint numCallbacks, jint bufferSizeInBursts, jint numVoices, jint numAlternateVoices,
+        jint alternatingPeriodMs, jboolean adpfEnabled, jboolean sineEnabled) {
+    return sAudioWorkload.start(numCallbacks, bufferSizeInBursts, numVoices, numAlternateVoices,
+                                alternatingPeriodMs, adpfEnabled, sineEnabled);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCpuCount(JNIEnv *env, jobject thiz) {
+    return AudioWorkloadTest::getCpuCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_setCpuAffinityForCallback(JNIEnv *env, jobject thiz,
+                                                                                 jint mask) {
+    return AudioWorkloadTest::setCpuAffinityForCallback(mask);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getXRunCount(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getXRunCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackCount(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getCallbackCount();
+}
+
+JNIEXPORT jlong JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getLastDurationNs(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.getLastDurationNs();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_isRunning(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.isRunning();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_stop(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_close(JNIEnv *env, jobject thiz) {
+    return sAudioWorkload.close();
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNIEnv *env, jobject obj) {
+    std::vector<AudioWorkloadTest::CallbackStatus> cppCallbackStats = sAudioWorkload.getCallbackStatistics();
+    jclass callbackStatusClass = env->FindClass("com/mobileer/oboetester/AudioWorkloadTestActivity$CallbackStatus");
+    if (callbackStatusClass == nullptr) {
+        std::cerr << "Error: Could not find Java class CallbackStatus" << std::endl;
+        return nullptr;
+    }
+
+    jmethodID callbackStatusConstructor = env->GetMethodID(callbackStatusClass, "<init>", "(IJJII)V");
+    if (callbackStatusConstructor == nullptr) {
+        std::cerr << "Error: Could not find constructor for CallbackStatus" << std::endl;
+        return nullptr;
+    }
+
+    jclass arrayListClass = env->FindClass("java/util/ArrayList");
+    if (arrayListClass == nullptr) {
+        std::cerr << "Error: Could not find Java class ArrayList" << std::endl;
+        return nullptr;
+    }
+
+    jmethodID arrayListConstructor = env->GetMethodID(arrayListClass, "<init>", "()V");
+    if (arrayListConstructor == nullptr) {
+        std::cerr << "Error: Could not find constructor for ArrayList" << std::endl;
+        return nullptr;
+    }
+
+    jmethodID arrayListAdd = env->GetMethodID(arrayListClass, "add", "(Ljava/lang/Object;)Z");
+    if (arrayListAdd == nullptr) {
+        std::cerr << "Error: Could not find 'add' method for ArrayList" << std::endl;
+        return nullptr;
+    }
+
+    jobject javaList = env->NewObject(arrayListClass, arrayListConstructor);
+
+    for (const auto& status : cppCallbackStats) {
+        jobject javaStatus = env->NewObject(
+                callbackStatusClass,
+                callbackStatusConstructor,
+                (jint)status.numVoices,
+                (jlong)status.beginTimeNs,
+                (jlong)status.finishTimeNs,
+                (jint)status.xRunCount,
+                (jint)status.cpuIndex
+        );
+        env->CallBooleanMethod(javaList, arrayListAdd, javaStatus);
+        env->DeleteLocalRef(javaStatus); // Important: Release local references
+    }
+
+    return javaList;
+}
+
+static AudioWorkloadTestRunner sAudioWorkloadRunner;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, jobject thiz,
+                                                                   jint numCallbacks,
+                                                                   jint bufferSizeInBursts,
+                                                                   jint numVoices,
+                                                                   jint highNumVoices,
+                                                                   jint highLowPeriodMillis,
+                                                                   jboolean adpfEnabled,
+                                                                   jboolean sineEnabled) {
+    return sAudioWorkloadRunner.start(numCallbacks, bufferSizeInBursts, numVoices,
+                                      highNumVoices, highLowPeriodMillis, adpfEnabled,
+                                      sineEnabled);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_pollIsDone(JNIEnv *env, jobject thiz) {
+    return sAudioWorkloadRunner.pollIsDone();
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getStatus(JNIEnv *env, jobject thiz) {
+    std::string status = sAudioWorkloadRunner.getStatus();
+    return env->NewStringUTF(status.c_str());
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_stop(JNIEnv *env, jobject thiz) {
+    return sAudioWorkloadRunner.stop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getResult(JNIEnv *env, jobject thiz) {
+    return sAudioWorkloadRunner.getResult();
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getResultText(JNIEnv *env, jobject thiz) {
+    std::string resultText = sAudioWorkloadRunner.getResultText();
+    return env->NewStringUTF(resultText.c_str());
 }
 
 } // extern "C"
