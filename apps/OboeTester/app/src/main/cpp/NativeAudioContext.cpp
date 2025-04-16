@@ -460,7 +460,9 @@ void ActivityTestOutput::configureAfterOpen() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
-    mSinkMemoryDirect->pullReset();
+    if (mSinkMemoryDirect != nullptr) {
+        mSinkMemoryDirect->pullReset();
+    }
 
     configureStreamGateway();
 }
@@ -522,7 +524,9 @@ oboe::Result ActivityTestOutput::startStreams() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
-    mSinkMemoryDirect->pullReset();
+    if (mSinkMemoryDirect != nullptr) {
+        mSinkMemoryDirect->pullReset();
+    }
     if (mVolumeRamp != nullptr) {
         mVolumeRamp->setTarget(mAmplitude);
     }
