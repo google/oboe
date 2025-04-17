@@ -460,9 +460,7 @@ void ActivityTestOutput::configureAfterOpen() {
     mSinkI16->pullReset();
     mSinkI24->pullReset();
     mSinkI32->pullReset();
-    if (mSinkMemoryDirect != nullptr) {
-        mSinkMemoryDirect->pullReset();
-    }
+    mSinkMemoryDirect->pullReset();
 
     configureStreamGateway();
 }
