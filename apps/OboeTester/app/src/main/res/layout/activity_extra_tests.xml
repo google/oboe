@@ -91,5 +91,25 @@
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchRapidCycleTest"
             android:text="Rapid Cycle" />
+
+        <Button
+            android:id="@+id/buttonAudioWorkloadTest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchAudioWorkloadTest"
+            android:text="Audio Workload" />
+
+        <Button
+            android:id="@+id/buttonAudioWorkloadTestRunner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchAudioWorkloadTestRunner"
+            android:text="Workload Runner" />
     </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

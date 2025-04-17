@@ -42,4 +42,12 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     public void onLaunchRapidCycleTest(View view) {
         launchTestActivity(TestRapidCycleActivity.class);
     }
+
+    public void onLaunchAudioWorkloadTest(View view) {
+        launchTestActivity(AudioWorkloadTestActivity.class);
+    }
+
+    public void onLaunchAudioWorkloadTestRunner(View view) {
+        launchTestActivity(AudioWorkloadTestRunnerActivity.class);
+    }
 }
