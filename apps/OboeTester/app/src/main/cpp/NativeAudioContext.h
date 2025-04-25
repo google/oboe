@@ -520,7 +520,15 @@ public:
     virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() = 0;
 
     int32_t getResetCount() {
-        return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+        auto analyzer = getFullDuplexAnalyzer();
+        if (analyzer == nullptr) {
+            return -1;
+        }
+        auto processor = analyzer->getLoopbackProcessor();
+        if (processor == nullptr) {
+            return -1;
+        }
+        return processor->getResetCount();
     }
 
 protected:
