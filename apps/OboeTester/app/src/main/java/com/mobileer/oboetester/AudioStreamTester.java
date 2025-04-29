@@ -28,6 +28,8 @@ class AudioStreamTester {
     }
 
     public void open() throws IOException {
+        requestedConfiguration.setPackageName(BuildConfig.APPLICATION_ID);
+        requestedConfiguration.setAttributionTag("AudioTag"); // Match attribution in AndroidManifest.xml
         mCurrentAudioStream.open(requestedConfiguration, actualConfiguration,
                 -1);
     }

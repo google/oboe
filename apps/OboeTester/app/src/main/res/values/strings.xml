@@ -318,4 +318,6 @@
         <item>50000</item>
     </string-array>
 
+    <string name="audio_attribution_label">Audio</string>
+
 </resources>

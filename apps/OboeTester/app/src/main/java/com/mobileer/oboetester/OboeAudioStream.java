@@ -70,7 +70,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getRateConversionQuality(),
                 requestedConfiguration.isMMap(),
                 isInput(),
-                requestedConfiguration.getSpatializationBehavior()
+                requestedConfiguration.getSpatializationBehavior(),
+                requestedConfiguration.getPackageName(),
+                requestedConfiguration.getAttributionTag()
         );
         if (result < 0) {
             streamIndex = INVALID_STREAM_INDEX;
@@ -105,6 +107,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setHardwareSampleRate(getHardwareSampleRate());
         actualConfiguration.setHardwareFormat(getHardwareFormat());
         actualConfiguration.setSpatializationBehavior(getSpatializationBehavior());
+        actualConfiguration.setPackageName(getPackageName());
+        actualConfiguration.setAttributionTag(getAttributionTag());
     }
 
     private native int openNative(
@@ -126,7 +130,9 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int rateConversionQuality,
             boolean isMMap,
             boolean isInput,
-            int spatializationBehavior);
+            int spatializationBehavior,
+            String packageName,
+            String attributionTag);
 
     @Override
     public void close() {
@@ -258,6 +264,15 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native int getSessionId(int streamIndex);
 
+    public String getPackageName() {
+        return getPackageName(streamIndex);
+    }
+    private native String getPackageName(int streamIndex);
+
+    public String getAttributionTag() {
+        return getAttributionTag(streamIndex);
+    }
+    private native String getAttributionTag(int streamIndex);
 
     public boolean isMMap() {
         return isMMap(streamIndex);

@@ -61,7 +61,9 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint rateConversionQuality,
                                                        jboolean isMMap,
                                                        jboolean isInput,
-                                                       jint spatializationBehavior);
+                                                       jint spatializationBehavior,
+                                                       jstring packageName,
+                                                       jstring attributionTag);
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint);
 
@@ -160,28 +162,40 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jint rateConversionQuality,
         jboolean isMMap,
         jboolean isInput,
-        jint spatializationBehavior) {
+        jint spatializationBehavior,
+        jstring packageName,
+        jstring attributionTag) {
     LOGD("OboeAudioStream_openNative: sampleRate = %d", sampleRate);
 
-    return (jint) engine.getCurrentActivity()->open(nativeApi,
-                                                    sampleRate,
-                                                    channelCount,
-                                                    channelMask,
-                                                    format,
-                                                    sharingMode,
-                                                    performanceMode,
-                                                    inputPreset,
-                                                    usage,
-                                                    contentType,
-                                                    bufferCapacityInFrames,
-                                                    deviceId,
-                                                    sessionId,
-                                                    channelConversionAllowed,
-                                                    formatConversionAllowed,
-                                                    rateConversionQuality,
-                                                    isMMap,
-                                                    isInput,
-                                                    spatializationBehavior);
+    const char *packageNameStr = env->GetStringUTFChars(packageName, nullptr);
+    const char *attributionTagStr = env->GetStringUTFChars(attributionTag, nullptr);
+
+    int result = engine.getCurrentActivity()->open(nativeApi,
+                                      sampleRate,
+                                      channelCount,
+                                      channelMask,
+                                      format,
+                                      sharingMode,
+                                      performanceMode,
+                                      inputPreset,
+                                      usage,
+                                      contentType,
+                                      bufferCapacityInFrames,
+                                      deviceId,
+                                      sessionId,
+                                      channelConversionAllowed,
+                                      formatConversionAllowed,
+                                      rateConversionQuality,
+                                      isMMap,
+                                      isInput,
+                                      spatializationBehavior,
+                                      packageNameStr,
+                                      attributionTagStr);
+
+    env->ReleaseStringUTFChars(packageName, packageNameStr);
+    env->ReleaseStringUTFChars(attributionTag, attributionTagStr);
+
+    return (jint) result;
 }
 
 JNIEXPORT jint JNICALL
@@ -502,6 +516,26 @@ Java_com_mobileer_oboetester_OboeAudioStream_getSessionId(
         result = oboeStream->getSessionId();
     }
     return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getPackageName(
+        JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        return env->NewStringUTF(oboeStream->getPackageName().c_str());
+    }
+    return (jstring) "";
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getAttributionTag(
+        JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        return env->NewStringUTF(oboeStream->getAttributionTag().c_str());
+    }
+    return (jstring) "";
 }
 
 JNIEXPORT jlong JNICALL

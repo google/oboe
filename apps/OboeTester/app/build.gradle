@@ -4,6 +4,7 @@ android {
     compileSdkVersion 34
     defaultConfig {
         applicationId = "com.mobileer.oboetester"
+
         minSdkVersion 23
         targetSdkVersion 34
         versionCode 95
