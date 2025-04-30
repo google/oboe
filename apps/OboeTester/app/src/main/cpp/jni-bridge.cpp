@@ -803,7 +803,11 @@ Java_com_mobileer_oboetester_AnalyzerActivity_isAnalyzerDone(JNIEnv *env,
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AnalyzerActivity_getResetCount(JNIEnv *env,
                                                                           jobject instance) {
-    return ((ActivityFullDuplex *)engine.getCurrentActivity())->getResetCount();
+    auto activity = (ActivityFullDuplex *)engine.getCurrentActivity();
+    if (activity == nullptr) {
+        return -1;
+    }
+    return activity->getResetCount();
 }
 
 // ==========================================================================

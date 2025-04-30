@@ -84,6 +84,7 @@ public class AnalyzerActivity extends TestInputActivity {
         AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
         report.append(String.format(Locale.getDefault(), "in.burst.frames = %d\n", inStream.getFramesPerBurst()));
         report.append(String.format(Locale.getDefault(), "in.xruns = %d\n", inStream.getXRunCount()));
+        report.append(String.format(Locale.getDefault(), "in.frames.read = %d\n", inStream.getFramesRead()));
 
         // OUTPUT
         report.append(mAudioOutTester.actualConfiguration.dump());
@@ -94,6 +95,7 @@ public class AnalyzerActivity extends TestInputActivity {
         int bufferCapacity = outStream.getBufferCapacityInFrames();
         report.append(String.format(Locale.getDefault(), "out.buffer.capacity.frames = %d\n", bufferCapacity));
         report.append(String.format(Locale.getDefault(), "out.xruns = %d\n", outStream.getXRunCount()));
+        report.append(String.format(Locale.getDefault(), "out.frames.written = %d\n", outStream.getFramesWritten()));
 
         return report.toString();
     }
