@@ -35,6 +35,14 @@
  * This class sets up an audio stream, generates a synthetic audio load (sine wave and/or
  * a more complex synth workload), and collects statistics about the audio callback performance,
  * such as callback duration, XRun counts, and CPU usage.
+ *
+ * Example usage:
+ * open();
+ * start();
+ * while (isRunning()) { getXRunCount(); getCallbackCount(); getLastDurationNs(); sleep(); }
+ * getCallbackStatistics();
+ * close();
+ *
  */
 class AudioWorkloadTest : oboe::AudioStreamDataCallback {
 public:
@@ -150,6 +158,7 @@ public:
 
     /**
      * @brief Retrieves the collected statistics for each audio callback.
+     * Call this only after the stream is stopped as this is not atomic.
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics();

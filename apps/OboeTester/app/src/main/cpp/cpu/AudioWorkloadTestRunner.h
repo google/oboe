@@ -29,6 +29,12 @@
  *
  * This class encapsulates an AudioWorkloadTest instance, controls its lifecycle (start, stop),
  * monitors its progress, and determines a pass/fail result based on criteria like XRuns.
+ *
+ * Example usage:
+ * start();
+ * while(!stopIfDone()) { getStatus(); sleep(); }
+ * getResultText();
+ *
  */
 class AudioWorkloadTestRunner {
 public:
