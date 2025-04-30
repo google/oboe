@@ -16,8 +16,6 @@
 
 #include "AudioWorkloadTest.h"
 
-AudioWorkloadTest::AudioWorkloadTest() : mStream(nullptr) {}
-
 int32_t AudioWorkloadTest::open() {
     oboe::AudioStreamBuilder builder;
     builder.setDirection(oboe::Direction::Output);
@@ -27,7 +25,7 @@ int32_t AudioWorkloadTest::open() {
     builder.setChannelCount(2);
     builder.setDataCallback(this);
 
-    oboe::Result result = builder.openStream(&mStream);
+    oboe::Result result = builder.openStream(mStream);
     if (result != oboe::Result::OK) {
         std::cerr << "Error opening stream: " << oboe::convertToText(result) << std::endl;
         return static_cast<int32_t>(result);
@@ -37,6 +35,7 @@ int32_t AudioWorkloadTest::open() {
     mSampleRate = mStream->getSampleRate();
     mPreviousXRunCount = 0;
     mXRunCount = 0;
+    mPhaseIncrement = 2.0f * (float) M_PI * 440.0f / mSampleRate; // 440 Hz sine wave
 
     return 0;
 }
@@ -53,11 +52,11 @@ int32_t AudioWorkloadTest::getBufferSizeInFrames() const {
     return mBufferSizeInFrames;
 }
 
-int32_t AudioWorkloadTest::start(int32_t targetDurationMs, int32_t bufferSizeInBursts, int32_t numVoices,
+int32_t AudioWorkloadTest::start(int32_t targetDurationMs, int32_t numBursts, int32_t numVoices,
                                  int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                                  bool hearWorkload) {
     mTargetDurationMs = targetDurationMs;
-    mBufferSizeInBursts = bufferSizeInBursts;
+    mNumBursts = numBursts;
     mNumVoices = numVoices;
     mAlternateNumVoices = alternateNumVoices;
     mAlternatingPeriodMs = alternatingPeriodMs;
@@ -69,7 +68,7 @@ int32_t AudioWorkloadTest::start(int32_t targetDurationMs, int32_t bufferSizeInB
     mRunning = true;
     mHearWorkload = hearWorkload;
     mStream->setPerformanceHintEnabled(adpfEnabled);
-    mStream->setBufferSizeInFrames(mBufferSizeInBursts * mFramesPerBurst);
+    mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
     mBufferSizeInFrames = mStream->getBufferSizeInFrames();
     mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
     oboe::Result result = mStream->start();
@@ -130,8 +129,12 @@ int32_t AudioWorkloadTest::stop() {
 
 int32_t AudioWorkloadTest::close() {
     if (mStream) {
-        mStream->close();
+        oboe::Result result = mStream->close();
         mStream = nullptr;
+        if (result != oboe::Result::OK) {
+            std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
+            return static_cast<int32_t>(result);
+        }
     }
     return 0;
 }
@@ -166,7 +169,7 @@ oboe::DataCallbackResult AudioWorkloadTest::onAudioReady(oboe::AudioStream* audi
         for (int j = 0; j < channelCount; j++) {
             *floatData++ = value;
         }
-        mPhase = mPhase + kPhaseIncrement;
+        mPhase = mPhase + mPhaseIncrement;
         // Wrap the phase around in a circle.
         if (mPhase >= M_PI) mPhase = mPhase - 2.0f * M_PI;
     }

@@ -29,10 +29,10 @@ import androidx.appcompat.app.AppCompatActivity;
 /**
  * Audio Workload Test Runner Activity
  */
-public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
+public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
 
     private ExponentialSliderView mTargetDurationMsSlider;
-    private ExponentialSliderView mBufferSizeInBurstsSlider;
+    private ExponentialSliderView mNumBurstsSlider;
     private ExponentialSliderView mNumVoicesSlider;
     private ExponentialSliderView mAlternateNumVoicesSlider;
     private ExponentialSliderView mAlternatingPeriodMsSlider;
@@ -47,6 +47,8 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
 
     private Handler mHandler;
     private static final int STATUS_UPDATE_PERIOD_MS = 100;
+
+    private static final int OPERATION_SUCCESS = 0;
 
     private Runnable mUpdateStatusRunnable = new Runnable() {
         @Override
@@ -78,7 +80,7 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_audio_workload_test_runner);
 
         mTargetDurationMsSlider = findViewById(R.id.target_duration_ms);
-        mBufferSizeInBurstsSlider = findViewById(R.id.buffer_size_in_bursts);
+        mNumBurstsSlider = findViewById(R.id.num_bursts);
         mNumVoicesSlider = findViewById(R.id.num_voices);
         mAlternateNumVoicesSlider = findViewById(R.id.alternate_num_voices);
         mAlternatingPeriodMsSlider = findViewById(R.id.alternating_period_ms);
@@ -99,27 +101,35 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
     }
 
     public void startTest(View view) {
+        int targetDurationMs = mTargetDurationMsSlider.getValue();
+        int numBursts = mNumBurstsSlider.getValue();
+        int numVoices = mNumVoicesSlider.getValue();
+        int alternateNumVoices = mAlternateNumVoicesSlider.getValue();
+        int alternatingPeriodMs = mAlternatingPeriodMsSlider.getValue();
+        boolean adpfEnabled = mEnableAdpfBox.isChecked();
+        boolean hearWorkload = mHearWorkloadBox.isChecked();
+
+        int result = start(targetDurationMs, numBursts, numVoices, alternateNumVoices, alternatingPeriodMs, adpfEnabled, hearWorkload);
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("start failed! Error:" + result);
+            return;
+        }
+
         mStartButton.setEnabled(false);
         mStopButton.setEnabled(true);
         mResultTextView.setText("");
         enableParamsUI(false);
-
-        int targetDurationMs = mTargetDurationMsSlider.getValue();
-        int bufferSizeInBursts = mBufferSizeInBurstsSlider.getValue();
-        int numVoices = mNumVoicesSlider.getValue();
-        int highNumVoices = mAlternateNumVoicesSlider.getValue();
-        int highLowPeriodMs = mAlternatingPeriodMsSlider.getValue();
-        boolean adpfEnabled = mEnableAdpfBox.isChecked();
-        boolean hearWorkload = mHearWorkloadBox.isChecked();
-
-        start(targetDurationMs, bufferSizeInBursts, numVoices, highNumVoices, highLowPeriodMs, adpfEnabled, hearWorkload);
         mHandler.postDelayed(mUpdateStatusRunnable, STATUS_UPDATE_PERIOD_MS);
     }
 
     public void stopTest(View view) {
-        stop();
+        int result = stop();
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("stop failed! Error:" + result);
+            return;
+        }
         mHandler.removeCallbacks(mUpdateStatusRunnable);
-        int result = getResult();
+        result = getResult();
         String resultText = getResultText();
         if (result == 1) {
             mResultTextView.setText("Result: PASS\n" + resultText);
@@ -135,7 +145,7 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
 
     public void enableParamsUI(boolean enabled) {
         mTargetDurationMsSlider.setEnabled(enabled);
-        mBufferSizeInBurstsSlider.setEnabled(enabled);
+        mNumBurstsSlider.setEnabled(enabled);
         mNumVoicesSlider.setEnabled(enabled);
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
@@ -143,16 +153,12 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
         mHearWorkloadBox.setEnabled(enabled);
     }
 
-    public native int start(int targetDurationMs, int bufferSizeInBursts, int numVoices,
-                            int highNumVoices, int highLowPeriodMs, boolean adpfEnabled,
+    public native int start(int targetDurationMs, int numBursts, int numVoices,
+                            int alternateNumVoices, int alternatingPeriodMs, boolean adpfEnabled,
                             boolean hearWorkload);
     public native boolean stopIfDone();
     public native String getStatus();
     public native int stop();
     public native int getResult();
     public native String getResultText();
-
-    static {
-        System.loadLibrary("oboetester"); // Replace with your library name if different
-    }
 }

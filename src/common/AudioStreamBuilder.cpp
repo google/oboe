@@ -45,7 +45,7 @@ int32_t DefaultStreamValues::SampleRate = 48000; // Common rate for mobile audio
 int32_t DefaultStreamValues::FramesPerBurst = 192; // 4 msec at 48000 Hz
 int32_t DefaultStreamValues::ChannelCount = 2; // Stereo
 
-constexpr int kBufferSizeInBurstsForLowLatencyStreams = 2;
+constexpr int knumBurstsForLowLatencyStreams = 2;
 
 #ifndef OBOE_ENABLE_AAUDIO
 // Set OBOE_ENABLE_AAUDIO to 0 if you want to disable the AAudio API.
@@ -193,7 +193,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
             } else if (streamP->getPerformanceMode() == PerformanceMode::LowLatency
                     && streamP->getDirection() == Direction::Output)  { // Output check is redundant.
                 optimalBufferSize = streamP->getFramesPerBurst() *
-                                        kBufferSizeInBurstsForLowLatencyStreams;
+                                        knumBurstsForLowLatencyStreams;
             }
             if (optimalBufferSize >= 0) {
                 auto setBufferResult = streamP->setBufferSizeInFrames(optimalBufferSize);

@@ -17,10 +17,10 @@
 #ifndef AUDIO_WORKLOAD_TEST_RUNNER_H
 #define AUDIO_WORKLOAD_TEST_RUNNER_H
 
-#include <string>
 #include <chrono>
 #include <atomic>
 #include <memory>
+#include <string>
 #include "AudioWorkloadTest.h"
 
 /**
@@ -51,25 +51,29 @@ public:
     /**
      * @brief Starts the audio workload test with the specified parameters.
      * @param targetDurationMs The desired duration of the test in milliseconds.
-     * @param bufferSizeInBursts The desired buffer size in terms of multiples of framesPerBurst.
+     * @param numBursts The desired buffer size in terms of multiples of framesPerBurst.
      * @param numVoices The primary number of synthesizer voices to simulate.
-     * @param highNumVoices An alternative number of voices for alternating workload.
-     * @param highLowPeriodMillis The period in milliseconds to alternate between numVoices and highNumVoices.
+     * @param alternateNumVoices An alternative number of voices for alternating workload. Set this
+     * the same as numVoices if you don't want the workload to change.
+     * @param alternatingPeriodMs The period in milliseconds to alternate between numVoices and
+     * alternateNumVoices.
      * @param adpfEnabled Whether to enable Adaptive Performance (ADPF) hints.
-     * @param hearWorkload If true, the synthesized audio will be audible; otherwise, it's processed silently.
-     * @return 0 on success, -1 on failure (e.g., test already running, error opening/starting stream).
+     * @param hearWorkload If true, the synthesized audio will be audible; otherwise, it's
+     * processed silently and a sine wave will be audible instead.
+     * @return 0 on success, -1 on failure (e.g., test already running, error opening/starting
+     * stream).
      */
     int32_t start(
             int32_t targetDurationMs,
-            int32_t bufferSizeInBursts,
+            int32_t numBursts,
             int32_t numVoices,
-            int32_t highNumVoices,
-            int32_t highLowPeriodMillis,
+            int32_t alternateNumVoices,
+            int32_t alternatingPeriodMs,
             bool adpfEnabled,
             bool hearWorkload);
 
     /**
-     * @brief Stops the test if it has completed its run (i.e., AudioWorkloadTest is no longer running).
+     * @brief Stops the test if it has completed its run.
      * This is useful for polling and cleaning up once the underlying test finishes due to duration.
      * @return True if the test is done (either stopped here or previously), false otherwise.
      */
@@ -104,7 +108,7 @@ public:
 private:
     AudioWorkloadTest mAudioWorkloadTest;    // The actual audio workload test instance
     std::atomic<bool> mIsRunning{false};
-    std::atomic<bool> mIsDone{false};
+    std::atomic<bool> mIsDone{true};
     std::atomic<int32_t> mResult{0};
     std::string mResultText;
 };

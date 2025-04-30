@@ -18,13 +18,13 @@
 #define AUDIO_WORKLOAD_TEST_H
 
 #include <oboe/Oboe.h>
-#include <vector>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <thread>
 #include <cmath>
-#include <algorithm>
 #include <iostream>
+#include <thread>
+#include <vector>
 #include <unistd.h> // For CPU affinity
 #include "SynthWorkload.h"
 
@@ -62,10 +62,10 @@ public:
      * @brief Constructor for AudioWorkloadTest.
      * Initializes the audio stream pointer to nullptr.
      */
-    AudioWorkloadTest();
+    AudioWorkloadTest() = default;
 
     /**
-     * @brief Opens an audio stream with specified parameters.
+     * @brief Opens a float stereo audio stream.
      * Configures the stream for low latency output.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
@@ -92,17 +92,18 @@ public:
     /**
      * @brief Starts the audio stream and the workload test.
      * @param targetDurationMillis The desired duration of the test in milliseconds.
-     * @param bufferSizeInBursts The desired buffer size in terms of multiples of framesPerBurst.
+     * @param numBursts The desired buffer size in terms of multiples of framesPerBurst.
      * @param numVoices The primary number of synthesizer voices to simulate.
-     * @param alternateNumVoices An alternative number of voices for alternating workload.
+     * @param alternateNumVoices An alternative number of voices for alternating workload. Set this
+     * the same as numVoices if you don't want the workload to change.
      * @param alternatingPeriodMs The period in milliseconds to alternate between numVoices and
      * alternateNumVoices.
      * @param adpfEnabled Whether to enable Adaptive Performance (ADPF) hints.
      * @param hearWorkload If true, the synthesized audio will be audible; otherwise, it's processed
-     * silently.
+     * silently and a sine wave will be audible instead.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
-    int32_t start(int32_t targetDurationMillis, int32_t bufferSizeInBursts, int32_t numVoices,
+    int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                   bool hearWorkload);
 
@@ -151,8 +152,8 @@ public:
     int32_t stop();
 
     /**
-     * @brief Closes the audio stream and releases resources.
-     * @return 0 on success.
+     * @brief Closes the audio stream.
+     * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t close();
 
@@ -178,7 +179,7 @@ public:
 
 private:
     // Member variables
-    oboe::AudioStream* mStream;              // Pointer to the Oboe audio stream instance
+    std::shared_ptr<oboe::AudioStream> mStream;              // Pointer to the Oboe audio stream instance
 
     // Atomic variables for thread-safe access from audio callback and other threads
     std::atomic<int32_t> mFramesPerBurst{0};
@@ -187,7 +188,7 @@ private:
     std::atomic<int32_t> mPreviousXRunCount{0};
     std::atomic<int32_t> mXRunCount{0};
     std::atomic<int32_t> mTargetDurationMs{0};
-    std::atomic<int32_t> mBufferSizeInBursts{0};
+    std::atomic<int32_t> mNumBursts{0};
     std::atomic<int32_t> mBufferSizeInFrames{0};
     std::atomic<int32_t> mNumVoices{0};
     std::atomic<int32_t> mAlternateNumVoices{0};
@@ -201,8 +202,8 @@ private:
 
     // Sine wave generation parameters
     std::atomic<float> mPhase{0.0f};           // Current phase of the sine wave oscillator
-    // Phase increment for a 440 Hz sine wave at a 48000 Hz sample rate
-    static constexpr float kPhaseIncrement = 2.0f * (float) M_PI * 440.0f / 48000.0f;
+    // Phase increment for sine wave
+    std::atomic<float> mPhaseIncrement{0.0f};  // Current phase of the sine wave oscillator
 
     SynthWorkload mSynthWorkload;              // Instance of the synthetic workload generator
 };

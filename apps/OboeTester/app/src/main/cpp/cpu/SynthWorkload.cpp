@@ -59,10 +59,9 @@ void SynthWorkload::renderStereo(float *buffer, int numFrames) {
     mCountdown -= numFrames;
 }
 
-SynthWorkload::SynthWorkload() {
-    mSynth.setup(marksynth::kSynthmarkSampleRate, marksynth::kSynthmarkMaxVoices);
+SynthWorkload::SynthWorkload() : SynthWorkload((int) (0.2 * marksynth::kSynthmarkSampleRate),
+                                               (int) (0.3 * marksynth::kSynthmarkSampleRate)) {
 }
-
 
 SynthWorkload::SynthWorkload(int onFrames, int offFrames) {
     mSynth.setup(marksynth::kSynthmarkSampleRate, marksynth::kSynthmarkMaxVoices);

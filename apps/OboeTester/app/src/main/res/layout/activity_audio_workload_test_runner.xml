@@ -36,7 +36,7 @@
         app:defaultValue="5000" />
 
     <com.mobileer.oboetester.ExponentialSliderView
-        android:id="@+id/buffer_size_in_bursts"
+        android:id="@+id/num_bursts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:sliderLabel="Buffer Size In Bursts"

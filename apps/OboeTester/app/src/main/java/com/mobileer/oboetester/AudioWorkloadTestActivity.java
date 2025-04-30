@@ -34,10 +34,10 @@ import java.util.List;
 /**
  * Audio Workload Test
  */
-public class AudioWorkloadTestActivity extends AppCompatActivity {
+public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
 
     private ExponentialSliderView mTargetDurationMsSlider;
-    private ExponentialSliderView mBufferSizeInBurstsSlider;
+    private ExponentialSliderView mNumBurstsSlider;
     private ExponentialSliderView mNumVoicesSlider;
     private ExponentialSliderView mAlternateNumVoicesSlider;
     private ExponentialSliderView mAlternatingPeriodMsSlider;
@@ -60,6 +60,9 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
 
     private UpdateThread mUpdateThread;
 
+    private static final int OPERATION_SUCCESS = 0;
+    private static final float MILLIS_TO_NANOS = 1000000.0f;
+
     // Must match the NewObject call in jni-bridge.cpp
     public static class CallbackStatus {
         public int numVoices;
@@ -68,7 +71,8 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
         public int xRunCount;
         public int cpuIndex;
 
-        public CallbackStatus(int numVoices, long beginTimeNs, long finishTimeNs, int xRunCount, int cpuIndex) {
+        public CallbackStatus(int numVoices, long beginTimeNs, long finishTimeNs, int xRunCount,
+                              int cpuIndex) {
             this.numVoices = numVoices;
             this.beginTimeNs = beginTimeNs;
             this.finishTimeNs = finishTimeNs;
@@ -130,7 +134,7 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_audio_workload_test);
 
         mTargetDurationMsSlider = (ExponentialSliderView) findViewById(R.id.target_duration_ms);
-        mBufferSizeInBurstsSlider = (ExponentialSliderView) findViewById(R.id.buffer_size_in_bursts);
+        mNumBurstsSlider = (ExponentialSliderView) findViewById(R.id.num_bursts);
         mNumVoicesSlider = (ExponentialSliderView) findViewById(R.id.num_voices);
         mAlternateNumVoicesSlider = (ExponentialSliderView) findViewById(R.id.alternate_num_voices);
         mAlternatingPeriodMsSlider = (ExponentialSliderView) findViewById(R.id.alternating_period_ms);
@@ -183,7 +187,12 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     public void openAudio(View view) {
-        open();
+        int result = open();
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("open failed! Error:" + result);
+            return;
+        }
+
         updateStreamInfoView();
 
         mOpenButton.setEnabled(false);
@@ -193,10 +202,15 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     public void startTest(View view) {
-        start(mTargetDurationMsSlider.getValue(), mBufferSizeInBurstsSlider.getValue(),
+        int result = start(mTargetDurationMsSlider.getValue(), mNumBurstsSlider.getValue(),
                 mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue(),
                 mAlternatingPeriodMsSlider.getValue(), mEnableAdpfBox.isChecked(),
                 mHearWorkloadBox.isChecked());
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("start failed! Error:" + result);
+            return;
+        }
+
         updateStreamInfoView();
 
         mOpenButton.setEnabled(false);
@@ -215,14 +229,25 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     private void stopTest() {
-        stop();
+        int result = stop();
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("stop failed! Error:" + result);
+            return;
+        }
+
         StringBuilder callbackStatisticsText = new StringBuilder();
         List<CallbackStatus> callbackStatuses = getCallbackStatistics();
-        int index = 0;
-        for (CallbackStatus callbackStatus : callbackStatuses) {
-            index++;
-            callbackStatisticsText.append(String.format("%d, %d, %.3f, %d, %d\n",
-                    index, callbackStatus.numVoices, (callbackStatus.finishTimeNs - callbackStatus.beginTimeNs) / 1000000.0f, callbackStatus.xRunCount, callbackStatus.cpuIndex));
+        if (callbackStatuses == null) {
+            showErrorToast("empty callback status!");
+        } else {
+            int index = 0;
+            for (CallbackStatus callbackStatus : callbackStatuses) {
+                index++;
+                callbackStatisticsText.append(String.format("%d, %d, %.3f, %d, %d\n",
+                        index, callbackStatus.numVoices,
+                        (callbackStatus.finishTimeNs - callbackStatus.beginTimeNs) / MILLIS_TO_NANOS,
+                        callbackStatus.xRunCount, callbackStatus.cpuIndex));
+            }
         }
         mCallbackStatisticsTextView.setText(callbackStatisticsText);
 
@@ -239,7 +264,11 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     public void closeAudio(View view) {
-        close();
+        int result = close();
+        if (result != OPERATION_SUCCESS) {
+            showErrorToast("close failed! Error:" + result);
+            return;
+        }
 
         mOpenButton.setEnabled(true);
         mStartButton.setEnabled(false);
@@ -249,7 +278,7 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
 
     public void enableParamsUI(boolean enabled) {
         mTargetDurationMsSlider.setEnabled(enabled);
-        mBufferSizeInBurstsSlider.setEnabled(enabled);
+        mNumBurstsSlider.setEnabled(enabled);
         mNumVoicesSlider.setEnabled(enabled);
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
@@ -266,7 +295,7 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     private native int getFramesPerBurst();
     private native int getSampleRate();
     private native int getBufferSizeInFrames();
-    private native int start(int targetDurationMs, int bufferSizeInBursts, int numVoices,
+    private native int start(int targetDurationMs, int numBursts, int numVoices,
                              int numAlternateVoices, int alternatingPeriodMs, boolean adpfEnabled,
                              boolean hearWorkload);
     private native int getCpuCount();

@@ -33,8 +33,8 @@ private:
     double                   mPreviousWorkload = 1.0;
     bool                     mAreNotesOn = false;
     int                      mCountdown = 0;
-    int                      mOnFrames = (int) (0.2 * 48000);
-    int                      mOffFrames = (int) (0.3 * 48000);
+    int                      mOnFrames = 0;
+    int                      mOffFrames = 0;
 };
 
 #endif //SYNTH_WORKLOAD_H

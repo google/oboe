@@ -1078,9 +1078,9 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getBufferSizeInFrames(JNI
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobject thiz,
-        jint targetDurationMs, jint bufferSizeInBursts, jint numVoices, jint numAlternateVoices,
+        jint targetDurationMs, jint numBursts, jint numVoices, jint numAlternateVoices,
         jint alternatingPeriodMs, jboolean adpfEnabled, jboolean hearWorkload) {
-    return sAudioWorkload.start(targetDurationMs, bufferSizeInBursts, numVoices,
+    return sAudioWorkload.start(targetDurationMs, numBursts, numVoices,
                                 numAlternateVoices, alternatingPeriodMs, adpfEnabled,
                                 hearWorkload);
 }
@@ -1184,14 +1184,14 @@ static AudioWorkloadTestRunner sAudioWorkloadRunner;
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, jobject thiz,
                                                                    jint targetDurationMs,
-                                                                   jint bufferSizeInBursts,
+                                                                   jint numBursts,
                                                                    jint numVoices,
-                                                                   jint highNumVoices,
-                                                                   jint highLowPeriodMillis,
+                                                                   jint alternateNumVoices,
+                                                                   jint alternatingPeriodMillis,
                                                                    jboolean adpfEnabled,
                                                                    jboolean hearWorkload) {
-    return sAudioWorkloadRunner.start(targetDurationMs, bufferSizeInBursts, numVoices,
-                                      highNumVoices, highLowPeriodMillis, adpfEnabled,
+    return sAudioWorkloadRunner.start(targetDurationMs, numBursts, numVoices,
+                                      alternateNumVoices, alternatingPeriodMillis, adpfEnabled,
                                       hearWorkload);
 }
 

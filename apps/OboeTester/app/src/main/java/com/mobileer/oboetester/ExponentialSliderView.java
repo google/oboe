@@ -105,7 +105,7 @@ public class ExponentialSliderView extends LinearLayout {
         if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
-                    R.styleable.ExponentialSliderView, // We'll define this in attrs.xml
+                    R.styleable.ExponentialSliderView, // Defined in attrs_exponential_slider.xml
                     0, 0);
 
             try {

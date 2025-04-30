@@ -25,10 +25,10 @@ AudioWorkloadTestRunner::~AudioWorkloadTestRunner() {
 
 int32_t AudioWorkloadTestRunner::start(
         int32_t targetDurationMs,
-        int32_t bufferSizeInBursts,
+        int32_t numBursts,
         int32_t numVoices,
-        int32_t highNumVoices,
-        int32_t highLowPeriodMillis,
+        int32_t alternateNumVoices,
+        int32_t alternatingPeriodMs,
         bool adpfEnabled,
         bool hearWorkload) {
     if (mIsRunning) {
@@ -50,10 +50,10 @@ int32_t AudioWorkloadTestRunner::start(
 
     int32_t result = mAudioWorkloadTest.start(
             targetDurationMs,
-            bufferSizeInBursts,
+            numBursts,
             numVoices,
-            highNumVoices,
-            highLowPeriodMillis,
+            alternateNumVoices,
+            alternatingPeriodMs,
             adpfEnabled,
             hearWorkload);
 
