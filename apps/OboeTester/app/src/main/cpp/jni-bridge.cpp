@@ -1126,54 +1126,159 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_close(JNIEnv *env, jobjec
     return sAudioWorkload.close();
 }
 
+// --- Cached JNI IDs ---
+static jclass g_callbackStatusClass = nullptr;
+static jmethodID g_callbackStatusConstructor = nullptr;
+
+static jclass g_arrayListClass = nullptr;
+static jmethodID g_arrayListConstructor = nullptr;
+static jmethodID g_arrayListAddMethod = nullptr;
+
+// Store the JavaVM pointer to get JNIEnv in JNI_OnLoad/OnUnload
+static JavaVM* g_javaVM = nullptr;
+
+// Cache jni classes and methods for getCallbackStatistics
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+    g_javaVM = vm; // Cache the JavaVM pointer
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        std::cerr << "JNI_OnLoad: Failed to get JNIEnv." << std::endl;
+        return JNI_ERR; // Indicates an error
+    }
+
+    const char* callbackStatusClassName =
+            "com/mobileer/oboetester/AudioWorkloadTestActivity$CallbackStatus";
+    jclass localCallbackStatusClass = env->FindClass(callbackStatusClassName);
+    if (localCallbackStatusClass == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not find class " << callbackStatusClassName << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+    // Create a global reference for the class
+    g_callbackStatusClass = (jclass)env->NewGlobalRef(localCallbackStatusClass);
+    env->DeleteLocalRef(localCallbackStatusClass); // Clean up the local reference
+    if (g_callbackStatusClass == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not create global ref for " << callbackStatusClassName
+                << std::endl;
+        return JNI_ERR;
+    }
+
+    g_callbackStatusConstructor = env->GetMethodID(g_callbackStatusClass, "<init>", "(IJJII)V");
+    if (g_callbackStatusConstructor == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not find constructor for " << callbackStatusClassName
+                << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+
+    const char* arrayListClassName = "java/util/ArrayList";
+    jclass localArrayListClass = env->FindClass(arrayListClassName);
+    if (localArrayListClass == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not find class " << arrayListClassName << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+    g_arrayListClass = (jclass)env->NewGlobalRef(localArrayListClass);
+    env->DeleteLocalRef(localArrayListClass); // Clean up local reference
+    if (g_arrayListClass == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not create global ref for " << arrayListClassName
+                << std::endl;
+        return JNI_ERR;
+    }
+
+    g_arrayListConstructor = env->GetMethodID(g_arrayListClass, "<init>", "()V");
+    if (g_arrayListConstructor == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not find constructor for " << arrayListClassName
+                << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+
+    g_arrayListAddMethod = env->GetMethodID(g_arrayListClass, "add", "(Ljava/lang/Object;)Z");
+    if (g_arrayListAddMethod == nullptr) {
+        std::cerr << "JNI_OnLoad: Could not find 'add' method for " << arrayListClassName
+                << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+
+    std::cout << "JNI_OnLoad: Successfully cached JNI class and method IDs." << std::endl;
+    return JNI_VERSION_1_6;
+}
+
+// Unload the jni classes and methods for getCallbackStatistics
+JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        std::cerr << "JNI_OnUnload: Failed to get JNIEnv." << std::endl;
+        return;
+    }
+
+    // Delete global references
+    if (g_callbackStatusClass != nullptr) {
+        env->DeleteGlobalRef(g_callbackStatusClass);
+        g_callbackStatusClass = nullptr;
+    }
+    if (g_arrayListClass != nullptr) {
+        env->DeleteGlobalRef(g_arrayListClass);
+        g_arrayListClass = nullptr;
+    }
+
+    g_callbackStatusConstructor = nullptr;
+    g_arrayListConstructor = nullptr;
+    g_arrayListAddMethod = nullptr;
+
+    g_javaVM = nullptr;
+    std::cout << "JNI_OnUnload: Released global JNI references." << std::endl;
+}
+
 JNIEXPORT jobject JNICALL
-Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNIEnv *env, jobject obj) {
-    std::vector<AudioWorkloadTest::CallbackStatus> cppCallbackStats = sAudioWorkload.getCallbackStatistics();
-    jclass callbackStatusClass = env->FindClass("com/mobileer/oboetester/AudioWorkloadTestActivity$CallbackStatus");
-    if (callbackStatusClass == nullptr) {
-        std::cerr << "Error: Could not find Java class CallbackStatus" << std::endl;
+Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNIEnv *env,
+                                                                             jobject obj) {
+    if (g_callbackStatusClass == nullptr || g_callbackStatusConstructor == nullptr ||
+        g_arrayListClass == nullptr || g_arrayListConstructor == nullptr ||
+        g_arrayListAddMethod == nullptr) {
+        std::cerr << "Error: JNI IDs not cached. Initialization in JNI_OnLoad might have failed."
+                << std::endl;
         return nullptr;
     }
 
-    jmethodID callbackStatusConstructor = env->GetMethodID(callbackStatusClass, "<init>", "(IJJII)V");
-    if (callbackStatusConstructor == nullptr) {
-        std::cerr << "Error: Could not find constructor for CallbackStatus" << std::endl;
+    std::vector<AudioWorkloadTest::CallbackStatus> cppCallbackStats =
+            sAudioWorkload.getCallbackStatistics();
+
+    jobject javaList = env->NewObject(g_arrayListClass, g_arrayListConstructor);
+    if (javaList == nullptr) {
+        std::cerr << "Error: Could not create new ArrayList object." << std::endl;
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
         return nullptr;
     }
-
-    jclass arrayListClass = env->FindClass("java/util/ArrayList");
-    if (arrayListClass == nullptr) {
-        std::cerr << "Error: Could not find Java class ArrayList" << std::endl;
-        return nullptr;
-    }
-
-    jmethodID arrayListConstructor = env->GetMethodID(arrayListClass, "<init>", "()V");
-    if (arrayListConstructor == nullptr) {
-        std::cerr << "Error: Could not find constructor for ArrayList" << std::endl;
-        return nullptr;
-    }
-
-    jmethodID arrayListAdd = env->GetMethodID(arrayListClass, "add", "(Ljava/lang/Object;)Z");
-    if (arrayListAdd == nullptr) {
-        std::cerr << "Error: Could not find 'add' method for ArrayList" << std::endl;
-        return nullptr;
-    }
-
-    jobject javaList = env->NewObject(arrayListClass, arrayListConstructor);
 
     for (const auto& status : cppCallbackStats) {
-        // Must match CallbackStatus constructor in AudioWorkloadTestActivity.java
         jobject javaStatus = env->NewObject(
-                callbackStatusClass,
-                callbackStatusConstructor,
+                g_callbackStatusClass,
+                g_callbackStatusConstructor,
                 (jint)status.numVoices,
                 (jlong)status.beginTimeNs,
                 (jlong)status.finishTimeNs,
                 (jint)status.xRunCount,
                 (jint)status.cpuIndex
         );
-        env->CallBooleanMethod(javaList, arrayListAdd, javaStatus);
-        env->DeleteLocalRef(javaStatus); // Important: Release local references
+        if (javaStatus == nullptr) {
+            std::cerr << "Error: Could not create new CallbackStatus object." << std::endl;
+            if (env->ExceptionCheck()) env->ExceptionDescribe();
+            env->DeleteLocalRef(javaList);
+            return nullptr;
+        }
+
+        env->CallBooleanMethod(javaList, g_arrayListAddMethod, javaStatus);
+        if (env->ExceptionCheck()) {
+            std::cerr << "Error: Exception occurred while adding to ArrayList." << std::endl;
+            env->ExceptionDescribe();
+            env->DeleteLocalRef(javaStatus);
+            env->DeleteLocalRef(javaList);
+            return nullptr;
+        }
+        env->DeleteLocalRef(javaStatus);
     }
 
     return javaList;
