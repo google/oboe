@@ -273,6 +273,10 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         }
 
         log("========================== #" + getTestCount());
+        if (getTestCount() == 1) {
+            deleteOldWaveFiles();
+        }
+
         int result = 0;
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
@@ -385,13 +389,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
                 appendFailedSummary("  " + getConfigText(actualInConfig) + "\n");
                 appendFailedSummary("  " + getConfigText(actualOutConfig) + "\n");
                 appendFailedSummary("    " + resultText + "\n");
-                saveRecordingAsWave();
                 mAutomatedTestRunner.incrementFailCount();
                 result = TEST_RESULT_FAILED;
             } else {
                 mAutomatedTestRunner.incrementPassCount();
                 result = TEST_RESULT_PASSED;
             }
+            saveRecordingAsWave(); // Save recording for both pass and fail results.
         }
         mAutomatedTestRunner.flushLog();
 
@@ -434,14 +438,37 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         requestedOutConfig.setMMap(false);
     }
 
+    File getRecordingDir() {
+        return getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+    }
+
     private void saveRecordingAsWave() {
-        File recordingDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        File waveFile = new File(recordingDir, String.format("glitch_%03d.wav", getTestCount()));
+        File waveFile = new File(getRecordingDir(), String.format("glitch_%03d.wav", getTestCount()));
         int saveResult = saveWaveFile(waveFile.getAbsolutePath());
         if (saveResult > 0) {
             appendFailedSummary("Saved in " + waveFile.getAbsolutePath() + "\n");
         } else {
             appendFailedSummary("saveWaveFile() returned " + saveResult + "\n");
+        }
+    }
+
+    /**
+     * Delete all the previously saved WAV files so the user does not
+     * debug obsolete data.
+     */
+    private void deleteOldWaveFiles() {
+        File recordingDir = getRecordingDir();
+        if (recordingDir.exists()) {
+            File[] files = recordingDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        if (!file.delete()) {
+                            appendFailedSummary("Failed to delete file: " + file.getAbsolutePath());
+                        }
+                    }
+                }
+            }
         }
     }
 
