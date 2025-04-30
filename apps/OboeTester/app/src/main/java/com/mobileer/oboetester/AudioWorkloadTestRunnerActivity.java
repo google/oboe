@@ -31,14 +31,14 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
 
-    private ExponentialSliderView mNumCallbacksSlider;
+    private ExponentialSliderView mTargetDurationMsSlider;
     private ExponentialSliderView mBufferSizeInBurstsSlider;
     private ExponentialSliderView mNumVoicesSlider;
     private ExponentialSliderView mAlternateNumVoicesSlider;
     private ExponentialSliderView mAlternatingPeriodMsSlider;
 
     private CheckBox mEnableAdpfBox;
-    private CheckBox mUseSineWaveBox;
+    private CheckBox mHearWorkloadBox;
 
     private Button mStartButton;
     private Button mStopButton;
@@ -51,7 +51,7 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
     private Runnable mUpdateStatusRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!pollIsDone()) {
+            if (!stopIfDone()) {
                 mStatusTextView.setText(getStatus());
                 mHandler.postDelayed(this, STATUS_UPDATE_PERIOD_MS);
             } else {
@@ -77,14 +77,14 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_workload_test_runner);
 
-        mNumCallbacksSlider = findViewById(R.id.num_callbacks);
+        mTargetDurationMsSlider = findViewById(R.id.target_duration_ms);
         mBufferSizeInBurstsSlider = findViewById(R.id.buffer_size_in_bursts);
         mNumVoicesSlider = findViewById(R.id.num_voices);
         mAlternateNumVoicesSlider = findViewById(R.id.alternate_num_voices);
         mAlternatingPeriodMsSlider = findViewById(R.id.alternating_period_ms);
 
         mEnableAdpfBox = findViewById(R.id.enable_adpf);
-        mUseSineWaveBox = findViewById(R.id.use_sine_wave);
+        mHearWorkloadBox = findViewById(R.id.hear_workload);
 
         mStartButton = findViewById(R.id.button_start_test);
         mStopButton = findViewById(R.id.button_stop_test);
@@ -104,15 +104,15 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
         mResultTextView.setText("");
         enableParamsUI(false);
 
-        int numCallbacks = mNumCallbacksSlider.getValue();
+        int targetDurationMs = mTargetDurationMsSlider.getValue();
         int bufferSizeInBursts = mBufferSizeInBurstsSlider.getValue();
         int numVoices = mNumVoicesSlider.getValue();
         int highNumVoices = mAlternateNumVoicesSlider.getValue();
-        int highLowPeriodMillis = mAlternatingPeriodMsSlider.getValue();
+        int highLowPeriodMs = mAlternatingPeriodMsSlider.getValue();
         boolean adpfEnabled = mEnableAdpfBox.isChecked();
-        boolean sineEnabled = mUseSineWaveBox.isChecked();
+        boolean hearWorkload = mHearWorkloadBox.isChecked();
 
-        start(numCallbacks, bufferSizeInBursts, numVoices, highNumVoices, highLowPeriodMillis, adpfEnabled, sineEnabled);
+        start(targetDurationMs, bufferSizeInBursts, numVoices, highNumVoices, highLowPeriodMs, adpfEnabled, hearWorkload);
         mHandler.postDelayed(mUpdateStatusRunnable, STATUS_UPDATE_PERIOD_MS);
     }
 
@@ -134,19 +134,19 @@ public class AudioWorkloadTestRunnerActivity extends AppCompatActivity {
     }
 
     public void enableParamsUI(boolean enabled) {
-        mNumCallbacksSlider.setEnabled(enabled);
+        mTargetDurationMsSlider.setEnabled(enabled);
         mBufferSizeInBurstsSlider.setEnabled(enabled);
         mNumVoicesSlider.setEnabled(enabled);
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
         mEnableAdpfBox.setEnabled(enabled);
-        mUseSineWaveBox.setEnabled(enabled);
+        mHearWorkloadBox.setEnabled(enabled);
     }
 
-    public native int start(int numCallbacks, int bufferSizeInBursts, int numVoices,
-                            int highNumVoices, int highLowPeriodMillis, boolean adpfEnabled,
-                            boolean sineEnabled);
-    public native boolean pollIsDone();
+    public native int start(int targetDurationMs, int bufferSizeInBursts, int numVoices,
+                            int highNumVoices, int highLowPeriodMs, boolean adpfEnabled,
+                            boolean hearWorkload);
+    public native boolean stopIfDone();
     public native String getStatus();
     public native int stop();
     public native int getResult();

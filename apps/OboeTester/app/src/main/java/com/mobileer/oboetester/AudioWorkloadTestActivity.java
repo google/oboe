@@ -36,14 +36,14 @@ import java.util.List;
  */
 public class AudioWorkloadTestActivity extends AppCompatActivity {
 
-    private ExponentialSliderView mNumCallbacksSlider;
+    private ExponentialSliderView mTargetDurationMsSlider;
     private ExponentialSliderView mBufferSizeInBurstsSlider;
     private ExponentialSliderView mNumVoicesSlider;
     private ExponentialSliderView mAlternateNumVoicesSlider;
     private ExponentialSliderView mAlternatingPeriodMsSlider;
 
     private CheckBox mEnableAdpfBox;
-    private CheckBox mUseSineWaveBox;
+    private CheckBox mHearWorkloadBox;
 
     private int mCpuCount;
     private LinearLayout mAffinityLayout;
@@ -60,6 +60,7 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
 
     private UpdateThread mUpdateThread;
 
+    // Must match the NewObject call in jni-bridge.cpp
     public static class CallbackStatus {
         public int numVoices;
         public long beginTimeNs;
@@ -85,11 +86,6 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
                     ", xRunCount=" + xRunCount +
                     ", cpuIndex=" + cpuIndex +
                     '}';
-        }
-
-        public String toShortString() {
-            return numVoices + ", " + beginTimeNs + ", " + finishTimeNs + ", " +
-                    xRunCount + ", " + cpuIndex;
         }
     }
 
@@ -133,14 +129,14 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_workload_test);
 
-        mNumCallbacksSlider = (ExponentialSliderView) findViewById(R.id.num_callbacks);
+        mTargetDurationMsSlider = (ExponentialSliderView) findViewById(R.id.target_duration_ms);
         mBufferSizeInBurstsSlider = (ExponentialSliderView) findViewById(R.id.buffer_size_in_bursts);
         mNumVoicesSlider = (ExponentialSliderView) findViewById(R.id.num_voices);
         mAlternateNumVoicesSlider = (ExponentialSliderView) findViewById(R.id.alternate_num_voices);
         mAlternatingPeriodMsSlider = (ExponentialSliderView) findViewById(R.id.alternating_period_ms);
 
         mEnableAdpfBox = (CheckBox) findViewById(R.id.enable_adpf);
-        mUseSineWaveBox = (CheckBox) findViewById(R.id.use_sine_wave);
+        mHearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
 
         mOpenButton = (Button) findViewById(R.id.button_open);
         mStartButton = (Button) findViewById(R.id.button_start);
@@ -188,8 +184,7 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
 
     public void openAudio(View view) {
         open();
-        mStreamInfoView.setText(String.format("burst: %d, sr: %d, buffer: %d", getFramesPerBurst(),
-                getSampleRate(), getBufferSizeInFrames()));
+        updateStreamInfoView();
 
         mOpenButton.setEnabled(false);
         mStartButton.setEnabled(true);
@@ -198,10 +193,11 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     public void startTest(View view) {
-        start(mNumCallbacksSlider.getValue(), mBufferSizeInBurstsSlider.getValue(),
+        start(mTargetDurationMsSlider.getValue(), mBufferSizeInBurstsSlider.getValue(),
                 mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue(),
                 mAlternatingPeriodMsSlider.getValue(), mEnableAdpfBox.isChecked(),
-                mUseSineWaveBox.isChecked());
+                mHearWorkloadBox.isChecked());
+        updateStreamInfoView();
 
         mOpenButton.setEnabled(false);
         mStartButton.setEnabled(false);
@@ -252,22 +248,27 @@ public class AudioWorkloadTestActivity extends AppCompatActivity {
     }
 
     public void enableParamsUI(boolean enabled) {
-        mNumCallbacksSlider.setEnabled(enabled);
+        mTargetDurationMsSlider.setEnabled(enabled);
         mBufferSizeInBurstsSlider.setEnabled(enabled);
         mNumVoicesSlider.setEnabled(enabled);
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
         mEnableAdpfBox.setEnabled(enabled);
-        mUseSineWaveBox.setEnabled(enabled);
+        mHearWorkloadBox.setEnabled(enabled);
+    }
+
+    public void updateStreamInfoView() {
+        mStreamInfoView.setText(String.format("burst: %d, sr: %d, buffer: %d", getFramesPerBurst(),
+                getSampleRate(), getBufferSizeInFrames()));
     }
 
     private native int open();
     private native int getFramesPerBurst();
     private native int getSampleRate();
     private native int getBufferSizeInFrames();
-    private native int start(int numCallbacks, int bufferSizeInBursts, int numVoices,
+    private native int start(int targetDurationMs, int bufferSizeInBursts, int numVoices,
                              int numAlternateVoices, int alternatingPeriodMs, boolean adpfEnabled,
-                             boolean sineEnabled);
+                             boolean hearWorkload);
     private native int getCpuCount();
     private native int setCpuAffinityForCallback(int mask);
     private native int getXRunCount();

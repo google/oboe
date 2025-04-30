@@ -29,8 +29,7 @@ public:
 private:
     marksynth::Synthesizer   mSynth;
     static constexpr int     kDummyBufferSizeInFrames = 32;
-    std::unique_ptr<float[]> mDummyStereoBuffer = std::make_unique<float[]>(
-            kDummyBufferSizeInFrames * 2);
+    float                    mDummyStereoBuffer[kDummyBufferSizeInFrames * 2];
     double                   mPreviousWorkload = 1.0;
     bool                     mAreNotesOn = false;
     int                      mCountdown = 0;

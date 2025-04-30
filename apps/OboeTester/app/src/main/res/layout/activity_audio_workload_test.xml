@@ -28,13 +28,13 @@
     tools:context="com.mobileer.oboetester.AudioWorkloadTestActivity">
 
     <com.mobileer.oboetester.ExponentialSliderView
-        android:id="@+id/num_callbacks"
+        android:id="@+id/target_duration_ms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:sliderLabel="Num Callbacks"
+        app:sliderLabel="Target Duration(ms)"
         app:minValue="1"
         app:maxValue="10000"
-        app:defaultValue="1000" />
+        app:defaultValue="5000" />
 
     <com.mobileer.oboetester.ExponentialSliderView
         android:id="@+id/buffer_size_in_bursts"
@@ -43,7 +43,7 @@
         app:sliderLabel="Buffer Size In Bursts"
         app:minValue="1"
         app:maxValue="1000"
-        app:defaultValue="4" />
+        app:defaultValue="2" />
 
     <com.mobileer.oboetester.ExponentialSliderView
         android:id="@+id/num_voices"
@@ -67,7 +67,7 @@
         android:id="@+id/alternating_period_ms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:sliderLabel="Alternating Period Ms"
+        app:sliderLabel="Alternating Period(ms)"
         app:minValue="1"
         app:maxValue="5000"
         app:defaultValue="500" />
@@ -92,11 +92,11 @@
             android:text="ADPF" />
 
         <CheckBox
-            android:id="@+id/use_sine_wave"
+            android:id="@+id/hear_workload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
-            android:text="Sine Wave" />
+            android:text="Hear Workload" />
     </LinearLayout>
 
     <HorizontalScrollView

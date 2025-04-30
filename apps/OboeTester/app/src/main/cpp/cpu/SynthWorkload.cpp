@@ -50,7 +50,7 @@ void SynthWorkload::renderStereo(float *buffer, int numFrames) {
         while (framesLeft > 0) {
             int framesThisTime = std::min(kDummyBufferSizeInFrames, framesLeft);
             // Do the work then throw it away.
-            mSynth.renderStereo(mDummyStereoBuffer.get(), framesThisTime);
+            mSynth.renderStereo(mDummyStereoBuffer, framesThisTime);
             framesLeft -= framesThisTime;
         }
     } else {

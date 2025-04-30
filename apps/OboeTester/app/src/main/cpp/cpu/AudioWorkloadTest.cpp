@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "AudioWorkloadTest.h"
 
 AudioWorkloadTest::AudioWorkloadTest() : mStream(nullptr) {}
@@ -19,8 +35,6 @@ int32_t AudioWorkloadTest::open() {
 
     mFramesPerBurst = mStream->getFramesPerBurst();
     mSampleRate = mStream->getSampleRate();
-    mStream->setBufferSizeInFrames(mBufferSizeInBursts * mFramesPerBurst);
-    mBufferSizeInFrames = mStream->getBufferSizeInFrames();
     mPreviousXRunCount = 0;
     mXRunCount = 0;
 
@@ -39,8 +53,10 @@ int32_t AudioWorkloadTest::getBufferSizeInFrames() const {
     return mBufferSizeInFrames;
 }
 
-int32_t AudioWorkloadTest::start(int32_t numCallbacks, int32_t bufferSizeInBursts, int32_t numVoices, int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled, bool sineEnabled) {
-    mNumCallbacks = numCallbacks;
+int32_t AudioWorkloadTest::start(int32_t targetDurationMs, int32_t bufferSizeInBursts, int32_t numVoices,
+                                 int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
+                                 bool hearWorkload) {
+    mTargetDurationMs = targetDurationMs;
     mBufferSizeInBursts = bufferSizeInBursts;
     mNumVoices = numVoices;
     mAlternateNumVoices = alternateNumVoices;
@@ -51,8 +67,10 @@ int32_t AudioWorkloadTest::start(int32_t numCallbacks, int32_t bufferSizeInBurst
     mPreviousXRunCount = mXRunCount.load();
     mXRunCount = 0;
     mRunning = true;
-    mSineEnabled = sineEnabled;
+    mHearWorkload = hearWorkload;
     mStream->setPerformanceHintEnabled(adpfEnabled);
+    mStream->setBufferSizeInFrames(mBufferSizeInBursts * mFramesPerBurst);
+    mBufferSizeInFrames = mStream->getBufferSizeInFrames();
     mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
     oboe::Result result = mStream->start();
     if (result != oboe::Result::OK) {
@@ -83,11 +101,11 @@ int32_t AudioWorkloadTest::getCpuCount() {
     return sysconf(_SC_NPROCESSORS_CONF);
 }
 
-int32_t AudioWorkloadTest::getXRunCount() {
+int32_t AudioWorkloadTest::getXRunCount() const {
     return mXRunCount - mPreviousXRunCount;
 }
 
-int32_t AudioWorkloadTest::getCallbackCount() {
+int32_t AudioWorkloadTest::getCallbackCount() const {
     return mCallbackCount;
 }
 
@@ -122,12 +140,15 @@ std::vector<AudioWorkloadTest::CallbackStatus> AudioWorkloadTest::getCallbackSta
     return mCallbackStatistics;
 }
 
-oboe::DataCallbackResult AudioWorkloadTest::onAudioReady(oboe::AudioStream* audioStream, void* audioData, int32_t numFrames) {
-    int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+oboe::DataCallbackResult AudioWorkloadTest::onAudioReady(oboe::AudioStream* audioStream,
+                                                         void* audioData, int32_t numFrames) {
+    int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     int currentVoices = mNumVoices;
     if (mAlternatingPeriodMs > 0) {
-        int64_t timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        int64_t timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
         if (mStartTimeMs == 0) {
             mStartTimeMs = timeMs;
         }
@@ -136,15 +157,30 @@ oboe::DataCallbackResult AudioWorkloadTest::onAudioReady(oboe::AudioStream* audi
         }
     }
 
+    auto floatData = static_cast<float *>(audioData);
+    int channelCount = audioStream->getChannelCount();
+
+    // Fill buffer with a sine wave.
+    for (int i = 0; i < numFrames; i++) {
+        float value = sinf(mPhase) * 0.2f;
+        for (int j = 0; j < channelCount; j++) {
+            *floatData++ = value;
+        }
+        mPhase = mPhase + kPhaseIncrement;
+        // Wrap the phase around in a circle.
+        if (mPhase >= M_PI) mPhase = mPhase - 2.0f * M_PI;
+    }
+
     mSynthWorkload.onCallback(currentVoices);
     if (currentVoices > 0) {
-        // Render into the buffer or discard the synth voices.
-        float *buffer = (audioStream->getChannelCount() == 2 && mSineEnabled)
+        // Render synth workload into the buffer or discard the synth voices.
+        float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
                         ? static_cast<float *>(audioData) : nullptr;
         mSynthWorkload.renderStereo(buffer, numFrames);
     }
 
-    int64_t finishTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    int64_t finishTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
     mXRunCount = audioStream->getXRunCount().value();
 
@@ -159,7 +195,10 @@ oboe::DataCallbackResult AudioWorkloadTest::onAudioReady(oboe::AudioStream* audi
     mCallbackCount++;
     mLastDurationNs = finishTimeNs - beginTimeNs;
 
-    if (mCallbackCount >= mNumCallbacks) {
+    int64_t currentTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+    if (currentTimeMs - mStartTimeMs > mTargetDurationMs) {
         mRunning = false;
         stop();
         return oboe::DataCallbackResult::Stop;

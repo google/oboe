@@ -19,47 +19,43 @@
 #include <iomanip>
 #include <sstream>
 
-AudioWorkloadTestRunner::AudioWorkloadTestRunner() : mAudioWorkloadTest(std::make_unique<AudioWorkloadTest>()) {}
-
 AudioWorkloadTestRunner::~AudioWorkloadTestRunner() {
     stop();
 }
 
 int32_t AudioWorkloadTestRunner::start(
-        int32_t numCallbacks,
+        int32_t targetDurationMs,
         int32_t bufferSizeInBursts,
         int32_t numVoices,
         int32_t highNumVoices,
         int32_t highLowPeriodMillis,
         bool adpfEnabled,
-        bool sineEnabled) {
+        bool hearWorkload) {
     if (mIsRunning) {
         std::cerr << "Error: Test already running." << std::endl;
         return -1;
     }
 
-    if (mAudioWorkloadTest->open() != static_cast<int32_t>(oboe::Result::OK)) {
+    if (mAudioWorkloadTest.open() != static_cast<int32_t>(oboe::Result::OK)) {
         mResultText = "Error opening audio stream.";
         mResult = -1;
         mIsDone = true;
         return -1;
     }
 
-    mNumCallbacks = numCallbacks;
     mIsRunning = true;
     mIsDone = false;
     mResult = 0;
     mResultText = "Running...";
-    mStartTime = std::chrono::steady_clock::now();
 
-    int32_t result = mAudioWorkloadTest->start(
-            numCallbacks,
+    int32_t result = mAudioWorkloadTest.start(
+            targetDurationMs,
             bufferSizeInBursts,
             numVoices,
             highNumVoices,
             highLowPeriodMillis,
             adpfEnabled,
-            sineEnabled);
+            hearWorkload);
 
     if (result != static_cast<int32_t>(oboe::Result::OK)) {
         mResultText = "Error starting audio stream: ";
@@ -67,15 +63,15 @@ int32_t AudioWorkloadTestRunner::start(
         mResult = -1;
         mIsDone = true;
         mIsRunning = false;
-        mAudioWorkloadTest->close();
+        mAudioWorkloadTest.close();
         return -1;
     }
 
     return 0;
 }
 
-bool AudioWorkloadTestRunner::pollIsDone() {
-    if (!mIsDone && !mAudioWorkloadTest->isRunning()) {
+bool AudioWorkloadTestRunner::stopIfDone() {
+    if (!mIsDone && !mAudioWorkloadTest.isRunning()) {
         stop();
     }
     return mIsDone;
@@ -85,17 +81,18 @@ std::string AudioWorkloadTestRunner::getStatus() const {
     if (!mIsRunning) {
         return mResultText;
     }
-    int32_t callbacksCompleted = mAudioWorkloadTest->getCallbackCount();
-    return "Running: " + std::to_string(callbacksCompleted) + "/" + std::to_string(mNumCallbacks) + " callbacks completed. XRuns: " + std::to_string(mAudioWorkloadTest->getXRunCount());
+    int32_t callbacksCompleted = mAudioWorkloadTest.getCallbackCount();
+    return "Running: " + std::to_string(callbacksCompleted)
+            + " callbacks completed. XRuns: " + std::to_string(mAudioWorkloadTest.getXRunCount());
 }
 
 int32_t AudioWorkloadTestRunner::stop() {
     if (mIsRunning) {
-        mAudioWorkloadTest->stop();
-        mAudioWorkloadTest->close();
+        mAudioWorkloadTest.stop();
+        mAudioWorkloadTest.close();
         mIsRunning = false;
 
-        int32_t xRunCount = mAudioWorkloadTest->getXRunCount();
+        int32_t xRunCount = mAudioWorkloadTest.getXRunCount();
         if (xRunCount > 0) {
             mResult = -1;
             mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " xruns.";

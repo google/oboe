@@ -1078,10 +1078,11 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getBufferSizeInFrames(JNI
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobject thiz,
-        jint numCallbacks, jint bufferSizeInBursts, jint numVoices, jint numAlternateVoices,
-        jint alternatingPeriodMs, jboolean adpfEnabled, jboolean sineEnabled) {
-    return sAudioWorkload.start(numCallbacks, bufferSizeInBursts, numVoices, numAlternateVoices,
-                                alternatingPeriodMs, adpfEnabled, sineEnabled);
+        jint targetDurationMs, jint bufferSizeInBursts, jint numVoices, jint numAlternateVoices,
+        jint alternatingPeriodMs, jboolean adpfEnabled, jboolean hearWorkload) {
+    return sAudioWorkload.start(targetDurationMs, bufferSizeInBursts, numVoices,
+                                numAlternateVoices, alternatingPeriodMs, adpfEnabled,
+                                hearWorkload);
 }
 
 JNIEXPORT jint JNICALL
@@ -1161,6 +1162,7 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNI
     jobject javaList = env->NewObject(arrayListClass, arrayListConstructor);
 
     for (const auto& status : cppCallbackStats) {
+        // Must match CallbackStatus constructor in AudioWorkloadTestActivity.java
         jobject javaStatus = env->NewObject(
                 callbackStatusClass,
                 callbackStatusConstructor,
@@ -1181,21 +1183,21 @@ static AudioWorkloadTestRunner sAudioWorkloadRunner;
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, jobject thiz,
-                                                                   jint numCallbacks,
+                                                                   jint targetDurationMs,
                                                                    jint bufferSizeInBursts,
                                                                    jint numVoices,
                                                                    jint highNumVoices,
                                                                    jint highLowPeriodMillis,
                                                                    jboolean adpfEnabled,
-                                                                   jboolean sineEnabled) {
-    return sAudioWorkloadRunner.start(numCallbacks, bufferSizeInBursts, numVoices,
+                                                                   jboolean hearWorkload) {
+    return sAudioWorkloadRunner.start(targetDurationMs, bufferSizeInBursts, numVoices,
                                       highNumVoices, highLowPeriodMillis, adpfEnabled,
-                                      sineEnabled);
+                                      hearWorkload);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_pollIsDone(JNIEnv *env, jobject thiz) {
-    return sAudioWorkloadRunner.pollIsDone();
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_stopIfDone(JNIEnv *env, jobject thiz) {
+    return sAudioWorkloadRunner.stopIfDone();
 }
 
 JNIEXPORT jstring JNICALL
