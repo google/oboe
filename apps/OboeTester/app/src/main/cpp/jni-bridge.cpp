@@ -525,7 +525,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_getPackageName(
     if (oboeStream != nullptr) {
         return env->NewStringUTF(oboeStream->getPackageName().c_str());
     }
-    return (jstring) "";
+    return env->NewStringUTF("");
 }
 
 JNIEXPORT jstring JNICALL
@@ -535,7 +535,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_getAttributionTag(
     if (oboeStream != nullptr) {
         return env->NewStringUTF(oboeStream->getAttributionTag().c_str());
     }
-    return (jstring) "";
+    return env->NewStringUTF("");
 }
 
 JNIEXPORT jlong JNICALL
