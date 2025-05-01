@@ -165,7 +165,7 @@ public:
 
             ALOGD("%s(), phaseOffset = %f\n", __func__, mPhaseOffset);
             if (mPhaseOffset != kPhaseInvalid) {
-                // One pole averaging filter.
+                // One pole averaging filter for magnitude.
                 setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));
             }
             resetAccumulator();

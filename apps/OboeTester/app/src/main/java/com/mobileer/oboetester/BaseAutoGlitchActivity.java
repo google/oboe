@@ -442,13 +442,21 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return getExternalFilesDir(Environment.DIRECTORY_MUSIC);
     }
 
+    void reportSavedWaveFiles() {
+        logAnalysis("\n --------\n"
+                + "Audio for each test saved in:\n  "
+                + getRecordingDir().getAbsolutePath()
+                + "/glitch_{###}.wav\n");
+    }
+
     private void saveRecordingAsWave() {
-        File waveFile = new File(getRecordingDir(), String.format("glitch_%03d.wav", getTestCount()));
+        File waveFile = new File(getRecordingDir(),
+                String.format("glitch_%03d.wav", getTestCount()));
         int saveResult = saveWaveFile(waveFile.getAbsolutePath());
-        if (saveResult > 0) {
-            appendFailedSummary("Saved in " + waveFile.getAbsolutePath() + "\n");
-        } else {
-            appendFailedSummary("saveWaveFile() returned " + saveResult + "\n");
+        if (saveResult <= 0) {
+            appendSummary("ERROR: saving "
+                    + waveFile.getAbsolutePath()
+                    + " returned " + saveResult + "\n");
         }
     }
 
