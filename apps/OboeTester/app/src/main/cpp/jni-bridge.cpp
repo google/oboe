@@ -1271,13 +1271,6 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNI
         }
 
         env->CallBooleanMethod(javaList, g_arrayListAddMethod, javaStatus);
-        if (env->ExceptionCheck()) {
-            std::cerr << "Error: Exception occurred while adding to ArrayList." << std::endl;
-            env->ExceptionDescribe();
-            env->DeleteLocalRef(javaStatus);
-            env->DeleteLocalRef(javaList);
-            return nullptr;
-        }
         env->DeleteLocalRef(javaStatus);
     }
 
