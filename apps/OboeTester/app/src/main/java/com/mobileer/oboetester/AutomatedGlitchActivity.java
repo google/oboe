@@ -110,6 +110,8 @@ public class AutomatedGlitchActivity  extends BaseAutoGlitchActivity {
 
             compareFailedTestsWithNearestPassingTest();
 
+            reportSavedWaveFiles();
+
         } catch (InterruptedException e) {
             compareFailedTestsWithNearestPassingTest();
 

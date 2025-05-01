@@ -873,6 +873,8 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
             compareFailedTestsWithNearestPassingTest();
 
+            reportSavedWaveFiles();
+
         } catch (InterruptedException e) {
             compareFailedTestsWithNearestPassingTest();
         } catch (Exception e) {
