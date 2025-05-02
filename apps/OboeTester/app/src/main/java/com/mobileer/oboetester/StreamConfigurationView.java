@@ -85,6 +85,14 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mSpatializationBehaviorSpinner;
     private TextView mActualSpatializationBehaviorView;
 
+    private TableRow mPackageNameTableRow;
+    private Spinner  mPackageNameSpinner;
+    private TextView mActualPackageNameView;
+
+    private TableRow mAttributionTagTableRow;
+    private Spinner  mAttributionTagSpinner;
+    private TextView mActualAttributionTagView;
+
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private Spinner  mRateConversionQualitySpinner;
@@ -344,6 +352,14 @@ public class StreamConfigurationView extends LinearLayout {
         mActualSpatializationBehaviorView = (TextView) findViewById(R.id.actualSpatializationBehavior);
         mSpatializationBehaviorSpinner = (Spinner) findViewById(R.id.spinnerSpatializationBehavior);
 
+        mPackageNameTableRow = (TableRow) findViewById(R.id.rowPackageName);
+        mActualPackageNameView = (TextView) findViewById(R.id.actualPackageName);
+        mPackageNameSpinner = (Spinner) findViewById(R.id.spinnerPackageName);
+
+        mAttributionTagTableRow = (TableRow) findViewById(R.id.rowAttributionTag);
+        mActualAttributionTagView = (TextView) findViewById(R.id.actualAttributionTag);
+        mAttributionTagSpinner = (Spinner) findViewById(R.id.spinnerAttributionTag);
+
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
         mStreamStatusView = (TextView) findViewById(R.id.statusView);
@@ -421,6 +437,12 @@ public class StreamConfigurationView extends LinearLayout {
         int spatializationBehavior = StreamConfiguration.convertTextToSpatializationBehavior(text);
         config.setSpatializationBehavior(spatializationBehavior);
 
+        text = mPackageNameSpinner.getSelectedItem().toString();
+        config.setPackageName(text);
+
+        text = mAttributionTagSpinner.getSelectedItem().toString();
+        config.setAttributionTag(text);
+
         // The corresponding channel count of the selected channel mask may be different from
         // the selected channel count, the last selected will be respected.
         if (mIsChannelMaskLastSelected) {
@@ -468,6 +490,8 @@ public class StreamConfigurationView extends LinearLayout {
         mContentTypeSpinner.setEnabled(enabled);
         mFormatSpinner.setEnabled(enabled);
         mSpatializationBehaviorSpinner.setEnabled(enabled);
+        mPackageNameSpinner.setEnabled(enabled);
+        mAttributionTagSpinner.setEnabled(enabled);
         mSampleRateSpinner.setEnabled(enabled);
         mRateConversionQualitySpinner.setEnabled(enabled);
         mDeviceSpinner.setEnabled(enabled);
@@ -514,6 +538,14 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getSpatializationBehavior();
         mActualSpatializationBehaviorView.setText(StreamConfiguration.convertSpatializationBehaviorToText(value));
         mActualSpatializationBehaviorView.requestLayout();
+
+        String stringValue = actualConfiguration.getPackageName();
+        mActualPackageNameView.setText(stringValue);
+        mActualPackageNameView.requestLayout();
+
+        stringValue = actualConfiguration.getAttributionTag();
+        mActualAttributionTagView.setText(stringValue);
+        mActualAttributionTagView.requestLayout();
 
         mActualChannelCountView.setText(actualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(actualConfiguration.getSampleRate() + "");
