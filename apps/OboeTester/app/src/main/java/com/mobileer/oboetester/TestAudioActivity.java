@@ -16,11 +16,15 @@
 
 package com.mobileer.oboetester;
 
+import static android.content.pm.PackageManager.GET_ATTRIBUTIONS;
+import static android.content.pm.PackageManager.GET_ATTRIBUTIONS_LONG;
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.Attribution;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -732,6 +736,38 @@ abstract class TestAudioActivity extends AppCompatActivity {
                            "the requested configuration must be 44.1kHz stereo when format is MP3");
             return;
         }
+
+        String packageName = "";
+        String attributionTag = "";
+        try {
+            PackageManager packageManager = getPackageManager();
+            packageName = getPackageName();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PackageInfo packageInfo = packageManager.getPackageInfo(packageName, GET_ATTRIBUTIONS);
+
+                Attribution[] attributions = null;
+                attributions = packageInfo.attributions;
+
+                if (attributions != null && attributions.length > 0) {
+                    Log.i(TAG, "Declared Attributions:");
+                    for (Attribution attribution : attributions) {
+                        String tag = attribution.getTag();
+                        attributionTag = tag;
+
+                        Log.i(TAG, "Tag: " + tag);
+                    }
+                } else {
+                    Log.i(TAG, "No attributions declared or found.");
+                }
+            }
+
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Package not found", e);
+        }
+
+        requestedConfig.setPackageName(packageName);
+        requestedConfig.setAttributionTag(attributionTag);
 
         streamContext.tester.open(); // OPEN the stream
 
