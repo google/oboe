@@ -446,6 +446,17 @@ TEST_F(StreamOpenInput, AAudioInputSetPackageName){
     }
 }
 
+TEST_F(StreamOpenInput, AAudioInputSetPackageNameInvalid){
+    if (getSdkVersion() >= __ANDROID_API_S__){
+        mBuilder.setDirection(Direction::Input);
+        mBuilder.setAudioApi(AudioApi::AAudio);
+        mBuilder.setPackageName("com.google.oboe.tests.unittestrunnerinvalid");
+        ASSERT_TRUE(openStream());
+        ASSERT_NE(mStream->requestStart(), Result::OK);
+        ASSERT_TRUE(closeStream());
+    }
+}
+
 TEST_F(StreamOpenOutput, AAudioOutputSetAttributionTag){
     if (getSdkVersion() >= __ANDROID_API_S__){
         mBuilder.setAudioApi(AudioApi::AAudio);

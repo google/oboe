@@ -283,6 +283,49 @@
 
             </TableRow>
 
+            <TableRow
+                android:id="@+id/rowPackageName">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/package_name_prompt"/>
+
+                <Spinner
+                    android:id="@+id/spinnerPackageName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/package_name_values" />
+
+                <TextView
+                    android:id="@+id/actualPackageName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/rowAttributionTag">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/attribution_tag_prompt"/>
+
+                <Spinner
+                    android:id="@+id/spinnerAttributionTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/attribution_tag_values" />
+
+                <TextView
+                    android:id="@+id/actualAttributionTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="\?" />
+
+            </TableRow>
         </TableLayout>
 
         <LinearLayout

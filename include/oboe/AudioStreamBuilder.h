@@ -604,6 +604,8 @@ public:
     * If an invalid package name is set, input streams may not be given permission to
     * record when started.
     *
+    * Please declare this as some input streams will fail permission checks otherwise.
+    *
     * The package name is usually the applicationId in your app's build.gradle file.
     *
     * Available since API level 31.

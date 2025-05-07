@@ -111,6 +111,8 @@ public:
      * @param isMMap
      * @param isInput
      * @param spatializationBehavior
+     * @param packageName
+     * @param attributionTag
      * @return stream ID
      */
     int open(jint nativeApi,
@@ -131,7 +133,9 @@ public:
              jint rateConversionQuality,
              jboolean isMMap,
              jboolean isInput,
-             jint spatializationBehavior);
+             jint spatializationBehavior,
+             const char *packageName,
+             const char *attributionTag);
 
     oboe::Result release();
 
