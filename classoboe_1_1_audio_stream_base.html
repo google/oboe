@@ -169,6 +169,10 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <tr class="separator:ad55e88cf9ec00d2ef6e21877c2ef085b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42e33c4aa4a327915297b416e67618a0" id="r_a42e33c4aa4a327915297b416e67618a0"><td class="memItemLeft" align="right" valign="top">PrivacySensitiveMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a42e33c4aa4a327915297b416e67618a0">getPrivacySensitiveMode</a> () const</td></tr>
 <tr class="separator:a42e33c4aa4a327915297b416e67618a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8a07ec910beafd13f35a91c2f5c9e8a" id="r_ad8a07ec910beafd13f35a91c2f5c9e8a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad8a07ec910beafd13f35a91c2f5c9e8a">getPackageName</a> () const</td></tr>
+<tr class="separator:ad8a07ec910beafd13f35a91c2f5c9e8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2348a39f64722fd62bd0e840672da29d" id="r_a2348a39f64722fd62bd0e840672da29d"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2348a39f64722fd62bd0e840672da29d">getAttributionTag</a> () const</td></tr>
+<tr class="separator:a2348a39f64722fd62bd0e840672da29d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4ec3aa76e69350fbce6f00786211495" id="r_aa4ec3aa76e69350fbce6f00786211495"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa4ec3aa76e69350fbce6f00786211495">isChannelConversionAllowed</a> () const</td></tr>
 <tr class="separator:aa4ec3aa76e69350fbce6f00786211495"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace3625a7332bf02a86818fdf63fcccb4" id="r_ace3625a7332bf02a86818fdf63fcccb4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ace3625a7332bf02a86818fdf63fcccb4">isFormatConversionAllowed</a> () const</td></tr>
@@ -319,6 +323,35 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <p>See AudioStreamBuilder_setAllowedCapturePolicy().</p>
 <p>Added in API level 29 to AAudio.</p>
 <dl class="section return"><dt>Returns</dt><dd>the allowed capture policy, for example AllowedCapturePolicy::All </dd></dl>
+
+</div>
+</div>
+<a id="a2348a39f64722fd62bd0e840672da29d" name="a2348a39f64722fd62bd0e840672da29d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2348a39f64722fd62bd0e840672da29d">&#9670;&#160;</a></span>getAttributionTag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string oboe::AudioStreamBase::getAttributionTag </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the stream's attribution tag</p>
+<p>See AudioStreamBuilder_setAttributionTag().</p>
+<p>Added in API level 31 to AAudio.</p>
+<dl class="section return"><dt>Returns</dt><dd>attributionTag </dd></dl>
 
 </div>
 </div>
@@ -736,6 +769,35 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>the stream's input preset. </dd></dl>
+
+</div>
+</div>
+<a id="ad8a07ec910beafd13f35a91c2f5c9e8a" name="ad8a07ec910beafd13f35a91c2f5c9e8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8a07ec910beafd13f35a91c2f5c9e8a">&#9670;&#160;</a></span>getPackageName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string oboe::AudioStreamBase::getPackageName </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the stream's package name</p>
+<p>See AudioStreamBuilder_setPackageName().</p>
+<p>Added in API level 31 to AAudio.</p>
+<dl class="section return"><dt>Returns</dt><dd>packageName </dd></dl>
 
 </div>
 </div>
