@@ -24,6 +24,7 @@
 #include "oboe/Oboe.h"
 #include "synth/Synthesizer.h"
 #include "synth/SynthTools.h"
+#include "cpu/SynthWorkload.h"
 #include "OboeTesterStreamCallback.h"
 
 class DoubleStatistics {
@@ -67,71 +68,6 @@ private:
     std::atomic<int> count { 0 };
     std::atomic<double> minimum { DBL_MAX };
     std::atomic<double> maximum { 0 };
-};
-
-/**
- * Manage the synthesizer workload that burdens the CPU.
- * Adjust the number of voices according to the requested workload.
- * Trigger noteOn and noteOff messages.
- */
-class SynthWorkload {
-public:
-    SynthWorkload() {
-        mSynth.setup(marksynth::kSynthmarkSampleRate, marksynth::kSynthmarkMaxVoices);
-    }
-
-    void onCallback(double workload) {
-        // If workload changes then restart notes.
-        if (workload != mPreviousWorkload) {
-            mSynth.allNotesOff();
-            mAreNotesOn = false;
-            mCountdown = 0; // trigger notes on
-            mPreviousWorkload = workload;
-        }
-        if (mCountdown <= 0) {
-            if (mAreNotesOn) {
-                mSynth.allNotesOff();
-                mAreNotesOn = false;
-                mCountdown = mOffFrames;
-            } else {
-                mSynth.notesOn((int)mPreviousWorkload);
-                mAreNotesOn = true;
-                mCountdown = mOnFrames;
-            }
-        }
-    }
-
-    /**
-     * Render the notes into a stereo buffer.
-     * Passing a nullptr will cause the calculated results to be discarded.
-     * The workload should be the same.
-     * @param buffer a real stereo buffer or nullptr
-     * @param numFrames
-     */
-    void renderStereo(float *buffer, int numFrames) {
-        if (buffer == nullptr) {
-            int framesLeft = numFrames;
-            while (framesLeft > 0) {
-                int framesThisTime = std::min(kDummyBufferSizeInFrames, framesLeft);
-                // Do the work then throw it away.
-                mSynth.renderStereo(&mDummyStereoBuffer[0], framesThisTime);
-                framesLeft -= framesThisTime;
-            }
-        } else {
-            mSynth.renderStereo(buffer, numFrames);
-        }
-        mCountdown -= numFrames;
-    }
-
-private:
-    marksynth::Synthesizer   mSynth;
-    static constexpr int     kDummyBufferSizeInFrames = 32;
-    float                    mDummyStereoBuffer[kDummyBufferSizeInFrames * 2];
-    double                   mPreviousWorkload = 1.0;
-    bool                     mAreNotesOn = false;
-    int                      mCountdown = 0;
-    int                      mOnFrames = (int) (0.2 * 48000);
-    int                      mOffFrames = (int) (0.3 * 48000);
 };
 
 class OboeStreamCallbackProxy : public OboeTesterStreamCallback {
