@@ -33,10 +33,10 @@ class SimpleMultiPlayer  {
 public:
     SimpleMultiPlayer();
 
-    void setupAudioStream(int32_t channelCount);
+    void setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode);
     void teardownAudioStream();
 
-    bool openStream();
+    bool openStream(oboe::PerformanceMode performanceMode);
     bool startStream();
 
     int getSampleRate() { return mSampleRate; }
@@ -54,7 +54,7 @@ public:
      */
     void unloadSampleData();
 
-    void triggerDown(int32_t index);
+    void triggerDown(int32_t index, oboe::PerformanceMode performanceMode);
     void triggerUp(int32_t index);
 
     void resetAll();
@@ -97,6 +97,18 @@ private:
         SimpleMultiPlayer *mParent;
     };
 
+    class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
+    public:
+        MyPresentationCallback(SimpleMultiPlayer *parent) : mParent(parent) {}
+
+        virtual ~MyPresentationCallback() {
+        }
+
+         void onPresentationEnded(oboe::AudioStream *oboeStream) override;
+    private:
+        SimpleMultiPlayer *mParent;
+    };
+
     // Oboe Audio Stream
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 
@@ -113,6 +125,8 @@ private:
 
     std::shared_ptr<MyDataCallback> mDataCallback;
     std::shared_ptr<MyErrorCallback> mErrorCallback;
+    std::shared_ptr<MyPresentationCallback> mPresentationCallback;
+
 };
 
 }
