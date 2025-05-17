@@ -68,8 +68,6 @@ static int loadAphFunctions() {
 
     gAPerformanceHintBindingInitialized = true;
 
-    Trace::initialize();
-
     return 0;
 }
 
@@ -101,12 +99,17 @@ int AdpfWrapper::open(pid_t threadId,
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
     //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
     std::lock_guard<std::mutex> lock(mLock);
-    Trace::beginSection("reportActualDuration");
-    Trace::setCounter("actualDurationNanos", actualDurationNanos);
     if (mHintSession != nullptr) {
+        bool traceEnabled = Trace::getInstance().isEnabled();
+        if (traceEnabled) {
+            Trace::getInstance().beginSection("reportActualDuration");
+            Trace::getInstance().setCounter("actualDurationNanos", actualDurationNanos);
+        }
         gAPH_reportActualWorkDurationFn(mHintSession, actualDurationNanos);
+        if (traceEnabled) {
+            Trace::getInstance().endSection();
+        }
     }
-    Trace::endSection();
 }
 
 void AdpfWrapper::close() {
