@@ -46,7 +46,9 @@ public:
     /**
      * @brief Destructor. Ensures the test is stopped when the runner is destroyed.
      */
-    ~AudioWorkloadTestRunner();
+    ~AudioWorkloadTestRunner() {
+        stop();
+    }
 
     /**
      * @brief Starts the audio workload test with the specified parameters.
@@ -70,40 +72,113 @@ public:
             int32_t alternateNumVoices,
             int32_t alternatingPeriodMs,
             bool adpfEnabled,
-            bool hearWorkload);
+            bool hearWorkload) {
+        if (mIsRunning) {
+            std::cerr << "Error: Test already running." << std::endl;
+            return -1;
+        }
+
+        if (mAudioWorkloadTest.open() != static_cast<int32_t>(oboe::Result::OK)) {
+            mResultText = "Error opening audio stream.";
+            mResult = -1;
+            mIsDone = true;
+            return -1;
+        }
+
+        mIsRunning = true;
+        mIsDone = false;
+        mResult = 0;
+        mResultText = "Running...";
+
+        int32_t result = mAudioWorkloadTest.start(
+                targetDurationMs,
+                numBursts,
+                numVoices,
+                alternateNumVoices,
+                alternatingPeriodMs,
+                adpfEnabled,
+                hearWorkload);
+
+        if (result != static_cast<int32_t>(oboe::Result::OK)) {
+            mResultText = "Error starting audio stream: ";
+            mResultText += oboe::convertToText(static_cast<oboe::Result>(result));
+            mResult = -1;
+            mIsDone = true;
+            mIsRunning = false;
+            mAudioWorkloadTest.close();
+            return -1;
+        }
+
+        return 0;
+    }
 
     /**
      * @brief Stops the test if it has completed its run.
      * This is useful for polling and cleaning up once the underlying test finishes due to duration.
      * @return True if the test is done (either stopped here or previously), false otherwise.
      */
-    bool stopIfDone();
+    bool stopIfDone() {
+        if (!mIsDone && !mAudioWorkloadTest.isRunning()) {
+            stop();
+        }
+        return mIsDone;
+    }
 
     /**
      * @brief Gets the current status of the test.
      * This can indicate if it's running, how many callbacks have occurred, or the final result text.
      * @return A string describing the current status.
      */
-    std::string getStatus() const;
+    std::string getStatus() const {
+        if (!mIsRunning) {
+            return mResultText;
+        }
+        int32_t callbacksCompleted = mAudioWorkloadTest.getCallbackCount();
+        return "Running: " + std::to_string(callbacksCompleted)
+               + " callbacks completed. XRuns: "
+               + std::to_string(mAudioWorkloadTest.getXRunCount());
+    }
 
     /**
      * @brief Stops the audio workload test explicitly.
      * This will also finalize the test result.
      * @return 0 if the test was running and is now stopped, -1 if it was not running.
      */
-    int32_t stop();
+    int32_t stop() {
+        if (mIsRunning) {
+            mAudioWorkloadTest.stop();
+            mAudioWorkloadTest.close();
+            mIsRunning = false;
+
+            int32_t xRunCount = mAudioWorkloadTest.getXRunCount();
+            if (xRunCount > 0) {
+                mResult = -1;
+                mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " xruns.";
+            } else {
+                mResult = 1;
+                mResultText = "PASS: No xruns encountered.";
+            }
+            mIsDone = true;
+            return 0;
+        }
+        return -1; // Not running
+    }
 
     /**
      * @brief Gets the numerical result of the test.
      * @return 0 if the test is not finished, 1 if it passed, -1 if it failed.
      */
-    int32_t getResult() const;
+    int32_t getResult() const {
+        return mResult;
+    }
 
     /**
      * @brief Gets a descriptive string for the test result (e.g., "PASS", "FAIL: X xruns").
      * @return A string containing the result text.
      */
-    std::string getResultText() const;
+    std::string getResultText() const {
+        return mResultText;
+    }
 
 private:
     AudioWorkloadTest mAudioWorkloadTest;    // The actual audio workload test instance

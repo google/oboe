@@ -69,25 +69,53 @@ public:
      * Configures the stream for low latency output.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
-    int32_t open();
+    int32_t open() {
+        oboe::AudioStreamBuilder builder;
+        builder.setDirection(oboe::Direction::Output);
+        builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
+        builder.setSharingMode(oboe::SharingMode::Exclusive);
+        builder.setFormat(oboe::AudioFormat::Float);
+        builder.setChannelCount(2);
+        builder.setDataCallback(this);
+
+        oboe::Result result = builder.openStream(mStream);
+        if (result != oboe::Result::OK) {
+            std::cerr << "Error opening stream: " << oboe::convertToText(result) << std::endl;
+            return static_cast<int32_t>(result);
+        }
+
+        mFramesPerBurst = mStream->getFramesPerBurst();
+        mSampleRate = mStream->getSampleRate();
+        mPreviousXRunCount = 0;
+        mXRunCount = 0;
+        mPhaseIncrement = 2.0f * (float) M_PI * 440.0f / mSampleRate; // 440 Hz sine wave
+
+        return 0;
+    }
 
     /**
      * @brief Gets the number of frames processed in a single audio callback burst.
      * @return The number of frames per burst.
      */
-    int32_t getFramesPerBurst() const;
+    int32_t getFramesPerBurst() const {
+        return mFramesPerBurst;
+    }
 
     /**
      * @brief Gets the sample rate of the audio stream.
      * @return The sample rate in Hz.
      */
-    int32_t getSampleRate() const;
+    int32_t getSampleRate() const {
+        return mSampleRate;
+    }
 
     /**
      * @brief Gets the current buffer size of the audio stream in frames.
      * @return The buffer size in frames.
      */
-    int32_t getBufferSizeInFrames() const;
+    int32_t getBufferSizeInFrames() const {
+        return mBufferSizeInFrames;
+    }
 
     /**
      * @brief Starts the audio stream and the workload test.
@@ -105,13 +133,39 @@ public:
      */
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
-                  bool hearWorkload);
+                  bool hearWorkload) {
+        mTargetDurationMs = targetDurationMillis;
+        mNumBursts = numBursts;
+        mNumVoices = numVoices;
+        mAlternateNumVoices = alternateNumVoices;
+        mAlternatingPeriodMs = alternatingPeriodMs;
+        mStartTimeMs = 0;
+        mCallbackStatistics.clear();
+        mCallbackCount = 0;
+        mPreviousXRunCount = mXRunCount.load();
+        mXRunCount = 0;
+        mRunning = true;
+        mHearWorkload = hearWorkload;
+        mStream->setPerformanceHintEnabled(adpfEnabled);
+        mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
+        mBufferSizeInFrames = mStream->getBufferSizeInFrames();
+        mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
+        oboe::Result result = mStream->start();
+        if (result != oboe::Result::OK) {
+            std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
+            return static_cast<int32_t>(result);
+        }
+
+        return 0;
+    }
 
     /**
      * @brief Gets the number of available CPU cores on the system.
      * @return The number of CPU cores.
      */
-    static int32_t getCpuCount();
+    static int32_t getCpuCount() {
+        return sysconf(_SC_NPROCESSORS_CONF);
+    }
 
     /**
      * @brief Sets the CPU affinity for the current thread (intended for the audio callback
@@ -119,50 +173,93 @@ public:
      * @param mask A bitmask specifying the allowed CPU cores.
      * @return 0 on success, -1 on failure.
      */
-    static int32_t setCpuAffinityForCallback(uint32_t mask);
+    static int32_t setCpuAffinityForCallback(uint32_t mask) {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        for (uint32_t i = 0; i < 32; ++i) {
+            if ((mask >> i) & 1) {
+                CPU_SET(i, &cpuset);
+            }
+        }
+
+        if (sched_setaffinity(pthread_self(), sizeof(cpu_set_t), &cpuset) != 0) {
+            std::cerr << "Error setting CPU affinity." << std::endl;
+            return -1;
+        }
+        return 0;
+    }
 
     /**
      * @brief Gets the number of XRuns (underruns/overruns) that occurred during the last test run.
      * @return The XRun count.
      */
-    int32_t getXRunCount() const;
+    int32_t getXRunCount() const {
+        return mXRunCount - mPreviousXRunCount;
+    }
 
     /**
      * @brief Gets the total number of audio callbacks invoked during the last test run.
      * @return The callback count.
      */
-    int32_t getCallbackCount() const;
+    int32_t getCallbackCount() const {
+        return mCallbackCount;
+    }
 
     /**
      * @brief Gets the duration of the last audio callback in nanoseconds.
      * @return The duration in nanoseconds.
      */
-    int64_t getLastDurationNs();
+    int64_t getLastDurationNs() {
+        return mLastDurationNs;
+    }
 
     /**
      * @brief Checks if the audio workload test is currently running.
      * @return True if running, false otherwise.
      */
-    bool isRunning();
+    bool isRunning() {
+        return mRunning;
+    }
 
     /**
      * @brief Stops the audio stream.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
-    int32_t stop();
+    int32_t stop() {
+        if (mStream) {
+            oboe::Result result = mStream->stop();
+            if (result != oboe::Result::OK) {
+                std::cerr << "Error stopping stream: " << oboe::convertToText(result) << std::endl;
+                return static_cast<int32_t>(result);
+            }
+        }
+        return 0;
+    }
 
     /**
      * @brief Closes the audio stream.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
-    int32_t close();
+    int32_t close() {
+        if (mStream) {
+            oboe::Result result = mStream->close();
+            mStream = nullptr;
+            if (result != oboe::Result::OK) {
+                std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
+                return static_cast<int32_t>(result);
+            }
+        }
+        return 0;
+    }
 
     /**
      * @brief Retrieves the collected statistics for each audio callback.
      * Call this only after the stream is stopped as this is not atomic.
      * @return A vector of CallbackStatus structures.
      */
-    std::vector<CallbackStatus> getCallbackStatistics();
+    std::vector<CallbackStatus> getCallbackStatistics() {
+        return mCallbackStatistics;
+    }
 
     /**
      * @brief The Oboe audio callback function.
@@ -175,11 +272,75 @@ public:
      * oboe::DataCallbackResult::Stop to stop.
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream, void* audioData,
-                                          int32_t numFrames) override;
+                                          int32_t numFrames) override {
+        int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+        int currentVoices = mNumVoices;
+        if (mAlternatingPeriodMs > 0) {
+            int64_t timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            if (mStartTimeMs == 0) {
+                mStartTimeMs = timeMs;
+            }
+            if (((timeMs - mStartTimeMs) % (2 * mAlternatingPeriodMs)) >= mAlternatingPeriodMs) {
+                currentVoices = mAlternateNumVoices;
+            }
+        }
+
+        auto floatData = static_cast<float *>(audioData);
+        int channelCount = audioStream->getChannelCount();
+
+        // Fill buffer with a sine wave.
+        for (int i = 0; i < numFrames; i++) {
+            float value = sinf(mPhase) * 0.2f;
+            for (int j = 0; j < channelCount; j++) {
+                *floatData++ = value;
+            }
+            mPhase = mPhase + mPhaseIncrement;
+            // Wrap the phase around in a circle.
+            if (mPhase >= M_PI) mPhase = mPhase - 2.0f * M_PI;
+        }
+
+        mSynthWorkload.onCallback(currentVoices);
+        if (currentVoices > 0) {
+            // Render synth workload into the buffer or discard the synth voices.
+            float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
+                            ? static_cast<float *>(audioData) : nullptr;
+            mSynthWorkload.renderStereo(buffer, numFrames);
+        }
+
+        int64_t finishTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+        mXRunCount = audioStream->getXRunCount().value();
+
+        CallbackStatus status{};
+        status.numVoices = currentVoices;
+        status.beginTimeNs = beginTimeNs;
+        status.finishTimeNs = finishTimeNs;
+        status.xRunCount = mXRunCount - mPreviousXRunCount;
+        status.cpuIndex = sched_getcpu();
+
+        mCallbackStatistics.push_back(status);
+        mCallbackCount++;
+        mLastDurationNs = finishTimeNs - beginTimeNs;
+
+        int64_t currentTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+        if (currentTimeMs - mStartTimeMs > mTargetDurationMs) {
+            mRunning = false;
+            stop();
+            return oboe::DataCallbackResult::Stop;
+        }
+
+        return oboe::DataCallbackResult::Continue;
+    }
 
 private:
     // Member variables
-    std::shared_ptr<oboe::AudioStream> mStream;              // Pointer to the Oboe audio stream instance
+    std::shared_ptr<oboe::AudioStream> mStream; // Pointer to the Oboe audio stream instance
 
     // Atomic variables for thread-safe access from audio callback and other threads
     std::atomic<int32_t> mFramesPerBurst{0};

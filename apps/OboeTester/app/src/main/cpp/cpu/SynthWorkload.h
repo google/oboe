@@ -21,10 +21,59 @@
 
 class SynthWorkload {
 public:
-    SynthWorkload();
-    SynthWorkload(int onFrames, int offFrames);
-    void onCallback(double workload);
-    void renderStereo(float *buffer, int numFrames);
+    SynthWorkload() : SynthWorkload((int) (0.2 * marksynth::kSynthmarkSampleRate),
+                                     (int) (0.3 * marksynth::kSynthmarkSampleRate)) {
+
+    }
+
+    SynthWorkload(int onFrames, int offFrames) {
+        mSynth.setup(marksynth::kSynthmarkSampleRate, marksynth::kSynthmarkMaxVoices);
+        mOnFrames = onFrames;
+        mOffFrames = offFrames;
+    }
+
+    void onCallback(double workload) {
+        // If workload changes then restart notes.
+        if (workload != mPreviousWorkload) {
+            mSynth.allNotesOff();
+            mAreNotesOn = false;
+            mCountdown = 0; // trigger notes on
+            mPreviousWorkload = workload;
+        }
+        if (mCountdown <= 0) {
+            if (mAreNotesOn) {
+                mSynth.allNotesOff();
+                mAreNotesOn = false;
+                mCountdown = mOffFrames;
+            } else {
+                mSynth.notesOn((int)mPreviousWorkload);
+                mAreNotesOn = true;
+                mCountdown = mOnFrames;
+            }
+        }
+    }
+
+    /**
+     * Render the notes into a stereo buffer.
+     * Passing a nullptr will cause the calculated results to be discarded.
+     * The workload should be the same.
+     * @param buffer a real stereo buffer or nullptr
+     * @param numFrames
+     */
+    void renderStereo(float *buffer, int numFrames) {
+        if (buffer == nullptr) {
+            int framesLeft = numFrames;
+            while (framesLeft > 0) {
+                int framesThisTime = std::min(kDummyBufferSizeInFrames, framesLeft);
+                // Do the work then throw it away.
+                mSynth.renderStereo(mDummyStereoBuffer, framesThisTime);
+                framesLeft -= framesThisTime;
+            }
+        } else {
+            mSynth.renderStereo(buffer, numFrames);
+        }
+        mCountdown -= numFrames;
+    }
 
 private:
     marksynth::Synthesizer   mSynth;
