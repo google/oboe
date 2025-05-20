@@ -413,7 +413,7 @@ public class DeviceReportActivity extends AppCompatActivity {
             }
 
             if (!foundAnyCore) {
-                return "############################\nCould not retrieve CPU core information. This usually means the necessary permissions are not available, or the /sys/devices/system/cpu paths do not exist on this device.";
+                return "############################\nCould not retrieve CPU core information.";
             }
 
             StringBuilder resultBuilder = new StringBuilder();
