@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -61,6 +63,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     public static final boolean VALUE_DEFAULT_USE_WORKLOAD = false;
     public static final String KEY_SCROLL_GRAPHICS = "scroll_graphics";
     public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
+    public static final String KEY_USE_CPU_HINT = "use_cpu_hint";
+    public static final boolean VALUE_DEFAULT_USE_CPU_HINT = false;
+    public static final String KEY_USE_GPU_HINT = "use_gpu_hint";
+    public static final boolean VALUE_DEFAULT_USE_GPU_HINT = false;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -78,9 +84,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private CheckBox mSustainedPerformanceModeBox;
+    private CheckBox mCpuHintBox;
+    private CheckBox mGpuHintBox;
     private int mCpuCount;
     private boolean mShouldUseADPF;
     private boolean mShouldUseWorkloadReporting;
+    private boolean mEnableCpuHint;
+    private boolean mEnableGpuHint;
+    private int mLastNotifyWorkloadResult;
 
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
@@ -167,6 +178,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
                         break;
                 }
+                if ((mWorkloadCurrent != nextWorkload) && (mEnableCpuHint || mEnableGpuHint)) {
+                    if (nextWorkload == mWorkloadHigh) {
+                        mLastNotifyWorkloadResult = stream.notifyWorkloadIncrease(mEnableCpuHint, mEnableGpuHint);
+                    } else {
+                        mLastNotifyWorkloadResult = stream.notifyWorkloadReset(mEnableCpuHint, mEnableGpuHint);
+                    }
+                }
                 stream.setWorkload((int) nextWorkload);
                 mWorkloadCurrent = nextWorkload;
                 // Update chart
@@ -186,7 +204,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
                         + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)
-                        + "\nRecovery = " + recoveryTimeString;
+                        + "\nRecovery = " + recoveryTimeString
+                        + "\nNotify = " + convertErrorToText(mLastNotifyWorkloadResult);
                 postResult(message);
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
@@ -307,12 +326,28 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
+        mCpuHintBox = (CheckBox) findViewById(R.id.cpu_hint);
+        mCpuHintBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mEnableCpuHint = checkBox.isChecked();
+        });
+        mCpuHintBox.setEnabled(mShouldUseADPF);
+
+        mGpuHintBox = (CheckBox) findViewById(R.id.gpu_hint);
+        mGpuHintBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mEnableGpuHint = checkBox.isChecked();
+        });
+        mGpuHintBox.setEnabled(mShouldUseADPF);
+
         mPerfHintBox.setOnClickListener(buttonView -> {
-                CheckBox checkBox = (CheckBox) buttonView;
-                mShouldUseADPF = checkBox.isChecked();
-                setPerformanceHintEnabled(mShouldUseADPF);
-                mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
-                mWorkloadReportBox.setEnabled(mShouldUseADPF);
+            CheckBox checkBox = (CheckBox) buttonView;
+            mShouldUseADPF = checkBox.isChecked();
+            setPerformanceHintEnabled(mShouldUseADPF);
+            mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
+            mWorkloadReportBox.setEnabled(mShouldUseADPF);
+            mCpuHintBox.setEnabled(mShouldUseADPF);
+            mGpuHintBox.setEnabled(mShouldUseADPF);
         });
 
         mWorkloadReportBox.setOnClickListener(buttonView -> {
@@ -378,7 +413,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mStartButton.setEnabled(!running);
         mStopButton.setEnabled(running);
         mPerfHintBox.setEnabled(running);
-        mWorkloadReportBox.setEnabled(running);
+        mWorkloadReportBox.setEnabled(running && mShouldUseADPF);
+        mCpuHintBox.setEnabled(running && mShouldUseADPF);
+        mGpuHintBox.setEnabled(running && mShouldUseADPF);
     }
 
     private void postResult(final String text) {
@@ -408,6 +445,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         }
         try {
             super.startAudio();
+            setPerformanceHintEnabled(mShouldUseADPF);
             updateButtons(true);
             postResult("Running test");
             mUpdateThread = new WorkloadUpdateThread();
@@ -448,6 +486,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mDrawChartAlways =
                     mBundleFromIntent.getBoolean(KEY_SCROLL_GRAPHICS,
                             VALUE_DEFAULT_SCROLL_GRAPHICS);
+            mEnableCpuHint = mBundleFromIntent.getBoolean(KEY_USE_CPU_HINT,
+                    VALUE_DEFAULT_USE_CPU_HINT);
+            mEnableGpuHint = mBundleFromIntent.getBoolean(KEY_USE_GPU_HINT,
+                    VALUE_DEFAULT_USE_GPU_HINT);
 
             startTest();
 
@@ -457,6 +499,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
                 setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
+                mCpuHintBox.setChecked(mEnableCpuHint);
+                mGpuHintBox.setChecked(mEnableGpuHint);
             });
 
             int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);

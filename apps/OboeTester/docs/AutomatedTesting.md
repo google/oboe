@@ -137,6 +137,8 @@ There are some optional parameters for just the "cpu_load" test:
     --ez use_adpf         {true, false} // if true, use work boost from performance hints. Default is false.
     --ez use_workload     {true, false} // if true and using ADPF then report workload changes. Default is false.
     --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
+    --ez use_cpu_hint     {true, false} // if true and using ADPF, notify adpf for cpu usage increase. Default is false.
+    --ez use_Gpu_hint     {true, false} // if true and using ADPF, notify adpf for gpu usage increase. Default is false.
 
 For example, a complete command for a "latency" test might be:
 

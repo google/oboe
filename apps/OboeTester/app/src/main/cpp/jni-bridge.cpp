@@ -627,6 +627,28 @@ Java_com_mobileer_oboetester_OboeAudioStream_setWorkload(
     engine.getCurrentActivity()->setWorkload(workload);
 }
 
+static const std::string sWorkloadDebugName = "OboeTester";
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_notifyWorkloadIncrease(
+        JNIEnv *env, jobject, jint streamIndex, jboolean cpu, jboolean gpu) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        return (jint) oboeStream->notifyWorkloadIncrease(cpu, gpu, sWorkloadDebugName.c_str());
+    }
+    return -1;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_notifyWorkloadReset(
+        JNIEnv *env, jobject, jint streamIndex, jboolean cpu, jboolean gpu) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        return (jint) oboeStream->notifyWorkloadReset(cpu, gpu, sWorkloadDebugName.c_str());
+    }
+    return -1;
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setHearWorkload(
         JNIEnv *env, jobject, jint streamIndex, jboolean enabled) {
