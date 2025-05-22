@@ -170,7 +170,10 @@ public:
 
     void setWorkload(int32_t workload) {
         oboeCallbackProxy.setWorkload(workload);
-        oboe::Trace::getInstance().setCounter("Workload", workload);
+        bool traceEnabled = oboe::Trace::getInstance().isEnabled();
+        if (traceEnabled) {
+            oboe::Trace::getInstance().setCounter("Workload", workload);
+        }
     }
 
     void setHearWorkload(bool enabled) {
