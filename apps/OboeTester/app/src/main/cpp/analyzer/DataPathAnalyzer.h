@@ -37,8 +37,8 @@ class DataPathAnalyzer : public BaseSineAnalyzer {
 public:
 
     DataPathAnalyzer() : BaseSineAnalyzer() {
-        // Add a little bit of noise to reduce blockage by speaker protection and DRC.
-        setNoiseAmplitude(0.02);
+        // Remove the noise because some phones have a high pass filter that makes it too loud!
+        setNoiseAmplitude(0.0);
     }
 
     double calculatePhaseError(double p1, double p2) {

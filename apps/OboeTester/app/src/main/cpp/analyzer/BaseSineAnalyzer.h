@@ -198,8 +198,9 @@ public:
     }
 
 protected:
-    // Try to get a prime period so the waveform plot changes every time.
-    static constexpr int32_t kTargetGlitchFrequency = 48000 / 113;
+    // Use a frequency that will not align with the common burst sizes.
+    // If it aligns then buffer reordering bugs could be masked.
+    static constexpr int32_t kTargetGlitchFrequency = 857; // Match CTS Verifier
 
     int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
@@ -209,7 +210,7 @@ protected:
     // in a callback and the output frame count may advance ahead of the input, or visa versa.
     double  mInputPhase = 0.0;
     double  mOutputPhase = 0.0;
-    double  mOutputAmplitude = 0.75;
+    double  mOutputAmplitude = 0.90;
     // This is the phase offset between the mInputPhase sine wave and the recorded
     // signal at the tuned frequency.
     // If this jumps around then we are probably just hearing noise.
