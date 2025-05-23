@@ -58,6 +58,12 @@ public:
         return mMagnitude;
     }
 
+    /**
+     * Set the amplitude of some white noise that can be added to the output signal.
+     * This can be used to try to defeat feedback suppression that may block pure sine waves.
+     * The default is zero because it can add phaseJitter and result in flaky tests.
+     * @param noiseAmplitude amplitude of white noise, default is 0.0
+     */
     void setNoiseAmplitude(double noiseAmplitude) {
         mNoiseAmplitude = noiseAmplitude;
     }
@@ -234,7 +240,8 @@ protected:
 private:
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
 
-    float mNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
+    // Default to zero because some phones have a high pass filter that make it too loud.
+    float mNoiseAmplitude = 0.0f;
     PseudoRandom  mWhiteNoise;
 };
 
