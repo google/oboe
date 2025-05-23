@@ -579,6 +579,100 @@ public:
         return oboe::Result::ErrorUnimplemented;
     }
 
+    /**
+    * Informs the framework of an upcoming increase in the workload of a graphics pipeline
+    * bound to this session. The user can specify whether the increase is expected to be
+    * on the CPU, GPU, or both.
+    *
+    * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+    * rate limiter.
+    *
+    * @param cpu Indicates if the workload increase is expected to affect the CPU.
+    * @param gpu Indicates if the workload increase is expected to affect the GPU.
+    * @param debugName A required string used to identify this specific hint during
+    *        tracing. This debug string will only be held for the duration of the
+    *        method, and can be safely discarded after.
+    *
+    * This was introduced in Android API Level 36
+    *
+    * @return Result::OK on success.
+    *         Result::ErrorInvalidState if the PerformanceHint was not enabled.
+    *         Result::ErrorClosed if AdpfWrapper::open() was not called.
+    *         Result::ErrorUnimplemented if the API is not supported.
+    *         Result::ErrorInvalidHandle if no hints were requested.
+    *         Result::ErrorInvalidRate if the hint was rate limited.
+    *         Result::ErrorNoService if communication with the system service has failed.
+    *         Result::ErrorUnavailable if the hint is not supported.
+    */
+    virtual oboe::Result notifyWorkloadIncrease([[maybe_unused]] bool cpu,
+                                                [[maybe_unused]] bool gpu,
+                                                [[maybe_unused]] const char* debugName) {
+        return oboe::Result::ErrorUnimplemented;
+    }
+
+    /**
+    * Informs the framework of an upcoming reset in the workload of a graphics pipeline
+    * bound to this session, or the imminent start of a new workload. The user can specify
+    * whether the reset is expected to affect the CPU, GPU, or both.
+    *
+    * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+    * this load tracking.
+    *
+    * @param cpu Indicates if the workload reset is expected to affect the CPU.
+    * @param gpu Indicates if the workload reset is expected to affect the GPU.
+    * @param debugName A required string used to identify this specific hint during
+    *        tracing. This debug string will only be held for the duration of the
+    *        method, and can be safely discarded after.
+    *
+    * This was introduced in Android API Level 36
+    *
+    * @return Result::OK on success.
+    *         Result::ErrorInvalidState if the PerformanceHint was not enabled.
+    *         Result::ErrorClosed if AdpfWrapper::open() was not called.
+    *         Result::ErrorUnimplemented if the API is not supported.
+    *         Result::ErrorInvalidHandle if no hints were requested.
+    *         Result::ErrorInvalidRate if the hint was rate limited.
+    *         Result::ErrorNoService if communication with the system service has failed.
+    *         Result::ErrorUnavailable if the hint is not supported.
+    */
+    virtual oboe::Result notifyWorkloadReset([[maybe_unused]] bool cpu,
+                                             [[maybe_unused]] bool gpu,
+                                             [[maybe_unused]] const char* debugName) {
+        return oboe::Result::ErrorUnimplemented;
+    }
+
+    /**
+    * Informs the framework of an upcoming one-off expensive frame for a graphics pipeline
+    * bound to this session. This frame will be treated as not representative of the workload as a
+    * whole, and it will be discarded the purposes of load tracking. The user can specify
+    * whether the workload spike is expected to be on the CPU, GPU, or both.
+    *
+    * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+    * rate limiter.
+    *
+    * This was introduced in Android API Level 36
+    *
+    * @param cpu Indicates if the workload spike is expected to affect the CPU.
+    * @param gpu Indicates if the workload spike is expected to affect the GPU.
+    * @param debugName A required string used to identify this specific hint during
+    *        tracing. This debug string will only be held for the duration of the
+    *        method, and can be safely discarded after.
+    *
+    * @return Result::OK on success.
+    *         Result::ErrorInvalidState if the PerformanceHint was not enabled.
+    *         Result::ErrorClosed if AdpfWrapper::open() was not called.
+    *         Result::ErrorUnimplemented if the API is not supported.
+    *         Result::ErrorInvalidHandle if no hints were requested.
+    *         Result::ErrorInvalidRate if the hint was rate limited.
+    *         Result::ErrorNoService if communication with the system service has failed.
+    *         Result::ErrorUnavailable if the hint is not supported.
+    */
+    virtual oboe::Result notifyWorkloadSpike([[maybe_unused]] bool cpu,
+                                             [[maybe_unused]] bool gpu,
+                                             [[maybe_unused]] const char* debugName) {
+        return oboe::Result::ErrorUnimplemented;
+    }
+
     virtual oboe::Result setOffloadDelayPadding([[maybe_unused]] int32_t delayInFrames,
                                                 [[maybe_unused]] int32_t paddingInFrames) {
         return Result::ErrorUnimplemented;

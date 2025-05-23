@@ -108,6 +108,27 @@ public:
         return oboe::Result::OK;
     }
 
+    oboe::Result notifyWorkloadIncrease(bool cpu, bool gpu, const char* debugName) override {
+        if (!isPerformanceHintEnabled()) {
+            return oboe::Result::ErrorInvalidState;
+        }
+        return mAdpfWrapper.notifyWorkloadIncrease(cpu, gpu, debugName);
+    }
+
+    oboe::Result notifyWorkloadSpike(bool cpu, bool gpu, const char* debugName) override {
+        if (!isPerformanceHintEnabled()) {
+            return oboe::Result::ErrorInvalidState;
+        }
+        return mAdpfWrapper.notifyWorkloadSpike(cpu, gpu, debugName);
+    }
+
+    oboe::Result notifyWorkloadReset(bool cpu, bool gpu, const char* debugName) override {
+        if (!isPerformanceHintEnabled()) {
+            return oboe::Result::ErrorInvalidState;
+        }
+        return mAdpfWrapper.notifyWorkloadReset(cpu, gpu, debugName);
+    }
+
     Result setOffloadDelayPadding(int32_t delayInFrames, int32_t paddingInFrames) override;
     ResultWithValue<int32_t> getOffloadDelay() override;
     ResultWithValue<int32_t> getOffloadPadding() override;

@@ -173,6 +173,18 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private native void setHearWorkload(int streamIndex, boolean checked);
 
+    @Override
+    public int notifyWorkloadIncrease(boolean cpu, boolean gpu) {
+        return notifyWorkloadIncrease(mStreamIndex, cpu, gpu);
+    }
+    private native int notifyWorkloadIncrease(int streamIndex, boolean cpu, boolean gpu);
+
+    @Override
+    public int notifyWorkloadReset(boolean cpu, boolean gpu) {
+        return notifyWorkloadReset(mStreamIndex, cpu, gpu);
+    }
+    private native int notifyWorkloadReset(int streamIndex, boolean cpu, boolean gpu);
+
     public int getNativeApi() {
         return getNativeApi(mStreamIndex);
     }
