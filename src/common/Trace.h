@@ -27,18 +27,45 @@ namespace oboe {
 class Trace {
 
 public:
-    static void beginSection(const char *format, ...);
+    static Trace &getInstance() {
+        static Trace instance;
+        return instance;
+    }
 
-    static void endSection();
+    /**
+     * @return true if Perfetto tracing is enabled.
+     */
+    bool isEnabled() const;
 
-    static void setCounter(const char *counterName, int64_t counterValue);
+    /**
+     * Only call this function if isEnabled() returns true.
+     * @param format
+     * @param ...
+     */
+    void beginSection(const char *format, ...);
 
-    static void initialize();
+    /**
+     * Only call this function if isEnabled() returns true.
+     */
+    void endSection() const;
+
+    /**
+     * Only call this function if isEnabled() returns true.
+     * @param counterName human readable name
+     * @param counterValue value to log in trace
+     */
+    void setCounter(const char *counterName, int64_t counterValue) const;
 
 private:
-    static bool mIsTracingEnabled;
-    static bool mIsSetCounterSupported;
-    static bool mHasErrorBeenShown;
+    Trace();
+// Tracing functions
+    void *(*ATrace_beginSection)(const char *sectionName) = nullptr;
+
+    void *(*ATrace_endSection)() = nullptr;
+
+    void *(*ATrace_setCounter)(const char *counterName, int64_t counterValue) = nullptr;
+
+    bool *(*ATrace_isEnabled)(void) = nullptr;
 };
 
 }
