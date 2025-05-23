@@ -37,7 +37,7 @@ class DataPathAnalyzer : public BaseSineAnalyzer {
 public:
 
     DataPathAnalyzer() : BaseSineAnalyzer() {
-        // Remove the noise because some phones have a high pass filter that makes it too loud!
+        // Don't add noise because some phones have a high pass filter that make it too loud.
         setNoiseAmplitude(0.0);
     }
 
