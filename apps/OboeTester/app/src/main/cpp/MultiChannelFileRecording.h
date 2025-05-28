@@ -154,7 +154,7 @@ public:
         }
 
         // Create a temporary buffer for float conversion.
-        std::vector<float> floatBuffer(numFrames * mChannelCount);
+        std::vector<float> floatBuffer(static_cast<size_t>(numFrames) * mChannelCount);
         for (int i = 0; i < numFrames * mChannelCount; i++) {
             floatBuffer[i] = static_cast<float>(buffer[i]) * (1.0f / 32768.0f);
         }
@@ -165,7 +165,7 @@ public:
 
         // Write the data.
         mFileStream.write(reinterpret_cast<const char*>(floatBuffer.data()),
-                          numFrames * mChannelCount * sizeof(float));
+                          static_cast<size_t>(numFrames) * mChannelCount * sizeof(float));
 
         if (!mFileStream) {
             throw std::runtime_error("MultiChannelFileRecording: Failed to write data to file (int16_t conversion).");
@@ -193,7 +193,7 @@ public:
 
         // Write the data.
         mFileStream.write(reinterpret_cast<const char*>(buffer),
-                          numFrames * mChannelCount * sizeof(float));
+                          static_cast<size_t>(numFrames) * mChannelCount * sizeof(float));
 
         if (!mFileStream) {
             throw std::runtime_error("MultiChannelFileRecording: Failed to write data to file (float).");
@@ -230,7 +230,7 @@ public:
 
         // Read the data.
         mFileStream.read(reinterpret_cast<char*>(buffer),
-                         framesToRead * mChannelCount * sizeof(float));
+                         static_cast<size_t>(framesToRead) * mChannelCount * sizeof(float));
 
         if (!mFileStream && !mFileStream.eof()) { // Check for read error, but not EOF
             throw std::runtime_error("MultiChannelFileRecording: Failed to read data from file.");
