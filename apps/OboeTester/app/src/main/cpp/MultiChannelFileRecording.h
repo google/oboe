@@ -17,20 +17,19 @@
 #ifndef NATIVEOBOE_MULTICHANNEL_FILE_RECORDING_H
 #define NATIVEOBOE_MULTICHANNEL_FILE_RECORDING_H
 
-#include <cstdint>      // For int32_t and int64_t
-#include <algorithm>    // For std::min and std::max
-#include <cstring>      // For memcpy
-#include <fstream>      // For std::fstream
-#include <string>       // For std::string
-#include <vector>       // For temporary buffer in int16_t write
-#include <stdexcept>    // For std::runtime_error
-#include <cstdio>       // For std::remove
+#include <cstdint>
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <cstdio>
 
 /**
  * @class MultiChannelFileRecording
  * @brief Stores multi-channel audio data in float format directly to a file
- * on disk, allowing for conceptually "infinite" recording and playback,
- * limited only by available disk space.
+ * on disk.
  *
  * This class provides file-like operations, managing read and write positions
  * within the underlying file. Data is always appended during write operations.
@@ -53,15 +52,18 @@ public:
         // Open the file in binary mode for both reading and writing.
         // std::ios::ate sets the initial position to the end of the file.
         // This is useful to determine the initial file size (mWriteCursorFrames).
-        mFileStream.open(mFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::ate);
+        mFileStream.open(
+                mFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::ate);
 
         if (!mFileStream.is_open()) {
             // Attempt to create the file if it doesn't exist and opening failed.
             // This is a common pattern when you need a file to exist for R/W.
             mFileStream.clear(); // Clear any error flags from previous open attempt
-            mFileStream.open(mFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc); // Create/truncate
+            // Create/truncate
+            mFileStream.open(mFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
             if (!mFileStream.is_open()) {
-                throw std::runtime_error("MultiChannelFileRecording: Failed to open or create file: " + mFilename);
+                throw std::runtime_error(
+                        "MultiChannelFileRecording: Failed to open or create file: " + mFilename);
             }
         }
 
@@ -104,13 +106,15 @@ public:
 
         // Remove the file from disk.
         if (std::remove(mFilename.c_str()) != 0) {
-            throw std::runtime_error("MultiChannelFileRecording: Failed to remove file during clear: " + mFilename);
+            throw std::runtime_error(
+                    "MultiChannelFileRecording: Failed to remove file during clear: " + mFilename);
         }
 
         // Re-open the file in truncate mode to create an empty file.
         mFileStream.open(mFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
         if (!mFileStream.is_open()) {
-            throw std::runtime_error("MultiChannelFileRecording: Failed to re-open file after clear: " + mFilename);
+            throw std::runtime_error(
+                    "MultiChannelFileRecording: Failed to re-open file after clear: " + mFilename);
         }
 
         // Reset cursors as the file is now empty.
