@@ -50,6 +50,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -657,6 +660,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
         updateNativeAudioParameters();
 
+        setRecordingFileName();
+
         if (!isTestConfiguredUsingBundle()) {
             applyConfigurationViewsToModels();
         }
@@ -956,6 +961,18 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
         return fileWritten;
     }
+
+    void setRecordingFileName() {
+        // Get the cache directory
+        File cacheDir = getCacheDir();
+
+        File outputFile = new File(cacheDir, "recording_" + System.currentTimeMillis());
+        String filePath = outputFile.getAbsolutePath();
+
+        setRecordingFileName(filePath);
+    }
+
+    native void setRecordingFileName(String filePath);
 
     void setupMp3BufferFromFile() {
         try {
