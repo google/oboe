@@ -127,13 +127,14 @@ public:
      * @param alternatingPeriodMs The period in milliseconds to alternate between numVoices and
      * alternateNumVoices.
      * @param adpfEnabled Whether to enable Adaptive Performance (ADPF) hints.
+     * @param adpfWorkloadIncreaseEnabled Whether to use ADPF setWorkloadIncrease() API.
      * @param hearWorkload If true, the synthesized audio will be audible; otherwise, it's processed
      * silently and a sine wave will be audible instead.
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
-                  bool hearWorkload) {
+                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -146,6 +147,7 @@ public:
         mXRunCount = 0;
         mRunning = true;
         mHearWorkload = hearWorkload;
+        mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
         mStream->setPerformanceHintEnabled(adpfEnabled);
         mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
@@ -276,6 +278,7 @@ public:
         int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
+        int lastVoices = mNumVoices;
         int currentVoices = mNumVoices;
         if (mAlternatingPeriodMs > 0) {
             int64_t timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -285,6 +288,16 @@ public:
             }
             if (((timeMs - mStartTimeMs) % (2 * mAlternatingPeriodMs)) >= mAlternatingPeriodMs) {
                 currentVoices = mAlternateNumVoices;
+            }
+        }
+
+        if (mAdpfWorkloadIncreaseEnabled) {
+            if (currentVoices > lastVoices) {
+                audioStream->notifyWorkloadIncrease(true /* cpu */, false /* gpu */,
+                                                    kTestName.c_str());
+            } else if (currentVoices < lastVoices) {
+                audioStream->notifyWorkloadReset(true /* cpu */, false /* gpu */,
+                                                    kTestName.c_str());
             }
         }
 
@@ -339,6 +352,8 @@ public:
     }
 
 private:
+    const std::string kTestName = "AudioWorkloadTest";
+
     // Member variables
     std::shared_ptr<oboe::AudioStream> mStream; // Pointer to the Oboe audio stream instance
 
@@ -357,6 +372,7 @@ private:
     std::atomic<int64_t> mLastDurationNs{0};
     std::atomic<int64_t> mStartTimeMs{0};
     std::atomic<bool> mHearWorkload{false};
+    std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
 
     std::vector<CallbackStatus> mCallbackStatistics;
     std::atomic<bool> mRunning{false};

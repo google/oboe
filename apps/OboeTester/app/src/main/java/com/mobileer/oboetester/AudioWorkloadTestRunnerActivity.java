@@ -38,6 +38,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
     private ExponentialSliderView mAlternatingPeriodMsSlider;
 
     private CheckBox mEnableAdpfBox;
+    private CheckBox mEnableAdpfWorkloadIncreaseBox;
     private CheckBox mHearWorkloadBox;
 
     private Button mStartButton;
@@ -86,6 +87,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         mAlternatingPeriodMsSlider = findViewById(R.id.alternating_period_ms);
 
         mEnableAdpfBox = findViewById(R.id.enable_adpf);
+        mEnableAdpfWorkloadIncreaseBox = findViewById(R.id.enable_adpf_workload_increase);
         mHearWorkloadBox = findViewById(R.id.hear_workload);
 
         mStartButton = findViewById(R.id.button_start_test);
@@ -107,9 +109,11 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         int alternateNumVoices = mAlternateNumVoicesSlider.getValue();
         int alternatingPeriodMs = mAlternatingPeriodMsSlider.getValue();
         boolean adpfEnabled = mEnableAdpfBox.isChecked();
+        boolean adpfWorkloadIncreaseEnabled = mEnableAdpfWorkloadIncreaseBox.isChecked();
         boolean hearWorkload = mHearWorkloadBox.isChecked();
 
-        int result = start(targetDurationMs, numBursts, numVoices, alternateNumVoices, alternatingPeriodMs, adpfEnabled, hearWorkload);
+        int result = start(targetDurationMs, numBursts, numVoices, alternateNumVoices,
+                alternatingPeriodMs, adpfEnabled, adpfWorkloadIncreaseEnabled, hearWorkload);
         if (result != OPERATION_SUCCESS) {
             showErrorToast("start failed! Error:" + result);
             return;
@@ -150,12 +154,13 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
         mEnableAdpfBox.setEnabled(enabled);
+        mEnableAdpfWorkloadIncreaseBox.setEnabled(enabled);
         mHearWorkloadBox.setEnabled(enabled);
     }
 
     public native int start(int targetDurationMs, int numBursts, int numVoices,
                             int alternateNumVoices, int alternatingPeriodMs, boolean adpfEnabled,
-                            boolean hearWorkload);
+                            boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload);
     public native boolean stopIfDone();
     public native String getStatus();
     public native int stop();

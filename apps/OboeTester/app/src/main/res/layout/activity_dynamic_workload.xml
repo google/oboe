@@ -68,18 +68,11 @@
         tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
         <CheckBox
-            android:id="@+id/cpu_hint"
+            android:id="@+id/enable_adpf_workload_increase"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8sp"
-            android:text="CPU Hint" />
-
-        <CheckBox
-            android:id="@+id/gpu_hint"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="GPU Hint" />
+            android:text="ADPF Workload Increase API" />
     </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

@@ -63,10 +63,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     public static final boolean VALUE_DEFAULT_USE_WORKLOAD = false;
     public static final String KEY_SCROLL_GRAPHICS = "scroll_graphics";
     public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
-    public static final String KEY_USE_CPU_HINT = "use_cpu_hint";
-    public static final boolean VALUE_DEFAULT_USE_CPU_HINT = false;
-    public static final String KEY_USE_GPU_HINT = "use_gpu_hint";
-    public static final boolean VALUE_DEFAULT_USE_GPU_HINT = false;
+    public static final String KEY_USE_WORKLOAD_INCREASE_API = "use_workload_increase_api";
+    public static final boolean VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API = false;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -84,13 +82,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private CheckBox mSustainedPerformanceModeBox;
-    private CheckBox mCpuHintBox;
-    private CheckBox mGpuHintBox;
+    private CheckBox mWorkloadIncreaseApiBox;
     private int mCpuCount;
     private boolean mShouldUseADPF;
     private boolean mShouldUseWorkloadReporting;
-    private boolean mEnableCpuHint;
-    private boolean mEnableGpuHint;
+    private boolean mEnableWorkloadIncreaseApi;
     private int mLastNotifyWorkloadResult;
 
     private static final int WORKLOAD_LOW = 1;
@@ -178,11 +174,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
                         break;
                 }
-                if ((mWorkloadCurrent != nextWorkload) && (mEnableCpuHint || mEnableGpuHint)) {
+                if ((mWorkloadCurrent != nextWorkload) && mEnableWorkloadIncreaseApi) {
                     if (nextWorkload == mWorkloadHigh) {
-                        mLastNotifyWorkloadResult = stream.notifyWorkloadIncrease(mEnableCpuHint, mEnableGpuHint);
+                        mLastNotifyWorkloadResult = stream.notifyWorkloadIncrease(true /* cpu */, false /* gpu */);
                     } else {
-                        mLastNotifyWorkloadResult = stream.notifyWorkloadReset(mEnableCpuHint, mEnableGpuHint);
+                        mLastNotifyWorkloadResult = stream.notifyWorkloadReset(true /* cpu */, false /* gpu */);
                     }
                 }
                 stream.setWorkload((int) nextWorkload);
@@ -326,19 +322,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
-        mCpuHintBox = (CheckBox) findViewById(R.id.cpu_hint);
-        mCpuHintBox.setOnClickListener(buttonView -> {
+        mWorkloadIncreaseApiBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
+        mWorkloadIncreaseApiBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
-            mEnableCpuHint = checkBox.isChecked();
+            mEnableWorkloadIncreaseApi = checkBox.isChecked();
         });
-        mCpuHintBox.setEnabled(mShouldUseADPF);
-
-        mGpuHintBox = (CheckBox) findViewById(R.id.gpu_hint);
-        mGpuHintBox.setOnClickListener(buttonView -> {
-            CheckBox checkBox = (CheckBox) buttonView;
-            mEnableGpuHint = checkBox.isChecked();
-        });
-        mGpuHintBox.setEnabled(mShouldUseADPF);
+        mWorkloadIncreaseApiBox.setEnabled(mEnableWorkloadIncreaseApi);
 
         mPerfHintBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
@@ -346,8 +335,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setPerformanceHintEnabled(mShouldUseADPF);
             mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
             mWorkloadReportBox.setEnabled(mShouldUseADPF);
-            mCpuHintBox.setEnabled(mShouldUseADPF);
-            mGpuHintBox.setEnabled(mShouldUseADPF);
+            mWorkloadIncreaseApiBox.setEnabled(mShouldUseADPF);
         });
 
         mWorkloadReportBox.setOnClickListener(buttonView -> {
@@ -414,8 +402,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mStopButton.setEnabled(running);
         mPerfHintBox.setEnabled(running);
         mWorkloadReportBox.setEnabled(running && mShouldUseADPF);
-        mCpuHintBox.setEnabled(running && mShouldUseADPF);
-        mGpuHintBox.setEnabled(running && mShouldUseADPF);
+        mWorkloadIncreaseApiBox.setEnabled(running && mShouldUseADPF);
     }
 
     private void postResult(final String text) {
@@ -486,10 +473,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mDrawChartAlways =
                     mBundleFromIntent.getBoolean(KEY_SCROLL_GRAPHICS,
                             VALUE_DEFAULT_SCROLL_GRAPHICS);
-            mEnableCpuHint = mBundleFromIntent.getBoolean(KEY_USE_CPU_HINT,
-                    VALUE_DEFAULT_USE_CPU_HINT);
-            mEnableGpuHint = mBundleFromIntent.getBoolean(KEY_USE_GPU_HINT,
-                    VALUE_DEFAULT_USE_GPU_HINT);
+            mEnableWorkloadIncreaseApi = mBundleFromIntent.getBoolean(KEY_USE_WORKLOAD_INCREASE_API,
+                    VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API);
 
             startTest();
 
@@ -499,8 +484,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
                 setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
-                mCpuHintBox.setChecked(mEnableCpuHint);
-                mGpuHintBox.setChecked(mEnableGpuHint);
+                mWorkloadIncreaseApiBox.setChecked(mEnableWorkloadIncreaseApi);
             });
 
             int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);

@@ -82,7 +82,7 @@ namespace oboe {
         void reportWorkload(int32_t appWorkload);
 
         /**
-        * Informs the framework of an upcoming increase in the workload of a graphics pipeline
+        * Informs the framework of an upcoming increase in the workload of an audio callback
         * bound to this session. The user can specify whether the increase is expected to be
         * on the CPU, GPU, or both.
         *
@@ -108,7 +108,7 @@ namespace oboe {
         oboe::Result notifyWorkloadIncrease(bool cpu, bool gpu, const char* debugName);
 
         /**
-        * Informs the framework of an upcoming reset in the workload of a graphics pipeline
+        * Informs the framework of an upcoming reset in the workload of an audio callback
         * bound to this session, or the imminent start of a new workload. The user can specify
         * whether the reset is expected to affect the CPU, GPU, or both.
         *
@@ -134,7 +134,7 @@ namespace oboe {
         oboe::Result notifyWorkloadReset(bool cpu, bool gpu, const char* debugName);
 
         /**
-        * Informs the framework of an upcoming one-off expensive frame for a graphics pipeline
+        * Informs the framework of an upcoming one-off expensive frame for an audio callback
         * bound to this session. This frame will be treated as not representative of the workload as a
         * whole, and it will be discarded the purposes of load tracking. The user can specify
         * whether the workload spike is expected to be on the CPU, GPU, or both.
