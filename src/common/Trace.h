@@ -27,18 +27,23 @@ namespace oboe {
 class Trace {
 
 public:
-    static void beginSection(const char *format, ...);
+    static Trace &getInstance() {
+        static Trace instance; // singleton
+        return instance;
+    }
 
-    static void endSection();
+    void beginSection(const char *format, ...);
 
-    static void setCounter(const char *counterName, int64_t counterValue);
+    void endSection();
 
-    static void initialize();
+    void setCounter(const char *counterName, int64_t counterValue);
+
+    void initialize();
 
 private:
-    static bool mIsTracingEnabled;
-    static bool mIsSetCounterSupported;
-    static bool mHasErrorBeenShown;
+    bool mIsTracingEnabled = false;
+    bool mIsSetCounterSupported = false;
+    bool mHasErrorBeenShown = false;
 };
 
 }

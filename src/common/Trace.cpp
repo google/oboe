@@ -40,10 +40,6 @@ typedef void *(*fp_ATrace_setCounter)(const char *counterName, int64_t counterVa
 
 typedef bool *(*fp_ATrace_isEnabled)(void);
 
-bool Trace::mIsTracingEnabled = false;
-bool Trace::mIsSetCounterSupported = false;
-bool Trace::mHasErrorBeenShown = false;
-
 void Trace::beginSection(const char *format, ...){
     if (mIsTracingEnabled) {
         va_list va;
