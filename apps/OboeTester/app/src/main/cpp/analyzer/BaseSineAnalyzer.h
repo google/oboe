@@ -58,6 +58,12 @@ public:
         return mMagnitude;
     }
 
+    /**
+     * Set the amplitude of some white noise that can be added to the output signal.
+     * This can be used to try to defeat feedback suppression that may block pure sine waves.
+     * The default is zero because it can add phaseJitter and result in flaky tests.
+     * @param noiseAmplitude amplitude of white noise, default is 0.0
+     */
     void setNoiseAmplitude(double noiseAmplitude) {
         mNoiseAmplitude = noiseAmplitude;
     }
@@ -198,8 +204,9 @@ public:
     }
 
 protected:
-    // Try to get a prime period so the waveform plot changes every time.
-    static constexpr int32_t kTargetGlitchFrequency = 48000 / 113;
+    // Use a frequency that will not align with the common burst sizes.
+    // If it aligns then buffer reordering bugs could be masked.
+    static constexpr int32_t kTargetGlitchFrequency = 857; // Match CTS Verifier
 
     int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
@@ -209,7 +216,7 @@ protected:
     // in a callback and the output frame count may advance ahead of the input, or visa versa.
     double  mInputPhase = 0.0;
     double  mOutputPhase = 0.0;
-    double  mOutputAmplitude = 0.75;
+    double  mOutputAmplitude = 0.90;
     // This is the phase offset between the mInputPhase sine wave and the recorded
     // signal at the tuned frequency.
     // If this jumps around then we are probably just hearing noise.
@@ -233,7 +240,8 @@ protected:
 private:
     float   mTolerance = 0.10; // scaled from 0.0 to 1.0
 
-    float mNoiseAmplitude = 0.00; // Used to experiment with warbling caused by DRC.
+    // Default to zero because some phones have a high pass filter that make it too loud.
+    float mNoiseAmplitude = 0.0f;
     PseudoRandom  mWhiteNoise;
 };
 

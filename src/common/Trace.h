@@ -28,22 +28,44 @@ class Trace {
 
 public:
     static Trace &getInstance() {
-        static Trace instance; // singleton
+        static Trace instance;
         return instance;
     }
 
+    /**
+     * @return true if Perfetto tracing is enabled.
+     */
+    bool isEnabled() const;
+
+    /**
+     * Only call this function if isEnabled() returns true.
+     * @param format
+     * @param ...
+     */
     void beginSection(const char *format, ...);
 
-    void endSection();
+    /**
+     * Only call this function if isEnabled() returns true.
+     */
+    void endSection() const;
 
-    void setCounter(const char *counterName, int64_t counterValue);
-
-    void initialize();
+    /**
+     * Only call this function if isEnabled() returns true.
+     * @param counterName human readable name
+     * @param counterValue value to log in trace
+     */
+    void setCounter(const char *counterName, int64_t counterValue) const;
 
 private:
-    bool mIsTracingEnabled = false;
-    bool mIsSetCounterSupported = false;
-    bool mHasErrorBeenShown = false;
+    Trace();
+// Tracing functions
+    void *(*ATrace_beginSection)(const char *sectionName) = nullptr;
+
+    void *(*ATrace_endSection)() = nullptr;
+
+    void *(*ATrace_setCounter)(const char *counterName, int64_t counterValue) = nullptr;
+
+    bool *(*ATrace_isEnabled)(void) = nullptr;
 };
 
 }

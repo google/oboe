@@ -18,6 +18,8 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
+import static com.mobileer.oboetester.IntentBasedTestSupport.KEY_RESTART_STREAM_IF_CLOSED;
+import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
 
 import android.content.Context;
 import android.content.Intent;
@@ -110,6 +112,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private int mSingleTestIndex = -1;
     private static boolean mBackgroundEnabled;
     private static boolean mForegroundServiceEnabled;
+    private static boolean mRestartStreamIfClosed = false;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -147,23 +150,34 @@ abstract class TestAudioActivity extends AppCompatActivity {
                     AudioStreamBase.StreamStatus status = streamContext.tester.getCurrentAudioStream().getStreamStatus();
                     AudioStreamBase.DoubleStatistics latencyStatistics =
                             streamContext.tester.getCurrentAudioStream().getLatencyStatistics();
+                    int errorCode = streamContext.tester.getCurrentAudioStream().getLastErrorCallbackResult();
                     if (streamContext.configurationView != null) {
                         // Handler runs this on the main UI thread.
                         int framesPerBurst = streamContext.tester.getCurrentAudioStream().getFramesPerBurst();
                         status.framesPerCallback = getFramesPerCallback();
                         String msg = "";
                         msg += "timestamp.latency = " + latencyStatistics.dump() + "\n";
+                        msg += "lastErrorCallbackResult = " + convertErrorToText(errorCode) + "\n";
                         msg += status.dump(framesPerBurst);
                         streamContext.configurationView.setStatusText(msg);
                         updateStreamDisplay();
                         gotViews = true;
                     }
 
-                    streamClosed = streamClosed || (status.state >= 12);
+                    streamClosed = streamClosed || (status.state >= 12) || (errorCode != StreamConfiguration.ERROR_OK);
                 }
 
                 if (streamClosed) {
                     onStreamClosed();
+                    if (mRestartStreamIfClosed) {
+                        try {
+                            openAudio();
+                            startAudio();
+                        } catch (IOException e) {
+                            showErrorToast("restarting stream caught " + e.getMessage());
+                            throw new RuntimeException(e);
+                        }
+                    }
                 } else {
                     // Repeat this runnable code block again.
                     if (gotViews) {
@@ -338,6 +352,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
         public void run() {
             try {
                 mResultFileName = mBundleFromIntent.getString(IntentBasedTestSupport.KEY_FILE_NAME);
+                mRestartStreamIfClosed = mBundleFromIntent.getBoolean(KEY_RESTART_STREAM_IF_CLOSED,
+                        false);
                 setVolumeFromIntent();
                 startTestUsingBundle();
             } catch( Exception e) {
@@ -775,8 +791,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
         Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
         if (result != 0) {
-            showErrorToast("Start failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
-            throw new IOException("startNative returned " + result + ", " + StreamConfiguration.convertErrorToText(result));
+            showErrorToast("Start failed with " + result + ", " + convertErrorToText(result));
+            throw new IOException("startNative returned " + result + ", " + convertErrorToText(result));
         } else {
             onStartAllContexts();
             for (StreamContext streamContext : mStreamContexts) {
@@ -791,7 +807,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     }
 
     protected void toastPauseError(int result) {
-        showErrorToast("Pause failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
+        showErrorToast("Pause failed with " + result + ", " + convertErrorToText(result));
     }
 
     public void pauseAudio() {
@@ -808,7 +824,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public void flushAudio() {
         int result = flushNative();
         if (result != 0) {
-            showErrorToast("Flush failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
+            showErrorToast("Flush failed with " + result + ", " + convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_FLUSHED;
             updateEnabledWidgets();
@@ -818,7 +834,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public void stopAudio() {
         int result = stopNative();
         if (result != 0) {
-            showErrorToast("Stop failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
+            showErrorToast("Stop failed with " + result + ", " + convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
@@ -829,7 +845,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public void releaseAudio() {
         int result = releaseNative();
         if (result != 0) {
-            showErrorToast("Release failed with " + result + ", " + StreamConfiguration.convertErrorToText(result));
+            showErrorToast("Release failed with " + result + ", " + convertErrorToText(result));
         } else {
             mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();

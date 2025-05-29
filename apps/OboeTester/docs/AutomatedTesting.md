@@ -102,6 +102,7 @@ There are several optional parameters in common for glitch, latency, input, and 
 There are some optional parameters in common for glitch, input, and output tests:
 
     --ei duration           {seconds}    // glitch test duration, default is 10 seconds
+    --ez restart_if_closed  {"true", 1, "false", 0} // if true, restart stream if its closed or disconnected
 
 There are several optional parameters for just the "glitch" test:
 

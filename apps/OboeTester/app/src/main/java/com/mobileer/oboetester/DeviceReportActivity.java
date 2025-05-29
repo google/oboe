@@ -41,12 +41,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.mobileer.audio_device.AudioDeviceInfoConverter;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Print a report of all the available audio devices.
@@ -151,6 +158,7 @@ public class DeviceReportActivity extends AppCompatActivity {
         report.append(reportUsbDevices());
         report.append(reportMidiDevices());
         report.append(reportMediaCodecs());
+        report.append(CpuInfoReader.reportCpuInfo());
         log(report.toString());
     }
 
@@ -310,6 +318,118 @@ public class DeviceReportActivity extends AppCompatActivity {
             report.append("\nERROR: " + e.getMessage() + "\n");
         }
         return report.toString();
+    }
+
+    public static class CpuInfoReader {
+
+        private static final String CPU_CAPACITY_PATH_FORMAT = "/sys/devices/system/cpu/cpu%d/cpu_capacity";
+        private static final String CPU_MIN_FREQ_PATH_FORMAT = "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_min_freq";
+        private static final String CPU_MAX_FREQ_PATH_FORMAT = "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq";
+        private static final String CPU_CURRENT_FREQ_PATH_FORMAT = "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq";
+
+        // Inner class to hold all the details for a single CPU core
+        private static class CoreDetails {
+            int index;
+            int capacity = -1; // -1 indicates not found
+            int minFreq = -1;
+            int maxFreq = -1;
+            int currentFreq = -1;
+
+            CoreDetails(int index) {
+                this.index = index;
+            }
+
+            @Override
+            public String toString() {
+                // Format frequencies from Hz to KHz for readability
+                String min = minFreq != -1 ? String.valueOf(minFreq / 1000) : "N/A";
+                String max = maxFreq != -1 ? String.valueOf(maxFreq / 1000) : "N/A";
+                String cur = currentFreq != -1 ? String.valueOf(currentFreq / 1000) : "N/A";
+                String cap = capacity != -1 ? String.valueOf(capacity) : "N/A";
+
+                return String.format("Idx %d Cap %s | Freq(KHz): Mn %s Mx %s Cur %s",
+                        index, cap, min, max, cur);
+            }
+        }
+
+        /**
+         * Reads a single integer value from a specified sysfs path.
+         * Returns -1 if the file doesn't exist, can't be read, or contains invalid data.
+         */
+        private static int readSysfsInt(String path) {
+            File file = new File(path);
+            if (!file.exists()) {
+                return -1; // File not found
+            }
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line = br.readLine();
+                if (line != null) {
+                    return Integer.parseInt(line.trim());
+                }
+            } catch (IOException | NumberFormatException e) {
+                // Log.e(TAG, "Error reading " + path, e); // Use Android's Log if in an Android context
+                System.err.println("Error reading or parsing " + path + ": " + e.getMessage());
+            }
+            return -1; // Error or invalid data
+        }
+
+        /**
+         * Gathers detailed CPU core information and formats it into a string.
+         * This method requires appropriate file system permissions to access /sys paths.
+         *
+         * @return A neatly formatted string containing CPU core details, or an error message.
+         */
+        public static String reportCpuInfo() {
+            Map<Integer, CoreDetails> cpuDetailsMap = new TreeMap<>(); // Use TreeMap to keep cores sorted by index
+
+            int cpuIndex = 0;
+            boolean foundAnyCore = false;
+
+            while (true) {
+                String capacityPath = String.format(CPU_CAPACITY_PATH_FORMAT, cpuIndex);
+                String minFreqPath = String.format(CPU_MIN_FREQ_PATH_FORMAT, cpuIndex);
+                String maxFreqPath = String.format(CPU_MAX_FREQ_PATH_FORMAT, cpuIndex);
+                String curFreqPath = String.format(CPU_CURRENT_FREQ_PATH_FORMAT, cpuIndex);
+
+                // Check if at least one common file exists for this CPU index
+                if (!new File(capacityPath).exists() &&
+                        !new File(minFreqPath).exists() &&
+                        !new File(maxFreqPath).exists() &&
+                        !new File(curFreqPath).exists()) {
+                    // If none of the paths exist for this CPU index, assume no more CPUs
+                    break;
+                }
+                foundAnyCore = true;
+
+                // Get or create CoreDetails for the current CPU index
+                CoreDetails details = cpuDetailsMap.get(cpuIndex);
+                if (details == null) {
+                    details = new CoreDetails(cpuIndex);
+                    cpuDetailsMap.put(cpuIndex, details);
+                }
+
+                details.capacity = readSysfsInt(capacityPath);
+                details.minFreq = readSysfsInt(minFreqPath);
+                details.maxFreq = readSysfsInt(maxFreqPath);
+                details.currentFreq = readSysfsInt(curFreqPath);
+
+                cpuIndex++;
+            }
+
+            if (!foundAnyCore) {
+                return "############################\nCould not retrieve CPU core information.";
+            }
+
+            StringBuilder resultBuilder = new StringBuilder();
+            resultBuilder.append("############################\n");
+            resultBuilder.append("CPU Cores:\n");
+
+            for (CoreDetails details : cpuDetailsMap.values()) {
+                resultBuilder.append(details.toString()).append("\n");
+            }
+
+            return resultBuilder.toString();
+        }
     }
 
     // Write to scrollable TextView
