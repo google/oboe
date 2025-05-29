@@ -130,7 +130,6 @@ int AdpfWrapper::open(pid_t threadId,
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
     //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
     std::lock_guard<std::mutex> lock(mLock);
-    Trace::getInstance().setCounter("actualDurationNanos", actualDurationNanos);
     if (mHintSession != nullptr) {
         bool traceEnabled = Trace::getInstance().isEnabled();
         if (traceEnabled) {
@@ -186,7 +185,10 @@ void AdpfWrapper::reportWorkload(int32_t appWorkload) {
 
 oboe::Result AdpfWrapper::notifyWorkloadIncrease(bool cpu, bool gpu, const char* debugName) {
     std::lock_guard<std::mutex> lock(mLock);
-    Trace::getInstance().beginSection("notifyWorkloadIncrease");
+    bool traceEnabled = Trace::getInstance().isEnabled();
+    if (traceEnabled) {
+        Trace::getInstance().beginSection("notifyWorkloadIncrease");
+    }
     if (gAPH_notifyWorkloadIncreaseFn == nullptr) {
         return Result::ErrorUnimplemented;
     }
@@ -207,12 +209,17 @@ oboe::Result AdpfWrapper::notifyWorkloadIncrease(bool cpu, bool gpu, const char*
     } else {
         return Result::ErrorInternal; // Unknown error
     }
-    Trace::getInstance().endSection();
+    if (traceEnabled) {
+        Trace::getInstance().endSection();
+    }
 }
 
 oboe::Result AdpfWrapper::notifyWorkloadSpike(bool cpu, bool gpu, const char* debugName) {
     std::lock_guard<std::mutex> lock(mLock);
-    Trace::getInstance().beginSection("notifyWorkloadSpike");
+    bool traceEnabled = Trace::getInstance().isEnabled();
+    if (traceEnabled) {
+        Trace::getInstance().beginSection("notifyWorkloadSpike");
+    }
     if (gAPH_notifyWorkloadSpikeFn == nullptr) {
         return Result::ErrorUnimplemented;
     }
@@ -233,12 +240,17 @@ oboe::Result AdpfWrapper::notifyWorkloadSpike(bool cpu, bool gpu, const char* de
     } else {
         return Result::ErrorInternal; // Unknown error
     }
-    Trace::getInstance().endSection();
+    if (traceEnabled) {
+        Trace::getInstance().endSection();
+    }
 }
 
 oboe::Result AdpfWrapper::notifyWorkloadReset(bool cpu, bool gpu, const char* debugName) {
     std::lock_guard<std::mutex> lock(mLock);
-    Trace::getInstance().beginSection("notifyWorkloadReset");
+    bool traceEnabled = Trace::getInstance().isEnabled();
+    if (traceEnabled) {
+        Trace::getInstance().beginSection("notifyWorkloadReset");
+    }
     if (gAPH_notifyWorkloadResetFn == nullptr) {
         return Result::ErrorUnimplemented;
     }
@@ -259,5 +271,7 @@ oboe::Result AdpfWrapper::notifyWorkloadReset(bool cpu, bool gpu, const char* de
     } else {
         return Result::ErrorInternal; // Unknown error
     }
-    Trace::getInstance().endSection();
+    if (traceEnabled) {
+        Trace::getInstance().endSection();
+    }
 }
