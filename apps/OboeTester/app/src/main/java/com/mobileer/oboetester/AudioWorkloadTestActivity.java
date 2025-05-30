@@ -43,6 +43,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     private ExponentialSliderView mAlternatingPeriodMsSlider;
 
     private CheckBox mEnableAdpfBox;
+    private CheckBox mEnableAdpfWorkloadIncreaseBox;
     private CheckBox mHearWorkloadBox;
 
     private int mCpuCount;
@@ -140,6 +141,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         mAlternatingPeriodMsSlider = (ExponentialSliderView) findViewById(R.id.alternating_period_ms);
 
         mEnableAdpfBox = (CheckBox) findViewById(R.id.enable_adpf);
+        mEnableAdpfWorkloadIncreaseBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
         mHearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
 
         mOpenButton = (Button) findViewById(R.id.button_open);
@@ -205,7 +207,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         int result = start(mTargetDurationMsSlider.getValue(), mNumBurstsSlider.getValue(),
                 mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue(),
                 mAlternatingPeriodMsSlider.getValue(), mEnableAdpfBox.isChecked(),
-                mHearWorkloadBox.isChecked());
+                mEnableAdpfWorkloadIncreaseBox.isChecked(), mHearWorkloadBox.isChecked());
         if (result != OPERATION_SUCCESS) {
             showErrorToast("start failed! Error:" + result);
             return;
@@ -283,6 +285,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         mAlternateNumVoicesSlider.setEnabled(enabled);
         mAlternatingPeriodMsSlider.setEnabled(enabled);
         mEnableAdpfBox.setEnabled(enabled);
+        mEnableAdpfWorkloadIncreaseBox.setEnabled(enabled);
         mHearWorkloadBox.setEnabled(enabled);
     }
 
@@ -297,7 +300,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     private native int getBufferSizeInFrames();
     private native int start(int targetDurationMs, int numBursts, int numVoices,
                              int numAlternateVoices, int alternatingPeriodMs, boolean adpfEnabled,
-                             boolean hearWorkload);
+                             boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload);
     private native int getCpuCount();
     private native int setCpuAffinityForCallback(int mask);
     private native int getXRunCount();

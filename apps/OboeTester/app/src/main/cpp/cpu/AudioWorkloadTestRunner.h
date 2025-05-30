@@ -60,6 +60,7 @@ public:
      * @param alternatingPeriodMs The period in milliseconds to alternate between numVoices and
      * alternateNumVoices.
      * @param adpfEnabled Whether to enable Adaptive Performance (ADPF) hints.
+     * @param adpfWorkloadIncreaseEnabled Whether to use ADPF setWorkloadIncrease() API.
      * @param hearWorkload If true, the synthesized audio will be audible; otherwise, it's
      * processed silently and a sine wave will be audible instead.
      * @return 0 on success, -1 on failure (e.g., test already running, error opening/starting
@@ -72,6 +73,7 @@ public:
             int32_t alternateNumVoices,
             int32_t alternatingPeriodMs,
             bool adpfEnabled,
+            bool adpfWorkloadIncreaseEnabled,
             bool hearWorkload) {
         if (mIsRunning) {
             std::cerr << "Error: Test already running." << std::endl;
@@ -97,6 +99,7 @@ public:
                 alternateNumVoices,
                 alternatingPeriodMs,
                 adpfEnabled,
+                adpfWorkloadIncreaseEnabled,
                 hearWorkload);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {

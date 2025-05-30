@@ -29,6 +29,7 @@ typedef void *(*fp_ATrace_setCounter)(const char *counterName, int64_t counterVa
 
 typedef bool *(*fp_ATrace_isEnabled)(void);
 
+
 bool Trace::isEnabled() const {
     return ATrace_isEnabled != nullptr && ATrace_isEnabled();
 }

@@ -15,4 +15,6 @@ public class NativeEngine {
     static native void setCpuAffinityMask(int mask);
 
     static native void setWorkloadReportingEnabled(boolean enabled);
+
+    static native void setNotifyWorkloadIncreaseEnabled(boolean enabled);
 }

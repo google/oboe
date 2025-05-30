@@ -68,6 +68,26 @@
         tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
         <CheckBox
+            android:id="@+id/enable_adpf_workload_increase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8sp"
+            android:text="ADPF Workload Increase API" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/small_horizontal_margin"
+        android:paddingTop="@dimen/small_vertical_margin"
+        android:paddingRight="@dimen/small_horizontal_margin"
+        android:paddingBottom="@dimen/small_vertical_margin"
+        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+        <CheckBox
             android:id="@+id/hear_workload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -128,7 +148,7 @@
         android:id="@+id/resultView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:lines="5"
+        android:lines="6"
         android:text="@string/tap_help"
         android:textSize="18sp"
         android:textStyle="bold" />

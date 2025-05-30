@@ -143,6 +143,13 @@ Java_com_mobileer_oboetester_NativeEngine_setWorkloadReportingEnabled(JNIEnv *en
     engine.getCurrentActivity()->setWorkloadReportingEnabled(enabled);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_NativeEngine_setNotifyWorkloadIncreaseEnabled(JNIEnv *env,
+                                                                      jclass type,
+                                                                      jboolean enabled) {
+    engine.getCurrentActivity()->setNotifyWorkloadIncreaseEnabled(enabled);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
@@ -1117,10 +1124,11 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getBufferSizeInFrames(JNI
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobject thiz,
         jint targetDurationMs, jint numBursts, jint numVoices, jint numAlternateVoices,
-        jint alternatingPeriodMs, jboolean adpfEnabled, jboolean hearWorkload) {
+        jint alternatingPeriodMs, jboolean adpfEnabled, jboolean adpfWorkloadIncreaseEnabled,
+        jboolean hearWorkload) {
     return sAudioWorkload.start(targetDurationMs, numBursts, numVoices,
                                 numAlternateVoices, alternatingPeriodMs, adpfEnabled,
-                                hearWorkload);
+                                adpfWorkloadIncreaseEnabled, hearWorkload);
 }
 
 JNIEXPORT jint JNICALL
@@ -1319,16 +1327,17 @@ static AudioWorkloadTestRunner sAudioWorkloadRunner;
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, jobject thiz,
-                                                                   jint targetDurationMs,
-                                                                   jint numBursts,
-                                                                   jint numVoices,
-                                                                   jint alternateNumVoices,
-                                                                   jint alternatingPeriodMillis,
-                                                                   jboolean adpfEnabled,
-                                                                   jboolean hearWorkload) {
+                                                   jint targetDurationMs,
+                                                   jint numBursts,
+                                                   jint numVoices,
+                                                   jint alternateNumVoices,
+                                                   jint alternatingPeriodMillis,
+                                                   jboolean adpfEnabled,
+                                                   jboolean adpfWorkloadIncreaseEnabled,
+                                                   jboolean hearWorkload) {
     return sAudioWorkloadRunner.start(targetDurationMs, numBursts, numVoices,
                                       alternateNumVoices, alternatingPeriodMillis, adpfEnabled,
-                                      hearWorkload);
+                                      adpfWorkloadIncreaseEnabled, hearWorkload);
 }
 
 JNIEXPORT jboolean JNICALL
