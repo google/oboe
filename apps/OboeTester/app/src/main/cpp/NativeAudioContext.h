@@ -316,6 +316,10 @@ public:
         oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
     }
 
+    void setNotifyWorkloadIncreaseEnabled(bool enabled) {
+        oboeCallbackProxy.setNotifyWorkloadIncreaseEnabled(enabled);
+    }
+
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
                                    [[maybe_unused]] int length) {}
 

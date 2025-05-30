@@ -174,13 +174,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         }
                         break;
                 }
-                if ((mWorkloadCurrent != nextWorkload) && mEnableWorkloadIncreaseApi) {
-                    if (nextWorkload == mWorkloadHigh) {
-                        mLastNotifyWorkloadResult = stream.notifyWorkloadIncrease(true /* cpu */, false /* gpu */);
-                    } else {
-                        mLastNotifyWorkloadResult = stream.notifyWorkloadReset(true /* cpu */, false /* gpu */);
-                    }
-                }
                 stream.setWorkload((int) nextWorkload);
                 mWorkloadCurrent = nextWorkload;
                 // Update chart
@@ -322,13 +315,6 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
-        mWorkloadIncreaseApiBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
-        mWorkloadIncreaseApiBox.setOnClickListener(buttonView -> {
-            CheckBox checkBox = (CheckBox) buttonView;
-            mEnableWorkloadIncreaseApi = checkBox.isChecked();
-        });
-        mWorkloadIncreaseApiBox.setEnabled(mEnableWorkloadIncreaseApi);
-
         mPerfHintBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             mShouldUseADPF = checkBox.isChecked();
@@ -344,6 +330,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
         });
         mWorkloadReportBox.setEnabled(mShouldUseADPF);
+
+        mWorkloadIncreaseApiBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
+        mWorkloadIncreaseApiBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mEnableWorkloadIncreaseApi = checkBox.isChecked();
+            setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
+        });
+        mWorkloadIncreaseApiBox.setEnabled(mEnableWorkloadIncreaseApi);
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
         hearWorkloadBox.setOnClickListener(buttonView -> {
@@ -395,6 +389,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
     private void setWorkloadReportingEnabled(boolean enabled) {
         NativeEngine.setWorkloadReportingEnabled(enabled);
+    }
+
+    private void setNotifyWorkloadIncreaseEnabled(boolean enabled) {
+        NativeEngine.setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
     private void updateButtons(boolean running) {
@@ -483,8 +481,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 setPerformanceHintEnabled(mShouldUseADPF);
                 mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
                 setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
-                mDrawAlwaysBox.setChecked(mDrawChartAlways);
                 mWorkloadIncreaseApiBox.setChecked(mEnableWorkloadIncreaseApi);
+                setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
+                mDrawAlwaysBox.setChecked(mDrawChartAlways);
             });
 
             int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);

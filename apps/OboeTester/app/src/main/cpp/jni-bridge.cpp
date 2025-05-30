@@ -143,6 +143,13 @@ Java_com_mobileer_oboetester_NativeEngine_setWorkloadReportingEnabled(JNIEnv *en
     engine.getCurrentActivity()->setWorkloadReportingEnabled(enabled);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_NativeEngine_setNotifyWorkloadIncreaseEnabled(JNIEnv *env,
+                                                                      jclass type,
+                                                                      jboolean enabled) {
+    engine.getCurrentActivity()->setNotifyWorkloadIncreaseEnabled(enabled);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         JNIEnv *env, jobject synth,
@@ -625,28 +632,6 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setWorkload(
         JNIEnv *env, jobject, jint workload) {
     engine.getCurrentActivity()->setWorkload(workload);
-}
-
-static const char* sWorkloadDebugName = "OboeTester";
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_notifyWorkloadIncrease(
-        JNIEnv *env, jobject, jint streamIndex, jboolean cpu, jboolean gpu) {
-    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
-    if (oboeStream != nullptr) {
-        return (jint) oboeStream->notifyWorkloadIncrease(cpu, gpu, sWorkloadDebugName);
-    }
-    return -1;
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_notifyWorkloadReset(
-        JNIEnv *env, jobject, jint streamIndex, jboolean cpu, jboolean gpu) {
-    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
-    if (oboeStream != nullptr) {
-        return (jint) oboeStream->notifyWorkloadReset(cpu, gpu, sWorkloadDebugName);
-    }
-    return -1;
 }
 
 JNIEXPORT void JNICALL
