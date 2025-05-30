@@ -200,6 +200,12 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getDelayBeforeClos
 <tr class="separator:a9fdffea9e3a3f693fcbbbca699a22c6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cf8ce01c8db830f89b70c782fe18d90" id="r_a9cf8ce01c8db830f89b70c782fe18d90"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9cf8ce01c8db830f89b70c782fe18d90">reportWorkload</a> (int32_t appWorkload)</td></tr>
 <tr class="separator:a9cf8ce01c8db830f89b70c782fe18d90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab76b523480d65f25f7df3c99f2dce47" id="r_aab76b523480d65f25f7df3c99f2dce47"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aab76b523480d65f25f7df3c99f2dce47">notifyWorkloadIncrease</a> (bool cpu, bool gpu, const char *debugName)</td></tr>
+<tr class="separator:aab76b523480d65f25f7df3c99f2dce47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3625762def846a6f4b3f48548bfa1b9c" id="r_a3625762def846a6f4b3f48548bfa1b9c"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3625762def846a6f4b3f48548bfa1b9c">notifyWorkloadReset</a> (bool cpu, bool gpu, const char *debugName)</td></tr>
+<tr class="separator:a3625762def846a6f4b3f48548bfa1b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5124210a3410ab9e36ea4c4b8b30e7b1" id="r_a5124210a3410ab9e36ea4c4b8b30e7b1"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5124210a3410ab9e36ea4c4b8b30e7b1">notifyWorkloadSpike</a> (bool cpu, bool gpu, const char *debugName)</td></tr>
+<tr class="separator:a5124210a3410ab9e36ea4c4b8b30e7b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac81c2a3fd1ce1bd19e7b738553d6390" id="r_aac81c2a3fd1ce1bd19e7b738553d6390"><td class="memItemLeft" align="right" valign="top"><a id="aac81c2a3fd1ce1bd19e7b738553d6390" name="aac81c2a3fd1ce1bd19e7b738553d6390"></a>
 virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><b>setOffloadDelayPadding</b> (int32_t delayInFrames, int32_t paddingInFrames)</td></tr>
 <tr class="separator:aac81c2a3fd1ce1bd19e7b738553d6390"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1137,6 +1143,144 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if XRun counts are supported on the stream </dd></dl>
+
+</div>
+</div>
+<a id="aab76b523480d65f25f7df3c99f2dce47" name="aab76b523480d65f25f7df3c99f2dce47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab76b523480d65f25f7df3c99f2dce47">&#9670;&#160;</a></span>notifyWorkloadIncrease()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual oboe::Result oboe::AudioStream::notifyWorkloadIncrease </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>cpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>gpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>debugName</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Informs the framework of an upcoming increase in the workload of an audio callback bound to this session. The user can specify whether the increase is expected to be on the CPU, GPU, or both.</p>
+<p>Sending hints for both CPU and GPU counts as two separate hints for the purposes of the rate limiter.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>Indicates if the workload increase is expected to affect the CPU. </td></tr>
+    <tr><td class="paramname">gpu</td><td>Indicates if the workload increase is expected to affect the GPU. </td></tr>
+    <tr><td class="paramname">debugName</td><td>A required string used to identify this specific hint during tracing. This debug string will only be held for the duration of the method, and can be safely discarded after.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This was introduced in Android API Level 36</p>
+<dl class="section return"><dt>Returns</dt><dd>Result::OK on success. Result::ErrorInvalidState if the PerformanceHint was not enabled. Result::ErrorClosed if AdpfWrapper::open() was not called. Result::ErrorUnimplemented if the API is not supported. Result::ErrorInvalidHandle if no hints were requested. Result::ErrorInvalidRate if the hint was rate limited. Result::ErrorNoService if communication with the system service has failed. Result::ErrorUnavailable if the hint is not supported. </dd></dl>
+
+</div>
+</div>
+<a id="a3625762def846a6f4b3f48548bfa1b9c" name="a3625762def846a6f4b3f48548bfa1b9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3625762def846a6f4b3f48548bfa1b9c">&#9670;&#160;</a></span>notifyWorkloadReset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual oboe::Result oboe::AudioStream::notifyWorkloadReset </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>cpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>gpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>debugName</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Informs the framework of an upcoming reset in the workload of an audio callback bound to this session, or the imminent start of a new workload. The user can specify whether the reset is expected to affect the CPU, GPU, or both.</p>
+<p>Sending hints for both CPU and GPU counts as two separate hints for the purposes of the this load tracking.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>Indicates if the workload reset is expected to affect the CPU. </td></tr>
+    <tr><td class="paramname">gpu</td><td>Indicates if the workload reset is expected to affect the GPU. </td></tr>
+    <tr><td class="paramname">debugName</td><td>A required string used to identify this specific hint during tracing. This debug string will only be held for the duration of the method, and can be safely discarded after.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This was introduced in Android API Level 36</p>
+<dl class="section return"><dt>Returns</dt><dd>Result::OK on success. Result::ErrorInvalidState if the PerformanceHint was not enabled. Result::ErrorClosed if AdpfWrapper::open() was not called. Result::ErrorUnimplemented if the API is not supported. Result::ErrorInvalidHandle if no hints were requested. Result::ErrorInvalidRate if the hint was rate limited. Result::ErrorNoService if communication with the system service has failed. Result::ErrorUnavailable if the hint is not supported. </dd></dl>
+
+</div>
+</div>
+<a id="a5124210a3410ab9e36ea4c4b8b30e7b1" name="a5124210a3410ab9e36ea4c4b8b30e7b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5124210a3410ab9e36ea4c4b8b30e7b1">&#9670;&#160;</a></span>notifyWorkloadSpike()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual oboe::Result oboe::AudioStream::notifyWorkloadSpike </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>cpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>gpu</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>debugName</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Informs the framework of an upcoming one-off expensive frame for an audio callback bound to this session. This frame will be treated as not representative of the workload as a whole, and it will be discarded the purposes of load tracking. The user can specify whether the workload spike is expected to be on the CPU, GPU, or both.</p>
+<p>Sending hints for both CPU and GPU counts as two separate hints for the purposes of the rate limiter.</p>
+<p>This was introduced in Android API Level 36</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>Indicates if the workload spike is expected to affect the CPU. </td></tr>
+    <tr><td class="paramname">gpu</td><td>Indicates if the workload spike is expected to affect the GPU. </td></tr>
+    <tr><td class="paramname">debugName</td><td>A required string used to identify this specific hint during tracing. This debug string will only be held for the duration of the method, and can be safely discarded after.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Result::OK on success. Result::ErrorInvalidState if the PerformanceHint was not enabled. Result::ErrorClosed if AdpfWrapper::open() was not called. Result::ErrorUnimplemented if the API is not supported. Result::ErrorInvalidHandle if no hints were requested. Result::ErrorInvalidRate if the hint was rate limited. Result::ErrorNoService if communication with the system service has failed. Result::ErrorUnavailable if the hint is not supported. </dd></dl>
 
 </div>
 </div>
