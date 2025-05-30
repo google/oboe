@@ -657,6 +657,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
         updateNativeAudioParameters();
 
+        setRecordingFileName();
+
         if (!isTestConfiguredUsingBundle()) {
             applyConfigurationViewsToModels();
         }
@@ -956,6 +958,18 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
         return fileWritten;
     }
+
+    void setRecordingFileName() {
+        // Get the cache directory
+        File cacheDir = getCacheDir();
+
+        File outputFile = new File(cacheDir, "recording_" + System.currentTimeMillis());
+        String filePath = outputFile.getAbsolutePath();
+
+        setRecordingFileName(filePath);
+    }
+
+    native void setRecordingFileName(String filePath);
 
     void setupMp3BufferFromFile() {
         try {

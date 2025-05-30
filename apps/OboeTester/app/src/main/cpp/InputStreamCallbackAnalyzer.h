@@ -26,7 +26,7 @@
 
 #include "analyzer/PeakDetector.h"
 #include "FormatConverterBox.h"
-#include "MultiChannelRecording.h"
+#include "MultiChannelFileRecording.h"
 #include "OboeTesterStreamCallback.h"
 
 class InputStreamCallbackAnalyzer : public OboeTesterStreamCallback {
@@ -58,7 +58,7 @@ public:
             void *audioData,
             int numFrames) override;
 
-    void setRecording(MultiChannelRecording *recording) {
+    void setRecording(MultiChannelFileRecording *recording) {
         mRecording = recording;
     }
 
@@ -75,7 +75,7 @@ public:
 public:
     int32_t                         mNumChannels = 0;
     std::unique_ptr<PeakDetector[]> mPeakDetectors;
-    MultiChannelRecording          *mRecording = nullptr;
+    MultiChannelFileRecording      *mRecording = nullptr;
 
 private:
     std::unique_ptr<FormatConverterBox> mInputConverter;
