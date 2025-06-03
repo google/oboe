@@ -43,7 +43,7 @@ Include and link to oboe by updating your `CMakeLists.txt`:
 
 Here's a complete example `CMakeLists.txt` file:
 
-    cmake_minimum_required(VERSION 3.4.1)
+    cmake_minimum_required(VERSION 3.22.1)
 
     # Build our own native library
     add_library (native-lib SHARED native-lib.cpp )
@@ -117,7 +117,7 @@ Add `oboe` to the list of libraries which your app's library depends on. For exa
 
 Here's a complete example `CMakeLists.txt` file:
 
-    cmake_minimum_required(VERSION 3.4.1)
+    cmake_minimum_required(VERSION 3.22.1)
 
     # Build our own native library
     add_library (native-lib SHARED native-lib.cpp )

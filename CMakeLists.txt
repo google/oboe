@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
 
 # Set the name of the project and store it in PROJECT_NAME. Also set the following variables:
 # PROJECT_SOURCE_DIR (usually the root directory where Oboe has been cloned e.g.)
