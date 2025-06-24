@@ -78,6 +78,7 @@ public:
         builder.setChannelCount(2);
         builder.setDataCallback(this);
 
+        mStream.reset();
         oboe::Result result = builder.openStream(mStream);
         if (result != oboe::Result::OK) {
             std::cerr << "Error opening stream: " << oboe::convertToText(result) << std::endl;
@@ -245,7 +246,6 @@ public:
     int32_t close() {
         if (mStream) {
             oboe::Result result = mStream->close();
-            mStream = nullptr;
             if (result != oboe::Result::OK) {
                 std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
