@@ -428,10 +428,11 @@
             android:layout_height="wrap_content"
             android:visibility="gone">
 
-            <TextView
-                android:id="@+id/textBassBoost"
+            <CheckBox
+                android:id="@+id/checkBoxBassBoost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
                 android:text="Bass Boost" />
 
             <SeekBar
@@ -441,10 +442,11 @@
                 android:max="1000"
                 android:progress="0" />
 
-            <TextView
-                android:id="@+id/textLoudnessEnhancer"
+            <CheckBox
+                android:id="@+id/checkBoxLoudnessEnhancer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
                 android:text="Loudness Enhancer" />
 
             <SeekBar
