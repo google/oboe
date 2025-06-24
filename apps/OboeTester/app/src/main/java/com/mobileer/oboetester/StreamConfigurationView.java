@@ -119,9 +119,9 @@ public class StreamConfigurationView extends LinearLayout {
     private CharSequence mAcousticEchoCancelerText;
     private CheckBox mNoiseSuppressorCheckBox;
     private CharSequence mNoiseSuppressorText;
-    private TextView mBassBoostTextView;
+    private CheckBox mBassBoostCheckBox;
     private SeekBar mBassBoostSeekBar;
-    private TextView mLoudnessEnhancerTextView;
+    private CheckBox mLoudnessEnhancerCheckBox;
     private SeekBar mLoudnessEnhancerSeekBar;
 
     private boolean mIsChannelMaskLastSelected;
@@ -250,10 +250,12 @@ public class StreamConfigurationView extends LinearLayout {
         mAutomaticGainControlCheckBox = (CheckBox) findViewById(R.id.checkBoxAutomaticGainControl);
         mAcousticEchoCancelerCheckBox = (CheckBox) findViewById(R.id.checkBoxAcousticEchoCanceler);
         mNoiseSuppressorCheckBox = (CheckBox) findViewById(R.id.checkBoxNoiseSuppressor);
-        mBassBoostTextView = (TextView) findViewById(R.id.textBassBoost);
+        mBassBoostCheckBox = (CheckBox) findViewById(R.id.checkBoxBassBoost);
         mBassBoostSeekBar = (SeekBar) findViewById(R.id.seekBarBassBoost);
-        mLoudnessEnhancerTextView = (TextView) findViewById(R.id.textLoudnessEnhancer);
+        mBassBoostSeekBar.setEnabled(mBassBoostCheckBox.isChecked());
+        mLoudnessEnhancerCheckBox = (CheckBox) findViewById(R.id.checkBoxLoudnessEnhancer);
         mLoudnessEnhancerSeekBar = (SeekBar) findViewById(R.id.seekBarLoudnessEnhancer);
+        mLoudnessEnhancerSeekBar.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
 
         mAutomaticGainControlCheckBox.setEnabled(AutomaticGainControl.isAvailable());
         mAutomaticGainControlText = mAutomaticGainControlCheckBox.getText();
@@ -304,6 +306,16 @@ public class StreamConfigurationView extends LinearLayout {
         mNoiseSuppressorCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 onNoiseSuppressorCheckBoxChanged(isChecked);
+            }
+        });
+        mBassBoostCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onBassBoostCheckBoxChanged(isChecked);
+            }
+        });
+        mLoudnessEnhancerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onLoudnessEnhancerCheckBoxChanged(isChecked);
             }
         });
 
@@ -634,8 +646,12 @@ public class StreamConfigurationView extends LinearLayout {
         if (misOutput) {
             mBassBoost = new BassBoost(0, sessionId);
             mBassBoost.setStrength((short) mBassBoostSeekBar.getProgress());
+            mBassBoost.setEnabled(mBassBoostCheckBox.isChecked());
+            mBassBoostSeekBar.setEnabled(mBassBoostCheckBox.isChecked());
             mLoudnessEnhancer = new LoudnessEnhancer(sessionId);
             mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
+            mLoudnessEnhancer.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
+            mLoudnessEnhancerSeekBar.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
         } else {
             // If AEC is not available, the checkbox will be disabled in initializeViews().
             if (mAcousticEchoCancelerCheckBox.isEnabled()) {
@@ -682,14 +698,14 @@ public class StreamConfigurationView extends LinearLayout {
         if (mLoudnessEnhancer != null) {
             mLoudnessEnhancer.setTargetGain(progress);
         }
-        mLoudnessEnhancerTextView.setText("Loudness Enhancer: " + progress);
+        mLoudnessEnhancerCheckBox.setText("Loudness Enhancer: " + progress);
     }
 
     private void onBassBoostSeekBarChanged(int progress) {
         if (mBassBoost != null) {
             mBassBoost.setStrength((short) progress);
         }
-        mBassBoostTextView.setText("Bass Boost: " + progress);
+        mBassBoostCheckBox.setText("Bass Boost: " + progress);
     }
 
     private void onAutomaticGainControlCheckBoxChanged(boolean isChecked) {
@@ -708,5 +724,19 @@ public class StreamConfigurationView extends LinearLayout {
         if (mNoiseSuppressorCheckBox.isEnabled() && mNoiseSuppressor != null) {
             mNoiseSuppressor.setEnabled(isChecked);
         }
+    }
+
+    private void onBassBoostCheckBoxChanged(boolean isChecked) {
+        if (mBassBoost != null) {
+            mBassBoost.setEnabled(isChecked);
+        }
+        mBassBoostSeekBar.setEnabled(isChecked);
+    }
+
+    private void onLoudnessEnhancerCheckBoxChanged(boolean isChecked) {
+        if (mLoudnessEnhancer != null) {
+            mLoudnessEnhancer.setEnabled(isChecked);
+        }
+        mLoudnessEnhancerSeekBar.setEnabled(isChecked);
     }
 }
