@@ -729,14 +729,14 @@ public class StreamConfigurationView extends LinearLayout {
     private void onBassBoostCheckBoxChanged(boolean isChecked) {
         if (mBassBoost != null) {
             mBassBoost.setEnabled(isChecked);
-            mBassBoostSeekBar.setEnabled(isChecked);
         }
+        mBassBoostSeekBar.setEnabled(isChecked);
     }
 
     private void onLoudnessEnhancerCheckBoxChanged(boolean isChecked) {
         if (mLoudnessEnhancer != null) {
             mLoudnessEnhancer.setEnabled(isChecked);
-            mLoudnessEnhancerSeekBar.setEnabled(isChecked);
         }
+        mLoudnessEnhancerSeekBar.setEnabled(isChecked);
     }
 }
