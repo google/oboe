@@ -156,7 +156,7 @@ public:
             outputResult = getOutputStream()->requestStop();
         }
         if (getInputStream()) {
-            inputResult = getOutputStream()->requestStop();
+            inputResult = getInputStream()->requestStop();
         }
         if (outputResult != Result::OK) {
             return outputResult;
