@@ -25,8 +25,9 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <cerrno>
 #include <unistd.h> // For CPU affinity
-#include <mutex> // Added for mutex
+#include <mutex>
 #include "SynthWorkload.h"
 
 /**
@@ -78,6 +79,11 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t open() {
+        std::lock_guard<std::mutex> lock(mStreamLock);
+        if (mStream) {
+            return 0; // Already open.
+        }
+
         oboe::AudioStreamBuilder builder;
         builder.setDirection(oboe::Direction::Output);
         builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
@@ -143,6 +149,11 @@ public:
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                   bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
+        bool expected = false;
+        if (!mRunning.compare_exchange_strong(expected, true)) {
+            return -EALREADY; // Already running
+        }
+
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -156,17 +167,25 @@ public:
         mCallbackCount = 0;
         mPreviousXRunCount = mXRunCount.load();
         mXRunCount = 0;
-        mRunning = true;
         mHearWorkload = hearWorkload;
         mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
-        mStream->setPerformanceHintEnabled(adpfEnabled);
-        mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
-        mBufferSizeInFrames = mStream->getBufferSizeInFrames();
-        mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
-        oboe::Result result = mStream->start();
-        if (result != oboe::Result::OK) {
-            std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
-            return static_cast<int32_t>(result);
+
+        {
+            std::lock_guard<std::mutex> lock(mStreamLock);
+            if (!mStream) {
+                mRunning = false;
+                return -EINVAL; // Stream not open
+            }
+            mStream->setPerformanceHintEnabled(adpfEnabled);
+            mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
+            mBufferSizeInFrames = mStream->getBufferSizeInFrames();
+            mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
+            oboe::Result result = mStream->start();
+            if (result != oboe::Result::OK) {
+                mRunning = false;
+                std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
+                return static_cast<int32_t>(result);
+            }
         }
 
         return 0;
@@ -239,8 +258,15 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t stop() {
-        if (mStream) {
-            oboe::Result result = mStream->stop();
+        mRunning = false; // Cooperatively stop the callback.
+        std::shared_ptr<oboe::AudioStream> stream;
+        {
+            std::lock_guard<std::mutex> lock(mStreamLock);
+            stream = mStream;
+        }
+
+        if (stream) {
+            oboe::Result result = stream->stop();
             if (result != oboe::Result::OK) {
                 std::cerr << "Error stopping stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
@@ -251,12 +277,17 @@ public:
 
     /**
      * @brief Closes the audio stream.
-     * @return 0 on success, or a negative Oboe error code on failure.
-     */
+     * @return 0 on success, or a negative Oboe error code on failure. */
     int32_t close() {
-        if (mStream) {
-            oboe::Result result = mStream->close();
+        stop(); // Ensure stream is stopped before closing.
+        std::shared_ptr<oboe::AudioStream> streamToClose;
+        {
+            std::lock_guard<std::mutex> lock(mStreamLock);
+            streamToClose = mStream;
             mStream = nullptr;
+        }
+        if (streamToClose) {
+            oboe::Result result = streamToClose->close();
             if (result != oboe::Result::OK) {
                 std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
@@ -287,6 +318,10 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream, void* audioData,
                                           int32_t numFrames) override {
+        if (!mRunning) {
+            return oboe::DataCallbackResult::Stop;
+        }
+
         int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
@@ -357,7 +392,7 @@ public:
         int64_t currentTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-        if (currentTimeMs - mStartTimeMs > mTargetDurationMs) {
+        if (mTargetDurationMs > 0 && (currentTimeMs - mStartTimeMs > mTargetDurationMs)) {
             mRunning = false;
             return oboe::DataCallbackResult::Stop;
         }
@@ -369,6 +404,7 @@ private:
     const std::string kTestName = "AudioWorkloadTest";
 
     // Member variables
+    std::mutex mStreamLock;
     std::shared_ptr<oboe::AudioStream> mStream; // Pointer to the Oboe audio stream instance
 
     // Atomic variables for thread-safe access from audio callback and other threads
@@ -396,8 +432,7 @@ private:
 
     // Sine wave generation parameters
     std::atomic<float> mPhase{0.0f};           // Current phase of the sine wave oscillator
-    // Phase increment for sine wave
-    std::atomic<float> mPhaseIncrement{0.0f};  // Current phase of the sine wave oscillator
+    std::atomic<float> mPhaseIncrement{0.0f};  // Phase increment for sine wave
 
     SynthWorkload mSynthWorkload;              // Instance of the synthetic workload generator
 };
