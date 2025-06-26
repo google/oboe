@@ -141,7 +141,7 @@ public:
      * This can indicate if it's running, how many callbacks have occurred, or the final result text.
      * @return A string describing the current status.
      */
-    std::string getStatus() const {
+    std::string getStatus() {
         if (!mIsRunning) {
             std::lock_guard<std::mutex> lock(mResultTextMutex);
             return mResultText;
@@ -192,7 +192,7 @@ public:
      * @brief Gets a descriptive string for the test result (e.g., "PASS", "FAIL: X xruns").
      * @return A string containing the result text.
      */
-    std::string getResultText() const {
+    std::string getResultText() {
         std::lock_guard<std::mutex> lock(mResultTextMutex);
         return mResultText;
     }
@@ -202,8 +202,7 @@ private:
     std::atomic<bool> mIsRunning{false};
     std::atomic<bool> mIsDone{true};
     std::atomic<int32_t> mResult{0};
-    // Mutex to protect mResultText. Mutable to allow locking in const methods.
-    mutable std::mutex mResultTextMutex;
+    std::mutex mResultTextMutex;
     std::string mResultText;
 };
 
