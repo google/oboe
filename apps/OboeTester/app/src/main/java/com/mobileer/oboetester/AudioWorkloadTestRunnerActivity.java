@@ -103,9 +103,9 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onStop() {
         stop();
-        super.onDestroy();
+        super.onStop();
     }
 
     public void startTest(View view) {
