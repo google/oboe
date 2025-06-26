@@ -26,6 +26,7 @@
 #include <thread>
 #include <vector>
 #include <unistd.h> // For CPU affinity
+#include <mutex> // Added for mutex
 #include "SynthWorkload.h"
 
 /**
@@ -148,7 +149,10 @@ public:
         mAlternateNumVoices = alternateNumVoices;
         mAlternatingPeriodMs = alternatingPeriodMs;
         mStartTimeMs = 0;
-        mCallbackStatistics.clear();
+        { // Protect mCallbackStatistics during clear
+            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            mCallbackStatistics.clear();
+        }
         mCallbackCount = 0;
         mPreviousXRunCount = mXRunCount.load();
         mXRunCount = 0;
@@ -267,6 +271,8 @@ public:
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics() {
+        // Protect mCallbackStatistics during read and return a copy to avoid exposing internal state
+        std::lock_guard<std::mutex> lock(mStatisticsMutex);
         return mCallbackStatistics;
     }
 
@@ -342,7 +348,10 @@ public:
         status.xRunCount = mXRunCount - mPreviousXRunCount;
         status.cpuIndex = sched_getcpu();
 
-        mCallbackStatistics.push_back(status);
+        { // Protect mCallbackStatistics during push_back
+            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            mCallbackStatistics.push_back(status);
+        }
         mCallbackCount++;
         mLastDurationNs = finishTimeNs - beginTimeNs;
 
@@ -380,6 +389,8 @@ private:
     std::atomic<bool> mHearWorkload{false};
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
 
+    // Mutex to protect mCallbackStatistics
+    std::mutex mStatisticsMutex;
     std::vector<CallbackStatus> mCallbackStatistics;
     std::atomic<bool> mRunning{false};
 
