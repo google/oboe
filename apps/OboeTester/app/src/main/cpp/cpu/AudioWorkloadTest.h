@@ -25,9 +25,8 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <cerrno>
 #include <unistd.h> // For CPU affinity
-#include <mutex>
+#include <mutex> // Added for mutex
 #include "SynthWorkload.h"
 
 /**
@@ -80,10 +79,6 @@ public:
      */
     int32_t open() {
         std::lock_guard<std::mutex> lock(mStreamLock);
-        if (mStream) {
-            return 0; // Already open.
-        }
-
         oboe::AudioStreamBuilder builder;
         builder.setDirection(oboe::Direction::Output);
         builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
@@ -149,11 +144,7 @@ public:
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                   bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
-        bool expected = false;
-        if (!mRunning.compare_exchange_strong(expected, true)) {
-            return -EALREADY; // Already running
-        }
-
+        std::lock_guard<std::mutex> lock(mStreamLock);
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -161,31 +152,23 @@ public:
         mAlternatingPeriodMs = alternatingPeriodMs;
         mStartTimeMs = 0;
         {
-            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            std::lock_guard<std::mutex> lock(mStatisticsLock);
             mCallbackStatistics.clear();
         }
         mCallbackCount = 0;
         mPreviousXRunCount = mXRunCount.load();
         mXRunCount = 0;
+        mRunning = true;
         mHearWorkload = hearWorkload;
         mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
-
-        {
-            std::lock_guard<std::mutex> lock(mStreamLock);
-            if (!mStream) {
-                mRunning = false;
-                return -EINVAL; // Stream not open
-            }
-            mStream->setPerformanceHintEnabled(adpfEnabled);
-            mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
-            mBufferSizeInFrames = mStream->getBufferSizeInFrames();
-            mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
-            oboe::Result result = mStream->start();
-            if (result != oboe::Result::OK) {
-                mRunning = false;
-                std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
-                return static_cast<int32_t>(result);
-            }
+        mStream->setPerformanceHintEnabled(adpfEnabled);
+        mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
+        mBufferSizeInFrames = mStream->getBufferSizeInFrames();
+        mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
+        oboe::Result result = mStream->start();
+        if (result != oboe::Result::OK) {
+            std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
+            return static_cast<int32_t>(result);
         }
 
         return 0;
@@ -258,15 +241,9 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t stop() {
-        mRunning = false; // Cooperatively stop the callback.
-        std::shared_ptr<oboe::AudioStream> stream;
-        {
-            std::lock_guard<std::mutex> lock(mStreamLock);
-            stream = mStream;
-        }
-
-        if (stream) {
-            oboe::Result result = stream->stop();
+        std::lock_guard<std::mutex> lock(mStreamLock);
+        if (mStream) {
+            oboe::Result result = mStream->stop();
             if (result != oboe::Result::OK) {
                 std::cerr << "Error stopping stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
@@ -277,17 +254,13 @@ public:
 
     /**
      * @brief Closes the audio stream.
-     * @return 0 on success, or a negative Oboe error code on failure. */
+     * @return 0 on success, or a negative Oboe error code on failure.
+     */
     int32_t close() {
-        stop(); // Ensure stream is stopped before closing.
-        std::shared_ptr<oboe::AudioStream> streamToClose;
-        {
-            std::lock_guard<std::mutex> lock(mStreamLock);
-            streamToClose = mStream;
+        std::lock_guard<std::mutex> lock(mStreamLock);
+        if (mStream) {
+            oboe::Result result = mStream->close();
             mStream = nullptr;
-        }
-        if (streamToClose) {
-            oboe::Result result = streamToClose->close();
             if (result != oboe::Result::OK) {
                 std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
@@ -302,7 +275,7 @@ public:
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics() {
-        std::lock_guard<std::mutex> lock(mStatisticsMutex);
+        std::lock_guard<std::mutex> lock(mStatisticsLock);
         return mCallbackStatistics;
     }
 
@@ -318,10 +291,6 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream, void* audioData,
                                           int32_t numFrames) override {
-        if (!mRunning) {
-            return oboe::DataCallbackResult::Stop;
-        }
-
         int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
@@ -383,7 +352,7 @@ public:
         status.cpuIndex = sched_getcpu();
 
         {
-            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            std::lock_guard<std::mutex> lock(mStatisticsLock);
             mCallbackStatistics.push_back(status);
         }
         mCallbackCount++;
@@ -392,7 +361,7 @@ public:
         int64_t currentTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-        if (mTargetDurationMs > 0 && (currentTimeMs - mStartTimeMs > mTargetDurationMs)) {
+        if (currentTimeMs - mStartTimeMs > mTargetDurationMs) {
             mRunning = false;
             return oboe::DataCallbackResult::Stop;
         }
@@ -403,8 +372,8 @@ public:
 private:
     const std::string kTestName = "AudioWorkloadTest";
 
-    // Member variables
-    std::mutex mStreamLock;
+    // Lock for protecting mStream
+    std::mutex                         mStreamLock;
     std::shared_ptr<oboe::AudioStream> mStream; // Pointer to the Oboe audio stream instance
 
     // Atomic variables for thread-safe access from audio callback and other threads
@@ -425,7 +394,7 @@ private:
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
 
     // Mutex to protect mCallbackStatistics
-    std::mutex mStatisticsMutex;
+    std::mutex mStatisticsLock;
     std::vector<CallbackStatus> mCallbackStatistics;
 
     std::atomic<bool> mRunning{false};
