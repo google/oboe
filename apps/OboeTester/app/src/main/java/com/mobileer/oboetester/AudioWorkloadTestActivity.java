@@ -188,6 +188,12 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         mCloseButton.setEnabled(false);
     }
 
+    @Override
+    protected void onStop() {
+        close();
+        super.onStop();
+    }
+
     public void openAudio(View view) {
         int result = open();
         if (result != OPERATION_SUCCESS) {

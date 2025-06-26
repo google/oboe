@@ -65,6 +65,13 @@ public:
     AudioWorkloadTest() = default;
 
     /**
+     * @brief Destructor. Close the stream when this class is destroyed.
+     */
+    ~AudioWorkloadTest() {
+        close();
+    }
+
+    /**
      * @brief Opens a float stereo audio stream.
      * Configures the stream for low latency output.
      * @return 0 on success, or a negative Oboe error code on failure.
@@ -344,7 +351,6 @@ public:
 
         if (currentTimeMs - mStartTimeMs > mTargetDurationMs) {
             mRunning = false;
-            stop();
             return oboe::DataCallbackResult::Stop;
         }
 
