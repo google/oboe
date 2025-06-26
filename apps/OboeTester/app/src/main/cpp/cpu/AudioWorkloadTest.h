@@ -149,7 +149,7 @@ public:
         mAlternateNumVoices = alternateNumVoices;
         mAlternatingPeriodMs = alternatingPeriodMs;
         mStartTimeMs = 0;
-        { // Protect mCallbackStatistics during clear
+        {
             std::lock_guard<std::mutex> lock(mStatisticsMutex);
             mCallbackStatistics.clear();
         }
@@ -271,7 +271,6 @@ public:
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics() {
-        // Protect mCallbackStatistics during read and return a copy to avoid exposing internal state
         std::lock_guard<std::mutex> lock(mStatisticsMutex);
         return mCallbackStatistics;
     }
@@ -348,7 +347,7 @@ public:
         status.xRunCount = mXRunCount - mPreviousXRunCount;
         status.cpuIndex = sched_getcpu();
 
-        { // Protect mCallbackStatistics during push_back
+        {
             std::lock_guard<std::mutex> lock(mStatisticsMutex);
             mCallbackStatistics.push_back(status);
         }
@@ -392,6 +391,7 @@ private:
     // Mutex to protect mCallbackStatistics
     std::mutex mStatisticsMutex;
     std::vector<CallbackStatus> mCallbackStatistics;
+
     std::atomic<bool> mRunning{false};
 
     // Sine wave generation parameters
