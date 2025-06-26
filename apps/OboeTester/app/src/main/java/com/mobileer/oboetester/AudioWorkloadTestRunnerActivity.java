@@ -102,6 +102,12 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         enableParamsUI(true);
     }
 
+    @Override
+    protected void onDestroy() {
+        stop();
+        super.onDestroy();
+    }
+
     public void startTest(View view) {
         int targetDurationMs = mTargetDurationMsSlider.getValue();
         int numBursts = mNumBurstsSlider.getValue();
