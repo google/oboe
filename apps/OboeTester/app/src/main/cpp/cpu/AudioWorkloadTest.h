@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 #include <unistd.h> // For CPU affinity
-#include <mutex> // Added for mutex
+#include <mutex>
 #include "SynthWorkload.h"
 
 /**
@@ -393,7 +393,7 @@ private:
     std::atomic<bool> mHearWorkload{false};
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
 
-    // Mutex to protect mCallbackStatistics
+    // Lock to protect mCallbackStatistics
     std::mutex mStatisticsLock;
     std::vector<CallbackStatus> mCallbackStatistics;
 
