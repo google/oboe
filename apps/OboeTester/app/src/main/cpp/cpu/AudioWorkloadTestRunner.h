@@ -81,7 +81,10 @@ public:
         }
 
         if (mAudioWorkloadTest.open() != static_cast<int32_t>(oboe::Result::OK)) {
-            mResultText = "Error opening audio stream.";
+            {
+                std::lock_guard<std::mutex> lock(mResultTextMutex);
+                mResultText = "Error opening audio stream.";
+            }
             mResult = -1;
             mIsDone = true;
             return -1;
@@ -90,7 +93,10 @@ public:
         mIsRunning = true;
         mIsDone = false;
         mResult = 0;
-        mResultText = "Running...";
+        {
+            std::lock_guard<std::mutex> lock(mResultTextMutex);
+            mResultText = "Running...";
+        }
 
         int32_t result = mAudioWorkloadTest.start(
                 targetDurationMs,
@@ -103,8 +109,11 @@ public:
                 hearWorkload);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {
-            mResultText = "Error starting audio stream: ";
-            mResultText += oboe::convertToText(static_cast<oboe::Result>(result));
+            {
+                std::lock_guard<std::mutex> lock(mResultTextMutex);
+                mResultText = "Error starting audio stream: ";
+                mResultText += oboe::convertToText(static_cast<oboe::Result>(result));
+            }
             mResult = -1;
             mIsDone = true;
             mIsRunning = false;
@@ -134,6 +143,7 @@ public:
      */
     std::string getStatus() const {
         if (!mIsRunning) {
+            std::lock_guard<std::mutex> lock(mResultTextMutex);
             return mResultText;
         }
         int32_t callbacksCompleted = mAudioWorkloadTest.getCallbackCount();
@@ -154,12 +164,15 @@ public:
             mIsRunning = false;
 
             int32_t xRunCount = mAudioWorkloadTest.getXRunCount();
-            if (xRunCount > 0) {
-                mResult = -1;
-                mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " xruns.";
-            } else {
-                mResult = 1;
-                mResultText = "PASS: No xruns encountered.";
+            {
+                std::lock_guard<std::mutex> lock(mResultTextMutex);
+                if (xRunCount > 0) {
+                    mResult = -1;
+                    mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " XRuns.";
+                } else {
+                    mResult = 1;
+                    mResultText = "PASS: No XRuns encountered.";
+                }
             }
             mIsDone = true;
             return 0;
@@ -180,6 +193,7 @@ public:
      * @return A string containing the result text.
      */
     std::string getResultText() const {
+        std::lock_guard<std::mutex> lock(mResultTextMutex);
         return mResultText;
     }
 
@@ -188,6 +202,8 @@ private:
     std::atomic<bool> mIsRunning{false};
     std::atomic<bool> mIsDone{true};
     std::atomic<int32_t> mResult{0};
+    // Mutex to protect mResultText. Mutable to allow locking in const methods.
+    mutable std::mutex mResultTextMutex;
     std::string mResultText;
 };
 
