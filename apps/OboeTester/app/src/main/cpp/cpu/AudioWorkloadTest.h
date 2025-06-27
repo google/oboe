@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 #include <unistd.h> // For CPU affinity
-#include <mutex> // Added for mutex
+#include <mutex>
 #include "SynthWorkload.h"
 
 /**
@@ -78,6 +78,7 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t open() {
+        std::lock_guard<std::mutex> lock(mStreamLock);
         oboe::AudioStreamBuilder builder;
         builder.setDirection(oboe::Direction::Output);
         builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
@@ -143,6 +144,7 @@ public:
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                   bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
+        std::lock_guard<std::mutex> lock(mStreamLock);
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -150,7 +152,7 @@ public:
         mAlternatingPeriodMs = alternatingPeriodMs;
         mStartTimeMs = 0;
         {
-            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            std::lock_guard<std::mutex> lock(mStatisticsLock);
             mCallbackStatistics.clear();
         }
         mCallbackCount = 0;
@@ -239,6 +241,7 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t stop() {
+        std::lock_guard<std::mutex> lock(mStreamLock);
         if (mStream) {
             oboe::Result result = mStream->stop();
             if (result != oboe::Result::OK) {
@@ -254,6 +257,7 @@ public:
      * @return 0 on success, or a negative Oboe error code on failure.
      */
     int32_t close() {
+        std::lock_guard<std::mutex> lock(mStreamLock);
         if (mStream) {
             oboe::Result result = mStream->close();
             mStream = nullptr;
@@ -271,7 +275,7 @@ public:
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics() {
-        std::lock_guard<std::mutex> lock(mStatisticsMutex);
+        std::lock_guard<std::mutex> lock(mStatisticsLock);
         return mCallbackStatistics;
     }
 
@@ -348,7 +352,7 @@ public:
         status.cpuIndex = sched_getcpu();
 
         {
-            std::lock_guard<std::mutex> lock(mStatisticsMutex);
+            std::lock_guard<std::mutex> lock(mStatisticsLock);
             mCallbackStatistics.push_back(status);
         }
         mCallbackCount++;
@@ -368,7 +372,8 @@ public:
 private:
     const std::string kTestName = "AudioWorkloadTest";
 
-    // Member variables
+    // Lock for protecting mStream
+    std::mutex                         mStreamLock;
     std::shared_ptr<oboe::AudioStream> mStream; // Pointer to the Oboe audio stream instance
 
     // Atomic variables for thread-safe access from audio callback and other threads
@@ -388,16 +393,15 @@ private:
     std::atomic<bool> mHearWorkload{false};
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
 
-    // Mutex to protect mCallbackStatistics
-    std::mutex mStatisticsMutex;
+    // Lock to protect mCallbackStatistics
+    std::mutex mStatisticsLock;
     std::vector<CallbackStatus> mCallbackStatistics;
 
     std::atomic<bool> mRunning{false};
 
     // Sine wave generation parameters
     std::atomic<float> mPhase{0.0f};           // Current phase of the sine wave oscillator
-    // Phase increment for sine wave
-    std::atomic<float> mPhaseIncrement{0.0f};  // Current phase of the sine wave oscillator
+    std::atomic<float> mPhaseIncrement{0.0f};  // Phase increment for sine wave
 
     SynthWorkload mSynthWorkload;              // Instance of the synthetic workload generator
 };
