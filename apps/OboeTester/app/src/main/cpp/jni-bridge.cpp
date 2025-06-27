@@ -265,14 +265,7 @@ Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setBufferSizeInFrames(
         JNIEnv *env, jobject, jint streamIndex, jint threshold) {
-    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
-    if (oboeStream != nullptr) {
-        auto result = oboeStream->setBufferSizeInFrames(threshold);
-        return (!result)
-               ? (jint) result.error()
-               : (jint) result.value();
-    }
-    return (jint) oboe::Result::ErrorNull;
+    return (jint) engine.getCurrentActivity()->setBufferSizeInFrames(streamIndex, threshold);
 }
 
 JNIEXPORT jint JNICALL

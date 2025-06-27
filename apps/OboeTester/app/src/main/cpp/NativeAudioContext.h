@@ -17,7 +17,9 @@
 #ifndef NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 #define NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 
+#include <condition_variable>
 #include <jni.h>
+#include <mutex>
 #include <sys/system_properties.h>
 #include <thread>
 #include <unordered_map>
@@ -198,14 +200,7 @@ public:
         context->runBlockingIO();
     }
 
-    void stopBlockingIOThread() {
-        if (dataThread != nullptr) {
-            // stop a thread that runs in place of the callback
-            threadEnabled.store(false); // ask thread to exit its loop
-            dataThread->join();
-            dataThread = nullptr;
-        }
-    }
+    void stopBlockingIOThread();
 
     virtual double getPeakLevel(int index) {
         return 0.0;
@@ -320,6 +315,8 @@ public:
         oboeCallbackProxy.setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
+    int32_t setBufferSizeInFrames(int streamIndex, int threshold);
+
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
                                    [[maybe_unused]] int length) {}
 
@@ -350,9 +347,12 @@ protected:
     int32_t                      mFramesPerBurst = 0; // TODO per stream
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
+    std::atomic<int32_t>         mBufferSizeInFrames = 0; // TODO per stream
 
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr; // FIXME never gets deleted
+    std::mutex                   threadLock;
+    std::condition_variable      threadWorkCV;
 
 private:
     int64_t mInputOpenedAt = 0;
