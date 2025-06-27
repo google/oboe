@@ -20,6 +20,7 @@
 // We could not trigger the race condition without adding these get calls and the sleeps.
 #define DEBUG_CLOSE_RACE 0
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #if DEBUG_CLOSE_RACE
@@ -250,6 +251,7 @@ int ActivityContext::open(jint nativeApi,
         mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
+        mBufferSizeInFrames = oboeStream->getBufferSizeInFrames();
 
         createRecording();
 
@@ -356,6 +358,33 @@ double ActivityContext::getTimestampLatency(int32_t streamIndex) {
         return (!result) ? -1.0 : result.value();
     }
     return -1.0;
+}
+
+void ActivityContext::stopBlockingIOThread() {
+    if (dataThread != nullptr) {
+        // stop a thread that runs in place of the callback
+        threadEnabled.store(false); // ask thread to exit its loop
+        std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
+        if (oboeStream != nullptr &&
+            oboeStream->getPerformanceMode() == PerformanceMode::POWER_SAVING_OFFLOADED) {
+            std::lock_guard _l(threadLock);
+            threadWorkCV.notify_one();
+        }
+        dataThread->join();
+        dataThread = nullptr;
+    }
+}
+
+int32_t ActivityContext::setBufferSizeInFrames(int streamIndex, int threshold) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        auto result = oboeStream->setBufferSizeInFrames(threshold);
+        if (result) {
+            mBufferSizeInFrames = result.value();
+        }
+        return (!result) ? (int32_t) result.error() : result.value();
+    }
+    return (int32_t) oboe::Result::ErrorNull;
 }
 
 // =================================================================== ActivityTestOutput
@@ -517,6 +546,21 @@ void ActivityTestOutput::runBlockingIO() {
         if (framesWritten < framesPerBlock) {
             LOGE("%s() : write() wrote %d of %d\n", __func__, framesWritten, framesPerBlock);
             break;
+        }
+
+        const int64_t bufferSizeInFrames = mBufferSizeInFrames.load();
+        if (oboeStream->getPerformanceMode() == PerformanceMode::POWER_SAVING_OFFLOADED &&
+            bufferSizeInFrames > mSampleRate) {
+            // If it is offload stream, the buffer size is more than 1 second and it is almost full,
+            // sleep to drain most of the data to save battery and make sure the next write can
+            // succeed on time.
+            int64_t dataAvailable = oboeStream->getFramesWritten() - oboeStream->getFramesRead();
+            if (dataAvailable > bufferSizeInFrames - mFramesPerBurst) {
+                static const double kDataBufferFullRatio = 0.9f;
+                int64_t drainNanos = dataAvailable * kDataBufferFullRatio * 1e9 / mSampleRate;
+                std::unique_lock _l(threadLock);
+                threadWorkCV.wait_for(_l, std::chrono::nanoseconds(drainNanos));
+            }
         }
     }
 }
