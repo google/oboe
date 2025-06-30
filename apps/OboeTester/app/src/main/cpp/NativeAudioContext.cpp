@@ -553,7 +553,9 @@ void ActivityTestOutput::runBlockingIO() {
             bufferSizeInFrames > mSampleRate) {
             // If it is offload stream, the buffer size is more than 1 second and it is almost full,
             // sleep to drain most of the data to save battery and make sure the next write can
-            // succeed on time.
+            // succeed on time. The one second here is a naive assumption that the OS won't suspend
+            // if there are CPUs working within one second. It is usually longer than 1 second.
+            // Use one second here as a minimum requirement.
             int64_t dataAvailable = oboeStream->getFramesWritten() - oboeStream->getFramesRead();
             if (dataAvailable > bufferSizeInFrames - mFramesPerBurst) {
                 static const double kDataBufferFullRatio = 0.9f;
