@@ -53,7 +53,7 @@
 #include "analyzer/GlitchAnalyzer.h"
 #include "analyzer/DataPathAnalyzer.h"
 #include "InputStreamCallbackAnalyzer.h"
-#include "MultiChannelRecording.h"
+#include "MultiChannelFileRecording.h"
 #include "OboeStreamCallbackProxy.h"
 #include "OboeTools.h"
 #include "PlayRecordingCallback.h"
@@ -320,6 +320,10 @@ public:
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
                                    [[maybe_unused]] int length) {}
 
+    void setRecordingFileName(const char *filename) {
+        mRecordingFileName = filename;
+    }
+
 protected:
     std::shared_ptr<oboe::AudioStream> getInputStream();
     std::shared_ptr<oboe::AudioStream> getOutputStream();
@@ -327,8 +331,8 @@ protected:
     void freeStreamIndex(int32_t streamIndex);
 
     virtual void createRecording() {
-        mRecording = std::make_unique<MultiChannelRecording>(mChannelCount,
-                                                             SECONDS_TO_RECORD * mSampleRate);
+        mRecording = std::make_unique<MultiChannelFileRecording>(mChannelCount,
+                                                             mRecordingFileName);
     }
 
     virtual void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {}
@@ -340,7 +344,7 @@ protected:
     AudioStreamGateway           audioStreamGateway;
     OboeStreamCallbackProxy      oboeCallbackProxy;
 
-    std::unique_ptr<MultiChannelRecording>  mRecording{};
+    std::unique_ptr<MultiChannelFileRecording>  mRecording{};
 
     int32_t                      mNextStreamHandle = 0;
     std::unordered_map<int32_t, std::shared_ptr<oboe::AudioStream>>  mOboeStreams;
@@ -348,6 +352,8 @@ protected:
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
     std::atomic<int32_t>         mBufferSizeInFrames = 0; // TODO per stream
+
+    std::string mRecordingFileName;
 
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr; // FIXME never gets deleted
@@ -546,8 +552,8 @@ public:
 
 protected:
     void createRecording() override {
-        mRecording = std::make_unique<MultiChannelRecording>(2, // output and input
-                                                             SECONDS_TO_RECORD * mSampleRate);
+        mRecording = std::make_unique<MultiChannelFileRecording>(2, // output and input
+                                                                 mRecordingFileName);
     }
 };
 

@@ -994,6 +994,14 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
     oboe::DefaultStreamValues::FramesPerBurst = audio_manager_frames_per_burst;
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setRecordingFileName(JNIEnv *env, jobject thiz,
+                                                                      jstring filePath) {
+    const char *filePathStr = env->GetStringUTFChars(filePath, nullptr);
+    engine.getCurrentActivity()->setRecordingFileName(filePathStr);
+    env->ReleaseStringUTFChars(filePath, filePathStr);
+}
+
 static TestErrorCallback sErrorCallbackTester;
 
 JNIEXPORT void JNICALL
