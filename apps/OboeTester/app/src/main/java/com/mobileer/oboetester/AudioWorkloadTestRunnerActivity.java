@@ -24,8 +24,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 /**
  * Audio Workload Test Runner Activity
  */
@@ -59,15 +57,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
                 mHandler.postDelayed(this, STATUS_UPDATE_PERIOD_MS);
             } else {
                 mStatusTextView.setText(getStatus());
-                int result = getResult();
-                int xRunCount = getXRunCount();
-                if (result == 1) {
-                    mResultTextView.setText("Result: PASS");
-                } else if (result == -1) {
-                    mResultTextView.setText("Result: FAIL\n xRunCount: " + xRunCount);
-                } else {
-                    mResultTextView.setText("Result: UNKNOWN\n xRunCount: " + xRunCount);
-                }
+                updateResultTextView();
                 mStartButton.setEnabled(true);
                 mStopButton.setEnabled(false);
                 enableParamsUI(true);
@@ -139,15 +129,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
             return;
         }
         mHandler.removeCallbacks(mUpdateStatusRunnable);
-        result = getResult();
-        int xRunCount = getXRunCount();
-        if (result == 1) {
-            mResultTextView.setText("Result: PASS");
-        } else if (result == -1) {
-            mResultTextView.setText("Result: FAIL. XRunCount: " + xRunCount);
-        } else {
-            mResultTextView.setText("Result: UNKNOWN. XRunCount: " + xRunCount);
-        }
+        updateResultTextView();
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
         enableParamsUI(true);
@@ -162,6 +144,18 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         mEnableAdpfBox.setEnabled(enabled);
         mEnableAdpfWorkloadIncreaseBox.setEnabled(enabled);
         mHearWorkloadBox.setEnabled(enabled);
+    }
+
+    private void updateResultTextView() {
+        int result = getResult();
+        int xRunCount = getXRunCount();
+        if (result == 1) {
+            mResultTextView.setText("Result: PASS");
+        } else if (result == -1) {
+            mResultTextView.setText("Result: FAIL. XRunCount: " + xRunCount);
+        } else {
+            mResultTextView.setText("Result: UNKNOWN. XRunCount: " + xRunCount);
+        }
     }
 
     public native int start(int targetDurationMs, int numBursts, int numVoices,
