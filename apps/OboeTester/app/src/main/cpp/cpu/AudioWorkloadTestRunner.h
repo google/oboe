@@ -33,7 +33,7 @@
  * Example usage:
  * start();
  * while(!stopIfDone()) { getStatus(); sleep(); }
- * getResultText();
+ * getResult(); getXRunCount();
  *
  */
 class AudioWorkloadTestRunner {
@@ -81,7 +81,6 @@ public:
         }
 
         if (mAudioWorkloadTest.open() != static_cast<int32_t>(oboe::Result::OK)) {
-            mResultText = "Error opening audio stream.";
             mResult = -1;
             mIsDone = true;
             return -1;
@@ -90,7 +89,6 @@ public:
         mIsRunning = true;
         mIsDone = false;
         mResult = 0;
-        mResultText = "Running...";
 
         int32_t result = mAudioWorkloadTest.start(
                 targetDurationMs,
@@ -103,8 +101,6 @@ public:
                 hearWorkload);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {
-            mResultText = "Error starting audio stream: ";
-            mResultText += oboe::convertToText(static_cast<oboe::Result>(result));
             mResult = -1;
             mIsDone = true;
             mIsRunning = false;
@@ -134,7 +130,13 @@ public:
      */
     std::string getStatus() const {
         if (!mIsRunning) {
-            return mResultText;
+            if (mResult == -1) {
+                return "FAIL: Encountered " + std::to_string(getXRunCount()) + " xruns.";
+            } else if (mResult == 1) {
+                return "PASS: No xruns encountered.";
+            } else {
+                return "Unknown result.";
+            }
         }
         int32_t callbacksCompleted = mAudioWorkloadTest.getCallbackCount();
         return "Running: " + std::to_string(callbacksCompleted)
@@ -156,10 +158,8 @@ public:
             int32_t xRunCount = mAudioWorkloadTest.getXRunCount();
             if (xRunCount > 0) {
                 mResult = -1;
-                mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " xruns.";
             } else {
                 mResult = 1;
-                mResultText = "PASS: No xruns encountered.";
             }
             mIsDone = true;
             return 0;
@@ -179,8 +179,8 @@ public:
      * @brief Gets a descriptive string for the test result (e.g., "PASS", "FAIL: X xruns").
      * @return A string containing the result text.
      */
-    std::string getResultText() const {
-        return mResultText;
+    int32_t getXRunCount() const {
+        return mAudioWorkloadTest.getXRunCount();
     }
 
 private:
@@ -188,7 +188,6 @@ private:
     std::atomic<bool> mIsRunning{false};
     std::atomic<bool> mIsDone{true};
     std::atomic<int32_t> mResult{0};
-    std::string mResultText;
 };
 
 #endif // AUDIO_WORKLOAD_TEST_RUNNER_H

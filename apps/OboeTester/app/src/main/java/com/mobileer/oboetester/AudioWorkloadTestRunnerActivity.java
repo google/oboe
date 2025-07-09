@@ -24,8 +24,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 /**
  * Audio Workload Test Runner Activity
  */
@@ -59,15 +57,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
                 mHandler.postDelayed(this, STATUS_UPDATE_PERIOD_MS);
             } else {
                 mStatusTextView.setText(getStatus());
-                int result = getResult();
-                String resultText = getResultText();
-                if (result == 1) {
-                    mResultTextView.setText("Result: PASS\n" + resultText);
-                } else if (result == -1) {
-                    mResultTextView.setText("Result: FAIL\n" + resultText);
-                } else {
-                    mResultTextView.setText("Result: UNKNOWN\n" + resultText);
-                }
+                updateResultTextView();
                 mStartButton.setEnabled(true);
                 mStopButton.setEnabled(false);
                 enableParamsUI(true);
@@ -139,15 +129,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
             return;
         }
         mHandler.removeCallbacks(mUpdateStatusRunnable);
-        result = getResult();
-        String resultText = getResultText();
-        if (result == 1) {
-            mResultTextView.setText("Result: PASS\n" + resultText);
-        } else if (result == -1) {
-            mResultTextView.setText("Result: FAIL\n" + resultText);
-        } else {
-            mResultTextView.setText("Result: UNKNOWN\n" + resultText);
-        }
+        updateResultTextView();
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
         enableParamsUI(true);
@@ -164,6 +146,18 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         mHearWorkloadBox.setEnabled(enabled);
     }
 
+    private void updateResultTextView() {
+        int result = getResult();
+        int xRunCount = getXRunCount();
+        if (result == 1) {
+            mResultTextView.setText("Result: PASS");
+        } else if (result == -1) {
+            mResultTextView.setText("Result: FAIL. XRunCount: " + xRunCount);
+        } else {
+            mResultTextView.setText("Result: UNKNOWN. XRunCount: " + xRunCount);
+        }
+    }
+
     public native int start(int targetDurationMs, int numBursts, int numVoices,
                             int alternateNumVoices, int alternatingPeriodMs, boolean adpfEnabled,
                             boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload);
@@ -171,5 +165,5 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
     public native String getStatus();
     public native int stop();
     public native int getResult();
-    public native String getResultText();
+    public native int getXRunCount();
 }
