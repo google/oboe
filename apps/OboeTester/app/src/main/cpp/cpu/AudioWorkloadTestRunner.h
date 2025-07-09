@@ -33,7 +33,7 @@
  * Example usage:
  * start();
  * while(!stopIfDone()) { getStatus(); sleep(); }
- * getResultText();
+ * getResult(); getXRunCount();
  *
  */
 class AudioWorkloadTestRunner {
@@ -81,10 +81,6 @@ public:
         }
 
         if (mAudioWorkloadTest.open() != static_cast<int32_t>(oboe::Result::OK)) {
-            {
-                std::lock_guard<std::mutex> lock(mResultTextMutex);
-                mResultText = "Error opening audio stream.";
-            }
             mResult = -1;
             mIsDone = true;
             return -1;
@@ -93,10 +89,6 @@ public:
         mIsRunning = true;
         mIsDone = false;
         mResult = 0;
-        {
-            std::lock_guard<std::mutex> lock(mResultTextMutex);
-            mResultText = "Running...";
-        }
 
         int32_t result = mAudioWorkloadTest.start(
                 targetDurationMs,
@@ -109,11 +101,6 @@ public:
                 hearWorkload);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {
-            {
-                std::lock_guard<std::mutex> lock(mResultTextMutex);
-                mResultText = "Error starting audio stream: ";
-                mResultText += oboe::convertToText(static_cast<oboe::Result>(result));
-            }
             mResult = -1;
             mIsDone = true;
             mIsRunning = false;
@@ -141,10 +128,15 @@ public:
      * This can indicate if it's running, how many callbacks have occurred, or the final result text.
      * @return A string describing the current status.
      */
-    std::string getStatus() {
+    std::string getStatus() const {
         if (!mIsRunning) {
-            std::lock_guard<std::mutex> lock(mResultTextMutex);
-            return mResultText;
+            if (mResult == -1) {
+                return "FAIL: Encountered " + std::to_string(getXRunCount()) + " xruns.";
+            } else if (mResult == 1) {
+                return "PASS: No xruns encountered.";
+            } else {
+                return "Unknown result.";
+            }
         }
         int32_t callbacksCompleted = mAudioWorkloadTest.getCallbackCount();
         return "Running: " + std::to_string(callbacksCompleted)
@@ -164,15 +156,10 @@ public:
             mIsRunning = false;
 
             int32_t xRunCount = mAudioWorkloadTest.getXRunCount();
-            {
-                std::lock_guard<std::mutex> lock(mResultTextMutex);
-                if (xRunCount > 0) {
-                    mResult = -1;
-                    mResultText = "FAIL: Encountered " + std::to_string(xRunCount) + " XRuns.";
-                } else {
-                    mResult = 1;
-                    mResultText = "PASS: No XRuns encountered.";
-                }
+            if (xRunCount > 0) {
+                mResult = -1;
+            } else {
+                mResult = 1;
             }
             mIsDone = true;
             return 0;
@@ -192,9 +179,8 @@ public:
      * @brief Gets a descriptive string for the test result (e.g., "PASS", "FAIL: X xruns").
      * @return A string containing the result text.
      */
-    std::string getResultText() {
-        std::lock_guard<std::mutex> lock(mResultTextMutex);
-        return mResultText;
+    int32_t getXRunCount() const {
+        return mAudioWorkloadTest.getXRunCount();
     }
 
 private:
@@ -202,8 +188,6 @@ private:
     std::atomic<bool> mIsRunning{false};
     std::atomic<bool> mIsDone{true};
     std::atomic<int32_t> mResult{0};
-    std::mutex mResultTextMutex;
-    std::string mResultText;
 };
 
 #endif // AUDIO_WORKLOAD_TEST_RUNNER_H

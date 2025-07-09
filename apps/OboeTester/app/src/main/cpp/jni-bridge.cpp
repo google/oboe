@@ -1361,10 +1361,9 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getResult(JNIEnv *e
     return sAudioWorkloadRunner.getResult();
 }
 
-JNIEXPORT jstring JNICALL
-Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getResultText(JNIEnv *env, jobject thiz) {
-    std::string resultText = sAudioWorkloadRunner.getResultText();
-    return env->NewStringUTF(resultText.c_str());
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getXRunCount(JNIEnv *env, jobject thiz) {
+    return sAudioWorkloadRunner.getXRunCount();
 }
 
 } // extern "C"

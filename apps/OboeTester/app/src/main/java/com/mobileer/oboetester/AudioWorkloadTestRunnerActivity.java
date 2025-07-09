@@ -60,13 +60,13 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
             } else {
                 mStatusTextView.setText(getStatus());
                 int result = getResult();
-                String resultText = getResultText();
+                int xRunCount = getXRunCount();
                 if (result == 1) {
-                    mResultTextView.setText("Result: PASS\n" + resultText);
+                    mResultTextView.setText("Result: PASS");
                 } else if (result == -1) {
-                    mResultTextView.setText("Result: FAIL\n" + resultText);
+                    mResultTextView.setText("Result: FAIL\n xRunCount: " + xRunCount);
                 } else {
-                    mResultTextView.setText("Result: UNKNOWN\n" + resultText);
+                    mResultTextView.setText("Result: UNKNOWN\n xRunCount: " + xRunCount);
                 }
                 mStartButton.setEnabled(true);
                 mStopButton.setEnabled(false);
@@ -140,13 +140,13 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         }
         mHandler.removeCallbacks(mUpdateStatusRunnable);
         result = getResult();
-        String resultText = getResultText();
+        int xRunCount = getXRunCount();
         if (result == 1) {
-            mResultTextView.setText("Result: PASS\n" + resultText);
+            mResultTextView.setText("Result: PASS");
         } else if (result == -1) {
-            mResultTextView.setText("Result: FAIL\n" + resultText);
+            mResultTextView.setText("Result: FAIL. XRunCount: " + xRunCount);
         } else {
-            mResultTextView.setText("Result: UNKNOWN\n" + resultText);
+            mResultTextView.setText("Result: UNKNOWN. XRunCount: " + xRunCount);
         }
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
@@ -171,5 +171,5 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
     public native String getStatus();
     public native int stop();
     public native int getResult();
-    public native String getResultText();
+    public native int getXRunCount();
 }
