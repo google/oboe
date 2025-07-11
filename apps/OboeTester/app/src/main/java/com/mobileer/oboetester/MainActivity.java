@@ -34,6 +34,8 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.core.view.WindowCompat;
+
 /**
  * Select various Audio tests.
  */
@@ -68,6 +70,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
 
         logScreenSize();
 

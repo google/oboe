@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 36
     defaultConfig {
         applicationId = "com.mobileer.oboetester"
         minSdkVersion 23
-        targetSdkVersion 34
+        targetSdkVersion 36
         versionCode 103
         versionName "2.7.14"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
