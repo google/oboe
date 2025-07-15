@@ -20,7 +20,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Plug Latency Test"
+            android:text="@string/title_plug_latency"
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:textStyle="bold" />
