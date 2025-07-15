@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,22 +97,15 @@ public class DeviceReportActivity extends AppCompatActivity {
         mMidiManager = (MidiManager) getSystemService(Context.MIDI_SERVICE);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        MenuItem settings = menu.findItem(R.id.action_share);
-        settings.setOnMenuItemClickListener(item -> {
-            if(mAutoTextView !=null) {
-                Intent sendIntent = new Intent();
-                sendIntent.setAction(Intent.ACTION_SEND);
-                sendIntent.putExtra(Intent.EXTRA_TEXT, mAutoTextView.getText().toString());
-                sendIntent.setType("text/plain");
-                Intent shareIntent = Intent.createChooser(sendIntent, null);
-                startActivity(shareIntent);
-            }
-            return false;
-        });
-        return true;
+    public void onShareButtonClick(View view) {
+        if(mAutoTextView !=null) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, mAutoTextView.getText().toString());
+            sendIntent.setType("text/plain");
+            Intent shareIntent = Intent.createChooser(sendIntent, null);
+            startActivity(shareIntent);
+        }
     }
 
     @Override

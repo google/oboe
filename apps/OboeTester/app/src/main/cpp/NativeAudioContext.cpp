@@ -331,11 +331,11 @@ int32_t  ActivityContext::saveWaveFile(const char *filename) {
     writer.setSamplesPerFrame(mRecording->getChannelCount());
     writer.setBitsPerSample(24);
     writer.setFrameCount(mRecording->getSizeInFrames());
-    float buffer[mRecording->getChannelCount()];
+    std::vector<float> buffer(mRecording->getChannelCount());
     // Read samples from start to finish.
     mRecording->rewind();
     for (int32_t frameIndex = 0; frameIndex < mRecording->getSizeInFrames(); frameIndex++) {
-        mRecording->read(buffer, 1 /* numFrames */);
+        mRecording->read(buffer.data(), 1 /* numFrames */);
         for (int32_t i = 0; i < mRecording->getChannelCount(); i++) {
             writer.write(buffer[i]);
         }
