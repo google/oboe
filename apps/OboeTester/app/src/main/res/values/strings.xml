@@ -223,6 +223,21 @@
         <item>5000</item>
     </string-array>
 
+    <string name="audio_source_prompt">Audio Source:</string>
+    <string-array name="audio_sources">
+        <item>DEFAULT</item>
+        <item>MIC</item>
+        <item>CAMCORDER</item>
+        <item>UNPROCESSED</item>
+        <item>VOICE_PERFORMANCE</item>
+        <item>VOICE_RECOGNITION</item>
+        <item>VOICE_COMMUNICATION</item>
+        <item>VOICE_UPLINK</item>
+        <item>VOICE_DOWNLINK</item>
+        <item>VOICE_CALL</item>
+        <item>REMOTE_SUBMIX</item>
+    </string-array>
+
     <string name="synth_sender_text">Select Sender for Synth</string>
     <string name="error_port_busy">Selected port is in use or unavailable.</string>
     <string name="port_open_ok">Port opened OK.</string>
