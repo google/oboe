@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <mutex>
 
+#include "oboe/Definitions.h"
+
 namespace oboe {
 
     struct APerformanceHintManager;
@@ -78,6 +80,85 @@ namespace oboe {
         void reportActualDuration(int64_t actualDurationNanos);
 
         void reportWorkload(int32_t appWorkload);
+
+        /**
+        * Informs the framework of an upcoming increase in the workload of an audio callback
+        * bound to this session. The user can specify whether the increase is expected to be
+        * on the CPU, GPU, or both.
+        *
+        * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+        * rate limiter.
+        *
+        * This was introduced in Android API Level 36
+        *
+        * @param cpu Indicates if the workload increase is expected to affect the CPU.
+        * @param gpu Indicates if the workload increase is expected to affect the GPU.
+        * @param debugName A required string used to identify this specific hint during
+        *        tracing. This debug string will only be held for the duration of the
+        *        method, and can be safely discarded after.
+        *
+        * @return Result::OK on success.
+        *         Result::ErrorClosed if open was not called.
+        *         Result::ErrorUnimplemented if the API is not supported.
+        *         Result::ErrorInvalidHandle if no hints were requested.
+        *         Result::ErrorInvalidRate if the hint was rate limited.
+        *         Result::ErrorNoService if communication with the system service has failed.
+        *         Result::ErrorUnavailable if the hint is not supported.
+        */
+        oboe::Result notifyWorkloadIncrease(bool cpu, bool gpu, const char* debugName);
+
+        /**
+        * Informs the framework of an upcoming reset in the workload of an audio callback
+        * bound to this session, or the imminent start of a new workload. The user can specify
+        * whether the reset is expected to affect the CPU, GPU, or both.
+        *
+        * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+        * this load tracking.
+        *
+        * This was introduced in Android API Level 36
+        *
+        * @param cpu Indicates if the workload reset is expected to affect the CPU.
+        * @param gpu Indicates if the workload reset is expected to affect the GPU.
+        * @param debugName A required string used to identify this specific hint during
+        *        tracing. This debug string will only be held for the duration of the
+        *        method, and can be safely discarded after.
+        *
+        * @return Result::OK on success.
+        *         Result::ErrorClosed if open was not called.
+        *         Result::ErrorUnimplemented if the API is not supported.
+        *         Result::ErrorInvalidHandle if no hints were requested.
+        *         Result::ErrorInvalidRate if the hint was rate limited.
+        *         Result::ErrorNoService if communication with the system service has failed.
+        *         Result::ErrorUnavailable if the hint is not supported.
+        */
+        oboe::Result notifyWorkloadReset(bool cpu, bool gpu, const char* debugName);
+
+        /**
+        * Informs the framework of an upcoming one-off expensive frame for an audio callback
+        * bound to this session. This frame will be treated as not representative of the workload as a
+        * whole, and it will be discarded the purposes of load tracking. The user can specify
+        * whether the workload spike is expected to be on the CPU, GPU, or both.
+        *
+        * Sending hints for both CPU and GPU counts as two separate hints for the purposes of the
+        * rate limiter.
+        *
+        * This was introduced in Android API Level 36
+        *
+        * @param cpu Indicates if the workload spike is expected to affect the CPU.
+        * @param gpu Indicates if the workload spike is expected to affect the GPU.
+        * @param debugName A required string used to identify this specific hint during
+        *        tracing. This debug string will only be held for the duration of the
+        *        method, and can be safely discarded after.
+        *
+        * @return Result::OK on success.
+        *         Result::ErrorClosed if open was not called.
+        *         Result::ErrorUnimplemented if the API is not supported.
+        *         Result::ErrorInvalidHandle if no hints were requested.
+        *         Result::ErrorInvalidRate if the hint was rate limited.
+        *         Result::ErrorNoService if communication with the system service has failed.
+        *         Result::ErrorUnavailable if the hint is not supported.
+        */
+        oboe::Result notifyWorkloadSpike(bool cpu, bool gpu, const char* debugName);
 
     private:
         std::mutex mLock;

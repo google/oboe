@@ -314,6 +314,8 @@ public class StreamConfiguration {
     private int mHardwareSampleRate;
     private int mHardwareFormat;
     private int mSpatializationBehavior;
+    private String mPackageName;
+    private String mAttributionTag;
 
     public StreamConfiguration() {
         reset();
@@ -369,6 +371,8 @@ public class StreamConfiguration {
         mHardwareSampleRate = UNSPECIFIED;
         mHardwareFormat = UNSPECIFIED;
         mSpatializationBehavior = UNSPECIFIED;
+        mPackageName = "";
+        mAttributionTag = "";
     }
 
     public int getFramesPerBurst() {
@@ -639,6 +643,15 @@ public class StreamConfiguration {
         return mChannelMaskStringToIntegerMap.get(text);
     }
 
+    public String getPackageName() { return mPackageName; }
+    public void setPackageName(String packageName) {
+        this.mPackageName = packageName;
+    }
+
+    public String getAttributionTag() { return mAttributionTag; }
+    public void setAttributionTag(String attributionTag) {
+        this.mAttributionTag = attributionTag;
+    }
 
     public String dump() {
         String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
@@ -670,6 +683,10 @@ public class StreamConfiguration {
                 convertFormatToText(mHardwareFormat).toLowerCase(Locale.getDefault())));
         message.append(String.format(Locale.getDefault(), "%s.spatializationBehavior = %s\n", prefix,
                 convertSpatializationBehaviorToText(mSpatializationBehavior).toLowerCase(Locale.getDefault())));
+        message.append(String.format(Locale.getDefault(), "%s.packageName = %s\n", prefix,
+                getPackageName()));
+        message.append(String.format(Locale.getDefault(), "%s.attributionTag = %s\n", prefix,
+                getAttributionTag()));
         return message.toString();
     }
 

@@ -85,6 +85,14 @@ public class StreamConfigurationView extends LinearLayout {
     private Spinner  mSpatializationBehaviorSpinner;
     private TextView mActualSpatializationBehaviorView;
 
+    private TableRow mPackageNameTableRow;
+    private Spinner  mPackageNameSpinner;
+    private TextView mActualPackageNameView;
+
+    private TableRow mAttributionTagTableRow;
+    private Spinner  mAttributionTagSpinner;
+    private TextView mActualAttributionTagView;
+
     private Spinner  mFormatSpinner;
     private Spinner  mSampleRateSpinner;
     private Spinner  mRateConversionQualitySpinner;
@@ -111,9 +119,9 @@ public class StreamConfigurationView extends LinearLayout {
     private CharSequence mAcousticEchoCancelerText;
     private CheckBox mNoiseSuppressorCheckBox;
     private CharSequence mNoiseSuppressorText;
-    private TextView mBassBoostTextView;
+    private CheckBox mBassBoostCheckBox;
     private SeekBar mBassBoostSeekBar;
-    private TextView mLoudnessEnhancerTextView;
+    private CheckBox mLoudnessEnhancerCheckBox;
     private SeekBar mLoudnessEnhancerSeekBar;
 
     private boolean mIsChannelMaskLastSelected;
@@ -242,10 +250,12 @@ public class StreamConfigurationView extends LinearLayout {
         mAutomaticGainControlCheckBox = (CheckBox) findViewById(R.id.checkBoxAutomaticGainControl);
         mAcousticEchoCancelerCheckBox = (CheckBox) findViewById(R.id.checkBoxAcousticEchoCanceler);
         mNoiseSuppressorCheckBox = (CheckBox) findViewById(R.id.checkBoxNoiseSuppressor);
-        mBassBoostTextView = (TextView) findViewById(R.id.textBassBoost);
+        mBassBoostCheckBox = (CheckBox) findViewById(R.id.checkBoxBassBoost);
         mBassBoostSeekBar = (SeekBar) findViewById(R.id.seekBarBassBoost);
-        mLoudnessEnhancerTextView = (TextView) findViewById(R.id.textLoudnessEnhancer);
+        mBassBoostSeekBar.setEnabled(mBassBoostCheckBox.isChecked());
+        mLoudnessEnhancerCheckBox = (CheckBox) findViewById(R.id.checkBoxLoudnessEnhancer);
         mLoudnessEnhancerSeekBar = (SeekBar) findViewById(R.id.seekBarLoudnessEnhancer);
+        mLoudnessEnhancerSeekBar.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
 
         mAutomaticGainControlCheckBox.setEnabled(AutomaticGainControl.isAvailable());
         mAutomaticGainControlText = mAutomaticGainControlCheckBox.getText();
@@ -298,6 +308,16 @@ public class StreamConfigurationView extends LinearLayout {
                 onNoiseSuppressorCheckBoxChanged(isChecked);
             }
         });
+        mBassBoostCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onBassBoostCheckBoxChanged(isChecked);
+            }
+        });
+        mLoudnessEnhancerCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onLoudnessEnhancerCheckBoxChanged(isChecked);
+            }
+        });
 
         mActualSampleRateView = (TextView) findViewById(R.id.actualSampleRate);
         mSampleRateSpinner = (Spinner) findViewById(R.id.spinnerSampleRate);
@@ -343,6 +363,14 @@ public class StreamConfigurationView extends LinearLayout {
         mSpatializationBehaviorTableRow = (TableRow) findViewById(R.id.rowSpatializationBehavior);
         mActualSpatializationBehaviorView = (TextView) findViewById(R.id.actualSpatializationBehavior);
         mSpatializationBehaviorSpinner = (Spinner) findViewById(R.id.spinnerSpatializationBehavior);
+
+        mPackageNameTableRow = (TableRow) findViewById(R.id.rowPackageName);
+        mActualPackageNameView = (TextView) findViewById(R.id.actualPackageName);
+        mPackageNameSpinner = (Spinner) findViewById(R.id.spinnerPackageName);
+
+        mAttributionTagTableRow = (TableRow) findViewById(R.id.rowAttributionTag);
+        mActualAttributionTagView = (TextView) findViewById(R.id.actualAttributionTag);
+        mAttributionTagSpinner = (Spinner) findViewById(R.id.spinnerAttributionTag);
 
         mStreamInfoView = (TextView) findViewById(R.id.streamInfo);
 
@@ -421,6 +449,12 @@ public class StreamConfigurationView extends LinearLayout {
         int spatializationBehavior = StreamConfiguration.convertTextToSpatializationBehavior(text);
         config.setSpatializationBehavior(spatializationBehavior);
 
+        text = mPackageNameSpinner.getSelectedItem().toString();
+        config.setPackageName(text);
+
+        text = mAttributionTagSpinner.getSelectedItem().toString();
+        config.setAttributionTag(text);
+
         // The corresponding channel count of the selected channel mask may be different from
         // the selected channel count, the last selected will be respected.
         if (mIsChannelMaskLastSelected) {
@@ -468,6 +502,8 @@ public class StreamConfigurationView extends LinearLayout {
         mContentTypeSpinner.setEnabled(enabled);
         mFormatSpinner.setEnabled(enabled);
         mSpatializationBehaviorSpinner.setEnabled(enabled);
+        mPackageNameSpinner.setEnabled(enabled);
+        mAttributionTagSpinner.setEnabled(enabled);
         mSampleRateSpinner.setEnabled(enabled);
         mRateConversionQualitySpinner.setEnabled(enabled);
         mDeviceSpinner.setEnabled(enabled);
@@ -514,6 +550,14 @@ public class StreamConfigurationView extends LinearLayout {
         value = actualConfiguration.getSpatializationBehavior();
         mActualSpatializationBehaviorView.setText(StreamConfiguration.convertSpatializationBehaviorToText(value));
         mActualSpatializationBehaviorView.requestLayout();
+
+        String stringValue = actualConfiguration.getPackageName();
+        mActualPackageNameView.setText(stringValue);
+        mActualPackageNameView.requestLayout();
+
+        stringValue = actualConfiguration.getAttributionTag();
+        mActualAttributionTagView.setText(stringValue);
+        mActualAttributionTagView.requestLayout();
 
         mActualChannelCountView.setText(actualConfiguration.getChannelCount() + "");
         mActualSampleRateView.setText(actualConfiguration.getSampleRate() + "");
@@ -602,8 +646,12 @@ public class StreamConfigurationView extends LinearLayout {
         if (misOutput) {
             mBassBoost = new BassBoost(0, sessionId);
             mBassBoost.setStrength((short) mBassBoostSeekBar.getProgress());
+            mBassBoost.setEnabled(mBassBoostCheckBox.isChecked());
+            mBassBoostSeekBar.setEnabled(mBassBoostCheckBox.isChecked());
             mLoudnessEnhancer = new LoudnessEnhancer(sessionId);
             mLoudnessEnhancer.setTargetGain((short) mLoudnessEnhancerSeekBar.getProgress());
+            mLoudnessEnhancer.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
+            mLoudnessEnhancerSeekBar.setEnabled(mLoudnessEnhancerCheckBox.isChecked());
         } else {
             // If AEC is not available, the checkbox will be disabled in initializeViews().
             if (mAcousticEchoCancelerCheckBox.isEnabled()) {
@@ -650,14 +698,14 @@ public class StreamConfigurationView extends LinearLayout {
         if (mLoudnessEnhancer != null) {
             mLoudnessEnhancer.setTargetGain(progress);
         }
-        mLoudnessEnhancerTextView.setText("Loudness Enhancer: " + progress);
+        mLoudnessEnhancerCheckBox.setText("Loudness Enhancer: " + progress);
     }
 
     private void onBassBoostSeekBarChanged(int progress) {
         if (mBassBoost != null) {
             mBassBoost.setStrength((short) progress);
         }
-        mBassBoostTextView.setText("Bass Boost: " + progress);
+        mBassBoostCheckBox.setText("Bass Boost: " + progress);
     }
 
     private void onAutomaticGainControlCheckBoxChanged(boolean isChecked) {
@@ -676,5 +724,19 @@ public class StreamConfigurationView extends LinearLayout {
         if (mNoiseSuppressorCheckBox.isEnabled() && mNoiseSuppressor != null) {
             mNoiseSuppressor.setEnabled(isChecked);
         }
+    }
+
+    private void onBassBoostCheckBoxChanged(boolean isChecked) {
+        if (mBassBoost != null) {
+            mBassBoost.setEnabled(isChecked);
+        }
+        mBassBoostSeekBar.setEnabled(isChecked);
+    }
+
+    private void onLoudnessEnhancerCheckBoxChanged(boolean isChecked) {
+        if (mLoudnessEnhancer != null) {
+            mLoudnessEnhancer.setEnabled(isChecked);
+        }
+        mLoudnessEnhancerSeekBar.setEnabled(isChecked);
     }
 }

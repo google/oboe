@@ -17,13 +17,16 @@
 #ifndef NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 #define NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 
+#include <condition_variable>
 #include <jni.h>
+#include <mutex>
 #include <sys/system_properties.h>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
 #include "common/OboeDebug.h"
+#include "common/Trace.h"
 #include "oboe/Oboe.h"
 
 #include "aaudio/AAudioExtensions.h"
@@ -111,6 +114,8 @@ public:
      * @param isMMap
      * @param isInput
      * @param spatializationBehavior
+     * @param packageName
+     * @param attributionTag
      * @return stream ID
      */
     int open(jint nativeApi,
@@ -131,7 +136,9 @@ public:
              jint rateConversionQuality,
              jboolean isMMap,
              jboolean isInput,
-             jint spatializationBehavior);
+             jint spatializationBehavior,
+             const char *packageName,
+             const char *attributionTag);
 
     oboe::Result release();
 
@@ -169,6 +176,10 @@ public:
 
     void setWorkload(int32_t workload) {
         oboeCallbackProxy.setWorkload(workload);
+        bool traceEnabled = oboe::Trace::getInstance().isEnabled();
+        if (traceEnabled) {
+            oboe::Trace::getInstance().setCounter("Workload", workload);
+        }
     }
 
     void setHearWorkload(bool enabled) {
@@ -189,14 +200,7 @@ public:
         context->runBlockingIO();
     }
 
-    void stopBlockingIOThread() {
-        if (dataThread != nullptr) {
-            // stop a thread that runs in place of the callback
-            threadEnabled.store(false); // ask thread to exit its loop
-            dataThread->join();
-            dataThread = nullptr;
-        }
-    }
+    void stopBlockingIOThread();
 
     virtual double getPeakLevel(int index) {
         return 0.0;
@@ -307,6 +311,12 @@ public:
         oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
     }
 
+    void setNotifyWorkloadIncreaseEnabled(bool enabled) {
+        oboeCallbackProxy.setNotifyWorkloadIncreaseEnabled(enabled);
+    }
+
+    int32_t setBufferSizeInFrames(int streamIndex, int threshold);
+
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
                                    [[maybe_unused]] int length) {}
 
@@ -337,9 +347,12 @@ protected:
     int32_t                      mFramesPerBurst = 0; // TODO per stream
     int32_t                      mChannelCount = 0; // TODO per stream
     int32_t                      mSampleRate = 0; // TODO per stream
+    std::atomic<int32_t>         mBufferSizeInFrames = 0; // TODO per stream
 
     std::atomic<bool>            threadEnabled{false};
     std::thread                 *dataThread = nullptr; // FIXME never gets deleted
+    std::mutex                   threadLock;
+    std::condition_variable      threadWorkCV;
 
 private:
     int64_t mInputOpenedAt = 0;
@@ -520,7 +533,15 @@ public:
     virtual FullDuplexAnalyzer *getFullDuplexAnalyzer() = 0;
 
     int32_t getResetCount() {
-        return getFullDuplexAnalyzer()->getLoopbackProcessor()->getResetCount();
+        auto analyzer = getFullDuplexAnalyzer();
+        if (analyzer == nullptr) {
+            return -1;
+        }
+        auto processor = analyzer->getLoopbackProcessor();
+        if (processor == nullptr) {
+            return -1;
+        }
+        return processor->getResetCount();
     }
 
 protected:

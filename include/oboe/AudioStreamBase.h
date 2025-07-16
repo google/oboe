@@ -215,6 +215,28 @@ public:
     PrivacySensitiveMode getPrivacySensitiveMode() const { return mPrivacySensitiveMode; }
 
     /**
+     * Return the stream's package name
+     *
+     * See AudioStreamBuilder_setPackageName().
+     *
+     * Added in API level 31 to AAudio.
+     *
+     * @return packageName
+     */
+    std::string getPackageName() const { return mPackageName; }
+
+    /**
+     * Return the stream's attribution tag
+     *
+     * See AudioStreamBuilder_setAttributionTag().
+     *
+     * Added in API level 31 to AAudio.
+     *
+     * @return attributionTag
+     */
+    std::string getAttributionTag() const { return mAttributionTag; }
+
+    /**
      * @return true if Oboe can convert channel counts to achieve optimal results.
      */
     bool isChannelConversionAllowed() const {

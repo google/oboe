@@ -62,6 +62,7 @@ public class IntentBasedTestSupport {
     public static final String KEY_BACKGROUND = "background";
     public static final String KEY_FOREGROUND_SERVICE = "foreground_service";
     public static final String KEY_VOLUME = "volume";
+    public static final String KEY_RESTART_STREAM_IF_CLOSED = "restart_if_closed";
 
     public static final String KEY_VOLUME_TYPE = "volume_type";
     public static final float VALUE_VOLUME_INVALID = -1.0f;

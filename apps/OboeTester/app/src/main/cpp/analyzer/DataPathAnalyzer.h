@@ -36,11 +36,6 @@
 class DataPathAnalyzer : public BaseSineAnalyzer {
 public:
 
-    DataPathAnalyzer() : BaseSineAnalyzer() {
-        // Add a little bit of noise to reduce blockage by speaker protection and DRC.
-        setNoiseAmplitude(0.02);
-    }
-
     double calculatePhaseError(double p1, double p2) {
         double diff = p1 - p2;
         // Wrap around the circle.

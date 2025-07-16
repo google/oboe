@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
 
 # Usually this file is called from run_tests.sh which requires the $ANDROID_NDK variable to be set so there's no need
 # to set it here. Comments below are left in intentionally in case they're useful in future.

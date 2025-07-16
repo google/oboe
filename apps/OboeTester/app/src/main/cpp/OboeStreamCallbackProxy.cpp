@@ -35,6 +35,16 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         audioStream->reportWorkload(numWorkloadVoices);
     }
 
+    // Tell ADPF that there is a change in workload.
+    if (mNotifyWorkloadIncreaseEnabled) {
+        if (numWorkloadVoices > mLastNumWorkloadVoices) {
+            audioStream->notifyWorkloadIncrease(true /* cpu */, false /* gpu */, kClassName.c_str());
+        } else if (numWorkloadVoices < mLastNumWorkloadVoices) {
+            audioStream->notifyWorkloadReset(true /* cpu */, false /* gpu */, kClassName.c_str());
+        }
+    }
+    mLastNumWorkloadVoices = numWorkloadVoices;
+
     // Change affinity if app requested a change.
     uint32_t mask = mCpuAffinityMask;
     if (mask != mPreviousMask) {

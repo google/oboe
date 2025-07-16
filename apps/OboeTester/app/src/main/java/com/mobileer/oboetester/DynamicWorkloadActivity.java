@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -61,6 +63,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     public static final boolean VALUE_DEFAULT_USE_WORKLOAD = false;
     public static final String KEY_SCROLL_GRAPHICS = "scroll_graphics";
     public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
+    public static final String KEY_USE_WORKLOAD_INCREASE_API = "use_workload_increase_api";
+    public static final boolean VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API = false;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -78,9 +82,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private CheckBox mSustainedPerformanceModeBox;
+    private CheckBox mWorkloadIncreaseApiBox;
     private int mCpuCount;
     private boolean mShouldUseADPF;
     private boolean mShouldUseWorkloadReporting;
+    private boolean mEnableWorkloadIncreaseApi;
+    private int mLastNotifyWorkloadResult;
 
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
@@ -186,7 +193,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                         + "\nWorkState = " + stateToString(mState)
                         + "\nCPU = " + String.format(Locale.getDefault(), "%6.3f%c", cpuLoad * 100, '%')
                         + "\ncores = " + cpuMaskToString(cpuMask, mCpuCount)
-                        + "\nRecovery = " + recoveryTimeString;
+                        + "\nRecovery = " + recoveryTimeString
+                        + "\nNotify = " + convertErrorToText(mLastNotifyWorkloadResult);
                 postResult(message);
 
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
@@ -308,11 +316,12 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         mUseAltAdpfBox.setVisibility(View.GONE);
 
         mPerfHintBox.setOnClickListener(buttonView -> {
-                CheckBox checkBox = (CheckBox) buttonView;
-                mShouldUseADPF = checkBox.isChecked();
-                setPerformanceHintEnabled(mShouldUseADPF);
-                mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
-                mWorkloadReportBox.setEnabled(mShouldUseADPF);
+            CheckBox checkBox = (CheckBox) buttonView;
+            mShouldUseADPF = checkBox.isChecked();
+            setPerformanceHintEnabled(mShouldUseADPF);
+            mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
+            mWorkloadReportBox.setEnabled(mShouldUseADPF);
+            mWorkloadIncreaseApiBox.setEnabled(mShouldUseADPF);
         });
 
         mWorkloadReportBox.setOnClickListener(buttonView -> {
@@ -321,6 +330,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
         });
         mWorkloadReportBox.setEnabled(mShouldUseADPF);
+
+        mWorkloadIncreaseApiBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
+        mWorkloadIncreaseApiBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mEnableWorkloadIncreaseApi = checkBox.isChecked();
+            setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
+        });
+        mWorkloadIncreaseApiBox.setEnabled(mEnableWorkloadIncreaseApi);
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
         hearWorkloadBox.setOnClickListener(buttonView -> {
@@ -374,11 +391,16 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         NativeEngine.setWorkloadReportingEnabled(enabled);
     }
 
+    private void setNotifyWorkloadIncreaseEnabled(boolean enabled) {
+        NativeEngine.setNotifyWorkloadIncreaseEnabled(enabled);
+    }
+
     private void updateButtons(boolean running) {
         mStartButton.setEnabled(!running);
         mStopButton.setEnabled(running);
         mPerfHintBox.setEnabled(running);
-        mWorkloadReportBox.setEnabled(running);
+        mWorkloadReportBox.setEnabled(running && mShouldUseADPF);
+        mWorkloadIncreaseApiBox.setEnabled(running && mShouldUseADPF);
     }
 
     private void postResult(final String text) {
@@ -408,6 +430,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         }
         try {
             super.startAudio();
+            setPerformanceHintEnabled(mShouldUseADPF);
             updateButtons(true);
             postResult("Running test");
             mUpdateThread = new WorkloadUpdateThread();
@@ -448,6 +471,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mDrawChartAlways =
                     mBundleFromIntent.getBoolean(KEY_SCROLL_GRAPHICS,
                             VALUE_DEFAULT_SCROLL_GRAPHICS);
+            mEnableWorkloadIncreaseApi = mBundleFromIntent.getBoolean(KEY_USE_WORKLOAD_INCREASE_API,
+                    VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API);
 
             startTest();
 
@@ -456,6 +481,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 setPerformanceHintEnabled(mShouldUseADPF);
                 mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
                 setWorkloadReportingEnabled(mShouldUseWorkloadReporting);
+                mWorkloadIncreaseApiBox.setChecked(mEnableWorkloadIncreaseApi);
+                setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
             });
 

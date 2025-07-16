@@ -26,7 +26,7 @@ import java.io.IOException;
 
 abstract class OboeAudioStream extends AudioStreamBase {
     private static final int INVALID_STREAM_INDEX = -1;
-    int streamIndex = INVALID_STREAM_INDEX;
+    int mStreamIndex = INVALID_STREAM_INDEX;
 
     @Override
     public void stopPlayback() throws IOException {
@@ -70,17 +70,19 @@ abstract class OboeAudioStream extends AudioStreamBase {
                 requestedConfiguration.getRateConversionQuality(),
                 requestedConfiguration.isMMap(),
                 isInput(),
-                requestedConfiguration.getSpatializationBehavior()
+                requestedConfiguration.getSpatializationBehavior(),
+                requestedConfiguration.getPackageName(),
+                requestedConfiguration.getAttributionTag()
         );
         if (result < 0) {
-            streamIndex = INVALID_STREAM_INDEX;
+            mStreamIndex = INVALID_STREAM_INDEX;
             String message = "Open "
                     + (isInput() ? "Input" : "Output")
                     + " failed! result = " + result + ", "
                     + StreamConfiguration.convertErrorToText(result);
             throw new IOException(message);
         } else {
-            streamIndex = result;
+            mStreamIndex = result;
         }
         actualConfiguration.setNativeApi(getNativeApi());
         actualConfiguration.setSampleRate(getSampleRate());
@@ -105,6 +107,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
         actualConfiguration.setHardwareSampleRate(getHardwareSampleRate());
         actualConfiguration.setHardwareFormat(getHardwareFormat());
         actualConfiguration.setSpatializationBehavior(getSpatializationBehavior());
+        actualConfiguration.setPackageName(getPackageName());
+        actualConfiguration.setAttributionTag(getAttributionTag());
     }
 
     private native int openNative(
@@ -126,141 +130,164 @@ abstract class OboeAudioStream extends AudioStreamBase {
             int rateConversionQuality,
             boolean isMMap,
             boolean isInput,
-            int spatializationBehavior);
+            int spatializationBehavior,
+            String packageName,
+            String attributionTag);
 
     @Override
     public void close() {
-        if (streamIndex >= 0) {
-            close(streamIndex);
-            streamIndex = INVALID_STREAM_INDEX;
+        if (mStreamIndex >= 0) {
+            close(mStreamIndex);
+            mStreamIndex = INVALID_STREAM_INDEX;
         }
     }
     public native void close(int streamIndex);
 
     @Override
     public int getBufferCapacityInFrames() {
-        return getBufferCapacityInFrames(streamIndex);
+        return getBufferCapacityInFrames(mStreamIndex);
     }
     private native int getBufferCapacityInFrames(int streamIndex);
 
     @Override
     public int getBufferSizeInFrames() {
-        return getBufferSizeInFrames(streamIndex);
+        return getBufferSizeInFrames(mStreamIndex);
     }
     private native int getBufferSizeInFrames(int streamIndex);
 
     @Override
     public int setBufferSizeInFrames(int thresholdFrames) {
-        return setBufferSizeInFrames(streamIndex, thresholdFrames);
+        return setBufferSizeInFrames(mStreamIndex, thresholdFrames);
     }
     private native int setBufferSizeInFrames(int streamIndex, int thresholdFrames);
 
     @Override
     public void setPerformanceHintEnabled(boolean checked) {
-        setPerformanceHintEnabled(streamIndex, checked);
+        setPerformanceHintEnabled(mStreamIndex, checked);
     }
     private native void setPerformanceHintEnabled(int streamIndex, boolean checked);
 
     @Override
     public void setHearWorkload(boolean checked) {
-        setHearWorkload(streamIndex, checked);
+        setHearWorkload(mStreamIndex, checked);
     }
     private native void setHearWorkload(int streamIndex, boolean checked);
 
+    @Override
+    public int notifyWorkloadIncrease(boolean cpu, boolean gpu) {
+        return notifyWorkloadIncrease(mStreamIndex, cpu, gpu);
+    }
+    private native int notifyWorkloadIncrease(int streamIndex, boolean cpu, boolean gpu);
+
+    @Override
+    public int notifyWorkloadReset(boolean cpu, boolean gpu) {
+        return notifyWorkloadReset(mStreamIndex, cpu, gpu);
+    }
+    private native int notifyWorkloadReset(int streamIndex, boolean cpu, boolean gpu);
+
     public int getNativeApi() {
-        return getNativeApi(streamIndex);
+        return getNativeApi(mStreamIndex);
     }
     private native int getNativeApi(int streamIndex);
 
     @Override
     public int getFramesPerBurst() {
-        return getFramesPerBurst(streamIndex);
+        return getFramesPerBurst(mStreamIndex);
     }
     private native int getFramesPerBurst(int streamIndex);
 
     public int getSharingMode() {
-        return getSharingMode(streamIndex);
+        return getSharingMode(mStreamIndex);
     }
     private native int getSharingMode(int streamIndex);
 
     public int getPerformanceMode() {
-        return getPerformanceMode(streamIndex);
+        return getPerformanceMode(mStreamIndex);
     }
     private native int getPerformanceMode(int streamIndex);
 
     public int getInputPreset() {
-        return getInputPreset(streamIndex);
+        return getInputPreset(mStreamIndex);
     }
     private native int getInputPreset(int streamIndex);
 
     public int getSpatializationBehavior() {
-        return getSpatializationBehavior(streamIndex);
+        return getSpatializationBehavior(mStreamIndex);
     }
     private native int getSpatializationBehavior(int streamIndex);
 
     public int getSampleRate() {
-        return getSampleRate(streamIndex);
+        return getSampleRate(mStreamIndex);
     }
     private native int getSampleRate(int streamIndex);
 
     public int getFormat() {
-        return getFormat(streamIndex);
+        return getFormat(mStreamIndex);
     }
     private native int getFormat(int streamIndex);
 
     public int getUsage() {
-        return getUsage(streamIndex);
+        return getUsage(mStreamIndex);
     }
     private native int getUsage(int streamIndex);
 
     public int getContentType() {
-        return getContentType(streamIndex);
+        return getContentType(mStreamIndex);
     }
     private native int getContentType(int streamIndex);
 
     public int getChannelCount() {
-        return getChannelCount(streamIndex);
+        return getChannelCount(mStreamIndex);
     }
     private native int getChannelCount(int streamIndex);
 
     public int getChannelMask() {
-        return getChannelMask(streamIndex);
+        return getChannelMask(mStreamIndex);
     }
     private native int getChannelMask(int streamIndex);
 
     public int getHardwareChannelCount() {
-        return getHardwareChannelCount(streamIndex);
+        return getHardwareChannelCount(mStreamIndex);
     }
     private native int getHardwareChannelCount(int streamIndex);
 
     public int getHardwareSampleRate() {
-        return getHardwareSampleRate(streamIndex);
+        return getHardwareSampleRate(mStreamIndex);
     }
     private native int getHardwareSampleRate(int streamIndex);
 
     public int getHardwareFormat() {
-        return getHardwareFormat(streamIndex);
+        return getHardwareFormat(mStreamIndex);
     }
     private native int getHardwareFormat(int streamIndex);
 
     public int getDeviceId() {
-        return getDeviceId(streamIndex);
+        return getDeviceId(mStreamIndex);
     }
     private native int getDeviceId(int streamIndex);
 
     public int[] getDeviceIds() {
-        return getDeviceIds(streamIndex);
+        return getDeviceIds(mStreamIndex);
     }
     @Nullable private native int[] getDeviceIds(int streamIndex);
 
     public int getSessionId() {
-        return getSessionId(streamIndex);
+        return getSessionId(mStreamIndex);
     }
     private native int getSessionId(int streamIndex);
 
+    public String getPackageName() {
+        return getPackageName(mStreamIndex);
+    }
+    private native String getPackageName(int streamIndex);
+
+    public String getAttributionTag() {
+        return getAttributionTag(mStreamIndex);
+    }
+    private native String getAttributionTag(int streamIndex);
 
     public boolean isMMap() {
-        return isMMap(streamIndex);
+        return isMMap(mStreamIndex);
     }
     private native boolean isMMap(int streamIndex);
 
@@ -269,49 +296,49 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     @Override
     public int getLastErrorCallbackResult() {
-        return getLastErrorCallbackResult(streamIndex);
+        return getLastErrorCallbackResult(mStreamIndex);
     }
     private native int getLastErrorCallbackResult(int streamIndex);
 
     @Override
     public long getFramesWritten() {
-        return getFramesWritten(streamIndex);
+        return getFramesWritten(mStreamIndex);
     }
     private native long getFramesWritten(int streamIndex);
 
     @Override
     public long getFramesRead() {
-        return getFramesRead(streamIndex);
+        return getFramesRead(mStreamIndex);
     }
     private native long getFramesRead(int streamIndex);
 
     @Override
     public int getXRunCount() {
-        return getXRunCount(streamIndex);
+        return getXRunCount(mStreamIndex);
     }
     private native int getXRunCount(int streamIndex);
 
     @Override
     public double getLatency() {
-        return getTimestampLatency(streamIndex);
+        return getTimestampLatency(mStreamIndex);
     }
     private native double getTimestampLatency(int streamIndex);
 
     @Override
     public float getCpuLoad() {
-        return getCpuLoad(streamIndex);
+        return getCpuLoad(mStreamIndex);
     }
     private native float getCpuLoad(int streamIndex);
 
     @Override
     public float getAndResetMaxCpuLoad() {
-        return getAndResetMaxCpuLoad(streamIndex);
+        return getAndResetMaxCpuLoad(mStreamIndex);
     }
     private native float getAndResetMaxCpuLoad(int streamIndex);
 
     @Override
     public int getAndResetCpuMask() {
-        return getAndResetCpuMask(streamIndex);
+        return getAndResetCpuMask(mStreamIndex);
     }
     private native int getAndResetCpuMask(int streamIndex);
 
@@ -326,7 +353,7 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     @Override
     public int getState() {
-        return getState(streamIndex);
+        return getState(mStreamIndex);
     }
     private native int getState(int streamIndex);
 

@@ -88,6 +88,12 @@ public abstract class AudioStreamBase {
     }
     public void setHearWorkload(boolean checked) {
     }
+    public int notifyWorkloadIncrease(boolean cpu, boolean gpu) {
+        return -1;
+    }
+    public int notifyWorkloadReset(boolean cpu, boolean gpu) {
+        return -1;
+    }
 
     public static class DoubleStatistics {
         private double sum;

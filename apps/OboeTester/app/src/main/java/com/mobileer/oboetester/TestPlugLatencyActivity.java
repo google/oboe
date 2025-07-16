@@ -115,12 +115,14 @@ public class TestPlugLatencyActivity extends TestAudioActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        keepScreenOn(true);
         addAudioDeviceCallback();
     }
 
     @Override
     protected void onStop() {
         removeAudioDeviceCallback();
+        keepScreenOn(false);
         super.onStop();
     }
 

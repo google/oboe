@@ -102,6 +102,7 @@ There are several optional parameters in common for glitch, latency, input, and 
 There are some optional parameters in common for glitch, input, and output tests:
 
     --ei duration           {seconds}    // glitch test duration, default is 10 seconds
+    --ez restart_if_closed  {"true", 1, "false", 0} // if true, restart stream if its closed or disconnected
 
 There are several optional parameters for just the "glitch" test:
 
@@ -137,6 +138,7 @@ There are some optional parameters for just the "cpu_load" test:
     --ez use_adpf         {true, false} // if true, use work boost from performance hints. Default is false.
     --ez use_workload     {true, false} // if true and using ADPF then report workload changes. Default is false.
     --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
+    --ez use_workload_increase_api {true, false} // if true and using ADPF, notify adpf with workload increase/reset apis. Default is false.
 
 For example, a complete command for a "latency" test might be:
 

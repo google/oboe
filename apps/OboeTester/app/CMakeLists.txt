@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -std=c++17 -fvisibility=hidden")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 link_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
-# Increment this number when adding files to OboeTester => 106
+# Increment this number when adding files to OboeTester => 108
 # The change in this file will help Android Studio resync
 # and generate new build files that reference the new code.
 file(GLOB_RECURSE app_native_sources src/main/cpp/*)
