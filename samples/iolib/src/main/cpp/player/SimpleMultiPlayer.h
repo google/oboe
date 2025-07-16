@@ -103,7 +103,7 @@ protected:
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 
     // Playback Audio attributes
-    int32_t mChannelCount;
+    int32_t mChannelCount; // Default To Stereo
     int32_t mSampleRate;
 
     // Sample Data

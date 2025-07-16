@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.powerplay
 
 import android.content.Intent
@@ -40,14 +56,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,7 +84,6 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -84,6 +95,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.powerplay.engine.AudioForegroundService
+import com.example.powerplay.engine.OboePerformanceMode
 import com.example.powerplay.engine.PlayerState
 import com.example.powerplay.engine.PowerPlayAudioPlayer
 import com.example.powerplay.ui.theme.MusicPlayerTheme
@@ -192,22 +204,6 @@ class MainActivity : ComponentActivity() {
             mutableLongStateOf(0)
         }
 
-
-//        LaunchedEffect(key1 = player.currentPosition, key2 = player.isPlaying) {
-//            delay(1000)
-//            currentPosition.longValue = player.currentPosition
-//        }
-//
-//        LaunchedEffect(currentPosition.longValue) {
-//            sliderPosition.longValue = currentPosition.longValue
-//        }
-//
-//        LaunchedEffect(player.duration) {
-//            if (player.duration > 0) {
-//                totalDuration.longValue = player.duration
-//            }
-//        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize(), contentAlignment = Alignment.Center
@@ -265,40 +261,6 @@ class MainActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp),
                 ) {
-
-//                    TrackSlider(
-//                        value = sliderPosition.longValue.toFloat(),
-//                        onValueChange = {
-//                            sliderPosition.longValue = it.toLong()
-//                        },
-//                        onValueChangeFinished = {
-//                            currentPosition.longValue = sliderPosition.longValue
-//                            //player.seekTo(sliderPosition.longValue)
-//                        },
-//                        songDuration = totalDuration.longValue.toFloat()
-//                    )
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                    ) {
-//
-//                        Text(
-//                            text = (currentPosition.longValue).convertToText(),
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(8.dp),
-//                            color = Color.Black,
-//                            style = TextStyle(fontWeight = FontWeight.Bold)
-//                        )
-//
-//                        val remainTime = totalDuration.longValue - currentPosition.longValue
-//                        Text(
-//                            text = if (remainTime >= 0) remainTime.convertToText() else "",
-//                            modifier = Modifier
-//                                .padding(8.dp),
-//                            color = Color.Black,
-//                            style = TextStyle(fontWeight = FontWeight.Bold)
-//                        )
-//                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -355,9 +317,6 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-//                    ControlButton(icon = R.drawable.ic_previous, size = 40.dp, onClick = {
-//                        //player.seekToPreviousMediaItem()
-//                    })
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(
                         icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
@@ -367,7 +326,7 @@ class MainActivity : ComponentActivity() {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> player.startPlaying(
                                     playingSongIndex.intValue,
-                                    offload.intValue
+                                    OboePerformanceMode.fromInt(offload.intValue)
                                 )
                             }
 
@@ -375,41 +334,9 @@ class MainActivity : ComponentActivity() {
                                 player.getPlayerStateLive().value == PlayerState.Playing
                         })
                     Spacer(modifier = Modifier.width(20.dp))
-//                    ControlButton(icon = R.drawable.ic_next, size = 40.dp, onClick = {
-//                        //player.seekToNextMediaItem()
-//                    })
                 }
             }
         }
-    }
-
-    /**
-     * Tracks and visualizes the song playing actions.
-     */
-    @Composable
-    fun TrackSlider(
-        value: Float,
-        onValueChange: (newValue: Float) -> Unit,
-        onValueChangeFinished: () -> Unit,
-        songDuration: Float
-    ) {
-        Slider(
-            value = value,
-            onValueChange = {
-                onValueChange(it)
-            },
-            onValueChangeFinished = {
-
-                onValueChangeFinished()
-
-            },
-            valueRange = 0f..songDuration,
-            colors = SliderDefaults.colors(
-                thumbColor = Color.Black,
-                activeTrackColor = Color.DarkGray,
-                inactiveTrackColor = Color.Gray,
-            )
-        )
     }
 
     /***
