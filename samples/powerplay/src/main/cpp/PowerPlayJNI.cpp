@@ -27,7 +27,7 @@
 #include <wav/WavStreamReader.h>
 
 #include <player/OneShotSampleSource.h>
-#include <player/SimpleMultiPlayer.h>
+#include "PowerPlayMultiPlayer.h"
 
 static const char *TAG = "PowerPlayJNI";
 
@@ -40,7 +40,7 @@ using namespace iolib;
 using namespace parselib;
 using namespace oboe;
 
-static SimpleMultiPlayer sDTPlayer;
+static PowerPlayMultiPlayer sDTPlayer;
 
 /**
  * Native (JNI) implementation of PowerPlayAudioEngine.setupAudioStreamNative()

@@ -35,6 +35,8 @@ include(${IOLIB_DIR}/src/main/cpp/CMakeLists.txt)
 # App specific sources
 set(APP_SOURCES
         PowerPlayJNI.cpp
+        PowerPlayMultiPlayer.h
+        PowerPlayMultiPlayer.cpp
 )
 
 # Build the powerplay (native) library
