@@ -31,9 +31,9 @@
 
 static const char *TAG = "PowerPlayJNI";
 
+#define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
 #ifdef __cplusplus
-
 extern "C" {
 #endif
 
@@ -41,58 +41,63 @@ using namespace iolib;
 using namespace parselib;
 using namespace oboe;
 
+// Global static player instance.
+// For more complex scenarios, consider passing this as a native peer (long) from Java.
 static PowerPlayMultiPlayer sDTPlayer;
 
 /**
  * @brief Converts a Kotlin PerformanceMode enum object (passed via JNI) to its corresponding oboe::PerformanceMode.
  *
- * This function retrieves the ordinal value from the Kotlin `PerformanceMode` enum object
- * and maps it to the equivalent `oboe::PerformanceMode` C++ enum value. This is
- * essential for translating performance mode settings from Kotlin/Java layer to the
- * native Oboe audio library for stream configuration.
- *
- * The mapping assumes the following correspondence between the Kotlin enum's ordinal
- * values and the Oboe enum values:
- * - Kotlin `PerformanceMode.None.ordinal` (0) maps to `oboe::PerformanceMode::None`
- * - Kotlin `PerformanceMode.LowLatency.ordinal` (1) maps to `oboe::PerformanceMode::LowLatency`
- * - Kotlin `PerformanceMode.PowerSaving.ordinal` (2) maps to `oboe::PerformanceMode::PowerSaving`
- * - Kotlin `PerformanceMode.PowerSavingOffloaded.ordinal` (3) maps to `oboe::PerformanceMode::POWER_SAVING_OFFLOADED`
- *
- * If the provided `performanceModeObj` is null, if the Java class or its "ordinal" method
- * cannot be found, or if the retrieved ordinal value is outside the expected range [0-3],
- * this function defaults to `oboe::PerformanceMode::None`.
- *
- * @param env Pointer to the JNI environment.
- * @param performanceModeObj A `jobject` representing the Kotlin `PerformanceMode` enum instance.
- * @return The corresponding `oboe::PerformanceMode` enum value, or `oboe::PerformanceMode::None`
- *         in case of errors or an invalid ordinal.
+ * (Documentation remains the same as your improved version, it's good)
  */
 oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj) {
     if (performanceModeObj == nullptr) {
-        return PerformanceMode::None; // Default or error case
+        LOG_ERROR("performanceModeObj is null in getPerformanceMode");
+        return PerformanceMode::None;
     }
 
     jclass performanceModeClass = env->GetObjectClass(performanceModeObj);
     if (performanceModeClass == nullptr) {
-        return PerformanceMode::None; // Error finding class
+        LOG_ERROR("Failed to get class for performanceModeObj");
+        // An exception might be pending here if GetObjectClass failed.
+        if (env->ExceptionCheck()) {
+            env->ExceptionClear(); // Clear it if we are returning a default.
+        }
+        return PerformanceMode::None;
     }
 
     jmethodID ordinalMethod = env->GetMethodID(performanceModeClass, "ordinal", "()I");
+    // It's good practice to delete local refs when done, though JNI cleans them on native method return.
+    env->DeleteLocalRef(performanceModeClass); // Delete local ref
+
     if (ordinalMethod == nullptr) {
-        return PerformanceMode::None; // Error finding method
+        LOG_ERROR("Failed to get 'ordinal' method ID");
+        if (env->ExceptionCheck()) {
+            env->ExceptionClear();
+        }
+        return PerformanceMode::None;
     }
 
     jint ordinal = env->CallIntMethod(performanceModeObj, ordinalMethod);
+    if (env->ExceptionCheck()) {
+        LOG_ERROR("Exception occurred calling 'ordinal' method.");
+        env->ExceptionClear();
+        return PerformanceMode::None;
+    }
 
-    // Assuming the order of enums in Kotlin matches Oboe's integer representation
-    // OboePerformanceMode.NONE.ordinal (0) -> oboe::PerformanceMode::None (10)
-    // OboePerformanceMode.LOW_LATENCY.ordinal (1) -> oboe::PerformanceMode::LowLatency (11)
-    // OboePerformanceMode.POWER_SAVING.ordinal (2) -> oboe::PerformanceMode::PowerSaving (12)
-    // OboePerformanceMode.POWER_SAVING_OFFLOADED.ordinal (3) -> oboe::PerformanceMode::POWER_SAVING_OFFLOADED (13)
-    if (ordinal >= 0 && ordinal <= 3) {
-        return static_cast<oboe::PerformanceMode>(ordinal + 10);
-    } else {
-        return PerformanceMode::None; // Default for unknown ordinal
+    // Mapping based on Kotlin enum ordinals to Oboe PerformanceMode values
+    switch (ordinal) {
+        case 0:
+            return PerformanceMode::None;
+        case 1:
+            return PerformanceMode::LowLatency;
+        case 2:
+            return PerformanceMode::PowerSaving;
+        case 3:
+            return PerformanceMode::POWER_SAVING_OFFLOADED;
+        default:
+            LOG_ERROR("Unknown performance mode ordinal: %d", ordinal);
+            return PerformanceMode::None;
     }
 }
 

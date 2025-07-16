@@ -8,8 +8,8 @@ android {
     defaultConfig {
         applicationId "com.example.powerplay"
         minSdkVersion 26
-        targetSdkVersion 35
-        compileSdkVersion 35
+        targetSdkVersion 36
+        compileSdkVersion 36
         versionCode 1
         versionName "1.0"
 
@@ -46,11 +46,10 @@ android {
         kotlinCompilerExtensionVersion compose_version
     }
 
-    ndkVersion '29.0.13113456 rc1' // Requires NDK r29 for PCM Offload
+    ndkVersion "29.0.13599879" // Requires NDK r29 for PCM Offload
     externalNativeBuild {
         cmake {
             path 'src/main/cpp/CMakeLists.txt'
-            version '3.31.6'
         }
     }
     packagingOptions {

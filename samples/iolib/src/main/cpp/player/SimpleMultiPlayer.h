@@ -54,7 +54,7 @@ public:
      */
     void unloadSampleData();
 
-    virtual void triggerDown(int32_t index, oboe::PerformanceMode performanceMode);
+    virtual void triggerDown(int32_t index, oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
     virtual void triggerUp(int32_t index);
 
     void resetAll();
