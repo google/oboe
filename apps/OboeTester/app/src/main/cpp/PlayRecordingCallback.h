@@ -19,14 +19,14 @@
 
 #include "oboe/Oboe.h"
 
-#include "MultiChannelRecording.h"
+#include "MultiChannelFileRecording.h"
 
 class PlayRecordingCallback : public oboe::AudioStreamCallback {
 public:
     PlayRecordingCallback() {}
     ~PlayRecordingCallback() = default;
 
-    void setRecording(MultiChannelRecording *recording) {
+    void setRecording(MultiChannelFileRecording *recording) {
         mRecording = recording;
     }
 
@@ -39,7 +39,7 @@ public:
             int numFrames);
 
 private:
-    MultiChannelRecording *mRecording = nullptr;
+    MultiChannelFileRecording *mRecording = nullptr;
 };
 
 

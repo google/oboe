@@ -23,7 +23,7 @@
 #include "oboe/Oboe.h"
 #include "analyzer/LatencyAnalyzer.h"
 #include "FullDuplexStreamWithConversion.h"
-#include "MultiChannelRecording.h"
+#include "MultiChannelFileRecording.h"
 
 class FullDuplexAnalyzer : public FullDuplexStreamWithConversion {
 public:
@@ -48,7 +48,7 @@ public:
         return mLoopbackProcessor;
     }
 
-    void setRecording(MultiChannelRecording *recording) {
+    void setRecording(MultiChannelFileRecording *recording) {
         mRecording = recording;
     }
 
@@ -61,7 +61,7 @@ public:
     }
 
 private:
-    MultiChannelRecording  *mRecording = nullptr;
+    MultiChannelFileRecording *mRecording = nullptr;
 
     LoopbackProcessor * const mLoopbackProcessor;
 
