@@ -69,8 +69,11 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
         return false;
     }
 
-    constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
-    result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+    if (!OboeExtensions::isMMapUsed(mAudioStream.get())) {
+        constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
+        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+    }
+
     if (result != Result::OK) {
         __android_log_print(
                 ANDROID_LOG_WARN,
