@@ -68,8 +68,7 @@ class AudioForegroundService : Service() {
 
         val result = audioManager.requestAudioFocus(audioFocusRequest)
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            // Start playback only when audio focus is granted
-            // ...
+            // TODO tart playback only when audio focus is granted
         }
 
         return START_STICKY
