@@ -229,13 +229,9 @@
         <item>MIC</item>
         <item>CAMCORDER</item>
         <item>UNPROCESSED</item>
-        <item>VOICE_PERFORMANCE</item>
         <item>VOICE_RECOGNITION</item>
         <item>VOICE_COMMUNICATION</item>
-        <item>VOICE_UPLINK</item>
-        <item>VOICE_DOWNLINK</item>
-        <item>VOICE_CALL</item>
-        <item>REMOTE_SUBMIX</item>
+        <item>VOICE_PERFORMANCE</item>
     </string-array>
 
     <string name="synth_sender_text">Select Sender for Synth</string>

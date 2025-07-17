@@ -201,7 +201,7 @@ class AudioRecordThread implements Runnable {
                 return MediaRecorder.AudioSource.VOICE_PERFORMANCE;
             } else {
                 Log.d(TAG, "MediaRecorder.AudioSource.VOICE_PERFORMANCE not supported");
-                return 10;
+                return MediaRecorder.AudioSource.DEFAULT;
             }
         } else {
             Log.d(TAG, "Unknown audio source: " + audioSource);

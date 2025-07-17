@@ -2,6 +2,7 @@ package com.mobileer.oboetester;
 
 import android.app.Activity;
 import android.media.AudioDeviceInfo;
+import android.os.Build;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
@@ -66,7 +67,18 @@ public class TapToToneTester {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 String audioSourceText = (String) mAudioSourceSpinner.getAdapter().getItem(position);
-                mRecorder.setAudioSource(audioSourceText);
+                if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && audioSourceText.equals("VOICE_PERFORMANCE")) {
+                    if (mActivity instanceof ExternalTapToToneActivity) {
+                        ExternalTapToToneActivity activity = (ExternalTapToToneActivity) mActivity;
+                        activity.showErrorToast("VOICE_PERFORMANCE not supported on API < 29");
+                    } else if (mActivity instanceof TapToToneActivity) {
+                        TapToToneActivity activity = (TapToToneActivity) mActivity;
+                        activity.showErrorToast("VOICE_PERFORMANCE not supported on API < 29");
+                    }
+
+                } else {
+                    mRecorder.setAudioSource(audioSourceText);
+                }
             }
 
             @Override
