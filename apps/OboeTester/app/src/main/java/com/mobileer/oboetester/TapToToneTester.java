@@ -72,6 +72,10 @@ public class TapToToneTester {
                     Toast.makeText(mActivity,
                             "Error: VOICE_PERFORMANCE not supported on API < 29",
                             Toast.LENGTH_SHORT).show();
+                } if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N && audioSourceText.equals("UNPROCESSED")) {
+                    Toast.makeText(mActivity,
+                            "Error: UNPROCESSED not supported on API < 24",
+                            Toast.LENGTH_SHORT).show();
                 } else {
                     mRecorder.setAudioSource(audioSourceText);
                 }

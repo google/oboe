@@ -186,8 +186,13 @@ class AudioRecordThread implements Runnable {
             return MediaRecorder.AudioSource.VOICE_COMMUNICATION;
         } else if (audioSource.equals("CAMCORDER")) {
             return MediaRecorder.AudioSource.CAMCORDER;
-        } else if (audioSource.equals("REMOTE_SUBMIX")) {
-            return MediaRecorder.AudioSource.REMOTE_SUBMIX;
+        } else if (audioSource.equals("UNPROCESSED")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return MediaRecorder.AudioSource.UNPROCESSED;
+            } else {
+                Log.d(TAG, "MediaRecorder.AudioSource.VOICE_PERFORMANCE not supported");
+                return MediaRecorder.AudioSource.DEFAULT;
+            }
         } else if (audioSource.equals("VOICE_PERFORMANCE")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 return MediaRecorder.AudioSource.VOICE_PERFORMANCE;
