@@ -36,9 +36,12 @@ public:
 
     void reset() override;
 
+    void useNoisePulse(bool useNoisePulse);
+
 private:
     std::atomic<int> mRequestCount; // external thread increments this to request a beep
     std::atomic<int> mAcknowledgeCount; // audio thread sets this to acknowledge
+    std::atomic<bool> mUseNoisePulse;
     double mLevel;
 };
 

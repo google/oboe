@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.mobileer.audio_device.AudioDeviceListEntry;
@@ -302,4 +303,11 @@ public class TapToToneActivity extends TestOutputActivityBase {
         mInputDeviceSpinner.setEnabled(true);
         mTapToToneTester.stop();
     }
+
+    public void onUseNoisePulseClicked(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        useNoisePulse(checkBox.isChecked());
+    }
+
+    public native void useNoisePulse(boolean enabled);
 }

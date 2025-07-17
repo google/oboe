@@ -26,6 +26,24 @@
         android:orientation="horizontal" />
 
     <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Use Noise Pulse: " />
+
+        <CheckBox
+            android:id="@+id/checkbox_use_noise_pulse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onUseNoisePulseClicked"
+            android:checked="true" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">

@@ -25,6 +25,7 @@ SawPingGenerator::SawPingGenerator()
         : OscillatorBase()
         , mRequestCount(0)
         , mAcknowledgeCount(0)
+        , mUseNoisePulse(true)
         , mLevel(0.0f) {
 }
 
@@ -50,7 +51,7 @@ int32_t SawPingGenerator::onProcess(int numFrames) {
     // Check level to prevent numeric underflow.
     if (mLevel > 0.000001) {
         for (int i = 0; i < numFrames; i++) {
-            float sawtooth = incrementPhase(frequencies[i]);
+            float sawtooth = mUseNoisePulse ? 1.0f : incrementPhase(frequencies[i]);
             *buffer++ = (float) (sawtooth * mLevel * amplitudes[i]);
             mLevel *= 0.999;
         }
@@ -67,3 +68,6 @@ void SawPingGenerator::trigger() {
     mRequestCount++;
 }
 
+void SawPingGenerator::useNoisePulse(bool enabled) {
+    mUseNoisePulse = enabled;
+}

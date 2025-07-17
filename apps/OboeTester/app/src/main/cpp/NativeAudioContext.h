@@ -511,6 +511,10 @@ public:
         sawPingGenerator.trigger();
     }
 
+    void useNoisePulse(bool enabled) {
+        sawPingGenerator.useNoisePulse(enabled);
+    }
+
     SawPingGenerator             sawPingGenerator;
 };
 
