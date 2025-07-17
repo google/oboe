@@ -2,7 +2,12 @@ package com.mobileer.oboetester;
 
 import android.app.Activity;
 import android.media.AudioDeviceInfo;
+import android.os.Build;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -20,13 +25,13 @@ public class TapToToneTester {
     private static final float ANALYSIS_TIME_TOTAL = MAX_TOUCH_LATENCY + MAX_OUTPUT_LATENCY;
     private static final int ANALYSIS_SAMPLE_RATE = 48000; // need not match output rate
 
-    private final boolean mRecordEnabled = true;
     private final AudioRecordThread mRecorder;
     private final TapLatencyAnalyser mTapLatencyAnalyser;
 
     private final Activity mActivity;
     private final WaveformView mWaveformView;
     private final TextView mResultView;
+    private final Spinner mAudioSourceSpinner;
 
     private final String mTapInstructions;
     private float mAnalysisTimeMargin = ANALYSIS_TIME_MARGIN;
@@ -53,27 +58,47 @@ public class TapToToneTester {
         mWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio);
         mWaveformView.setEnabled(false);
 
-        if (mRecordEnabled) {
-            float analysisTimeMax = ANALYSIS_TIME_TOTAL + mAnalysisTimeMargin;
-            mRecorder = new AudioRecordThread(ANALYSIS_SAMPLE_RATE,
-                    1,
-                    (int) (analysisTimeMax * ANALYSIS_SAMPLE_RATE));
-        }
+        float analysisTimeMax = ANALYSIS_TIME_TOTAL + mAnalysisTimeMargin;
+        mRecorder = new AudioRecordThread(ANALYSIS_SAMPLE_RATE,
+                1,
+                (int) (analysisTimeMax * ANALYSIS_SAMPLE_RATE));
+
+        mAudioSourceSpinner = (Spinner) activity.findViewById(R.id.audio_source_spinner);
+        mAudioSourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                String audioSourceText = (String) mAudioSourceSpinner.getAdapter().getItem(position);
+                if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && "VOICE_PERFORMANCE".equals(audioSourceText)) {
+                    Toast.makeText(mActivity,
+                            "Error: VOICE_PERFORMANCE not supported on API < 29",
+                            Toast.LENGTH_SHORT).show();
+                } if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N && "UNPROCESSED".equals(audioSourceText)) {
+                    Toast.makeText(mActivity,
+                            "Error: UNPROCESSED not supported on API < 24",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    mRecorder.setAudioSource(audioSourceText);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // no-op
+            }
+        });
+        mRecorder.setAudioSource((String) mAudioSourceSpinner.getAdapter().getItem(0));
+
         mTapLatencyAnalyser = new TapLatencyAnalyser();
     }
 
     public void start() throws IOException {
-        if (mRecordEnabled) {
-            mRecorder.startAudio();
-            mWaveformView.setEnabled(true);
-        }
+        mRecorder.startAudio();
+        mWaveformView.setEnabled(true);
     }
 
     public void stop() {
-        if (mRecordEnabled) {
-            mRecorder.stopAudio();
-            mWaveformView.setEnabled(false);
-        }
+        mRecorder.stopAudio();
+        mWaveformView.setEnabled(false);
     }
 
     /**
@@ -103,11 +128,9 @@ public class TapToToneTester {
     }
 
     private void scheduleTaskWhenDone(Runnable task) {
-        if (mRecordEnabled) {
-            // schedule an analysis to start in the near future
-            int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
-            mRecorder.scheduleTask(numSamples, task);
-        }
+        // schedule an analysis to start in the near future
+        int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_DELAY);
+        mRecorder.scheduleTask(numSamples, task);
     }
 
     private void analyseAndShowResults() {
@@ -118,7 +141,6 @@ public class TapToToneTester {
     }
 
     public TestResult analyzeCapturedAudio() {
-        if (!mRecordEnabled) return null;
         int numSamples = (int) (mRecorder.getSampleRate() * ANALYSIS_TIME_TOTAL);
         float[] buffer = new float[numSamples];
         mRecorder.setCaptureEnabled(false); // TODO wait for it to settle
