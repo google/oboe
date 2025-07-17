@@ -1,9 +1,16 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    tools:context="com.mobileer.oboetester.DynamicWorkloadActivity" >
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
 
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -153,6 +160,11 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dynamic_workload_graph_info" />
+
     <com.mobileer.oboetester.MultiLineChart
         android:id="@+id/multiline_chart"
         android:layout_width="fill_parent"
@@ -164,4 +176,4 @@
         app:exampleString="Hello, MultiLineChart"
         app:lineColor="@color/light_blue_600" />
 </LinearLayout>
-
+</ScrollView>

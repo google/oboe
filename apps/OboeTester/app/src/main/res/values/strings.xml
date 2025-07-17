@@ -346,4 +346,8 @@
         <item>AudioTag</item>
         <item>BogusTag</item>
     </string-array>
+
+    <string name="dynamic_workload_graph_info">
+        Dynamic Workload: Black\nCPU Load: Green or Red (Glitch)
+    </string>
 </resources>
