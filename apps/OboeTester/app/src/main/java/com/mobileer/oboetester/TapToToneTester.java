@@ -68,11 +68,11 @@ public class TapToToneTester {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 String audioSourceText = (String) mAudioSourceSpinner.getAdapter().getItem(position);
-                if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && audioSourceText.equals("VOICE_PERFORMANCE")) {
+                if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && "VOICE_PERFORMANCE".equals(audioSourceText)) {
                     Toast.makeText(mActivity,
                             "Error: VOICE_PERFORMANCE not supported on API < 29",
                             Toast.LENGTH_SHORT).show();
-                } if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N && audioSourceText.equals("UNPROCESSED")) {
+                } if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N && "UNPROCESSED".equals(audioSourceText)) {
                     Toast.makeText(mActivity,
                             "Error: UNPROCESSED not supported on API < 24",
                             Toast.LENGTH_SHORT).show();
