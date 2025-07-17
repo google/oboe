@@ -190,7 +190,7 @@ class AudioRecordThread implements Runnable {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 return MediaRecorder.AudioSource.UNPROCESSED;
             } else {
-                Log.d(TAG, "MediaRecorder.AudioSource.VOICE_PERFORMANCE not supported");
+                Log.d(TAG, "MediaRecorder.AudioSource.UNPROCESSED not supported");
                 return MediaRecorder.AudioSource.DEFAULT;
             }
         } else if (audioSource.equals("VOICE_PERFORMANCE")) {
