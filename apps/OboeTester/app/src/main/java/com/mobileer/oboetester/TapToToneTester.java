@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -68,14 +69,9 @@ public class TapToToneTester {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 String audioSourceText = (String) mAudioSourceSpinner.getAdapter().getItem(position);
                 if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && audioSourceText.equals("VOICE_PERFORMANCE")) {
-                    if (mActivity instanceof ExternalTapToToneActivity) {
-                        ExternalTapToToneActivity activity = (ExternalTapToToneActivity) mActivity;
-                        activity.showErrorToast("VOICE_PERFORMANCE not supported on API < 29");
-                    } else if (mActivity instanceof TapToToneActivity) {
-                        TapToToneActivity activity = (TapToToneActivity) mActivity;
-                        activity.showErrorToast("VOICE_PERFORMANCE not supported on API < 29");
-                    }
-
+                    Toast.makeText(mActivity,
+                            "Error: VOICE_PERFORMANCE not supported on API < 29",
+                            Toast.LENGTH_SHORT).show();
                 } else {
                     mRecorder.setAudioSource(audioSourceText);
                 }
