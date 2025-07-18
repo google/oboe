@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef NATIVEOBOE_SAWPINGGENERATOR_H
-#define NATIVEOBOE_SAWPINGGENERATOR_H
+#ifndef NATIVEOBOE_NOISEPULSEGENERATOR_H
+#define NATIVEOBOE_NOISEPULSEGENERATOR_H
 
 #include <atomic>
 #include <unistd.h>
@@ -24,17 +24,26 @@
 #include "flowgraph/FlowGraphNode.h"
 #include "flowunits/OscillatorBase.h"
 
-class SawPingGenerator : public OscillatorBase {
+class NoisePulseGenerator : public oboe::flowgraph::FlowGraphNode {
 public:
-    SawPingGenerator();
+    NoisePulseGenerator();
 
-    virtual ~SawPingGenerator();
+    virtual ~NoisePulseGenerator();
 
     int32_t onProcess(int numFrames) override;
 
     void trigger();
 
     void reset() override;
+
+    /**
+     * Control the linear amplitude.
+     * Silence is 0.0.
+     * A typical full amplitude would be 1.0.
+     */
+    oboe::flowgraph::FlowGraphPortFloatInput  amplitude;
+
+    oboe::flowgraph::FlowGraphPortFloatOutput output;
 
 private:
     std::atomic<int> mRequestCount; // external thread increments this to request a beep
@@ -43,4 +52,4 @@ private:
 };
 
 
-#endif //NATIVEOBOE_SAWPINGGENERATOR_H
+#endif //NATIVEOBOE_NOISEPULSEGENERATOR_H

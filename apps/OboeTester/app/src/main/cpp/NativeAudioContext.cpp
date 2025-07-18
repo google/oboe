@@ -677,11 +677,18 @@ void ActivityTapToTone::configureAfterOpen() {
     mSinkI32 = std::make_shared<SinkI32>(mChannelCount);
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
-    sawPingGenerator.setSampleRate(outputStream->getSampleRate());
-    sawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
-    sawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
 
-    sawPingGenerator.output.connect(&(monoToMulti->input));
+    mNoisePulseGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+    mSawPingGenerator.setSampleRate(outputStream->getSampleRate());
+    mSawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
+    mSawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+
+    if (mUseNoisePulse) {
+        mNoisePulseGenerator.output.connect(&(monoToMulti->input));
+    } else {
+        mSawPingGenerator.output.connect(&(monoToMulti->input));
+    }
+
     monoToMulti->output.connect(&(mSinkFloat.get()->input));
     monoToMulti->output.connect(&(mSinkI16.get()->input));
     monoToMulti->output.connect(&(mSinkI24.get()->input));
