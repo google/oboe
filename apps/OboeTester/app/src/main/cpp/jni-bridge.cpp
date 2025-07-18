@@ -112,6 +112,11 @@ Java_com_mobileer_oboetester_NativeEngine_isMMapExclusiveSupported(JNIEnv *env, 
     return oboe::AAudioExtensions::getInstance().isMMapExclusiveSupported();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_NativeEngine_isMMapEnabled(JNIEnv *env, jclass type) {
+    return oboe::AAudioExtensions::getInstance().isMMapEnabled();
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_NativeEngine_setWorkaroundsEnabled(JNIEnv *env, jclass type,
                                                                           jboolean enabled) {
