@@ -41,7 +41,7 @@ add_library(minimaloboe SHARED
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable after done debugging.
-target_compile_options(minimaloboe PRIVATE -Wall -Werror "$<$<CONFIG:RELEASE>:-Ofast>")
+target_compile_options(minimaloboe PRIVATE -Wall -Werror "$<$<CONFIG:RELEASE>:-O3 -ffast-math>")
 
 target_link_libraries( # Specifies the target library.
         minimaloboe
