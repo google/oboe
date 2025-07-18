@@ -177,8 +177,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 }
                 stream.setWorkload((int) nextWorkload);
                 mWorkloadCurrent = nextWorkload;
-                int xRunCount = stream.getXRunCount();
-                boolean useSecondaryColor = (xRunCount != mLastXRunCount);
+                final int xRunCount = stream.getXRunCount();
+                final boolean useSecondaryColor = (xRunCount != mLastXRunCount);
                 mLastXRunCount = xRunCount;
                 // Update chart
                 float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
