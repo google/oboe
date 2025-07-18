@@ -994,6 +994,13 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
     oboe::DefaultStreamValues::FramesPerBurst = audio_manager_frames_per_burst;
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TapToToneActivity_useNoisePulse(JNIEnv *env,
+                                                             jclass clazz,
+                                                             jboolean enabled) {
+    engine.mActivityTapToTone.useNoisePulse(enabled);
+}
+
 static TestErrorCallback sErrorCallbackTester;
 
 JNIEXPORT void JNICALL

@@ -54,6 +54,7 @@
 #include "analyzer/DataPathAnalyzer.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
+#include "NoisePulseGenerator.h"
 #include "OboeStreamCallbackProxy.h"
 #include "OboeTools.h"
 #include "PlayRecordingCallback.h"
@@ -69,6 +70,7 @@
 #define AMPLITUDE_SAWTOOTH       0.5
 #define FREQUENCY_SAW_PING       800.0
 #define AMPLITUDE_SAW_PING       0.8
+#define AMPLITUDE_NOISE_PULSE    0.8
 #define AMPLITUDE_IMPULSE        0.7
 
 
@@ -507,11 +509,21 @@ public:
 
     void configureAfterOpen() override;
 
-    virtual void trigger() override {
-        sawPingGenerator.trigger();
+    void trigger() override {
+        if (mUseNoisePulse) {
+            mNoisePulseGenerator.trigger();
+        } else {
+            mSawPingGenerator.trigger();
+        }
     }
 
-    SawPingGenerator             sawPingGenerator;
+    void useNoisePulse(bool enabled) {
+        mUseNoisePulse = enabled;
+    }
+
+    bool                         mUseNoisePulse;
+    SawPingGenerator             mSawPingGenerator;
+    NoisePulseGenerator          mNoisePulseGenerator;
 };
 
 /**
