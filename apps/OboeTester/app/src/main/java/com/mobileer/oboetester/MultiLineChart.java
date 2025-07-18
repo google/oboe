@@ -108,12 +108,11 @@ public class MultiLineChart extends View {
         for (int i = 1; i < numPoints; i++) {
             float xData = getXData(i);
             float yData = trace.get(i);
-            boolean useSecondaryColor = trace.getUseSecondaryColor(i);
             float xPos = width - ((xMax - xData) * xScaler);
             float yPos = height - ((yData - yMin) * yScaler);
             if (i > 1) {
                 // Each line segment requires 4 values!
-                if (useSecondaryColor) {
+                if (trace.getUseSecondaryColor(i)) {
                     mSecondaryColorVertices[secondaryColorVertexIndex++] = previousX;
                     mSecondaryColorVertices[secondaryColorVertexIndex++] = previousY;
                     mSecondaryColorVertices[secondaryColorVertexIndex++] = xPos;
@@ -196,7 +195,7 @@ public class MultiLineChart extends View {
 
         public void add(float value, boolean useSecondaryColor) {
             // Take the hit here instead of when drawing.
-            float normalizedValue = Math.min(mMax, Math.max(mMin, value));
+            final float normalizedValue = Math.min(mMax, Math.max(mMin, value));
             // Add the data twice to make the graph less spiky
             mData.add(normalizedValue, useSecondaryColor);
             mData.add(normalizedValue, useSecondaryColor);

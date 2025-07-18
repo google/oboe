@@ -5,126 +5,32 @@
     android:layout_height="wrap_content"
     android:fillViewport="true"
     tools:context="com.mobileer.oboetester.DynamicWorkloadActivity" >
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
-
-    <include layout="@layout/merge_audio_simple" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:lines="1"
-        android:text="CPUs:"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/small_horizontal_margin"
-        android:paddingTop="@dimen/small_vertical_margin"
-        android:paddingRight="@dimen/small_horizontal_margin"
-        android:paddingBottom="@dimen/small_vertical_margin"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
         tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
-        <CheckBox
-            android:id="@+id/enable_perf_hint"
+        <include layout="@layout/merge_audio_simple" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="ADPF" />
-
-        <CheckBox
-            android:id="@+id/enable_workload_report"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Wkload" />
-
-        <CheckBox
-            android:id="@+id/use_alternative_adpf"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Alt ADPF" />
-    </LinearLayout>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/small_horizontal_margin"
-        android:paddingTop="@dimen/small_vertical_margin"
-        android:paddingRight="@dimen/small_horizontal_margin"
-        android:paddingBottom="@dimen/small_vertical_margin"
-        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
-
-        <CheckBox
-            android:id="@+id/enable_adpf_workload_increase"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="ADPF Workload Increase API" />
-    </LinearLayout>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/small_horizontal_margin"
-        android:paddingTop="@dimen/small_vertical_margin"
-        android:paddingRight="@dimen/small_horizontal_margin"
-        android:paddingBottom="@dimen/small_vertical_margin"
-        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
-
-        <CheckBox
-            android:id="@+id/hear_workload"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Hear Synth" />
-
-        <CheckBox
-            android:id="@+id/draw_always"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:checked="true"
-            android:text="Scroll" />
-
-        <CheckBox
-            android:id="@+id/sustained_perf_mode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8sp"
-            android:text="Sustain" />
-    </LinearLayout>
-
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+            android:lines="1"
+            android:text="CPUs:"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
 
-            android:id="@+id/affinityLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -134,46 +40,140 @@
             android:paddingBottom="@dimen/small_vertical_margin"
             tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
-            <TextView
-                android:layout_width="match_parent"
+            <CheckBox
+                android:id="@+id/enable_perf_hint"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/cpu_affinity"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_marginRight="8sp"
+                android:text="ADPF" />
+
+            <CheckBox
+                android:id="@+id/enable_workload_report"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Wkload" />
+
+            <CheckBox
+                android:id="@+id/use_alternative_adpf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Alt ADPF" />
         </LinearLayout>
 
-    </HorizontalScrollView>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
 
-    <com.mobileer.oboetester.WorkloadView
-        android:id="@+id/dynamic_workload_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/small_horizontal_margin"
+            android:paddingTop="@dimen/small_vertical_margin"
+            android:paddingRight="@dimen/small_horizontal_margin"
+            android:paddingBottom="@dimen/small_vertical_margin"
+            tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
 
-    <TextView
-        android:id="@+id/resultView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:lines="6"
-        android:text="@string/tap_help"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+            <CheckBox
+                android:id="@+id/enable_adpf_workload_increase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="ADPF Workload Increase API" />
+        </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/dynamic_workload_graph_info" />
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
 
-    <com.mobileer.oboetester.MultiLineChart
-        android:id="@+id/multiline_chart"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:minHeight="100dp"
-        app:backgroundColor="@color/background_warm"
-        app:exampleDimension="24sp"
-        app:exampleDrawable="@android:drawable/ic_menu_add"
-        app:exampleString="Hello, MultiLineChart"
-        app:lineColor="@color/light_blue_600" />
-</LinearLayout>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/small_horizontal_margin"
+            android:paddingTop="@dimen/small_vertical_margin"
+            android:paddingRight="@dimen/small_horizontal_margin"
+            android:paddingBottom="@dimen/small_vertical_margin"
+            tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+            <CheckBox
+                android:id="@+id/hear_workload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Hear Synth" />
+
+            <CheckBox
+                android:id="@+id/draw_always"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:checked="true"
+                android:text="Scroll" />
+
+            <CheckBox
+                android:id="@+id/sustained_perf_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="Sustain" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+
+                android:id="@+id/affinityLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/small_horizontal_margin"
+                android:paddingTop="@dimen/small_vertical_margin"
+                android:paddingRight="@dimen/small_horizontal_margin"
+                android:paddingBottom="@dimen/small_vertical_margin"
+                tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cpu_affinity"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <com.mobileer.oboetester.WorkloadView
+            android:id="@+id/dynamic_workload_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <TextView
+            android:id="@+id/resultView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lines="6"
+            android:text="@string/tap_help"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dynamic_workload_graph_info" />
+
+        <com.mobileer.oboetester.MultiLineChart
+            android:id="@+id/multiline_chart"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:minHeight="100dp"
+            app:backgroundColor="@color/background_warm"
+            app:exampleDimension="24sp"
+            app:exampleDrawable="@android:drawable/ic_menu_add"
+            app:exampleString="Hello, MultiLineChart"
+            app:lineColor="@color/light_blue_600" />
+    </LinearLayout>
 </ScrollView>
