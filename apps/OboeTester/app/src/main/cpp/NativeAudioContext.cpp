@@ -678,7 +678,7 @@ void ActivityTapToTone::configureAfterOpen() {
 
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
 
-    mNoisePulseGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+    mNoisePulseGenerator.amplitude.setValue(AMPLITUDE_NOISE_PULSE);
     mSawPingGenerator.setSampleRate(outputStream->getSampleRate());
     mSawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
     mSawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
