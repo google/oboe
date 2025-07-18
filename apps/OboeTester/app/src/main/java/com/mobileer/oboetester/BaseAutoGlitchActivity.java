@@ -413,6 +413,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
+        requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
+        requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
+
         // Legacy NONE
         requestedInConfig.setMMap(false);
         requestedOutConfig.setMMap(false);
@@ -430,8 +433,6 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             requestedOutConfig.setMMap(true);
 
             // MMAP_LOW_LATENCY_SHARED
-            requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
-            requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
             testCurrentConfigurations();
 
             // MMAP LOW_LATENCY EXCLUSIVE
@@ -594,8 +595,8 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration actualInConfig = mAudioInputTester.actualConfiguration;
         StreamConfiguration actualOutConfig = mAudioOutTester.actualConfiguration;
         // No point running the test if we don't get any of the sharing modes we requested.
-        if (requestedInConfig.isMMap() && (actualInConfig.getSharingMode() != requestedInConfig.getSharingMode())
-                && requestedOutConfig.isMMap() && actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
+        if (actualInConfig.getSharingMode() != requestedInConfig.getSharingMode()
+                && actualOutConfig.getSharingMode() != requestedOutConfig.getSharingMode()) {
             log("Did not get requested sharing mode.");
             why += "share,";
         }
