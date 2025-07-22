@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.mobileer.audio_device.AudioDeviceListEntry;
@@ -57,6 +58,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
     private Button mStopButton;
     private Button mStartButton;
+    private CheckBox mUseNoisePulseCheckBox;
 
     private MidiOutputPortConnectionSelector mPortSelector;
     private final MyNoteListener mTestListener = new MyNoteListener();
@@ -117,6 +119,9 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
         mInputDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.input_devices_spinner);
         mInputDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_INPUTS);
+
+        mUseNoisePulseCheckBox = (CheckBox) findViewById(R.id.checkbox_use_noise_pulse);
+        useNoisePulse(mUseNoisePulseCheckBox.isChecked());
     }
 
     private void updateButtons(boolean running) {
@@ -292,6 +297,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                 ((AudioDeviceListEntry) mInputDeviceSpinner.getSelectedItem()).getDeviceInfo();
         mTapToToneTester.setInputDevice(deviceInfo);
         mInputDeviceSpinner.setEnabled(false);
+        mUseNoisePulseCheckBox.setEnabled(false);
         mTapToToneTester.resetLatency();
         mTapToToneTester.start();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -300,6 +306,13 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private void stopTapToToneTester() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mInputDeviceSpinner.setEnabled(true);
+        mUseNoisePulseCheckBox.setEnabled(true);
         mTapToToneTester.stop();
     }
+
+    public void onUseNoisePulseClicked(View view) {
+        useNoisePulse(mUseNoisePulseCheckBox.isChecked());
+    }
+
+    public native void useNoisePulse(boolean enabled);
 }

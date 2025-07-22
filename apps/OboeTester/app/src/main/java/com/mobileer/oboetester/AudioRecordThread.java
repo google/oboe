@@ -21,6 +21,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Build;
+import android.util.Log;
 
 /**
  * Abstract class for recording.
@@ -42,6 +44,7 @@ class AudioRecordThread implements Runnable {
     private boolean mCaptureEnabled = true;
 
     private AudioDeviceInfo mDeviceInfo;
+    private String mAudioSource;
 
     public AudioRecordThread(int frameRate, int channelCount, int maxFrames) {
         mSampleRate = frameRate;
@@ -56,8 +59,9 @@ class AudioRecordThread implements Runnable {
         int minRecordBuffSizeInBytes = AudioRecord.getMinBufferSize(mSampleRate,
                 channelConfig,
                 audioFormat);
+        int audioSourceInt = audioSourceToInt(mAudioSource);
         mRecorder = new AudioRecord(
-                MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                audioSourceInt,
                 mSampleRate,
                 channelConfig,
                 audioFormat,
@@ -80,6 +84,10 @@ class AudioRecordThread implements Runnable {
         }
 
         stopAudioRecording();
+    }
+
+    public void setAudioSource(String audioSource) {
+        mAudioSource = audioSource;
     }
 
     public void startAudio() {
@@ -165,5 +173,36 @@ class AudioRecordThread implements Runnable {
 
     public void setInputDevice(AudioDeviceInfo deviceInfo) {
         mDeviceInfo = deviceInfo;
+    }
+
+    private int audioSourceToInt(String audioSource) {
+        if (audioSource.equals("DEFAULT")) {
+            return MediaRecorder.AudioSource.DEFAULT;
+        } if (audioSource.equals("MIC")) {
+            return MediaRecorder.AudioSource.MIC;
+        } else if (audioSource.equals("VOICE_RECOGNITION")) {
+            return MediaRecorder.AudioSource.VOICE_RECOGNITION;
+        } else if (audioSource.equals("VOICE_COMMUNICATION")) {
+            return MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+        } else if (audioSource.equals("CAMCORDER")) {
+            return MediaRecorder.AudioSource.CAMCORDER;
+        } else if (audioSource.equals("UNPROCESSED")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return MediaRecorder.AudioSource.UNPROCESSED;
+            } else {
+                Log.d(TAG, "MediaRecorder.AudioSource.UNPROCESSED not supported");
+                return MediaRecorder.AudioSource.DEFAULT;
+            }
+        } else if (audioSource.equals("VOICE_PERFORMANCE")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                return MediaRecorder.AudioSource.VOICE_PERFORMANCE;
+            } else {
+                Log.d(TAG, "MediaRecorder.AudioSource.VOICE_PERFORMANCE not supported");
+                return MediaRecorder.AudioSource.DEFAULT;
+            }
+        } else {
+            Log.d(TAG, "Unknown audio source: " + audioSource);
+            return MediaRecorder.AudioSource.DEFAULT;
+        }
     }
 }

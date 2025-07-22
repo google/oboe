@@ -108,6 +108,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         private int mState = STATE_IDLE;
         private long mLastToggleTime = 0;
+        private long mLastXRunCount = 0;
         private long mRecoveryTimeBegin;
         private long mRecoveryTimeEnd;
         private long mStartTimeNanos;
@@ -176,11 +177,14 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 }
                 stream.setWorkload((int) nextWorkload);
                 mWorkloadCurrent = nextWorkload;
+                final int xRunCount = stream.getXRunCount();
+                final boolean useSecondaryColor = (xRunCount != mLastXRunCount);
+                mLastXRunCount = xRunCount;
                 // Update chart
                 float nowMicros = (System.nanoTime() - mStartTimeNanos) *  0.001f;
                 mMultiLineChart.addX(nowMicros);
-                mMaxCpuLoadTrace.add((float) maxCpuLoad);
-                mWorkloadTrace.add((float) mWorkloadCurrent);
+                mMaxCpuLoadTrace.add((float) maxCpuLoad, useSecondaryColor);
+                mWorkloadTrace.add((float) mWorkloadCurrent, false /* useSecondaryColor */);
                 if (drawChartOnce || mDrawChartAlways){
                     mMultiLineChart.update();
                 }
@@ -298,9 +302,9 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         NativeEngine.setCpuAffinityMask(defaultCpuAffinityMask);
 
         mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
-        mMaxCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.RED,
+        mMaxCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.GREEN, Color.RED,
                 0.0f, 2.0f);
-        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.BLUE,
+        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.DKGRAY,
                 0.0f, (MARGIN_ABOVE_WORKLOAD_FOR_CPU * WORKLOAD_HIGH_MAX));
 
         mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);

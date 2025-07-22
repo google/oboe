@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,32 +17,30 @@
 #include <unistd.h>
 #include "common/OboeDebug.h"
 #include "oboe/Definitions.h"
-#include "SawPingGenerator.h"
+#include "NoisePulseGenerator.h"
 
 using namespace oboe::flowgraph;
 
-SawPingGenerator::SawPingGenerator()
-        : OscillatorBase()
+NoisePulseGenerator::NoisePulseGenerator()
+        : amplitude(*this, 1)
+        , output(*this, 1)
         , mRequestCount(0)
         , mAcknowledgeCount(0)
         , mLevel(0.0f) {
 }
 
-SawPingGenerator::~SawPingGenerator() { }
+NoisePulseGenerator::~NoisePulseGenerator() { }
 
-void SawPingGenerator::reset() {
+void NoisePulseGenerator::reset() {
     FlowGraphNode::reset();
     mAcknowledgeCount.store(mRequestCount.load());
 }
 
-int32_t SawPingGenerator::onProcess(int numFrames) {
-
-    const float *frequencies = frequency.getBuffer();
+int32_t NoisePulseGenerator::onProcess(int numFrames) {
     const float *amplitudes = amplitude.getBuffer();
     float *buffer = output.getBuffer();
 
     if (mRequestCount.load() > mAcknowledgeCount.load()) {
-        mPhase = -1.0f;
         mLevel = 1.0;
         mAcknowledgeCount++;
     }
@@ -50,8 +48,7 @@ int32_t SawPingGenerator::onProcess(int numFrames) {
     // Check level to prevent numeric underflow.
     if (mLevel > 0.000001) {
         for (int i = 0; i < numFrames; i++) {
-            float sawtooth = incrementPhase(frequencies[i]);
-            *buffer++ = (float) (sawtooth * mLevel * amplitudes[i]);
+            *buffer++ = (float) (mLevel * amplitudes[i]);
             mLevel *= 0.999;
         }
     } else {
@@ -63,6 +60,6 @@ int32_t SawPingGenerator::onProcess(int numFrames) {
     return numFrames;
 }
 
-void SawPingGenerator::trigger() {
+void NoisePulseGenerator::trigger() {
     mRequestCount++;
 }
