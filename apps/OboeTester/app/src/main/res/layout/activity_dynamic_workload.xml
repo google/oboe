@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
     tools:context=".DynamicWorkloadActivity">
 
@@ -32,8 +32,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fillViewport="true"
-        tools:context="com.mobileer.oboetester.DynamicWorkloadActivity" >
+        android:fillViewport="true" >
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
@@ -42,10 +41,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            tools:context="com.mobileer.oboetester.DynamicWorkloadActivity">
+            android:paddingRight="@dimen/activity_horizontal_margin" >
 
             <include layout="@layout/merge_audio_simple" />
 
@@ -196,8 +192,8 @@
 
             <com.mobileer.oboetester.MultiLineChart
                 android:id="@+id/multiline_chart"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:minHeight="100dp"
                 app:backgroundColor="@color/background_warm"
                 app:exampleDimension="24sp"
@@ -206,4 +202,4 @@
                 app:lineColor="@color/light_blue_600" />
         </LinearLayout>
     </ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
