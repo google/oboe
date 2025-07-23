@@ -50,6 +50,7 @@ private:
         iolib::SimpleMultiPlayer *mParent;
     };
     std::shared_ptr<MyPresentationCallback> mPresentationCallback;
+    oboe::PerformanceMode mLastPerformanceMode;
 };
 
 #endif //SAMPLES_POWERPLAYMULTIPLAYER_H

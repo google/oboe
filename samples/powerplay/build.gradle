@@ -7,7 +7,7 @@ plugins {
 android {
     defaultConfig {
         applicationId "com.example.powerplay"
-        minSdkVersion 26
+        minSdkVersion 36
         targetSdkVersion 36
         compileSdkVersion 36
         versionCode 1

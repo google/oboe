@@ -41,6 +41,7 @@ void PowerPlayMultiPlayer::setupAudioStream(int32_t channelCount, oboe::Performa
 
 bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
+    mLastPerformanceMode = performanceMode;
 
     // Use shared_ptr to prevent use of a deleted callback.
     mDataCallback = std::make_shared<MyDataCallback>(this);
@@ -49,16 +50,15 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
     // Create an audio stream
     AudioStreamBuilder builder;
-    builder.setChannelCount(mChannelCount);
-    builder.setDataCallback(mDataCallback);
-    builder.setErrorCallback(mErrorCallback);
-    builder.setPresentationCallback(mPresentationCallback);
-    builder.setFormat(AudioFormat::Float);
-    builder.setSampleRate(48000);
-    builder.setPerformanceMode(performanceMode);
-    builder.setFramesPerDataCallback(128);
-    builder.setSharingMode(SharingMode::Exclusive);
-    builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+    builder.setChannelCount(mChannelCount)
+            ->setDataCallback(mDataCallback)
+            ->setErrorCallback(mErrorCallback)
+            ->setPresentationCallback(mPresentationCallback)
+            ->setFormat(AudioFormat::Float)
+            ->setSampleRate(48000)
+            ->setPerformanceMode(performanceMode)
+            ->setFramesPerDataCallback(128)
+            ->setSharingMode(SharingMode::Exclusive);
 
     Result result = builder.openStream(mAudioStream);
     if (result != Result::OK) {
@@ -72,14 +72,13 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     if (!OboeExtensions::isMMapUsed(mAudioStream.get())) {
         constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
         result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
-    }
-
-    if (result != Result::OK) {
-        __android_log_print(
-                ANDROID_LOG_WARN,
-                TAG,
-                "setBufferSizeInFrames failed. Error: %s", convertToText(result)
-        );
+        if (result != Result::OK) {
+            __android_log_print(
+                    ANDROID_LOG_WARN,
+                    TAG,
+                    "setBufferSizeInFrames failed. Error: %s", convertToText(result)
+            );
+        }
     }
 
     mSampleRate = mAudioStream->getSampleRate();
@@ -95,15 +94,9 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     if (index < mNumSampleBuffers) {
         mSampleSources[index]->setPlayMode();
     }
-
-    if (!mAudioStream) setupAudioStream(mChannelCount, performanceMode);
-
-    auto state = mAudioStream->getState();
-    if (mAudioStream && state == StreamState::Closed) {
+    if (performanceMode != mLastPerformanceMode) {
+        teardownAudioStream();
         openStream(performanceMode);
-        startStream();
     }
-
-    if (mAudioStream && state == StreamState::Open) startStream();
-    if (mAudioStream && state == StreamState::Paused) mAudioStream->requestStart();
+    startStream();
 }

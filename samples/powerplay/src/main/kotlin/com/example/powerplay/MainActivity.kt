@@ -123,11 +123,7 @@ class MainActivity : ComponentActivity() {
                 .build()
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
-        isOffloadSupported = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            AudioManager.isOffloadedPlaybackSupported(format, attributes)
-        } else {
-            false
-        }
+        isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
 
         setContent {
             MusicPlayerTheme {
@@ -173,14 +169,6 @@ class MainActivity : ComponentActivity() {
             // player.seekTo(pagerState.currentPage, 0)
         }
 
-//        LaunchedEffect(player.currentMediaItemIndex) {
-//            playingSongIndex.intValue = player.currentMediaItemIndex
-//            pagerState.animateScrollToPage(
-//                playingSongIndex.intValue,
-//                animationSpec = tween(500)
-//            )
-//        }
-
         LaunchedEffect(Unit) {
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
@@ -192,18 +180,6 @@ class MainActivity : ComponentActivity() {
             mutableStateOf(false)
         }
 
-        val currentPosition = remember {
-            mutableLongStateOf(0)
-        }
-
-        val sliderPosition = remember {
-            mutableLongStateOf(0)
-        }
-
-        val totalDuration = remember {
-            mutableLongStateOf(0)
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize(), contentAlignment = Alignment.Center
@@ -211,10 +187,6 @@ class MainActivity : ComponentActivity() {
             val configuration = LocalConfiguration.current
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                /***
-                 * Animated texts includes song name and its artist
-                 * Animates when the song is switching
-                 */
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
                     (scaleIn() + fadeIn()) with (scaleOut() + fadeOut())
                 }, label = "") {
@@ -235,7 +207,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
 
                 /***
                  * Includes animated song album cover
@@ -274,16 +245,20 @@ class MainActivity : ComponentActivity() {
                     val (selectedOption, onOptionSelected) = remember {
                         mutableStateOf(radioOptions[0])
                     }
+                    val enabled = !isPlaying.value
                     radioOptions.forEachIndexed { index, text ->
                         Row(
                             Modifier
                                 .height(32.dp)
                                 .selectable(
                                     selected = (text == selectedOption),
+                                    enabled = enabled,
                                     onClick = {
-                                        onOptionSelected(text)
-                                        offload.intValue = index
-                                        player.teardownAudioStream()
+                                        if (enabled) {
+                                            onOptionSelected(text)
+                                            offload.intValue = index
+                                            player.teardownAudioStream()
+                                        }
                                     },
                                     role = Role.RadioButton
                                 )
@@ -293,7 +268,7 @@ class MainActivity : ComponentActivity() {
                             RadioButton(
                                 selected = (text == selectedOption),
                                 onClick = null, // null recommended for accessibility with screen readers
-                                enabled = !isPlaying.value
+                                enabled = enabled
                             )
                             Text(
                                 text = text,

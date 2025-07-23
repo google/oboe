@@ -149,7 +149,7 @@ void SimpleMultiPlayer::setupAudioStream(int32_t channelCount, oboe::Performance
     __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
     mChannelCount = channelCount;
 
-    openStream();
+    openStream(performanceMode);
 }
 
 void SimpleMultiPlayer::teardownAudioStream() {
@@ -185,7 +185,7 @@ void SimpleMultiPlayer::unloadSampleData() {
     mNumSampleBuffers = 0;
 }
 
-void SimpleMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
+void SimpleMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode /* performanceMode */) {
     if (index < mNumSampleBuffers) {
         mSampleSources[index]->setPlayMode();
     }

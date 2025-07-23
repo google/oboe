@@ -43,13 +43,8 @@ using namespace oboe;
 
 // Global static player instance.
 // For more complex scenarios, consider passing this as a native peer (long) from Java.
-static PowerPlayMultiPlayer sDTPlayer;
+static PowerPlayMultiPlayer player;
 
-/**
- * @brief Converts a Kotlin PerformanceMode enum object (passed via JNI) to its corresponding oboe::PerformanceMode.
- *
- * (Documentation remains the same as your improved version, it's good)
- */
 oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj) {
     if (performanceModeObj == nullptr) {
         LOG_ERROR("performanceModeObj is null in getPerformanceMode");
@@ -59,7 +54,6 @@ oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj
     jclass performanceModeClass = env->GetObjectClass(performanceModeObj);
     if (performanceModeClass == nullptr) {
         LOG_ERROR("Failed to get class for performanceModeObj");
-        // An exception might be pending here if GetObjectClass failed.
         if (env->ExceptionCheck()) {
             env->ExceptionClear(); // Clear it if we are returning a default.
         }
@@ -67,8 +61,7 @@ oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj
     }
 
     jmethodID ordinalMethod = env->GetMethodID(performanceModeClass, "ordinal", "()I");
-    // It's good practice to delete local refs when done, though JNI cleans them on native method return.
-    env->DeleteLocalRef(performanceModeClass); // Delete local ref
+    env->DeleteLocalRef(performanceModeClass);
 
     if (ordinalMethod == nullptr) {
         LOG_ERROR("Failed to get 'ordinal' method ID");
@@ -102,7 +95,7 @@ oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.setupAudioStreamNative()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.setupAudioStreamNative()
  */
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
@@ -111,11 +104,11 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
         jint channels
 ) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "setupAudioStreamNative()");
-    sDTPlayer.setupAudioStream(channels, oboe::PerformanceMode::None);
+    player.setupAudioStream(channels, oboe::PerformanceMode::None);
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.startAudioStreamNative()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.startAudioStreamNative()
  */
 JNIEXPORT jint JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
@@ -123,11 +116,11 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
         jobject
 ) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "startAudioStreamNative()");
-    return (jint) sDTPlayer.startStream();
+    return (jint) player.startStream();
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.teardownAudioStreamNative()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.teardownAudioStreamNative()
  */
 JNIEXPORT jint JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative(
@@ -135,14 +128,14 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative
         jobject
 ) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "teardownAudioStreamNative()");
-    sDTPlayer.teardownAudioStream();
+    player.teardownAudioStream();
 
     //TODO - Actually handle a return here.
     return true;
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.loadAssetNative()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.loadAssetNative()
  */
 JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_loadAssetNative(
         JNIEnv *env,
@@ -164,71 +157,71 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_lo
     sampleBuffer->loadSampleData(&reader);
 
     const auto source = new OneShotSampleSource(sampleBuffer, 0);
-    sDTPlayer.addSampleSource(source, sampleBuffer);
+    player.addSampleSource(source, sampleBuffer);
 
     delete[] buf;
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.unloadWavAssetsNative()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.unloadWavAssetsNative()
  */
 JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_unloadAssetsNative(
         JNIEnv *env,
         jobject
 ) {
-    sDTPlayer.unloadSampleData();
+    player.unloadSampleData();
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.getOutputReset()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getOutputReset()
  */
 JNIEXPORT jboolean JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
         JNIEnv *,
         jobject
 ) {
-    return sDTPlayer.getOutputReset();
+    return player.getOutputReset();
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.clearOutputReset()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.clearOutputReset()
  */
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
         JNIEnv *,
         jobject
 ) {
-    sDTPlayer.clearOutputReset();
+    player.clearOutputReset();
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.trigger()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.startPlayingNative()
  */
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject,
                                                                           jint index,
                                                                           jobject mode) {
     auto performanceMode = getPerformanceMode(env, mode);
-    sDTPlayer.triggerDown(index, performanceMode);
+    player.triggerDown(index, performanceMode);
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.trigger()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.stopPlayingNative()
  */
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv *env, jobject,
                                                                          jint index) {
-    sDTPlayer.triggerUp(index);
+    player.triggerUp(index);
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioEngine.trigger()
+ * Native (JNI) implementation of PowerPlayAudioPlayer.setLoopingNative()
  */
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(JNIEnv *env, jobject,
                                                                         jint index,
                                                                         jboolean looping) {
-    sDTPlayer.setLoopMode(index, looping);
+    player.setLoopMode(index, looping);
 }
 
 

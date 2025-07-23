@@ -557,8 +557,8 @@ AAudioLoader::signature_I_PSPIPI AAudioLoader::load_I_PSPIPI(const char *functio
 
 #endif
 
-// The aaudio device type and aaudio policy were added in NDK 28,
-// which is the first version to support Android W (API 36).
+// The aaudio device type and aaudio policy were added in NDK 29,
+// which is the first version to support Android B (API 36).
 #if __NDK_MAJOR__ >= 30
 
     ASSERT_INT32(AAudio_DeviceType);
@@ -599,7 +599,7 @@ AAudioLoader::signature_I_PSPIPI AAudioLoader::load_I_PSPIPI(const char *functio
     static_assert((int32_t)MMapPolicy::Auto == AAUDIO_POLICY_AUTO, ERRMSG);
     static_assert((int32_t)MMapPolicy::Always == AAUDIO_POLICY_ALWAYS, ERRMSG);
 
-#endif // __NDK_MAJOR__ >= 28
+#endif // __NDK_MAJOR__ >= 29
 
 #endif // AAUDIO_AAUDIO_H
 

@@ -47,7 +47,7 @@ static SimpleMultiPlayer sDTPlayer;
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_setupAudioStreamNative(
         JNIEnv* env, jobject, jint numChannels) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
-    sDTPlayer.setupAudioStream(numChannels, oboe::PerformanceMode::LowLatency);
+    sDTPlayer.setupAudioStream(numChannels);
 }
 
 JNIEXPORT void JNICALL
@@ -135,7 +135,7 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_clearOu
  */
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_restartStream(JNIEnv*, jobject) {
     sDTPlayer.resetAll();
-    if (sDTPlayer.openStream(oboe::PerformanceMode::LowLatency) && sDTPlayer.startStream()){
+    if (sDTPlayer.openStream() && sDTPlayer.startStream()){
         __android_log_print(ANDROID_LOG_INFO, TAG, "openStream successful");
     } else {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "openStream failed");
