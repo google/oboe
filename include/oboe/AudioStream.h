@@ -828,6 +828,7 @@ protected:
     // Time to sleep in order to prevent a race condition with a callback after a close().
     // Two milliseconds may be enough but 10 msec is even safer.
     static constexpr int kMinDelayBeforeCloseMillis = 10;
+    static constexpr int kMaxDelayBeforeCloseMillis = 100;
     int32_t              mDelayBeforeCloseMillis = kMinDelayBeforeCloseMillis;
 
 private:
