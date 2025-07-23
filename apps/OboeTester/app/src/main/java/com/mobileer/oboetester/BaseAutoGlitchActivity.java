@@ -413,6 +413,9 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         StreamConfiguration requestedInConfig = mAudioInputTester.requestedConfiguration;
         StreamConfiguration requestedOutConfig = mAudioOutTester.requestedConfiguration;
 
+        final boolean requestedInConfigWasMMap = requestedInConfig.isMMap();
+        final boolean requestedOutConfigWasMMap = requestedOutConfig.isMMap();
+
         requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
         requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_SHARED);
 
@@ -428,14 +431,21 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         requestedOutConfig.setPerformanceMode(StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY);
         testCurrentConfigurations();
 
-        // MMAP LowLatency
         if (NativeEngine.isMMapSupported()) {
             requestedInConfig.setMMap(true);
             requestedOutConfig.setMMap(true);
+
+            // MMAP_LOW_LATENCY_SHARED
+            testCurrentConfigurations();
+
+            // MMAP LOW_LATENCY EXCLUSIVE
+            requestedInConfig.setSharingMode(StreamConfiguration.SHARING_MODE_EXCLUSIVE);
+            requestedOutConfig.setSharingMode(StreamConfiguration.SHARING_MODE_EXCLUSIVE);
             testCurrentConfigurations();
         }
-        requestedInConfig.setMMap(false);
-        requestedOutConfig.setMMap(false);
+
+        requestedInConfig.setMMap(requestedInConfigWasMMap);
+        requestedOutConfig.setMMap(requestedOutConfigWasMMap);
     }
 
     File getRecordingDir() {
