@@ -19,9 +19,9 @@
 
 buildscript {
     ext {
-        compose_version = '1.7.8'
-        core_version = "1.15.0"
-        lifecycle_version = "2.8.7"
+        compose_version = '1.8.3'
+        core_version = "1.16.0"
+        lifecycle_version = "2.9.2"
         kotlin_version = '2.1.10'
     }
 

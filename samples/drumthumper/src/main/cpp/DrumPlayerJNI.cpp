@@ -106,7 +106,7 @@ JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_unloadW
  * Native (JNI) implementation of DrumPlayer.trigger()
  */
 JNIEXPORT void JNICALL Java_com_plausiblesoftware_drumthumper_DrumPlayer_trigger(JNIEnv* env, jobject, jint index) {
-    sDTPlayer.triggerDown(index);
+    sDTPlayer.triggerDown(index, oboe::PerformanceMode::LowLatency);
 }
 
 /**

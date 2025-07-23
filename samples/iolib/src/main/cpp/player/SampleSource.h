@@ -44,8 +44,18 @@ public:
     }
     virtual ~SampleSource() {}
 
-    void setPlayMode() { mCurSampleIndex = 0; mIsPlaying = true; }
-    void setStopMode() { mIsPlaying = false; mCurSampleIndex = 0; }
+    void setPlayMode(bool fromPause = true) {
+        mIsPlaying = true;
+        if (fromPause) {
+            mCurSampleIndex = 0;
+        }
+    }
+    void setStopMode(bool isPause = false) {
+        mIsPlaying = false;
+        if (!isPause) {
+            mCurSampleIndex = 0;
+        }
+    }
 
     void setLoopMode(bool isLoopMode) { mIsLoopMode = isLoopMode; }
 

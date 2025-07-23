@@ -33,10 +33,10 @@ class SimpleMultiPlayer  {
 public:
     SimpleMultiPlayer();
 
-    void setupAudioStream(int32_t channelCount);
+    virtual void setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
     void teardownAudioStream();
 
-    bool openStream();
+    virtual bool openStream(oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
     bool startStream();
 
     int getSampleRate() { return mSampleRate; }
@@ -54,8 +54,8 @@ public:
      */
     void unloadSampleData();
 
-    void triggerDown(int32_t index);
-    void triggerUp(int32_t index);
+    virtual void triggerDown(int32_t index, oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
+    virtual void triggerUp(int32_t index);
 
     void resetAll();
 
@@ -70,7 +70,7 @@ public:
 
     void setLoopMode(int index, bool isLoopMode);
 
-private:
+protected:
     class MyDataCallback : public oboe::AudioStreamDataCallback {
     public:
         MyDataCallback(SimpleMultiPlayer *parent) : mParent(parent) {}
@@ -101,7 +101,7 @@ private:
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 
     // Playback Audio attributes
-    int32_t mChannelCount;
+    int32_t mChannelCount; // Default To Stereo
     int32_t mSampleRate;
 
     // Sample Data

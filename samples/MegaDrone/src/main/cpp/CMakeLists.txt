@@ -26,4 +26,4 @@ target_link_options(megadrone PRIVATE "-Wl,-z,max-page-size=16384")
 
 # Enable optimization flags: if having problems with source level debugging,
 # disable -Ofast ( and debug ), re-enable it after done debugging.
-target_compile_options(megadrone PRIVATE -Wall -Werror -Ofast)
+target_compile_options(megadrone PRIVATE -Wall -Werror -O3 -ffast-math)
