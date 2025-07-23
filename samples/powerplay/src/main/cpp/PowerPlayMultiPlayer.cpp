@@ -86,24 +86,30 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
 
 void PowerPlayMultiPlayer::triggerUp(int32_t index) {
-    mAudioStream->pause();
+    if (index >= 0 && index < mNumSampleBuffers) {
+        mSampleSources[index]->setStopMode(true);
+    }
+    if (mAudioStream) {
+        mAudioStream->pause();
+    }
 }
 
 void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
-    if (index < mNumSampleBuffers) {
-        mSampleSources[index]->setPlayMode();
+    auto performanceModeChanged = performanceMode != mLastPerformanceMode;
+    if (index >= 0 && index < mNumSampleBuffers) {
+        mSampleSources[index]->setPlayMode(performanceModeChanged);
     }
-    if (performanceMode != mLastPerformanceMode) {
+
+    if (performanceModeChanged) {
         teardownAudioStream();
-    }
-    if (!mAudioStream) {
-        auto result = openStream(performanceMode);
-        if (!result) {
+        if (!openStream(performanceMode)) {
             __android_log_print(ANDROID_LOG_ERROR,
                                 TAG,
                                 "Failed to reopen stream with new performance mode");
             return;
         }
     }
-    startStream();
+    if (mAudioStream) {
+        startStream();
+    }
 }
