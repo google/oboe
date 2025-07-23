@@ -6,7 +6,7 @@ plugins {
 
 android {
     defaultConfig {
-        applicationId "com.example.powerplay"
+        applicationId "com.google.oboe.samples.powerplay"
         minSdkVersion 36
         targetSdkVersion 36
         compileSdkVersion 36
@@ -57,7 +57,7 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    namespace 'com.example.powerplay'
+    namespace 'com.google.oboe.samples.powerplay'
 }
 
 dependencies {

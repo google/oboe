@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.powerplay.engine
+package com.google.oboe.samples.powerplay.engine
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -29,8 +29,8 @@ import android.media.AudioManager
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.example.powerplay.MainActivity
-import com.example.powerplay.R
+import com.google.oboe.samples.powerplay.MainActivity
+import com.google.oboe.samples.powerplay.R
 
 class AudioForegroundService : Service() {
 

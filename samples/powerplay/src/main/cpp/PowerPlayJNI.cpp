@@ -98,7 +98,7 @@ oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj
  * Native (JNI) implementation of PowerPlayAudioPlayer.setupAudioStreamNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
         JNIEnv *env,
         jobject,
         jint channels) {
@@ -112,7 +112,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.startAudioStreamNative()
  */
 JNIEXPORT jint JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
         JNIEnv *,
         jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "startAudioStreamNative()");
@@ -123,7 +123,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.teardownAudioStreamNative()
  */
 JNIEXPORT jint JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative(
         JNIEnv *,
         jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "teardownAudioStreamNative()");
@@ -136,7 +136,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative
 /**
  * Native (JNI) implementation of PowerPlayAudioPlayer.loadAssetNative()
  */
-JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_loadAssetNative(
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_loadAssetNative(
         JNIEnv *env,
         jobject,
         jbyteArray bytearray,
@@ -162,7 +162,7 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_lo
 /**
  * Native (JNI) implementation of PowerPlayAudioPlayer.unloadWavAssetsNative()
  */
-JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_unloadAssetsNative(
+JNIEXPORT void JNICALL Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_unloadAssetsNative(
         JNIEnv *env,
         jobject) {
     player.unloadSampleData();
@@ -172,7 +172,7 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_un
  * Native (JNI) implementation of PowerPlayAudioPlayer.getOutputReset()
  */
 JNIEXPORT jboolean JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
         JNIEnv *,
         jobject) {
     return player.getOutputReset();
@@ -182,7 +182,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.clearOutputReset()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
         JNIEnv *,
         jobject) {
     player.clearOutputReset();
@@ -192,7 +192,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.startPlayingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(
         JNIEnv *env, jobject,
         jint index,
         jobject mode) {
@@ -204,7 +204,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.stopPlayingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(
         JNIEnv *env,
         jobject,
         jint index) {
@@ -215,7 +215,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.setLoopingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(
         JNIEnv *env,
         jobject,
         jint index,

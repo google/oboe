@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.powerplay
+package com.google.oboe.samples.powerplay
 
 import android.content.Intent
 import android.media.AudioAttributes
@@ -92,11 +92,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.powerplay.engine.AudioForegroundService
-import com.example.powerplay.engine.OboePerformanceMode
-import com.example.powerplay.engine.PlayerState
-import com.example.powerplay.engine.PowerPlayAudioPlayer
-import com.example.powerplay.ui.theme.MusicPlayerTheme
+import com.google.oboe.samples.powerplay.engine.AudioForegroundService
+import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
+import com.google.oboe.samples.powerplay.engine.PlayerState
+import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
+import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
 
 class MainActivity : ComponentActivity() {
 

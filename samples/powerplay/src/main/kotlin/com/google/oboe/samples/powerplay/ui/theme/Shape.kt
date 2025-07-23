@@ -1,4 +1,4 @@
-package com.example.powerplay.ui.theme
+package com.google.oboe.samples.powerplay.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes

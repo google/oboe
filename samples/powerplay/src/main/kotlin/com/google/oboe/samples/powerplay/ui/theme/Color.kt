@@ -1,4 +1,4 @@
-package com.example.powerplay.ui.theme
+package com.google.oboe.samples.powerplay.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

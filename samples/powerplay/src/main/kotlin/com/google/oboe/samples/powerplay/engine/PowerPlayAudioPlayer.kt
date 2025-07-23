@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.powerplay.engine
+package com.google.oboe.samples.powerplay.engine
 
 import android.content.res.AssetManager
 import androidx.lifecycle.DefaultLifecycleObserver

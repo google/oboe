@@ -95,6 +95,8 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     }
     if (performanceMode != mLastPerformanceMode) {
         teardownAudioStream();
+    }
+    if (!mAudioStream) {
         auto result = openStream(performanceMode);
         if (!result) {
             __android_log_print(ANDROID_LOG_ERROR,
