@@ -46,7 +46,7 @@ android {
         kotlinCompilerExtensionVersion compose_version
     }
 
-    ndkVersion "29.0.13113456" // Requires NDK r29 for PCM Offload
+    ndkVersion "29.0.13599879 rc2" // Requires NDK r29 for PCM Offload
     externalNativeBuild {
         cmake {
             path 'src/main/cpp/CMakeLists.txt'
