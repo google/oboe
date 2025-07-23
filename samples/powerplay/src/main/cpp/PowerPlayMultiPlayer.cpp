@@ -21,18 +21,14 @@ static const char *TAG = "PowerPlayMultiPlayer";
 using namespace oboe;
 using namespace parselib;
 
-PowerPlayMultiPlayer::PowerPlayMultiPlayer() = default;
-
-PowerPlayMultiPlayer::~PowerPlayMultiPlayer() = default;
-
-void PowerPlayMultiPlayer::MyPresentationCallback::onPresentationEnded(oboe::AudioStream *oboeStream) {
-    __android_log_print(ANDROID_LOG_INFO, TAG,
-                        "==== MyPresentationCallback() called with gain %f",
-                        mParent->getGain(0)
-    );
+void
+PowerPlayMultiPlayer::MyPresentationCallback::onPresentationEnded(oboe::AudioStream *oboeStream) {
+    __android_log_print(ANDROID_LOG_INFO, TAG, "==== MyPresentationCallback() called with gain %f",
+                        mParent->getGain(0));
 }
 
-void PowerPlayMultiPlayer::setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode) {
+void PowerPlayMultiPlayer::setupAudioStream(int32_t channelCount,
+                                            oboe::PerformanceMode performanceMode) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
     mChannelCount = channelCount;
 
@@ -50,6 +46,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
     // Create an audio stream
     AudioStreamBuilder builder;
+    // TODO - Read sample rate, format from the file instead of hardcoding.
     builder.setChannelCount(mChannelCount)
             ->setDataCallback(mDataCallback)
             ->setErrorCallback(mErrorCallback)
@@ -69,9 +66,11 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
         return false;
     }
 
-    if (!OboeExtensions::isMMapUsed(mAudioStream.get())) {
+    if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::POWER_SAVING_OFFLOADED ||
+        !OboeExtensions::isMMapUsed(mAudioStream.get())) {
         constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
-        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+        result = mAudioStream->setBufferSizeInFrames(
+                mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
         if (result != Result::OK) {
             __android_log_print(
                     ANDROID_LOG_WARN,
@@ -96,7 +95,13 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     }
     if (performanceMode != mLastPerformanceMode) {
         teardownAudioStream();
-        openStream(performanceMode);
+        auto result = openStream(performanceMode);
+        if (!result) {
+            __android_log_print(ANDROID_LOG_ERROR,
+                                TAG,
+                                "Failed to reopen stream with new performance mode");
+            return;
+        }
     }
     startStream();
 }

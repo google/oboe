@@ -27,6 +27,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.powerplay.MainActivity
 import com.example.powerplay.R
@@ -49,17 +50,17 @@ class AudioForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-            .build()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
 
         audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setAudioAttributes(audioAttributes)
-            .setAcceptsDelayedFocusGain(true)
-            .setOnAudioFocusChangeListener(audioFocusChangeListener)
-            .build()
+                .setAudioAttributes(audioAttributes)
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -69,6 +70,8 @@ class AudioForegroundService : Service() {
         val result = audioManager.requestAudioFocus(audioFocusRequest)
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             // TODO tart playback only when audio focus is granted
+        } else {
+            Log.e(TAG, "Failed to get audio focus, result: $result")
         }
 
         return START_STICKY
@@ -82,7 +85,7 @@ class AudioForegroundService : Service() {
     private fun createNotification(): Notification {
         val channelId = createNotificationChannel()
         val notificationIntent =
-            Intent(this, MainActivity::class.java) // Replace with your main activity
+            Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -111,10 +114,11 @@ class AudioForegroundService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return null // Not using binding in this example
+        return null
     }
 
     companion object {
         private const val NOTIFICATION_ID = 1
+        private const val TAG = "AudioForegroundService"
     }
 }

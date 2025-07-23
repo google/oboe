@@ -101,9 +101,10 @@ JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
         JNIEnv *env,
         jobject,
-        jint channels
-) {
+        jint channels) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "setupAudioStreamNative()");
+
+    //TODO - Read channel number from file instead of passing it in.
     player.setupAudioStream(channels, oboe::PerformanceMode::None);
 }
 
@@ -113,8 +114,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setupAudioStreamNative(
 JNIEXPORT jint JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
         JNIEnv *,
-        jobject
-) {
+        jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "startAudioStreamNative()");
     return (jint) player.startStream();
 }
@@ -125,8 +125,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startAudioStreamNative(
 JNIEXPORT jint JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_teardownAudioStreamNative(
         JNIEnv *,
-        jobject
-) {
+        jobject) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "teardownAudioStreamNative()");
     player.teardownAudioStream();
 
@@ -141,8 +140,7 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_lo
         JNIEnv *env,
         jobject,
         jbyteArray bytearray,
-        jint index
-) {
+        jint index) {
     const int32_t len = env->GetArrayLength(bytearray);
     auto *buf = new unsigned char[len];
 
@@ -151,7 +149,6 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_lo
     MemInputStream stream(buf, len);
     WavStreamReader reader(&stream);
     reader.parse();
-    reader.getNumChannels();
 
     auto *sampleBuffer = new SampleBuffer();
     sampleBuffer->loadSampleData(&reader);
@@ -167,8 +164,7 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_lo
  */
 JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_unloadAssetsNative(
         JNIEnv *env,
-        jobject
-) {
+        jobject) {
     player.unloadSampleData();
 }
 
@@ -178,8 +174,7 @@ JNIEXPORT void JNICALL Java_com_example_powerplay_engine_PowerPlayAudioPlayer_un
 JNIEXPORT jboolean JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
         JNIEnv *,
-        jobject
-) {
+        jobject) {
     return player.getOutputReset();
 }
 
@@ -189,8 +184,7 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_getOutputResetNative(
 JNIEXPORT void JNICALL
 Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
         JNIEnv *,
-        jobject
-) {
+        jobject) {
     player.clearOutputReset();
 }
 
@@ -198,9 +192,10 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_clearOutputResetNative(
  * Native (JNI) implementation of PowerPlayAudioPlayer.startPlayingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv *env, jobject,
-                                                                          jint index,
-                                                                          jobject mode) {
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(
+        JNIEnv *env, jobject,
+        jint index,
+        jobject mode) {
     auto performanceMode = getPerformanceMode(env, mode);
     player.triggerDown(index, performanceMode);
 }
@@ -209,8 +204,10 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_startPlayingNative(JNIEnv
  * Native (JNI) implementation of PowerPlayAudioPlayer.stopPlayingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv *env, jobject,
-                                                                         jint index) {
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(
+        JNIEnv *env,
+        jobject,
+        jint index) {
     player.triggerUp(index);
 }
 
@@ -218,12 +215,13 @@ Java_com_example_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNative(JNIEnv 
  * Native (JNI) implementation of PowerPlayAudioPlayer.setLoopingNative()
  */
 JNIEXPORT void JNICALL
-Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(JNIEnv *env, jobject,
-                                                                        jint index,
-                                                                        jboolean looping) {
+Java_com_example_powerplay_engine_PowerPlayAudioPlayer_setLoopingNative(
+        JNIEnv *env,
+        jobject,
+        jint index,
+        jboolean looping) {
     player.setLoopMode(index, looping);
 }
-
 
 #ifdef __cplusplus
 }

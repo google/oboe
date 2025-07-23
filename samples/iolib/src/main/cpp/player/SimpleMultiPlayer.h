@@ -97,8 +97,6 @@ protected:
         SimpleMultiPlayer *mParent;
     };
 
-
-
     // Oboe Audio Stream
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 

@@ -24,9 +24,9 @@
  */
 class PowerPlayMultiPlayer : public iolib::SimpleMultiPlayer {
 public:
-    PowerPlayMultiPlayer();
+    PowerPlayMultiPlayer() = default;
 
-    virtual ~PowerPlayMultiPlayer();
+    virtual ~PowerPlayMultiPlayer() = default;
 
     void setupAudioStream(int32_t channelCount, oboe::PerformanceMode performanceMode) override;
 

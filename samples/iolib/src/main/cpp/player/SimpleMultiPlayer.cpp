@@ -101,7 +101,8 @@ bool SimpleMultiPlayer::openStream(PerformanceMode performanceMode) {
     // Reduce stream latency by setting the buffer size to a multiple of the burst size
     // Note: this will fail with ErrorUnimplemented if we are using a callback with OpenSL ES
     // See oboe::AudioStreamBuffered::setBufferSizeInFrames
-    if (!OboeExtensions::isMMapUsed(mAudioStream.get())) {
+    if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::POWER_SAVING_OFFLOADED ||
+            !OboeExtensions::isMMapUsed(mAudioStream.get())) {
         result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
     }
 
