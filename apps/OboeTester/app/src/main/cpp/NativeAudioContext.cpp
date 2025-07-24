@@ -366,7 +366,7 @@ void ActivityContext::stopBlockingIOThread() {
         threadEnabled.store(false); // ask thread to exit its loop
         std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
         if (oboeStream != nullptr &&
-            oboeStream->getPerformanceMode() == PerformanceMode::POWER_SAVING_OFFLOADED) {
+            oboeStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded) {
             std::lock_guard _l(threadLock);
             threadWorkCV.notify_one();
         }
@@ -549,7 +549,7 @@ void ActivityTestOutput::runBlockingIO() {
         }
 
         const int64_t bufferSizeInFrames = mBufferSizeInFrames.load();
-        if (oboeStream->getPerformanceMode() == PerformanceMode::POWER_SAVING_OFFLOADED &&
+        if (oboeStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&
             bufferSizeInFrames > mSampleRate) {
             // If it is offload stream, the buffer size is more than 1 second and it is almost full,
             // sleep to drain most of the data to save battery and make sure the next write can
