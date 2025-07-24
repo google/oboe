@@ -145,6 +145,10 @@ public:
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
                   bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
         std::lock_guard<std::mutex> lock(mStreamLock);
+        if (!mStream) {
+            std::cerr << "Error: Stream not open." << std::endl;
+            return static_cast<int32_t>(oboe::Result::ErrorInvalidState);
+        }
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -152,7 +156,7 @@ public:
         mAlternatingPeriodMs = alternatingPeriodMs;
         mStartTimeMs = 0;
         {
-            std::lock_guard<std::mutex> lock(mStatisticsLock);
+            std::lock_guard<std::mutex> statisticsLock(mStatisticsLock);
             mCallbackStatistics.clear();
         }
         mCallbackCount = 0;
@@ -275,7 +279,7 @@ public:
      * @return A vector of CallbackStatus structures.
      */
     std::vector<CallbackStatus> getCallbackStatistics() {
-        std::lock_guard<std::mutex> lock(mStatisticsLock);
+        std::lock_guard<std::mutex> statisticsLock(mStatisticsLock);
         return mCallbackStatistics;
     }
 
@@ -291,6 +295,9 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream, void* audioData,
                                           int32_t numFrames) override {
+        if (audioStream == nullptr) {
+            return oboe::DataCallbackResult::Stop;
+        }
         int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
@@ -352,7 +359,7 @@ public:
         status.cpuIndex = sched_getcpu();
 
         {
-            std::lock_guard<std::mutex> lock(mStatisticsLock);
+            std::lock_guard<std::mutex> statisticsLock(mStatisticsLock);
             mCallbackStatistics.push_back(status);
         }
         mCallbackCount++;
