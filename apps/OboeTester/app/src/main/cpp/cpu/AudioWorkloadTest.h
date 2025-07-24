@@ -295,9 +295,6 @@ public:
      */
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream* audioStream, void* audioData,
                                           int32_t numFrames) override {
-        if (audioStream == nullptr) {
-            return oboe::DataCallbackResult::Stop;
-        }
         int64_t beginTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
