@@ -116,7 +116,9 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(false);
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
+        mBackgroundCheckBox.setChecked(true);
         mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
+        mForegroundServiceCheckBox.setChecked(true);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY
@@ -163,10 +165,10 @@ public class MainActivity extends BaseOboeTesterActivity {
 
     private void setTogglesFromIntent() {
         boolean backgroundEnabled = mBundleFromIntent.getBoolean(
-                IntentBasedTestSupport.KEY_BACKGROUND, false);
+                IntentBasedTestSupport.KEY_BACKGROUND, true);
         TestAudioActivity.setBackgroundEnabled(backgroundEnabled);
         boolean foregroundServiceEnabled = mBundleFromIntent.getBoolean(
-                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, false);
+                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, true);
         TestAudioActivity.setForegroundServiceEnabled(foregroundServiceEnabled);
     }
 
