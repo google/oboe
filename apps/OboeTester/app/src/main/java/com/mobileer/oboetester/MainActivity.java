@@ -113,7 +113,9 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(false);
 
         mBackgroundCheckBox = (CheckBox) findViewById(R.id.boxEnableBackground);
+        mBackgroundCheckBox.setChecked(true);
         mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
+        mForegroundServiceCheckBox.setChecked(true);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY
