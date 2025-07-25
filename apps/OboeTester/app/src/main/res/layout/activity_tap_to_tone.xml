@@ -1,114 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:fillViewport="true"
-    tools:context="com.mobileer.oboetester.TapToToneActivity"
-    >
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
-
-    <include layout="@layout/merge_audio_simple"/>
-
-    <com.mobileer.oboetester.CommunicationDeviceView
-        android:id="@+id/comm_device_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" />
+    android:fitsSystemWindows="true"
+    tools:context="com.mobileer.oboetester.TapToToneActivity">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Use Noise Pulse: " />
+            android:text="@string/title_activity_output_latency"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <CheckBox
-            android:id="@+id/checkbox_use_noise_pulse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onUseNoisePulseClicked"
-            android:checked="true" />
     </LinearLayout>
 
-    <LinearLayout
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
+        android:fillViewport="true" >
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Input Source: " />
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin" >
 
-        <Spinner
-            android:id="@+id/audio_source_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/audio_sources"
-            android:prompt="@string/audio_source_prompt" />
-    </LinearLayout>
+            <include layout="@layout/merge_audio_simple"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <com.mobileer.oboetester.CommunicationDeviceView
+                android:id="@+id/comm_device_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Input Device: " />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <com.mobileer.audio_device.AudioDeviceSpinner
-            android:id="@+id/input_devices_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Use Noise Pulse: " />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+                <CheckBox
+                    android:id="@+id/checkbox_use_noise_pulse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onUseNoisePulseClicked"
+                    android:checked="true" />
+            </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="MIDI:" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <Spinner
-            android:id="@+id/spinner_synth_sender"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/senders" />
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Input Source: " />
 
-    <TextView
-        android:id="@+id/resultView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:lines="2"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:text="@string/tap_help" />
+                <Spinner
+                    android:id="@+id/audio_source_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/audio_sources"
+                    android:prompt="@string/audio_source_prompt" />
+            </LinearLayout>
 
-    <com.mobileer.oboetester.WaveformView
-        android:id="@+id/waveview_audio"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:minHeight="100dp"
-        />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Input Device: " />
+
+                <com.mobileer.audio_device.AudioDeviceSpinner
+                    android:id="@+id/input_devices_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MIDI:" />
+
+                <Spinner
+                    android:id="@+id/spinner_synth_sender"
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/senders" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/resultView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="2"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:text="@string/tap_help" />
+
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
-</ScrollView>
