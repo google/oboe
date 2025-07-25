@@ -87,7 +87,7 @@ oboe::PerformanceMode getPerformanceMode(JNIEnv *env, jobject performanceModeObj
         case 2:
             return PerformanceMode::PowerSaving;
         case 3:
-            return PerformanceMode::POWER_SAVING_OFFLOADED;
+            return PerformanceMode::PowerSavingOffloaded;
         default:
             LOG_ERROR("Unknown performance mode ordinal: %d", ordinal);
             return PerformanceMode::None;

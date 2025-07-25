@@ -66,7 +66,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
         return false;
     }
 
-    if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::POWER_SAVING_OFFLOADED ||
+    if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::PowerSavingOffloaded ||
         !OboeExtensions::isMMapUsed(mAudioStream.get())) {
         constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
         result = mAudioStream->setBufferSizeInFrames(

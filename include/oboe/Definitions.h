@@ -290,7 +290,7 @@ namespace oboe {
          * With the offload playback, the default data callback size will be large and it
          * allows data feeding thread to sleep longer time after sending enough data.
          */
-        POWER_SAVING_OFFLOADED = 13, // AAUDIO_PERFORMANCE_MODE_POWER_SAVING_OFFLOADED
+        PowerSavingOffloaded = 13, // AAUDIO_PERFORMANCE_MODE_POWER_SAVING_OFFLOADED
     };
 
     /**
