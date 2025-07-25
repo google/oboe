@@ -5,9 +5,9 @@ android {
     compileSdkVersion 35
     defaultConfig {
         applicationId 'com.google.oboe.samples.hellooboe'
-        minSdkVersion 21
-        targetSdkVersion 35
-        compileSdkVersion 35
+        minSdkVersion 23
+        targetSdkVersion 36
+        compileSdkVersion 36
         versionCode 1
         versionName '1.0'
         externalNativeBuild {

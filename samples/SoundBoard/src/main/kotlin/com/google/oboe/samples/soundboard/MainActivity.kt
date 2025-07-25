@@ -91,10 +91,8 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowMetrics = windowManager.currentWindowMetrics
             val windowInsets = windowMetrics.windowInsets
-            val insets = windowInsets.getInsetsIgnoringVisibility(
-                    WindowInsets.Type.navigationBars() or WindowInsets.Type.statusBars())
-            val width = windowMetrics.bounds.width() - insets.left - insets.right
-            val height = windowMetrics.bounds.height() - insets.top - insets.bottom
+            val width = windowMetrics.bounds.width()
+            val height = windowMetrics.bounds.height()
             size.set(width, height)
         } else {
             display.getSize(size) // Use getSize to exclude navigation bar if visible
