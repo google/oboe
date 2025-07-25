@@ -162,10 +162,10 @@ public class MainActivity extends BaseOboeTesterActivity {
 
     private void setTogglesFromIntent() {
         boolean backgroundEnabled = mBundleFromIntent.getBoolean(
-                IntentBasedTestSupport.KEY_BACKGROUND, false);
+                IntentBasedTestSupport.KEY_BACKGROUND, true);
         TestAudioActivity.setBackgroundEnabled(backgroundEnabled);
         boolean foregroundServiceEnabled = mBundleFromIntent.getBoolean(
-                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, false);
+                IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, true);
         TestAudioActivity.setForegroundServiceEnabled(foregroundServiceEnabled);
     }
 
