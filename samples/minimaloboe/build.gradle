@@ -8,8 +8,8 @@ android {
     defaultConfig {
         applicationId "com.example.minimaloboe"
         minSdkVersion 21
-        targetSdkVersion 35
-        compileSdkVersion 35
+        targetSdkVersion 36
+        compileSdkVersion 36
         versionCode 1
         versionName "1.0"
 
