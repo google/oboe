@@ -170,7 +170,7 @@ public:
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
         {
             std::lock_guard<std::mutex> synthWorkloadLock(mSynthWorkloadLock);
-            mSynthWorkload = SynthWorkload((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
+            mSynthWorkload = std::make_shared<SynthWorkload>((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
         }
         oboe::Result result = mStream->start();
         if (result != oboe::Result::OK) {
@@ -340,12 +340,14 @@ public:
 
         {
             std::lock_guard<std::mutex> synthWorkloadLock(mSynthWorkloadLock);
-            mSynthWorkload.onCallback(currentVoices);
-            if (currentVoices > 0) {
-                // Render synth workload into the buffer or discard the synth voices.
-                float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
-                                ? static_cast<float *>(audioData) : nullptr;
-                mSynthWorkload.renderStereo(buffer, numFrames);
+            if (mSynthWorkload) {
+                mSynthWorkload->onCallback(currentVoices);
+                if (currentVoices > 0) {
+                    // Render synth workload into the buffer or discard the synth voices.
+                    float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
+                                    ? static_cast<float *>(audioData) : nullptr;
+                    mSynthWorkload->renderStereo(buffer, numFrames);
+                }
             }
         }
 
@@ -415,7 +417,7 @@ private:
 
     // Lock to protect mSynthWorkload
     std::mutex mSynthWorkloadLock;
-    SynthWorkload mSynthWorkload;              // Instance of the synthetic workload generator
+    std::shared_ptr<SynthWorkload> mSynthWorkload; // Pointer to the synthetic workload generator
 };
 
 #endif // AUDIO_WORKLOAD_TEST_H
