@@ -79,6 +79,11 @@ public:
      */
     int32_t open() {
         std::lock_guard<std::mutex> lock(mStreamLock);
+        if (mStream) {
+            std::cerr << "Error: Stream already open." << std::endl;
+            return static_cast<int32_t>(oboe::Result::ErrorUnavailable);
+        }
+
         oboe::AudioStreamBuilder builder;
         builder.setDirection(oboe::Direction::Output);
         builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
@@ -98,6 +103,7 @@ public:
         mPreviousXRunCount = 0;
         mXRunCount = 0;
         mPhaseIncrement = 2.0f * (float) M_PI * 440.0f / mSampleRate; // 440 Hz sine wave
+        mSynthWorkload = std::make_unique<SynthWorkload>((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
 
         return 0;
     }
@@ -172,12 +178,9 @@ public:
         mStream->setPerformanceHintEnabled(adpfEnabled);
         mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
-        {
-            std::lock_guard<std::mutex> synthWorkloadLock(mSynthWorkloadLock);
-            mSynthWorkload = std::make_unique<SynthWorkload>((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
-        }
         oboe::Result result = mStream->start();
         if (result != oboe::Result::OK) {
+            mRunning = false;
             std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
             return static_cast<int32_t>(result);
         }
@@ -344,16 +347,13 @@ public:
             if (mPhase >= M_PI) mPhase = mPhase - 2.0f * M_PI;
         }
 
-        {
-            std::lock_guard<std::mutex> synthWorkloadLock(mSynthWorkloadLock);
-            if (mSynthWorkload) {
-                mSynthWorkload->onCallback(currentVoices);
-                if (currentVoices > 0) {
-                    // Render synth workload into the buffer or discard the synth voices.
-                    float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
-                                    ? static_cast<float *>(audioData) : nullptr;
-                    mSynthWorkload->renderStereo(buffer, numFrames);
-                }
+        if (mSynthWorkload) {
+            mSynthWorkload->onCallback(currentVoices);
+            if (currentVoices > 0) {
+                // Render synth workload into the buffer or discard the synth voices.
+                float *buffer = (audioStream->getChannelCount() == 2 && mHearWorkload)
+                                ? static_cast<float *>(audioData) : nullptr;
+                mSynthWorkload->renderStereo(buffer, numFrames);
             }
         }
 
@@ -421,8 +421,6 @@ private:
     std::atomic<float> mPhase{0.0f};           // Current phase of the sine wave oscillator
     std::atomic<float> mPhaseIncrement{0.0f};  // Phase increment for sine wave
 
-    // Lock to protect mSynthWorkload
-    std::mutex mSynthWorkloadLock;
     std::unique_ptr<SynthWorkload> mSynthWorkload; // Pointer to the synthetic workload generator
 };
 
