@@ -113,7 +113,7 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
 
     // Copy the data from the Java float array to the Oboe audio buffer.
     jfloat *arrayElements = env->GetFloatArrayElements(audioDataArray, nullptr);
-    memcpy(audioData, arrayElements, static_cast<unsigned long>(numFrames * mAudioStream->getChannelCount() * sizeof(float)));
+    memcpy(audioData, arrayElements, static_cast<unsigned long>(numFrames) * mAudioStream->getChannelCount() * sizeof(float));
     env->ReleaseFloatArrayElements(audioDataArray, arrayElements, JNI_ABORT);
     env->DeleteLocalRef(audioDataArray);
 
