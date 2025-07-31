@@ -191,6 +191,8 @@
                 android:progress="500" />
         </LinearLayout>
 
+        <include layout="@layout/volume_buttons" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

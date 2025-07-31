@@ -113,6 +113,9 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mVolumeSeekBar.setOnSeekBarChangeListener(mVolumeChangeListener);
 
         mShouldSetStreamControlByAttributes = (CheckBox) findViewById(R.id.enableSetStreamControlByAttributes);
+
+        View rootView = findViewById(android.R.id.content);
+        new VolumeControl(this, rootView);
     }
 
     @Override
