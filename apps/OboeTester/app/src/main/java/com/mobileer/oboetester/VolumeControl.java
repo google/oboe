@@ -3,6 +3,7 @@ package com.mobileer.oboetester;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Build;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -45,6 +46,11 @@ public class VolumeControl {
         mStreamTypes.put("Alarm", AudioManager.STREAM_ALARM);
         mStreamTypes.put("Notification", AudioManager.STREAM_NOTIFICATION);
         mStreamTypes.put("System", AudioManager.STREAM_SYSTEM);
+        mStreamTypes.put("Voice Call", AudioManager.STREAM_VOICE_CALL);
+        mStreamTypes.put("DTMF", AudioManager.STREAM_DTMF);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mStreamTypes.put("Accessibility", AudioManager.STREAM_ACCESSIBILITY);
+        }
 
         setupControls();
     }
