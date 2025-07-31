@@ -257,10 +257,20 @@ public:
     int32_t stop() {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (mStream) {
-            oboe::Result result = mStream->stop();
+            oboe::Result result = mStream->requestStop();
             if (result != oboe::Result::OK) {
                 std::cerr << "Error stopping stream: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
+            }
+            oboe::StreamState next;
+            result = mStream->waitForStateChange(oboe::StreamState::Stopping, &next, 0);
+            if (result != oboe::Result::OK) {
+                std::cerr << "Error while waiting for stream to stop: " << oboe::convertToText(result) << std::endl;
+                return static_cast<int32_t>(result);
+            }
+            if (next != oboe::StreamState::Stopped) {
+                std::cerr << "Error: Stream did not stop. State: " << oboe::convertToText(next) << std::endl;
+                return static_cast<int32_t>(oboe::Result::ErrorInvalidState);
             }
         }
         mRunning = false;
