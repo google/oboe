@@ -4,18 +4,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A helper class to manage volume control buttons.
- * This class finds the volume buttons in the provided view and sets up
- * OnClickListeners to use the AudioManager to adjust the volume.
+ * This class finds the volume buttons and a spinner in the provided view,
+ * populates the spinner with audio stream types, and sets up OnClickListeners
+ * to use the AudioManager to adjust the volume for the selected stream.
  */
 public class VolumeControl {
 
     private Activity mActivity;
     private View mRootView;
     private AudioManager mAudioManager;
+    private int mCurrentStreamType = AudioManager.STREAM_MUSIC;
+    private final Map<String, Integer> mStreamTypes = new LinkedHashMap<>();
 
     /**
      * Constructor for the VolumeControl class.
@@ -28,27 +38,61 @@ public class VolumeControl {
         this.mActivity = activity;
         this.mRootView = rootView;
         this.mAudioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-        setupVolumeButtons();
+
+        // Populate the map of stream types
+        mStreamTypes.put("Music", AudioManager.STREAM_MUSIC);
+        mStreamTypes.put("Ring", AudioManager.STREAM_RING);
+        mStreamTypes.put("Alarm", AudioManager.STREAM_ALARM);
+        mStreamTypes.put("Notification", AudioManager.STREAM_NOTIFICATION);
+        mStreamTypes.put("System", AudioManager.STREAM_SYSTEM);
+
+        setupControls();
     }
 
     /**
-     * Finds the volume buttons within the layout and attaches click listeners.
+     * Finds the volume controls within the layout, populates the spinner,
+     * and attaches necessary listeners.
      */
-    private void setupVolumeButtons() {
-        // It's assumed that the layout containing these buttons has been inflated
-        // and the IDs are available within the rootView.
-        // The IDs R.id.volume_up_button and R.id.volume_down_button must be available
-        // in your project's R file.
+    private void setupControls() {
         Button volumeUpButton = mRootView.findViewById(R.id.volume_up_button);
         Button volumeDownButton = mRootView.findViewById(R.id.volume_down_button);
+        Spinner streamTypeSpinner = mRootView.findViewById(R.id.stream_type_spinner);
 
+        // Setup Spinner
+        if (streamTypeSpinner != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    mActivity,
+                    android.R.layout.simple_spinner_item,
+                    new ArrayList<>(mStreamTypes.keySet())
+            );
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            streamTypeSpinner.setAdapter(adapter);
+
+            streamTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    String selectedStreamName = (String) parent.getItemAtPosition(position);
+                    Integer streamType = mStreamTypes.get(selectedStreamName);
+                    if (streamType != null) {
+                        mCurrentStreamType = streamType;
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    // Do nothing
+                }
+            });
+        }
+
+
+        // Setup Volume Up Button
         if (volumeUpButton != null) {
             volumeUpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mAudioManager != null) {
-                        // Adjust the volume up for the music stream and show the default UI
-                        mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                        mAudioManager.adjustStreamVolume(mCurrentStreamType,
                                 AudioManager.ADJUST_RAISE,
                                 AudioManager.FLAG_SHOW_UI);
                     }
@@ -56,13 +100,13 @@ public class VolumeControl {
             });
         }
 
+        // Setup Volume Down Button
         if (volumeDownButton != null) {
             volumeDownButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mAudioManager != null) {
-                        // Adjust the volume down for the music stream and show the default UI
-                        mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                        mAudioManager.adjustStreamVolume(mCurrentStreamType,
                                 AudioManager.ADJUST_LOWER,
                                 AudioManager.FLAG_SHOW_UI);
                     }

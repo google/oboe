@@ -9,18 +9,28 @@ tools:parentTag="android.widget.LinearLayout">
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Volume:"
+            android:labelFor="@id/stream_type_spinner"/>
+
+        <Spinner
+            android:id="@+id/stream_type_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/volume_down_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="Volume Down" />
+            android:text="Down" />
 
         <Button
             android:id="@+id/volume_up_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="Volume Up" />
+            android:text="Up" />
     </LinearLayout>
 </merge>
