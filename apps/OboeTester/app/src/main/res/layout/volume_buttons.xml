@@ -14,13 +14,13 @@ tools:parentTag="android.widget.LinearLayout">
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="HW Volume Down" />
+            android:text="Volume Down" />
 
         <Button
             android:id="@+id/volume_up_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="HW Volume Up" />
+            android:text="Volume Up" />
     </LinearLayout>
 </merge>

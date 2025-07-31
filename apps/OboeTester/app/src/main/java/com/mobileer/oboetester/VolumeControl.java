@@ -1,20 +1,21 @@
 package com.mobileer.oboetester;
 
 import android.app.Activity;
-import android.view.KeyEvent;
+import android.content.Context;
+import android.media.AudioManager;
 import android.view.View;
-import android.view.inputmethod.BaseInputConnection;
 import android.widget.Button;
 
 /**
  * A helper class to manage volume control buttons.
  * This class finds the volume buttons in the provided view and sets up
- * OnClickListeners to simulate hardware volume key presses.
+ * OnClickListeners to use the AudioManager to adjust the volume.
  */
 public class VolumeControl {
 
-    private final Activity mActivity;
-    private final View mRootView;
+    private Activity mActivity;
+    private View mRootView;
+    private AudioManager mAudioManager;
 
     /**
      * Constructor for the VolumeControl class.
@@ -26,6 +27,7 @@ public class VolumeControl {
     public VolumeControl(Activity activity, View rootView) {
         this.mActivity = activity;
         this.mRootView = rootView;
+        this.mAudioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
         setupVolumeButtons();
     }
 
@@ -44,7 +46,12 @@ public class VolumeControl {
             volumeUpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sendKeyEvent(KeyEvent.KEYCODE_VOLUME_UP);
+                    if (mAudioManager != null) {
+                        // Adjust the volume up for the music stream and show the default UI
+                        mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                                AudioManager.ADJUST_RAISE,
+                                AudioManager.FLAG_SHOW_UI);
+                    }
                 }
             });
         }
@@ -53,23 +60,14 @@ public class VolumeControl {
             volumeDownButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sendKeyEvent(KeyEvent.KEYCODE_VOLUME_DOWN);
+                    if (mAudioManager != null) {
+                        // Adjust the volume down for the music stream and show the default UI
+                        mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                                AudioManager.ADJUST_LOWER,
+                                AudioManager.FLAG_SHOW_UI);
+                    }
                 }
             });
         }
-    }
-
-    /**
-     * Simulates a key press event.
-     * This creates a new InputConnection on the activity's current focus
-     * and sends the specified key event.
-     *
-     * @param keyCode The key code to send (e.g., KeyEvent.KEYCODE_VOLUME_UP).
-     */
-    private void sendKeyEvent(int keyCode) {
-        View decorView = mActivity.getWindow().getDecorView();
-        BaseInputConnection inputConnection = new BaseInputConnection(decorView, true);
-        inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-        inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
     }
 }
