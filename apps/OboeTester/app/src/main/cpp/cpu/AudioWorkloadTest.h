@@ -149,6 +149,10 @@ public:
             std::cerr << "Error: Stream not open." << std::endl;
             return static_cast<int32_t>(oboe::Result::ErrorInvalidState);
         }
+        if (mRunning) {
+            std::cerr << "Error: Stream already started." << std::endl;
+            return static_cast<int32_t>(oboe::Result::ErrorUnavailable);
+        }
         mTargetDurationMs = targetDurationMillis;
         mNumBursts = numBursts;
         mNumVoices = numVoices;
@@ -256,6 +260,7 @@ public:
                 return static_cast<int32_t>(result);
             }
         }
+        mRunning = false;
         return 0;
     }
 
@@ -273,6 +278,7 @@ public:
                 return static_cast<int32_t>(result);
             }
         }
+        mRunning = false;
         return 0;
     }
 
