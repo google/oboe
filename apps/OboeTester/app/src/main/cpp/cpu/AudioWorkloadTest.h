@@ -170,7 +170,7 @@ public:
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
         {
             std::lock_guard<std::mutex> synthWorkloadLock(mSynthWorkloadLock);
-            mSynthWorkload = std::make_shared<SynthWorkload>((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
+            mSynthWorkload = std::make_unique<SynthWorkload>((int) 0.2 * mSampleRate, (int) 0.3 * mSampleRate);
         }
         oboe::Result result = mStream->start();
         if (result != oboe::Result::OK) {
@@ -417,7 +417,7 @@ private:
 
     // Lock to protect mSynthWorkload
     std::mutex mSynthWorkloadLock;
-    std::shared_ptr<SynthWorkload> mSynthWorkload; // Pointer to the synthetic workload generator
+    std::unique_ptr<SynthWorkload> mSynthWorkload; // Pointer to the synthetic workload generator
 };
 
 #endif // AUDIO_WORKLOAD_TEST_H
