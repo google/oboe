@@ -143,6 +143,11 @@
             android:label="@string/title_audio_workload_test_runner"
             android:exported="true"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ReverseJniActivity"
+            android:label="@string/title_reverse_jni"
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".MidiTapTester"
