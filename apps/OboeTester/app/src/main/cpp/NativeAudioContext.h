@@ -154,6 +154,10 @@ public:
 
     oboe::Result flush();
 
+    virtual int64_t flushFromFrame(int32_t accuracy, int64_t frame) {
+        return static_cast<int64_t>(oboe::Result::ErrorUnimplemented);
+    }
+
     oboe::Result stopAllStreams();
 
     virtual oboe::Result stop() {
@@ -471,6 +475,8 @@ public:
     }
 
     void setupMemoryBuffer(std::unique_ptr<uint8_t[]>& buffer, int length) final;
+
+    int64_t flushFromFrame(int32_t accuracy, int64_t frame) final;
 
 protected:
     SignalType                       mSignalType = SignalType::Sine;

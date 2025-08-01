@@ -19,12 +19,17 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -41,6 +46,11 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     private SeekBar mVolumeSeekBar;
     private CheckBox mShouldSetStreamControlByAttributes;
     private boolean mShouldDisableForCompressedFormat = false;
+
+    private LinearLayout mFlushFromFrameLayout;
+    private EditText mFlushFromFrameEditText;
+    private Spinner mFlushFromAccuracySpinner;
+    private Button mFlushFromFrameButton;
 
     private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
         @Override
@@ -113,6 +123,17 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mVolumeSeekBar.setOnSeekBarChangeListener(mVolumeChangeListener);
 
         mShouldSetStreamControlByAttributes = (CheckBox) findViewById(R.id.enableSetStreamControlByAttributes);
+
+        mFlushFromFrameLayout = (LinearLayout) findViewById(R.id.flushFromFrameLayout);
+        mFlushFromFrameEditText = (EditText) findViewById(R.id.flushFromFrameEditText);
+        mFlushFromAccuracySpinner = (Spinner) findViewById(R.id.flushFromAccuracySpinner);
+        mFlushFromFrameButton = (Button) findViewById(R.id.flushFromFrameButton);
+        mFlushFromFrameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                flushFromFrame();
+            }
+        });
     }
 
     @Override
@@ -178,6 +199,27 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         int channelCount = mAudioOutTester.getCurrentAudioStream().getChannelCount();
         configureChannelBoxes(channelCount, mShouldDisableForCompressedFormat);
         mOutputSignalSpinner.setEnabled(false);
+    }
+
+    public void flushFromFrame() {
+        try {
+            int accuracy = mFlushFromAccuracySpinner.getSelectedItemPosition();
+            long positionInFrames = Long.parseLong(mFlushFromFrameEditText.getText().toString());
+            long result = flushFromFrameNative(accuracy, positionInFrames);
+            if (result >= 0) {
+                Toast.makeText(this,
+                        String.format("Successfully flushed from: %d, actual flushed position: %d",
+                                positionInFrames, result),
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(
+                        this, "Failed to flush from Frame", Toast.LENGTH_LONG).show();
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Failed to flushFromFrame, the requested frame(" +
+                    mFlushFromFrameEditText.getText().toString() + ") is invalid");
+            showErrorToast("Invalid number of frames");
+        }
     }
 
     public void onChannelBoxClicked(View view) {

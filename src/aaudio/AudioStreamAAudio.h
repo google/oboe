@@ -134,6 +134,8 @@ public:
     ResultWithValue<int32_t> getOffloadPadding() override;
     Result setOffloadEndOfStream() override;
 
+    Result flushFromFrame(FlushFromAccuracy accuracy, int64_t* positionInFrames) override;
+
 protected:
     static void internalErrorCallback(
             AAudioStream *stream,

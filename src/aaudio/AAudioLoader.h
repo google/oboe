@@ -196,6 +196,8 @@ class AAudioLoader {
     // AAudioStream_getDeviceIds()
     typedef int32_t (*signature_I_PSPIPI)(AAudioStream *, int32_t *, int32_t *);
 
+    typedef int32_t (*signature_I_PSIPL)(AAudioStream *, int32_t, int64_t *);
+
     static AAudioLoader* getInstance(); // singleton
 
     /**
@@ -313,6 +315,8 @@ class AAudioLoader {
     signature_I_PS   stream_getOffloadPadding = nullptr;
     signature_I_PS   stream_setOffloadEndOfStream = nullptr;
 
+    signature_I_PSIPL stream_flushFromFrame = nullptr;
+
   private:
     AAudioLoader() {}
     ~AAudioLoader();
@@ -344,6 +348,7 @@ class AAudioLoader {
     signature_V_PBPRPV  load_V_PBPRPV(const char *name);
     signature_I_PSII    load_I_PSII(const char *name);
     signature_I_PSPIPI  load_I_PSPIPI(const char *name);
+    signature_I_PSIPL   load_I_PSIPL(const char *name);
 
     void *mLibHandle = nullptr;
 };

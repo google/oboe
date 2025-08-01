@@ -350,4 +350,10 @@
     <string name="dynamic_workload_graph_info">
         Dynamic Workload: Black\nCPU Load: Green or Red (Glitch detected)
     </string>
+
+    <string name="flush_from_accuracy_prompt">Choose a FlushFromAccuracy</string>
+    <string-array name="flush_from_accuracy">
+        <item>Undefined</item>
+        <item>Accurate</item>
+    </string-array>
 </resources>

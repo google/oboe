@@ -195,6 +195,9 @@ int AAudioLoader::open() {
         stream_setOffloadEndOfStream = load_I_PS("AAudioStream_setOffloadEndOfStream");
 
         stream_getDeviceIds = load_I_PSPIPI("AAudioStream_getDeviceIds");
+
+        // TODO: Use 25Q4 version code and name when it is defined.
+        stream_flushFromFrame = load_I_PSIPL("AAudioStream_flushFromFrame");
     }
 
     return 0;
@@ -360,6 +363,12 @@ AAudioLoader::signature_I_PSPIPI AAudioLoader::load_I_PSPIPI(const char *functio
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_I_PSPIPI>(proc);
+}
+
+AAudioLoader::signature_I_PSIPL AAudioLoader::load_I_PSIPL(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSIPL>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t

@@ -1078,6 +1078,24 @@ namespace oboe {
     };
 
     /**
+     * The values are defined to be used for the accuracy requirement when calling
+     * AudioStream.flushFromFrame.
+     */
+    enum class FlushFromAccuracy : int32_t {
+        /**
+         * There is not requirement for frame accuracy when flushing, it is up to the OS
+         * to select a right position to flush from.
+         */
+        Undefined = 0, // AAUDIO_FLUSH_FROM_ACCURACY_UNDEFINED
+
+        /**
+         * The stream must be flushed from the requested position. If it is not possible to flush
+         * from the requested position, the stream must not be flushed.
+         */
+        Accurate = 1, // AAUDIO_FLUSH_FROM_ACCURACY_ACCURATE
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:
