@@ -222,6 +222,13 @@ Java_com_mobileer_oboetester_TestAudioActivity_flushNative(JNIEnv *env, jobject)
     return (jint) engine.getCurrentActivity()->flush();
 }
 
+JNIEXPORT jlong JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_flushFromFrameNative(
+        JNIEnv * /*env*/, jobject, jint accuracy, jlong frames) {
+    return (jlong) engine.getCurrentActivity()->flushFromFrame(
+            accuracy, static_cast<int64_t>(frames));
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_stopNative(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->stop();
