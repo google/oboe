@@ -594,15 +594,15 @@ int64_t ActivityTestOutput::flushFromFrame(int32_t accuracy, int64_t frame) {
     }
     const int64_t requestedFrames = frame;
     if (auto result = oboeStream->flushFromFrame(
-            static_cast<oboe::FlushFromAccuracy>(accuracy), &frame);
-        result != oboe::Result::OK) {
+            static_cast<oboe::FlushFromAccuracy>(accuracy), frame);
+        result.error() != oboe::Result::OK) {
         LOGE("Failed to flushFromFrame(%d, %jd), error=%d, suggestedFrame=%jd",
-             accuracy, requestedFrames, result, frame);
-        return static_cast<int64_t>(result);
+             accuracy, requestedFrames, result.error(), frame);
+        return static_cast<int64_t>(result.error());
     } else {
         LOGD("Successfully flushFromFrame(%d, %jd), actual flushed frame: %jd",
-             accuracy, requestedFrames, frame);
-        return frame;
+             accuracy, requestedFrames, result.value());
+        return result.value();
     }
 }
 

@@ -702,7 +702,7 @@ public:
      *
      * When clients request to flush from a certain position, the audio system will return the
      * actual flushed position based on the requested position, playback latency, etc. The written
-     * position will be updated as the actual flush position. All data behind actual flush position
+     * position will be updated as the actual flush position. All data after actual flush position
      * flushed. The client can provide data from actual flush position at next write operation or
      * data callback request. When the stream is flushed, the stream end will be reset. The client
      * must not write any data before this function returns. Otherwise, the data will be corrupted.
@@ -713,24 +713,26 @@ public:
      *
      * @param accuracy the accuracy requirement when flushing. The value must be one of the valid
      *                 FlushFromAccuracy value.
-     * @param[in|out] position the start point in frames to flush the stream. If flushing from frame
-     *                         is supported for the stream, the position will be updated as the
-     *                         actual flush from position when successfully flush or the suggested
-     *                         position to flush from if it cannot flush from the requested
-     *                         position. If there is not enough data to safely flush, position will
-     *                         remain the same.
-     * @return Result::OK if the stream is successfully flushed.
-     *         Result::ErrorUnImplemented if it is not supported by the device.
+     * @param position the start point in frames to flush the stream.
+     * @return a result which the error code indicates if the stream is successfully flush or not
+     *         and value as the successfully flushed position or suggested flushed position.
+     *         Result::OK if the stream is successfully flushed. The value is the actual flushed
+     *         position.
+     *         Result::ErrorUnimplemented if it is not supported by the device. The value is the
+     *         requested position.
      *         Result::ErrorIllegalArgument if the stream is not an output offload stream or the
-     *         accuracy is not one of valid FlushFromAccuracy values.
+     *         accuracy is not one of valid FlushFromAccuracy values. The value is the requested
+     *         position.
      *         Result::ErrorOutOfRange if the provided position is negative or is greater than the
      *         frames written or the stream cannot flush from the requested position and
-     *         FlushFromAccuracy::Accurate is requested.
-     *         Result::ErrorDisconnected if the stream is disconnected.
-     *         Result::ErrorClosed if the stream is closed.
+     *         FlushFromAccuracy::Accurate is requested. The value is suggested flushed position.
+     *         Result::ErrorDisconnected if the stream is disconnected. The value is the requested
+     *         position.
+     *         Result::ErrorClosed if the stream is closed. The value is the requested position.
      */
-    virtual oboe::Result flushFromFrame(FlushFromAccuracy accuracy, int64_t* positionInFrames) {
-        return Result::ErrorUnimplemented;
+    virtual ResultWithValue<int64_t> flushFromFrame(
+            FlushFromAccuracy accuracy, int64_t positionInFrames) {
+        return ResultWithValue<int64_t>(Result::ErrorUnimplemented);
     }
 
 protected:
