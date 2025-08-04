@@ -4,7 +4,8 @@ var searchData=
   ['fifocontrollerbase_1',['FifoControllerBase',['../classoboe_1_1_fifo_controller_base.html',1,'oboe::FifoControllerBase'],['../classoboe_1_1_fifo_controller_base.html#ac961b963bf443ee82039e016f78ce698',1,'oboe::FifoControllerBase::FifoControllerBase()']]],
   ['firedatacallback_2',['fireDataCallback',['../classoboe_1_1_audio_stream.html#ab7a8cfe5d6039386bc5850fd5ee9bd62',1,'oboe::AudioStream']]],
   ['flush_3',['flush',['../classoboe_1_1_audio_stream.html#a32c25c0333eab3d65ce02275ad4acb3d',1,'oboe::AudioStream']]],
-  ['framesperburst_4',['FramesPerBurst',['../classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300',1,'oboe::DefaultStreamValues']]],
-  ['frametimestamp_5',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]],
-  ['fullduplexstream_6',['FullDuplexStream',['../classoboe_1_1_full_duplex_stream.html',1,'oboe']]]
+  ['flushfromframe_4',['flushFromFrame',['../classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9',1,'oboe::AudioStream']]],
+  ['framesperburst_5',['FramesPerBurst',['../classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300',1,'oboe::DefaultStreamValues']]],
+  ['frametimestamp_6',['FrameTimestamp',['../structoboe_1_1_frame_timestamp.html',1,'oboe']]],
+  ['fullduplexstream_7',['FullDuplexStream',['../classoboe_1_1_full_duplex_stream.html',1,'oboe']]]
 ];
