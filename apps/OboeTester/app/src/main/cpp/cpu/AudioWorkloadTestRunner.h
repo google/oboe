@@ -76,7 +76,7 @@ public:
             bool adpfWorkloadIncreaseEnabled,
             bool hearWorkload) {
         if (mIsRunning) {
-            std::cerr << "Error: Test already running." << std::endl;
+            LOGE("Error: Test already running.");
             return -1;
         }
 

@@ -80,7 +80,7 @@ public:
     int32_t open() {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (mStream) {
-            std::cerr << "Error: Stream already open." << std::endl;
+            LOGE("Error: Stream already open.");
             return static_cast<int32_t>(oboe::Result::ErrorUnavailable);
         }
 
@@ -94,7 +94,7 @@ public:
 
         oboe::Result result = builder.openStream(mStream);
         if (result != oboe::Result::OK) {
-            std::cerr << "Error opening stream: " << oboe::convertToText(result) << std::endl;
+            LOGE("Error opening stream: %s", oboe::convertToText(result));
             return static_cast<int32_t>(result);
         }
 
@@ -152,11 +152,11 @@ public:
                   bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (!mStream) {
-            std::cerr << "Error: Stream not open." << std::endl;
+            LOGE("Error: Stream not open.");
             return static_cast<int32_t>(oboe::Result::ErrorInvalidState);
         }
         if (mRunning) {
-            std::cerr << "Error: Stream already started." << std::endl;
+            LOGE("Error: Stream already started.");
             return static_cast<int32_t>(oboe::Result::ErrorUnavailable);
         }
         mTargetDurationMs = targetDurationMillis;
@@ -181,7 +181,7 @@ public:
         oboe::Result result = mStream->start();
         if (result != oboe::Result::OK) {
             mRunning = false;
-            std::cerr << "Error starting stream: " << oboe::convertToText(result) << std::endl;
+            LOGE("Error starting stream: %s", oboe::convertToText(result));
             return static_cast<int32_t>(result);
         }
 
@@ -212,7 +212,7 @@ public:
         }
 
         if (sched_setaffinity(pthread_self(), sizeof(cpu_set_t), &cpuset) != 0) {
-            std::cerr << "Error setting CPU affinity." << std::endl;
+            LOGE("Error setting CPU affinity.");
             return -1;
         }
         return 0;
@@ -259,17 +259,17 @@ public:
         if (mStream) {
             oboe::Result result = mStream->requestStop();
             if (result != oboe::Result::OK) {
-                std::cerr << "Error stopping stream: " << oboe::convertToText(result) << std::endl;
+                LOGE("Error stopping stream: %s", oboe::convertToText(result));
                 return static_cast<int32_t>(result);
             }
             oboe::StreamState next;
             result = mStream->waitForStateChange(oboe::StreamState::Stopping, &next, kTimeoutInNanos);
             if (result != oboe::Result::OK) {
-                std::cerr << "Error while waiting for stream to stop: " << oboe::convertToText(result) << std::endl;
+                LOGE("Error while waiting for stream to stop: %s", oboe::convertToText(result));
                 return static_cast<int32_t>(result);
             }
             if (next != oboe::StreamState::Stopped) {
-                std::cerr << "Error: Stream did not stop. State: " << oboe::convertToText(next) << std::endl;
+                LOGE("Error: Stream did not stop. State: %s", oboe::convertToText(next));
                 return static_cast<int32_t>(oboe::Result::ErrorInvalidState);
             }
         }
@@ -287,7 +287,7 @@ public:
             oboe::Result result = mStream->close();
             mStream = nullptr;
             if (result != oboe::Result::OK) {
-                std::cerr << "Error closing stream: " << oboe::convertToText(result) << std::endl;
+                LOGE("Error closing stream: %s", oboe::convertToText(result));
                 return static_cast<int32_t>(result);
             }
         }

@@ -1188,15 +1188,15 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     g_javaVM = vm; // Cache the JavaVM pointer
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-        std::cerr << "JNI_OnLoad: Failed to get JNIEnv." << std::endl;
-        return JNI_ERR; // Indicates an error
+        LOGE("JNI_OnLoad: Failed to get JNIEnv.");
+        return JNI_ERR;
     }
 
     const char* callbackStatusClassName =
             "com/mobileer/oboetester/AudioWorkloadTestActivity$CallbackStatus";
     jclass localCallbackStatusClass = env->FindClass(callbackStatusClassName);
     if (localCallbackStatusClass == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not find class " << callbackStatusClassName << std::endl;
+        LOGE("JNI_OnLoad: Could not find class %s", callbackStatusClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
@@ -1204,15 +1204,13 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     g_callbackStatusClass = (jclass)env->NewGlobalRef(localCallbackStatusClass);
     env->DeleteLocalRef(localCallbackStatusClass); // Clean up the local reference
     if (g_callbackStatusClass == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not create global ref for " << callbackStatusClassName
-                << std::endl;
+        LOGE("JNI_OnLoad: Could not create global ref for %s", callbackStatusClassName);
         return JNI_ERR;
     }
 
     g_callbackStatusConstructor = env->GetMethodID(g_callbackStatusClass, "<init>", "(IJJII)V");
     if (g_callbackStatusConstructor == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not find constructor for " << callbackStatusClassName
-                << std::endl;
+        LOGE("JNI_OnLoad: Could not find constructor for %s", callbackStatusClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
@@ -1220,30 +1218,27 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     const char* arrayListClassName = "java/util/ArrayList";
     jclass localArrayListClass = env->FindClass(arrayListClassName);
     if (localArrayListClass == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not find class " << arrayListClassName << std::endl;
+        LOGE("JNI_OnLoad: Could not find class %s", arrayListClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
     g_arrayListClass = (jclass)env->NewGlobalRef(localArrayListClass);
     env->DeleteLocalRef(localArrayListClass); // Clean up local reference
     if (g_arrayListClass == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not create global ref for " << arrayListClassName
-                << std::endl;
+        LOGE("JNI_OnLoad: Could not create global ref for %s", arrayListClassName);
         return JNI_ERR;
     }
 
     g_arrayListConstructor = env->GetMethodID(g_arrayListClass, "<init>", "()V");
     if (g_arrayListConstructor == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not find constructor for " << arrayListClassName
-                << std::endl;
+        LOGE("JNI_OnLoad: Could not find constructor for %s", arrayListClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
 
     g_arrayListAddMethod = env->GetMethodID(g_arrayListClass, "add", "(Ljava/lang/Object;)Z");
     if (g_arrayListAddMethod == nullptr) {
-        std::cerr << "JNI_OnLoad: Could not find 'add' method for " << arrayListClassName
-                << std::endl;
+        LOGE("JNI_OnLoad: Could not find 'add' method for %s", arrayListClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
@@ -1256,7 +1251,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-        std::cerr << "JNI_OnUnload: Failed to get JNIEnv." << std::endl;
+        LOGE("JNI_OnUnload: Failed to get JNIEnv.");
         return;
     }
 
@@ -1284,8 +1279,7 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNI
     if (g_callbackStatusClass == nullptr || g_callbackStatusConstructor == nullptr ||
         g_arrayListClass == nullptr || g_arrayListConstructor == nullptr ||
         g_arrayListAddMethod == nullptr) {
-        std::cerr << "Error: JNI IDs not cached. Initialization in JNI_OnLoad might have failed."
-                << std::endl;
+        LOGE("Error: JNI IDs not cached. Initialization in JNI_OnLoad might have failed.");
         return nullptr;
     }
 
@@ -1294,7 +1288,7 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNI
 
     jobject javaList = env->NewObject(g_arrayListClass, g_arrayListConstructor);
     if (javaList == nullptr) {
-        std::cerr << "Error: Could not create new ArrayList object." << std::endl;
+        LOGE("Error: Could not create new ArrayList object.");
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return nullptr;
     }
@@ -1310,7 +1304,7 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_getCallbackStatistics(JNI
                 (jint)status.cpuIndex
         );
         if (javaStatus == nullptr) {
-            std::cerr << "Error: Could not create new CallbackStatus object." << std::endl;
+            LOGE("Error: Could not create new CallbackStatus object.");
             if (env->ExceptionCheck()) env->ExceptionDescribe();
             env->DeleteLocalRef(javaList);
             return nullptr;
