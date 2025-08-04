@@ -1,44 +1,61 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.mobileer.oboetester;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A helper class to manage volume control buttons.
- * This class finds the volume buttons and a spinner in the provided view,
- * populates the spinner with audio stream types, and sets up OnClickListeners
- * to use the AudioManager to adjust the volume for the selected stream.
+ * A custom compound view that encapsulates volume controls.
+ * It inflates its own layout and manages its own logic, so it can be
+ * dropped into any XML layout and work without any Java code in the Activity.
  */
-public class VolumeControl {
+public class VolumeControlView extends LinearLayout {
 
-    private Activity mActivity;
-    private View mRootView;
     private AudioManager mAudioManager;
     private int mCurrentStreamType = AudioManager.STREAM_MUSIC;
     private final Map<String, Integer> mStreamTypes = new LinkedHashMap<>();
 
-    /**
-     * Constructor for the VolumeControl class.
-     *
-     * @param activity The activity that hosts the buttons.
-     * @param rootView The root view of the layout where the buttons are defined.
-     * This is typically the activity's content view.
-     */
-    public VolumeControl(Activity activity, View rootView) {
-        this.mActivity = activity;
-        this.mRootView = rootView;
-        this.mAudioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+    public VolumeControlView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    private void init(Context context) {
+        // Inflate the layout and attach it to this view
+        LayoutInflater.from(context).inflate(R.layout.volume_buttons, this, true);
+
+        // Get the AudioManager system service
+        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         // Populate the map of stream types
         mStreamTypes.put("Music", AudioManager.STREAM_MUSIC);
@@ -52,22 +69,22 @@ public class VolumeControl {
             mStreamTypes.put("Accessibility", AudioManager.STREAM_ACCESSIBILITY);
         }
 
+        // Set the orientation for the LinearLayout
+        setOrientation(VERTICAL);
+
         setupControls();
     }
 
-    /**
-     * Finds the volume controls within the layout, populates the spinner,
-     * and attaches necessary listeners.
-     */
     private void setupControls() {
-        Button volumeUpButton = mRootView.findViewById(R.id.volume_up_button);
-        Button volumeDownButton = mRootView.findViewById(R.id.volume_down_button);
-        Spinner streamTypeSpinner = mRootView.findViewById(R.id.stream_type_spinner);
+        // Find views within this component's layout
+        Button volumeUpButton = findViewById(R.id.volume_up_button);
+        Button volumeDownButton = findViewById(R.id.volume_down_button);
+        Spinner streamTypeSpinner = findViewById(R.id.stream_type_spinner);
 
         // Setup Spinner
         if (streamTypeSpinner != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    mActivity,
+                    getContext(),
                     android.R.layout.simple_spinner_item,
                     new ArrayList<>(mStreamTypes.keySet())
             );
@@ -91,31 +108,20 @@ public class VolumeControl {
             });
         }
 
-
         // Setup Volume Up Button
         if (volumeUpButton != null) {
-            volumeUpButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mAudioManager != null) {
-                        mAudioManager.adjustStreamVolume(mCurrentStreamType,
-                                AudioManager.ADJUST_RAISE,
-                                AudioManager.FLAG_SHOW_UI);
-                    }
+            volumeUpButton.setOnClickListener(v -> {
+                if (mAudioManager != null) {
+                    mAudioManager.adjustStreamVolume(mCurrentStreamType, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
                 }
             });
         }
 
         // Setup Volume Down Button
         if (volumeDownButton != null) {
-            volumeDownButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mAudioManager != null) {
-                        mAudioManager.adjustStreamVolume(mCurrentStreamType,
-                                AudioManager.ADJUST_LOWER,
-                                AudioManager.FLAG_SHOW_UI);
-                    }
+            volumeDownButton.setOnClickListener(v -> {
+                if (mAudioManager != null) {
+                    mAudioManager.adjustStreamVolume(mCurrentStreamType, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
                 }
             });
         }
