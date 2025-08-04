@@ -263,7 +263,7 @@ public:
                 return static_cast<int32_t>(result);
             }
             oboe::StreamState next;
-            result = mStream->waitForStateChange(oboe::StreamState::Stopping, &next, 0);
+            result = mStream->waitForStateChange(oboe::StreamState::Stopping, &next, kTimeoutInNanos);
             if (result != oboe::Result::OK) {
                 std::cerr << "Error while waiting for stream to stop: " << oboe::convertToText(result) << std::endl;
                 return static_cast<int32_t>(result);
@@ -399,6 +399,8 @@ public:
 
 private:
     const std::string kTestName = "AudioWorkloadTest";
+
+    static constexpr int kTimeoutInNanos = 500 * oboe::kNanosPerMillisecond;
 
     // Lock for protecting mStream
     std::mutex                         mStreamLock;
