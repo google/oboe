@@ -1019,4 +1019,20 @@ void AudioStreamAAudio::updateDeviceIds() {
     }
 }
 
+ResultWithValue<int64_t> AudioStreamAAudio::flushFromFrame(FlushFromAccuracy accuracy,
+                                                           int64_t positionInFrames) {
+    if (mLibLoader->stream_flushFromFrame == nullptr) {
+        return ResultWithValue<int64_t>(positionInFrames, Result::ErrorUnimplemented);
+    }
+    std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        return ResultWithValue<int64_t>(positionInFrames, Result::ErrorClosed);
+    }
+    // TODO: use aaudio_flush_from_frame_accuracy_t when it is defined.
+    auto result = static_cast<Result>(mLibLoader->stream_flushFromFrame(
+                    stream, static_cast<int32_t>(accuracy), &positionInFrames));
+    return ResultWithValue<int64_t>(positionInFrames, result);
+}
+
 } // namespace oboe

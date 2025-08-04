@@ -587,6 +587,25 @@ void ActivityTestOutput::setupMemoryBuffer(std::unique_ptr<uint8_t[]> &buffer, i
     }
 }
 
+int64_t ActivityTestOutput::flushFromFrame(int32_t accuracy, int64_t frame) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
+    if (oboeStream == nullptr) {
+        return static_cast<int64_t>(oboe::Result::ErrorInvalidState);
+    }
+    const int64_t requestedFrames = frame;
+    if (auto result = oboeStream->flushFromFrame(
+            static_cast<oboe::FlushFromAccuracy>(accuracy), frame);
+        result.error() != oboe::Result::OK) {
+        LOGE("Failed to flushFromFrame(%d, %jd), error=%d, suggestedFrame=%jd",
+             accuracy, requestedFrames, result.error(), frame);
+        return static_cast<int64_t>(result.error());
+    } else {
+        LOGD("Successfully flushFromFrame(%d, %jd), actual flushed frame: %jd",
+             accuracy, requestedFrames, result.value());
+        return result.value();
+    }
+}
+
 // ======================================================================= ActivityTestInput
 void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();

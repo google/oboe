@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -43,6 +44,48 @@
         android:paddingRight="@dimen/activity_horizontal_margin" >
 
         <include layout="@layout/merge_audio_common"/>
+
+        <LinearLayout
+            android:id="@+id/flushFromFrameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Flush from frame:" />
+                <EditText
+                    android:id="@+id/flushFromFrameEditText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:inputType="number"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FlushFromAccuracy:" />
+                <Spinner
+                    android:id="@+id/flushFromAccuracySpinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/flush_from_accuracy"
+                    android:prompt="@string/flush_from_accuracy_prompt" />
+                <Button
+                    android:id="@+id/flushFromFrameButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Flush From Frame" />
+            </LinearLayout>
+        </LinearLayout>
 
         <HorizontalScrollView
             android:layout_width="wrap_content"

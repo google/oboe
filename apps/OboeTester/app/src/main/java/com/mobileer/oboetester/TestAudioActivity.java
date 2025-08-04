@@ -777,6 +777,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     private native int releaseNative();
 
+    protected native long flushFromFrameNative(int accuracy, long frames);
+
     protected native void setActivityType(int activityType);
 
     private native int getFramesPerCallback();

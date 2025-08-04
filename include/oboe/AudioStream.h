@@ -690,6 +690,51 @@ public:
         return Result::ErrorUnimplemented;
     }
 
+    /**
+     * Flush all data from given position. If this operation returns successfully, the following
+     * data will be written from the returned position.
+     *
+     * This method will only available when the performance mode is
+     * PerformanceMode::PowerSavingOffloaded.
+     *
+     * The requested position must not be negative or greater than the written frames. The current
+     * written position can be known by querying getFramesWritten().
+     *
+     * When clients request to flush from a certain position, the audio system will return the
+     * actual flushed position based on the requested position, playback latency, etc. The written
+     * position will be updated as the actual flush position. All data after actual flush position
+     * flushed. The client can provide data from actual flush position at next write operation or
+     * data callback request. When the stream is flushed, the stream end will be reset. The client
+     * must not write any data before this function returns. Otherwise, the data will be corrupted.
+     * When the method returns successfully and the stream is active, the client must write data
+     * immediately if little audio data remains. Otherwise, the stream will underrun.
+     *
+     *  This was introduced in Android API Level 37.
+     *
+     * @param accuracy the accuracy requirement when flushing. The value must be one of the valid
+     *                 FlushFromAccuracy value.
+     * @param position the start point in frames to flush the stream.
+     * @return a result which the error code indicates if the stream is successfully flush or not
+     *         and value as the successfully flushed position or suggested flushed position.
+     *         Result::OK if the stream is successfully flushed. The value is the actual flushed
+     *         position.
+     *         Result::ErrorUnimplemented if it is not supported by the device. The value is the
+     *         requested position.
+     *         Result::ErrorIllegalArgument if the stream is not an output offload stream or the
+     *         accuracy is not one of valid FlushFromAccuracy values. The value is the requested
+     *         position.
+     *         Result::ErrorOutOfRange if the provided position is negative or is greater than the
+     *         frames written or the stream cannot flush from the requested position and
+     *         FlushFromAccuracy::Accurate is requested. The value is suggested flushed position.
+     *         Result::ErrorDisconnected if the stream is disconnected. The value is the requested
+     *         position.
+     *         Result::ErrorClosed if the stream is closed. The value is the requested position.
+     */
+    virtual ResultWithValue<int64_t> flushFromFrame(
+            FlushFromAccuracy accuracy, int64_t positionInFrames) {
+        return ResultWithValue<int64_t>(Result::ErrorUnimplemented);
+    }
+
 protected:
 
     /**
