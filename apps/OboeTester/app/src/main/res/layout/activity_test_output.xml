@@ -234,6 +234,10 @@
                 android:progress="500" />
         </LinearLayout>
 
+        <com.mobileer.oboetester.VolumeControlView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
