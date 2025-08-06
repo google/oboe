@@ -88,8 +88,8 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
         position = mStream->getFramesRead();
         timestampNanos = AudioClock::getNanoseconds();
     }
-
     double sampleRate = (double) mStream->getSampleRate();
+
     int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
     int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
     int64_t coldStartLatencyNanos = timeOfFrameZero - mBeginStartNanos;
