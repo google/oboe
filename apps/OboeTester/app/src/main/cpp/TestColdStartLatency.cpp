@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <cinttypes>
 #include <stdlib.h>
 #include <aaudio/AAudioExtensions.h>
 
@@ -63,6 +64,7 @@ int32_t TestColdStartLatency::start() {
     int64_t endStartNanos = AudioClock::getNanoseconds();
     int64_t actualDurationNanos = endStartNanos - mBeginStartNanos;
     mStartTimeMicros = actualDurationNanos / NANOS_PER_MICROSECOND;
+
     return (int32_t) result;
 }
 
@@ -77,9 +79,6 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
     int64_t timestampNanos;
     if (mStream->getDirection() == Direction::Output) {
         auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
-        if (!result) {
-            return -1; // ERROR
-        }
         auto frameTimestamp = result.value();
         // Calculate the time that frame[0] would have been played by the speaker.
         position = frameTimestamp.position;
@@ -89,11 +88,16 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
         timestampNanos = AudioClock::getNanoseconds();
     }
     double sampleRate = (double) mStream->getSampleRate();
-
     int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
     int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
     int64_t coldStartLatencyNanos = timeOfFrameZero - mBeginStartNanos;
     return coldStartLatencyNanos / NANOS_PER_MICROSECOND;
+}
+
+void TestColdStartLatency::waitForValidTimestamp() {
+    while(!mStream->getTimestamp(CLOCK_MONOTONIC)) {
+        usleep(kPollPeriodMillis * 1000);
+    }
 }
 
 // Callback that sleeps then touches the audio buffer.
