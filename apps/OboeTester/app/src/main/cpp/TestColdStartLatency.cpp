@@ -97,7 +97,7 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
 }
 
 void TestColdStartLatency::waitForValidTimestamp() {
-    while(!mStream->getTimestamp(CLOCK_MONOTONIC)) {
+    while (!mStream->getTimestamp(CLOCK_MONOTONIC)) {
         usleep(kPollPeriodMillis * 1000);
     }
 }
