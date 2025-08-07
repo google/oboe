@@ -22,12 +22,20 @@ public class ReverseJniEngine {
 
     private static final String TAG = "ReverseJniEngine";
     private long mNativeEngineHandle = 0;
-    private double mPhase = 0.0;
-    private double mPhaseIncrement = 0.0;
-    private final int mSampleRate = 48000;
-    private final double mFrequency = 440.0; // A4 tone
+
+    private static final int MAX_BUFFER_SIZE = 1920; // e.g., 10 bursts of 192 frames
+    private final float[][] mAudioBuffers;
+    private volatile int mCurrentBufferIndex = 0;
+
+    private static final int CHANNEL_COUNT = 2;
+    private double[] mPhase;
+    private double[] mPhaseIncrement;
+    private final double[] mFrequencies = {440.0, 523.25}; // A4 and C5 for stereo
+
     private int mXRunCount = 0;
     private int mSleepDurationUs = 0;
+    private final int mSampleRate = 48000;
+
 
     // Load the native library
     static {
@@ -35,14 +43,22 @@ public class ReverseJniEngine {
     }
 
     public ReverseJniEngine() {
-        // Calculate the phase increment for our sine wave generator
-        mPhaseIncrement = 2 * Math.PI * mFrequency / mSampleRate;
+        mAudioBuffers = new float[2][MAX_BUFFER_SIZE * CHANNEL_COUNT];
+        mPhase = new double[CHANNEL_COUNT];
+        mPhaseIncrement = new double[CHANNEL_COUNT];
+        for (int i = 0; i < CHANNEL_COUNT; i++) {
+            mPhase[i] = 0.0;
+            double frequency = (i < mFrequencies.length) ? mFrequencies[i] : mFrequencies[0] * (i + 1);
+            mPhaseIncrement[i] = 2 * Math.PI * frequency / mSampleRate;
+        }
     }
 
     public void create() {
         if (mNativeEngineHandle == 0) {
-            mNativeEngineHandle = createEngine();
+            mNativeEngineHandle = createEngine(CHANNEL_COUNT);
             Log.i(TAG, "Created native engine with handle: " + mNativeEngineHandle);
+            setAudioBuffers(mNativeEngineHandle, mAudioBuffers[0], mAudioBuffers[1]);
+            Log.i(TAG, "Passed audio buffers to native engine.");
         }
     }
 
@@ -83,33 +99,46 @@ public class ReverseJniEngine {
         mSleepDurationUs = sleepDurationUs;
     }
 
+    /**
+     * Called from JNI. Fills one of the internal buffers with stereo audio data
+     * and returns the index of the buffer that is ready to be read.
+     *
+     * @param numFrames The number of frames the native side needs.
+     * @param totalXRunCount The current x-run count from Oboe.
+     * @return The index (0 or 1) of the buffer that was just filled.
+     */
     @SuppressWarnings("unused") // Called from JNI
-    private void onAudioReady(float[] audioData, int numFrames, int totalXRunCount) {
-        if (audioData == null) {
-            Log.e(TAG, "Audio data is null");
-        }
-        // Simple sine wave generator
+    private int onAudioReady(int numFrames, int totalXRunCount) {
+        int writeBufferIndex = mCurrentBufferIndex;
+        float[] writeBuffer = mAudioBuffers[writeBufferIndex];
+
         for (int i = 0; i < numFrames; i++) {
-            audioData[i] = (float) Math.sin(mPhase);
-            mPhase += mPhaseIncrement;
-            if (mPhase > 2 * Math.PI) {
-                mPhase -= 2 * Math.PI;
+            for (int ch = 0; ch < CHANNEL_COUNT; ch++) {
+                writeBuffer[(i * CHANNEL_COUNT) + ch] = (float) Math.sin(mPhase[ch]);
+                mPhase[ch] += mPhaseIncrement[ch];
+                if (mPhase[ch] > 2 * Math.PI) {
+                    mPhase[ch] -= 2 * Math.PI;
+                }
             }
         }
         mXRunCount = totalXRunCount;
-        //Log.i(TAG, "XRun count: " + mXRunCount);
+
+        // Optional: Simulate work
         try {
-            // First parameter is milliseconds, second is the remaining part in nanoseconds
             Thread.sleep(mSleepDurationUs / 1000, (mSleepDurationUs % 1000) * 1000);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // It's generally not a good idea to swallow this, but for this example...
         }
+
+        mCurrentBufferIndex = 1 - mCurrentBufferIndex; // Toggles between 0 and 1
+        return writeBufferIndex;
     }
 
     // Native methods that are implemented in jni-bridge.cpp
-    private native long createEngine();
+    private native long createEngine(int channelCount);
     private native void startEngine(long enginePtr, int bufferSizeInBursts);
     private native void stopEngine(long enginePtr);
     private native void deleteEngine(long enginePtr);
     private native void setBufferSizeInBursts(long enginePtr, int bufferSizeInBursts);
+    private native void setAudioBuffers(long enginePtr, float[] buffer0, float[] buffer1);
 }

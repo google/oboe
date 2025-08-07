@@ -20,25 +20,36 @@
 
 #include <jni.h>
 #include <oboe/Oboe.h>
+#include <atomic>
+#include <memory>
 
-class ReverseJniEngine : public oboe::AudioStreamDataCallback {
+class ReverseJniEngine : public oboe::AudioStreamDataCallback, public oboe::AudioStreamErrorCallback {
 public:
-    ReverseJniEngine(JNIEnv *env, jobject thiz);
+    ReverseJniEngine(JNIEnv *env, jobject thiz, int channelCount);
     ~ReverseJniEngine();
 
     void start(int bufferSizeInBursts);
     void stop();
     void setBufferSizeInBursts(int bufferSizeInBursts);
 
-    // Oboe's audio callback
+    void setAudioBuffers(JNIEnv *env, jfloatArray buffer0, jfloatArray buffer1);
+
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream,
                                           void *audioData,
                                           int32_t numFrames) override;
+
+    void onErrorAfterClose(oboe::AudioStream *oboeStream,
+                           oboe::Result error) override;
 
 private:
     JavaVM *mJavaVM = nullptr;
     jobject mJavaObject = nullptr;
     jmethodID mOnAudioReadyId = nullptr;
+    std::atomic<bool> mIsThreadAttached{false};
+
+    int mChannelCount;
+
+    jfloatArray mAudioBuffers[2] = {nullptr, nullptr};
 
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 

@@ -1368,8 +1368,8 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getXRunCount(JNIEnv
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_createEngine(JNIEnv *env, jobject thiz) {
-    ReverseJniEngine *reverseJniEngine = new ReverseJniEngine(env, thiz);
+Java_com_mobileer_oboetester_ReverseJniEngine_createEngine(JNIEnv *env, jobject thiz, jint channelCount) {
+    ReverseJniEngine *reverseJniEngine = new ReverseJniEngine(env, thiz, channelCount);
     return reinterpret_cast<jlong>(reverseJniEngine);
 }
 
@@ -1402,6 +1402,14 @@ Java_com_mobileer_oboetester_ReverseJniEngine_setBufferSizeInBursts(JNIEnv *env,
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         reverseJniEngine->setBufferSizeInBursts(bufferSizeInBursts);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffers(JNIEnv *env, jobject thiz, jlong enginePtr, jfloatArray buffer0, jfloatArray buffer1) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->setAudioBuffers(env, buffer0, buffer1);
     }
 }
 

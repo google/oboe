@@ -19,23 +19,33 @@
 
 #define TAG "ReverseJniEngine"
 
-ReverseJniEngine::ReverseJniEngine(JNIEnv *env, jobject thiz) {
-    // Store the JavaVM and a global reference to the Java object.
+ReverseJniEngine::ReverseJniEngine(JNIEnv *env, jobject thiz, int channelCount)
+        : mChannelCount(channelCount) {
     env->GetJavaVM(&mJavaVM);
     mJavaObject = env->NewGlobalRef(thiz);
 
-    // Get the method ID for the onAudioReady callback in the Java class.
-    // The signature "([FII)V" means a method that takes a float array and two ints, and returns void.
     jclass javaClass = env->GetObjectClass(mJavaObject);
-    mOnAudioReadyId = env->GetMethodID(javaClass, "onAudioReady", "([FII)V");
+    mOnAudioReadyId = env->GetMethodID(javaClass, "onAudioReady", "(II)I");
     env->DeleteLocalRef(javaClass);
 }
 
 ReverseJniEngine::~ReverseJniEngine() {
-    // It's important to release the global reference when the engine is destroyed.
     JNIEnv *env;
     mJavaVM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
+
     env->DeleteGlobalRef(mJavaObject);
+
+    if (mAudioBuffers[0]) {
+        env->DeleteGlobalRef(mAudioBuffers[0]);
+    }
+    if (mAudioBuffers[1]) {
+        env->DeleteGlobalRef(mAudioBuffers[1]);
+    }
+}
+
+void ReverseJniEngine::setAudioBuffers(JNIEnv *env, jfloatArray buffer0, jfloatArray buffer1) {
+    mAudioBuffers[0] = (jfloatArray)env->NewGlobalRef(buffer0);
+    mAudioBuffers[1] = (jfloatArray)env->NewGlobalRef(buffer1);
 }
 
 void ReverseJniEngine::start(int bufferSizeInBursts) {
@@ -68,12 +78,15 @@ void ReverseJniEngine::setupAudioStream() {
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setSharingMode(oboe::SharingMode::Exclusive)
             ->setFormat(oboe::AudioFormat::Float)
-            ->setChannelCount(oboe::ChannelCount::Mono)
-            ->setDataCallback(this);
+            ->setChannelCount(mChannelCount)
+            ->setDataCallback(this)
+            ->setErrorCallback(this);
 
     oboe::Result result = builder.openStream(mAudioStream);
     if (result != oboe::Result::OK) {
         LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
+    } else {
+        LOGI("Successfully created stream with channel count: %d", mAudioStream->getChannelCount());
     }
 }
 
@@ -87,41 +100,37 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
                                                         void *audioData,
                                                         int32_t numFrames) {
     JNIEnv *env;
-    // Attach the current thread to the JVM to make JNI calls.
     int getEnvStat = mJavaVM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
     if (getEnvStat == JNI_EDETACHED) {
         if (mJavaVM->AttachCurrentThread(&env, nullptr) != 0) {
             LOGE("Failed to attach current thread to JVM");
             return oboe::DataCallbackResult::Stop;
         }
+        mIsThreadAttached = true;
     }
 
     int xRunCount = mAudioStream->getXRunCount().value();
 
-    // Create a new Java float array to pass the audio data.
-    jfloatArray audioDataArray = env->NewFloatArray(numFrames * mAudioStream->getChannelCount());
-
-    // Call the Java method via reverse JNI.
-    env->CallVoidMethod(mJavaObject, mOnAudioReadyId, audioDataArray, numFrames, xRunCount);
+    jint bufferToReadIndex = env->CallIntMethod(mJavaObject, mOnAudioReadyId, numFrames, xRunCount);
 
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
         LOGE("Exception thrown in Java onAudioReady");
-        env->DeleteLocalRef(audioDataArray);
         return oboe::DataCallbackResult::Stop;
     }
 
-    // Copy the data from the Java float array to the Oboe audio buffer.
-    jfloat *arrayElements = env->GetFloatArrayElements(audioDataArray, nullptr);
-    memcpy(audioData, arrayElements, static_cast<unsigned long>(numFrames) * mAudioStream->getChannelCount() * sizeof(float));
-    env->ReleaseFloatArrayElements(audioDataArray, arrayElements, JNI_ABORT);
-    env->DeleteLocalRef(audioDataArray);
-
-    // Detach the thread if we attached it.
-    if (getEnvStat == JNI_EDETACHED) {
-        mJavaVM->DetachCurrentThread();
-    }
+    jfloatArray javaBuffer = mAudioBuffers[bufferToReadIndex];
+    jsize floatsToCopy = numFrames * mChannelCount;
+    env->GetFloatArrayRegion(javaBuffer, 0, floatsToCopy, static_cast<jfloat*>(audioData));
 
     return oboe::DataCallbackResult::Continue;
+}
+
+void ReverseJniEngine::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) {
+    if (mIsThreadAttached.load()) {
+        mJavaVM->DetachCurrentThread();
+        mIsThreadAttached = false;
+    }
+    LOGI("Audio stream closed. Error: %s", oboe::convertToText(error));
 }
