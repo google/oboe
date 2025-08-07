@@ -140,6 +140,7 @@ public class TestColdStartLatencyActivity extends AppCompatActivity {
                     startStream();
                     log("requestStart() Latency: " + getStartTimeMicros() / 1000 + " msec");
                     sleep(startSleepTimeMillis);
+                    waitForValidTimestamp();
                     log("Cold Start Latency: " + getColdStartTimeMicros() / 1000 + " msec");
                     closeStream();
                 } catch (InterruptedException e) {
@@ -181,6 +182,7 @@ public class TestColdStartLatencyActivity extends AppCompatActivity {
                                   boolean useExclusive);
     private native int startStream();
     private native int closeStream();
+    private native void waitForValidTimestamp();
     private native int getOpenTimeMicros();
     private native int getStartTimeMicros();
     private native int getColdStartTimeMicros();

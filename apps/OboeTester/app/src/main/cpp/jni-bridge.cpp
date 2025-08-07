@@ -1082,6 +1082,12 @@ Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getColdStartTimeMicros
     return sColdStartLatency.getColdStartTimeMicros();
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestColdStartLatencyActivity_waitForValidTimestamp(
+        JNIEnv *env, jobject instance) {
+    sColdStartLatency.waitForValidTimestamp();
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestColdStartLatencyActivity_getAudioDeviceId(
         JNIEnv *env, jobject instance) {

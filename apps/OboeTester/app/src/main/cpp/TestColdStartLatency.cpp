@@ -96,6 +96,12 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
     return coldStartLatencyNanos / NANOS_PER_MICROSECOND;
 }
 
+void TestColdStartLatency::waitForValidTimestamp() {
+    while (!mStream->getTimestamp(CLOCK_MONOTONIC)) {
+        usleep(kPollPeriodMillis * 1000);
+    }
+}
+
 // Callback that sleeps then touches the audio buffer.
 DataCallbackResult TestColdStartLatency::MyDataCallback::onAudioReady(
         AudioStream *audioStream,

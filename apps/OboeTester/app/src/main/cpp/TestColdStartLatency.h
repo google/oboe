@@ -30,6 +30,8 @@ public:
     int32_t start();
     int32_t close();
 
+    void waitForValidTimestamp();
+
     int32_t getColdStartTimeMicros();
 
     int32_t getOpenTimeMicros() {
@@ -71,6 +73,7 @@ private:
     std::shared_ptr<MyDataCallback> mDataCallback;
 
     static constexpr int kChannelCount = 1;
+    static constexpr int kPollPeriodMillis = 1;
 };
 
 #endif //OBOETESTER_TEST_COLD_START_LATENCY_H
