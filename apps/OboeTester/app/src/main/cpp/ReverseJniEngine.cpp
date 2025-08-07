@@ -15,7 +15,7 @@
  */
 
 #include "ReverseJniEngine.h"
-#include <android/log.h>
+#include "common/OboeDebug.h"
 
 #define TAG "ReverseJniEngine"
 
@@ -39,7 +39,7 @@ ReverseJniEngine::~ReverseJniEngine() {
 }
 
 void ReverseJniEngine::start(int bufferSizeInBursts) {
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Starting audio stream.");
+    LOGI("Starting audio stream.");
     setupAudioStream();
     setBufferSizeInBursts(bufferSizeInBursts);
     if (mAudioStream) {
@@ -58,7 +58,7 @@ void ReverseJniEngine::stop() {
 void ReverseJniEngine::setBufferSizeInBursts(int bufferSizeInBursts) {
     if (mAudioStream) {
         mAudioStream->setBufferSizeInFrames(bufferSizeInBursts * mAudioStream->getFramesPerBurst());
-        __android_log_print(ANDROID_LOG_INFO, TAG, "Buffer size set to %d frames.", mAudioStream->getBufferSizeInFrames());
+        LOGI("Buffer size set to %d frames.", mAudioStream->getBufferSizeInFrames());
     }
 }
 
@@ -73,7 +73,7 @@ void ReverseJniEngine::setupAudioStream() {
 
     oboe::Result result = builder.openStream(mAudioStream);
     if (result != oboe::Result::OK) {
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to create stream. Error: %s", oboe::convertToText(result));
+        LOGE("Failed to create stream. Error: %s", oboe::convertToText(result));
     }
 }
 
@@ -91,7 +91,7 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
     int getEnvStat = mJavaVM->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
     if (getEnvStat == JNI_EDETACHED) {
         if (mJavaVM->AttachCurrentThread(&env, nullptr) != 0) {
-            __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to attach current thread to JVM");
+            LOGE("Failed to attach current thread to JVM");
             return oboe::DataCallbackResult::Stop;
         }
     }
@@ -107,7 +107,8 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
         env->ExceptionClear();
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "Exception thrown in Java onAudioReady");
+        LOGE("Exception thrown in Java onAudioReady");
+        env->DeleteLocalRef(audioDataArray);
         return oboe::DataCallbackResult::Stop;
     }
 

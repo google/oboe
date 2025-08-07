@@ -1368,13 +1368,13 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getXRunCount(JNIEnv
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_native_1createEngine(JNIEnv *env, jobject thiz) {
+Java_com_mobileer_oboetester_ReverseJniEngine_createEngine(JNIEnv *env, jobject thiz) {
     ReverseJniEngine *reverseJniEngine = new ReverseJniEngine(env, thiz);
     return reinterpret_cast<jlong>(reverseJniEngine);
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_native_1startEngine(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
+Java_com_mobileer_oboetester_ReverseJniEngine_startEngine(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         reverseJniEngine->start(bufferSizeInBursts);
@@ -1382,7 +1382,7 @@ Java_com_mobileer_oboetester_ReverseJniEngine_native_1startEngine(JNIEnv *env, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_native_1stopEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
+Java_com_mobileer_oboetester_ReverseJniEngine_stopEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         reverseJniEngine->stop();
@@ -1390,7 +1390,7 @@ Java_com_mobileer_oboetester_ReverseJniEngine_native_1stopEngine(JNIEnv *env, jo
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_native_1deleteEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
+Java_com_mobileer_oboetester_ReverseJniEngine_deleteEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         delete reverseJniEngine;
@@ -1398,7 +1398,7 @@ Java_com_mobileer_oboetester_ReverseJniEngine_native_1deleteEngine(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_native_1setBufferSizeInBursts(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
+Java_com_mobileer_oboetester_ReverseJniEngine_setBufferSizeInBursts(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         reverseJniEngine->setBufferSizeInBursts(bufferSizeInBursts);

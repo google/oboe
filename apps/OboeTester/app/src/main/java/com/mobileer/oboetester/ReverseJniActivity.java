@@ -16,26 +16,19 @@
 
 package com.mobileer.oboetester;
 
-import static com.mobileer.oboetester.TestAudioActivity.TAG;
-
-import android.content.Context;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.RadioButton;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Test for reverse jni
+ * Test for testing reverse JNI.
+ * This test lets you configure the buffer size and the sleep duration to simulate a workload and
+ * lets you hear a sine wave and see the XRun count.
+ * This will inform us the viability of creating a Java/Kotlin only interface that uses Oboe.
  */
 public class ReverseJniActivity extends AppCompatActivity {
 

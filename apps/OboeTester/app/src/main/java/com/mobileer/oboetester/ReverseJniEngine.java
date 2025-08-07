@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.mobileer.oboetester;
 
 import android.util.Log;
@@ -25,28 +41,28 @@ public class ReverseJniEngine {
 
     public void create() {
         if (mNativeEngineHandle == 0) {
-            mNativeEngineHandle = native_createEngine();
+            mNativeEngineHandle = createEngine();
             Log.i(TAG, "Created native engine with handle: " + mNativeEngineHandle);
         }
     }
 
     public void start(int bufferSizeInBursts) {
         if (mNativeEngineHandle != 0) {
-            native_startEngine(mNativeEngineHandle, bufferSizeInBursts);
+            startEngine(mNativeEngineHandle, bufferSizeInBursts);
             Log.i(TAG, "Started native engine.");
         }
     }
 
     public void stop() {
         if (mNativeEngineHandle != 0) {
-            native_stopEngine(mNativeEngineHandle);
+            stopEngine(mNativeEngineHandle);
             Log.i(TAG, "Stopped native engine.");
         }
     }
 
     public void destroy() {
         if (mNativeEngineHandle != 0) {
-            native_deleteEngine(mNativeEngineHandle);
+            deleteEngine(mNativeEngineHandle);
             mNativeEngineHandle = 0;
             Log.i(TAG, "Destroyed native engine.");
         }
@@ -54,7 +70,7 @@ public class ReverseJniEngine {
 
     public void setBufferSizeInBursts(int bufferSizeInBursts) {
         if (mNativeEngineHandle != 0) {
-            native_setBufferSizeInBursts(mNativeEngineHandle, bufferSizeInBursts);
+            setBufferSizeInBursts(mNativeEngineHandle, bufferSizeInBursts);
             Log.i(TAG, "SetBufferSizeInBursts:" + bufferSizeInBursts);
         }
     }
@@ -69,6 +85,9 @@ public class ReverseJniEngine {
 
     @SuppressWarnings("unused") // Called from JNI
     private void onAudioReady(float[] audioData, int numFrames, int totalXRunCount) {
+        if (audioData == null) {
+            Log.e(TAG, "Audio data is null");
+        }
         // Simple sine wave generator
         for (int i = 0; i < numFrames; i++) {
             audioData[i] = (float) Math.sin(mPhase);
@@ -78,8 +97,9 @@ public class ReverseJniEngine {
             }
         }
         mXRunCount = totalXRunCount;
-        Log.i(TAG, "XRun count: " + mXRunCount);
+        //Log.i(TAG, "XRun count: " + mXRunCount);
         try {
+            // First parameter is milliseconds, second is the remaining part in nanoseconds
             Thread.sleep(mSleepDurationUs / 1000, (mSleepDurationUs % 1000) * 1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -87,9 +107,9 @@ public class ReverseJniEngine {
     }
 
     // Native methods that are implemented in jni-bridge.cpp
-    private native long native_createEngine();
-    private native void native_startEngine(long enginePtr, int bufferSizeInBursts);
-    private native void native_stopEngine(long enginePtr);
-    private native void native_deleteEngine(long enginePtr);
-    private native void native_setBufferSizeInBursts(long enginePtr, int bufferSizeInBursts);
+    private native long createEngine();
+    private native void startEngine(long enginePtr, int bufferSizeInBursts);
+    private native void stopEngine(long enginePtr);
+    private native void deleteEngine(long enginePtr);
+    private native void setBufferSizeInBursts(long enginePtr, int bufferSizeInBursts);
 }
