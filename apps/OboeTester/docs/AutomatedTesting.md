@@ -92,7 +92,7 @@ There are several optional parameters in common for glitch, latency, input, and 
     --ei out_channels       {samples}    // number of output channels, default is 2. This is ignored if out_channel_mask is set.
     --ei sample_rate        {hertz}
     --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
-    --es out_perf           {"none", "lowlat", "powersave"}  // output performance mode, default is "lowlat"
+    --es out_perf           {"none", "lowlat", "powersave", "powersave_offload"}  // output performance mode, default is "lowlat", "powersave_offload" will only be availabe for output stream
     --es out_usage          {"media", "voice_communication", "alarm", "notification", "game"} // default is media
     --es in_sharing         {"shared", "exclusive"} // input sharing mode, default is "exclusive"
     --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
