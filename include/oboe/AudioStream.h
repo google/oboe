@@ -735,6 +735,36 @@ public:
         return ResultWithValue<int64_t>(Result::ErrorUnimplemented);
     }
 
+    /**
+     * Set playback parameters for the given stream.
+     *
+     * This was introduced in Android API Level 37.
+     *
+     * @param parameters a pointer of PlaybackParameters where current playback parameters
+     *                   will be written to on success.
+     * @return Result::OK if the playback parameters are set successfully.
+     *         Result::ErrorIllegalArgument if the given stream is not an output stream or
+     *         the requested parameters are invalid.
+     *         Result::ErrorUnimplemented if the device or the stream doesn't support setting
+     *         playback parameters.
+     *         Result::ErrorInvalidState if the stream is not initialized successfully.
+     */
+    virtual oboe::Result setPlaybackParameters(const PlaybackParameters& parameters) {
+        return Result::ErrorUnimplemented;
+    }
+
+    /**
+     * Get current playback parameters for the given stream.
+     *
+     * This was introduced in Android API Level 37.
+     *
+     * @return a ResultWithValue which has a result of Result::OK and a value containing the
+     * playback parameters, or a result of Result::Error*.
+     */
+    virtual ResultWithValue<PlaybackParameters> getPlaybackParameters() {
+        return ResultWithValue<PlaybackParameters>(Result::ErrorUnimplemented);
+    }
+
 protected:
 
     /**

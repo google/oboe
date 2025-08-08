@@ -1035,4 +1035,123 @@ ResultWithValue<int64_t> AudioStreamAAudio::flushFromFrame(FlushFromAccuracy acc
     return ResultWithValue<int64_t>(positionInFrames, result);
 }
 
+namespace {
+
+ResultWithValue<AAudioPlaybackParameters> oboe2AAudio_PlaybackParameters_AAudioPlaybackParameters(
+        const PlaybackParameters& playbackParameters) {
+    AAudioPlaybackParameters aaudioPlaybackParameters;
+    switch (playbackParameters.fallbackMode) {
+        case FallbackMode::Default:
+            aaudioPlaybackParameters.fallbackMode = AAUDIO_FALLBACK_MODE_DEFAULT;
+            break;
+        case FallbackMode::Mute:
+            aaudioPlaybackParameters.fallbackMode = AAUDIO_FALLBACK_MODE_MUTE;
+            break;
+        case FallbackMode::Fail:
+            aaudioPlaybackParameters.fallbackMode = AAUDIO_FALLBACK_MODE_FAIL;
+            break;
+        default:
+            return ResultWithValue<AAudioPlaybackParameters>(Result::ErrorIllegalArgument);
+    }
+
+    switch (playbackParameters.stretchMode) {
+        case StretchMode::Default:
+            aaudioPlaybackParameters.stretchMode = AAUDIO_STRETCH_MODE_DEFAULT;
+            break;
+        case StretchMode::Voice:
+            aaudioPlaybackParameters.stretchMode = AAUDIO_STRETCH_MODE_VOICE;
+            break;
+        default:
+            return ResultWithValue<AAudioPlaybackParameters>(Result::ErrorIllegalArgument);
+    }
+
+    aaudioPlaybackParameters.pitch = playbackParameters.pitch;
+    aaudioPlaybackParameters.speed = playbackParameters.speed;
+    return ResultWithValue<AAudioPlaybackParameters>(aaudioPlaybackParameters);
+}
+
+ResultWithValue<PlaybackParameters> aaudio2oboe_AAudioPlaybackParameters_PlaybackParameters(
+        const AAudioPlaybackParameters& aaudioPlaybackParameters) {
+    PlaybackParameters playbackParameters;
+    switch (aaudioPlaybackParameters.fallbackMode) {
+        case AAUDIO_FALLBACK_MODE_DEFAULT:
+            playbackParameters.fallbackMode = FallbackMode::Default;
+            break;
+        case AAUDIO_FALLBACK_MODE_MUTE:
+            playbackParameters.fallbackMode = FallbackMode::Mute;
+            break;
+        case AAUDIO_FALLBACK_MODE_FAIL:
+            playbackParameters.fallbackMode = FallbackMode::Fail;
+            break;
+        default:
+            return ResultWithValue<PlaybackParameters>(Result::ErrorIllegalArgument);
+    }
+
+    switch (aaudioPlaybackParameters.stretchMode) {
+        case AAUDIO_STRETCH_MODE_DEFAULT:
+            playbackParameters.stretchMode = StretchMode::Default;
+            break;
+        case AAUDIO_STRETCH_MODE_VOICE:
+            playbackParameters.stretchMode = StretchMode::Voice;
+            break;
+        default:
+            return ResultWithValue<PlaybackParameters>(Result::ErrorIllegalArgument);
+    }
+    playbackParameters.pitch = aaudioPlaybackParameters.pitch;
+    playbackParameters.speed = aaudioPlaybackParameters.speed;
+    return ResultWithValue<PlaybackParameters>(playbackParameters);
+}
+
+} // namespace
+
+Result AudioStreamAAudio::setPlaybackParameters(const PlaybackParameters &parameters) {
+    if (mLibLoader->stream_setPlaybackParameters == nullptr) {
+        LOGD("%s, the NDK function is not available", __func__);
+        return Result::ErrorUnimplemented;
+    }
+    std::shared_lock _l(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        LOGE("%s the stream is already closed", __func__);
+        return Result::ErrorClosed;
+    }
+    auto convertResult =
+            oboe2AAudio_PlaybackParameters_AAudioPlaybackParameters(parameters);
+    if (!convertResult) {
+        LOGE("%s, invalid parameters, %s", __func__, toString(parameters).c_str());
+        return Result::ErrorIllegalArgument;
+    }
+    auto aaudioPlaybackParameters = convertResult.value();
+    return static_cast<Result>(mLibLoader->stream_setPlaybackParameters(
+            stream, &aaudioPlaybackParameters));
+}
+
+ResultWithValue<PlaybackParameters> AudioStreamAAudio::getPlaybackParameters() {
+    if (mLibLoader->stream_getPlaybackParameters == nullptr) {
+        LOGD("%s, the NDK function is not available", __func__);
+        return Result::ErrorUnimplemented;
+    }
+    std::shared_lock _l(mAAudioStreamLock);
+    AAudioStream *stream = mAAudioStream.load();
+    if (stream == nullptr) {
+        LOGE("%s the stream is already closed", __func__);
+        return Result::ErrorClosed;
+    }
+
+    AAudioPlaybackParameters aaudioPlaybackParameters;
+    auto result = static_cast<Result>(
+            mLibLoader->stream_getPlaybackParameters(stream, &aaudioPlaybackParameters));
+    if (result != Result::OK) {
+        return ResultWithValue<PlaybackParameters>(result);
+    }
+
+    auto playbackParameters =
+            aaudio2oboe_AAudioPlaybackParameters_PlaybackParameters(aaudioPlaybackParameters);
+    if (!playbackParameters) {
+        LOGE("%s failed to convert from aaudio playback parameters", __func__);
+        return Result::ErrorIllegalArgument;
+    }
+    return ResultWithValue<PlaybackParameters>(playbackParameters.value());
+}
+
 } // namespace oboe

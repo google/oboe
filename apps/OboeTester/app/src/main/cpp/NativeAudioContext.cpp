@@ -606,6 +606,23 @@ int64_t ActivityTestOutput::flushFromFrame(int32_t accuracy, int64_t frame) {
     }
 }
 
+oboe::Result ActivityTestOutput::setPlaybackParameters(const oboe::PlaybackParameters& parameters) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
+    if (oboeStream == nullptr) {
+        return oboe::Result::ErrorInvalidState;
+    }
+
+    return oboeStream->setPlaybackParameters(parameters);
+}
+
+oboe::ResultWithValue<oboe::PlaybackParameters>  ActivityTestOutput::getPlaybackParameters() {
+    std::shared_ptr<oboe::AudioStream> oboeStream = getOutputStream();
+    if (oboeStream == nullptr) {
+        return {oboe::Result::ErrorInvalidState};
+    }
+    return oboeStream->getPlaybackParameters();
+}
+
 // ======================================================================= ActivityTestInput
 void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();

@@ -356,4 +356,17 @@
         <item>Undefined</item>
         <item>Accurate</item>
     </string-array>
+
+    <string name="fallback_mode_prompt">Choose a FallbackMode</string>
+    <string-array name="fallback_mode">
+        <item>Default</item>
+        <item>Mute</item>
+        <item>Fail</item>
+    </string-array>
+
+    <string name="stretch_mode_prompt">Choose a StretchMode</string>
+    <string-array name="stretch_mode">
+        <item>Default</item>
+        <item>Voice</item>
+    </string-array>
 </resources>

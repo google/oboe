@@ -96,6 +96,8 @@ int getChannelCountFromChannelMask(ChannelMask channelMask);
 
 bool isCompressedFormat(AudioFormat format);
 
+std::string toString(const PlaybackParameters& parameters);
+
 } // namespace oboe
 
 #endif //OBOE_UTILITIES_H

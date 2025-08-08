@@ -43,6 +43,21 @@ static NativeAudioContext engine;
 /*********************************************************************************/
 extern "C" {
 
+// --- Cached JNI IDs ---
+static jclass g_callbackStatusClass = nullptr;
+static jmethodID g_callbackStatusConstructor = nullptr;
+
+static jclass g_arrayListClass = nullptr;
+static jmethodID g_arrayListConstructor = nullptr;
+static jmethodID g_arrayListAddMethod = nullptr;
+
+static jclass g_playbackParametersClass = nullptr;
+static jmethodID g_playbackParametersConstructor = nullptr;
+static jfieldID g_fallbackModeField = nullptr;
+static jfieldID g_stretchModeField = nullptr;
+static jfieldID g_pitchField = nullptr;
+static jfieldID g_speedField = nullptr;
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint nativeApi,
@@ -252,6 +267,35 @@ Java_com_mobileer_oboetester_TestAudioActivity_setupMemoryBuffer(JNIEnv *env, jo
 
     env->GetByteArrayRegion(buffer, offset, length, reinterpret_cast<jbyte *>(buf.get()));
     engine.getCurrentActivity()->setupMemoryBuffer(buf, length);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setPlaybackParametersNative(
+        JNIEnv *env, jobject, jobject playbackParameters) {
+    oboe::PlaybackParameters params{};
+    params.fallbackMode = static_cast<oboe::FallbackMode>(
+            env->GetIntField(playbackParameters, g_fallbackModeField));
+    params.stretchMode = static_cast<oboe::StretchMode>(
+            env->GetIntField(playbackParameters, g_stretchModeField));
+    params.pitch = static_cast<float>(env->GetFloatField(playbackParameters, g_pitchField));
+    params.speed = static_cast<float>(env->GetFloatField(playbackParameters, g_speedField));
+
+    return static_cast<jint>(engine.getCurrentActivity()->setPlaybackParameters(params));
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_getPlaybackParametersNative(
+        JNIEnv *env, jobject) {
+    oboe::ResultWithValue<oboe::PlaybackParameters> result =
+            engine.getCurrentActivity()->getPlaybackParameters();
+    if (!result) {
+        return nullptr;
+    }
+    oboe::PlaybackParameters params = result.value();
+
+    return env->NewObject(g_playbackParametersClass, g_playbackParametersConstructor,
+                          (jint)params.fallbackMode,
+                          (jint)params.stretchMode, params.pitch, params.speed);
 }
 
 JNIEXPORT jint JNICALL
@@ -1179,14 +1223,6 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_close(JNIEnv *env, jobjec
     return sAudioWorkload.close();
 }
 
-// --- Cached JNI IDs ---
-static jclass g_callbackStatusClass = nullptr;
-static jmethodID g_callbackStatusConstructor = nullptr;
-
-static jclass g_arrayListClass = nullptr;
-static jmethodID g_arrayListConstructor = nullptr;
-static jmethodID g_arrayListAddMethod = nullptr;
-
 // Store the JavaVM pointer to get JNIEnv in JNI_OnLoad/OnUnload
 static JavaVM* g_javaVM = nullptr;
 
@@ -1250,6 +1286,33 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
         return JNI_ERR;
     }
 
+    const char* playbackParametersClassName = "com/mobileer/oboetester/PlaybackParameters";
+    jclass localPlaybackParametersClass = env->FindClass(playbackParametersClassName);
+    if (localPlaybackParametersClass == nullptr) {
+        LOGE("JNI_OnLoad: Could not find class %s", playbackParametersClassName);
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+    g_playbackParametersClass = (jclass)env->NewGlobalRef(localPlaybackParametersClass);
+    env->DeleteLocalRef(localPlaybackParametersClass);
+    if (g_playbackParametersClass == nullptr) {
+        LOGE("JNI_OnLoad: Could not create global ref for %s", playbackParametersClassName);
+        return JNI_ERR;
+    }
+
+    g_playbackParametersConstructor = env->GetMethodID(
+            g_playbackParametersClass, "<init>", "(IIFF)V");
+    if (g_playbackParametersConstructor == nullptr) {
+        LOGE("JNI_OnLoad: Could not find constructor for %s", playbackParametersClassName);
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+
+    g_fallbackModeField = env->GetFieldID(g_playbackParametersClass, "mFallbackMode", "I");
+    g_stretchModeField = env->GetFieldID(g_playbackParametersClass, "mStretchMode", "I");
+    g_pitchField = env->GetFieldID(g_playbackParametersClass, "mPitch", "F");
+    g_speedField = env->GetFieldID(g_playbackParametersClass, "mSpeed", "F");
+
     std::cout << "JNI_OnLoad: Successfully cached JNI class and method IDs." << std::endl;
     return JNI_VERSION_1_6;
 }
@@ -1271,10 +1334,19 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved) {
         env->DeleteGlobalRef(g_arrayListClass);
         g_arrayListClass = nullptr;
     }
+    if (g_playbackParametersClass != nullptr) {
+        env->DeleteGlobalRef(g_playbackParametersClass);
+        g_playbackParametersClass = nullptr;
+    }
 
     g_callbackStatusConstructor = nullptr;
     g_arrayListConstructor = nullptr;
     g_arrayListAddMethod = nullptr;
+    g_playbackParametersConstructor = nullptr;
+    g_fallbackModeField = nullptr;
+    g_stretchModeField = nullptr;
+    g_pitchField = nullptr;
+    g_speedField = nullptr;
 
     g_javaVM = nullptr;
     std::cout << "JNI_OnUnload: Released global JNI references." << std::endl;

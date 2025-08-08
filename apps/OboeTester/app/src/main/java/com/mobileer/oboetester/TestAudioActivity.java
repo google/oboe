@@ -789,6 +789,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
 
+    protected native int setPlaybackParametersNative(PlaybackParameters parameters);
+    protected native PlaybackParameters getPlaybackParametersNative();
+
     public void startAudio() throws IOException {
         Log.i(TAG, "startAudio() called =========================");
         int result = startNative();
