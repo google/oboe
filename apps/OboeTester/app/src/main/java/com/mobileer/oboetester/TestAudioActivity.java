@@ -408,6 +408,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
     }
 
+    protected boolean isStreamClosed() {
+        return mAudioState == AUDIO_STATE_CLOSED;
+    }
+
     protected void updateEnabledWidgets() {
         if (mOpenButton != null) {
             mOpenButton.setBackgroundColor(mAudioState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);

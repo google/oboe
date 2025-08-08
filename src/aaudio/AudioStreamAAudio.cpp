@@ -1084,6 +1084,7 @@ ResultWithValue<PlaybackParameters> aaudio2oboe_AAudioPlaybackParameters_Playbac
             playbackParameters.fallbackMode = FallbackMode::Fail;
             break;
         default:
+            LOGE("%s unknown fallback mode %d", __func__, aaudioPlaybackParameters.fallbackMode);
             return ResultWithValue<PlaybackParameters>(Result::ErrorIllegalArgument);
     }
 
@@ -1095,6 +1096,7 @@ ResultWithValue<PlaybackParameters> aaudio2oboe_AAudioPlaybackParameters_Playbac
             playbackParameters.stretchMode = StretchMode::Voice;
             break;
         default:
+            LOGE("%s unknown stretch mode %d", __func__, aaudioPlaybackParameters.stretchMode);
             return ResultWithValue<PlaybackParameters>(Result::ErrorIllegalArgument);
     }
     playbackParameters.pitch = aaudioPlaybackParameters.pitch;
@@ -1145,13 +1147,7 @@ ResultWithValue<PlaybackParameters> AudioStreamAAudio::getPlaybackParameters() {
         return ResultWithValue<PlaybackParameters>(result);
     }
 
-    auto playbackParameters =
-            aaudio2oboe_AAudioPlaybackParameters_PlaybackParameters(aaudioPlaybackParameters);
-    if (!playbackParameters) {
-        LOGE("%s failed to convert from aaudio playback parameters", __func__);
-        return Result::ErrorIllegalArgument;
-    }
-    return ResultWithValue<PlaybackParameters>(playbackParameters.value());
+    return aaudio2oboe_AAudioPlaybackParameters_PlaybackParameters(aaudioPlaybackParameters);
 }
 
 } // namespace oboe

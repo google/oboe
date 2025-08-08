@@ -52,6 +52,7 @@ public final class TestOutputActivity extends TestOutputActivityBase {
     private Spinner mFlushFromAccuracySpinner;
     private Button mFlushFromFrameButton;
 
+    private LinearLayout mPlaybackParametersLayout;
     private Spinner mFallbackModeSpinner;
     private TextView mFallbackModeTextView;
     private Spinner mStretchModeSpinner;
@@ -140,6 +141,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             }
         });
 
+        mPlaybackParametersLayout = (LinearLayout) findViewById(R.id.playbackParametersLayout);
+        mPlaybackParametersLayout.setVisibility(View.GONE);
         mFallbackModeSpinner = (Spinner) findViewById(R.id.fallbackModeSpinner);
         mFallbackModeTextView = (TextView) findViewById(R.id.fallbackModeText);
         mStretchModeSpinner = (Spinner) findViewById(R.id.stretchModeSpinner);
@@ -201,7 +204,10 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mShouldSetStreamControlByAttributes.setEnabled(false);
         mShouldDisableForCompressedFormat = StreamConfiguration.isCompressedFormat(
                 mAudioOutTester.getCurrentAudioStream().getFormat());
-        updatePlaybackParametersText();
+        if (!isStreamClosed()) {
+            mPlaybackParametersLayout.setVisibility(View.VISIBLE);
+            updatePlaybackParametersText();
+        }
     }
 
     private void configureChannelBoxes(int channelCount, boolean shouldDisable) {
@@ -248,6 +254,9 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mOutputSignalSpinner.setEnabled(true);
         mShouldSetStreamControlByAttributes.setEnabled(true);
         super.closeAudio();
+        if (isStreamClosed()) {
+            mPlaybackParametersLayout.setVisibility(View.GONE);
+        }
     }
 
     public void startAudio() throws IOException {
