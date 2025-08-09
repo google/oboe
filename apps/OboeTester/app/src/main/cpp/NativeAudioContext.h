@@ -300,6 +300,14 @@ public:
 
     virtual void setAmplitude(float amplitude) {}
 
+    virtual oboe::Result setPlaybackParameters(const oboe::PlaybackParameters& parameters) {
+        return oboe::Result::ErrorUnimplemented;
+    }
+
+    virtual oboe::ResultWithValue<oboe::PlaybackParameters> getPlaybackParameters() {
+        return oboe::ResultWithValue<oboe::PlaybackParameters>(oboe::Result::ErrorUnimplemented);
+    }
+
     virtual int32_t saveWaveFile(const char *filename);
 
     virtual void setMinimumFramesBeforeRead(int32_t numFrames) {}
@@ -477,6 +485,10 @@ public:
     void setupMemoryBuffer(std::unique_ptr<uint8_t[]>& buffer, int length) final;
 
     int64_t flushFromFrame(int32_t accuracy, int64_t frame) final;
+
+    oboe::Result setPlaybackParameters(const oboe::PlaybackParameters& parameters) final;
+
+    oboe::ResultWithValue<oboe::PlaybackParameters> getPlaybackParameters() final;
 
 protected:
     SignalType                       mSignalType = SignalType::Sine;

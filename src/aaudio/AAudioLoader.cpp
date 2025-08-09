@@ -198,6 +198,10 @@ int AAudioLoader::open() {
 
         // TODO: Use 25Q4 version code and name when it is defined.
         stream_flushFromFrame = load_I_PSIPL("AAudioStream_flushFromFrame");
+        stream_getPlaybackParameters =
+                load_I_PSPM("AAudioStream_getPlaybackParameters");
+        stream_setPlaybackParameters =
+                load_I_PSCPM("AAudioStream_setPlaybackParameters");
     }
 
     return 0;
@@ -369,6 +373,18 @@ AAudioLoader::signature_I_PSIPL AAudioLoader::load_I_PSIPL(const char *functionN
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_I_PSIPL>(proc);
+}
+
+AAudioLoader::signature_I_PSPM AAudioLoader::load_I_PSPM(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSPM>(proc);
+}
+
+AAudioLoader::signature_I_PSCPM AAudioLoader::load_I_PSCPM(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_I_PSCPM>(proc);
 }
 
 // Ensure that all AAudio primitive data types are int32_t

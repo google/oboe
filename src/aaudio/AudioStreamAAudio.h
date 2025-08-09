@@ -137,6 +137,9 @@ public:
     ResultWithValue<int64_t> flushFromFrame(
             FlushFromAccuracy accuracy, int64_t positionInFrames) override;
 
+    oboe::Result setPlaybackParameters(const PlaybackParameters& parameters) override;
+    ResultWithValue<PlaybackParameters> getPlaybackParameters() override;
+
 protected:
     static void internalErrorCallback(
             AAudioStream *stream,

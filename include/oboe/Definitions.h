@@ -1096,6 +1096,65 @@ namespace oboe {
     };
 
     /**
+     * Behavior when the values for speed and / or pitch are out of the applicable range.
+     */
+    enum class FallbackMode : int32_t {
+        /**
+         * It is up to the system to choose best handling.
+         */
+        Default = 0, // AAUDIO_FALLBACK_MODE_DEFAULT
+        /**
+         * Play silence for parameter values that are out of range.
+         */
+        Mute = 1, // AAUDIO_FALLBACK_MODE_MUTE
+        /**
+         * When the requested speed and or pitch is out of range, processing will be
+         * stopped and an error will be returned.
+         */
+        Fail = 2, // AAUDIO_FALLBACK_MODE_FAIL
+    };
+
+    /**
+     * Algorithms used for time-stretching (preserving pitch while playing audio
+     * content at different speed).
+     */
+    enum class StretchMode : int32_t {
+        /**
+         * Time-stretching algorithm is selected by the system.
+         */
+        Default = 0, // AAUDIO_STRETCH_MODE_DEFAULT
+        /**
+         * Selects time-stretch algorithm best suitable for voice (speech) content.
+         */
+        Voice = 1, // AAUDIO_STRETCH_MODE_VOICE
+    };
+
+    /**
+     * Structure for common playback params.
+     */
+    struct PlaybackParameters {
+        /**
+         * See `FallbackMode`.
+         */
+        FallbackMode fallbackMode;
+        /**
+         * See `StretchMode`.
+         */
+        StretchMode stretchMode;
+        /**
+         * Increases or decreases the tonal frequency of the audio content.
+         * It is expressed as a multiplicative factor, where normal pitch is 1.0f.
+         * The pitch must be in range of [0.25f, 4.0f].
+         */
+        float pitch;
+        /**
+         * Increases or decreases the time to play back a set of audio frames.
+         * Normal speed is 1.0f. The speed must in range of [0.01f, 20.0f].
+         */
+        float speed;
+    };
+
+    /**
      * On API 16 to 26 OpenSL ES will be used. When using OpenSL ES the optimal values for sampleRate and
      * framesPerBurst are not known by the native code.
      * On API 17+ these values should be obtained from the AudioManager using this code:
