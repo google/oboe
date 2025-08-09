@@ -573,53 +573,78 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span>        Accurate = 1, <span class="comment">// AAUDIO_FLUSH_FROM_ACCURACY_ACCURATE</span></div>
 <div class="line"><a id="l01096" name="l01096"></a><span class="lineno"> 1096</span>    };</div>
 <div class="line"><a id="l01097" name="l01097"></a><span class="lineno"> 1097</span> </div>
-<div class="foldopen" id="foldopen01116" data-start="{" data-end="};">
-<div class="line"><a id="l01116" name="l01116"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html"> 1116</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a> {</div>
-<div class="line"><a id="l01117" name="l01117"></a><span class="lineno"> 1117</span> </div>
-<div class="line"><a id="l01118" name="l01118"></a><span class="lineno"> 1118</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l01119" name="l01119"></a><span class="lineno"> 1119</span> </div>
-<div class="line"><a id="l01121" name="l01121"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1"> 1121</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">SampleRate</a>;</div>
-<div class="line"><a id="l01123" name="l01123"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300"> 1123</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">FramesPerBurst</a>;</div>
-<div class="line"><a id="l01125" name="l01125"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d"> 1125</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">ChannelCount</a>;</div>
-<div class="line"><a id="l01126" name="l01126"></a><span class="lineno"> 1126</span> </div>
-<div class="line"><a id="l01127" name="l01127"></a><span class="lineno"> 1127</span>    };</div>
-</div>
-<div class="line"><a id="l01128" name="l01128"></a><span class="lineno"> 1128</span> </div>
-<div class="foldopen" id="foldopen01132" data-start="{" data-end="};">
-<div class="line"><a id="l01132" name="l01132"></a><span class="lineno"><a class="line" href="structoboe_1_1_frame_timestamp.html"> 1132</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> {</div>
-<div class="line"><a id="l01133" name="l01133"></a><span class="lineno"> 1133</span>        int64_t position; <span class="comment">// in frames</span></div>
-<div class="line"><a id="l01134" name="l01134"></a><span class="lineno"> 1134</span>        int64_t timestamp; <span class="comment">// in nanoseconds</span></div>
-<div class="line"><a id="l01135" name="l01135"></a><span class="lineno"> 1135</span>    };</div>
-</div>
-<div class="line"><a id="l01136" name="l01136"></a><span class="lineno"> 1136</span> </div>
-<div class="foldopen" id="foldopen01137" data-start="{" data-end="};">
-<div class="line"><a id="l01137" name="l01137"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html"> 1137</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_oboe_globals.html">OboeGlobals</a> {</div>
-<div class="line"><a id="l01138" name="l01138"></a><span class="lineno"> 1138</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l01139" name="l01139"></a><span class="lineno"> 1139</span> </div>
-<div class="line"><a id="l01140" name="l01140"></a><span class="lineno"> 1140</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> areWorkaroundsEnabled() {</div>
-<div class="line"><a id="l01141" name="l01141"></a><span class="lineno"> 1141</span>            <span class="keywordflow">return</span> mWorkaroundsEnabled;</div>
-<div class="line"><a id="l01142" name="l01142"></a><span class="lineno"> 1142</span>        }</div>
-<div class="line"><a id="l01143" name="l01143"></a><span class="lineno"> 1143</span> </div>
-<div class="foldopen" id="foldopen01149" data-start="{" data-end="}">
-<div class="line"><a id="l01149" name="l01149"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b"> 1149</a></span>        <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">setWorkaroundsEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
-<div class="line"><a id="l01150" name="l01150"></a><span class="lineno"> 1150</span>            mWorkaroundsEnabled = enabled;</div>
-<div class="line"><a id="l01151" name="l01151"></a><span class="lineno"> 1151</span>        }</div>
-</div>
-<div class="line"><a id="l01152" name="l01152"></a><span class="lineno"> 1152</span> </div>
-<div class="line"><a id="l01153" name="l01153"></a><span class="lineno"> 1153</span>    <span class="keyword">private</span>:</div>
-<div class="line"><a id="l01154" name="l01154"></a><span class="lineno"> 1154</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> mWorkaroundsEnabled;</div>
+<div class="line"><a id="l01101" name="l01101"></a><span class="lineno"> 1101</span>    <span class="keyword">enum class</span> FallbackMode : int32_t {</div>
+<div class="line"><a id="l01105" name="l01105"></a><span class="lineno"> 1105</span>        Default = 0, <span class="comment">// AAUDIO_FALLBACK_MODE_DEFAULT</span></div>
+<div class="line"><a id="l01109" name="l01109"></a><span class="lineno"> 1109</span>        Mute = 1, <span class="comment">// AAUDIO_FALLBACK_MODE_MUTE</span></div>
+<div class="line"><a id="l01114" name="l01114"></a><span class="lineno"> 1114</span>        Fail = 2, <span class="comment">// AAUDIO_FALLBACK_MODE_FAIL</span></div>
+<div class="line"><a id="l01115" name="l01115"></a><span class="lineno"> 1115</span>    };</div>
+<div class="line"><a id="l01116" name="l01116"></a><span class="lineno"> 1116</span> </div>
+<div class="line"><a id="l01121" name="l01121"></a><span class="lineno"> 1121</span>    <span class="keyword">enum class</span> StretchMode : int32_t {</div>
+<div class="line"><a id="l01125" name="l01125"></a><span class="lineno"> 1125</span>        Default = 0, <span class="comment">// AAUDIO_STRETCH_MODE_DEFAULT</span></div>
+<div class="line"><a id="l01129" name="l01129"></a><span class="lineno"> 1129</span>        Voice = 1, <span class="comment">// AAUDIO_STRETCH_MODE_VOICE</span></div>
+<div class="line"><a id="l01130" name="l01130"></a><span class="lineno"> 1130</span>    };</div>
+<div class="line"><a id="l01131" name="l01131"></a><span class="lineno"> 1131</span> </div>
+<div class="foldopen" id="foldopen01135" data-start="{" data-end="};">
+<div class="line"><a id="l01135" name="l01135"></a><span class="lineno"><a class="line" href="structoboe_1_1_playback_parameters.html"> 1135</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> {</div>
+<div class="line"><a id="l01139" name="l01139"></a><span class="lineno"><a class="line" href="structoboe_1_1_playback_parameters.html#a871d7c06b30731e4f9aa94bcb5ef41ab"> 1139</a></span>        FallbackMode <a class="code hl_variable" href="structoboe_1_1_playback_parameters.html#a871d7c06b30731e4f9aa94bcb5ef41ab">fallbackMode</a>;</div>
+<div class="line"><a id="l01143" name="l01143"></a><span class="lineno"><a class="line" href="structoboe_1_1_playback_parameters.html#af6ef5f2a2711bdf8a9d8b184d5e448fa"> 1143</a></span>        StretchMode <a class="code hl_variable" href="structoboe_1_1_playback_parameters.html#af6ef5f2a2711bdf8a9d8b184d5e448fa">stretchMode</a>;</div>
+<div class="line"><a id="l01149" name="l01149"></a><span class="lineno"><a class="line" href="structoboe_1_1_playback_parameters.html#a56b6a48fe9b8a69de30ae77d7fe7165e"> 1149</a></span>        <span class="keywordtype">float</span> <a class="code hl_variable" href="structoboe_1_1_playback_parameters.html#a56b6a48fe9b8a69de30ae77d7fe7165e">pitch</a>;</div>
+<div class="line"><a id="l01154" name="l01154"></a><span class="lineno"><a class="line" href="structoboe_1_1_playback_parameters.html#a7739a52be3ed06bc6ba278d2433c2aba"> 1154</a></span>        <span class="keywordtype">float</span> <a class="code hl_variable" href="structoboe_1_1_playback_parameters.html#a7739a52be3ed06bc6ba278d2433c2aba">speed</a>;</div>
 <div class="line"><a id="l01155" name="l01155"></a><span class="lineno"> 1155</span>    };</div>
 </div>
-<div class="line"><a id="l01156" name="l01156"></a><span class="lineno"> 1156</span>} <span class="comment">// namespace oboe</span></div>
-<div class="line"><a id="l01157" name="l01157"></a><span class="lineno"> 1157</span> </div>
-<div class="line"><a id="l01158" name="l01158"></a><span class="lineno"> 1158</span><span class="preprocessor">#endif </span><span class="comment">// OBOE_DEFINITIONS_H</span></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html">oboe::DefaultStreamValues</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1116</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_a46a5d9a653f2153f618cadcab764e1b1"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">oboe::DefaultStreamValues::SampleRate</a></div><div class="ttdeci">static int32_t SampleRate</div><div class="ttdef"><b>Definition</b> Definitions.h:1121</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ab5ea5576699cebc56193f5c297d3e300"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">oboe::DefaultStreamValues::FramesPerBurst</a></div><div class="ttdeci">static int32_t FramesPerBurst</div><div class="ttdef"><b>Definition</b> Definitions.h:1123</div></div>
-<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ad5dce538d5963c81bf58350ab730962d"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">oboe::DefaultStreamValues::ChannelCount</a></div><div class="ttdeci">static int32_t ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:1125</div></div>
-<div class="ttc" id="aclassoboe_1_1_oboe_globals_html"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html">oboe::OboeGlobals</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1137</div></div>
-<div class="ttc" id="aclassoboe_1_1_oboe_globals_html_af2b8af764c5a5e6fc007b7725117303b"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals::setWorkaroundsEnabled</a></div><div class="ttdeci">static void setWorkaroundsEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> Definitions.h:1149</div></div>
-<div class="ttc" id="astructoboe_1_1_frame_timestamp_html"><div class="ttname"><a href="structoboe_1_1_frame_timestamp.html">oboe::FrameTimestamp</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1132</div></div>
+<div class="line"><a id="l01156" name="l01156"></a><span class="lineno"> 1156</span> </div>
+<div class="foldopen" id="foldopen01175" data-start="{" data-end="};">
+<div class="line"><a id="l01175" name="l01175"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html"> 1175</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_default_stream_values.html">DefaultStreamValues</a> {</div>
+<div class="line"><a id="l01176" name="l01176"></a><span class="lineno"> 1176</span> </div>
+<div class="line"><a id="l01177" name="l01177"></a><span class="lineno"> 1177</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span> </div>
+<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1"> 1180</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">SampleRate</a>;</div>
+<div class="line"><a id="l01182" name="l01182"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300"> 1182</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">FramesPerBurst</a>;</div>
+<div class="line"><a id="l01184" name="l01184"></a><span class="lineno"><a class="line" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d"> 1184</a></span>        <span class="keyword">static</span> int32_t <a class="code hl_variable" href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">ChannelCount</a>;</div>
+<div class="line"><a id="l01185" name="l01185"></a><span class="lineno"> 1185</span> </div>
+<div class="line"><a id="l01186" name="l01186"></a><span class="lineno"> 1186</span>    };</div>
+</div>
+<div class="line"><a id="l01187" name="l01187"></a><span class="lineno"> 1187</span> </div>
+<div class="foldopen" id="foldopen01191" data-start="{" data-end="};">
+<div class="line"><a id="l01191" name="l01191"></a><span class="lineno"><a class="line" href="structoboe_1_1_frame_timestamp.html"> 1191</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_frame_timestamp.html">FrameTimestamp</a> {</div>
+<div class="line"><a id="l01192" name="l01192"></a><span class="lineno"> 1192</span>        int64_t position; <span class="comment">// in frames</span></div>
+<div class="line"><a id="l01193" name="l01193"></a><span class="lineno"> 1193</span>        int64_t timestamp; <span class="comment">// in nanoseconds</span></div>
+<div class="line"><a id="l01194" name="l01194"></a><span class="lineno"> 1194</span>    };</div>
+</div>
+<div class="line"><a id="l01195" name="l01195"></a><span class="lineno"> 1195</span> </div>
+<div class="foldopen" id="foldopen01196" data-start="{" data-end="};">
+<div class="line"><a id="l01196" name="l01196"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html"> 1196</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classoboe_1_1_oboe_globals.html">OboeGlobals</a> {</div>
+<div class="line"><a id="l01197" name="l01197"></a><span class="lineno"> 1197</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l01198" name="l01198"></a><span class="lineno"> 1198</span> </div>
+<div class="line"><a id="l01199" name="l01199"></a><span class="lineno"> 1199</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> areWorkaroundsEnabled() {</div>
+<div class="line"><a id="l01200" name="l01200"></a><span class="lineno"> 1200</span>            <span class="keywordflow">return</span> mWorkaroundsEnabled;</div>
+<div class="line"><a id="l01201" name="l01201"></a><span class="lineno"> 1201</span>        }</div>
+<div class="line"><a id="l01202" name="l01202"></a><span class="lineno"> 1202</span> </div>
+<div class="foldopen" id="foldopen01208" data-start="{" data-end="}">
+<div class="line"><a id="l01208" name="l01208"></a><span class="lineno"><a class="line" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b"> 1208</a></span>        <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">setWorkaroundsEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
+<div class="line"><a id="l01209" name="l01209"></a><span class="lineno"> 1209</span>            mWorkaroundsEnabled = enabled;</div>
+<div class="line"><a id="l01210" name="l01210"></a><span class="lineno"> 1210</span>        }</div>
+</div>
+<div class="line"><a id="l01211" name="l01211"></a><span class="lineno"> 1211</span> </div>
+<div class="line"><a id="l01212" name="l01212"></a><span class="lineno"> 1212</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l01213" name="l01213"></a><span class="lineno"> 1213</span>        <span class="keyword">static</span> <span class="keywordtype">bool</span> mWorkaroundsEnabled;</div>
+<div class="line"><a id="l01214" name="l01214"></a><span class="lineno"> 1214</span>    };</div>
+</div>
+<div class="line"><a id="l01215" name="l01215"></a><span class="lineno"> 1215</span>} <span class="comment">// namespace oboe</span></div>
+<div class="line"><a id="l01216" name="l01216"></a><span class="lineno"> 1216</span> </div>
+<div class="line"><a id="l01217" name="l01217"></a><span class="lineno"> 1217</span><span class="preprocessor">#endif </span><span class="comment">// OBOE_DEFINITIONS_H</span></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html">oboe::DefaultStreamValues</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1175</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_a46a5d9a653f2153f618cadcab764e1b1"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#a46a5d9a653f2153f618cadcab764e1b1">oboe::DefaultStreamValues::SampleRate</a></div><div class="ttdeci">static int32_t SampleRate</div><div class="ttdef"><b>Definition</b> Definitions.h:1180</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ab5ea5576699cebc56193f5c297d3e300"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ab5ea5576699cebc56193f5c297d3e300">oboe::DefaultStreamValues::FramesPerBurst</a></div><div class="ttdeci">static int32_t FramesPerBurst</div><div class="ttdef"><b>Definition</b> Definitions.h:1182</div></div>
+<div class="ttc" id="aclassoboe_1_1_default_stream_values_html_ad5dce538d5963c81bf58350ab730962d"><div class="ttname"><a href="classoboe_1_1_default_stream_values.html#ad5dce538d5963c81bf58350ab730962d">oboe::DefaultStreamValues::ChannelCount</a></div><div class="ttdeci">static int32_t ChannelCount</div><div class="ttdef"><b>Definition</b> Definitions.h:1184</div></div>
+<div class="ttc" id="aclassoboe_1_1_oboe_globals_html"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html">oboe::OboeGlobals</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1196</div></div>
+<div class="ttc" id="aclassoboe_1_1_oboe_globals_html_af2b8af764c5a5e6fc007b7725117303b"><div class="ttname"><a href="classoboe_1_1_oboe_globals.html#af2b8af764c5a5e6fc007b7725117303b">oboe::OboeGlobals::setWorkaroundsEnabled</a></div><div class="ttdeci">static void setWorkaroundsEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> Definitions.h:1208</div></div>
+<div class="ttc" id="astructoboe_1_1_frame_timestamp_html"><div class="ttname"><a href="structoboe_1_1_frame_timestamp.html">oboe::FrameTimestamp</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1191</div></div>
+<div class="ttc" id="astructoboe_1_1_playback_parameters_html"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html">oboe::PlaybackParameters</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1135</div></div>
+<div class="ttc" id="astructoboe_1_1_playback_parameters_html_a56b6a48fe9b8a69de30ae77d7fe7165e"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html#a56b6a48fe9b8a69de30ae77d7fe7165e">oboe::PlaybackParameters::pitch</a></div><div class="ttdeci">float pitch</div><div class="ttdef"><b>Definition</b> Definitions.h:1149</div></div>
+<div class="ttc" id="astructoboe_1_1_playback_parameters_html_a7739a52be3ed06bc6ba278d2433c2aba"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html#a7739a52be3ed06bc6ba278d2433c2aba">oboe::PlaybackParameters::speed</a></div><div class="ttdeci">float speed</div><div class="ttdef"><b>Definition</b> Definitions.h:1154</div></div>
+<div class="ttc" id="astructoboe_1_1_playback_parameters_html_a871d7c06b30731e4f9aa94bcb5ef41ab"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html#a871d7c06b30731e4f9aa94bcb5ef41ab">oboe::PlaybackParameters::fallbackMode</a></div><div class="ttdeci">FallbackMode fallbackMode</div><div class="ttdef"><b>Definition</b> Definitions.h:1139</div></div>
+<div class="ttc" id="astructoboe_1_1_playback_parameters_html_af6ef5f2a2711bdf8a9d8b184d5e448fa"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html#af6ef5f2a2711bdf8a9d8b184d5e448fa">oboe::PlaybackParameters::stretchMode</a></div><div class="ttdeci">StretchMode stretchMode</div><div class="ttdef"><b>Definition</b> Definitions.h:1143</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

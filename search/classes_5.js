@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resultwithvalue_0',['ResultWithValue',['../classoboe_1_1_result_with_value.html',1,'oboe']]]
+  ['playbackparameters_0',['PlaybackParameters',['../structoboe_1_1_playback_parameters.html',1,'oboe']]]
 ];

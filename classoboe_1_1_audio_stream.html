@@ -220,6 +220,10 @@ virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><b>setOf
 <tr class="separator:a0f06feb4d6ae7b2e8e961d6783efe238"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af50cdb7f9459754d53e31e21be3682d9" id="r_af50cdb7f9459754d53e31e21be3682d9"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af50cdb7f9459754d53e31e21be3682d9">flushFromFrame</a> (FlushFromAccuracy accuracy, int64_t positionInFrames)</td></tr>
 <tr class="separator:af50cdb7f9459754d53e31e21be3682d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add35434e8f93bd2b2ee658bd0f9194b8" id="r_add35434e8f93bd2b2ee658bd0f9194b8"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add35434e8f93bd2b2ee658bd0f9194b8">setPlaybackParameters</a> (const <a class="el" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> &amp;parameters)</td></tr>
+<tr class="separator:add35434e8f93bd2b2ee658bd0f9194b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8213d7c1699e3b7a104ea6dbd5fdbb90" id="r_a8213d7c1699e3b7a104ea6dbd5fdbb90"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; <a class="el" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8213d7c1699e3b7a104ea6dbd5fdbb90">getPlaybackParameters</a> ()</td></tr>
+<tr class="separator:a8213d7c1699e3b7a104ea6dbd5fdbb90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classoboe_1_1_audio_stream_base"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classoboe_1_1_audio_stream_base')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></td></tr>
 <tr class="memitem:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_aa6b103e1b0f808bbc4949d56f0829f98"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#aa6b103e1b0f808bbc4949d56f0829f98">AudioStreamBase</a> (const <a class="el" href="classoboe_1_1_audio_stream_base.html">AudioStreamBase</a> &amp;)=default</td></tr>
 <tr class="separator:aa6b103e1b0f808bbc4949d56f0829f98 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -946,6 +950,34 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>last result passed from an error callback </dd></dl>
+
+</div>
+</div>
+<a id="a8213d7c1699e3b7a104ea6dbd5fdbb90" name="a8213d7c1699e3b7a104ea6dbd5fdbb90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8213d7c1699e3b7a104ea6dbd5fdbb90">&#9670;&#160;</a></span>getPlaybackParameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a>&lt; <a class="el" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> &gt; oboe::AudioStream::getPlaybackParameters </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get current playback parameters for the given stream.</p>
+<p>This was introduced in Android API Level 37.</p>
+<dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classoboe_1_1_result_with_value.html">ResultWithValue</a> which has a result of Result::OK and a value containing the playback parameters, or a result of Result::Error*. </dd></dl>
 
 </div>
 </div>
@@ -1774,6 +1806,40 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="add35434e8f93bd2b2ee658bd0f9194b8" name="add35434e8f93bd2b2ee658bd0f9194b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add35434e8f93bd2b2ee658bd0f9194b8">&#9670;&#160;</a></span>setPlaybackParameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual oboe::Result oboe::AudioStream::setPlaybackParameters </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>parameters</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set playback parameters for the given stream.</p>
+<p>This was introduced in Android API Level 37.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">parameters</td><td>a pointer of <a class="el" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a> where current playback parameters will be written to on success. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Result::OK if the playback parameters are set successfully. Result::ErrorIllegalArgument if the given stream is not an output stream or the requested parameters are invalid. Result::ErrorUnimplemented if the device or the stream doesn't support setting playback parameters. Result::ErrorInvalidState if the stream is not initialized successfully. </dd></dl>
 
 </div>
 </div>
