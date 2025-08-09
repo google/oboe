@@ -31,6 +31,7 @@ public class IntentBasedTestSupport {
     public static final String VALUE_PERF_LOW_LATENCY = "lowlat";
     public static final String VALUE_PERF_POWERSAVE = "powersave";
     public static final String VALUE_PERF_NONE = "none";
+    public static final String VALUE_PERF_POWERSAVE_OFFLOAD = "powersave_offload";
 
     public static final String KEY_IN_CHANNELS = "in_channels";
     public static final String KEY_OUT_CHANNELS = "out_channels";
@@ -134,6 +135,8 @@ public class IntentBasedTestSupport {
             return StreamConfiguration.PERFORMANCE_MODE_POWER_SAVING;
         } else if (VALUE_PERF_LOW_LATENCY.equals(text)) {
             return StreamConfiguration.PERFORMANCE_MODE_LOW_LATENCY;
+        } else if (VALUE_PERF_POWERSAVE_OFFLOAD.equals(text)) {
+            return StreamConfiguration.PERFORMANCE_MODE_POWER_SAVING_OFFLOAD;
         } else {
             throw new IllegalArgumentException("perf mode invalid: " + text);
         }
@@ -374,5 +377,9 @@ public class IntentBasedTestSupport {
 
     public static int getDurationSeconds(Bundle bundle) {
         return bundle.getInt(KEY_DURATION, VALUE_DEFAULT_DURATION);
+    }
+
+    public static int getBurstCount(Bundle bundle) {
+        return bundle.getInt(KEY_BUFFER_BURSTS, 0);
     }
 }

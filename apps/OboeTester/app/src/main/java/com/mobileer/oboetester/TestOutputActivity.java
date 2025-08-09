@@ -309,6 +309,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             mAudioOutTester.setSignalType(signalType);
 
             openAudio();
+            int burstCount = IntentBasedTestSupport.getBurstCount(mBundleFromIntent);
+            setBufferSizeByNumBursts(burstCount);
             startAudio();
 
             int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);

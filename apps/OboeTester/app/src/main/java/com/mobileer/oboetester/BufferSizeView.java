@@ -157,7 +157,7 @@ public class BufferSizeView extends LinearLayout {
         updateBufferSize();
     }
 
-    private void setBufferSizeByNumBursts(int numBursts) {
+    protected void setBufferSizeByNumBursts(int numBursts) {
         int sizeFrames = -1;
         if (mStream != null) {
             int framesPerBurst = mStream.getFramesPerBurst();
