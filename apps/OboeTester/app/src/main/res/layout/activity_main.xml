@@ -206,7 +206,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:checked="false"
+            android:checked="true"
             android:text="enable Oboe workarounds" />
 
         <CheckBox
@@ -214,7 +214,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:checked="false"
+            android:checked="true"
             android:text="enable background operation" />
 
 
@@ -223,7 +223,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:checked="false"
+            android:checked="true"
             android:text="enable foreground service" />
 
         <CheckBox

@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -518,6 +519,33 @@ public class StreamConfiguration {
                 return AudioAttributes.USAGE_UNKNOWN;
             default:
                 return AudioAttributes.USAGE_UNKNOWN;
+        }
+    }
+
+    // Used to convert Usages to legacy Stream types
+    // See https://source.android.com/docs/core/audio/attributes#compatibility
+    static int convertUsageToStreamType(int usage) {
+        switch(usage) {
+            case USAGE_VOICE_COMMUNICATION:
+            case USAGE_VOICE_COMMUNICATION_SIGNALLING:
+                return AudioManager.STREAM_VOICE_CALL;
+            case USAGE_ASSISTANCE_SONIFICATION:
+                return AudioManager.STREAM_SYSTEM;
+            case USAGE_NOTIFICATION_RINGTONE:
+                return AudioManager.STREAM_RING;
+            case USAGE_ALARM:
+                return AudioManager.STREAM_ALARM;
+            case USAGE_NOTIFICATION:
+            case USAGE_NOTIFICATION_EVENT:
+                return AudioManager.STREAM_NOTIFICATION;
+            case UNSPECIFIED:
+            case USAGE_GAME:
+            case USAGE_MEDIA:
+            case USAGE_ASSISTANCE_ACCESSIBILITY:
+            case USAGE_ASSISTANCE_NAVIGATION_GUIDANCE:
+            case USAGE_ASSISTANT:
+            default:
+                return AudioManager.STREAM_MUSIC;
         }
     }
 

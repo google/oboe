@@ -22,6 +22,7 @@ import static com.mobileer.oboetester.IntentBasedTestSupport.KEY_RESTART_STREAM_
 import static com.mobileer.oboetester.StreamConfiguration.convertContentTypeAudioAttributesContentType;
 import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
 import static com.mobileer.oboetester.StreamConfiguration.convertUsageToAudioAttributeUsage;
+import static com.mobileer.oboetester.StreamConfiguration.convertUsageToStreamType;
 
 import android.content.Context;
 import android.content.Intent;
@@ -117,7 +118,6 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     private static boolean mForegroundServiceEnabled;
     private static boolean mRestartStreamIfClosed = false;
     private static boolean mAudioFocusEnabled;
-    private boolean mIsDucked = false;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -722,18 +722,20 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     private void requestAudioFocus() {
-        // Get attributes for focus request.
-        AudioAttributes.Builder attributesBuilder = new AudioAttributes.Builder();
-        // Default to media usage.
-        attributesBuilder.setUsage(AudioAttributes.USAGE_MEDIA);
-        attributesBuilder.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC);
+        AudioAttributes.Builder attributesBuilder = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC);
 
-        StreamContext firstOutputStreamContext = getFirstOutputStreamContext();
-        if (firstOutputStreamContext == null) {
-            firstOutputStreamContext = getFirstInputStreamContext();
+        // Use first output stream as the stream context.
+        // If it's not available, use the first input stream.
+        StreamContext streamContext = getFirstOutputStreamContext();
+        if (streamContext == null) {
+            streamContext = getFirstInputStreamContext();
         }
-        if (firstOutputStreamContext != null) {
-            StreamConfiguration config = firstOutputStreamContext.tester.requestedConfiguration;
+        int streamType = AudioManager.STREAM_MUSIC; // Used for legacy APIs
+        if (streamContext != null) {
+            StreamConfiguration config = streamContext.tester.requestedConfiguration;
+            streamType = convertUsageToStreamType(config.getUsage());
             attributesBuilder.setUsage(convertUsageToAudioAttributeUsage(config.getUsage()));
             attributesBuilder.setContentType(convertContentTypeAudioAttributesContentType(config.getContentType()));
         }
@@ -754,26 +756,12 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             }
         } else {
             // Use deprecated method for older APIs.
-            int result = am.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
+            int result = am.requestAudioFocus(this, streamType,
                     AudioManager.AUDIOFOCUS_GAIN);
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 showErrorToast("Could not get audio focus");
                 return;
             }
-        }
-    }
-
-    private void duck() {
-        if (!mIsDucked) {
-            setDuck(true);
-            mIsDucked = true;
-        }
-    }
-
-    private void unduck() {
-        if (mIsDucked) {
-            setDuck(false);
-            mIsDucked = false;
         }
     }
 
@@ -783,7 +771,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             Log.i(TAG, "onAudioFocusChange(" + focusChange + ")");
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
-                    unduck();
+                    setDuck(false);
                     if (mAudioState == AUDIO_STATE_STOPPED || mAudioState == AUDIO_STATE_PAUSED) {
                         try {
                             startAudio();
@@ -803,7 +791,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                    duck();
+                    setDuck(true);
                     break;
             }
         });
