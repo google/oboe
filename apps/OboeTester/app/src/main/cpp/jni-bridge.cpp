@@ -1002,6 +1002,11 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestAudioActivity_setDuck(JNIEnv *env, jobject thiz, jboolean isDucked) {
+    engine.setDuck(isDucked);
+}
+
+JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TapToToneActivity_useNoisePulse(JNIEnv *env,
                                                              jclass clazz,
                                                              jboolean enabled) {

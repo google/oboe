@@ -226,6 +226,14 @@
             android:checked="false"
             android:text="enable foreground service" />
 
+        <CheckBox
+            android:id="@+id/boxEnableAudioFocus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="false"
+            android:text="enable audio focus" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import android.media.AudioAttributes;
+import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -483,6 +485,42 @@ public class StreamConfiguration {
         }
     }
 
+    static int convertUsageToAudioAttributeUsage(int usage) {
+        switch(usage) {
+            case UNSPECIFIED:
+                return AudioAttributes.USAGE_UNKNOWN;
+            case USAGE_MEDIA:
+                return AudioAttributes.USAGE_MEDIA;
+            case USAGE_VOICE_COMMUNICATION:
+                return AudioAttributes.USAGE_VOICE_COMMUNICATION;
+            case USAGE_VOICE_COMMUNICATION_SIGNALLING:
+                return AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING;
+            case USAGE_ALARM:
+                return AudioAttributes.USAGE_ALARM;
+            case USAGE_NOTIFICATION:
+                return AudioAttributes.USAGE_NOTIFICATION;
+            case USAGE_NOTIFICATION_RINGTONE:
+                return AudioAttributes.USAGE_NOTIFICATION_RINGTONE;
+            case USAGE_NOTIFICATION_EVENT:
+                return AudioAttributes.USAGE_NOTIFICATION_EVENT;
+            case USAGE_ASSISTANCE_ACCESSIBILITY:
+                return AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY;
+            case USAGE_ASSISTANCE_NAVIGATION_GUIDANCE:
+                return AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE;
+            case USAGE_ASSISTANCE_SONIFICATION:
+                return AudioAttributes.USAGE_ASSISTANCE_SONIFICATION;
+            case USAGE_GAME:
+                return AudioAttributes.USAGE_GAME;
+            case USAGE_ASSISTANT:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    return AudioAttributes.USAGE_ASSISTANT;
+                }
+                return AudioAttributes.USAGE_UNKNOWN;
+            default:
+                return AudioAttributes.USAGE_UNKNOWN;
+        }
+    }
+
     public static int convertTextToUsage(String text) {
         return mUsageStringToIntegerMap.get(text);
     }
@@ -501,6 +539,23 @@ public class StreamConfiguration {
                 return "Sonification";
             default:
                 return "?=" + contentType;
+        }
+    }
+
+    static int convertContentTypeAudioAttributesContentType(int contentType) {
+        switch(contentType) {
+            case UNSPECIFIED:
+                return AudioAttributes.CONTENT_TYPE_UNKNOWN;
+            case CONTENT_TYPE_SPEECH:
+                return AudioAttributes.CONTENT_TYPE_SPEECH;
+            case CONTENT_TYPE_MUSIC:
+                return AudioAttributes.CONTENT_TYPE_MUSIC;
+            case CONTENT_TYPE_MOVIE:
+                return AudioAttributes.CONTENT_TYPE_MOVIE;
+            case CONTENT_TYPE_SONIFICATION:
+                return AudioAttributes.CONTENT_TYPE_SONIFICATION;
+            default:
+                return AudioAttributes.CONTENT_TYPE_UNKNOWN;
         }
     }
 

@@ -19,7 +19,9 @@ package com.mobileer.oboetester;
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_START;
 import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
 import static com.mobileer.oboetester.IntentBasedTestSupport.KEY_RESTART_STREAM_IF_CLOSED;
+import static com.mobileer.oboetester.StreamConfiguration.convertContentTypeAudioAttributesContentType;
 import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
+import static com.mobileer.oboetester.StreamConfiguration.convertUsageToAudioAttributeUsage;
 
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,7 +59,7 @@ import java.util.Locale;
 /**
  * Base class for other Activities.
  */
-abstract class TestAudioActivity extends AppCompatActivity {
+abstract class TestAudioActivity extends AppCompatActivity implements AudioManager.OnAudioFocusChangeListener {
     public static final String TAG = "OboeTester";
 
     protected static final int FADER_PROGRESS_MAX = 1000;
@@ -113,6 +116,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private static boolean mBackgroundEnabled;
     private static boolean mForegroundServiceEnabled;
     private static boolean mRestartStreamIfClosed = false;
+    private static boolean mAudioFocusEnabled;
+    private boolean mIsDucked = false;
 
     protected Bundle mBundleFromIntent;
     protected boolean mTestRunningByIntent;
@@ -216,6 +221,14 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     public static boolean isForegroundServiceEnabled() {
         return mForegroundServiceEnabled;
+    }
+
+    public static void setAudioFocusEnabled(boolean enabled) {
+        mAudioFocusEnabled = enabled;
+    }
+
+    public static boolean isAudioFocusEnabled() {
+        return mAudioFocusEnabled;
     }
 
     public int getServiceType() {
@@ -655,11 +668,15 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public void openAudio() throws IOException {
         closeAudio();
 
-        updateNativeAudioParameters();
-
         if (!isTestConfiguredUsingBundle()) {
             applyConfigurationViewsToModels();
         }
+
+        if (isAudioFocusEnabled()) {
+            requestAudioFocus();
+        }
+
+        updateNativeAudioParameters();
 
         int sampleRate = 0; // Use the OUTPUT sample rate for INPUT
 
@@ -698,6 +715,94 @@ abstract class TestAudioActivity extends AppCompatActivity {
         updateEnabledWidgets();
         onStartAllContexts();
         mStreamSniffer.startStreamSniffer();
+    }
+
+    private void requestAudioFocus() {
+        // Get attributes for focus request.
+        AudioAttributes.Builder attributesBuilder = new AudioAttributes.Builder();
+        // Default to media usage.
+        attributesBuilder.setUsage(AudioAttributes.USAGE_MEDIA);
+        attributesBuilder.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC);
+
+        StreamContext firstOutputStreamContext = getFirstOutputStreamContext();
+        if (firstOutputStreamContext == null) {
+            firstOutputStreamContext = getFirstInputStreamContext();
+        }
+        if (firstOutputStreamContext != null) {
+            StreamConfiguration config = firstOutputStreamContext.tester.requestedConfiguration;
+            attributesBuilder.setUsage(convertUsageToAudioAttributeUsage(config.getUsage()));
+            attributesBuilder.setContentType(convertContentTypeAudioAttributesContentType(config.getContentType()));
+        }
+        AudioAttributes audioAttributes = attributesBuilder.build();
+
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        // Request audio focus.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AudioFocusRequest focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(audioAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(this)
+                    .build();
+            int result = am.requestAudioFocus(focusRequest);
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                showErrorToast("Could not get audio focus");
+                return;
+            }
+        } else {
+            // Use deprecated method for older APIs.
+            int result = am.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN);
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                showErrorToast("Could not get audio focus");
+                return;
+            }
+        }
+    }
+
+    private void duck() {
+        if (!mIsDucked) {
+            setDuck(true);
+            mIsDucked = true;
+        }
+    }
+
+    private void unduck() {
+        if (mIsDucked) {
+            setDuck(false);
+            mIsDucked = false;
+        }
+    }
+
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        runOnUiThread(() -> {
+            Log.i(TAG, "onAudioFocusChange(" + focusChange + ")");
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    unduck();
+                    if (mAudioState == AUDIO_STATE_STOPPED || mAudioState == AUDIO_STATE_PAUSED) {
+                        try {
+                            startAudio();
+                        } catch(IOException e) {
+                            showErrorToast("startAudio() caught " + e.getMessage());
+                        }
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    if (mAudioState == AUDIO_STATE_STARTED) {
+                        stopAudio();
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    if (mAudioState == AUDIO_STATE_STARTED) {
+                        pauseAudio();
+                    }
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    duck();
+                    break;
+            }
+        });
     }
 
     protected boolean shouldSetStreamControlByAttributes() {
@@ -786,6 +891,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private native void setupMemoryBuffer(byte[] buffer, int offset, int length);
 
     public native void setUseAlternativeAdpf(boolean enabled);
+
+    private native void setDuck(boolean isDucked);
 
     private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
 
@@ -897,6 +1004,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
             if (streamContext.isInput()) {
                 streamContext.tester.close();
             }
+        }
+
+        if (isAudioFocusEnabled()) {
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            am.abandonAudioFocus(this);
         }
 
         mAudioState = AUDIO_STATE_CLOSED;
