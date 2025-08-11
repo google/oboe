@@ -112,6 +112,27 @@ typedef int32_t AAudio_DeviceType;
 typedef int32_t aaudio_policy_t;
 #endif
 
+// TODO: find the first NDK version containing the following values
+#if OBOE_USING_NDK && __NDK_MAJOR__ <= 30
+typedef enum AAudio_FallbackMode : int32_t {
+    AAUDIO_FALLBACK_MODE_DEFAULT = 0,
+    AAUDIO_FALLBACK_MODE_MUTE = 1,
+    AAUDIO_FALLBACK_MODE_FAIL = 2,
+} AAudio_FallbackMode;
+
+typedef enum AAudio_StretchMode : int32_t {
+    AAUDIO_STRETCH_MODE_DEFAULT = 0,
+    AAUDIO_STRETCH_MODE_VOICE = 1,
+} AAudio_StretchMode;
+
+typedef struct AAudioPlaybackParameters {
+    AAudio_FallbackMode fallbackMode;
+    AAudio_StretchMode stretchMode;
+    float pitch;
+    float speed;
+} AAudioPlaybackParameters;
+#endif
+
 namespace oboe {
 
 /**
@@ -135,6 +156,7 @@ class AAudioLoader {
     // U = uint32_t
     // O = bOol
     // R = pResentation end callback
+    // M = aaudioplaybackparaMeters
 
     typedef int32_t  (*signature_I_PPB)(AAudioStreamBuilder **builder);
 
@@ -197,6 +219,9 @@ class AAudioLoader {
     typedef int32_t (*signature_I_PSPIPI)(AAudioStream *, int32_t *, int32_t *);
 
     typedef int32_t (*signature_I_PSIPL)(AAudioStream *, int32_t, int64_t *);
+
+    typedef int32_t (*signature_I_PSPM)(AAudioStream *, AAudioPlaybackParameters *);
+    typedef int32_t (*signature_I_PSCPM)(AAudioStream *, const AAudioPlaybackParameters *);
 
     static AAudioLoader* getInstance(); // singleton
 
@@ -317,6 +342,9 @@ class AAudioLoader {
 
     signature_I_PSIPL stream_flushFromFrame = nullptr;
 
+    signature_I_PSPM stream_getPlaybackParameters = nullptr;
+    signature_I_PSCPM stream_setPlaybackParameters = nullptr;
+
   private:
     AAudioLoader() {}
     ~AAudioLoader();
@@ -349,6 +377,8 @@ class AAudioLoader {
     signature_I_PSII    load_I_PSII(const char *name);
     signature_I_PSPIPI  load_I_PSPIPI(const char *name);
     signature_I_PSIPL   load_I_PSIPL(const char *name);
+    signature_I_PSPM    load_I_PSPM(const char *name);
+    signature_I_PSCPM   load_I_PSCPM(const char *name);
 
     void *mLibHandle = nullptr;
 };

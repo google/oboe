@@ -311,6 +311,25 @@ const char *convertToText<SampleRateConversionQuality>(SampleRateConversionQuali
     }
 }
 
+template<>
+const char *convertToText<FallbackMode>(FallbackMode fallbackMode) {
+    switch (fallbackMode) {
+        case FallbackMode::Default: return "Default";
+        case FallbackMode::Fail:    return "Fail";
+        case FallbackMode::Mute:    return "Mute";
+        default:                    return "Unrecognized fallback mode";
+    }
+}
+
+template<>
+const char *convertToText<StretchMode>(StretchMode stretchMode) {
+    switch (stretchMode) {
+        case StretchMode::Default: return "Default";
+        case StretchMode::Voice:   return "Voice";
+        default:                   return "Unrecognized stretch mode";
+    }
+}
+
 std::string getPropertyString(const char * name) {
     std::string result;
 #ifdef __ANDROID__
@@ -370,6 +389,15 @@ std::set<AudioFormat> COMPRESSED_FORMATS = {
 };
 bool isCompressedFormat(AudioFormat format) {
     return COMPRESSED_FORMATS.count(format) != 0;
+}
+
+std::string toString(const PlaybackParameters& parameters) {
+    std::stringstream ss;
+    ss << "Fallback Mode: " << convertToText(parameters.fallbackMode)
+       << ", Stretch Mode:" << convertToText(parameters.stretchMode)
+       << ", pitch: " << parameters.pitch
+       << ", speed: " << parameters.speed;
+    return ss.str();
 }
 
 }// namespace oboe

@@ -421,6 +421,10 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         }
     }
 
+    protected boolean isStreamClosed() {
+        return mAudioState == AUDIO_STATE_CLOSED;
+    }
+
     protected void updateEnabledWidgets() {
         if (mOpenButton != null) {
             mOpenButton.setBackgroundColor(mAudioState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
@@ -895,6 +899,9 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     private native void setDuck(boolean isDucked);
 
     private static native void setDefaultAudioValues(int audioManagerSampleRate, int audioManagerFramesPerBurst);
+
+    protected native int setPlaybackParametersNative(PlaybackParameters parameters);
+    protected native PlaybackParameters getPlaybackParametersNative();
 
     public void startAudio() throws IOException {
         Log.i(TAG, "startAudio() called =========================");

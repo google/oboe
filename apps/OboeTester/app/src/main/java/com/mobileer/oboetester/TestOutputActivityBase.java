@@ -41,6 +41,10 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         }
     }
 
+    protected void setBufferSizeByNumBursts(int burstCount) {
+        mBufferSizeView.setBufferSizeByNumBursts(burstCount);
+    }
+
     @Override
     public AudioOutputTester addAudioOutputTester() {
         return super.addAudioOutputTester();
