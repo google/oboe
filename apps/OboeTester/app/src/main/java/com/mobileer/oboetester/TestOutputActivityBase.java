@@ -57,4 +57,9 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
             mBufferSizeView.onStreamOpened((OboeAudioStream) mAudioOutTester.getCurrentAudioStream());
         }
     }
+
+    protected boolean isOffloadStream() {
+        return mAudioOutTester.actualConfiguration.getPerformanceMode() ==
+                StreamConfiguration.PERFORMANCE_MODE_POWER_SAVING_OFFLOAD;
+    }
 }
