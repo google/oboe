@@ -777,38 +777,36 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        runOnUiThread(() -> {
-            Log.i(TAG, "onAudioFocusChange(" + focusChange + ")");
-            int currentState;
-            synchronized (mAudioStateLock) {
-                currentState = mAudioState;
-            }
+        Log.i(TAG, "onAudioFocusChange(" + focusChange + ")");
+        int currentState;
+        synchronized (mAudioStateLock) {
+            currentState = mAudioState;
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                     setDuck(false);
                     if (currentState == AUDIO_STATE_STOPPED || currentState == AUDIO_STATE_PAUSED) {
                         try {
-                            startAudio();
-                        } catch(IOException e) {
+                            startAudioLocked();
+                        } catch (IOException e) {
                             showErrorToast("startAudio() caught " + e.getMessage());
                         }
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
                     if (currentState == AUDIO_STATE_STARTED) {
-                        stopAudio();
+                        stopAudioLocked();
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                     if (currentState == AUDIO_STATE_STARTED) {
-                        pauseAudio();
+                        pauseAudioLocked();
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                     setDuck(true);
                     break;
             }
-        });
+        }
     }
 
     protected boolean shouldSetStreamControlByAttributes() {
@@ -847,6 +845,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         return false;
     }
 
+    @GuardedBy("mAudioStateLock")
     private void openStreamContextLocked(StreamContext streamContext) throws IOException {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
@@ -905,21 +904,27 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     protected native int setPlaybackParametersNative(PlaybackParameters parameters);
     protected native PlaybackParameters getPlaybackParametersNative();
 
+    @GuardedBy("mAudioStateLock")
+    private void startAudioLocked() throws IOException {
+        synchronized (mAudioStateLock) {
+            startAudio();
+        }
+    }
+
     public void startAudio() throws IOException {
         int result;
-        synchronized (mAudioStateLock) {
-            if (mAudioState != AUDIO_STATE_OPEN
-                    && mAudioState != AUDIO_STATE_STOPPED
-                    && mAudioState != AUDIO_STATE_PAUSED
-                    && mAudioState != AUDIO_STATE_FLUSHED) {
-                Log.w(TAG, "startAudio() called in invalid state " + mAudioState + ", ignoring.");
-                return;
-            }
-            Log.i(TAG, "startAudio() transitioning to STARTED");
-            result = startNative();
-            if (result == 0) {
-                mAudioState = AUDIO_STATE_STARTED;
-            }
+
+        if (mAudioState != AUDIO_STATE_OPEN
+                && mAudioState != AUDIO_STATE_STOPPED
+                && mAudioState != AUDIO_STATE_PAUSED
+                && mAudioState != AUDIO_STATE_FLUSHED) {
+            Log.w(TAG, "startAudio() called in invalid state " + mAudioState + ", ignoring.");
+            return;
+        }
+        Log.i(TAG, "startAudio() transitioning to STARTED");
+        result = startNative();
+        if (result == 0) {
+            mAudioState = AUDIO_STATE_STARTED;
         }
 
         if (result != 0) {
@@ -943,16 +948,21 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public void pauseAudio() {
-        int result;
         synchronized (mAudioStateLock) {
-            if (mAudioState != AUDIO_STATE_STARTED) {
-                Log.w(TAG, "pauseAudio() called in invalid state " + mAudioState + ", ignoring.");
-                return;
-            }
-            result = pauseNative();
-            if (result == 0) {
-                mAudioState = AUDIO_STATE_PAUSED;
-            }
+            pauseAudioLocked();
+        }
+    }
+
+    @GuardedBy("mAudioStateLock")
+    private void pauseAudioLocked() {
+        int result;
+        if (mAudioState != AUDIO_STATE_STARTED) {
+            Log.w(TAG, "pauseAudio() called in invalid state " + mAudioState + ", ignoring.");
+            return;
+        }
+        result = pauseNative();
+        if (result == 0) {
+            mAudioState = AUDIO_STATE_PAUSED;
         }
 
         if (result != 0) {
@@ -984,16 +994,21 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public void stopAudio() {
-        int result;
         synchronized (mAudioStateLock) {
-            if (mAudioState != AUDIO_STATE_STARTED && mAudioState != AUDIO_STATE_PAUSED) {
-                Log.w(TAG, "stopAudio() called in invalid state " + mAudioState + ", ignoring.");
-                return;
-            }
-            result = stopNative();
-            if (result == 0) {
-                mAudioState = AUDIO_STATE_STOPPED;
-            }
+            stopAudioLocked();
+        }
+    }
+
+    @GuardedBy("mAudioStateLock")
+    private void stopAudioLocked() {
+        int result;
+        if (mAudioState != AUDIO_STATE_STARTED && mAudioState != AUDIO_STATE_PAUSED) {
+            Log.w(TAG, "stopAudio() called in invalid state " + mAudioState + ", ignoring.");
+            return;
+        }
+        result = stopNative();
+        if (result == 0) {
+            mAudioState = AUDIO_STATE_STOPPED;
         }
 
         if (result != 0) {
