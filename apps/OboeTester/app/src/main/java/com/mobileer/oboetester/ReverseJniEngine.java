@@ -24,8 +24,7 @@ public class ReverseJniEngine {
     private long mNativeEngineHandle = 0;
 
     private static final int MAX_BUFFER_SIZE = 1920; // e.g., 10 bursts of 192 frames
-    private final float[][] mAudioBuffers;
-    private volatile int mCurrentBufferIndex = 0;
+    private final float[] mAudioBuffer;
 
     private static final int CHANNEL_COUNT = 2;
     private double[] mPhase;
@@ -43,7 +42,8 @@ public class ReverseJniEngine {
     }
 
     public ReverseJniEngine() {
-        mAudioBuffers = new float[2][MAX_BUFFER_SIZE * CHANNEL_COUNT];
+        // Use two buffers to synchronize between java and native. This lets us
+        mAudioBuffer = new float[MAX_BUFFER_SIZE * CHANNEL_COUNT];
         mPhase = new double[CHANNEL_COUNT];
         mPhaseIncrement = new double[CHANNEL_COUNT];
         for (int i = 0; i < CHANNEL_COUNT; i++) {
@@ -57,7 +57,7 @@ public class ReverseJniEngine {
         if (mNativeEngineHandle == 0) {
             mNativeEngineHandle = createEngine(CHANNEL_COUNT);
             Log.i(TAG, "Created native engine with handle: " + mNativeEngineHandle);
-            setAudioBuffers(mNativeEngineHandle, mAudioBuffers[0], mAudioBuffers[1]);
+            setAudioBuffer(mNativeEngineHandle, mAudioBuffer);
             Log.i(TAG, "Passed audio buffers to native engine.");
         }
     }
@@ -100,21 +100,16 @@ public class ReverseJniEngine {
     }
 
     /**
-     * Called from JNI. Fills one of the internal buffers with stereo audio data
-     * and returns the index of the buffer that is ready to be read.
+     * Called from JNI. Fills the internal buffer with stereo audio data.
      *
      * @param numFrames The number of frames the native side needs.
      * @param totalXRunCount The current x-run count from Oboe.
-     * @return The index (0 or 1) of the buffer that was just filled.
      */
     @SuppressWarnings("unused") // Called from JNI
-    private int onAudioReady(int numFrames, int totalXRunCount) {
-        int writeBufferIndex = mCurrentBufferIndex;
-        float[] writeBuffer = mAudioBuffers[writeBufferIndex];
-
+    private void onAudioReady(int numFrames, int totalXRunCount) {
         for (int i = 0; i < numFrames; i++) {
             for (int ch = 0; ch < CHANNEL_COUNT; ch++) {
-                writeBuffer[(i * CHANNEL_COUNT) + ch] = (float) Math.sin(mPhase[ch]);
+                mAudioBuffer[(i * CHANNEL_COUNT) + ch] = (float) Math.sin(mPhase[ch]);
                 mPhase[ch] += mPhaseIncrement[ch];
                 if (mPhase[ch] > 2 * Math.PI) {
                     mPhase[ch] -= 2 * Math.PI;
@@ -124,14 +119,13 @@ public class ReverseJniEngine {
         mXRunCount = totalXRunCount;
 
         // Optional: Simulate work
-        try {
-            Thread.sleep(mSleepDurationUs / 1000, (mSleepDurationUs % 1000) * 1000);
-        } catch (InterruptedException e) {
-            // It's generally not a good idea to swallow this, but for this example...
+        if (mSleepDurationUs > 0) {
+            try {
+                Thread.sleep(mSleepDurationUs / 1000, (mSleepDurationUs % 1000) * 1000);
+            } catch (InterruptedException e) {
+                Log.i(TAG, "onAudioReady sleep interrupted: " + e.getMessage());
+            }
         }
-
-        mCurrentBufferIndex = 1 - mCurrentBufferIndex; // Toggles between 0 and 1
-        return writeBufferIndex;
     }
 
     // Native methods that are implemented in jni-bridge.cpp
@@ -140,5 +134,5 @@ public class ReverseJniEngine {
     private native void stopEngine(long enginePtr);
     private native void deleteEngine(long enginePtr);
     private native void setBufferSizeInBursts(long enginePtr, int bufferSizeInBursts);
-    private native void setAudioBuffers(long enginePtr, float[] buffer0, float[] buffer1);
+    private native void setAudioBuffer(long enginePtr, float[] buffer);
 }

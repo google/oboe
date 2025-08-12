@@ -32,7 +32,7 @@ public:
     void stop();
     void setBufferSizeInBursts(int bufferSizeInBursts);
 
-    void setAudioBuffers(JNIEnv *env, jfloatArray buffer0, jfloatArray buffer1);
+    void setAudioBuffer(JNIEnv *env, jfloatArray buffer);
 
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream,
                                           void *audioData,
@@ -49,7 +49,7 @@ private:
 
     int mChannelCount;
 
-    jfloatArray mAudioBuffers[2] = {nullptr, nullptr};
+    jfloatArray mAudioBuffer = nullptr;
 
     std::shared_ptr<oboe::AudioStream> mAudioStream;
 

@@ -1406,10 +1406,10 @@ Java_com_mobileer_oboetester_ReverseJniEngine_setBufferSizeInBursts(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffers(JNIEnv *env, jobject thiz, jlong enginePtr, jfloatArray buffer0, jfloatArray buffer1) {
+Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffer(JNIEnv *env, jobject thiz, jlong enginePtr, jfloatArray buffer) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
-        reverseJniEngine->setAudioBuffers(env, buffer0, buffer1);
+        reverseJniEngine->setAudioBuffer(env, buffer);
     }
 }
 

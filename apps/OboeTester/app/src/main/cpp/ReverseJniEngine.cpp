@@ -25,7 +25,7 @@ ReverseJniEngine::ReverseJniEngine(JNIEnv *env, jobject thiz, int channelCount)
     mJavaObject = env->NewGlobalRef(thiz);
 
     jclass javaClass = env->GetObjectClass(mJavaObject);
-    mOnAudioReadyId = env->GetMethodID(javaClass, "onAudioReady", "(II)I");
+    mOnAudioReadyId = env->GetMethodID(javaClass, "onAudioReady", "(II)V");
     env->DeleteLocalRef(javaClass);
 }
 
@@ -35,17 +35,13 @@ ReverseJniEngine::~ReverseJniEngine() {
 
     env->DeleteGlobalRef(mJavaObject);
 
-    if (mAudioBuffers[0]) {
-        env->DeleteGlobalRef(mAudioBuffers[0]);
-    }
-    if (mAudioBuffers[1]) {
-        env->DeleteGlobalRef(mAudioBuffers[1]);
+    if (mAudioBuffer) {
+        env->DeleteGlobalRef(mAudioBuffer);
     }
 }
 
-void ReverseJniEngine::setAudioBuffers(JNIEnv *env, jfloatArray buffer0, jfloatArray buffer1) {
-    mAudioBuffers[0] = (jfloatArray)env->NewGlobalRef(buffer0);
-    mAudioBuffers[1] = (jfloatArray)env->NewGlobalRef(buffer1);
+void ReverseJniEngine::setAudioBuffer(JNIEnv *env, jfloatArray buffer) {
+    mAudioBuffer = (jfloatArray)env->NewGlobalRef(buffer);
 }
 
 void ReverseJniEngine::start(int bufferSizeInBursts) {
@@ -111,7 +107,7 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
 
     int xRunCount = mAudioStream->getXRunCount().value();
 
-    jint bufferToReadIndex = env->CallIntMethod(mJavaObject, mOnAudioReadyId, numFrames, xRunCount);
+    env->CallVoidMethod(mJavaObject, mOnAudioReadyId, numFrames, xRunCount);
 
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
@@ -120,7 +116,7 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
         return oboe::DataCallbackResult::Stop;
     }
 
-    jfloatArray javaBuffer = mAudioBuffers[bufferToReadIndex];
+    jfloatArray javaBuffer = mAudioBuffer;
     jsize floatsToCopy = numFrames * mChannelCount;
     env->GetFloatArrayRegion(javaBuffer, 0, floatsToCopy, static_cast<jfloat*>(audioData));
 
