@@ -897,14 +897,14 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     protected native int setPlaybackParametersNative(PlaybackParameters parameters);
     protected native PlaybackParameters getPlaybackParametersNative();
 
-    @GuardedBy("mAudioStateLock")
-    private void startAudioLocked() throws IOException {
+    public void startAudio() throws IOException {
         synchronized (mAudioStateLock) {
-            startAudio();
+            startAudioLocked();
         }
     }
 
-    public void startAudio() throws IOException {
+    @GuardedBy("mAudioStateLock")
+    private void startAudioLocked() throws IOException {
         int result;
 
         if (mAudioState != AUDIO_STATE_OPEN
