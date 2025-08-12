@@ -47,7 +47,7 @@ private:
     jobject mJavaObject = nullptr;
     jmethodID mOnAudioReadyId = nullptr;
     std::atomic<bool> mIsThreadAttached{false};
-    std::atomic<int> mSleepDurationUs{false};
+    std::atomic<int> mSleepDurationUs{0};
 
     int mChannelCount;
 

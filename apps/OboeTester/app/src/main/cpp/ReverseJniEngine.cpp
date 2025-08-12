@@ -125,6 +125,7 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
     jsize floatsToCopy = numFrames * mChannelCount;
     env->GetFloatArrayRegion(javaBuffer, 0, floatsToCopy, static_cast<jfloat*>(audioData));
 
+    // Sleep to simulate an actual workload.
     if (mSleepDurationUs > 0) {
         usleep(mSleepDurationUs);
     }
