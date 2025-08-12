@@ -204,9 +204,11 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mShouldSetStreamControlByAttributes.setEnabled(false);
         mShouldDisableForCompressedFormat = StreamConfiguration.isCompressedFormat(
                 mAudioOutTester.getCurrentAudioStream().getFormat());
-        if (!isStreamClosed()) {
+        if (!isStreamClosed() && isOffloadStream()) {
             mPlaybackParametersLayout.setVisibility(View.VISIBLE);
             updatePlaybackParametersText();
+        } else {
+            mPlaybackParametersLayout.setVisibility(View.GONE);
         }
     }
 
