@@ -45,6 +45,12 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         mBufferSizeView.setBufferSizeByNumBursts(burstCount);
     }
 
+    protected void setBufferSizeByNumFrames(int frameCount) {
+        StringBuffer message = new StringBuffer();
+        message.append("bufferSize = #" + frameCount + " frames");
+        mBufferSizeView.setBufferSize(message, frameCount);
+    }
+
     @Override
     public AudioOutputTester addAudioOutputTester() {
         return super.addAudioOutputTester();
