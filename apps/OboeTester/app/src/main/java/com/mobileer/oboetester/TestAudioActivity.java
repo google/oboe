@@ -693,7 +693,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 applyConfigurationViewsToModels();
             }
 
-            if (isAudioFocusEnabled()) {
+            if (isAudioFocusEnabled() && (getFirstOutputStreamContext() != null)) {
                 requestAudioFocus();
             }
 
@@ -744,20 +744,12 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC);
 
         StreamContext streamContext = getFirstOutputStreamContext();
-        if (streamContext == null) {
-            streamContext = getFirstInputStreamContext();
-        }
-        int streamType = AudioManager.STREAM_MUSIC;
-        if (streamContext != null) {
-            StreamConfiguration config = streamContext.tester.requestedConfiguration;
-            streamType = convertUsageToStreamType(config.getUsage());
-            attributesBuilder.setUsage(convertUsageToAudioAttributeUsage(config.getUsage()));
-            attributesBuilder.setContentType(convertContentTypeAudioAttributesContentType(config.getContentType()));
-        }
-        AudioAttributes audioAttributes = attributesBuilder.build();
-
+        StreamConfiguration config = streamContext.tester.requestedConfiguration;
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            attributesBuilder.setUsage(convertUsageToAudioAttributeUsage(config.getUsage()));
+            attributesBuilder.setContentType(convertContentTypeAudioAttributesContentType(config.getContentType()));
+            AudioAttributes audioAttributes = attributesBuilder.build();
             AudioFocusRequest focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setAudioAttributes(audioAttributes)
                     .setAcceptsDelayedFocusGain(true)
@@ -768,6 +760,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 showErrorToast("Could not get audio focus");
             }
         } else {
+            int streamType = convertUsageToStreamType(config.getUsage());
             int result = am.requestAudioFocus(this, streamType, AudioManager.AUDIOFOCUS_GAIN);
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 showErrorToast("Could not get audio focus");
