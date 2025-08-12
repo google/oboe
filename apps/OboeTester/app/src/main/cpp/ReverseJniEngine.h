@@ -28,9 +28,10 @@ public:
     ReverseJniEngine(JNIEnv *env, jobject thiz, int channelCount);
     ~ReverseJniEngine();
 
-    void start(int bufferSizeInBursts);
+    void start(int bufferSizeInBursts, int sleepDurationNs);
     void stop();
     void setBufferSizeInBursts(int bufferSizeInBursts);
+    void setSleepDurationUs(int sleepDurationUs);
 
     void setAudioBuffer(JNIEnv *env, jfloatArray buffer);
 
@@ -46,6 +47,7 @@ private:
     jobject mJavaObject = nullptr;
     jmethodID mOnAudioReadyId = nullptr;
     std::atomic<bool> mIsThreadAttached{false};
+    std::atomic<int> mSleepDurationUs{false};
 
     int mChannelCount;
 

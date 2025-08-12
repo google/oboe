@@ -44,8 +44,9 @@ void ReverseJniEngine::setAudioBuffer(JNIEnv *env, jfloatArray buffer) {
     mAudioBuffer = (jfloatArray)env->NewGlobalRef(buffer);
 }
 
-void ReverseJniEngine::start(int bufferSizeInBursts) {
+void ReverseJniEngine::start(int bufferSizeInBursts, int sleepDurationUs) {
     LOGI("Starting audio stream.");
+    mSleepDurationUs = sleepDurationUs;
     setupAudioStream();
     setBufferSizeInBursts(bufferSizeInBursts);
     if (mAudioStream) {
@@ -66,6 +67,10 @@ void ReverseJniEngine::setBufferSizeInBursts(int bufferSizeInBursts) {
         mAudioStream->setBufferSizeInFrames(bufferSizeInBursts * mAudioStream->getFramesPerBurst());
         LOGI("Buffer size set to %d frames.", mAudioStream->getBufferSizeInFrames());
     }
+}
+
+void ReverseJniEngine::setSleepDurationUs(int sleepDurationUs) {
+    mSleepDurationUs = sleepDurationUs;
 }
 
 void ReverseJniEngine::setupAudioStream() {
@@ -119,6 +124,10 @@ oboe::DataCallbackResult ReverseJniEngine::onAudioReady(oboe::AudioStream *oboeS
     jfloatArray javaBuffer = mAudioBuffer;
     jsize floatsToCopy = numFrames * mChannelCount;
     env->GetFloatArrayRegion(javaBuffer, 0, floatsToCopy, static_cast<jfloat*>(audioData));
+
+    if (mSleepDurationUs > 0) {
+        usleep(mSleepDurationUs);
+    }
 
     return oboe::DataCallbackResult::Continue;
 }

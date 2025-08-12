@@ -32,7 +32,6 @@ public class ReverseJniEngine {
     private final double[] mFrequencies = {440.0, 523.25}; // A4 and C5 for stereo
 
     private int mXRunCount = 0;
-    private int mSleepDurationUs = 0;
     private final int mSampleRate = 48000;
 
 
@@ -62,9 +61,9 @@ public class ReverseJniEngine {
         }
     }
 
-    public void start(int bufferSizeInBursts) {
+    public void start(int bufferSizeInBursts, int sleepDurationUs) {
         if (mNativeEngineHandle != 0) {
-            startEngine(mNativeEngineHandle, bufferSizeInBursts);
+            startEngine(mNativeEngineHandle, bufferSizeInBursts, sleepDurationUs);
             Log.i(TAG, "Started native engine.");
         }
     }
@@ -96,7 +95,10 @@ public class ReverseJniEngine {
     }
 
     public void setSleepDurationUs(int sleepDurationUs) {
-        mSleepDurationUs = sleepDurationUs;
+        if (mNativeEngineHandle != 0) {
+            setSleepDurationUs(mNativeEngineHandle, sleepDurationUs);
+            Log.i(TAG, "setSleepDurationUs:" + sleepDurationUs);
+        }
     }
 
     /**
@@ -117,22 +119,14 @@ public class ReverseJniEngine {
             }
         }
         mXRunCount = totalXRunCount;
-
-        // Optional: Simulate work
-        if (mSleepDurationUs > 0) {
-            try {
-                Thread.sleep(mSleepDurationUs / 1000, (mSleepDurationUs % 1000) * 1000);
-            } catch (InterruptedException e) {
-                Log.i(TAG, "onAudioReady sleep interrupted: " + e.getMessage());
-            }
-        }
     }
 
     // Native methods that are implemented in jni-bridge.cpp
     private native long createEngine(int channelCount);
-    private native void startEngine(long enginePtr, int bufferSizeInBursts);
+    private native void startEngine(long enginePtr, int bufferSizeInBursts, int sleepDurationUs);
     private native void stopEngine(long enginePtr);
     private native void deleteEngine(long enginePtr);
     private native void setBufferSizeInBursts(long enginePtr, int bufferSizeInBursts);
+    private native void setSleepDurationUs(long enginePtr, int sleepDurationUs);
     private native void setAudioBuffer(long enginePtr, float[] buffer);
 }

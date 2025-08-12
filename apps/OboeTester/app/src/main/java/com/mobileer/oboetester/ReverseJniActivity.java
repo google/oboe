@@ -100,7 +100,7 @@ public class ReverseJniActivity extends AppCompatActivity {
 
     private void startAudio() {
         mAudioEngine.create();
-        mAudioEngine.start(mBufferSizeInBurstsSlider.getValue());
+        mAudioEngine.start(mBufferSizeInBurstsSlider.getValue(), mSleepDurationUsSlider.getValue());
         mIsPlaying = true;
         mUiUpdateHandler.post(mUiUpdateRunnable);
         updateButtonStates();

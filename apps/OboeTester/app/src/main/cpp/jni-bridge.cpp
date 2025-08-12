@@ -1374,10 +1374,10 @@ Java_com_mobileer_oboetester_ReverseJniEngine_createEngine(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_ReverseJniEngine_startEngine(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
+Java_com_mobileer_oboetester_ReverseJniEngine_startEngine(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts, jint sleepDurationUs) {
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
-        reverseJniEngine->start(bufferSizeInBursts);
+        reverseJniEngine->start(bufferSizeInBursts, sleepDurationUs);
     }
 }
 
@@ -1402,6 +1402,14 @@ Java_com_mobileer_oboetester_ReverseJniEngine_setBufferSizeInBursts(JNIEnv *env,
     ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
     if (reverseJniEngine) {
         reverseJniEngine->setBufferSizeInBursts(bufferSizeInBursts);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_setSleepDurationUs(JNIEnv *env, jobject thiz, jlong enginePtr, jint sleepDurationUs) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->setSleepDurationUs(sleepDurationUs);
     }
 }
 
