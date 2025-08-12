@@ -46,6 +46,7 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -96,6 +97,8 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             new AudioConfig(44100 /*sampleRate*/, StreamConfiguration.AUDIO_FORMAT_MP3,
                     StreamConfiguration.CHANNEL_STEREO, 2 /*channelCount*/);
 
+    private final Object mAudioStateLock = new Object();
+    @GuardedBy("mAudioStateLock")
     private int mAudioState = AUDIO_STATE_CLOSED;
 
     protected ArrayList<StreamContext> mStreamContexts;
@@ -407,7 +410,9 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 enableForegroundService(false);
             }
         }
-        mAudioState = AUDIO_STATE_CLOSED;
+        synchronized (mAudioStateLock) {
+            mAudioState = AUDIO_STATE_CLOSED;
+        }
         super.onDestroy();
     }
 
@@ -422,20 +427,30 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     protected boolean isStreamClosed() {
-        return mAudioState == AUDIO_STATE_CLOSED;
+        synchronized (mAudioStateLock) {
+            return mAudioState == AUDIO_STATE_CLOSED;
+        }
     }
 
     protected void updateEnabledWidgets() {
-        if (mOpenButton != null) {
-            mOpenButton.setBackgroundColor(mAudioState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
-            mStartButton.setBackgroundColor(mAudioState == AUDIO_STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
-            mPauseButton.setBackgroundColor(mAudioState == AUDIO_STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
-            mFlushButton.setBackgroundColor(mAudioState == AUDIO_STATE_FLUSHED ? COLOR_ACTIVE : COLOR_IDLE);
-            mStopButton.setBackgroundColor(mAudioState == AUDIO_STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
-            mReleaseButton.setBackgroundColor(mAudioState == AUDIO_STATE_RELEASED ? COLOR_ACTIVE : COLOR_IDLE);
-            mCloseButton.setBackgroundColor(mAudioState == AUDIO_STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
-        }
-        setConfigViewsEnabled(mAudioState == AUDIO_STATE_CLOSED);
+        // This method is called from state-changing methods.
+        // It must run on the UI thread because it touches Views.
+        runOnUiThread(() -> {
+            int currentState;
+            synchronized (mAudioStateLock) {
+                currentState = mAudioState;
+            }
+            if (mOpenButton != null) {
+                mOpenButton.setBackgroundColor(currentState == AUDIO_STATE_OPEN ? COLOR_ACTIVE : COLOR_IDLE);
+                mStartButton.setBackgroundColor(currentState == AUDIO_STATE_STARTED ? COLOR_ACTIVE : COLOR_IDLE);
+                mPauseButton.setBackgroundColor(currentState == AUDIO_STATE_PAUSED ? COLOR_ACTIVE : COLOR_IDLE);
+                mFlushButton.setBackgroundColor(currentState == AUDIO_STATE_FLUSHED ? COLOR_ACTIVE : COLOR_IDLE);
+                mStopButton.setBackgroundColor(currentState == AUDIO_STATE_STOPPED ? COLOR_ACTIVE : COLOR_IDLE);
+                mReleaseButton.setBackgroundColor(currentState == AUDIO_STATE_RELEASED ? COLOR_ACTIVE : COLOR_IDLE);
+                mCloseButton.setBackgroundColor(currentState == AUDIO_STATE_CLOSED ? COLOR_ACTIVE : COLOR_IDLE);
+            }
+            setConfigViewsEnabled(currentState == AUDIO_STATE_CLOSED);
+        });
     }
 
     private void setConfigViewsEnabled(boolean b) {
@@ -670,50 +685,52 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public void openAudio() throws IOException {
-        closeAudio();
+        synchronized (mAudioStateLock) {
+            // Always close existing streams before opening new ones.
+            closeAudioLocked();
 
-        if (!isTestConfiguredUsingBundle()) {
-            applyConfigurationViewsToModels();
-        }
+            if (!isTestConfiguredUsingBundle()) {
+                applyConfigurationViewsToModels();
+            }
 
-        if (isAudioFocusEnabled()) {
-            requestAudioFocus();
-        }
+            if (isAudioFocusEnabled()) {
+                requestAudioFocus();
+            }
 
-        updateNativeAudioParameters();
+            updateNativeAudioParameters();
 
-        int sampleRate = 0; // Use the OUTPUT sample rate for INPUT
+            int sampleRate = 0; // Use the OUTPUT sample rate for INPUT
 
-        // Open output streams then open input streams.
-        // This is so that the capacity of input stream can be expanded to
-        // match the burst size of the output for full duplex.
-        for (StreamContext streamContext : mStreamContexts) {
-            if (!streamContext.isInput()) { // OUTPUT?
-                openStreamContext(streamContext);
-                int streamSampleRate = streamContext.tester.actualConfiguration.getSampleRate();
-                if (sampleRate == 0) {
-                    sampleRate = streamSampleRate;
-                }
+            // Open output streams then open input streams.
+            // This is so that the capacity of input stream can be expanded to
+            // match the burst size of the output for full duplex.
+            for (StreamContext streamContext : mStreamContexts) {
+                if (!streamContext.isInput()) { // OUTPUT?
+                    openStreamContextLocked(streamContext);
+                    int streamSampleRate = streamContext.tester.actualConfiguration.getSampleRate();
+                    if (sampleRate == 0) {
+                        sampleRate = streamSampleRate;
+                    }
 
-                if (shouldSetStreamControlByAttributes()) {
-                    // Associate volume keys with this output stream.
-                    int actualUsage = streamContext.tester.actualConfiguration.getUsage();
-                    int actualContentType = streamContext.tester.actualConfiguration.getContentType();
-                    setStreamControlByAttributes(actualUsage, actualContentType);
-                }
+                    if (shouldSetStreamControlByAttributes()) {
+                        int actualUsage = streamContext.tester.actualConfiguration.getUsage();
+                        int actualContentType = streamContext.tester.actualConfiguration.getContentType();
+                        setStreamControlByAttributes(actualUsage, actualContentType);
+                    }
 
-                if (streamContext.tester.actualConfiguration.getFormat() ==
-                        StreamConfiguration.AUDIO_FORMAT_MP3) {
-                    setupMp3BufferFromFile();
+                    if (streamContext.tester.actualConfiguration.getFormat() ==
+                            StreamConfiguration.AUDIO_FORMAT_MP3) {
+                        setupMp3BufferFromFile();
+                    }
                 }
             }
-        }
-        for (StreamContext streamContext : mStreamContexts) {
-            if (streamContext.isInput()) {
-                if (sampleRate != 0) {
-                    streamContext.tester.requestedConfiguration.setSampleRate(sampleRate);
+            for (StreamContext streamContext : mStreamContexts) {
+                if (streamContext.isInput()) {
+                    if (sampleRate != 0) {
+                        streamContext.tester.requestedConfiguration.setSampleRate(sampleRate);
+                    }
+                    openStreamContextLocked(streamContext);
                 }
-                openStreamContext(streamContext);
             }
         }
         updateEnabledWidgets();
@@ -726,13 +743,11 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC);
 
-        // Use first output stream as the stream context.
-        // If it's not available, use the first input stream.
         StreamContext streamContext = getFirstOutputStreamContext();
         if (streamContext == null) {
             streamContext = getFirstInputStreamContext();
         }
-        int streamType = AudioManager.STREAM_MUSIC; // Used for legacy APIs
+        int streamType = AudioManager.STREAM_MUSIC;
         if (streamContext != null) {
             StreamConfiguration config = streamContext.tester.requestedConfiguration;
             streamType = convertUsageToStreamType(config.getUsage());
@@ -742,7 +757,6 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         AudioAttributes audioAttributes = attributesBuilder.build();
 
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        // Request audio focus.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             AudioFocusRequest focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setAudioAttributes(audioAttributes)
@@ -752,15 +766,11 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             int result = am.requestAudioFocus(focusRequest);
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 showErrorToast("Could not get audio focus");
-                return;
             }
         } else {
-            // Use deprecated method for older APIs.
-            int result = am.requestAudioFocus(this, streamType,
-                    AudioManager.AUDIOFOCUS_GAIN);
+            int result = am.requestAudioFocus(this, streamType, AudioManager.AUDIOFOCUS_GAIN);
             if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 showErrorToast("Could not get audio focus");
-                return;
             }
         }
     }
@@ -769,10 +779,14 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public void onAudioFocusChange(int focusChange) {
         runOnUiThread(() -> {
             Log.i(TAG, "onAudioFocusChange(" + focusChange + ")");
+            int currentState;
+            synchronized (mAudioStateLock) {
+                currentState = mAudioState;
+            }
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                     setDuck(false);
-                    if (mAudioState == AUDIO_STATE_STOPPED || mAudioState == AUDIO_STATE_PAUSED) {
+                    if (currentState == AUDIO_STATE_STOPPED || currentState == AUDIO_STATE_PAUSED) {
                         try {
                             startAudio();
                         } catch(IOException e) {
@@ -781,12 +795,12 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
-                    if (mAudioState == AUDIO_STATE_STARTED) {
+                    if (currentState == AUDIO_STATE_STARTED) {
                         stopAudio();
                     }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    if (mAudioState == AUDIO_STATE_STARTED) {
+                    if (currentState == AUDIO_STATE_STARTED) {
                         pauseAudio();
                     }
                     break;
@@ -821,7 +835,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
      * @return true if the device is TYPE_BLUETOOTH_SCO
      */
     boolean isScoDevice(int deviceId) {
-        if (deviceId == 0) return false; // Unspecified
+        if (deviceId == 0) return false;
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         final AudioDeviceInfo[] devices = audioManager.getDevices(
                 AudioManager.GET_DEVICES_INPUTS | AudioManager.GET_DEVICES_OUTPUTS);
@@ -833,7 +847,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         return false;
     }
 
-    private void openStreamContext(StreamContext streamContext) throws IOException {
+    private void openStreamContextLocked(StreamContext streamContext) throws IOException {
         StreamConfiguration requestedConfig = streamContext.tester.requestedConfiguration;
         StreamConfiguration actualConfig = streamContext.tester.actualConfiguration;
 
@@ -856,7 +870,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 try {
                     streamContext.configurationView.setupEffects(sessionId);
                 } catch (Exception e) {
-                    showErrorToast("openStreamContext() caught " + e.getMessage());
+                    showErrorToast("openStreamContextLocked() caught " + e.getMessage());
                 }
             }
             streamContext.configurationView.updateDisplay(streamContext.tester.actualConfiguration);
@@ -892,10 +906,25 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     protected native PlaybackParameters getPlaybackParametersNative();
 
     public void startAudio() throws IOException {
-        Log.i(TAG, "startAudio() called =========================");
-        int result = startNative();
+        int result;
+        synchronized (mAudioStateLock) {
+            if (mAudioState != AUDIO_STATE_OPEN
+                    && mAudioState != AUDIO_STATE_STOPPED
+                    && mAudioState != AUDIO_STATE_PAUSED
+                    && mAudioState != AUDIO_STATE_FLUSHED) {
+                Log.w(TAG, "startAudio() called in invalid state " + mAudioState + ", ignoring.");
+                return;
+            }
+            Log.i(TAG, "startAudio() transitioning to STARTED");
+            result = startNative();
+            if (result == 0) {
+                mAudioState = AUDIO_STATE_STARTED;
+            }
+        }
+
         if (result != 0) {
-            showErrorToast("Start failed with " + result + ", " + convertErrorToText(result));
+            String message = "Start failed with " + result + ", " + convertErrorToText(result);
+            showErrorToast(message);
             throw new IOException("startNative returned " + result + ", " + convertErrorToText(result));
         } else {
             onStartAllContexts();
@@ -905,7 +934,6 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                     configView.updateDisplay(streamContext.tester.actualConfiguration);
                 }
             }
-            mAudioState = AUDIO_STATE_STARTED;
             updateEnabledWidgets();
         }
     }
@@ -915,43 +943,83 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public void pauseAudio() {
-        int result = pauseNative();
+        int result;
+        synchronized (mAudioStateLock) {
+            if (mAudioState != AUDIO_STATE_STARTED) {
+                Log.w(TAG, "pauseAudio() called in invalid state " + mAudioState + ", ignoring.");
+                return;
+            }
+            result = pauseNative();
+            if (result == 0) {
+                mAudioState = AUDIO_STATE_PAUSED;
+            }
+        }
+
         if (result != 0) {
             toastPauseError(result);
         } else {
-            mAudioState = AUDIO_STATE_PAUSED;
             updateEnabledWidgets();
             onStopAllContexts();
         }
     }
 
     public void flushAudio() {
-        int result = flushNative();
+        int result;
+        synchronized (mAudioStateLock) {
+            if (mAudioState != AUDIO_STATE_PAUSED) {
+                Log.w(TAG, "flushAudio() called in invalid state " + mAudioState + ", ignoring.");
+                return;
+            }
+            result = flushNative();
+            if (result == 0) {
+                mAudioState = AUDIO_STATE_FLUSHED;
+            }
+        }
+
         if (result != 0) {
             showErrorToast("Flush failed with " + result + ", " + convertErrorToText(result));
         } else {
-            mAudioState = AUDIO_STATE_FLUSHED;
             updateEnabledWidgets();
         }
     }
 
     public void stopAudio() {
-        int result = stopNative();
+        int result;
+        synchronized (mAudioStateLock) {
+            if (mAudioState != AUDIO_STATE_STARTED && mAudioState != AUDIO_STATE_PAUSED) {
+                Log.w(TAG, "stopAudio() called in invalid state " + mAudioState + ", ignoring.");
+                return;
+            }
+            result = stopNative();
+            if (result == 0) {
+                mAudioState = AUDIO_STATE_STOPPED;
+            }
+        }
+
         if (result != 0) {
             showErrorToast("Stop failed with " + result + ", " + convertErrorToText(result));
         } else {
-            mAudioState = AUDIO_STATE_STOPPED;
             updateEnabledWidgets();
             onStopAllContexts();
         }
     }
 
     public void releaseAudio() {
-        int result = releaseNative();
+        int result;
+        synchronized (mAudioStateLock) {
+            if (mAudioState < AUDIO_STATE_OPEN || mAudioState >= AUDIO_STATE_RELEASED) {
+                Log.w(TAG, "releaseAudio() called in invalid state " + mAudioState + ", ignoring.");
+                return;
+            }
+            result = releaseNative();
+            if (result == 0) {
+                mAudioState = AUDIO_STATE_RELEASED;
+            }
+        }
+
         if (result != 0) {
             showErrorToast("Release failed with " + result + ", " + convertErrorToText(result));
         } else {
-            mAudioState = AUDIO_STATE_RELEASED;
             updateEnabledWidgets();
             onStopAllContexts();
         }
@@ -963,26 +1031,41 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public void saveIntentLog() {
     }
 
-    // This should only be called from UI events such as onStop or a button press.
     public void onStopTest() {
         stopTest();
     }
 
     public void stopTest() {
-        stopAudio();
-        closeAudio();
-    }
-
-    public void stopAudioQuiet() {
-        stopNative();
-        mAudioState = AUDIO_STATE_STOPPED;
+        synchronized (mAudioStateLock) {
+            if (mAudioState == AUDIO_STATE_STARTED || mAudioState == AUDIO_STATE_PAUSED) {
+                stopNative();
+                mAudioState = AUDIO_STATE_STOPPED;
+            }
+            closeAudioLocked();
+        }
         updateEnabledWidgets();
     }
 
-    // Make synchronized so we don't close from two streams at the same time.
-    public synchronized void closeAudio() {
+    public void stopAudioQuiet() {
+        synchronized (mAudioStateLock) {
+            if (mAudioState == AUDIO_STATE_STARTED || mAudioState == AUDIO_STATE_PAUSED) {
+                stopNative();
+                mAudioState = AUDIO_STATE_STOPPED;
+            }
+        }
+        updateEnabledWidgets();
+    }
+
+    public void closeAudio() {
+        synchronized (mAudioStateLock) {
+            closeAudioLocked();
+        }
+        updateEnabledWidgets();
+    }
+
+    @GuardedBy("mAudioStateLock")
+    private void closeAudioLocked() {
         if (mAudioState >= AUDIO_STATE_CLOSING) {
-            Log.d(TAG, "closeAudio() already closing");
             return;
         }
         mAudioState = AUDIO_STATE_CLOSING;
@@ -1007,7 +1090,6 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         }
 
         mAudioState = AUDIO_STATE_CLOSED;
-        updateEnabledWidgets();
     }
 
     void startBluetoothSco() {
