@@ -490,17 +490,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
             });
 
-            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
-            if (durationSeconds > 0) {
-                // Schedule the end of the test.
-                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopAutomaticTest();
-                    }
-                }, durationSeconds * 1000);
-            }
+            
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         } finally {
@@ -508,7 +498,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         }
     }
 
-    void stopAutomaticTest() {
+    @Override
+    public void stopAutomaticTest() {
         String report = getCommonTestReport();
         AudioStreamBase outputStream =mAudioOutTester.getCurrentAudioStream();
         report += "out.xruns = " + outputStream.getXRunCount() + "\n";

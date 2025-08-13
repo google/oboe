@@ -199,23 +199,12 @@ public class ManualGlitchActivity extends GlitchActivity {
     @Override
     public void startTestUsingBundle() {
         configureStreamsFromBundle(mBundleFromIntent);
-
-        int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
         int numBursts = mBundleFromIntent.getInt(KEY_BUFFER_BURSTS, VALUE_DEFAULT_BUFFER_BURSTS);
 
         try {
             openStartAudioTestUI();
             int sizeFrames = mAudioOutTester.getCurrentAudioStream().getFramesPerBurst() * numBursts;
             mAudioOutTester.getCurrentAudioStream().setBufferSizeInFrames(sizeFrames);
-
-            // Schedule the end of the test.
-            Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopAutomaticTest();
-                }
-            }, durationSeconds * 1000);
         } catch (IOException e) {
             String report = "Open failed: " + e.getMessage();
             maybeWriteTestResult(report);
@@ -226,7 +215,8 @@ public class ManualGlitchActivity extends GlitchActivity {
 
     }
 
-    void stopAutomaticTest() {
+    @Override
+    public void stopAutomaticTest() {
         String report = getCommonTestReport()
                 + String.format(Locale.getDefault(), "tolerance = %5.3f\n", mTolerance)
                 + mLastGlitchReport;

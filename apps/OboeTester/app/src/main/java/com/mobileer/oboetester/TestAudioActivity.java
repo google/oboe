@@ -21,8 +21,10 @@ import static com.mobileer.oboetester.AudioForegroundService.ACTION_STOP;
 import static com.mobileer.oboetester.IntentBasedTestSupport.KEY_RESTART_STREAM_IF_CLOSED;
 import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -44,6 +46,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,6 +122,16 @@ abstract class TestAudioActivity extends AppCompatActivity {
     protected String mResultFileName;
     private String mTestResults;
     private ExternalFileWriter mExternalFileWriter = new ExternalFileWriter(this);
+
+    private TestTimeoutScheduler mTestTimeoutScheduler = new TestTimeoutScheduler();
+    private BroadcastReceiver mStopTestReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mTestRunningByIntent) {
+                stopAutomaticTest();
+            }
+        }
+    };
 
     public String getTestName() {
         return "TestAudio";
@@ -318,6 +331,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mStopTestReceiver,
+                new IntentFilter(TestTimeoutReceiver.ACTION_STOP_TEST));
         if (mBundleFromIntent != null) {
             processBundleFromIntent();
         }
@@ -355,6 +370,12 @@ abstract class TestAudioActivity extends AppCompatActivity {
                 mRestartStreamIfClosed = mBundleFromIntent.getBoolean(KEY_RESTART_STREAM_IF_CLOSED,
                         false);
                 setVolumeFromIntent();
+
+                int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
+                if (durationSeconds > 0) {
+                    mTestTimeoutScheduler.scheduleTestTimeout(TestAudioActivity.this, durationSeconds);
+                }
+
                 startTestUsingBundle();
             } catch( Exception e) {
                 showErrorToast(e.getMessage());
@@ -365,9 +386,14 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public void startTestUsingBundle() {
     }
 
+    public void stopAutomaticTest() {
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mStopTestReceiver);
     }
 
     @Override
@@ -870,6 +896,9 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     // This should only be called from UI events such as onStop or a button press.
     public void onStopTest() {
+        if (mTestRunningByIntent) {
+            mTestTimeoutScheduler.cancelTestTimeout(this);
+        }
         stopTest();
     }
 
