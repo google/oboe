@@ -264,6 +264,7 @@
     <string name="title_rapid_cycle">Rapid Cycle</string>
     <string name="title_audio_workload_test">Audio Workload Test</string>
     <string name="title_audio_workload_test_runner">Audio Workload Test Runner</string>
+    <string name="title_reverse_jni">Reverse JNI</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
