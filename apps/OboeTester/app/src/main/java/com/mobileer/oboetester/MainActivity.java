@@ -64,6 +64,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
     private CheckBox mForegroundServiceCheckBox;
+    private CheckBox mAudioFocusCheckBox;
     private static String mVersionText;
 
     @Override
@@ -119,6 +120,8 @@ public class MainActivity extends BaseOboeTesterActivity {
         mBackgroundCheckBox.setChecked(true);
         mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
         mForegroundServiceCheckBox.setChecked(true);
+        mAudioFocusCheckBox = (CheckBox) findViewById(R.id.boxEnableAudioFocus);
+        mAudioFocusCheckBox.setChecked(true);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY
@@ -170,6 +173,9 @@ public class MainActivity extends BaseOboeTesterActivity {
         boolean foregroundServiceEnabled = mBundleFromIntent.getBoolean(
                 IntentBasedTestSupport.KEY_FOREGROUND_SERVICE, true);
         TestAudioActivity.setForegroundServiceEnabled(foregroundServiceEnabled);
+        boolean audioFocusEnabled = mBundleFromIntent.getBoolean(
+                IntentBasedTestSupport.KEY_AUDIO_FOCUS, true);
+        TestAudioActivity.setAudioFocusEnabled(audioFocusEnabled);
     }
 
     private Intent getTestIntent(Bundle bundle) {
@@ -270,6 +276,7 @@ public class MainActivity extends BaseOboeTesterActivity {
         NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
         TestAudioActivity.setForegroundServiceEnabled(mForegroundServiceCheckBox.isChecked());
+        TestAudioActivity.setAudioFocusEnabled(mAudioFocusCheckBox.isChecked());
     }
 
     @Override
