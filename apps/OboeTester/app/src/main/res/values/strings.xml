@@ -336,16 +336,16 @@
 
     <string name="package_name_prompt">Package:</string>
     <string-array name="package_name_values">
-        <item></item>
         <item>com.mobileer.oboetester</item>
         <item>bogus.name</item>
+        <item></item>
     </string-array>
 
     <string name="attribution_tag_prompt">Attribution:</string>
     <string-array name="attribution_tag_values">
-        <item></item>
         <item>AudioTag</item>
         <item>BogusTag</item>
+        <item></item>
     </string-array>
 
     <string name="dynamic_workload_graph_info">
