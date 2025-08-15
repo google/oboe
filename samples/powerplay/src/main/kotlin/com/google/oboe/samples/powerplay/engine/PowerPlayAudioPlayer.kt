@@ -31,6 +31,9 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      */
     fun setupAudioStream() {
         setupAudioStreamNative(NUM_PLAY_CHANNELS)
+
+        // By default, MMap should be enabled.
+        if (isMMapSupportedNative()) setMMapEnabled(true)
         _playerState.update { PlayerState.Initialized }
     }
 
@@ -62,6 +65,31 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         assetFD.close()
     }
 
+
+    /**
+     * Sets whether the audio stream should use MMap audio.
+     * @param enabled True to enable MMap, false to disable.
+     */
+    fun setMMapEnabled(enabled: Boolean) = setMMapEnabledNative(enabled)
+
+    /**
+     * Checks if MMap is currently enabled.
+     * @return True if MMap is enabled, false otherwise.
+     */
+    fun isMMapEnabled(): Boolean = isMMapEnabledNative()
+
+    /**
+     * Checks if MMap is currently being used by the audio stream.
+     * @return True if MMap is being used, false otherwise.
+     */
+    fun isMMapUsed(): Boolean = isMMapUsedNative()
+
+    /**
+     * Checks if MMap is supported by the current device.
+     * @return True if MMap is supported, false otherwise.
+     */
+    fun isMMapSupported(): Boolean = isMMapSupportedNative()
+
     /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
@@ -80,6 +108,10 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun setLoopingNative(index: Int, looping: Boolean)
     private external fun startPlayingNative(index: Int, mode: OboePerformanceMode)
     private external fun stopPlayingNative(index: Int)
+    private external fun setMMapEnabledNative(enabled: Boolean): Boolean
+    private external fun isMMapEnabledNative(): Boolean
+    private external fun isMMapUsedNative(): Boolean
+    private external fun isMMapSupportedNative(): Boolean
 
     /**
      * Companion
