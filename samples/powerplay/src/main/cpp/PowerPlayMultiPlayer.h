@@ -36,6 +36,14 @@ public:
 
     void triggerDown(int32_t index, oboe::PerformanceMode performanceMode) override;
 
+    static bool setMMapEnabled(bool enabled);
+
+    static bool isMMapEnabled();
+
+    static bool isMMapSupported();
+
+    bool isMMapUsed();
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:
@@ -49,6 +57,7 @@ private:
     private:
         iolib::SimpleMultiPlayer *mParent;
     };
+
     std::shared_ptr<MyPresentationCallback> mPresentationCallback;
     oboe::PerformanceMode mLastPerformanceMode;
 };
