@@ -31,9 +31,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      */
     fun setupAudioStream() {
         setupAudioStreamNative(NUM_PLAY_CHANNELS)
-
-        // By default, MMap should be enabled.
-        if (isMMapSupportedNative()) setMMapEnabled(true)
         _playerState.update { PlayerState.Initialized }
     }
 
@@ -129,4 +126,5 @@ sealed interface PlayerState {
     object Initialized : PlayerState
     object Playing : PlayerState
     object Stopped : PlayerState
+    object Error : PlayerState
 }

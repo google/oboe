@@ -159,12 +159,12 @@ class MainActivity : ComponentActivity() {
             mutableIntStateOf(0)
         }
         val offload = remember {
-            mutableIntStateOf(0)
+            mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
         }
+        val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
 
         LaunchedEffect(pagerState.currentPage) {
             playingSongIndex.intValue = pagerState.currentPage
-            // player.seekTo(pagerState.currentPage, 0)
         }
 
         LaunchedEffect(Unit) {
@@ -179,8 +179,8 @@ class MainActivity : ComponentActivity() {
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize(), contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
 
@@ -236,6 +236,7 @@ class MainActivity : ComponentActivity() {
                     "Performance Modes"
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Column {
                     val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
                     if (isOffloadSupported) radioOptions.add("PCM Offload")
@@ -256,6 +257,13 @@ class MainActivity : ComponentActivity() {
                                             onOptionSelected(text)
                                             offload.intValue = index
                                             player.teardownAudioStream()
+
+                                            // Reset MMAP checkbox if not PCM Offload
+                                            if (OboePerformanceMode.fromInt(offload.intValue)
+                                                == OboePerformanceMode.PowerSavingOffloaded) {
+                                                isMMapEnabled.value = true
+                                                player.setMMapEnabled(true)
+                                            }
                                         }
                                     },
                                     role = Role.RadioButton
@@ -265,7 +273,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             RadioButton(
                                 selected = (text == selectedOption),
-                                onClick = null, // null recommended for accessibility with screen readers
+                                onClick = null,
                                 enabled = enabled
                             )
                             Text(
@@ -285,6 +293,47 @@ class MainActivity : ComponentActivity() {
                         else -> "Performance Mode: PCM Offload"
                     }
                 )
+
+                if (OboePerformanceMode.fromInt(offload.intValue)
+                    == OboePerformanceMode.PowerSavingOffloaded && isOffloadSupported) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
+                            .selectable(
+                                selected = !isMMapEnabled.value,
+                                onClick = {
+                                    if (!isPlaying.value) {
+                                        isMMapEnabled.value = !isMMapEnabled.value
+                                        player.setMMapEnabled(isMMapEnabled.value)
+                                        player.teardownAudioStream()
+                                        player.setupAudioStream()
+                                    }
+                                },
+                                role = Role.Checkbox
+                            )
+                            .padding(vertical = 4.dp)
+                    ) {
+                        androidx.compose.material3.Checkbox(
+                            checked = !isMMapEnabled.value,
+                            onCheckedChange = {
+                                if (!isPlaying.value) {
+                                    isMMapEnabled.value = !it
+                                    player.setMMapEnabled(!it)
+                                }
+                            },
+                            enabled = !isPlaying.value // Disable checkbox while playing
+                        )
+                        Text(
+                            text = "Disable MMAP",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -297,10 +346,21 @@ class MainActivity : ComponentActivity() {
                         onClick = {
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
-                                false -> player.startPlaying(
-                                    playingSongIndex.intValue,
-                                    OboePerformanceMode.fromInt(offload.intValue)
-                                )
+                                false -> {
+                                    // Ensure the audio stream is set up before playing,
+                                    // especially if it was torn down due to mode changes.
+                                    // You might need a more sophisticated way to check if setup is needed.
+                                    if (player.getPlayerStateLive().value == PlayerState.Stopped ||
+                                        player.getPlayerStateLive().value == PlayerState.Error
+                                    ) { // Or other states indicating not ready
+                                        player.teardownAudioStream() // Ensure clean state
+                                        player.setupAudioStream()
+                                    }
+                                    player.startPlaying(
+                                        playingSongIndex.intValue,
+                                        OboePerformanceMode.fromInt(offload.intValue)
+                                    )
+                                }
                             }
 
                             isPlaying.value =
@@ -311,6 +371,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     /***
      * Player control button

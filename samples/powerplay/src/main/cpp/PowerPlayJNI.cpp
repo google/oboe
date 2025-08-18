@@ -231,7 +231,7 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setMMapEnable
         JNIEnv *env,
         jobject,
         jboolean enable) {
-    PowerPlayMultiPlayer::setMMapEnabled(enable);
+    return PowerPlayMultiPlayer::setMMapEnabled(enable);
 }
 
 /**
@@ -241,7 +241,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapEnabledNative(
         JNIEnv *env,
         jobject) {
-    return player.isMMapEnabled();
+    return PowerPlayMultiPlayer::isMMapEnabled();
 }
 
 /**
@@ -261,7 +261,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapSupportedNative(
         JNIEnv *env,
         jobject) {
-    return player.isMMapSupported();
+    return PowerPlayMultiPlayer::isMMapSupported();
 }
 
 
