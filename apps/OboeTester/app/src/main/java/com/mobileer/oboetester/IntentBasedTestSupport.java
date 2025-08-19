@@ -128,6 +128,8 @@ public class IntentBasedTestSupport {
     public static final String VALUE_FORMAT_IEC61937 = "iec61937";
     public static final String VALUE_FORMAT_MP3 = "mp3";
 
+    public static final String KEY_BUFFER_CAPACITY = "buffer_capacity";
+
     public static int getApiFromText(String text) {
         if (VALUE_API_AAUDIO.equals(text)) {
             return StreamConfiguration.NATIVE_API_AAUDIO;
@@ -338,6 +340,9 @@ public class IntentBasedTestSupport {
 
         text = bundle.getString(KEY_OUT_FORMAT, "");
         requestedOutConfig.setFormat(getFormatFromText(text));
+
+        int bufferCapacity = bundle.getInt(KEY_BUFFER_CAPACITY, 0);
+        requestedOutConfig.setBufferCapacityInFrames(bufferCapacity);
     }
 
     public static void configureInputStreamFromBundle(Bundle bundle,
@@ -383,6 +388,9 @@ public class IntentBasedTestSupport {
 
         text = bundle.getString(KEY_IN_FORMAT, "");
         requestedInConfig.setFormat(getFormatFromText(text));
+
+        int bufferCapacity = bundle.getInt(KEY_BUFFER_CAPACITY, 0);
+        requestedInConfig.setBufferCapacityInFrames(bufferCapacity);
     }
 
     public static int getSignalTypeFromBundle(Bundle bundle) {
