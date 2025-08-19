@@ -83,6 +83,7 @@ There are some optional parameter in common for all tests:
 
 There are several optional parameters in common for glitch, latency, input, and output tests:
 
+    --ei buffer_capacity    {capacity} // number of frames in the buffer, default is UNSPECIFIED.
     --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered". Do not use together with buffer_frames to avoid conflict. When both set, buffer_bursts will be ignored.
     --ei buffer_frames      {frames}     // number of frames in the buffer, do not use together with buffer_bursts to avoid conflict. When both set, buffer_bursts will be ignored.
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
