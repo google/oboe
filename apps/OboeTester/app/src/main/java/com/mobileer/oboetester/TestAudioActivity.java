@@ -133,6 +133,13 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
     };
 
+    private final long mActivityId = generateActivityId();
+    private static long CURRENT_ACTIVITY_ID = 0;
+
+    private static synchronized long generateActivityId() {
+        return ++CURRENT_ACTIVITY_ID;
+    }
+
     public String getTestName() {
         return "TestAudio";
     }
@@ -430,6 +437,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
             Intent serviceIntent = new Intent(action, null, this,
                     AudioForegroundService.class);
             serviceIntent.putExtra("service_types", getServiceType());
+            serviceIntent.putExtra(AudioForegroundService.KEY_ACTIVITY_ID, mActivityId);
             startForegroundService(serviceIntent);
         }
     }
