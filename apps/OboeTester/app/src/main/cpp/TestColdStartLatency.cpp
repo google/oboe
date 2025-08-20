@@ -52,7 +52,7 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
     // Revert MMAP back to its previous state
     AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
 
-    if (mDeviceId) {
+    if (result != Result::OK) {
         mDeviceId = mStream->getDeviceId();
     }
 
