@@ -38,7 +38,7 @@
         &#160;Click Show Settings to configure.\n
         This glitch measurement plays\n
         and listens to a sine wave.\n
-        It works with best with a loopback dongle.\n
+        It works best with a loopback dongle.\n
         Set volume to medium-high.\n
     </string>
     <string name="echo_instructions">
