@@ -300,6 +300,8 @@ public:
 
     virtual void setAmplitude(float amplitude) {}
 
+    virtual void setDuck(bool isDucked) {}
+
     virtual oboe::Result setPlaybackParameters(const oboe::PlaybackParameters& parameters) {
         return oboe::Result::ErrorUnimplemented;
     }
@@ -478,8 +480,13 @@ public:
     void setAmplitude(float amplitude) override {
         mAmplitude = amplitude;
         if (mVolumeRamp) {
-            mVolumeRamp->setTarget(mAmplitude);
+            mVolumeRamp->setTarget(mAmplitude * mDuckingMultiplier);
         }
+    }
+
+    void setDuck(bool isDucked) override {
+        mDuckingMultiplier = isDucked ? 0.2f : 1.0f;
+        setAmplitude(mAmplitude);
     }
 
     void setupMemoryBuffer(std::unique_ptr<uint8_t[]>& buffer, int length) final;
@@ -505,6 +512,7 @@ protected:
 
     static constexpr int             kRampMSec = 10; // for volume control
     float                            mAmplitude = 1.0f;
+    float                            mDuckingMultiplier = 1.0f;
     std::shared_ptr<RampLinear> mVolumeRamp;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
@@ -852,6 +860,12 @@ public:
 
     void setDelayTime(double delayTimeMillis) {
         mActivityEcho.setDelayTime(delayTimeMillis);
+    }
+
+    void setDuck(bool isDucked) {
+        if (currentActivity == &mActivityTestOutput) {
+            mActivityTestOutput.setDuck(isDucked);
+        }
     }
 
     ActivityTestOutput           mActivityTestOutput;
