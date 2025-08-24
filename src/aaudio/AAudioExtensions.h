@@ -17,6 +17,7 @@
 #ifndef OBOE_AAUDIO_EXTENSIONS_H
 #define OBOE_AAUDIO_EXTENSIONS_H
 
+#include <algorithm>
 #include <dlfcn.h>
 #include <set>
 #include <stdint.h>
