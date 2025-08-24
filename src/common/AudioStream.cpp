@@ -20,6 +20,9 @@
 
 #include "oboe/AudioClock.h"
 #include "oboe/AudioStream.h"
+
+#include <algorithm>
+
 #include "oboe/Utilities.h"
 #include "OboeDebug.h"
 
