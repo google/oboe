@@ -114,6 +114,8 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
 
     // Maybe make a FilterInputStream.
     AudioStreamBuilder childBuilder(*this);
+
+#ifndef OBOE_DISABLE_CONVERSION
     // Check need for conversion and modify childBuilder for optimal stream.
     bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
     // Do we need to make a child stream and convert.
@@ -159,6 +161,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
             }
         }
     }
+#endif
 
     if (streamP == nullptr) {
         streamP = build();

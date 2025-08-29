@@ -88,6 +88,7 @@ target_compile_options(oboe
         -Wextra-semi
         -Wshadow
         -Wshadow-field
+        -DOBOE_DISABLE_CONVERSION
         "$<$<CONFIG:RELEASE>:-Ofast>"
         "$<$<CONFIG:DEBUG>:-O3>"
         "$<$<CONFIG:DEBUG>:-Werror>")
