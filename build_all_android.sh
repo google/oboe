@@ -34,7 +34,6 @@ CMAKE_ARGS="-S. \
   -DANDROID_TOOLCHAIN=clang \
   -DANDROID_STL=c++_shared \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
-  -DOBOE_DISABLE_CONVERSION=OFF \
   -DCMAKE_INSTALL_PREFIX=."
 
 function build_oboe {
