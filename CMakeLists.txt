@@ -75,7 +75,7 @@ set (data_conversion_sources
 )
 
 # Option to disable data conversion features. Default is OFF (i.e., conversion is ON).
-option(OBOE_DISABLE_CONVERSION "Exclude data conversion source files and features" ON)
+option(OBOE_DISABLE_CONVERSION "Exclude data conversion source files and features" OFF)
 
 if(OBOE_DISABLE_CONVERSION)
     message(STATUS "Oboe: Data conversion is DISABLED.")
@@ -105,9 +105,7 @@ target_compile_options(oboe
         "$<$<CONFIG:DEBUG>:-O3>"
         "$<$<CONFIG:DEBUG>:-Werror>")
 
-if(OBOE_DISABLE_CONVERSION)
-    target_compile_definitions(oboe PRIVATE OBOE_DISABLE_CONVERSION=1)
-endif()
+target_compile_definitions(oboe PRIVATE $<$<BOOL:${OBOE_DISABLE_CONVERSION}>:DISABLE_CONVERSION=1>)
 
 # Enable logging of D,V for debug builds
 target_compile_definitions(oboe PUBLIC $<$<CONFIG:DEBUG>:OBOE_ENABLE_LOGGING=1>)

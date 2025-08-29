@@ -27,7 +27,7 @@
 #include "opensles/AudioStreamOpenSLES.h"
 #include "QuirksManager.h"
 
-#ifndef OBOE_DISABLE_CONVERSION
+#ifndef DISABLE_CONVERSION
 #include "FilterAudioStream.h"
 #endif
 
@@ -118,7 +118,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
     // Maybe make a FilterInputStream.
     AudioStreamBuilder childBuilder(*this);
 
-#ifndef OBOE_DISABLE_CONVERSION
+#ifndef DISABLE_CONVERSION
     // Check need for conversion and modify childBuilder for optimal stream.
     bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
     // Do we need to make a child stream and convert.
