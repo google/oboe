@@ -19,7 +19,6 @@
 
 #include "aaudio/AAudioExtensions.h"
 #include "aaudio/AudioStreamAAudio.h"
-#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -27,6 +26,10 @@
 #include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
 #include "QuirksManager.h"
+
+#ifndef OBOE_DISABLE_CONVERSION
+#include "FilterAudioStream.h"
+#endif
 
 bool oboe::OboeGlobals::mWorkaroundsEnabled = true;
 
