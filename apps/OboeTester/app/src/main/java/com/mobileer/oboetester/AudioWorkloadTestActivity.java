@@ -270,7 +270,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
                     firstTimeNs = callbackStatus.beginTimeNs;
                 }
                 long elapsedTime = callbackStatus.beginTimeNs - firstTimeNs;
-                mMultiLineChart.addX(elapsedTime * NANOS_TO_MILLIS);
+                mMultiLineChart.addX(elapsedTime * NANOS_TO_SECONDS);
 
                 long callbackDuration = callbackStatus.finishTimeNs - callbackStatus.beginTimeNs;
                 double cpuLoad = NANOS_TO_SECONDS * callbackDuration / expectedCallbackTimeSeconds;
