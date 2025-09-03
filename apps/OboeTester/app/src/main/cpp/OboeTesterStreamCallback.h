@@ -25,7 +25,8 @@
 #include "synth/Synthesizer.h"
 #include "synth/SynthTools.h"
 
-class OboeTesterStreamCallback : public oboe::AudioStreamCallback {
+class OboeTesterStreamCallback : public oboe::AudioStreamCallback,
+                                 public oboe::AudioStreamPartialDataCallback {
 public:
     virtual ~OboeTesterStreamCallback() = default;
 
@@ -43,6 +44,14 @@ public:
      */
     static void setHangTimeMillis(int hangTimeMillis) {
         mHangTimeMillis = hangTimeMillis;
+    }
+
+    int32_t onPartialAudioReady(oboe::AudioStream *audioStream,
+                                void *audioData,
+                                int numFrames) override {
+        // Default implementation for partial data callback. Child class should override
+        // it if it is used to create builder.
+        return -1;
     }
 
 protected:

@@ -131,6 +131,12 @@ typedef struct AAudioPlaybackParameters {
     float pitch;
     float speed;
 } AAudioPlaybackParameters;
+
+typedef int32_t (*AAudioStream_partialDataCallback)(
+        AAudioStream* stream,
+        void* userData,
+        void* audioData,
+        int32_t numFrames);
 #endif
 
 namespace oboe {
@@ -157,6 +163,7 @@ class AAudioLoader {
     // O = bOol
     // R = pResentation end callback
     // M = aaudioplaybackparaMeters
+    // D = Datacallback/partialDatacallback
 
     typedef int32_t  (*signature_I_PPB)(AAudioStreamBuilder **builder);
 
@@ -271,6 +278,7 @@ class AAudioLoader {
     signature_V_PBPDPV  builder_setDataCallback = nullptr;
     signature_V_PBPEPV  builder_setErrorCallback = nullptr;
     signature_V_PBPRPV  builder_setPresentationEndCallback = nullptr;
+    signature_V_PBPDPV  builder_setPartialDataCallback = nullptr;
 
     signature_I_PB      builder_delete = nullptr;
 

@@ -105,6 +105,10 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize);
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setUsePartialCallbackNative(
+        JNIEnv *env, jclass type, jboolean usePartialCallback);
+
 // ================= OboeAudioOutputStream ================================
 
 JNIEXPORT void JNICALL
@@ -329,6 +333,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_getBufferSizeInFrames(
         result = oboeStream->getBufferSizeInFrames();
     }
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setPartialCallbackPercentage(
+        JNIEnv * /*env*/, jobject /*thiz*/, jint percentage) {
+    engine.getCurrentActivity()->setPartialCallbackPercentage(percentage);
 }
 
 JNIEXPORT void JNICALL
@@ -740,6 +750,12 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize) {
     ActivityContext::callbackSize = callbackSize;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setUsePartialDataCallbackNative(
+        JNIEnv *env, jclass type, jboolean usePartialDataCallback) {
+    ActivityContext::mUsePartialDataCallback = usePartialDataCallback;
 }
 
 JNIEXPORT jboolean JNICALL

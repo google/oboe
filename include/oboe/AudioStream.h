@@ -448,6 +448,20 @@ public:
     }
 
     /*
+     * Swap old partial data callback for new callback.
+     * This not atomic.
+     * This should only be used internally.
+     * @param dataCallback
+     * @return previous dataCallback
+     */
+    AudioStreamPartialDataCallback *swapPartialDataCallback(
+            AudioStreamPartialDataCallback *partialDataCallback) {
+        AudioStreamPartialDataCallback *previousPartialCallback = mPartialDataCallback;
+        mPartialDataCallback = partialDataCallback;
+        return previousPartialCallback;
+    }
+
+    /*
      * Swap old callback for new callback.
      * This not atomic.
      * This should only be used internally.
@@ -809,7 +823,16 @@ protected:
      * @return the result of the callback: stop or continue
      *
      */
-    DataCallbackResult fireDataCallback(void *audioData, int numFrames);
+    virtual DataCallbackResult fireDataCallback(void *audioData, int numFrames);
+
+    /**
+     * Override this to provide your own behaviour for the parital audio callback
+     *
+     * @param audioData container array which audio frames will be written into or read from
+     * @param numFrames number of frames which were read/written
+     * @return the actual processed frames
+     */
+    virtual int32_t firePartialDataCallback(void* audioData, int numFrames);
 
     /**
      * @return true if callbacks may be called

@@ -202,6 +202,9 @@ int AAudioLoader::open() {
                 load_I_PSPM("AAudioStream_getPlaybackParameters");
         stream_setPlaybackParameters =
                 load_I_PSCPM("AAudioStream_setPlaybackParameters");
+
+        builder_setPartialDataCallback =
+                load_V_PBPDPV("AAudioStreamBuilder_setPartialDataCallback");
     }
 
     return 0;
