@@ -200,6 +200,10 @@ public:
                 static_cast<aaudio_direction_t>(direction)));
     }
 
+    bool isPartialDataCallbackSupported() {
+        return mLibLoader != nullptr && mLibLoader->builder_setPartialDataCallback != nullptr;
+    }
+
 private:
     bool initMMapPolicy() {
         if (mLibLoader == nullptr || mLibLoader->open() != 0) {

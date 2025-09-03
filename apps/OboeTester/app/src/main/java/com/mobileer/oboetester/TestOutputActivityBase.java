@@ -16,6 +16,8 @@
 
 package com.mobileer.oboetester;
 
+import android.view.View;
+
 import java.io.IOException;
 
 abstract class TestOutputActivityBase extends TestAudioActivity {
@@ -23,6 +25,8 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
 
     private BufferSizeView mBufferSizeView;
     protected WorkloadView mWorkloadView;
+
+    private PartialDataCallbackSizeView mPartialDataCallbackSizeView;
 
     @Override boolean isOutput() { return true; }
 
@@ -35,10 +39,14 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
     protected void findAudioCommon() {
         super.findAudioCommon();
         mBufferSizeView = (BufferSizeView) findViewById(R.id.buffer_size_view);
+        mPartialDataCallbackSizeView =
+                (PartialDataCallbackSizeView) findViewById(R.id.partial_data_callback_size_view);
         mWorkloadView = (WorkloadView) findViewById(R.id.workload_view);
         if (mWorkloadView != null) {
             mWorkloadView.setWorkloadReceiver((w) -> mAudioOutTester.setWorkload(w));
         }
+        mPartialDataCallbackSizeView.setVisibility(
+                OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
     }
 
     protected void setBufferSizeByNumBursts(int burstCount) {
@@ -61,6 +69,10 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         super.openAudio();
         if (mBufferSizeView != null) {
             mBufferSizeView.onStreamOpened((OboeAudioStream) mAudioOutTester.getCurrentAudioStream());
+        }
+        if (mPartialDataCallbackSizeView != null) {
+            mPartialDataCallbackSizeView.onStreamOpened(
+                    (OboeAudioStream) mAudioOutTester.getCurrentAudioStream());
         }
     }
 

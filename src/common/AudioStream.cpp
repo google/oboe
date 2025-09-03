@@ -86,6 +86,28 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     return result;
 }
 
+int32_t AudioStream::firePartialDataCallback(void *audioData, int numFrames) {
+    if (!isDataCallbackEnabled()) {
+        LOGW("AudioStream::%s() called with data callback disabled!", __func__);
+        return -1; // Should not be getting called
+    }
+
+    beginPerformanceHintInCallback();
+
+    // Call the app to do the work.
+    int32_t result;
+    if (mPartialDataCallback) {
+        result = mPartialDataCallback->onPartialAudioReady(this, audioData, numFrames);
+    } else {
+        LOGE("AudioStream::%s, called without a partial data callback!", __func__);
+        result = -1; // This should not happen, return negative value to stop the stream.
+    }
+
+    endPerformanceHintInCallback(numFrames);
+
+    return result;
+}
+
 Result AudioStream::waitForStateTransition(StreamState startingState,
                                            StreamState endingState,
                                            int64_t timeoutNanoseconds)

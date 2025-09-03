@@ -45,6 +45,8 @@ public class TestInputActivity  extends TestAudioActivity {
     int mInputMarginBursts = 0;
     private WorkloadView mWorkloadView;
 
+    private PartialDataCallbackSizeView mPartialDataCallbackSizeView;
+
     public native void setMinimumFramesBeforeRead(int frames);
     public native int saveWaveFile(String absolutePath);
 
@@ -56,6 +58,11 @@ public class TestInputActivity  extends TestAudioActivity {
 
         BufferSizeView bufferSizeView = findViewById(R.id.buffer_size_view);
         bufferSizeView.setVisibility(View.GONE);
+
+        mPartialDataCallbackSizeView =
+                (PartialDataCallbackSizeView) findViewById(R.id.partial_data_callback_size_view);
+        mPartialDataCallbackSizeView.setVisibility(
+                OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -127,6 +134,10 @@ public class TestInputActivity  extends TestAudioActivity {
     public void openAudio(View view) {
         try {
             openAudio();
+            if (mPartialDataCallbackSizeView != null) {
+                mPartialDataCallbackSizeView.onStreamOpened(
+                        (OboeAudioStream) mAudioInputTester.getCurrentAudioStream());
+            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         }

@@ -89,9 +89,9 @@ public:
         return AudioApi::AAudio;
     }
 
-    DataCallbackResult callOnAudioReady(AAudioStream *stream,
-                                                   void *audioData,
-                                                   int32_t numFrames);
+    DataCallbackResult callOnAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+
+    int32_t callOnPartialAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
 
     bool isMMapUsed();
 

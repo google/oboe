@@ -64,6 +64,8 @@ public class MainActivity extends BaseOboeTesterActivity {
     private CheckBox mWorkaroundsCheckBox;
     private CheckBox mBackgroundCheckBox;
     private CheckBox mForegroundServiceCheckBox;
+    private CheckBox mUseCallbackCheckBox;
+    private CheckBox mUsePartialDataCallbackCheckBox;
     private static String mVersionText;
 
     @Override
@@ -119,6 +121,11 @@ public class MainActivity extends BaseOboeTesterActivity {
         mBackgroundCheckBox.setChecked(true);
         mForegroundServiceCheckBox = (CheckBox) findViewById(R.id.boxEnableForegroundService);
         mForegroundServiceCheckBox.setChecked(true);
+
+        mUseCallbackCheckBox = (CheckBox) findViewById(R.id.useCallback);
+        mUsePartialDataCallbackCheckBox = (CheckBox) findViewById(R.id.usePartialDataCallback);
+        mUsePartialDataCallbackCheckBox.setChecked(false);
+        OboeAudioStream.setUsePartialDataCallback(false);
 
         mBuildTextView = (TextView) findViewById(R.id.text_build_info);
         mBuildTextView.setText(Build.DISPLAY
@@ -281,6 +288,21 @@ public class MainActivity extends BaseOboeTesterActivity {
     public void onUseCallbackClicked(View view) {
         CheckBox checkBox = (CheckBox) view;
         OboeAudioStream.setUseCallback(checkBox.isChecked());
+        if (!checkBox.isChecked()) {
+            mUsePartialDataCallbackCheckBox.setChecked(false);
+            OboeAudioStream.setUsePartialDataCallback(false);
+        }
+    }
+
+    public void onUsePartialDataCallbackClicked(View view) {
+        CheckBox checkBox = (CheckBox) view;
+        OboeAudioStream.setUsePartialDataCallback(checkBox.isChecked());
+        if (checkBox.isChecked()) {
+            // When partial data callback is checked, also check use callback to ensure
+            // data callback is used.
+            mUseCallbackCheckBox.setChecked(true);
+            OboeAudioStream.setUseCallback(true);
+        }
     }
 
     private void updateCallbackSize() {

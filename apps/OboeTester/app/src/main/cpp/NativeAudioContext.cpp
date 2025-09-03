@@ -66,7 +66,12 @@ private:
 };
 
 bool ActivityContext::mUseCallback = true;
+bool ActivityContext::mUsePartialDataCallback = false;
 int  ActivityContext::callbackSize = 0;
+
+ActivityContext::ActivityContext() {
+    oboeCallbackProxy = std::make_shared<OboeStreamCallbackProxy>();
+}
 
 std::shared_ptr<oboe::AudioStream> ActivityContext::getOutputStream() {
     for (auto entry : mOboeStreams) {
@@ -149,7 +154,13 @@ oboe::Result ActivityContext::stopAllStreams() {
 void ActivityContext::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
     // We needed the proxy because we did not know the channelCount when we setup the Builder.
     if (mUseCallback) {
-        builder.setDataCallback(&oboeCallbackProxy);
+        if (mUsePartialDataCallback) {
+            builder.setPartialDataCallback(
+                    std::dynamic_pointer_cast<oboe::AudioStreamPartialDataCallback>(
+                            oboeCallbackProxy));
+        } else {
+            builder.setDataCallback(oboeCallbackProxy);
+        }
     }
 }
 
@@ -224,6 +235,7 @@ int ActivityContext::open(jint nativeApi,
     if (mUseCallback) {
         builder.setFramesPerCallback(callbackSize);
     }
+    oboeCallbackProxy->setIsPartialDataCallback(mUsePartialDataCallback);
     configureBuilder(isInput, builder);
 
     builder.setAudioApi(audioApi);
@@ -513,7 +525,7 @@ void ActivityTestOutput::configureStreamGateway() {
     }
 
     if (mUseCallback) {
-        oboeCallbackProxy.setDataCallback(&audioStreamGateway);
+        oboeCallbackProxy->setDataCallback(&audioStreamGateway);
     }
 }
 
@@ -627,7 +639,7 @@ oboe::ResultWithValue<oboe::PlaybackParameters>  ActivityTestOutput::getPlayback
 void ActivityTestInput::configureAfterOpen() {
     mInputAnalyzer.reset();
     if (mUseCallback) {
-        oboeCallbackProxy.setDataCallback(&mInputAnalyzer);
+        oboeCallbackProxy->setDataCallback(&mInputAnalyzer);
     }
     mInputAnalyzer.setRecording(mRecording.get());
 }
@@ -761,7 +773,7 @@ void ActivityEcho::configureBuilder(bool isInput, oboe::AudioStreamBuilder &buil
     // only output uses a callback, input is polled
     if (!isInput) {
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setDataCallback(mFullDuplexEcho.get());
+        oboeCallbackProxy->setDataCallback(mFullDuplexEcho.get());
     }
 }
 
@@ -783,7 +795,7 @@ void ActivityRoundTripLatency::configureBuilder(bool isInput, oboe::AudioStreamB
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setDataCallback(mFullDuplexLatency.get());
+        oboeCallbackProxy->setDataCallback(mFullDuplexLatency.get());
     }
 }
 
@@ -839,7 +851,7 @@ void ActivityGlitches::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setDataCallback(mFullDuplexGlitches.get());
+        oboeCallbackProxy->setDataCallback(mFullDuplexGlitches.get());
     }
 }
 
@@ -862,7 +874,7 @@ void ActivityDataPath::configureBuilder(bool isInput, oboe::AudioStreamBuilder &
     if (!isInput) {
         // only output uses a callback, input is polled
         builder.setCallback((oboe::AudioStreamCallback *) &oboeCallbackProxy);
-        oboeCallbackProxy.setDataCallback(mFullDuplexDataPath.get());
+        oboeCallbackProxy->setDataCallback(mFullDuplexDataPath.get());
     }
 }
 
@@ -900,6 +912,6 @@ void ActivityTestDisconnect::configureAfterOpen() {
     } else if (inputStream) {
         audioStreamGateway.setAudioSink(nullptr);
     }
-    oboeCallbackProxy.setDataCallback(&audioStreamGateway);
+    oboeCallbackProxy->setDataCallback(&audioStreamGateway);
 }
 
