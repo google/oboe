@@ -17,6 +17,13 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
+    <com.mobileer.oboetester.PartialDataCallbackSizeView
+        android:id="@+id/partial_data_callback_size_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
     <com.mobileer.oboetester.WorkloadView
         android:id="@+id/workload_view"
         android:layout_width="match_parent"

@@ -57,6 +57,21 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
     }
 }
 
+// 'C' wrapper for the partial data callback method
+static int32_t oboe_aaudio_partial_data_callback_proc(
+        AAudioStream *stream,
+        void *userData,
+        void *audioData,
+        int32_t numFrames) {
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    if (oboeStream != nullptr) {
+        return oboeStream->callOnPartialAudioReady(stream, audioData, numFrames);
+    } else {
+        // Return negative number to stop the stream.
+        return -1;
+    }
+}
+
 // This runs in its own thread.
 // Only one of these threads will be launched from internalErrorCallback().
 // It calls app error callbacks from a static function in case the stream gets deleted.
@@ -366,8 +381,20 @@ Result AudioStreamAAudio::open() {
         mSpatializationBehavior = SpatializationBehavior::Never;
     }
 
-    if (isDataCallbackSpecified()) {
-        mLibLoader->builder_setDataCallback(aaudioBuilder, oboe_aaudio_data_callback_proc, this);
+    if (anyDataCallbackSpecified()) {
+        if (isDataCallbackSpecified()) {
+            mLibLoader->builder_setDataCallback(
+                    aaudioBuilder, oboe_aaudio_data_callback_proc, this);
+        } else if (isPartialDataCallbackSpecified()) {
+            if (mLibLoader->builder_setPartialDataCallback == nullptr) {
+                // This must not happen. The stream should fail open from the builder.
+                // But having a check here to avoid crashing.
+                LOGE("Using partial data callback while it is not available");
+                return Result::ErrorIllegalArgument;
+            }
+            mLibLoader->builder_setPartialDataCallback(
+                    aaudioBuilder, oboe_aaudio_partial_data_callback_proc, this);
+        }
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerDataCallback());
 
         if (!isErrorCallbackSpecified()) {
@@ -561,8 +588,8 @@ void AudioStreamAAudio::launchStopThread() {
 }
 
 DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/,
-                                                                 void *audioData,
-                                                                 int32_t numFrames) {
+                                                       void *audioData,
+                                                       int32_t numFrames) {
     DataCallbackResult result = fireDataCallback(audioData, numFrames);
     if (result == DataCallbackResult::Continue) {
         return result;
@@ -583,6 +610,12 @@ DataCallbackResult AudioStreamAAudio::callOnAudioReady(AAudioStream * /*stream*/
     }
 }
 
+int32_t AudioStreamAAudio::callOnPartialAudioReady(AAudioStream * /*stream*/,
+                                                   void *audioData,
+                                                   int32_t numFrames) {
+    return firePartialDataCallback(audioData, numFrames);
+}
+
 Result AudioStreamAAudio::requestStart() {
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -595,7 +628,7 @@ Result AudioStreamAAudio::requestStart() {
                 return Result::OK;
             }
         }
-        if (isDataCallbackSpecified()) {
+        if (anyDataCallbackSpecified()) {
             setDataCallbackEnabled(true);
         }
         mStopThreadAllowed = true;

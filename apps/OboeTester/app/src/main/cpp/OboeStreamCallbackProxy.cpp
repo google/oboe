@@ -15,18 +15,14 @@
  */
 
 #include "common/OboeDebug.h"
+#include "NativeAudioContext.h"
 #include "OboeStreamCallbackProxy.h"
 
 bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
 
-oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
-        oboe::AudioStream *audioStream,
-        void *audioData,
-        int numFrames) {
-    oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
-    int64_t startTimeNanos = getNanoseconds();
-    int32_t numWorkloadVoices = mNumWorkloadVoices;
-
+void OboeStreamCallbackProxy::preDataCallback(oboe::AudioStream *audioStream,
+                                              int numFrames,
+                                              int numWorkloadVoices) {
     // Record which CPU this is running on.
     orCurrentCpuMask(sched_getcpu());
 
@@ -56,15 +52,13 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
 
     mCallbackCount++;
     mFramesPerCallback = numFrames;
+}
 
-    if (mCallbackReturnStop) {
-        return oboe::DataCallbackResult::Stop;
-    }
-
-    if (mCallback != nullptr) {
-        callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
-    }
-
+void OboeStreamCallbackProxy::postDataCallback(oboe::AudioStream *audioStream,
+                                               void *audioData,
+                                               int numFrames,
+                                               int64_t startTimeNanos,
+                                               int numWorkloadVoices) {
     mSynthWorkload.onCallback(numWorkloadVoices);
     if (numWorkloadVoices > 0) {
         // Render into the buffer or discard the synth voices.
@@ -77,9 +71,10 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
     int64_t currentTimeNanos = getNanoseconds();
     // Sometimes we get a short callback when doing sample rate conversion.
     // Just ignore those to avoid noise.
-    if (numFrames > (getFramesPerCallback() / 2)) {
+    if (numFrames > (getFramesPerCallback() / 2) || mIsPartialDataCallback) {
         int64_t calculationTime = currentTimeNanos - startTimeNanos;
-        float currentCpuLoad = calculationTime * 0.000000001f * audioStream->getSampleRate() / numFrames;
+        float currentCpuLoad =
+                calculationTime * 0.000000001f * audioStream->getSampleRate() / numFrames;
         mCpuLoad = (mCpuLoad * 0.95f) + (currentCpuLoad * 0.05f); // simple low pass filter
         mMaxCpuLoad = std::max(currentCpuLoad, mMaxCpuLoad.load());
     }
@@ -88,6 +83,58 @@ oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
         mStatistics.add((currentTimeNanos - mPreviousCallbackTimeNs) * kNsToMsScaler);
     }
     mPreviousCallbackTimeNs = currentTimeNanos;
+}
+
+oboe::DataCallbackResult OboeStreamCallbackProxy::onAudioReady(
+        oboe::AudioStream *audioStream,
+        void *audioData,
+        int numFrames) {
+    oboe::DataCallbackResult callbackResult = oboe::DataCallbackResult::Stop;
+    int64_t startTimeNanos = getNanoseconds();
+    int32_t numWorkloadVoices = mNumWorkloadVoices;
+    preDataCallback(audioStream, numFrames, numWorkloadVoices);
+
+    if (mCallbackReturnStop) {
+        return oboe::DataCallbackResult::Stop;
+    }
+
+    if (mCallback != nullptr) {
+        callbackResult = mCallback->onAudioReady(audioStream, audioData, numFrames);
+    }
+
+    postDataCallback(audioStream, audioData, numFrames, startTimeNanos, numWorkloadVoices);
+
+    return callbackResult;
+}
+
+int32_t OboeStreamCallbackProxy::onPartialAudioReady(oboe::AudioStream *audioStream,
+                                                     void *audioData,
+                                                     int numFrames) {
+    int32_t callbackResult = -1;
+    int64_t startTimeNanos = getNanoseconds();
+    int32_t numWorkloadVoices = mNumWorkloadVoices;
+    preDataCallback(audioStream, numFrames, numWorkloadVoices);
+
+    if (mCallbackReturnStop) {
+        return callbackResult;
+    }
+
+    // Temporary upgrade to int64_t to avoid overflow when multiplying.
+    int framesToProcessed =
+            (int64_t)numFrames * mPartialDataCallbackPercentage / kPartialDataCallbackPercentage;
+    if (mCallback != nullptr) {
+        auto oboeCallbackResult =
+                mCallback->onAudioReady(audioStream, audioData, framesToProcessed);
+        if (oboeCallbackResult != oboe::DataCallbackResult::Stop) {
+            callbackResult = framesToProcessed;
+        }
+    }
+
+    postDataCallback(audioStream,
+                     audioData,
+                     callbackResult > 0 ? framesToProcessed : 0,
+                     startTimeNanos,
+                     numWorkloadVoices);
 
     return callbackResult;
 }

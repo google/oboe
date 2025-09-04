@@ -28,6 +28,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
     private static final int INVALID_STREAM_INDEX = -1;
     int mStreamIndex = INVALID_STREAM_INDEX;
 
+    private static boolean USE_PARTIAL_DATA_CALLBACK = false;
+
     @Override
     public void stopPlayback() throws IOException {
         int result = stopPlaybackNative();
@@ -160,6 +162,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
         return setBufferSizeInFrames(mStreamIndex, thresholdFrames);
     }
     private native int setBufferSizeInFrames(int streamIndex, int thresholdFrames);
+
+    public native void setPartialCallbackPercentage(int percentage);
 
     @Override
     public void setPerformanceHintEnabled(boolean checked) {
@@ -366,5 +370,15 @@ abstract class OboeAudioStream extends AudioStreamBase {
     public static native void setCallbackSize(int callbackSize);
 
     public static native int getOboeVersionNumber();
+
+    public static boolean usePartialDataCallback() {
+        return USE_PARTIAL_DATA_CALLBACK;
+    }
+
+    public static void setUsePartialDataCallback(boolean usePartialDataCallback) {
+        USE_PARTIAL_DATA_CALLBACK = usePartialDataCallback;
+        setUsePartialDataCallbackNative(usePartialDataCallback);
+    }
+    private static native void setUsePartialDataCallbackNative(boolean usePartialDataCallback);
 
 }
