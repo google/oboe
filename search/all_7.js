@@ -12,8 +12,10 @@ var searchData=
   ['ismmapenabled_9',['isMMapEnabled',['../classoboe_1_1_oboe_extensions.html#acb59883549a68c5602961e8b1f5594aa',1,'oboe::OboeExtensions']]],
   ['ismmapsupported_10',['isMMapSupported',['../classoboe_1_1_oboe_extensions.html#a426a601f357d8644a5d27babf1372ba0',1,'oboe::OboeExtensions']]],
   ['ismmapused_11',['isMMapUsed',['../classoboe_1_1_oboe_extensions.html#a7fe9cde7ff7cf2410dcce867d07670b2',1,'oboe::OboeExtensions']]],
-  ['isperformancehintenabled_12',['isPerformanceHintEnabled',['../classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b',1,'oboe::AudioStream']]],
-  ['ispresentationcallbackspecified_13',['isPresentationCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#abbf0b7df1cd7c78caa794f2e314f90f2',1,'oboe::AudioStreamBase']]],
-  ['isvalidconfig_14',['isValidConfig',['../classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2',1,'oboe::AudioStreamBase']]],
-  ['isxruncountsupported_15',['isXRunCountSupported',['../classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
+  ['ispartialdatacallbackspecified_12',['isPartialDataCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#a054a576db5a7aa1b333311aa975d5289',1,'oboe::AudioStreamBase']]],
+  ['ispartialdatacallbacksupported_13',['isPartialDataCallbackSupported',['../classoboe_1_1_oboe_extensions.html#aa42010a19f604da072bc7683d12c2ccb',1,'oboe::OboeExtensions']]],
+  ['isperformancehintenabled_14',['isPerformanceHintEnabled',['../classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b',1,'oboe::AudioStream']]],
+  ['ispresentationcallbackspecified_15',['isPresentationCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#abbf0b7df1cd7c78caa794f2e314f90f2',1,'oboe::AudioStreamBase']]],
+  ['isvalidconfig_16',['isValidConfig',['../classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2',1,'oboe::AudioStreamBase']]],
+  ['isxruncountsupported_17',['isXRunCountSupported',['../classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
 ];

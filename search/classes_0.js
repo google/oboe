@@ -7,5 +7,6 @@ var searchData=
   ['audiostreamcallback_4',['AudioStreamCallback',['../classoboe_1_1_audio_stream_callback.html',1,'oboe']]],
   ['audiostreamdatacallback_5',['AudioStreamDataCallback',['../classoboe_1_1_audio_stream_data_callback.html',1,'oboe']]],
   ['audiostreamerrorcallback_6',['AudioStreamErrorCallback',['../classoboe_1_1_audio_stream_error_callback.html',1,'oboe']]],
-  ['audiostreampresentationcallback_7',['AudioStreamPresentationCallback',['../classoboe_1_1_audio_stream_presentation_callback.html',1,'oboe']]]
+  ['audiostreampartialdatacallback_7',['AudioStreamPartialDataCallback',['../classoboe_1_1_audio_stream_partial_data_callback.html',1,'oboe']]],
+  ['audiostreampresentationcallback_8',['AudioStreamPresentationCallback',['../classoboe_1_1_audio_stream_presentation_callback.html',1,'oboe']]]
 ];

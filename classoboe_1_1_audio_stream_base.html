@@ -143,12 +143,18 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <tr class="separator:a09f1bb95625469d682b15c90fb7d0d6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d2b0c8664fb85f0425bf081d02bda63" id="r_a1d2b0c8664fb85f0425bf081d02bda63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1d2b0c8664fb85f0425bf081d02bda63">getDataCallback</a> () const</td></tr>
 <tr class="separator:a1d2b0c8664fb85f0425bf081d02bda63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade17e1b92eda38857766263be18201ae" id="r_ade17e1b92eda38857766263be18201ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade17e1b92eda38857766263be18201ae">getPartialDataCallback</a> () const</td></tr>
+<tr class="separator:ade17e1b92eda38857766263be18201ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75eca223a8e8793f47d23f42b89acfab" id="r_a75eca223a8e8793f47d23f42b89acfab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75eca223a8e8793f47d23f42b89acfab">getErrorCallback</a> () const</td></tr>
 <tr class="separator:a75eca223a8e8793f47d23f42b89acfab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8041b52bb5c6085e92fb22de8ab9d1e3" id="r_a8041b52bb5c6085e92fb22de8ab9d1e3"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_presentation_callback.html">AudioStreamPresentationCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8041b52bb5c6085e92fb22de8ab9d1e3">getPresentationCallback</a> () const</td></tr>
 <tr class="separator:a8041b52bb5c6085e92fb22de8ab9d1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a54d38b985a2eb12c6972104dc0ce73" id="r_a9a54d38b985a2eb12c6972104dc0ce73"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9a54d38b985a2eb12c6972104dc0ce73">isDataCallbackSpecified</a> () const</td></tr>
 <tr class="separator:a9a54d38b985a2eb12c6972104dc0ce73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a054a576db5a7aa1b333311aa975d5289" id="r_a054a576db5a7aa1b333311aa975d5289"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a054a576db5a7aa1b333311aa975d5289">isPartialDataCallbackSpecified</a> () const</td></tr>
+<tr class="separator:a054a576db5a7aa1b333311aa975d5289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a780d0c1f94826307f801ec1418ce0047" id="r_a780d0c1f94826307f801ec1418ce0047"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a780d0c1f94826307f801ec1418ce0047">anyDataCallbackSpecified</a> () const</td></tr>
+<tr class="separator:a780d0c1f94826307f801ec1418ce0047"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef579f6d1f779c89d051f0963f2976b3" id="r_aef579f6d1f779c89d051f0963f2976b3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aef579f6d1f779c89d051f0963f2976b3">isErrorCallbackSpecified</a> () const</td></tr>
 <tr class="separator:aef579f6d1f779c89d051f0963f2976b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbf0b7df1cd7c78caa794f2e314f90f2" id="r_abbf0b7df1cd7c78caa794f2e314f90f2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abbf0b7df1cd7c78caa794f2e314f90f2">isPresentationCallbackSpecified</a> () const</td></tr>
@@ -200,6 +206,11 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:ae899a6eb823f694860556f03d2bee2b1" id="r_ae899a6eb823f694860556f03d2bee2b1"><td class="memItemLeft" align="right" valign="top"><a id="ae899a6eb823f694860556f03d2bee2b1" name="ae899a6eb823f694860556f03d2bee2b1"></a>
 std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mSharedDataCallback</b></td></tr>
 <tr class="separator:ae899a6eb823f694860556f03d2bee2b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae90833d635f91be68cbc7f5db1d6ce99" id="r_ae90833d635f91be68cbc7f5db1d6ce99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae90833d635f91be68cbc7f5db1d6ce99">mPartialDataCallback</a> = nullptr</td></tr>
+<tr class="separator:ae90833d635f91be68cbc7f5db1d6ce99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd9c55a190ed75b68a9760aa43e6148d" id="r_abd9c55a190ed75b68a9760aa43e6148d"><td class="memItemLeft" align="right" valign="top"><a id="abd9c55a190ed75b68a9760aa43e6148d" name="abd9c55a190ed75b68a9760aa43e6148d"></a>
+std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mSharedPartialDataCallback</b></td></tr>
+<tr class="separator:abd9c55a190ed75b68a9760aa43e6148d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc0c8cc54adb6d3350c62b8a74b9c57b" id="r_adc0c8cc54adb6d3350c62b8a74b9c57b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a> = nullptr</td></tr>
 <tr class="separator:adc0c8cc54adb6d3350c62b8a74b9c57b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af499c51f6a69114ee6c0018f58d727ae" id="r_af499c51f6a69114ee6c0018f58d727ae"><td class="memItemLeft" align="right" valign="top"><a id="af499c51f6a69114ee6c0018f58d727ae" name="af499c51f6a69114ee6c0018f58d727ae"></a>
@@ -297,6 +308,32 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a780d0c1f94826307f801ec1418ce0047" name="a780d0c1f94826307f801ec1418ce0047"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a780d0c1f94826307f801ec1418ce0047">&#9670;&#160;</a></span>anyDataCallbackSpecified()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::AudioStreamBase::anyDataCallbackSpecified </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>true if a data callback or a partial data callback was set for this stream </dd></dl>
+
+</div>
+</div>
 <a id="ad55e88cf9ec00d2ef6e21877c2ef085b" name="ad55e88cf9ec00d2ef6e21877c2ef085b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad55e88cf9ec00d2ef6e21877c2ef085b">&#9670;&#160;</a></span>getAllowedCapturePolicy()</h2>
 
@@ -801,6 +838,32 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 
 </div>
 </div>
+<a id="ade17e1b92eda38857766263be18201ae" name="ade17e1b92eda38857766263be18201ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade17e1b92eda38857766263be18201ae">&#9670;&#160;</a></span>getPartialDataCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> * oboe::AudioStreamBase::getPartialDataCallback </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>For internal use only. </p><dl class="section return"><dt>Returns</dt><dd>the partial data callback object for this stream, if set. </dd></dl>
+
+</div>
+</div>
 <a id="a2ddb935de0e24dd7ae8e2cfbecac9fdc" name="a2ddb935de0e24dd7ae8e2cfbecac9fdc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2ddb935de0e24dd7ae8e2cfbecac9fdc">&#9670;&#160;</a></span>getPerformanceMode()</h2>
 
@@ -1165,6 +1228,32 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>true if Oboe can convert data formats to achieve optimal results. </dd></dl>
+
+</div>
+</div>
+<a id="a054a576db5a7aa1b333311aa975d5289" name="a054a576db5a7aa1b333311aa975d5289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a054a576db5a7aa1b333311aa975d5289">&#9670;&#160;</a></span>isPartialDataCallbackSpecified()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool oboe::AudioStreamBase::isPartialDataCallbackSpecified </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>true if a partial data callback was set for this stream </dd></dl>
 
 </div>
 </div>
@@ -1658,6 +1747,29 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 <p>Control the name of the package creating the stream. Only active on Android 31+ </p>
+
+</div>
+</div>
+<a id="ae90833d635f91be68cbc7f5db1d6ce99" name="ae90833d635f91be68cbc7f5db1d6ce99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae90833d635f91be68cbc7f5db1d6ce99">&#9670;&#160;</a></span>mPartialDataCallback</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a>* oboe::AudioStreamBase::mPartialDataCallback = nullptr</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The partial data callback which will be fired when new data is ready to be read/written. </p>
 
 </div>
 </div>

@@ -272,245 +272,262 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00448" name="l00448"></a><span class="lineno">  448</span>    }</div>
 <div class="line"><a id="l00449" name="l00449"></a><span class="lineno">  449</span> </div>
 <div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span>    <span class="comment">/*</span></div>
-<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span><span class="comment">     * Swap old callback for new callback.</span></div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span><span class="comment">     * Swap old partial data callback for new callback.</span></div>
 <div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span><span class="comment">     * This not atomic.</span></div>
 <div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="comment">     * This should only be used internally.</span></div>
-<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="comment">     * @param errorCallback</span></div>
-<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="comment">     * @return previous errorCallback</span></div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="comment">     * @param dataCallback</span></div>
+<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span><span class="comment">     * @return previous dataCallback</span></div>
 <div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span><span class="comment">     */</span></div>
-<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span>    <a class="code hl_class" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *swapErrorCallback(<a class="code hl_class" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *errorCallback) {</div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>        <a class="code hl_class" href="classoboe_1_1_audio_stream_error_callback.html">AudioStreamErrorCallback</a> *previousCallback = <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a>;</div>
-<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>        <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a> = errorCallback;</div>
-<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>        <span class="keywordflow">return</span> previousCallback;</div>
-<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>    }</div>
-<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span> </div>
-<div class="line"><a id="l00466" name="l00466"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aa6ae9fc6ecc905571979c4df8f849a44">  466</a></span>    <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int32_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aa6ae9fc6ecc905571979c4df8f849a44">getAvailableFrames</a>();</div>
-<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span> </div>
-<div class="line"><a id="l00482" name="l00482"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f">  482</a></span>    <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int32_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f">waitForAvailableFrames</a>(int32_t numFrames,</div>
-<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>                                                    int64_t timeoutNanoseconds);</div>
-<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span> </div>
-<div class="foldopen" id="foldopen00488" data-start="{" data-end="}">
-<div class="line"><a id="l00488" name="l00488"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">  488</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">getLastErrorCallbackResult</a>()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>        <span class="keywordflow">return</span> mErrorCallbackResult;</div>
-<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span>    }</div>
+<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span>    <a class="code hl_class" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *swapPartialDataCallback(</div>
+<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>            <a class="code hl_class" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *partialDataCallback) {</div>
+<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>        <a class="code hl_class" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *previousPartialCallback = <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#ae90833d635f91be68cbc7f5db1d6ce99">mPartialDataCallback</a>;</div>
+<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>        <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#ae90833d635f91be68cbc7f5db1d6ce99">mPartialDataCallback</a> = partialDataCallback;</div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>        <span class="keywordflow">return</span> previousPartialCallback;</div>
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span>    }</div>
+<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span> </div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>    <span class="comment">/*</span></div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span><span class="comment">     * Swap old callback for new callback.</span></div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span><span class="comment">     * This not atomic.</span></div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span><span class="comment">     * This should only be used internally.</span></div>
+<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span><span class="comment">     * @param errorCallback</span></div>
+<div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span><span class="comment">     * @return previous errorCallback</span></div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span><span class="comment">     */</span></div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>    AudioStreamErrorCallback *swapErrorCallback(AudioStreamErrorCallback *errorCallback) {</div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>        AudioStreamErrorCallback *previousCallback = <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a>;</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>        <a class="code hl_variable" href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">mErrorCallback</a> = errorCallback;</div>
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span>        <span class="keywordflow">return</span> previousCallback;</div>
+<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span>    }</div>
+<div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span> </div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aa6ae9fc6ecc905571979c4df8f849a44">  480</a></span>    <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int32_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aa6ae9fc6ecc905571979c4df8f849a44">getAvailableFrames</a>();</div>
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span> </div>
+<div class="line"><a id="l00496" name="l00496"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f">  496</a></span>    <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int32_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f">waitForAvailableFrames</a>(int32_t numFrames,</div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>                                                    int64_t timeoutNanoseconds);</div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span> </div>
+<div class="foldopen" id="foldopen00502" data-start="{" data-end="}">
+<div class="line"><a id="l00502" name="l00502"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">  502</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">getLastErrorCallbackResult</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>        <span class="keywordflow">return</span> mErrorCallbackResult;</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>    }</div>
 </div>
-<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span> </div>
-<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span> </div>
-<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>    int32_t getDelayBeforeCloseMillis()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>        <span class="keywordflow">return</span> mDelayBeforeCloseMillis;</div>
-<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>    }</div>
-<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span> </div>
-<div class="foldopen" id="foldopen00511" data-start="{" data-end="}">
-<div class="line"><a id="l00511" name="l00511"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">  511</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">setDelayBeforeCloseMillis</a>(int32_t delayBeforeCloseMillis) {</div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>        mDelayBeforeCloseMillis = delayBeforeCloseMillis;</div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>    }</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span> </div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span> </div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>    int32_t getDelayBeforeCloseMillis()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>        <span class="keywordflow">return</span> mDelayBeforeCloseMillis;</div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>    }</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span> </div>
+<div class="foldopen" id="foldopen00525" data-start="{" data-end="}">
+<div class="line"><a id="l00525" name="l00525"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">  525</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">setDelayBeforeCloseMillis</a>(int32_t delayBeforeCloseMillis) {</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>        mDelayBeforeCloseMillis = delayBeforeCloseMillis;</div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>    }</div>
 </div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span> </div>
-<div class="foldopen" id="foldopen00538" data-start="{" data-end="}">
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">  538</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">setPerformanceHintEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>        mPerformanceHintEnabled = enabled;</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>    }</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span> </div>
+<div class="foldopen" id="foldopen00552" data-start="{" data-end="}">
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">  552</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">setPerformanceHintEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        mPerformanceHintEnabled = enabled;</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    }</div>
 </div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span> </div>
-<div class="foldopen" id="foldopen00548" data-start="{" data-end="}">
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">  548</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">isPerformanceHintEnabled</a>() {</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>        <span class="keywordflow">return</span> mPerformanceHintEnabled;</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    }</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span> </div>
+<div class="foldopen" id="foldopen00562" data-start="{" data-end="}">
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">  562</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">isPerformanceHintEnabled</a>() {</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>        <span class="keywordflow">return</span> mPerformanceHintEnabled;</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>    }</div>
 </div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span> </div>
-<div class="foldopen" id="foldopen00578" data-start="{" data-end="}">
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">  578</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">reportWorkload</a>([[maybe_unused]] int32_t appWorkload) {</div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>    }</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span> </div>
+<div class="foldopen" id="foldopen00592" data-start="{" data-end="}">
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">  592</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">reportWorkload</a>([[maybe_unused]] int32_t appWorkload) {</div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>    }</div>
 </div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span> </div>
-<div class="foldopen" id="foldopen00607" data-start="{" data-end="}">
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">  607</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">notifyWorkloadIncrease</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>                                                [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>                                                [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    }</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span> </div>
+<div class="foldopen" id="foldopen00621" data-start="{" data-end="}">
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">  621</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">notifyWorkloadIncrease</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>                                                [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>                                                [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>    }</div>
 </div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span> </div>
-<div class="foldopen" id="foldopen00638" data-start="{" data-end="}">
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">  638</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">notifyWorkloadReset</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>                                             [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>                                             [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>    }</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
+<div class="foldopen" id="foldopen00652" data-start="{" data-end="}">
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">  652</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">notifyWorkloadReset</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>                                             [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
+<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>                                             [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>    }</div>
 </div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span> </div>
-<div class="foldopen" id="foldopen00670" data-start="{" data-end="}">
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">  670</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">notifyWorkloadSpike</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>                                             [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>                                             [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
-<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>    }</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span> </div>
+<div class="foldopen" id="foldopen00684" data-start="{" data-end="}">
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">  684</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">notifyWorkloadSpike</a>([[maybe_unused]] <span class="keywordtype">bool</span> cpu,</div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>                                             [[maybe_unused]] <span class="keywordtype">bool</span> gpu,</div>
+<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>                                             [[maybe_unused]] <span class="keyword">const</span> <span class="keywordtype">char</span>* debugName) {</div>
+<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>        <span class="keywordflow">return</span> oboe::Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>    }</div>
 </div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span> </div>
-<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>    <span class="keyword">virtual</span> oboe::Result setOffloadDelayPadding([[maybe_unused]] int32_t delayInFrames,</div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>                                                [[maybe_unused]] int32_t paddingInFrames) {</div>
-<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>    }</div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span> </div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>    <span class="keyword">virtual</span> ResultWithValue&lt;int32_t&gt; getOffloadDelay() {</div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>        <span class="keywordflow">return</span> ResultWithValue&lt;int32_t&gt;(Result::ErrorUnimplemented);</div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>    }</div>
-<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span> </div>
-<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>    <span class="keyword">virtual</span> ResultWithValue&lt;int32_t&gt; getOffloadPadding() {</div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>        <span class="keywordflow">return</span> ResultWithValue&lt;int32_t&gt;(Result::ErrorUnimplemented);</div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>    }</div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span> </div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>    <span class="keyword">virtual</span> oboe::Result setOffloadEndOfStream() {</div>
-<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>    }</div>
-<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span> </div>
-<div class="foldopen" id="foldopen00733" data-start="{" data-end="}">
-<div class="line"><a id="l00733" name="l00733"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">  733</a></span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int64_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">flushFromFrame</a>(</div>
-<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>            FlushFromAccuracy accuracy, int64_t positionInFrames) {</div>
-<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int64_t&gt;</a>(Result::ErrorUnimplemented);</div>
-<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>    }</div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span> </div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>    <span class="keyword">virtual</span> oboe::Result setOffloadDelayPadding([[maybe_unused]] int32_t delayInFrames,</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>                                                [[maybe_unused]] int32_t paddingInFrames) {</div>
+<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>    }</div>
+<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span> </div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>    <span class="keyword">virtual</span> ResultWithValue&lt;int32_t&gt; getOffloadDelay() {</div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>        <span class="keywordflow">return</span> ResultWithValue&lt;int32_t&gt;(Result::ErrorUnimplemented);</div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>    }</div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span> </div>
+<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>    <span class="keyword">virtual</span> ResultWithValue&lt;int32_t&gt; getOffloadPadding() {</div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>        <span class="keywordflow">return</span> ResultWithValue&lt;int32_t&gt;(Result::ErrorUnimplemented);</div>
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span>    }</div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span> </div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>    <span class="keyword">virtual</span> oboe::Result setOffloadEndOfStream() {</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>    }</div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span> </div>
+<div class="foldopen" id="foldopen00747" data-start="{" data-end="}">
+<div class="line"><a id="l00747" name="l00747"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">  747</a></span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int64_t&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">flushFromFrame</a>(</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>            FlushFromAccuracy accuracy, int64_t positionInFrames) {</div>
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;int64_t&gt;</a>(Result::ErrorUnimplemented);</div>
+<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>    }</div>
 </div>
-<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span> </div>
-<div class="foldopen" id="foldopen00752" data-start="{" data-end="}">
-<div class="line"><a id="l00752" name="l00752"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">  752</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">setPlaybackParameters</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a>&amp; parameters) {</div>
-<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
-<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>    }</div>
+<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span> </div>
+<div class="foldopen" id="foldopen00766" data-start="{" data-end="}">
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">  766</a></span>    <span class="keyword">virtual</span> oboe::Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">setPlaybackParameters</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structoboe_1_1_playback_parameters.html">PlaybackParameters</a>&amp; parameters) {</div>
+<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span>        <span class="keywordflow">return</span> Result::ErrorUnimplemented;</div>
+<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>    }</div>
 </div>
-<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span> </div>
-<div class="foldopen" id="foldopen00764" data-start="{" data-end="}">
-<div class="line"><a id="l00764" name="l00764"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">  764</a></span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;PlaybackParameters&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">getPlaybackParameters</a>() {</div>
-<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;PlaybackParameters&gt;</a>(Result::ErrorUnimplemented);</div>
-<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>    }</div>
-</div>
-<div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span> </div>
-<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span><span class="keyword">protected</span>:</div>
 <div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span> </div>
-<div class="foldopen" id="foldopen00779" data-start="{" data-end="}">
-<div class="line"><a id="l00779" name="l00779"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">  779</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">wasErrorCallbackCalled</a>() {</div>
-<div class="line"><a id="l00780" name="l00780"></a><span class="lineno">  780</span>        <span class="keywordflow">return</span> mErrorCallbackCalled.exchange(<span class="keyword">true</span>);</div>
-<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span>    }</div>
+<div class="foldopen" id="foldopen00778" data-start="{" data-end="}">
+<div class="line"><a id="l00778" name="l00778"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">  778</a></span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;PlaybackParameters&gt;</a> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">getPlaybackParameters</a>() {</div>
+<div class="line"><a id="l00779" name="l00779"></a><span class="lineno">  779</span>        <span class="keywordflow">return</span> <a class="code hl_class" href="classoboe_1_1_result_with_value.html">ResultWithValue&lt;PlaybackParameters&gt;</a>(Result::ErrorUnimplemented);</div>
+<div class="line"><a id="l00780" name="l00780"></a><span class="lineno">  780</span>    }</div>
 </div>
-<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span> </div>
-<div class="line"><a id="l00789" name="l00789"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">  789</a></span>    <span class="keyword">virtual</span> Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">waitForStateTransition</a>(StreamState startingState,</div>
-<div class="line"><a id="l00790" name="l00790"></a><span class="lineno">  790</span>                                          StreamState endingState,</div>
-<div class="line"><a id="l00791" name="l00791"></a><span class="lineno">  791</span>                                          int64_t timeoutNanoseconds);</div>
-<div class="line"><a id="l00792" name="l00792"></a><span class="lineno">  792</span> </div>
-<div class="foldopen" id="foldopen00800" data-start="{" data-end="}">
-<div class="line"><a id="l00800" name="l00800"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">  800</a></span>    <span class="keyword">virtual</span> DataCallbackResult <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">onDefaultCallback</a>(<span class="keywordtype">void</span>* <span class="comment">/* audioData  */</span>, <span class="keywordtype">int</span> <span class="comment">/* numFrames */</span>) {</div>
-<div class="line"><a id="l00801" name="l00801"></a><span class="lineno">  801</span>        <span class="keywordflow">return</span> DataCallbackResult::Stop;</div>
-<div class="line"><a id="l00802" name="l00802"></a><span class="lineno">  802</span>    }</div>
+<div class="line"><a id="l00781" name="l00781"></a><span class="lineno">  781</span> </div>
+<div class="line"><a id="l00782" name="l00782"></a><span class="lineno">  782</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00783" name="l00783"></a><span class="lineno">  783</span> </div>
+<div class="foldopen" id="foldopen00793" data-start="{" data-end="}">
+<div class="line"><a id="l00793" name="l00793"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">  793</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">wasErrorCallbackCalled</a>() {</div>
+<div class="line"><a id="l00794" name="l00794"></a><span class="lineno">  794</span>        <span class="keywordflow">return</span> mErrorCallbackCalled.exchange(<span class="keyword">true</span>);</div>
+<div class="line"><a id="l00795" name="l00795"></a><span class="lineno">  795</span>    }</div>
 </div>
-<div class="line"><a id="l00803" name="l00803"></a><span class="lineno">  803</span> </div>
-<div class="line"><a id="l00812" name="l00812"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#ab7a8cfe5d6039386bc5850fd5ee9bd62">  812</a></span>    DataCallbackResult <a class="code hl_function" href="classoboe_1_1_audio_stream.html#ab7a8cfe5d6039386bc5850fd5ee9bd62">fireDataCallback</a>(<span class="keywordtype">void</span> *audioData, <span class="keywordtype">int</span> numFrames);</div>
-<div class="line"><a id="l00813" name="l00813"></a><span class="lineno">  813</span> </div>
-<div class="foldopen" id="foldopen00817" data-start="{" data-end="}">
-<div class="line"><a id="l00817" name="l00817"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">  817</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">isDataCallbackEnabled</a>() {</div>
-<div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>        <span class="keywordflow">return</span> mDataCallbackEnabled;</div>
-<div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span>    }</div>
+<div class="line"><a id="l00796" name="l00796"></a><span class="lineno">  796</span> </div>
+<div class="line"><a id="l00803" name="l00803"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">  803</a></span>    <span class="keyword">virtual</span> Result <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">waitForStateTransition</a>(StreamState startingState,</div>
+<div class="line"><a id="l00804" name="l00804"></a><span class="lineno">  804</span>                                          StreamState endingState,</div>
+<div class="line"><a id="l00805" name="l00805"></a><span class="lineno">  805</span>                                          int64_t timeoutNanoseconds);</div>
+<div class="line"><a id="l00806" name="l00806"></a><span class="lineno">  806</span> </div>
+<div class="foldopen" id="foldopen00814" data-start="{" data-end="}">
+<div class="line"><a id="l00814" name="l00814"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">  814</a></span>    <span class="keyword">virtual</span> DataCallbackResult <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">onDefaultCallback</a>(<span class="keywordtype">void</span>* <span class="comment">/* audioData  */</span>, <span class="keywordtype">int</span> <span class="comment">/* numFrames */</span>) {</div>
+<div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>        <span class="keywordflow">return</span> DataCallbackResult::Stop;</div>
+<div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>    }</div>
 </div>
-<div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span> </div>
-<div class="foldopen" id="foldopen00825" data-start="{" data-end="}">
-<div class="line"><a id="l00825" name="l00825"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">  825</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">setDataCallbackEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
-<div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span>        mDataCallbackEnabled = enabled;</div>
-<div class="line"><a id="l00827" name="l00827"></a><span class="lineno">  827</span>    }</div>
-</div>
-<div class="line"><a id="l00828" name="l00828"></a><span class="lineno">  828</span> </div>
-<div class="line"><a id="l00833" name="l00833"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">  833</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">calculateDefaultDelayBeforeCloseMillis</a>();</div>
-<div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span> </div>
-<div class="foldopen" id="foldopen00838" data-start="{" data-end="}">
-<div class="line"><a id="l00838" name="l00838"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">  838</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">sleepBeforeClose</a>() {</div>
-<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>        <span class="keywordflow">if</span> (mDelayBeforeCloseMillis &gt; 0) {</div>
-<div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>            usleep(mDelayBeforeCloseMillis * 1000);</div>
-<div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>        }</div>
+<div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span> </div>
+<div class="line"><a id="l00826" name="l00826"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0e166f78dc351ba92a458d17a7bf0536">  826</a></span>    <span class="keyword">virtual</span> DataCallbackResult <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a0e166f78dc351ba92a458d17a7bf0536">fireDataCallback</a>(<span class="keywordtype">void</span> *audioData, <span class="keywordtype">int</span> numFrames);</div>
+<div class="line"><a id="l00827" name="l00827"></a><span class="lineno">  827</span> </div>
+<div class="line"><a id="l00835" name="l00835"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aa42024b9450e79e20a163a40e81993e2">  835</a></span>    <span class="keyword">virtual</span> int32_t <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aa42024b9450e79e20a163a40e81993e2">firePartialDataCallback</a>(<span class="keywordtype">void</span>* audioData, <span class="keywordtype">int</span> numFrames);</div>
+<div class="line"><a id="l00836" name="l00836"></a><span class="lineno">  836</span> </div>
+<div class="foldopen" id="foldopen00840" data-start="{" data-end="}">
+<div class="line"><a id="l00840" name="l00840"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">  840</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">isDataCallbackEnabled</a>() {</div>
+<div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>        <span class="keywordflow">return</span> mDataCallbackEnabled;</div>
 <div class="line"><a id="l00842" name="l00842"></a><span class="lineno">  842</span>    }</div>
 </div>
 <div class="line"><a id="l00843" name="l00843"></a><span class="lineno">  843</span> </div>
-<div class="line"><a id="l00847" name="l00847"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">  847</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">beginPerformanceHintInCallback</a>() {}</div>
-<div class="line"><a id="l00848" name="l00848"></a><span class="lineno">  848</span> </div>
-<div class="line"><a id="l00853" name="l00853"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">  853</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">endPerformanceHintInCallback</a>(int32_t <span class="comment">/*numFrames*/</span>) {}</div>
-<div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span> </div>
-<div class="line"><a id="l00858" name="l00858"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">  858</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">closePerformanceHint</a>() {}</div>
-<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span> </div>
-<div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span>    <span class="comment">/*</span></div>
-<div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span><span class="comment">     * Set a weak_ptr to this stream from the shared_ptr so that we can</span></div>
-<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span><span class="comment">     * later use a shared_ptr in the error callback.</span></div>
-<div class="line"><a id="l00863" name="l00863"></a><span class="lineno">  863</span><span class="comment">     */</span></div>
-<div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>    <span class="keywordtype">void</span> setWeakThis(std::shared_ptr&lt;oboe::AudioStream&gt; &amp;sharedStream) {</div>
-<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>        mWeakThis = sharedStream;</div>
-<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span>    }</div>
-<div class="line"><a id="l00867" name="l00867"></a><span class="lineno">  867</span> </div>
-<div class="line"><a id="l00868" name="l00868"></a><span class="lineno">  868</span>    <span class="comment">/*</span></div>
-<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span><span class="comment">     * Make a shared_ptr that will prevent this stream from being deleted.</span></div>
-<div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span><span class="comment">     */</span></div>
-<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>    std::shared_ptr&lt;oboe::AudioStream&gt; lockWeakThis() {</div>
-<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>        <span class="keywordflow">return</span> mWeakThis.lock();</div>
-<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>    }</div>
-<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span> </div>
-<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>    std::weak_ptr&lt;AudioStream&gt; mWeakThis; <span class="comment">// weak pointer to this object</span></div>
-<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span> </div>
-<div class="line"><a id="l00883" name="l00883"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">  883</a></span>    std::atomic&lt;int64_t&gt; <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">mFramesWritten</a>{};</div>
-<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span> </div>
-<div class="line"><a id="l00891" name="l00891"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">  891</a></span>    std::atomic&lt;int64_t&gt; <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">mFramesRead</a>{};</div>
-<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span> </div>
-<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>    std::mutex           mLock; <span class="comment">// for synchronizing start/stop/close</span></div>
-<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span> </div>
-<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>    oboe::Result         mErrorCallbackResult = oboe::Result::OK;</div>
-<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span> </div>
-<div class="line"><a id="l00901" name="l00901"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">  901</a></span>    int32_t              <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">mFramesPerBurst</a> = kUnspecified;</div>
-<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span> </div>
-<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>    <span class="comment">// Time to sleep in order to prevent a race condition with a callback after a close().</span></div>
-<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>    <span class="comment">// Two milliseconds may be enough but 10 msec is even safer.</span></div>
-<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kMinDelayBeforeCloseMillis = 10;</div>
-<div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kMaxDelayBeforeCloseMillis = 100;</div>
-<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span>    int32_t              mDelayBeforeCloseMillis = kMinDelayBeforeCloseMillis;</div>
-<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span> </div>
-<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span> </div>
-<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>    <span class="comment">// Log the scheduler if it changes.</span></div>
-<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>    <span class="keywordtype">void</span>                 checkScheduler();</div>
-<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>    <span class="keywordtype">int</span>                  mPreviousScheduler = -1;</div>
-<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span> </div>
-<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span>    std::atomic&lt;bool&gt;    mDataCallbackEnabled{<span class="keyword">false</span>};</div>
-<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>    std::atomic&lt;bool&gt;    mErrorCallbackCalled{<span class="keyword">false</span>};</div>
+<div class="foldopen" id="foldopen00848" data-start="{" data-end="}">
+<div class="line"><a id="l00848" name="l00848"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">  848</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">setDataCallbackEnabled</a>(<span class="keywordtype">bool</span> enabled) {</div>
+<div class="line"><a id="l00849" name="l00849"></a><span class="lineno">  849</span>        mDataCallbackEnabled = enabled;</div>
+<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>    }</div>
+</div>
+<div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span> </div>
+<div class="line"><a id="l00856" name="l00856"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">  856</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">calculateDefaultDelayBeforeCloseMillis</a>();</div>
+<div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span> </div>
+<div class="foldopen" id="foldopen00861" data-start="{" data-end="}">
+<div class="line"><a id="l00861" name="l00861"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">  861</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">sleepBeforeClose</a>() {</div>
+<div class="line"><a id="l00862" name="l00862"></a><span class="lineno">  862</span>        <span class="keywordflow">if</span> (mDelayBeforeCloseMillis &gt; 0) {</div>
+<div class="line"><a id="l00863" name="l00863"></a><span class="lineno">  863</span>            usleep(mDelayBeforeCloseMillis * 1000);</div>
+<div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>        }</div>
+<div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>    }</div>
+</div>
+<div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span> </div>
+<div class="line"><a id="l00870" name="l00870"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">  870</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">beginPerformanceHintInCallback</a>() {}</div>
+<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span> </div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">  876</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">endPerformanceHintInCallback</a>(int32_t <span class="comment">/*numFrames*/</span>) {}</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span> </div>
+<div class="line"><a id="l00881" name="l00881"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">  881</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">closePerformanceHint</a>() {}</div>
+<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span> </div>
+<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>    <span class="comment">/*</span></div>
+<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span><span class="comment">     * Set a weak_ptr to this stream from the shared_ptr so that we can</span></div>
+<div class="line"><a id="l00885" name="l00885"></a><span class="lineno">  885</span><span class="comment">     * later use a shared_ptr in the error callback.</span></div>
+<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span><span class="comment">     */</span></div>
+<div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>    <span class="keywordtype">void</span> setWeakThis(std::shared_ptr&lt;oboe::AudioStream&gt; &amp;sharedStream) {</div>
+<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>        mWeakThis = sharedStream;</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>    }</div>
+<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span> </div>
+<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>    <span class="comment">/*</span></div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span><span class="comment">     * Make a shared_ptr that will prevent this stream from being deleted.</span></div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span><span class="comment">     */</span></div>
+<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>    std::shared_ptr&lt;oboe::AudioStream&gt; lockWeakThis() {</div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        <span class="keywordflow">return</span> mWeakThis.lock();</div>
+<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>    }</div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span> </div>
+<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>    std::weak_ptr&lt;AudioStream&gt; mWeakThis; <span class="comment">// weak pointer to this object</span></div>
+<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span> </div>
+<div class="line"><a id="l00906" name="l00906"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">  906</a></span>    std::atomic&lt;int64_t&gt; <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">mFramesWritten</a>{};</div>
+<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span> </div>
+<div class="line"><a id="l00914" name="l00914"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">  914</a></span>    std::atomic&lt;int64_t&gt; <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">mFramesRead</a>{};</div>
+<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span> </div>
+<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>    std::mutex           mLock; <span class="comment">// for synchronizing start/stop/close</span></div>
 <div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span> </div>
-<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>    std::atomic&lt;bool&gt;    mPerformanceHintEnabled{<span class="keyword">false</span>}; <span class="comment">// set only by app</span></div>
-<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>};</div>
+<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>    oboe::Result         mErrorCallbackResult = oboe::Result::OK;</div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span> </div>
+<div class="line"><a id="l00924" name="l00924"></a><span class="lineno"><a class="line" href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">  924</a></span>    int32_t              <a class="code hl_variable" href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">mFramesPerBurst</a> = kUnspecified;</div>
+<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span> </div>
+<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>    <span class="comment">// Time to sleep in order to prevent a race condition with a callback after a close().</span></div>
+<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>    <span class="comment">// Two milliseconds may be enough but 10 msec is even safer.</span></div>
+<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kMinDelayBeforeCloseMillis = 10;</div>
+<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kMaxDelayBeforeCloseMillis = 100;</div>
+<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>    int32_t              mDelayBeforeCloseMillis = kMinDelayBeforeCloseMillis;</div>
+<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span> </div>
+<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span> </div>
+<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>    <span class="comment">// Log the scheduler if it changes.</span></div>
+<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>    <span class="keywordtype">void</span>                 checkScheduler();</div>
+<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    <span class="keywordtype">int</span>                  mPreviousScheduler = -1;</div>
+<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span> </div>
+<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    std::atomic&lt;bool&gt;    mDataCallbackEnabled{<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span>    std::atomic&lt;bool&gt;    mErrorCallbackCalled{<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00940" name="l00940"></a><span class="lineno">  940</span> </div>
+<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>    std::atomic&lt;bool&gt;    mPerformanceHintEnabled{<span class="keyword">false</span>}; <span class="comment">// set only by app</span></div>
+<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span>};</div>
 </div>
-<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span> </div>
-<div class="foldopen" id="foldopen00925" data-start="{" data-end="};">
-<div class="line"><a id="l00925" name="l00925"></a><span class="lineno"><a class="line" href="structoboe_1_1_stream_deleter_functor.html">  925</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_stream_deleter_functor.html">StreamDeleterFunctor</a> {</div>
-<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>        <span class="keywordtype">void</span> operator()(<a class="code hl_class" href="classoboe_1_1_audio_stream.html">AudioStream</a>  *audioStream) {</div>
-<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>            <span class="keywordflow">if</span> (audioStream) {</div>
-<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>                audioStream-&gt;<a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9c8ea30e30e513766d5e996c370eb8d8">close</a>();</div>
-<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>            }</div>
-<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>            <span class="keyword">delete</span> audioStream;</div>
-<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span>        }</div>
-<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>    };</div>
+<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span> </div>
+<div class="foldopen" id="foldopen00948" data-start="{" data-end="};">
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno"><a class="line" href="structoboe_1_1_stream_deleter_functor.html">  948</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="structoboe_1_1_stream_deleter_functor.html">StreamDeleterFunctor</a> {</div>
+<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>        <span class="keywordtype">void</span> operator()(<a class="code hl_class" href="classoboe_1_1_audio_stream.html">AudioStream</a>  *audioStream) {</div>
+<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>            <span class="keywordflow">if</span> (audioStream) {</div>
+<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>                audioStream-&gt;<a class="code hl_function" href="classoboe_1_1_audio_stream.html#a9c8ea30e30e513766d5e996c370eb8d8">close</a>();</div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span>            }</div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>            <span class="keyword">delete</span> audioStream;</div>
+<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>        }</div>
+<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>    };</div>
 </div>
-<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>} <span class="comment">// namespace oboe</span></div>
-<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span> </div>
-<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span><span class="preprocessor">#endif </span><span class="comment">/* OBOE_STREAM_H_ */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>} <span class="comment">// namespace oboe</span></div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span> </div>
+<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span><span class="preprocessor">#endif </span><span class="comment">/* OBOE_STREAM_H_ */</span><span class="preprocessor"></span></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_base_html"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html">oboe::AudioStreamBase</a></div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:31</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a5ff460bac9d14dfeac4eeddfcbb6e206"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206">oboe::AudioStreamBase::mChannelCount</a></div><div class="ttdeci">int32_t mChannelCount</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:296</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a6d8493f66a945cb426506c70f0358e5f"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f">oboe::AudioStreamBase::mDataCallback</a></div><div class="ttdeci">AudioStreamDataCallback * mDataCallback</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:284</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a7869f04836c2c2bdc10c7309ad4b8e09"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a7869f04836c2c2bdc10c7309ad4b8e09">oboe::AudioStreamBase::mFormat</a></div><div class="ttdeci">AudioFormat mFormat</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:309</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_adc0c8cc54adb6d3350c62b8a74b9c57b"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">oboe::AudioStreamBase::mErrorCallback</a></div><div class="ttdeci">AudioStreamErrorCallback * mErrorCallback</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:288</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a5ff460bac9d14dfeac4eeddfcbb6e206"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206">oboe::AudioStreamBase::mChannelCount</a></div><div class="ttdeci">int32_t mChannelCount</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:322</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a6d8493f66a945cb426506c70f0358e5f"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a6d8493f66a945cb426506c70f0358e5f">oboe::AudioStreamBase::mDataCallback</a></div><div class="ttdeci">AudioStreamDataCallback * mDataCallback</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:306</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_a7869f04836c2c2bdc10c7309ad4b8e09"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#a7869f04836c2c2bdc10c7309ad4b8e09">oboe::AudioStreamBase::mFormat</a></div><div class="ttdeci">AudioFormat mFormat</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:335</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_adc0c8cc54adb6d3350c62b8a74b9c57b"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#adc0c8cc54adb6d3350c62b8a74b9c57b">oboe::AudioStreamBase::mErrorCallback</a></div><div class="ttdeci">AudioStreamErrorCallback * mErrorCallback</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:314</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_base_html_ae90833d635f91be68cbc7f5db1d6ce99"><div class="ttname"><a href="classoboe_1_1_audio_stream_base.html#ae90833d635f91be68cbc7f5db1d6ce99">oboe::AudioStreamBase::mPartialDataCallback</a></div><div class="ttdeci">AudioStreamPartialDataCallback * mPartialDataCallback</div><div class="ttdef"><b>Definition</b> AudioStreamBase.h:310</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_builder_html"><div class="ttname"><a href="classoboe_1_1_audio_stream_builder.html">oboe::AudioStreamBuilder</a></div><div class="ttdef"><b>Definition</b> AudioStreamBuilder.h:34</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_data_callback_html"><div class="ttname"><a href="classoboe_1_1_audio_stream_data_callback.html">oboe::AudioStreamDataCallback</a></div><div class="ttdef"><b>Definition</b> AudioStreamCallback.h:34</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_error_callback_html"><div class="ttname"><a href="classoboe_1_1_audio_stream_error_callback.html">oboe::AudioStreamErrorCallback</a></div><div class="ttdef"><b>Definition</b> AudioStreamCallback.h:102</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html"><div class="ttname"><a href="classoboe_1_1_audio_stream.html">oboe::AudioStream</a></div><div class="ttdef"><b>Definition</b> AudioStream.h:43</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0187b0557bb9c7b7ea8bb64fe421d7b4"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">oboe::AudioStream::mFramesPerBurst</a></div><div class="ttdeci">int32_t mFramesPerBurst</div><div class="ttdef"><b>Definition</b> AudioStream.h:901</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0187b0557bb9c7b7ea8bb64fe421d7b4"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0187b0557bb9c7b7ea8bb64fe421d7b4">oboe::AudioStream::mFramesPerBurst</a></div><div class="ttdeci">int32_t mFramesPerBurst</div><div class="ttdef"><b>Definition</b> AudioStream.h:924</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a04f29836748a8e5842aef2be200022ad"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a04f29836748a8e5842aef2be200022ad">oboe::AudioStream::pause</a></div><div class="ttdeci">virtual Result pause(int64_t timeoutNanoseconds=kDefaultTimeoutNanos)</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a07e82f9b9e2e4800f23ae9a7193c3b58"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">oboe::AudioStream::mFramesRead</a></div><div class="ttdeci">std::atomic&lt; int64_t &gt; mFramesRead</div><div class="ttdef"><b>Definition</b> AudioStream.h:891</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a07e82f9b9e2e4800f23ae9a7193c3b58"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a07e82f9b9e2e4800f23ae9a7193c3b58">oboe::AudioStream::mFramesRead</a></div><div class="ttdeci">std::atomic&lt; int64_t &gt; mFramesRead</div><div class="ttdef"><b>Definition</b> AudioStream.h:914</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0c865a5501f369d959c39d8ab8b46a07"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0c865a5501f369d959c39d8ab8b46a07">oboe::AudioStream::waitForStateChange</a></div><div class="ttdeci">virtual Result waitForStateChange(StreamState inputState, StreamState *nextState, int64_t timeoutNanoseconds)=0</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0ea79e60f5a3d29fc5a1a116aba11dfe"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">oboe::AudioStream::onDefaultCallback</a></div><div class="ttdeci">virtual DataCallbackResult onDefaultCallback(void *, int)</div><div class="ttdef"><b>Definition</b> AudioStream.h:800</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0faa6d3a6fd4f367e6f80d5a29e6dcba"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">oboe::AudioStream::setDataCallbackEnabled</a></div><div class="ttdeci">void setDataCallbackEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> AudioStream.h:825</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0e166f78dc351ba92a458d17a7bf0536"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0e166f78dc351ba92a458d17a7bf0536">oboe::AudioStream::fireDataCallback</a></div><div class="ttdeci">virtual DataCallbackResult fireDataCallback(void *audioData, int numFrames)</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0ea79e60f5a3d29fc5a1a116aba11dfe"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0ea79e60f5a3d29fc5a1a116aba11dfe">oboe::AudioStream::onDefaultCallback</a></div><div class="ttdeci">virtual DataCallbackResult onDefaultCallback(void *, int)</div><div class="ttdef"><b>Definition</b> AudioStream.h:814</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a0faa6d3a6fd4f367e6f80d5a29e6dcba"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a0faa6d3a6fd4f367e6f80d5a29e6dcba">oboe::AudioStream::setDataCallbackEnabled</a></div><div class="ttdeci">void setDataCallbackEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> AudioStream.h:848</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a15cdaaaa4c1e8da322d6da33334c8147"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a15cdaaaa4c1e8da322d6da33334c8147">oboe::AudioStream::usesAAudio</a></div><div class="ttdeci">bool usesAAudio() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:409</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a2b7a3cee7444114843dbdd1fc705f6bb"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a2b7a3cee7444114843dbdd1fc705f6bb">oboe::AudioStream::getAudioApi</a></div><div class="ttdeci">virtual AudioApi getAudioApi() const =0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a2b9a90edb31c03fc034d1d79dac14d92"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a2b9a90edb31c03fc034d1d79dac14d92">oboe::AudioStream::getFramesPerBurst</a></div><div class="ttdeci">int32_t getFramesPerBurst() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:237</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a32c25c0333eab3d65ce02275ad4acb3d"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a32c25c0333eab3d65ce02275ad4acb3d">oboe::AudioStream::flush</a></div><div class="ttdeci">virtual Result flush(int64_t timeoutNanoseconds=kDefaultTimeoutNanos)</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a3625762def846a6f4b3f48548bfa1b9c"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">oboe::AudioStream::notifyWorkloadReset</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadReset(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:638</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a3625762def846a6f4b3f48548bfa1b9c"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c">oboe::AudioStream::notifyWorkloadReset</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadReset(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:652</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a3c484e314dee8dfed1d419f487b5d601"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a3c484e314dee8dfed1d419f487b5d601">oboe::AudioStream::requestStart</a></div><div class="ttdeci">virtual Result requestStart()=0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a3caa2803064eafd217ef86b282d249da"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a3caa2803064eafd217ef86b282d249da">oboe::AudioStream::calculateLatencyMillis</a></div><div class="ttdeci">virtual ResultWithValue&lt; double &gt; calculateLatencyMillis()</div><div class="ttdef"><b>Definition</b> AudioStream.h:307</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a42a645b6ad3dc89db751b7f55db72ded"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a42a645b6ad3dc89db751b7f55db72ded">oboe::AudioStream::read</a></div><div class="ttdeci">virtual ResultWithValue&lt; int32_t &gt; read(void *, int32_t, int64_t)</div><div class="ttdef"><b>Definition</b> AudioStream.h:391</div></div>
@@ -520,48 +537,49 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a462358ddab709c79d1a7968d6d55b727"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a462358ddab709c79d1a7968d6d55b727">oboe::AudioStream::updateFramesRead</a></div><div class="ttdeci">virtual void updateFramesRead()=0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a47bb5798275f14d76444283a6b6f35eb"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a47bb5798275f14d76444283a6b6f35eb">oboe::AudioStream::getState</a></div><div class="ttdeci">virtual StreamState getState()=0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a4eff89cae5bffa989e2413557e64c386"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a4eff89cae5bffa989e2413557e64c386">oboe::AudioStream::release</a></div><div class="ttdeci">virtual Result release()</div><div class="ttdef"><b>Definition</b> AudioStream.h:89</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a5124210a3410ab9e36ea4c4b8b30e7b1"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">oboe::AudioStream::notifyWorkloadSpike</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadSpike(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:670</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a524b17bc75564dd2910fae4feb853184"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">oboe::AudioStream::closePerformanceHint</a></div><div class="ttdeci">virtual void closePerformanceHint()</div><div class="ttdef"><b>Definition</b> AudioStream.h:858</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a5124210a3410ab9e36ea4c4b8b30e7b1"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1">oboe::AudioStream::notifyWorkloadSpike</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadSpike(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:684</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a524b17bc75564dd2910fae4feb853184"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a524b17bc75564dd2910fae4feb853184">oboe::AudioStream::closePerformanceHint</a></div><div class="ttdeci">virtual void closePerformanceHint()</div><div class="ttdef"><b>Definition</b> AudioStream.h:881</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a5c01907a59d5f89a5e4b819fe66b08bc"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a5c01907a59d5f89a5e4b819fe66b08bc">oboe::AudioStream::getBytesPerFrame</a></div><div class="ttdeci">int32_t getBytesPerFrame() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:250</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a5f743b9ec83a31ce8b7edc7ed6bbca8b"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">oboe::AudioStream::sleepBeforeClose</a></div><div class="ttdeci">void sleepBeforeClose()</div><div class="ttdef"><b>Definition</b> AudioStream.h:838</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a5f743b9ec83a31ce8b7edc7ed6bbca8b"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a5f743b9ec83a31ce8b7edc7ed6bbca8b">oboe::AudioStream::sleepBeforeClose</a></div><div class="ttdeci">void sleepBeforeClose()</div><div class="ttdef"><b>Definition</b> AudioStream.h:861</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a64ad978c5f70ced17ef5a96605496515"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a64ad978c5f70ced17ef5a96605496515">oboe::AudioStream::updateFramesWritten</a></div><div class="ttdeci">virtual void updateFramesWritten()=0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a686c6ce8a29051c858fd1de386805dc6"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a686c6ce8a29051c858fd1de386805dc6">oboe::AudioStream::open</a></div><div class="ttdeci">virtual Result open()</div><div class="ttdef"><b>Definition</b> AudioStream.h:66</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a6a0ec80ae28a5187b680f397b385e730"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">oboe::AudioStream::beginPerformanceHintInCallback</a></div><div class="ttdeci">virtual void beginPerformanceHintInCallback()</div><div class="ttdef"><b>Definition</b> AudioStream.h:847</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a6a0ec80ae28a5187b680f397b385e730"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a6a0ec80ae28a5187b680f397b385e730">oboe::AudioStream::beginPerformanceHintInCallback</a></div><div class="ttdeci">virtual void beginPerformanceHintInCallback()</div><div class="ttdef"><b>Definition</b> AudioStream.h:870</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a6bd5d633ff999e4da1faf3cd949aa602"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a6bd5d633ff999e4da1faf3cd949aa602">oboe::AudioStream::requestFlush</a></div><div class="ttdeci">virtual Result requestFlush()=0</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a76922b874397aafa135d0e1b3c1a9272"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">oboe::AudioStream::endPerformanceHintInCallback</a></div><div class="ttdeci">virtual void endPerformanceHintInCallback(int32_t)</div><div class="ttdef"><b>Definition</b> AudioStream.h:853</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a76922b874397aafa135d0e1b3c1a9272"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a76922b874397aafa135d0e1b3c1a9272">oboe::AudioStream::endPerformanceHintInCallback</a></div><div class="ttdeci">virtual void endPerformanceHintInCallback(int32_t)</div><div class="ttdef"><b>Definition</b> AudioStream.h:876</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a7f18bb3cc5490fd7fbc1f6da63c730f6"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a7f18bb3cc5490fd7fbc1f6da63c730f6">oboe::AudioStream::requestPause</a></div><div class="ttdeci">virtual Result requestPause()=0</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a820e634f741e6b5efdcef8104cecb919"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a820e634f741e6b5efdcef8104cecb919">oboe::AudioStream::requestStop</a></div><div class="ttdeci">virtual Result requestStop()=0</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8213d7c1699e3b7a104ea6dbd5fdbb90"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">oboe::AudioStream::getPlaybackParameters</a></div><div class="ttdeci">virtual ResultWithValue&lt; PlaybackParameters &gt; getPlaybackParameters()</div><div class="ttdef"><b>Definition</b> AudioStream.h:764</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a88a63317b7c58815bac074976b00aa23"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">oboe::AudioStream::mFramesWritten</a></div><div class="ttdeci">std::atomic&lt; int64_t &gt; mFramesWritten</div><div class="ttdef"><b>Definition</b> AudioStream.h:883</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8213d7c1699e3b7a104ea6dbd5fdbb90"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8213d7c1699e3b7a104ea6dbd5fdbb90">oboe::AudioStream::getPlaybackParameters</a></div><div class="ttdeci">virtual ResultWithValue&lt; PlaybackParameters &gt; getPlaybackParameters()</div><div class="ttdef"><b>Definition</b> AudioStream.h:778</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a88a63317b7c58815bac074976b00aa23"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a88a63317b7c58815bac074976b00aa23">oboe::AudioStream::mFramesWritten</a></div><div class="ttdeci">std::atomic&lt; int64_t &gt; mFramesWritten</div><div class="ttdef"><b>Definition</b> AudioStream.h:906</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8adbacd6a55a94a532916ab037fba1d6"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8adbacd6a55a94a532916ab037fba1d6">oboe::AudioStream::waitForStateTransition</a></div><div class="ttdeci">virtual Result waitForStateTransition(StreamState startingState, StreamState endingState, int64_t timeoutNanoseconds)</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8b9c04ff659ccbcfcf6bc08a1a01a69c"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8b9c04ff659ccbcfcf6bc08a1a01a69c">oboe::AudioStream::getUnderlyingStream</a></div><div class="ttdeci">virtual void * getUnderlyingStream() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:421</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8ebb587a07bf62c864fd62c63b241fd4"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8ebb587a07bf62c864fd62c63b241fd4">oboe::AudioStream::AudioStream</a></div><div class="ttdeci">AudioStream(const AudioStreamBuilder &amp;builder)</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8fe8afdf164a1fe835c514f709743d75"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">oboe::AudioStream::getLastErrorCallbackResult</a></div><div class="ttdeci">virtual oboe::Result getLastErrorCallbackResult() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:488</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a8fe8afdf164a1fe835c514f709743d75"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a8fe8afdf164a1fe835c514f709743d75">oboe::AudioStream::getLastErrorCallbackResult</a></div><div class="ttdeci">virtual oboe::Result getLastErrorCallbackResult() const</div><div class="ttdef"><b>Definition</b> AudioStream.h:502</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_a9c8ea30e30e513766d5e996c370eb8d8"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a9c8ea30e30e513766d5e996c370eb8d8">oboe::AudioStream::close</a></div><div class="ttdeci">virtual Result close()</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a9cf8ce01c8db830f89b70c782fe18d90"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">oboe::AudioStream::reportWorkload</a></div><div class="ttdeci">virtual oboe::Result reportWorkload(int32_t appWorkload)</div><div class="ttdef"><b>Definition</b> AudioStream.h:578</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a9fdffea9e3a3f693fcbbbca699a22c6b"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">oboe::AudioStream::isPerformanceHintEnabled</a></div><div class="ttdeci">bool isPerformanceHintEnabled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:548</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_aa48da7bf28026b7cccee73e6b054af28"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">oboe::AudioStream::wasErrorCallbackCalled</a></div><div class="ttdeci">bool wasErrorCallbackCalled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:779</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a9cf8ce01c8db830f89b70c782fe18d90"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90">oboe::AudioStream::reportWorkload</a></div><div class="ttdeci">virtual oboe::Result reportWorkload(int32_t appWorkload)</div><div class="ttdef"><b>Definition</b> AudioStream.h:592</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_a9fdffea9e3a3f693fcbbbca699a22c6b"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b">oboe::AudioStream::isPerformanceHintEnabled</a></div><div class="ttdeci">bool isPerformanceHintEnabled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:562</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_aa42024b9450e79e20a163a40e81993e2"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aa42024b9450e79e20a163a40e81993e2">oboe::AudioStream::firePartialDataCallback</a></div><div class="ttdeci">virtual int32_t firePartialDataCallback(void *audioData, int numFrames)</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_aa48da7bf28026b7cccee73e6b054af28"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aa48da7bf28026b7cccee73e6b054af28">oboe::AudioStream::wasErrorCallbackCalled</a></div><div class="ttdeci">bool wasErrorCallbackCalled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:793</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_aa6ae9fc6ecc905571979c4df8f849a44"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aa6ae9fc6ecc905571979c4df8f849a44">oboe::AudioStream::getAvailableFrames</a></div><div class="ttdeci">ResultWithValue&lt; int32_t &gt; getAvailableFrames()</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_aab76b523480d65f25f7df3c99f2dce47"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">oboe::AudioStream::notifyWorkloadIncrease</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadIncrease(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:607</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_aab76b523480d65f25f7df3c99f2dce47"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47">oboe::AudioStream::notifyWorkloadIncrease</a></div><div class="ttdeci">virtual oboe::Result notifyWorkloadIncrease(bool cpu, bool gpu, const char *debugName)</div><div class="ttdef"><b>Definition</b> AudioStream.h:621</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_ab037b48b871b365b6b3e3f7155967912"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ab037b48b871b365b6b3e3f7155967912">oboe::AudioStream::setBufferSizeInFrames</a></div><div class="ttdeci">virtual ResultWithValue&lt; int32_t &gt; setBufferSizeInFrames(int32_t)</div><div class="ttdef"><b>Definition</b> AudioStream.h:207</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_ab43dd4074e1de57bac1c3fd111430341"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ab43dd4074e1de57bac1c3fd111430341">oboe::AudioStream::getFramesWritten</a></div><div class="ttdeci">virtual int64_t getFramesWritten()</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_ab7a8cfe5d6039386bc5850fd5ee9bd62"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ab7a8cfe5d6039386bc5850fd5ee9bd62">oboe::AudioStream::fireDataCallback</a></div><div class="ttdeci">DataCallbackResult fireDataCallback(void *audioData, int numFrames)</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_ac0974b61c525d3b275dce342f75c208f"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ac0974b61c525d3b275dce342f75c208f">oboe::AudioStream::waitForAvailableFrames</a></div><div class="ttdeci">ResultWithValue&lt; int32_t &gt; waitForAvailableFrames(int32_t numFrames, int64_t timeoutNanoseconds)</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_acb8edbc17ff79993a8ed996d216fe6f3"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#acb8edbc17ff79993a8ed996d216fe6f3">oboe::AudioStream::getTimestamp</a></div><div class="ttdeci">virtual Result getTimestamp(clockid_t, int64_t *, int64_t *)</div><div class="ttdef"><b>Definition</b> AudioStream.h:332</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_ad23cd8bf80d480ffb613c03d5e5d4512"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ad23cd8bf80d480ffb613c03d5e5d4512">oboe::AudioStream::write</a></div><div class="ttdeci">virtual ResultWithValue&lt; int32_t &gt; write(const void *, int32_t, int64_t)</div><div class="ttdef"><b>Definition</b> AudioStream.h:373</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_ad588d956ff4bb9669f37ec143b94818d"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">oboe::AudioStream::setPerformanceHintEnabled</a></div><div class="ttdeci">void setPerformanceHintEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> AudioStream.h:538</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_add35434e8f93bd2b2ee658bd0f9194b8"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">oboe::AudioStream::setPlaybackParameters</a></div><div class="ttdeci">virtual oboe::Result setPlaybackParameters(const PlaybackParameters &amp;parameters)</div><div class="ttdef"><b>Definition</b> AudioStream.h:752</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_add85011ba825f74931deeb92c5edf831"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">oboe::AudioStream::isDataCallbackEnabled</a></div><div class="ttdeci">bool isDataCallbackEnabled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:817</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_ad588d956ff4bb9669f37ec143b94818d"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#ad588d956ff4bb9669f37ec143b94818d">oboe::AudioStream::setPerformanceHintEnabled</a></div><div class="ttdeci">void setPerformanceHintEnabled(bool enabled)</div><div class="ttdef"><b>Definition</b> AudioStream.h:552</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_add35434e8f93bd2b2ee658bd0f9194b8"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#add35434e8f93bd2b2ee658bd0f9194b8">oboe::AudioStream::setPlaybackParameters</a></div><div class="ttdeci">virtual oboe::Result setPlaybackParameters(const PlaybackParameters &amp;parameters)</div><div class="ttdef"><b>Definition</b> AudioStream.h:766</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_add85011ba825f74931deeb92c5edf831"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#add85011ba825f74931deeb92c5edf831">oboe::AudioStream::isDataCallbackEnabled</a></div><div class="ttdeci">bool isDataCallbackEnabled()</div><div class="ttdef"><b>Definition</b> AudioStream.h:840</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_aec093859d42f0470c884edd1e976d9f3"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aec093859d42f0470c884edd1e976d9f3">oboe::AudioStream::stop</a></div><div class="ttdeci">virtual Result stop(int64_t timeoutNanoseconds=kDefaultTimeoutNanos)</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_aeebfc59abd978cd6dff07c16cfe266df"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aeebfc59abd978cd6dff07c16cfe266df">oboe::AudioStream::getFramesRead</a></div><div class="ttdeci">virtual int64_t getFramesRead()</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_aef19aa03f38dacb7e275a0e8e93e743f"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#aef19aa03f38dacb7e275a0e8e93e743f">oboe::AudioStream::calculateDefaultDelayBeforeCloseMillis</a></div><div class="ttdeci">void calculateDefaultDelayBeforeCloseMillis()</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_af04f03eb6b64b564f1c4401688987d21"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#af04f03eb6b64b564f1c4401688987d21">oboe::AudioStream::start</a></div><div class="ttdeci">virtual Result start(int64_t timeoutNanoseconds=kDefaultTimeoutNanos)</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_af2d5e150a46fe166a99982f4a072ddbd"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">oboe::AudioStream::setDelayBeforeCloseMillis</a></div><div class="ttdeci">void setDelayBeforeCloseMillis(int32_t delayBeforeCloseMillis)</div><div class="ttdef"><b>Definition</b> AudioStream.h:511</div></div>
-<div class="ttc" id="aclassoboe_1_1_audio_stream_html_af50cdb7f9459754d53e31e21be3682d9"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">oboe::AudioStream::flushFromFrame</a></div><div class="ttdeci">virtual ResultWithValue&lt; int64_t &gt; flushFromFrame(FlushFromAccuracy accuracy, int64_t positionInFrames)</div><div class="ttdef"><b>Definition</b> AudioStream.h:733</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_af2d5e150a46fe166a99982f4a072ddbd"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#af2d5e150a46fe166a99982f4a072ddbd">oboe::AudioStream::setDelayBeforeCloseMillis</a></div><div class="ttdeci">void setDelayBeforeCloseMillis(int32_t delayBeforeCloseMillis)</div><div class="ttdef"><b>Definition</b> AudioStream.h:525</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_html_af50cdb7f9459754d53e31e21be3682d9"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#af50cdb7f9459754d53e31e21be3682d9">oboe::AudioStream::flushFromFrame</a></div><div class="ttdeci">virtual ResultWithValue&lt; int64_t &gt; flushFromFrame(FlushFromAccuracy accuracy, int64_t positionInFrames)</div><div class="ttdef"><b>Definition</b> AudioStream.h:747</div></div>
 <div class="ttc" id="aclassoboe_1_1_audio_stream_html_afe78adb3735f3f03867a96f0eedf0aa2"><div class="ttname"><a href="classoboe_1_1_audio_stream.html#afe78adb3735f3f03867a96f0eedf0aa2">oboe::AudioStream::getTimestamp</a></div><div class="ttdeci">virtual ResultWithValue&lt; FrameTimestamp &gt; getTimestamp(clockid_t)</div></div>
+<div class="ttc" id="aclassoboe_1_1_audio_stream_partial_data_callback_html"><div class="ttname"><a href="classoboe_1_1_audio_stream_partial_data_callback.html">oboe::AudioStreamPartialDataCallback</a></div><div class="ttdef"><b>Definition</b> AudioStreamCallback.h:210</div></div>
 <div class="ttc" id="aclassoboe_1_1_result_with_value_html"><div class="ttname"><a href="classoboe_1_1_result_with_value.html">oboe::ResultWithValue</a></div><div class="ttdef"><b>Definition</b> ResultWithValue.h:47</div></div>
 <div class="ttc" id="astructoboe_1_1_playback_parameters_html"><div class="ttname"><a href="structoboe_1_1_playback_parameters.html">oboe::PlaybackParameters</a></div><div class="ttdef"><b>Definition</b> Definitions.h:1135</div></div>
-<div class="ttc" id="astructoboe_1_1_stream_deleter_functor_html"><div class="ttname"><a href="structoboe_1_1_stream_deleter_functor.html">oboe::StreamDeleterFunctor</a></div><div class="ttdef"><b>Definition</b> AudioStream.h:925</div></div>
+<div class="ttc" id="astructoboe_1_1_stream_deleter_functor_html"><div class="ttname"><a href="structoboe_1_1_stream_deleter_functor.html">oboe::StreamDeleterFunctor</a></div><div class="ttdef"><b>Definition</b> AudioStream.h:948</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
