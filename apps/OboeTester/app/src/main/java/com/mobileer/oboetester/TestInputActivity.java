@@ -61,8 +61,10 @@ public class TestInputActivity  extends TestAudioActivity {
 
         mPartialDataCallbackSizeView =
                 (PartialDataCallbackSizeView) findViewById(R.id.partial_data_callback_size_view);
-        mPartialDataCallbackSizeView.setVisibility(
-                OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
+        if (mPartialDataCallbackSizeView != null) {
+            mPartialDataCallbackSizeView.setVisibility(
+                    OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override

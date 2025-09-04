@@ -45,8 +45,10 @@ abstract class TestOutputActivityBase extends TestAudioActivity {
         if (mWorkloadView != null) {
             mWorkloadView.setWorkloadReceiver((w) -> mAudioOutTester.setWorkload(w));
         }
-        mPartialDataCallbackSizeView.setVisibility(
-                OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
+        if (mPartialDataCallbackSizeView != null) {
+            mPartialDataCallbackSizeView.setVisibility(
+                    OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
+        }
     }
 
     protected void setBufferSizeByNumBursts(int burstCount) {

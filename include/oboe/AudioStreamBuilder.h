@@ -441,6 +441,12 @@ public:
      * If both this method and setPartialDataCallback(std::shared_ptr<AudioStreamPartialDataCallback>)
      * are called, the data callback from the last called method will be used.
      *
+     * Note that if the stream is offloaded or compress formats, it is suggested to use
+     * setPartialDataCallback(std::shared_ptr<AudioStreamPartialDataCallback>) when it is available.
+     * The reason is that AudioStreamDataCallback will require apps to process all the provided
+     * data or none of the provided data. This is not suitable for compressed audio data, for
+     * gapless audio playback, or to drain audio to a fixed arbitrary stop point in frames.
+     *
      * @param sharedDataCallback
      * @return pointer to the builder so calls can be chained
      */
@@ -456,16 +462,22 @@ public:
     }
 
     /**
-    * Pass a raw pointer to a data callback. This is not recommended because the dataCallback
-    * object might get deleted by the app while it is being used.
-    *
-    * If both this method and setPartialDataCallback(std::shared_ptr<AudioStreamPartialDataCallback>)
-    * are called, the data callback from the last called method will be used.
-    *
-    * @deprecated Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) instead.
-    * @param dataCallback
-    * @return pointer to the builder so calls can be chained
-    */
+     * Pass a raw pointer to a data callback. This is not recommended because the dataCallback
+     * object might get deleted by the app while it is being used.
+     *
+     * If both this method and setPartialDataCallback(std::shared_ptr<AudioStreamPartialDataCallback>)
+     * are called, the data callback from the last called method will be used.
+     *
+     * Note that if the stream is offloaded or compress formats, it is suggested to use
+     * setPartialDataCallback(std::shared_ptr<AudioStreamPartialDataCallback>) when it is available.
+     * The reason is that AudioStreamDataCallback will require apps to process all the provided
+     * data or none of the provided data. This is not suitable for compressed audio data, for
+     * gapless audio playback, or to drain audio to a fixed arbitrary stop point in frames.
+     *
+     * @deprecated Call setDataCallback(std::shared_ptr<AudioStreamDataCallback>) instead.
+     * @param dataCallback
+     * @return pointer to the builder so calls can be chained
+     */
     AudioStreamBuilder *setDataCallback(AudioStreamDataCallback *dataCallback) {
         mDataCallback = dataCallback;
         mSharedDataCallback = nullptr;
@@ -501,7 +513,7 @@ public:
      * will make more sense to use partial data callback. When the stream is offloaded, no data
      * conversion is allowed. When the stream is a deep buffer stream, the data conversion will be
      * provided by the Android framework. In that case, partial data callback is currently only
-     * supported without data conversion.
+     * supported without using data conversion from oboe.
      *
      * Call OboeExtensions::isPartialDataCallbackSupported() to check if partial data
      * callback is supported by the device or not.
