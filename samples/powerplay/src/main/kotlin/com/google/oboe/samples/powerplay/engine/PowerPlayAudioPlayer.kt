@@ -76,12 +76,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun isMMapEnabled(): Boolean = isMMapEnabledNative()
 
     /**
-     * Checks if MMap is currently being used by the audio stream.
-     * @return True if MMap is being used, false otherwise.
-     */
-    fun isMMapUsed(): Boolean = isMMapUsedNative()
-
-    /**
      * Checks if MMap is supported by the current device.
      * @return True if MMap is supported, false otherwise.
      */
@@ -107,7 +101,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun stopPlayingNative(index: Int)
     private external fun setMMapEnabledNative(enabled: Boolean): Boolean
     private external fun isMMapEnabledNative(): Boolean
-    private external fun isMMapUsedNative(): Boolean
     private external fun isMMapSupportedNative(): Boolean
 
     /**

@@ -245,16 +245,6 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapEnabled
 }
 
 /**
- * Native (JNI) implementation of PowerPlayAudioPlayer.isMMapUsedNative()
- */
-JNIEXPORT jboolean JNICALL
-Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapUsedNative(
-        JNIEnv *env,
-        jobject) {
-    return player.isMMapUsed();
-}
-
-/**
  * Native (JNI) implementation of PowerPlayAudioPlayer.isMMapSupportedNative()
  */
 JNIEXPORT jboolean JNICALL

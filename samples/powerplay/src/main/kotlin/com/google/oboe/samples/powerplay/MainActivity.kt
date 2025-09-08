@@ -314,12 +314,8 @@ class MainActivity : ComponentActivity() {
                         )
 
                     }
-                    val mMapValidation = when (isPlaying.value) {
-                        true -> isMMapEnabled.value && player.isMMapUsed()
-                        false -> isMMapEnabled.value
-                    }
                     Text(
-                        text = when (mMapValidation) {
+                        text = when (isMMapEnabled.value) {
                             true -> "| Current Mode: MMAP"
                             false -> "| Current Mode: Classic"
                         },

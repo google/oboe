@@ -126,9 +126,3 @@ bool PowerPlayMultiPlayer::isMMapEnabled() {
 bool PowerPlayMultiPlayer::isMMapSupported() {
     return oboe::OboeExtensions::isMMapSupported();
 }
-
-bool PowerPlayMultiPlayer::isMMapUsed() {
-    if (!mAudioStream) return false;
-    const auto result = oboe::OboeExtensions::isMMapUsed(mAudioStream.get());
-    return result;
-}
