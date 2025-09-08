@@ -351,11 +351,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-
-    /***
-     * Player control button
-     */
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
         Box(
