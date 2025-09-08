@@ -115,8 +115,8 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
 }
 
 bool PowerPlayMultiPlayer::setMMapEnabled(bool enabled) {
-    auto result = static_cast<MMapPolicy>(oboe::OboeExtensions::setMMapEnabled(enabled));
-    return result == MMapPolicy::Auto;
+    auto result = oboe::OboeExtensions::setMMapEnabled(enabled);
+    return result == 0;
 }
 
 bool PowerPlayMultiPlayer::isMMapEnabled() {
@@ -129,5 +129,6 @@ bool PowerPlayMultiPlayer::isMMapSupported() {
 
 bool PowerPlayMultiPlayer::isMMapUsed() {
     if (!mAudioStream) return false;
-    return oboe::OboeExtensions::isMMapUsed(mAudioStream.get());
+    const auto result = oboe::OboeExtensions::isMMapUsed(mAudioStream.get());
+    return result;
 }

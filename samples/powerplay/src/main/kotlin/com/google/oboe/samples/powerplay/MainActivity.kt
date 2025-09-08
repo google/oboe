@@ -56,6 +56,7 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var player: PowerPlayAudioPlayer
     private lateinit var serviceIntent: Intent
+    private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +124,7 @@ class MainActivity : ComponentActivity() {
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
         isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
+        isMMapSupported = player.isMMapSupported()
 
         setContent {
             MusicPlayerTheme {
@@ -161,6 +164,7 @@ class MainActivity : ComponentActivity() {
         val offload = remember {
             mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
         }
+
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
 
         LaunchedEffect(pagerState.currentPage) {
@@ -215,9 +219,7 @@ class MainActivity : ComponentActivity() {
                     pageSize = PageSize.Fixed((configuration.screenWidthDp / (1.7)).dp),
                     contentPadding = PaddingValues(horizontal = 85.dp)
                 ) { page ->
-
                     val painter = painterResource(id = playList[page].cover)
-
                     if (page == pagerState.currentPage) {
                         VinylAlbumCoverAnimation(isSongPlaying = isPlaying.value, painter = painter)
                     } else {
@@ -257,13 +259,6 @@ class MainActivity : ComponentActivity() {
                                             onOptionSelected(text)
                                             offload.intValue = index
                                             player.teardownAudioStream()
-
-                                            // Reset MMAP checkbox if not PCM Offload
-                                            if (OboePerformanceMode.fromInt(offload.intValue)
-                                                == OboePerformanceMode.PowerSavingOffloaded) {
-                                                isMMapEnabled.value = true
-                                                player.setMMapEnabled(true)
-                                            }
                                         }
                                     },
                                     role = Role.RadioButton
@@ -293,47 +288,45 @@ class MainActivity : ComponentActivity() {
                         else -> "Performance Mode: PCM Offload"
                     }
                 )
-
-                if (OboePerformanceMode.fromInt(offload.intValue)
-                    == OboePerformanceMode.PowerSavingOffloaded && isOffloadSupported) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
-                            .selectable(
-                                selected = !isMMapEnabled.value,
-                                onClick = {
-                                    if (!isPlaying.value) {
-                                        isMMapEnabled.value = !isMMapEnabled.value
-                                        player.setMMapEnabled(isMMapEnabled.value)
-                                        player.teardownAudioStream()
-                                        player.setupAudioStream()
-                                    }
-                                },
-                                role = Role.Checkbox
-                            )
-                            .padding(vertical = 4.dp)
-                    ) {
-                        androidx.compose.material3.Checkbox(
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                        .padding(vertical = 4.dp)
+                ) {
+                    if (isMMapSupported) {
+                        Checkbox(
                             checked = !isMMapEnabled.value,
                             onCheckedChange = {
                                 if (!isPlaying.value) {
                                     isMMapEnabled.value = !it
-                                    player.setMMapEnabled(!it)
+                                    player.setMMapEnabled(isMMapEnabled.value)
                                 }
                             },
-                            enabled = !isPlaying.value // Disable checkbox while playing
+                            enabled = !isPlaying.value
                         )
                         Text(
                             text = "Disable MMAP",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 8.dp)
                         )
-                    }
-                }
 
+                    }
+                    val mMapValidation = when (isPlaying.value) {
+                        true -> isMMapEnabled.value && player.isMMapUsed()
+                        false -> isMMapEnabled.value
+                    }
+                    Text(
+                        text = when (mMapValidation) {
+                            true -> "| Current Mode: MMAP"
+                            false -> "| Current Mode: Classic"
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -347,15 +340,6 @@ class MainActivity : ComponentActivity() {
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> {
-                                    // Ensure the audio stream is set up before playing,
-                                    // especially if it was torn down due to mode changes.
-                                    // You might need a more sophisticated way to check if setup is needed.
-                                    if (player.getPlayerStateLive().value == PlayerState.Stopped ||
-                                        player.getPlayerStateLive().value == PlayerState.Error
-                                    ) { // Or other states indicating not ready
-                                        player.teardownAudioStream() // Ensure clean state
-                                        player.setupAudioStream()
-                                    }
                                     player.startPlaying(
                                         playingSongIndex.intValue,
                                         OboePerformanceMode.fromInt(offload.intValue)
