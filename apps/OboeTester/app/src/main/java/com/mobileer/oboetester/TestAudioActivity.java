@@ -505,10 +505,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public StreamContext addOutputStreamContext() {
         StreamContext streamContext = new StreamContext();
         streamContext.tester = AudioOutputTester.getInstance();
-        streamContext.configurationView = (StreamConfigurationView) 
+        streamContext.configurationView = (StreamConfigurationView)
                 findViewById(R.id.outputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView = (StreamConfigurationView) 
+            streamContext.configurationView = (StreamConfigurationView)
                     findViewById(R.id.streamConfiguration);
         }
         if (streamContext.configurationView != null) {
@@ -526,10 +526,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public StreamContext addInputStreamContext() {
         StreamContext streamContext = new StreamContext();
         streamContext.tester = AudioInputTester.getInstance();
-        streamContext.configurationView = (StreamConfigurationView) 
+        streamContext.configurationView = (StreamConfigurationView)
                 findViewById(R.id.inputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView = (StreamConfigurationView) 
+            streamContext.configurationView = (StreamConfigurationView)
                     findViewById(R.id.streamConfiguration);
         }
         if (streamContext.configurationView != null) {
@@ -987,7 +987,8 @@ abstract class TestAudioActivity extends AppCompatActivity {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             report.append(String.format(Locale.getDefault(), "test.version = %s\n", pinfo.versionName));
             report.append(String.format(Locale.getDefault(), "test.version.code = %d\n", pinfo.versionCode));
-        } catch (PackageManager.NameNotFoundException e) {}
+        } catch (PackageManager.NameNotFoundException e) {
+        }
         report.append("time.millis = " + System.currentTimeMillis() + "\n");
 
         if (mStreamContexts.size() == 0) {
