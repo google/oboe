@@ -133,6 +133,21 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
     };
 
+    private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                if (mStreamSniffer != null) {
+                    mStreamSniffer.stopStreamSniffer();
+                }
+            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
+                if (mStreamSniffer != null && mAudioState < AUDIO_STATE_CLOSING) {
+                    mStreamSniffer.startStreamSniffer();
+                }
+            }
+        }
+    };
+
     private final long mActivityId = generateActivityId();
     private static long CURRENT_ACTIVITY_ID = 0;
 
@@ -343,6 +358,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (mBundleFromIntent != null) {
             processBundleFromIntent();
         }
+
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStateReceiver, screenStateFilter);
     }
 
     private void setVolumeFromIntent() {
@@ -401,6 +421,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mStopTestReceiver);
+        unregisterReceiver(mScreenStateReceiver);
     }
 
     @Override
@@ -484,10 +505,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public StreamContext addOutputStreamContext() {
         StreamContext streamContext = new StreamContext();
         streamContext.tester = AudioOutputTester.getInstance();
-        streamContext.configurationView = (StreamConfigurationView)
+        streamContext.configurationView = (StreamConfigurationView) 
                 findViewById(R.id.outputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView = (StreamConfigurationView)
+            streamContext.configurationView = (StreamConfigurationView) 
                     findViewById(R.id.streamConfiguration);
         }
         if (streamContext.configurationView != null) {
@@ -505,10 +526,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
     public StreamContext addInputStreamContext() {
         StreamContext streamContext = new StreamContext();
         streamContext.tester = AudioInputTester.getInstance();
-        streamContext.configurationView = (StreamConfigurationView)
+        streamContext.configurationView = (StreamConfigurationView) 
                 findViewById(R.id.inputStreamConfiguration);
         if (streamContext.configurationView == null) {
-            streamContext.configurationView = (StreamConfigurationView)
+            streamContext.configurationView = (StreamConfigurationView) 
                     findViewById(R.id.streamConfiguration);
         }
         if (streamContext.configurationView != null) {
@@ -966,8 +987,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             report.append(String.format(Locale.getDefault(), "test.version = %s\n", pinfo.versionName));
             report.append(String.format(Locale.getDefault(), "test.version.code = %d\n", pinfo.versionCode));
-        } catch (PackageManager.NameNotFoundException e) {
-        }
+        } catch (PackageManager.NameNotFoundException e) {}
         report.append("time.millis = " + System.currentTimeMillis() + "\n");
 
         if (mStreamContexts.size() == 0) {
