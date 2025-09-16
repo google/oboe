@@ -136,11 +136,13 @@ abstract class TestAudioActivity extends AppCompatActivity {
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                Log.d(TAG, "action screen off");
                 if (mStreamSniffer != null) {
                     mStreamSniffer.stopStreamSniffer();
                 }
-            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                Log.d(TAG, "action screen on");
                 if (mStreamSniffer != null && !isClosingOrClosed()) {
                     mStreamSniffer.startStreamSniffer();
                 }
@@ -303,6 +305,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
         findAudioCommon();
 
         mBundleFromIntent = getIntent().getExtras();
+
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStateReceiver, screenStateFilter);
     }
 
     @Override
@@ -358,11 +365,6 @@ abstract class TestAudioActivity extends AppCompatActivity {
         if (mBundleFromIntent != null) {
             processBundleFromIntent();
         }
-
-        IntentFilter screenStateFilter = new IntentFilter();
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(mScreenStateReceiver, screenStateFilter);
     }
 
     private void setVolumeFromIntent() {
@@ -421,7 +423,6 @@ abstract class TestAudioActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mStopTestReceiver);
-        unregisterReceiver(mScreenStateReceiver);
     }
 
     @Override
@@ -448,6 +449,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
                 enableForegroundService(false);
             }
         }
+        unregisterReceiver(mScreenStateReceiver);
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
     }
