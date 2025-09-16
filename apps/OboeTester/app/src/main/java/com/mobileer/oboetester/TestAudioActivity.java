@@ -141,7 +141,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
                     mStreamSniffer.stopStreamSniffer();
                 }
             } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-                if (mStreamSniffer != null && mAudioState < AUDIO_STATE_CLOSING) {
+                if (mStreamSniffer != null && !isClosingOrClosed()) {
                     mStreamSniffer.startStreamSniffer();
                 }
             }
@@ -944,7 +944,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     // Make synchronized so we don't close from two streams at the same time.
     public synchronized void closeAudio() {
-        if (mAudioState >= AUDIO_STATE_CLOSING) {
+        if (isClosingOrClosed()) {
             Log.d(TAG, "closeAudio() already closing");
             return;
         }
@@ -966,6 +966,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
         mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
+    }
+
+    public boolean isClosingOrClosed() {
+        return (mAudioState == AUDIO_STATE_CLOSING) || (mAudioState == AUDIO_STATE_CLOSED);
     }
 
     void startBluetoothSco() {
