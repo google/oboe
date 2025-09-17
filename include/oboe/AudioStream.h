@@ -744,8 +744,8 @@ public:
      *         position.
      *         Result::ErrorClosed if the stream is closed. The value is the requested position.
      */
-    virtual ResultWithValue<int64_t> flushFromFrame(
-            FlushFromAccuracy accuracy, int64_t positionInFrames) {
+    virtual ResultWithValue<int64_t> flushFromFrame([[maybe_unused]] FlushFromAccuracy accuracy,
+                                                    [[maybe_unused]] int64_t positionInFrames) {
         return ResultWithValue<int64_t>(Result::ErrorUnimplemented);
     }
 
@@ -763,7 +763,8 @@ public:
      *         playback parameters.
      *         Result::ErrorInvalidState if the stream is not initialized successfully.
      */
-    virtual oboe::Result setPlaybackParameters(const PlaybackParameters& parameters) {
+    virtual oboe::Result setPlaybackParameters(
+            [[maybe_unused]] const PlaybackParameters& parameters) {
         return Result::ErrorUnimplemented;
     }
 
