@@ -133,6 +133,23 @@ abstract class TestAudioActivity extends AppCompatActivity {
         }
     };
 
+    private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                Log.d(TAG, "action screen off");
+                if (mStreamSniffer != null) {
+                    mStreamSniffer.stopStreamSniffer();
+                }
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                Log.d(TAG, "action screen on");
+                if (mStreamSniffer != null && !isClosingOrClosed()) {
+                    mStreamSniffer.startStreamSniffer();
+                }
+            }
+        }
+    };
+
     private final long mActivityId = generateActivityId();
     private static long CURRENT_ACTIVITY_ID = 0;
 
@@ -288,6 +305,11 @@ abstract class TestAudioActivity extends AppCompatActivity {
         findAudioCommon();
 
         mBundleFromIntent = getIntent().getExtras();
+
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStateReceiver, screenStateFilter);
     }
 
     @Override
@@ -427,6 +449,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
                 enableForegroundService(false);
             }
         }
+        unregisterReceiver(mScreenStateReceiver);
         mAudioState = AUDIO_STATE_CLOSED;
         super.onDestroy();
     }
@@ -923,7 +946,7 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
     // Make synchronized so we don't close from two streams at the same time.
     public synchronized void closeAudio() {
-        if (mAudioState >= AUDIO_STATE_CLOSING) {
+        if (isClosingOrClosed()) {
             Log.d(TAG, "closeAudio() already closing");
             return;
         }
@@ -945,6 +968,10 @@ abstract class TestAudioActivity extends AppCompatActivity {
 
         mAudioState = AUDIO_STATE_CLOSED;
         updateEnabledWidgets();
+    }
+
+    public boolean isClosingOrClosed() {
+        return (mAudioState == AUDIO_STATE_CLOSING) || (mAudioState == AUDIO_STATE_CLOSED);
     }
 
     void startBluetoothSco() {
