@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addDefaultEffects() {
-        val defaultEffects = listOf("Overdrive", "White Chorus", "Echo")
+        val defaultEffects = listOf("Gain", "Echo", "Tremolo")
         for (effectName in defaultEffects) {
             NativeInterface.effectDescriptionMap[effectName]?.let {
                 val toAdd = Effect(it)
