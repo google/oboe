@@ -80,6 +80,14 @@ public:
         mPreviousMask = 0;
     }
 
+    void setIsPartialDataCallback(bool isPartialDataCallback) {
+        mIsPartialDataCallback = isPartialDataCallback;
+    }
+
+    void setPartialDataCallbackPercentage(int percentage) {
+        mPartialDataCallbackPercentage.store(percentage);
+    }
+
     static void setCallbackReturnStop(bool b) {
         mCallbackReturnStop = b;
     }
@@ -100,6 +108,11 @@ public:
      * Called when the stream is ready to process audio.
      */
     oboe::DataCallbackResult onAudioReady(
+            oboe::AudioStream *audioStream,
+            void *audioData,
+            int numFrames) override;
+
+    int32_t onPartialAudioReady(
             oboe::AudioStream *audioStream,
             void *audioData,
             int numFrames) override;
@@ -186,6 +199,13 @@ public:
     }
 
 private:
+    void preDataCallback(oboe::AudioStream *audioStream, int numFrames, int numWorkloadVoices);
+    void postDataCallback(oboe::AudioStream *audioStream,
+                          void *audioData,
+                          int numFrames,
+                          int64_t startTimeNanos,
+                          int numWorkloadVoices);
+
     static constexpr double    kNsToMsScaler = 0.000001;
     const std::string          kClassName = "OboeStreamCallbackProxy";
 
@@ -202,6 +222,10 @@ private:
 
     oboe::AudioStreamDataCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
+
+    bool                       mIsPartialDataCallback = false;
+    static constexpr int       kPartialDataCallbackPercentage = 100;
+    std::atomic<int32_t>       mPartialDataCallbackPercentage{kPartialDataCallbackPercentage};
 
     int64_t                    mCallbackCount = 0;
     std::atomic<int32_t>       mFramesPerCallback{0};

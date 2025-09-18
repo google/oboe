@@ -190,7 +190,7 @@ public class BufferSizeView extends LinearLayout {
         setBufferSize(message, sizeFrames);
     }
 
-    private void setBufferSize(StringBuffer message, int sizeFrames) {
+    protected void setBufferSize(StringBuffer message, int sizeFrames) {
         if (mStream != null) {
             message.append(", " + sizeFrames);
             if (mStream != null && sizeFrames >= 0) {

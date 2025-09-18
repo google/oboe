@@ -29,6 +29,7 @@ import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -133,7 +134,18 @@ public class TestColdStartLatencyActivity extends AppCompatActivity {
                 loopCount++;
                 try {
                     sleep(closedSleepTimeMillis);
-                    openStream(useInput, useLowLatency, useMmap, useExclusive);
+                    int result = openStream(useInput, useLowLatency, useMmap, useExclusive);
+                    if (result != 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(TestColdStartLatencyActivity.this,
+                                        "Error opening stream. Error: " + result,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        break;
+                    }
                     log("-------#" + loopCount + " Device Id: " + getAudioDeviceId());
                     log("open() Latency: " + getOpenTimeMicros() / 1000 + " msec");
                     sleep(openSleepTimeMillis);

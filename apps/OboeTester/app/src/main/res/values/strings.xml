@@ -38,7 +38,7 @@
         &#160;Click Show Settings to configure.\n
         This glitch measurement plays\n
         and listens to a sine wave.\n
-        It works with best with a loopback dongle.\n
+        It works best with a loopback dongle.\n
         Set volume to medium-high.\n
     </string>
     <string name="echo_instructions">
@@ -264,6 +264,7 @@
     <string name="title_rapid_cycle">Rapid Cycle</string>
     <string name="title_audio_workload_test">Audio Workload Test</string>
     <string name="title_audio_workload_test_runner">Audio Workload Test Runner</string>
+    <string name="title_reverse_jni">Reverse JNI</string>
 
     <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
     <string name="share">Share</string>
@@ -335,16 +336,16 @@
 
     <string name="package_name_prompt">Package:</string>
     <string-array name="package_name_values">
-        <item></item>
         <item>com.mobileer.oboetester</item>
         <item>bogus.name</item>
+        <item></item>
     </string-array>
 
     <string name="attribution_tag_prompt">Attribution:</string>
     <string-array name="attribution_tag_values">
-        <item></item>
         <item>AudioTag</item>
         <item>BogusTag</item>
+        <item></item>
     </string-array>
 
     <string name="dynamic_workload_graph_info">

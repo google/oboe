@@ -24,6 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:shrinkColumns="1"
+            android:background="#00FFFFFF"
             >
 
             <TableRow>

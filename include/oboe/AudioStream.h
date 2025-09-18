@@ -448,6 +448,20 @@ public:
     }
 
     /*
+     * Swap old partial data callback for new callback.
+     * This not atomic.
+     * This should only be used internally.
+     * @param dataCallback
+     * @return previous dataCallback
+     */
+    AudioStreamPartialDataCallback *swapPartialDataCallback(
+            AudioStreamPartialDataCallback *partialDataCallback) {
+        AudioStreamPartialDataCallback *previousPartialCallback = mPartialDataCallback;
+        mPartialDataCallback = partialDataCallback;
+        return previousPartialCallback;
+    }
+
+    /*
      * Swap old callback for new callback.
      * This not atomic.
      * This should only be used internally.
@@ -730,8 +744,8 @@ public:
      *         position.
      *         Result::ErrorClosed if the stream is closed. The value is the requested position.
      */
-    virtual ResultWithValue<int64_t> flushFromFrame(
-            FlushFromAccuracy accuracy, int64_t positionInFrames) {
+    virtual ResultWithValue<int64_t> flushFromFrame([[maybe_unused]] FlushFromAccuracy accuracy,
+                                                    [[maybe_unused]] int64_t positionInFrames) {
         return ResultWithValue<int64_t>(Result::ErrorUnimplemented);
     }
 
@@ -749,7 +763,8 @@ public:
      *         playback parameters.
      *         Result::ErrorInvalidState if the stream is not initialized successfully.
      */
-    virtual oboe::Result setPlaybackParameters(const PlaybackParameters& parameters) {
+    virtual oboe::Result setPlaybackParameters(
+            [[maybe_unused]] const PlaybackParameters& parameters) {
         return Result::ErrorUnimplemented;
     }
 
@@ -809,7 +824,16 @@ protected:
      * @return the result of the callback: stop or continue
      *
      */
-    DataCallbackResult fireDataCallback(void *audioData, int numFrames);
+    virtual DataCallbackResult fireDataCallback(void *audioData, int numFrames);
+
+    /**
+     * Override this to provide your own behaviour for the parital audio callback
+     *
+     * @param audioData container array which audio frames will be written into or read from
+     * @param numFrames number of frames which were read/written
+     * @return the actual processed frames
+     */
+    virtual int32_t firePartialDataCallback(void* audioData, int numFrames);
 
     /**
      * @return true if callbacks may be called

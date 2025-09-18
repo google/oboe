@@ -17,6 +17,7 @@
 #ifndef OBOE_AAUDIO_EXTENSIONS_H
 #define OBOE_AAUDIO_EXTENSIONS_H
 
+#include <algorithm>
 #include <dlfcn.h>
 #include <set>
 #include <stdint.h>
@@ -197,6 +198,10 @@ public:
         return static_cast<MMapPolicy>(mLibLoader->aaudio_getPlatformMMapExclusivePolicy(
                 static_cast<AAudio_DeviceType>(deviceType),
                 static_cast<aaudio_direction_t>(direction)));
+    }
+
+    bool isPartialDataCallbackSupported() {
+        return mLibLoader != nullptr && mLibLoader->builder_setPartialDataCallback != nullptr;
     }
 
 private:

@@ -17,6 +17,7 @@
 #ifndef NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 #define NATIVEOBOE_NATIVEAUDIOCONTEXT_H
 
+#include <atomic>
 #include <condition_variable>
 #include <jni.h>
 #include <mutex>
@@ -82,7 +83,7 @@
 class ActivityContext {
 public:
 
-    ActivityContext() {}
+    ActivityContext();
 
     virtual ~ActivityContext() = default;
 
@@ -93,6 +94,14 @@ public:
         } else {
             return nullptr;
         }
+    }
+
+    void setPartialCallbackPercentage(int percentage) {
+        if (percentage < 0 || percentage > 100) {
+            // Ignoring the error, this only comes from the UI and must be valid value.
+            return;
+        }
+        oboeCallbackProxy->setPartialDataCallbackPercentage(percentage);
     }
 
     virtual void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder);
@@ -165,23 +174,23 @@ public:
     }
 
     float getCpuLoad() {
-        return oboeCallbackProxy.getCpuLoad();
+        return oboeCallbackProxy->getCpuLoad();
     }
 
     float getAndResetMaxCpuLoad() {
-        return oboeCallbackProxy.getAndResetMaxCpuLoad();
+        return oboeCallbackProxy->getAndResetMaxCpuLoad();
     }
 
     uint32_t getAndResetCpuMask() {
-        return oboeCallbackProxy.getAndResetCpuMask();
+        return oboeCallbackProxy->getAndResetCpuMask();
     }
 
     std::string getCallbackTimeString() {
-        return oboeCallbackProxy.getCallbackTimeString();
+        return oboeCallbackProxy->getCallbackTimeString();
     }
 
     void setWorkload(int32_t workload) {
-        oboeCallbackProxy.setWorkload(workload);
+        oboeCallbackProxy->setWorkload(workload);
         bool traceEnabled = oboe::Trace::getInstance().isEnabled();
         if (traceEnabled) {
             oboe::Trace::getInstance().setCounter("Workload", workload);
@@ -189,7 +198,7 @@ public:
     }
 
     void setHearWorkload(bool enabled) {
-        oboeCallbackProxy.setHearWorkload(enabled);
+        oboeCallbackProxy->setHearWorkload(enabled);
     }
 
     virtual oboe::Result startPlayback() {
@@ -279,7 +288,7 @@ public:
     }
 
     int64_t getCallbackCount() {
-        return oboeCallbackProxy.getCallbackCount();
+        return oboeCallbackProxy->getCallbackCount();
     }
 
     oboe::Result getLastErrorCallbackResult() {
@@ -291,7 +300,7 @@ public:
     }
 
     int32_t getFramesPerCallback() {
-        return oboeCallbackProxy.getFramesPerCallback();
+        return oboeCallbackProxy->getFramesPerCallback();
     }
 
     virtual void setChannelEnabled(int channelIndex, bool enabled) {}
@@ -315,20 +324,21 @@ public:
     virtual void setMinimumFramesBeforeRead(int32_t numFrames) {}
 
     static bool   mUseCallback;
+    static bool   mUsePartialDataCallback;
     static int    callbackSize;
 
     double getTimestampLatency(int32_t streamIndex);
 
     void setCpuAffinityMask(uint32_t mask) {
-        oboeCallbackProxy.setCpuAffinityMask(mask);
+        oboeCallbackProxy->setCpuAffinityMask(mask);
     }
 
     void setWorkloadReportingEnabled(bool enabled) {
-        oboeCallbackProxy.setWorkloadReportingEnabled(enabled);
+        oboeCallbackProxy->setWorkloadReportingEnabled(enabled);
     }
 
     void setNotifyWorkloadIncreaseEnabled(bool enabled) {
-        oboeCallbackProxy.setNotifyWorkloadIncreaseEnabled(enabled);
+        oboeCallbackProxy->setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
     int32_t setBufferSizeInFrames(int streamIndex, int threshold);
@@ -354,7 +364,7 @@ protected:
     std::unique_ptr<float []>    dataBuffer{};
 
     AudioStreamGateway           audioStreamGateway;
-    OboeStreamCallbackProxy      oboeCallbackProxy;
+    std::shared_ptr<OboeStreamCallbackProxy> oboeCallbackProxy;
 
     std::unique_ptr<MultiChannelRecording>  mRecording{};
 

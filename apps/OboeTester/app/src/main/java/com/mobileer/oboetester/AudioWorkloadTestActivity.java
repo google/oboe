@@ -16,6 +16,9 @@
 
 package com.mobileer.oboetester;
 
+import static java.lang.Math.max;
+
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,7 +29,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,12 +59,16 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
 
     private TextView mStreamInfoView;
     private TextView mCurrentStatusView;
-    private TextView mCallbackStatisticsTextView;
+    private MultiLineChart mMultiLineChart;
+    private MultiLineChart.Trace mCpuLoadTrace;
+    private MultiLineChart.Trace mWorkloadTrace;
 
     private UpdateThread mUpdateThread;
 
     private static final int OPERATION_SUCCESS = 0;
-    private static final float MILLIS_TO_NANOS = 1000000.0f;
+    private static final float NANOS_TO_MILLIS = 1.0e-6f;
+    private static final float NANOS_TO_SECONDS = 1.0e-9f;
+    private static final float MARGIN_ABOVE_WORKLOAD_FOR_CPU = 1.2f;
 
     // Must match the NewObject call in jni-bridge.cpp
     public static class CallbackStatus {
@@ -105,7 +111,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
             @Override
             public void run() {
                 mCurrentStatusView.setText(String.format("#%d, xRuns: %d, time: %.3fms, running: %b",
-                        getCallbackCount(), getXRunCount(), getLastDurationNs() / 1000000.0f, isRunning()));
+                        getCallbackCount(), getXRunCount(), getLastDurationNs() * NANOS_TO_MILLIS, isRunning()));
                 if (isRunning()) {
                     mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
                 } else {
@@ -151,7 +157,12 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
 
         mStreamInfoView = (TextView) findViewById(R.id.stream_info_view);
         mCurrentStatusView = (TextView) findViewById(R.id.current_status_view);
-        mCallbackStatisticsTextView = (TextView) findViewById(R.id.callback_statistics_text_view);
+
+        mMultiLineChart = (MultiLineChart) findViewById(R.id.multiline_chart);
+        mCpuLoadTrace = mMultiLineChart.createTrace("CPU", Color.GREEN, Color.RED,
+                0.0f, 2.0f);
+        mWorkloadTrace = mMultiLineChart.createTrace("Work", Color.DKGRAY,
+                0.0f, MARGIN_ABOVE_WORKLOAD_FOR_CPU);
 
         mCpuCount = getCpuCount();
         final int defaultCpuAffinityMask = 0;
@@ -243,21 +254,35 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
             return;
         }
 
-        StringBuilder callbackStatisticsText = new StringBuilder();
         List<CallbackStatus> callbackStatuses = getCallbackStatistics();
         if (callbackStatuses == null) {
             showErrorToast("empty callback status!");
         } else {
-            int index = 0;
+            mMultiLineChart.reset();
+            long firstTimeNs = 0;
+            int lastXRuns = 0;
+            // Time between callbacks in nanoseconds.
+            double expectedCallbackTimeSeconds = (double) getBufferSizeInFrames() / getSampleRate();
+
+            float maxWorkloadValue = max(mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue());
             for (CallbackStatus callbackStatus : callbackStatuses) {
-                index++;
-                callbackStatisticsText.append(String.format("%d, %d, %.3f, %d, %d\n",
-                        index, callbackStatus.numVoices,
-                        (callbackStatus.finishTimeNs - callbackStatus.beginTimeNs) / MILLIS_TO_NANOS,
-                        callbackStatus.xRunCount, callbackStatus.cpuIndex));
+                if (firstTimeNs == 0) {
+                    firstTimeNs = callbackStatus.beginTimeNs;
+                }
+                long elapsedTime = callbackStatus.beginTimeNs - firstTimeNs;
+                mMultiLineChart.addX(elapsedTime * NANOS_TO_SECONDS);
+
+                long callbackDuration = callbackStatus.finishTimeNs - callbackStatus.beginTimeNs;
+                double cpuLoad = NANOS_TO_SECONDS * callbackDuration / expectedCallbackTimeSeconds;
+                boolean hasXRun = (callbackStatus.xRunCount > lastXRuns);
+                lastXRuns = callbackStatus.xRunCount;
+
+
+                mCpuLoadTrace.add((float) cpuLoad, hasXRun);
+                mWorkloadTrace.add(callbackStatus.numVoices / maxWorkloadValue, false);
             }
+            mMultiLineChart.update();
         }
-        mCallbackStatisticsTextView.setText(callbackStatisticsText);
 
         if (mUpdateThread != null) {
             mUpdateThread.stop();

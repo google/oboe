@@ -19,7 +19,6 @@
 
 #include "aaudio/AAudioExtensions.h"
 #include "aaudio/AudioStreamAAudio.h"
-#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -27,6 +26,10 @@
 #include "opensles/AudioOutputStreamOpenSLES.h"
 #include "opensles/AudioStreamOpenSLES.h"
 #include "QuirksManager.h"
+
+#ifndef DISABLE_CONVERSION
+#include "FilterAudioStream.h"
+#endif
 
 bool oboe::OboeGlobals::mWorkaroundsEnabled = true;
 
@@ -99,6 +102,11 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
         LOGW("%s() invalid config. Error %s", __func__, oboe::convertToText(result));
         return result;
     }
+    if (mPartialDataCallback != nullptr &&
+        (!OboeExtensions::isPartialDataCallbackSupported() || !willUseAAudio())) {
+        LOGE("%s() Partial data callback is not supported.", __func__);
+        return Result::ErrorIllegalArgument;
+    }
 
 #ifndef OBOE_SUPPRESS_LOG_SPAM
     LOGI("%s() %s -------- %s --------",
@@ -114,10 +122,17 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
 
     // Maybe make a FilterInputStream.
     AudioStreamBuilder childBuilder(*this);
+
+#ifndef DISABLE_CONVERSION
     // Check need for conversion and modify childBuilder for optimal stream.
     bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
     // Do we need to make a child stream and convert.
     if (conversionNeeded) {
+        if (isPartialDataCallbackSpecified()) {
+            LOGW("%s(), partial data callback is not supported when data conversion is required",
+                 __func__);
+            return Result::ErrorIllegalArgument;
+        }
         AudioStream *tempStream;
         result = childBuilder.openStreamInternal(&tempStream);
         if (result != Result::OK) {
@@ -159,6 +174,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
             }
         }
     }
+#endif
 
     if (streamP == nullptr) {
         streamP = build();

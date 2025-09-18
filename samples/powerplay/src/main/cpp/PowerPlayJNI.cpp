@@ -223,6 +223,39 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setLoopingNat
     player.setLoopMode(index, looping);
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.setMMapEnabledNative()
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setMMapEnabledNative(
+        JNIEnv *env,
+        jobject,
+        jboolean enable) {
+    return PowerPlayMultiPlayer::setMMapEnabled(enable);
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.isMMapEnabledNative()
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapEnabledNative(
+        JNIEnv *env,
+        jobject) {
+    return PowerPlayMultiPlayer::isMMapEnabled();
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.isMMapSupportedNative()
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapSupportedNative(
+        JNIEnv *env,
+        jobject) {
+    return PowerPlayMultiPlayer::isMMapSupported();
+}
+
+
+
 #ifdef __cplusplus
 }
 #endif

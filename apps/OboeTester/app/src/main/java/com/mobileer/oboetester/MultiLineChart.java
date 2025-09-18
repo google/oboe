@@ -196,8 +196,6 @@ public class MultiLineChart extends View {
         public void add(float value, boolean useSecondaryColor) {
             // Take the hit here instead of when drawing.
             final float normalizedValue = Math.min(mMax, Math.max(mMin, value));
-            // Add the data twice to make the graph less spiky
-            mData.add(normalizedValue, useSecondaryColor);
             mData.add(normalizedValue, useSecondaryColor);
         }
 

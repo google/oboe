@@ -56,6 +56,7 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var player: PowerPlayAudioPlayer
     private lateinit var serviceIntent: Intent
+    private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +124,7 @@ class MainActivity : ComponentActivity() {
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
         isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
+        isMMapSupported = player.isMMapSupported()
 
         setContent {
             MusicPlayerTheme {
@@ -159,12 +162,13 @@ class MainActivity : ComponentActivity() {
             mutableIntStateOf(0)
         }
         val offload = remember {
-            mutableIntStateOf(0)
+            mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
         }
+
+        val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
 
         LaunchedEffect(pagerState.currentPage) {
             playingSongIndex.intValue = pagerState.currentPage
-            // player.seekTo(pagerState.currentPage, 0)
         }
 
         LaunchedEffect(Unit) {
@@ -179,8 +183,8 @@ class MainActivity : ComponentActivity() {
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxSize(), contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
 
@@ -215,9 +219,7 @@ class MainActivity : ComponentActivity() {
                     pageSize = PageSize.Fixed((configuration.screenWidthDp / (1.7)).dp),
                     contentPadding = PaddingValues(horizontal = 85.dp)
                 ) { page ->
-
                     val painter = painterResource(id = playList[page].cover)
-
                     if (page == pagerState.currentPage) {
                         VinylAlbumCoverAnimation(isSongPlaying = isPlaying.value, painter = painter)
                     } else {
@@ -236,6 +238,7 @@ class MainActivity : ComponentActivity() {
                     "Performance Modes"
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Column {
                     val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
                     if (isOffloadSupported) radioOptions.add("PCM Offload")
@@ -265,7 +268,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             RadioButton(
                                 selected = (text == selectedOption),
-                                onClick = null, // null recommended for accessibility with screen readers
+                                onClick = null,
                                 enabled = enabled
                             )
                             Text(
@@ -285,6 +288,41 @@ class MainActivity : ComponentActivity() {
                         else -> "Performance Mode: PCM Offload"
                     }
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                        .padding(vertical = 4.dp)
+                ) {
+                    if (isMMapSupported) {
+                        Checkbox(
+                            checked = !isMMapEnabled.value,
+                            onCheckedChange = {
+                                if (!isPlaying.value) {
+                                    isMMapEnabled.value = !it
+                                    player.setMMapEnabled(isMMapEnabled.value)
+                                }
+                            },
+                            enabled = !isPlaying.value
+                        )
+                        Text(
+                            text = "Disable MMAP",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+
+                    }
+                    Text(
+                        text = when (isMMapEnabled.value) {
+                            true -> "| Current Mode: MMAP"
+                            false -> "| Current Mode: Classic"
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -297,10 +335,12 @@ class MainActivity : ComponentActivity() {
                         onClick = {
                             when (isPlaying.value) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
-                                false -> player.startPlaying(
-                                    playingSongIndex.intValue,
-                                    OboePerformanceMode.fromInt(offload.intValue)
-                                )
+                                false -> {
+                                    player.startPlaying(
+                                        playingSongIndex.intValue,
+                                        OboePerformanceMode.fromInt(offload.intValue)
+                                    )
+                                }
                             }
 
                             isPlaying.value =
@@ -311,10 +351,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    /***
-     * Player control button
-     */
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
         Box(

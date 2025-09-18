@@ -113,3 +113,16 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         startStream();
     }
 }
+
+bool PowerPlayMultiPlayer::setMMapEnabled(bool enabled) {
+    auto result = oboe::OboeExtensions::setMMapEnabled(enabled);
+    return result == 0;
+}
+
+bool PowerPlayMultiPlayer::isMMapEnabled() {
+    return oboe::OboeExtensions::isMMapEnabled();
+}
+
+bool PowerPlayMultiPlayer::isMMapSupported() {
+    return oboe::OboeExtensions::isMMapSupported();
+}

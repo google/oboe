@@ -84,13 +84,17 @@ There are some optional parameter in common for all tests:
 
 There are several optional parameters in common for glitch, latency, input, and output tests:
 
-    --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered"
+    --ei buffer_capacity    {capacity} // number of frames in the buffer, default is UNSPECIFIED.
+    --ei buffer_bursts      {bursts}     // number of bursts in the buffer, 2 for "double buffered". Do not use together with buffer_frames to avoid conflict. When both set, buffer_bursts will be ignored.
+    --ei buffer_frames      {frames}     // number of frames in the buffer, do not use together with buffer_bursts to avoid conflict. When both set, buffer_bursts will be ignored.
     --es in_api             {"unspecified", "opensles", "aaudio"}  // native input API, default is "unspecified"
     --es out_api            {"unspecified", "opensles", "aaudio"}  // native output API, default is "unspecified"
     --es in_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
     --es out_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
     --ei in_channels        {samples}    // number of input channels, default is 2. This is ignored if in_channel_mask is set.
     --ei out_channels       {samples}    // number of output channels, default is 2. This is ignored if out_channel_mask is set.
+    --es in_format          {"pcm_16_bit", "pcm_float", "pcm_24_bit", "pcm_32_bit", "iec61937", "mp3"}
+    --es out_format         {"pcm_16_bit", "pcm_float", "pcm_24_bit", "pcm_32_bit", "iec61937", "mp3"}
     --ei sample_rate        {hertz}
     --es in_perf            {"none", "lowlat", "powersave"}  // input performance mode, default is "lowlat"
     --es out_perf           {"none", "lowlat", "powersave", "powersave_offload"}  // output performance mode, default is "lowlat", "powersave_offload" will only be available for output stream

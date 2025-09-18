@@ -136,5 +136,15 @@
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchAudioWorkloadTestRunner"
             android:text="Workload Runner" />
+
+        <Button
+            android:id="@+id/buttonReverseJniTest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchReverseJniTest"
+            android:text="Reverse JNI" />
     </GridLayout>
 </LinearLayout>

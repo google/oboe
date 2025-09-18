@@ -24,8 +24,10 @@ import static com.mobileer.oboetester.StreamConfiguration.convertErrorToText;
 import static com.mobileer.oboetester.StreamConfiguration.convertUsageToAudioAttributeUsage;
 import static com.mobileer.oboetester.StreamConfiguration.convertUsageToStreamType;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -49,6 +51,7 @@ import android.widget.Toast;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -127,6 +130,40 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     protected String mResultFileName;
     private String mTestResults;
     private ExternalFileWriter mExternalFileWriter = new ExternalFileWriter(this);
+
+    private TestTimeoutScheduler mTestTimeoutScheduler = new TestTimeoutScheduler();
+    private BroadcastReceiver mStopTestReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mTestRunningByIntent) {
+                stopAutomaticTest();
+            }
+        }
+    };
+
+    private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                Log.d(TAG, "action screen off");
+                if (mStreamSniffer != null) {
+                    mStreamSniffer.stopStreamSniffer();
+                }
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                Log.d(TAG, "action screen on");
+                if (mStreamSniffer != null && !isClosingOrClosed()) {
+                    mStreamSniffer.startStreamSniffer();
+                }
+            }
+        }
+    };
+
+    private final long mActivityId = generateActivityId();
+    private static long CURRENT_ACTIVITY_ID = 0;
+
+    private static synchronized long generateActivityId() {
+        return ++CURRENT_ACTIVITY_ID;
+    }
 
     public String getTestName() {
         return "TestAudio";
@@ -284,6 +321,11 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         findAudioCommon();
 
         mBundleFromIntent = getIntent().getExtras();
+
+        IntentFilter screenStateFilter = new IntentFilter();
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStateReceiver, screenStateFilter);
     }
 
     @Override
@@ -334,6 +376,8 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     @Override
     public void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mStopTestReceiver,
+                new IntentFilter(TestTimeoutReceiver.ACTION_STOP_TEST));
         if (mBundleFromIntent != null) {
             processBundleFromIntent();
         }
@@ -371,6 +415,12 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                 mRestartStreamIfClosed = mBundleFromIntent.getBoolean(KEY_RESTART_STREAM_IF_CLOSED,
                         false);
                 setVolumeFromIntent();
+
+                int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
+                if (durationSeconds > 0) {
+                    mTestTimeoutScheduler.scheduleTestTimeout(TestAudioActivity.this, durationSeconds);
+                }
+
                 startTestUsingBundle();
             } catch( Exception e) {
                 showErrorToast(e.getMessage());
@@ -381,9 +431,14 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public void startTestUsingBundle() {
     }
 
+    public void stopAutomaticTest() {
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mStopTestReceiver);
     }
 
     @Override
@@ -413,6 +468,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         synchronized (mAudioStateLock) {
             mAudioState = AUDIO_STATE_CLOSED;
         }
+        unregisterReceiver(mScreenStateReceiver);
         super.onDestroy();
     }
 
@@ -422,6 +478,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             Intent serviceIntent = new Intent(action, null, this,
                     AudioForegroundService.class);
             serviceIntent.putExtra("service_types", getServiceType());
+            serviceIntent.putExtra(AudioForegroundService.KEY_ACTIVITY_ID, mActivityId);
             startForegroundService(serviceIntent);
         }
     }
@@ -1040,6 +1097,9 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     }
 
     public void onStopTest() {
+        if (mTestRunningByIntent) {
+            mTestTimeoutScheduler.cancelTestTimeout(this);
+        }
         stopTest();
     }
 
@@ -1073,7 +1133,8 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
 
     @GuardedBy("mAudioStateLock")
     private void closeAudioLocked() {
-        if (mAudioState >= AUDIO_STATE_CLOSING) {
+        if (isClosingOrClosed()) {
+            Log.d(TAG, "closeAudio() already closing");
             return;
         }
         mAudioState = AUDIO_STATE_CLOSING;
@@ -1098,6 +1159,10 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         }
 
         mAudioState = AUDIO_STATE_CLOSED;
+    }
+
+    public boolean isClosingOrClosed() {
+        return (mAudioState == AUDIO_STATE_CLOSING) || (mAudioState == AUDIO_STATE_CLOSED);
     }
 
     void startBluetoothSco() {

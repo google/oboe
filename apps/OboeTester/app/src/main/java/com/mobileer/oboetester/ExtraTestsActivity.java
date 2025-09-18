@@ -50,4 +50,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     public void onLaunchAudioWorkloadTestRunner(View view) {
         launchTestActivity(AudioWorkloadTestRunnerActivity.class);
     }
+
+    public void onLaunchReverseJniTest(View view) {
+        launchTestActivity(ReverseJniActivity.class);
+    }
 }

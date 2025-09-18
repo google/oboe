@@ -28,6 +28,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -143,6 +144,11 @@
             android:label="@string/title_audio_workload_test_runner"
             android:exported="true"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ReverseJniActivity"
+            android:label="@string/title_reverse_jni"
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".MidiTapTester"
@@ -172,6 +178,9 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
+        <receiver android:name=".TestTimeoutReceiver" android:exported="false"/>
+
     </application>
 
 </manifest>

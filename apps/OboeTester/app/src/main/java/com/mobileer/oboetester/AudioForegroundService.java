@@ -27,10 +27,16 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.HashSet;
+
 public class AudioForegroundService extends Service {
     private static final String TAG = "OboeTester";
     public static final String ACTION_START = "ACTION_START";
     public static final String ACTION_STOP = "ACTION_STOP";
+    public static final String KEY_ACTIVITY_ID = "KEY_ACTIVITY_ID";
+
+    private int mServiceType;
+    private final HashSet<Long> mActivityIds = new HashSet<>();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -65,14 +71,30 @@ public class AudioForegroundService extends Service {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     int serviceTypes = intent.getIntExtra("service_types", 0);
                     Log.i(TAG, "ServiceTypes: " + serviceTypes);
-                    startForeground(1, buildNotification(), serviceTypes);
+                    long activityId = intent.getLongExtra(KEY_ACTIVITY_ID, 0);
+                    synchronized (mActivityIds) {
+                        mActivityIds.add(activityId);
+                        if (mActivityIds.size() == 1 || serviceTypes != mServiceType) {
+                            startForeground(1, buildNotification(), serviceTypes);
+                            mServiceType = serviceTypes;
+                        }
+                    }
                 }
                 break;
             case ACTION_STOP:
                 Log.i(TAG, "Receive ACTION_STOP " + intent.getExtras());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    stopForeground(STOP_FOREGROUND_REMOVE);
+                    long activityId = intent.getLongExtra(KEY_ACTIVITY_ID, 0);
+                    synchronized (mActivityIds) {
+                        mActivityIds.remove(activityId);
+                        if (mActivityIds.isEmpty()) {
+                            stopForeground(STOP_FOREGROUND_REMOVE);
+                        }
+                    }
                 }
+                break;
+            default:
+                Log.w(TAG, "Unknown action: " + intent.getAction());
                 break;
         }
         return START_NOT_STICKY;

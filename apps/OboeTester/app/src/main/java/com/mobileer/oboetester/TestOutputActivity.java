@@ -204,9 +204,11 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         mShouldSetStreamControlByAttributes.setEnabled(false);
         mShouldDisableForCompressedFormat = StreamConfiguration.isCompressedFormat(
                 mAudioOutTester.getCurrentAudioStream().getFormat());
-        if (!isStreamClosed()) {
+        if (!isStreamClosed() && isOffloadStream()) {
             mPlaybackParametersLayout.setVisibility(View.VISIBLE);
             updatePlaybackParametersText();
+        } else {
+            mPlaybackParametersLayout.setVisibility(View.GONE);
         }
     }
 
@@ -309,21 +311,16 @@ public final class TestOutputActivity extends TestOutputActivityBase {
             mAudioOutTester.setSignalType(signalType);
 
             openAudio();
-            int burstCount = IntentBasedTestSupport.getBurstCount(mBundleFromIntent);
-            setBufferSizeByNumBursts(burstCount);
-            startAudio();
-
-            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
-            if (durationSeconds > 0) {
-                // Schedule the end of the test.
-                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopAutomaticTest();
-                    }
-                }, durationSeconds * 1000);
+            int frameCount = IntentBasedTestSupport.getBufferFrameCount(mBundleFromIntent);
+            if (frameCount != 0) {
+                setBufferSizeByNumFrames(frameCount);
+            } else {
+                int burstCount = IntentBasedTestSupport.getBurstCount(mBundleFromIntent);
+                if (burstCount != 0) {
+                    setBufferSizeByNumBursts(burstCount);
+                }
             }
+            startAudio();
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         } finally {
@@ -331,7 +328,8 @@ public final class TestOutputActivity extends TestOutputActivityBase {
         }
     }
 
-    void stopAutomaticTest() {
+    @Override
+    public void stopAutomaticTest() {
         String report = getCommonTestReport();
         stopAudio();
         maybeWriteTestResult(report);

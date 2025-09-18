@@ -35,6 +35,7 @@
 #include "TestRapidCycle.h"
 #include "cpu/AudioWorkloadTest.h"
 #include "cpu/AudioWorkloadTestRunner.h"
+#include "ReverseJniEngine.h"
 
 static NativeAudioContext engine;
 
@@ -103,6 +104,10 @@ Java_com_mobileer_oboetester_OboeAudioStream_setCallbackReturnStop(JNIEnv *env,
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize);
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setUsePartialCallbackNative(
+        JNIEnv *env, jclass type, jboolean usePartialCallback);
 
 // ================= OboeAudioOutputStream ================================
 
@@ -328,6 +333,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_getBufferSizeInFrames(
         result = oboeStream->getBufferSizeInFrames();
     }
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setPartialCallbackPercentage(
+        JNIEnv * /*env*/, jobject /*thiz*/, jint percentage) {
+    engine.getCurrentActivity()->setPartialCallbackPercentage(percentage);
 }
 
 JNIEXPORT void JNICALL
@@ -739,6 +750,12 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setCallbackSize(JNIEnv *env, jclass type,
                                                             jint callbackSize) {
     ActivityContext::callbackSize = callbackSize;
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setUsePartialDataCallbackNative(
+        JNIEnv *env, jclass type, jboolean usePartialDataCallback) {
+    ActivityContext::mUsePartialDataCallback = usePartialDataCallback;
 }
 
 JNIEXPORT jboolean JNICALL
@@ -1448,6 +1465,60 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getResult(JNIEnv *e
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_getXRunCount(JNIEnv *env, jobject thiz) {
     return sAudioWorkloadRunner.getXRunCount();
+}
+
+JNIEXPORT jlong JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_createEngine(JNIEnv *env, jobject thiz, jint channelCount) {
+    ReverseJniEngine *reverseJniEngine = new ReverseJniEngine(env, thiz, channelCount);
+    return reinterpret_cast<jlong>(reverseJniEngine);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_startEngine(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts, jint sleepDurationUs) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->start(bufferSizeInBursts, sleepDurationUs);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_stopEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->stop();
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_deleteEngine(JNIEnv *env, jobject thiz, jlong enginePtr) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        delete reverseJniEngine;
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_setBufferSizeInBursts(JNIEnv *env, jobject thiz, jlong enginePtr, jint bufferSizeInBursts) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->setBufferSizeInBursts(bufferSizeInBursts);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_setSleepDurationUs(JNIEnv *env, jobject thiz, jlong enginePtr, jint sleepDurationUs) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->setSleepDurationUs(sleepDurationUs);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffer(JNIEnv *env, jobject thiz, jlong enginePtr, jfloatArray buffer) {
+    ReverseJniEngine *reverseJniEngine = reinterpret_cast<ReverseJniEngine *>(enginePtr);
+    if (reverseJniEngine) {
+        reverseJniEngine->setAudioBuffer(env, buffer);
+    }
 }
 
 } // extern "C"

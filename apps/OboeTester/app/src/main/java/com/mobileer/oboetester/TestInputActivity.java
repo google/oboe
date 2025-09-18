@@ -45,6 +45,8 @@ public class TestInputActivity  extends TestAudioActivity {
     int mInputMarginBursts = 0;
     private WorkloadView mWorkloadView;
 
+    private PartialDataCallbackSizeView mPartialDataCallbackSizeView;
+
     public native void setMinimumFramesBeforeRead(int frames);
     public native int saveWaveFile(String absolutePath);
 
@@ -56,6 +58,13 @@ public class TestInputActivity  extends TestAudioActivity {
 
         BufferSizeView bufferSizeView = findViewById(R.id.buffer_size_view);
         bufferSizeView.setVisibility(View.GONE);
+
+        mPartialDataCallbackSizeView =
+                (PartialDataCallbackSizeView) findViewById(R.id.partial_data_callback_size_view);
+        if (mPartialDataCallbackSizeView != null) {
+            mPartialDataCallbackSizeView.setVisibility(
+                    OboeAudioStream.usePartialDataCallback() ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
@@ -127,6 +136,10 @@ public class TestInputActivity  extends TestAudioActivity {
     public void openAudio(View view) {
         try {
             openAudio();
+            if (mPartialDataCallbackSizeView != null) {
+                mPartialDataCallbackSizeView.onStreamOpened(
+                        (OboeAudioStream) mAudioInputTester.getCurrentAudioStream());
+            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         }
@@ -204,18 +217,6 @@ public class TestInputActivity  extends TestAudioActivity {
 
             openAudio();
             startAudio();
-
-            int durationSeconds = IntentBasedTestSupport.getDurationSeconds(mBundleFromIntent);
-            if (durationSeconds > 0) {
-                // Schedule the end of the test.
-                Handler handler = new Handler(Looper.getMainLooper()); // UI thread
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopAutomaticTest();
-                    }
-                }, durationSeconds * 1000);
-            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         } finally {
@@ -223,7 +224,8 @@ public class TestInputActivity  extends TestAudioActivity {
         }
     }
 
-    void stopAutomaticTest() {
+    @Override
+    public void stopAutomaticTest() {
         String report = getCommonTestReport();
         stopAudio();
         maybeWriteTestResult(report);
