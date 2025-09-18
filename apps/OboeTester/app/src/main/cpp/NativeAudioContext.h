@@ -495,7 +495,7 @@ public:
     }
 
     void setDuck(bool isDucked) override {
-        mDuckingMultiplier = isDucked ? 0.2f : 1.0f;
+        mDuckingMultiplier = isDucked ? kDuckingVolumeMultiplier : kNormalVolumeMultiplier;
         setAmplitude(mAmplitude);
     }
 
@@ -513,6 +513,8 @@ protected:
     std::vector<SineOscillator>      sineOscillators;
     std::vector<SawtoothOscillator>  sawtoothOscillators;
     static constexpr float           kSweepPeriod = 10.0; // for triangle up and down
+    static constexpr float           kDuckingVolumeMultiplier = 0.2f; // volume multiplier when ducking
+    static constexpr float           kNormalVolumeMultiplier = 1.0f; // when not ducking
 
     // A triangle LFO is shaped into either a linear or an exponential range for sweep.
     TriangleOscillator               mTriangleOscillator;
@@ -522,7 +524,7 @@ protected:
 
     static constexpr int             kRampMSec = 10; // for volume control
     float                            mAmplitude = 1.0f;
-    float                            mDuckingMultiplier = 1.0f;
+    float                            mDuckingMultiplier = kNormalVolumeMultiplier;
     std::shared_ptr<RampLinear> mVolumeRamp;
 
     std::unique_ptr<ManyToMultiConverter>   manyToMulti;
@@ -870,12 +872,6 @@ public:
 
     void setDelayTime(double delayTimeMillis) {
         mActivityEcho.setDelayTime(delayTimeMillis);
-    }
-
-    void setDuck(bool isDucked) {
-        if (currentActivity == &mActivityTestOutput) {
-            mActivityTestOutput.setDuck(isDucked);
-        }
     }
 
     ActivityTestOutput           mActivityTestOutput;

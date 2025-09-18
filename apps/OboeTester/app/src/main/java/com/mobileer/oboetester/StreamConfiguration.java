@@ -488,8 +488,6 @@ public class StreamConfiguration {
 
     static int convertUsageToAudioAttributeUsage(int usage) {
         switch(usage) {
-            case UNSPECIFIED:
-                return AudioAttributes.USAGE_UNKNOWN;
             case USAGE_MEDIA:
                 return AudioAttributes.USAGE_MEDIA;
             case USAGE_VOICE_COMMUNICATION:
@@ -517,6 +515,7 @@ public class StreamConfiguration {
                     return AudioAttributes.USAGE_ASSISTANT;
                 }
                 return AudioAttributes.USAGE_UNKNOWN;
+            case UNSPECIFIED:
             default:
                 return AudioAttributes.USAGE_UNKNOWN;
         }
@@ -555,8 +554,6 @@ public class StreamConfiguration {
 
     static String convertContentTypeToText(int contentType) {
         switch(contentType) {
-            case UNSPECIFIED:
-                return "Unspecified";
             case CONTENT_TYPE_SPEECH:
                 return "Speech";
             case CONTENT_TYPE_MUSIC:
@@ -565,6 +562,8 @@ public class StreamConfiguration {
                 return "Movie";
             case CONTENT_TYPE_SONIFICATION:
                 return "Sonification";
+            case UNSPECIFIED:
+                return "Unspecified";
             default:
                 return "?=" + contentType;
         }

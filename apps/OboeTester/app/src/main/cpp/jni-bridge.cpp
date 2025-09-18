@@ -117,6 +117,8 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioOutputStream_setToneType(JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioOutputStream_setAmplitude(JNIEnv *env, jobject, jfloat);
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioOutputStream_setDuck(JNIEnv *env, jobject, jboolean);
 
 /*********************************************************************************/
 /**********************  JNI Implementations *************************************/
@@ -1063,8 +1065,8 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_TestAudioActivity_setDuck(JNIEnv *env, jobject thiz, jboolean isDucked) {
-    engine.setDuck(isDucked);
+Java_com_mobileer_oboetester_TestAudioActivity_setDuck(JNIEnv *env, jobject, jboolean isDucked) {
+    engine.getCurrentActivity()->setDuck(isDucked);
 }
 
 JNIEXPORT void JNICALL
