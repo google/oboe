@@ -15,6 +15,6 @@
   -->
 
 <resources>
-    <string name="app_name">fxlab</string>
+    <string name="app_name">Fxlab</string>
     <string name="action_toggle_mute">Toggle volume</string>
 </resources>
