@@ -86,10 +86,12 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
 
 void PowerPlayMultiPlayer::triggerUp(int32_t index) {
+    if (index >= 0 && index < mNumSampleBuffers) {
+        mSampleSources[index]->setStopMode(true);
+    }
     if (mAudioStream) {
         mAudioStream->pause();
     }
-    mSampleSources[index]->setStopMode(true);
 }
 
 void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
