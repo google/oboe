@@ -96,7 +96,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     auto performanceModeChanged = performanceMode != mLastPerformanceMode;
     mLastPerformanceMode = performanceMode;
 
-
     for (size_t i = 0; i < mSampleSources.size(); ++i) {
         if (i != index) mSampleSources[i]->setStopMode(false);
     }
@@ -111,15 +110,16 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         }
     }
 
+    mSampleSources[index]->setPlayMode(performanceModeChanged);
+
     if (mAudioStream) {
         if (performanceModeChanged &&
             mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&
             mSampleSources[index]->getCurserIndex() != 0) {
             mAudioStream->flushFromFrame(FlushFromAccuracy::Accurate, 0);
+        } else {
+            startStream(mLastPerformanceMode);
         }
-
-        mSampleSources[index]->setPlayMode(performanceModeChanged);
-        startStream(mLastPerformanceMode);
     }
 }
 
