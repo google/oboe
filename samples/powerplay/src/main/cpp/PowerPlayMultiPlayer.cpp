@@ -115,10 +115,17 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     mSampleSources[index]->setPlayMode(performanceModeChanged);
 
     if (mAudioStream) {
-        if (performanceModeChanged &&
-            mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&
-            mSampleSources[index]->getCurserIndex() != 0) {
-            mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
+        auto isOffload = mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded;
+        if (isOffload && mSampleSources[index]->getCurserIndex() == 0) {
+            auto result = mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
+            if (result != Result::OK) {
+
+                __android_log_print(ANDROID_LOG_ERROR,
+                                    TAG,
+                                    "Failed to flush from frame. Error: %s",
+                                    convertToText(result.error()));
+            }
+            mAudioStream->start();
         } else {
             startStream(mLastPerformanceMode);
         }
