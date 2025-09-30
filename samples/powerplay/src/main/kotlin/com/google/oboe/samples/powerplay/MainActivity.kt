@@ -217,7 +217,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     state = pagerState,
                     pageSize = PageSize.Fixed((configuration.screenWidthDp / (1.7)).dp),
-                    contentPadding = PaddingValues(horizontal = 85.dp)
+                    contentPadding = PaddingValues(horizontal = 85.dp),
                 ) { page ->
                     val painter = painterResource(id = playList[page].cover)
                     if (page == pagerState.currentPage) {
@@ -351,6 +351,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
         Box(
@@ -522,6 +523,12 @@ class MainActivity : ComponentActivity() {
                 artist = "Momo Oboe",
                 cover = R.drawable.album_art_1,
                 fileName = "song1.wav",
+            ),
+            Music(
+                name = "Digital Noca",
+                artist = "Momo Oboe",
+                cover = R.drawable.album_art_2,
+                fileName = "song2.wav",
             ),
         )
     }

@@ -86,9 +86,12 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
 
 void PowerPlayMultiPlayer::triggerUp(int32_t index) {
-    if (index >= 0 && index < mNumSampleBuffers) {
-        mSampleSources[index]->setStopMode(true);
+    mSampleSources[index]->setStopMode(true);
+
+    if (mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded) {
+        mAudioStream->flushFromFrame(FlushFromAccuracy::Accurate, 0);
     }
+
     if (mAudioStream) {
         mAudioStream->pause();
     }
@@ -96,8 +99,9 @@ void PowerPlayMultiPlayer::triggerUp(int32_t index) {
 
 void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
     auto performanceModeChanged = performanceMode != mLastPerformanceMode;
-    if (index >= 0 && index < mNumSampleBuffers) {
-        mSampleSources[index]->setPlayMode(performanceModeChanged);
+    mSampleSources[index]->setPlayMode(performanceModeChanged);
+    if (mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded) {
+        mAudioStream->flushFromFrame(FlushFromAccuracy::Accurate, 0);
     }
 
     if (performanceModeChanged) {
