@@ -118,14 +118,14 @@ bool SimpleMultiPlayer::openStream(PerformanceMode performanceMode) {
     return true;
 }
 
-bool SimpleMultiPlayer::startStream() {
+bool SimpleMultiPlayer::startStream(PerformanceMode performanceMode) {
     int tryCount = 0;
     while (tryCount < 3) {
         bool wasOpenSuccessful = true;
         // Assume that openStream() was called successfully before startStream() call.
         if (tryCount > 0) {
             usleep(20 * 1000); // Sleep between tries to give the system time to settle.
-            wasOpenSuccessful = openStream(); // Try to open the stream again after the first try.
+            wasOpenSuccessful = openStream(performanceMode); // Try to open the stream again after the first try.
         }
         if (wasOpenSuccessful) {
             Result result = mAudioStream->requestStart();

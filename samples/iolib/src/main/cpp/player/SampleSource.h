@@ -46,13 +46,13 @@ public:
 
     void setPlayMode(bool fromPause = true) {
         mIsPlaying = true;
-        if (fromPause) {
+        if (fromPause == true) {
             mCurSampleIndex = 0;
         }
     }
     void setStopMode(bool isPause = false) {
         mIsPlaying = false;
-        if (!isPause) {
+        if (isPause == false) {
             mCurSampleIndex = 0;
         }
     }
@@ -60,6 +60,8 @@ public:
     void setLoopMode(bool isLoopMode) { mIsLoopMode = isLoopMode; }
 
     bool isPlaying() { return mIsPlaying; }
+
+    int32_t getCurserIndex() { return mCurSampleIndex; }
 
     void setPan(float pan) {
         if (pan < PAN_HARDLEFT) {

@@ -37,7 +37,7 @@ public:
     void teardownAudioStream();
 
     virtual bool openStream(oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
-    bool startStream();
+    bool startStream(oboe::PerformanceMode performanceMode = oboe::PerformanceMode::LowLatency);
 
     int getSampleRate() { return mSampleRate; }
 
