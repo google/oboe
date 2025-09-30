@@ -116,7 +116,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         if (performanceModeChanged &&
             mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&
             mSampleSources[index]->getCurserIndex() != 0) {
-            mAudioStream->flushFromFrame(FlushFromAccuracy::Accurate, 0);
+            mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
         } else {
             startStream(mLastPerformanceMode);
         }
