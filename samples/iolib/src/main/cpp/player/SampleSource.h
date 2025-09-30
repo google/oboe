@@ -46,13 +46,13 @@ public:
 
     void setPlayMode(bool fromPause = true) {
         mIsPlaying = true;
-        if (fromPause == true) {
+        if (fromPause) {
             mCurSampleIndex = 0;
         }
     }
     void setStopMode(bool isPause = false) {
         mIsPlaying = false;
-        if (isPause == false) {
+        if (!isPause) {
             mCurSampleIndex = 0;
         }
     }
