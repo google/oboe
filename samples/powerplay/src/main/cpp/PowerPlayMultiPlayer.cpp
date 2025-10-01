@@ -85,11 +85,35 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 }
 
 void PowerPlayMultiPlayer::triggerUp(int32_t index) {
-    if (index >= 0 && index < mNumSampleBuffers) {
-        mSampleSources[index]->setStopMode(true);
+    // Validate index is not out of bounds.
+    if (index < 0 || index >= mSampleSources.size()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "triggerDown: Invalid index %d", index);
+        return;
     }
-    if (mAudioStream) {
-        mAudioStream->pause();
+
+    // Validate the audio stream is not null.
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "triggerDown: mAudioStream is null after attempting to open.");
+        return;
+    }
+
+    // Attempt to pause audio if the stream is not already paused.
+    if (mAudioStream->getState() != StreamState::Paused) {
+        const auto result = mAudioStream->requestPause();
+        if (result != Result::OK) {
+            __android_log_print(ANDROID_LOG_ERROR,
+                                TAG,
+                                "Unable to pause the audio stream.");
+            return;
+        }
+    }
+
+    // Assure previous sample is stopped and the play head is reset to zero, avoiding the
+    // currently playing index. Only allow the playback head to reset when the song has changed.
+    const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
+    if (currentlyPlayingIndex != -1) {
+        mSampleSources[currentlyPlayingIndex]->pause();
     }
 }
 
@@ -122,16 +146,16 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         }
     }
 
-    const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
-    const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
-
-    // Assure all other loaded samples are stopped and the play head is reset to zero, avoiding the
+    // Assure previous sample is stopped and the play head is reset to zero, avoiding the
     // currently playing index. Only allow the playback head to reset when the song has changed.
-    for (size_t i = 0; i < mSampleSources.size(); ++i) {
-        if (i != index) mSampleSources[i]->setStopMode();
-        else mSampleSources[i]->setPlayMode(currentlyPlayingIndex == i);
+    const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
+    if (currentlyPlayingIndex != -1 && currentlyPlayingIndex != index) {
+        mSampleSources[currentlyPlayingIndex]->setStopMode(false);
     }
+    mSampleSources[index]->play();
 
+
+    const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
     const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;
     if (mSampleSources[index]) {
         const auto isPlayHeadAtStart = mSampleSources[index]->getPlayHeadPosition() == 0;
@@ -173,8 +197,11 @@ bool PowerPlayMultiPlayer::isMMapSupported() {
 }
 
 int32_t PowerPlayMultiPlayer::getCurrentlyPlayingIndex() {
+    // TODO due to the use of drumthumper as a scaffold base, for now, we must assume that the
+    //      sample that has a progress cursor head is the playing sample. Ideally, we can
+    //      redo the engine so it no longer relies on drumthumper as a base.
     for (auto i = 0; i < mSampleSources.size(); ++i) {
-        if (mSampleSources[i]->isPlaying()) return i;
+        if (mSampleSources[i]->getPlayHeadPosition() > 0) return i;
     }
 
     // No source is currently playing.
