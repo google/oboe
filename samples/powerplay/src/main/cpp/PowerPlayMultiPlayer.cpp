@@ -113,7 +113,7 @@ void PowerPlayMultiPlayer::triggerUp(int32_t index) {
     // currently playing index. Only allow the playback head to reset when the song has changed.
     const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
     if (currentlyPlayingIndex != -1) {
-        mSampleSources[currentlyPlayingIndex]->pause();
+        mSampleSources[currentlyPlayingIndex]->setStopMode(true);
     }
 }
 
@@ -152,7 +152,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     if (currentlyPlayingIndex != -1 && currentlyPlayingIndex != index) {
         mSampleSources[currentlyPlayingIndex]->setStopMode(false);
     }
-    mSampleSources[index]->play();
+    mSampleSources[index]->setPlayMode(false);
 
     const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
     const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;

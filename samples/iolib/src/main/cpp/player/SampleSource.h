@@ -57,14 +57,6 @@ public:
         }
     }
 
-    void play() {
-        mIsPlaying = true;
-    }
-
-    void pause() {
-        mIsPlaying = false;
-    }
-
     void setLoopMode(bool isLoopMode) { mIsLoopMode = isLoopMode; }
 
     bool isPlaying() { return mIsPlaying; }
