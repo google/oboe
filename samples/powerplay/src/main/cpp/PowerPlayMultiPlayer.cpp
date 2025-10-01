@@ -122,7 +122,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         }
     }
 
-
     const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
     const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
 
@@ -133,7 +132,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         else mSampleSources[i]->setPlayMode(currentlyPlayingIndex == i);
     }
 
-    // The mAudioStream null check is technically redundant due to the earlier check, but kept for clarity if logic evolves.
     const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;
     if (mSampleSources[index]) { // Ensure the specific sample source is valid before accessing it
         const auto isPlayHeadAtStart = mSampleSources[index]->getPlayHeadPosition() == 0;
