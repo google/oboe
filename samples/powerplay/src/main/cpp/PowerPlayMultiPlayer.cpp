@@ -94,7 +94,7 @@ void PowerPlayMultiPlayer::triggerUp(int32_t index) {
 }
 
 void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
-    // Validate index is not out of bounds
+    // Validate index is not out of bounds.
     if (index < 0 || index >= mSampleSources.size()) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "triggerDown: Invalid index %d", index);
         return;
@@ -128,7 +128,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     // Assure all other loaded samples are stopped and the play head is reset to zero, avoiding the
     // currently playing index. Only allow the playback head to reset when the song has changed.
     for (size_t i = 0; i < mSampleSources.size(); ++i) {
-        if (i != index) mSampleSources[i]->setStopMode(false);
+        if (i != index) mSampleSources[i]->setStopMode();
         else mSampleSources[i]->setPlayMode(currentlyPlayingIndex == i);
     }
 

@@ -542,6 +542,12 @@ class MainActivity : ComponentActivity() {
                 cover = R.drawable.album_art_2,
                 fileName = "song2.wav",
             ),
+            Music(
+                name = "Window Seat",
+                artist = "Momo Oboe",
+                cover = R.drawable.album_art_3,
+                fileName = "song3.wav",
+            ),
         )
     }
 
