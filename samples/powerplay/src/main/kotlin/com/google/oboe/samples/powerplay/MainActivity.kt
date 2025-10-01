@@ -70,6 +70,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,6 +99,7 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
 
@@ -166,9 +168,22 @@ class MainActivity : ComponentActivity() {
         }
 
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
+        val isPlaying = remember {
+            mutableStateOf(false)
+        }
 
-        LaunchedEffect(pagerState.currentPage) {
-            playingSongIndex.intValue = pagerState.currentPage
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.currentPage }
+                .distinctUntilChanged()
+                .collect { page ->
+                    playingSongIndex.intValue = pagerState.currentPage
+                    if (isPlaying.value) {
+                        player.startPlaying(
+                            playingSongIndex.intValue,
+                            OboePerformanceMode.fromInt(offload.intValue)
+                        )
+                    }
+                }
         }
 
         LaunchedEffect(Unit) {
@@ -178,9 +193,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val isPlaying = remember {
-            mutableStateOf(false)
-        }
+
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -217,7 +230,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     state = pagerState,
                     pageSize = PageSize.Fixed((configuration.screenWidthDp / (1.7)).dp),
-                    contentPadding = PaddingValues(horizontal = 85.dp)
+                    contentPadding = PaddingValues(horizontal = 85.dp),
                 ) { page ->
                     val painter = painterResource(id = playList[page].cover)
                     if (page == pagerState.currentPage) {
@@ -258,7 +271,6 @@ class MainActivity : ComponentActivity() {
                                         if (enabled) {
                                             onOptionSelected(text)
                                             offload.intValue = index
-                                            player.teardownAudioStream()
                                         }
                                     },
                                     role = Role.RadioButton
@@ -351,6 +363,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
         Box(
@@ -522,6 +535,18 @@ class MainActivity : ComponentActivity() {
                 artist = "Momo Oboe",
                 cover = R.drawable.album_art_1,
                 fileName = "song1.wav",
+            ),
+            Music(
+                name = "Digital Noca",
+                artist = "Momo Oboe",
+                cover = R.drawable.album_art_2,
+                fileName = "song2.wav",
+            ),
+            Music(
+                name = "Window Seat",
+                artist = "Momo Oboe",
+                cover = R.drawable.album_art_3,
+                fileName = "song3.wav",
             ),
         )
     }

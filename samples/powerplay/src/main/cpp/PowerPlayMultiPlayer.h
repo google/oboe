@@ -44,6 +44,9 @@ public:
 
     bool isMMapUsed();
 
+    int32_t getCurrentlyPlayingIndex();
+
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:
@@ -59,6 +62,7 @@ private:
     };
 
     std::shared_ptr<MyPresentationCallback> mPresentationCallback;
+
     oboe::PerformanceMode mLastPerformanceMode;
 };
 

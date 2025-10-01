@@ -61,6 +61,8 @@ public:
 
     bool isPlaying() { return mIsPlaying; }
 
+    int32_t getPlayHeadPosition() const { return mCurSampleIndex; }
+
     void setPan(float pan) {
         if (pan < PAN_HARDLEFT) {
             mPan = PAN_HARDLEFT;
