@@ -133,7 +133,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     }
 
     const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;
-    if (mSampleSources[index]) { // Ensure the specific sample source is valid before accessing it
+    if (mSampleSources[index]) {
         const auto isPlayHeadAtStart = mSampleSources[index]->getPlayHeadPosition() == 0;
 
         if (isOffloaded && isPlayHeadAtStart) {
