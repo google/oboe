@@ -154,7 +154,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     }
     mSampleSources[index]->play();
 
-
     const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
     const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;
     if (mSampleSources[index]) {
