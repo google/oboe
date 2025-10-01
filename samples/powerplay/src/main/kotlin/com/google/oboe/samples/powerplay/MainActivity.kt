@@ -271,7 +271,6 @@ class MainActivity : ComponentActivity() {
                                         if (enabled) {
                                             onOptionSelected(text)
                                             offload.intValue = index
-                                            player.teardownAudioStream()
                                         }
                                     },
                                     role = Role.RadioButton

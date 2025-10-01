@@ -84,7 +84,6 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     return true;
 }
 
-
 void PowerPlayMultiPlayer::triggerUp(int32_t index) {
     if (index >= 0 && index < mNumSampleBuffers) {
         mSampleSources[index]->setStopMode(true);
@@ -95,16 +94,27 @@ void PowerPlayMultiPlayer::triggerUp(int32_t index) {
 }
 
 void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode performanceMode) {
-    auto performanceModeChanged = performanceMode != mLastPerformanceMode;
-    mLastPerformanceMode = performanceMode;
-
-    for (size_t i = 0; i < mSampleSources.size(); ++i) {
-        if (i != index) mSampleSources[i]->setStopMode(false);
+    // Validate index is not out of bounds
+    if (index < 0 || index >= mSampleSources.size()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "triggerDown: Invalid index %d", index);
+        return;
     }
 
-    if (performanceModeChanged) {
+    // Validate the audio stream is not null.
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "triggerDown: mAudioStream is null after attempting to open.");
+        return;
+    }
+
+    // If the performance mode has changed, we need to reopen the stream.
+    if (performanceMode != mLastPerformanceMode) {
         teardownAudioStream();
-        if (!openStream(performanceMode)) {
+
+        // Attempt here to reopen the stream with the new performance mode.
+        const auto result = openStream(performanceMode);
+        if (!result) {
+            // Something went wrong and the stream could not be reopened.
             __android_log_print(ANDROID_LOG_ERROR,
                                 TAG,
                                 "Failed to reopen stream with new performance mode");
@@ -112,22 +122,41 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         }
     }
 
-    mSampleSources[index]->setPlayMode(performanceModeChanged);
 
-    if (mAudioStream) {
-        auto isOffload = mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded;
-        if (isOffload && mSampleSources[index]->getCurserIndex() == 0) {
-            auto result = mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
+    const auto currentPerformanceMode = mAudioStream->getPerformanceMode();
+    const auto currentlyPlayingIndex = getCurrentlyPlayingIndex();
+
+    // Assure all other loaded samples are stopped and the play head is reset to zero, avoiding the
+    // currently playing index. Only allow the playback head to reset when the song has changed.
+    for (size_t i = 0; i < mSampleSources.size(); ++i) {
+        if (i != index) mSampleSources[i]->setStopMode(false);
+        else mSampleSources[i]->setPlayMode(currentlyPlayingIndex == i);
+    }
+
+    // The mAudioStream null check is technically redundant due to the earlier check, but kept for clarity if logic evolves.
+    const auto isOffloaded = currentPerformanceMode == PerformanceMode::PowerSavingOffloaded;
+    if (mSampleSources[index]) { // Ensure the specific sample source is valid before accessing it
+        const auto isPlayHeadAtStart = mSampleSources[index]->getPlayHeadPosition() == 0;
+
+        if (isOffloaded && isPlayHeadAtStart) {
+            const auto result = mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
             if (result != Result::OK) {
-
                 __android_log_print(ANDROID_LOG_ERROR,
                                     TAG,
                                     "Failed to flush from frame. Error: %s",
                                     convertToText(result.error()));
+                return;
             }
-            mAudioStream->start();
-        } else {
-            startStream(mLastPerformanceMode);
+        }
+    }
+
+    // Attempt to play audio if the stream is not already playing.
+    if (mAudioStream->getState() != StreamState::Started) {
+        const auto result = mAudioStream->requestStart();
+        if (result != Result::OK) {
+            __android_log_print(ANDROID_LOG_ERROR,
+                                TAG,
+                                "Unable to start the audio stream.");
         }
     }
 }
@@ -143,4 +172,13 @@ bool PowerPlayMultiPlayer::isMMapEnabled() {
 
 bool PowerPlayMultiPlayer::isMMapSupported() {
     return oboe::OboeExtensions::isMMapSupported();
+}
+
+int32_t PowerPlayMultiPlayer::getCurrentlyPlayingIndex() {
+    for (auto i = 0; i < mSampleSources.size(); ++i) {
+        if (mSampleSources[i]->isPlaying()) return i;
+    }
+
+    // No source is currently playing.
+    return -1;
 }
