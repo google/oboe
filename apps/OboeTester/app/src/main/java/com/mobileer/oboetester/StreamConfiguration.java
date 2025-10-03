@@ -571,8 +571,6 @@ public class StreamConfiguration {
 
     static int convertContentTypeAudioAttributesContentType(int contentType) {
         switch(contentType) {
-            case UNSPECIFIED:
-                return AudioAttributes.CONTENT_TYPE_UNKNOWN;
             case CONTENT_TYPE_SPEECH:
                 return AudioAttributes.CONTENT_TYPE_SPEECH;
             case CONTENT_TYPE_MUSIC:
@@ -581,6 +579,7 @@ public class StreamConfiguration {
                 return AudioAttributes.CONTENT_TYPE_MOVIE;
             case CONTENT_TYPE_SONIFICATION:
                 return AudioAttributes.CONTENT_TYPE_SONIFICATION;
+            case UNSPECIFIED:
             default:
                 return AudioAttributes.CONTENT_TYPE_UNKNOWN;
         }
