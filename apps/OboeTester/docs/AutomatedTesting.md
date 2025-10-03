@@ -80,6 +80,7 @@ There are some optional parameter in common for all tests:
                             Stream type for the setStreamVolume() call. Default is "music".
     --ez background         {"true", 1, "false", 0} // if true then Oboetester will continue to run in the background
     --ez foreground_service {"true", 1, "false", 0} // if true then Oboetester will ask for record/play permissions via a foreground service
+    --ez audio_focus        {"true", 1, "false", 0} // if true then Oboetester will request for audio focus. Default is true.
 
 There are several optional parameters in common for glitch, latency, input, and output tests:
 
