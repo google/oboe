@@ -780,6 +780,13 @@ public:
         return ResultWithValue<PlaybackParameters>(Result::ErrorUnimplemented);
     }
 
+    /*
+     * Make a shared_ptr that will prevent this stream from being deleted.
+     */
+    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
+        return mWeakThis.lock();
+    }
+
 protected:
 
     /**
@@ -887,13 +894,6 @@ protected:
      */
     void setWeakThis(std::shared_ptr<oboe::AudioStream> &sharedStream) {
         mWeakThis = sharedStream;
-    }
-
-    /*
-     * Make a shared_ptr that will prevent this stream from being deleted.
-     */
-    std::shared_ptr<oboe::AudioStream> lockWeakThis() {
-        return mWeakThis.lock();
     }
 
     std::weak_ptr<AudioStream> mWeakThis; // weak pointer to this object
