@@ -232,8 +232,6 @@ void AudioStreamAAudio::internalErrorCallback(
         LOGD("%s() ErrorTimeout changed to ErrorDisconnected to fix b/173928197", __func__);
     }
 
-    oboeStream->mErrorCallbackResult = oboeResult;
-
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
     auto [isStreamAlive, sharedStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
@@ -241,6 +239,8 @@ void AudioStreamAAudio::internalErrorCallback(
         // The stream is already closed. No need to call error callback.
         return;
     }
+
+    oboeStream->mErrorCallbackResult = oboeResult;
 
     // These checks should be enough because we assume that the stream close()
     // will join() any active callback threads and will not allow new callbacks.
