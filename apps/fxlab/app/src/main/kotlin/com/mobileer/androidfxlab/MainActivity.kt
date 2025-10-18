@@ -121,6 +121,9 @@ class MainActivity : AppCompatActivity() {
             == PackageManager.PERMISSION_GRANTED
         ) {
             NativeInterface.createAudioEngine()
+            if (EffectsAdapter.effectList.isEmpty()) {
+                addDefaultEffects()
+            }
             NativeInterface.enable(isAudioEnabled)
         }
     }
@@ -148,6 +151,18 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
+    }
+
+    private fun addDefaultEffects() {
+        val defaultEffects = listOf("Gain", "Echo", "Tremolo")
+        for (effectName in defaultEffects) {
+            NativeInterface.effectDescriptionMap[effectName]?.let {
+                val toAdd = Effect(it)
+                EffectsAdapter.effectList.add(toAdd)
+                NativeInterface.addEffect(toAdd)
+            }
+        }
+        EffectsAdapter.notifyDataSetChanged()
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
