@@ -45,14 +45,10 @@ public class CommunicationDeviceView extends LinearLayout {
     private boolean mScoStateReceiverRegistered = false;
     private CommunicationDeviceSpinner mDeviceSpinner;
     private int mScoState;
-    private CommDeviceSniffer mCommDeviceSniffer = new CommDeviceSniffer();;
 
-    protected class CommDeviceSniffer extends NativeSniffer {
-        @Override
-        public void updateStatusText() {
-            showCommDeviceStatus();
-        }
-    }
+    private AudioManager.OnCommunicationDeviceChangedListener mCommDeviceListener;
+    private BroadcastReceiver mSpeakerphoneStateReceiver;
+    private boolean mSpeakerphoneStateReceiverRegistered = false;
 
     public CommunicationDeviceView(Context context) {
         super(context);
@@ -107,6 +103,19 @@ public class CommunicationDeviceView extends LinearLayout {
             }
         };
 
+        mSpeakerphoneStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                showCommDeviceStatus();
+            }
+        };
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mCommDeviceListener = (deviceInfo) -> {
+                showCommDeviceStatus();
+            };
+        }
+
         mDeviceSpinner = (CommunicationDeviceSpinner) findViewById(R.id.comm_devices_spinner);
         mDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
@@ -137,17 +146,28 @@ public class CommunicationDeviceView extends LinearLayout {
 
     public void onStart() {
         registerScoStateReceiver();
-        mCommDeviceSniffer.startSniffer();
+        registerSpeakerphoneStateReceiver();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (mCommDeviceListener != null) {
+                mAudioManager.addOnCommunicationDeviceChangedListener(getContext().getMainExecutor(),
+                        mCommDeviceListener);
+            }
+        }
     }
 
 
     public void onStop() {
-        mCommDeviceSniffer.stopSniffer();
         mSpeakerphoneCheckbox.setChecked(false);
         setSpeakerPhoneOn(false);
         mScoCheckbox.setChecked(false);
         mAudioManager.stopBluetoothSco();
         unregisterScoStateReceiver();
+        unregisterSpeakerphoneStateReceiver();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (mCommDeviceListener != null) {
+                mAudioManager.removeOnCommunicationDeviceChangedListener(mCommDeviceListener);
+            }
+        }
     }
 
     public void onSetSpeakerphoneOn(View view) {
@@ -208,4 +228,18 @@ public class CommunicationDeviceView extends LinearLayout {
         }
     }
 
+    private synchronized void registerSpeakerphoneStateReceiver() {
+        if (!mSpeakerphoneStateReceiverRegistered) {
+            getContext().registerReceiver(mSpeakerphoneStateReceiver,
+                    new IntentFilter("android.media.action.SPEAKERPHONE_STATE_CHANGED"));
+            mSpeakerphoneStateReceiverRegistered = true;
+        }
+    }
+
+    private synchronized void unregisterSpeakerphoneStateReceiver() {
+        if (mSpeakerphoneStateReceiverRegistered) {
+            getContext().unregisterReceiver(mSpeakerphoneStateReceiver);
+            mSpeakerphoneStateReceiverRegistered = false;
+        }
+    }
 }
