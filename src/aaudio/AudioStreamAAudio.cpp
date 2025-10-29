@@ -137,7 +137,8 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
     if (!isStreamAlive) {
         // Note that the stream is removed from the collection when close is called. However,
         // there can be callback fired until the framework fully close the stream. In that case,
-        // logging a warning here and quick return to stop the stream.
+        // logging a warning here and return negative number for partial callback to stop the
+        // stream.
         LOGW("%s data callback while stream is not longer alive", __func__);
         return -1;
     }
