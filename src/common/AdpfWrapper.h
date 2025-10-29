@@ -74,7 +74,9 @@ namespace oboe {
         /**
          * Report the measured duration of a callback.
          * This is normally called by onEndCallback().
-         * You may want to call this directly in order to give an advance hint of a jump in workload.
+         * On older Android devices (below Android 16), you may want to call this directly in order
+         * to give an advance hint of a jump in workload.
+         * On newer APIs, use notifyWorkloadIncrease() instead.
          * @param actualDurationNanos
          */
         void reportActualDuration(int64_t actualDurationNanos);
