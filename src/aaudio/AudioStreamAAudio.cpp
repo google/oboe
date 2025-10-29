@@ -107,6 +107,15 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         int32_t numFrames) {
 
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    auto [isStreamAlive, sharedStream] =
+            AAudioStreamCollection::getInstance().getStream(oboeStream);
+    if (!isStreamAlive) {
+        // Note that the stream is removed from the collection when close is called. However,
+        // there can be callback fired until the framework fully close the stream. In that case,
+        // logging a warning here and quick return to stop the stream.
+        LOGW("%s data callback while stream is not longer alive", __func__);
+        return static_cast<aaudio_data_callback_result_t>(DataCallbackResult::Stop);
+    }
     if (oboeStream != nullptr) {
         return static_cast<aaudio_data_callback_result_t>(
                 oboeStream->callOnAudioReady(stream, audioData, numFrames));
@@ -123,6 +132,15 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+    auto [isStreamAlive, sharedStream] =
+            AAudioStreamCollection::getInstance().getStream(oboeStream);
+    if (!isStreamAlive) {
+        // Note that the stream is removed from the collection when close is called. However,
+        // there can be callback fired until the framework fully close the stream. In that case,
+        // logging a warning here and quick return to stop the stream.
+        LOGW("%s data callback while stream is not longer alive", __func__);
+        return -1;
+    }
     if (oboeStream != nullptr) {
         return oboeStream->callOnPartialAudioReady(stream, audioData, numFrames);
     } else {
@@ -613,6 +631,7 @@ Result AudioStreamAAudio::release() {
 }
 
 Result AudioStreamAAudio::close() {
+    LOGD("%s", __func__);
     // Always remove the stream from the collection before closing it as after closing, the client
     // will free the resource of the stream.
     AAudioStreamCollection::getInstance().removeStream(this);
