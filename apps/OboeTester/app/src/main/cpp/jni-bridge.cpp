@@ -985,6 +985,44 @@ Java_com_mobileer_oboetester_TestDataPathsActivity_getPhaseDataPaths(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_setSignalType(JNIEnv *env,
+                                                                          jobject instance,
+                                                                          jint signalType) {
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        engine.mActivityDataPath.getDataPathAnalyzer()->setSignalType(signalType);
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_getFrequencyResponse(JNIEnv *env,
+                                                                          jobject instance) {
+    std::string report = "";
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        report = engine.mActivityDataPath.getDataPathAnalyzer()->getFrequencyResponse();
+    }
+    return env->NewStringUTF(report.c_str());
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_getDistortionReport(JNIEnv *env,
+                                                                          jobject instance) {
+    std::string report = "";
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        report = engine.mActivityDataPath.getDataPathAnalyzer()->getDistortionReport();
+    }
+    return env->NewStringUTF(report.c_str());
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_getAnalysisResult(JNIEnv *env,
+                                                                          jobject instance) {
+    if (engine.mActivityDataPath.getDataPathAnalyzer()) {
+        return engine.mActivityDataPath.getDataPathAnalyzer()->getAnalysisResult();
+    }
+    return 0;
+}
+
+JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_setTolerance(JNIEnv *env,
                                                                    jobject instance,
                                                                    jfloat tolerance) {
