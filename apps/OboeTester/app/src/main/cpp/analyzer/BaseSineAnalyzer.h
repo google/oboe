@@ -34,11 +34,21 @@
 class BaseSineAnalyzer : public LoopbackProcessor {
 public:
 
+    enum SignalType {
+        Sine,
+        Chirp,
+        MultiTone
+    };
+
     BaseSineAnalyzer()
             : LoopbackProcessor()
             , mInfiniteRecording(64 * 1024) {}
 
     virtual bool isOutputEnabled() { return true; }
+
+    void setSignalType(int signalType) {
+        mSignalType = static_cast<SignalType>(signalType);
+    }
 
     void setMagnitude(double magnitude) {
         mMagnitude = magnitude;
@@ -96,6 +106,15 @@ public:
         }
     }
 
+    void incrementMultiTonePhases() {
+        for (size_t i = 0; i < mMultiTonePhases.size(); i++) {
+            mMultiTonePhases[i] += mMultiTonePhaseIncrements[i];
+            if (mMultiTonePhases[i] > M_PI) {
+                mMultiTonePhases[i] -= (2.0 * M_PI);
+            }
+        }
+    }
+
 
     /**
      * @param frameData upon return, contains the reference sine wave
@@ -105,11 +124,44 @@ public:
         float output = 0.0f;
         // Output sine wave so we can measure it.
         if (isOutputEnabled()) {
-            float sinOut = sinf(mOutputPhase);
-            incrementOutputPhase();
-            output = (sinOut * mOutputAmplitude)
-                     + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
-            // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
+            switch (mSignalType) {
+            case Sine:
+            default:{
+                float sinOut = sinf(mOutputPhase);
+                incrementOutputPhase();
+                output = (sinOut * mOutputAmplitude)
+                         + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
+                // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
+                break;
+            }
+            case Chirp: {
+                if (mFrameCounter < getSampleRate() * kChirpDurationSeconds) {
+                    float sinOut = sinf(mOutputPhase);
+                    // Simple linear chirp from kChirpStartFrequency to kChirpEndFrequency in kChirpDurationSeconds seconds.
+                    double maxFreq = kChirpEndFrequency;
+                    if (maxFreq > getSampleRate() / 2.0) {
+                        maxFreq = getSampleRate() / 2.0;
+                    }
+                    double freq = kChirpStartFrequency + (maxFreq - kChirpStartFrequency) * mFrameCounter / (getSampleRate() * kChirpDurationSeconds);
+                    mPhaseIncrement = 2.0 * M_PI * freq / getSampleRate();
+                    incrementOutputPhase();
+                    output = sinOut * mOutputAmplitude;
+                    mFrameCounter++;
+                } else {
+                    output = 0.0f;
+                }
+                break;
+            }
+            case MultiTone: {
+                double sum = 0.0;
+                for (double phase : mMultiTonePhases) {
+                    sum += sin(phase);
+                }
+                incrementMultiTonePhases();
+                output = (sum / mMultiTonePhases.size()) * mOutputAmplitude;
+                break;
+            }
+            }
         }
         for (int i = 0; i < channelCount; i++) {
             frameData[i] = (i == getOutputChannel()) ? output : 0.0f;
@@ -192,6 +244,7 @@ public:
         LoopbackProcessor::reset();
         resetAccumulator();
         mMagnitude = 0.0;
+        mFrameCounter = 0;
     }
 
     void prepareToTest() override {
@@ -201,12 +254,30 @@ public:
         mOutputPhase = 0.0f;
         mInverseSinePeriod = 1.0 / mSinePeriod;
         mPhaseIncrement = 2.0 * M_PI * mInverseSinePeriod;
+
+        mMultiTonePhases.clear();
+        mMultiTonePhaseIncrements.clear();
+        for (double freq : sMultiToneFrequencies) {
+            mMultiTonePhases.push_back(0.0);
+            mMultiTonePhaseIncrements.push_back(2.0 * M_PI * freq / getSampleRate());
+        }
     }
 
 protected:
     // Use a frequency that will not align with the common burst sizes.
     // If it aligns then buffer reordering bugs could be masked.
     static constexpr int32_t kTargetGlitchFrequency = 857; // Match CTS Verifier
+
+    // Chirp constants
+    static constexpr double kChirpStartFrequency = 20.0;
+    static constexpr double kChirpEndFrequency = 15000.0;
+    static constexpr double kChirpDurationSeconds = 4.0;
+
+    // Multi-tone constants
+    static constexpr double sMultiToneFrequencies[] = {401.0, 601.0, 1009.0, 1409.0, 2203.0};
+
+    SignalType mSignalType = Sine;
+    int32_t mFrameCounter = 0;
 
     int32_t mSinePeriod = 1; // this will be set before use
     double  mInverseSinePeriod = 1.0;
@@ -216,6 +287,12 @@ protected:
     // in a callback and the output frame count may advance ahead of the input, or visa versa.
     double  mInputPhase = 0.0;
     double  mOutputPhase = 0.0;
+
+    // For multi-tone
+    std::vector<double> mMultiTonePhases;
+    std::vector<double> mMultiTonePhaseIncrements;
+
+
     double  mOutputAmplitude = 0.90;
     // This is the phase offset between the mInputPhase sine wave and the recorded
     // signal at the tuned frequency.
