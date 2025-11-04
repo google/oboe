@@ -19,10 +19,6 @@
 #include <iomanip>
 #include "fft.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 double DataPathAnalyzer::calculatePhaseError(double p1, double p2) {
     double diff = p1 - p2;
     // Wrap around the circle.
@@ -37,22 +33,6 @@ double DataPathAnalyzer::calculatePhaseError(double p1, double p2) {
 
 BaseSineAnalyzer::result_code DataPathAnalyzer::processInputFrame(const float *frameData, int channelCount) {
     switch (mSignalType) {
-        case Sine: {
-            float sample = frameData[getInputChannel()];
-            mInfiniteRecording.write(sample);
-
-            if (transformSample(sample)) {
-                // Analyze magnitude and phase on every period.
-                if (mPhaseOffset != kPhaseInvalid) {
-                    double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
-                    if (diff < mPhaseTolerance) {
-                        mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
-                    }
-                    mPreviousPhaseOffset = mPhaseOffset;
-                }
-            }
-        }
-        break;
         case Chirp: {
             if (mFftBuffer.size() != mFftBufferSize) {
                 mFftBuffer.resize(mFftBufferSize);
@@ -179,6 +159,23 @@ BaseSineAnalyzer::result_code DataPathAnalyzer::processInputFrame(const float *f
                 }
                 mDistortionReport = report.str();
                 mFftBufferIndex = 0;
+            }
+            break;
+        }
+        case Sine:
+        default: {
+            float sample = frameData[getInputChannel()];
+            mInfiniteRecording.write(sample);
+
+            if (transformSample(sample)) {
+                // Analyze magnitude and phase on every period.
+                if (mPhaseOffset != kPhaseInvalid) {
+                    double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
+                    if (diff < mPhaseTolerance) {
+                        mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
+                    }
+                    mPreviousPhaseOffset = mPhaseOffset;
+                }
             }
             break;
         }

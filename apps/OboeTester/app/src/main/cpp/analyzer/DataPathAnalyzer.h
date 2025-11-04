@@ -38,7 +38,7 @@ private:
     double calculatePhaseError(double p1, double p2);
 
     double  mPreviousPhaseOffset = 0.0;
-    double  mPhaseTolerance = 2 * 3.14159265358979323846  / 48;
+    double  mPhaseTolerance = 2 * M_PI / 48;
     double  mMaxMagnitude = 0.0;
 
     // For multi-tone analysis

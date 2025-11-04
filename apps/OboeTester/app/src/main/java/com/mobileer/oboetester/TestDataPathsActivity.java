@@ -306,6 +306,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
                 case 2: // Multi-tone
                     message.append("Multi-tone Analysis:\n" + getDistortionReport() + "\n");
                     break;
+                default:
+                    message.append("Unknown signal type\n");
+                    break;
             }
             message.append(mAutomatedTestRunner.getPassFailReport() + "\n");
             return message.toString();
@@ -314,13 +317,14 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         public String getShortReport() {
             switch (mSignalType) {
                 case 0: // Sine
-                default:
                     return "maxMag = " + getMagnitudeText(mMaxMagnitude)
                             + ", jitter = " + getJitterText();
                 case 1: // Chirp
                     return "Chirp: " + getFrequencyResponse();
                 case 2: // Multi-tone
                     return "Multi: " + getDistortionReport();
+                default:
+                    return "Unknown signal type";
             }
         }
 

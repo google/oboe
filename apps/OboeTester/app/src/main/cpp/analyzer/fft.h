@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef FFT_H
-#define FFT_H
+#ifndef ANALYZER_FFT_H
+#define ANALYZER_FFT_H
 
 #include <complex>
 #include <vector>
 
-const double PI = 3.141592653589793238460;
-
-typedef std::complex<double> Complex;
-typedef std::vector<Complex> CVector;
+using Complex = std::complex<double>;
+using CVector = std::vector<Complex>;
 
 // Radix-2 Cooley-Tukey FFT
 void fft(CVector &a) {
@@ -32,13 +30,13 @@ void fft(CVector &a) {
 
     CVector a0(n / 2), a1(n / 2);
     for (int i = 0; 2 * i < n; i++) {
-        a0[i] = a[2*i];
-        a1[i] = a[2*i+1];
+        a0[i] = a[2 * i];
+        a1[i] = a[2 * i + 1];
     }
     fft(a0);
     fft(a1);
 
-    double ang = 2 * PI / n;
+    const double ang = 2 * M_PI / n;
     Complex w(1), wn(cos(ang), sin(ang));
     for (int i = 0; 2 * i < n; i++) {
         a[i] = a0[i] + w * a1[i];
@@ -47,4 +45,4 @@ void fft(CVector &a) {
     }
 }
 
-#endif // FFT_H
+#endif // ANALYZER_FFT_H

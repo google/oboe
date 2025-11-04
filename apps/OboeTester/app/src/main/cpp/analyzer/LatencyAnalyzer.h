@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "common/OboeDebug.h"
+
 #include "PeakDetector.h"
 #include "PseudoRandom.h"
 #include "RandomPulseGenerator.h"

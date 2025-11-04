@@ -125,42 +125,44 @@ public:
         // Output sine wave so we can measure it.
         if (isOutputEnabled()) {
             switch (mSignalType) {
-            case Sine:
-            default:{
-                float sinOut = sinf(mOutputPhase);
-                incrementOutputPhase();
-                output = (sinOut * mOutputAmplitude)
-                         + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
-                // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
-                break;
-            }
-            case Chirp: {
-                if (mFrameCounter < getSampleRate() * kChirpDurationSeconds) {
-                    float sinOut = sinf(mOutputPhase);
-                    // Simple linear chirp from kChirpStartFrequency to kChirpEndFrequency in kChirpDurationSeconds seconds.
-                    double maxFreq = kChirpEndFrequency;
-                    if (maxFreq > getSampleRate() / 2.0) {
-                        maxFreq = getSampleRate() / 2.0;
+                case Chirp: {
+                    if (mFrameCounter < getSampleRate() * kChirpDurationSeconds) {
+                        float sinOut = sinf(mOutputPhase);
+                        // Simple linear chirp from kChirpStartFrequency to kChirpEndFrequency in kChirpDurationSeconds seconds.
+                        double maxFreq = kChirpEndFrequency;
+                        // Only go up to Nyquist frequency
+                        double nyquist = getSampleRate() / 2.0;
+                        if (maxFreq > nyquist) {
+                            maxFreq = nyquist;
+                        }
+                        double freq = kChirpStartFrequency + (maxFreq - kChirpStartFrequency) * mFrameCounter / (getSampleRate() * kChirpDurationSeconds);
+                        mPhaseIncrement = 2.0 * M_PI * freq / getSampleRate();
+                        incrementOutputPhase();
+                        output = sinOut * mOutputAmplitude;
+                        mFrameCounter++;
+                    } else {
+                        output = 0.0f;
                     }
-                    double freq = kChirpStartFrequency + (maxFreq - kChirpStartFrequency) * mFrameCounter / (getSampleRate() * kChirpDurationSeconds);
-                    mPhaseIncrement = 2.0 * M_PI * freq / getSampleRate();
+                    break;
+                }
+                case MultiTone: {
+                    double sum = 0.0;
+                    for (double phase : mMultiTonePhases) {
+                        sum += sin(phase);
+                    }
+                    incrementMultiTonePhases();
+                    output = (sum / mMultiTonePhases.size()) * mOutputAmplitude;
+                    break;
+                }
+                case Sine:
+                default: {
+                    float sinOut = sinf(mOutputPhase);
                     incrementOutputPhase();
-                    output = sinOut * mOutputAmplitude;
-                    mFrameCounter++;
-                } else {
-                    output = 0.0f;
+                    output = (sinOut * mOutputAmplitude)
+                            + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
+                    // ALOGD("sin(%f) = %f, %f\n", mOutputPhase, sinOut,  kPhaseIncrement);
+                    break;
                 }
-                break;
-            }
-            case MultiTone: {
-                double sum = 0.0;
-                for (double phase : mMultiTonePhases) {
-                    sum += sin(phase);
-                }
-                incrementMultiTonePhases();
-                output = (sum / mMultiTonePhases.size()) * mOutputAmplitude;
-                break;
-            }
             }
         }
         for (int i = 0; i < channelCount; i++) {
