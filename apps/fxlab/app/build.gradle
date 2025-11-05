@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.application'
-
-apply plugin: 'kotlin-android'
-
-apply plugin: 'kotlin-kapt'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
 
 android {
     compileSdkVersion 36
@@ -30,6 +29,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures {
+        viewBinding true
     }
     buildTypes {
         release {
@@ -48,9 +50,6 @@ android {
         cmake {
             path "./CMakeLists.txt"
         }
-    }
-    dataBinding {
-        enabled = true
     }
     namespace 'com.mobileer.androidfxlab'
 }
