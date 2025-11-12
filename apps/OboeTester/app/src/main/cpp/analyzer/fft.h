@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef ANALYZER_FFT_H
-#define ANALYZER_FFT_H
+#pragma once
 
 #include <complex>
 #include <vector>
@@ -44,5 +43,3 @@ void fft(CVector &a) {
         w *= wn;
     }
 }
-
-#endif // ANALYZER_FFT_H

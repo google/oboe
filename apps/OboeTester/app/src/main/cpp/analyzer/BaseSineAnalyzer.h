@@ -48,6 +48,9 @@ public:
 
     void setSignalType(int signalType) {
         mSignalType = static_cast<SignalType>(signalType);
+        if (mSignalType < SignalType::Sine || mSignalType > SignalType::MultiTone) {
+            ALOGD("%s(), invalid signal type %d\n", __func__, mSignalType);
+        }
     }
 
     void setMagnitude(double magnitude) {
@@ -128,14 +131,12 @@ public:
                 case Chirp: {
                     if (mFrameCounter < getSampleRate() * kChirpDurationSeconds) {
                         float sinOut = sinf(mOutputPhase);
-                        // Simple linear chirp from kChirpStartFrequency to kChirpEndFrequency in kChirpDurationSeconds seconds.
-                        double maxFreq = kChirpEndFrequency;
-                        // Only go up to Nyquist frequency
-                        double nyquist = getSampleRate() / 2.0;
-                        if (maxFreq > nyquist) {
-                            maxFreq = nyquist;
-                        }
-                        double freq = kChirpStartFrequency + (maxFreq - kChirpStartFrequency) * mFrameCounter / (getSampleRate() * kChirpDurationSeconds);
+                        // Simple linear chirp from kChirpStartFrequency to mChirpEndFrequencyActual
+                        // in kChirpDurationSeconds seconds.
+                        double freq = kChirpStartFrequency
+                                      + (mChirpEndFrequencyActual - kChirpStartFrequency)
+                                        * mFrameCounter
+                                        / (getSampleRate() * kChirpDurationSeconds);
                         mPhaseIncrement = 2.0 * M_PI * freq / getSampleRate();
                         incrementOutputPhase();
                         output = sinOut * mOutputAmplitude;
@@ -263,6 +264,9 @@ public:
             mMultiTonePhases.push_back(0.0);
             mMultiTonePhaseIncrements.push_back(2.0 * M_PI * freq / getSampleRate());
         }
+
+        // Adjust chirp frequency to be no higher than Nyquist.
+        mChirpEndFrequencyActual = std::min((double)kChirpEndFrequency, getSampleRate() / 2.0);
     }
 
 protected:
@@ -289,6 +293,9 @@ protected:
     // in a callback and the output frame count may advance ahead of the input, or visa versa.
     double  mInputPhase = 0.0;
     double  mOutputPhase = 0.0;
+
+    // For chirp
+    double mChirpEndFrequencyActual = kChirpEndFrequency; // Nyquist adjusted
 
     // For multi-tone
     std::vector<double> mMultiTonePhases;
