@@ -30,6 +30,14 @@
 namespace oboe {
 
 /**
+ * Configuration for performance hint sessions.
+ * Currently supports only highPerformanceAudio flag but may be extended later.
+ */
+struct PerformanceHintConfig {
+    bool highPerformanceAudio = false;
+};
+
+/**
  * The default number of nanoseconds to wait for when performing state change operations on the
  * stream, such as `start` and `stop`.
  *
@@ -554,6 +562,19 @@ public:
     }
 
     /**
+     * Configure performance hint behavior for this stream. The configuration
+     * currently supports enabling highPerformanceAudio mode when creating the
+     * underlying hint session.
+     */
+    void setPerformanceHintConfig(const PerformanceHintConfig& config) {
+        mPerformanceHintConfig = config;
+    }
+
+    PerformanceHintConfig getPerformanceHintConfig() const {
+        return mPerformanceHintConfig;
+    }
+
+    /**
      * This only tells you if the feature has been requested.
      * It does not tell you if the PerformanceHint feature is implemented or active on the device.
      *
@@ -897,6 +918,8 @@ protected:
     }
 
     std::weak_ptr<AudioStream> mWeakThis; // weak pointer to this object
+    // Performance hint configuration for this stream.
+    PerformanceHintConfig mPerformanceHintConfig;
 
     /**
      * Number of frames which have been written into the stream

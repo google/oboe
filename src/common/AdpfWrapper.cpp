@@ -35,6 +35,13 @@ typedef void (*APH_closeSession)(APerformanceHintSession* session);
 typedef int (*APH_notifyWorkloadIncrease)(APerformanceHintSession*, bool, bool, const char*);
 typedef int (*APH_notifyWorkloadSpike)(APerformanceHintSession*, bool, bool, const char*);
 typedef int (*APH_notifyWorkloadReset)(APerformanceHintSession*, bool, bool, const char*);
+typedef int (*APH_createSessionUsingConfig)(APerformanceHintManager*, void* /*ASessionCreationConfig*/, APerformanceHintSession**);
+typedef void* (*APH_sessionConfig_create)();
+typedef void (*APH_sessionConfig_release)(void*);
+typedef void (*APH_sessionConfig_setTids)(void*, const pid_t*, size_t);
+typedef void (*APH_sessionConfig_setTargetWorkDurationNanos)(void*, int64_t);
+typedef void (*APH_sessionConfig_setHighPerformanceAudio)(void*, bool);
+typedef bool (*APH_isFeatureSupported)(void* /*APerformanceHintFeature*/);
 
 static bool gAPerformanceHintBindingInitialized = false;
 static APH_getManager gAPH_getManagerFn = nullptr;
@@ -44,9 +51,24 @@ static APH_closeSession gAPH_closeSessionFn = nullptr;
 static APH_notifyWorkloadIncrease gAPH_notifyWorkloadIncreaseFn = nullptr;
 static APH_notifyWorkloadSpike gAPH_notifyWorkloadSpikeFn = nullptr;
 static APH_notifyWorkloadReset gAPH_notifyWorkloadResetFn = nullptr;
+static APH_createSessionUsingConfig gAPH_createSessionUsingConfigFn = nullptr;
+static APH_sessionConfig_create gAPH_sessionConfigCreateFn = nullptr;
+static APH_sessionConfig_release gAPH_sessionConfigReleaseFn = nullptr;
+static APH_sessionConfig_setTids gAPH_sessionConfigSetTidsFn = nullptr;
+static APH_sessionConfig_setTargetWorkDurationNanos gAPH_sessionConfigSetTargetWorkDurationNanosFn = nullptr;
+static APH_sessionConfig_setHighPerformanceAudio gAPH_sessionConfigSetHighPerformanceAudioFn = nullptr;
+static APH_isFeatureSupported gAPH_isFeatureSupportedFn = nullptr;
 
 #ifndef __ANDROID_API_B__
 #define __ANDROID_API_B__ 36
+#endif
+
+#ifndef APERF_HINT_SESSIONS
+#define APERF_HINT_SESSIONS 0
+#endif
+
+#ifndef APERF_HINT_HIGH_PERFORMANCE_AUDIO
+#define APERF_HINT_HIGH_PERFORMANCE_AUDIO 6
 #endif
 
 static int loadAphFunctions() {
@@ -95,6 +117,20 @@ static int loadAphFunctions() {
         if (gAPH_notifyWorkloadResetFn == nullptr) {
             return -1007;
         }
+
+        // Optional config-based session creation (API 36+). These may be missing on older
+        // platforms or pre-release builds; load them if available.
+        gAPH_createSessionUsingConfigFn = (APH_createSessionUsingConfig)dlsym(
+                handle_, "APerformanceHint_createSessionUsingConfig");
+        gAPH_sessionConfigCreateFn = (APH_sessionConfig_create)dlsym(handle_, "ASessionCreationConfig_create");
+        gAPH_sessionConfigReleaseFn = (APH_sessionConfig_release)dlsym(handle_, "ASessionCreationConfig_release");
+        gAPH_sessionConfigSetTidsFn = (APH_sessionConfig_setTids)dlsym(handle_, "ASessionCreationConfig_setTids");
+        gAPH_sessionConfigSetTargetWorkDurationNanosFn = (APH_sessionConfig_setTargetWorkDurationNanos)dlsym(
+                handle_, "ASessionCreationConfig_setTargetWorkDurationNanos");
+        gAPH_sessionConfigSetHighPerformanceAudioFn = (APH_sessionConfig_setHighPerformanceAudio)dlsym(
+                handle_, "ASessionCreationConfig_setHighPerformanceAudio");
+        gAPH_isFeatureSupportedFn = (APH_isFeatureSupported)dlsym(
+                handle_, "APerformanceHint_isFeatureSupported");
     }
 
     gAPerformanceHintBindingInitialized = true;
@@ -104,8 +140,20 @@ static int loadAphFunctions() {
 
 bool AdpfWrapper::sUseAlternativeHack = false; // TODO remove hack
 
+bool AdpfWrapper::isHighPerformanceAudioSupported() {
+    // Ensure the performance hint functions are loaded.
+    int result = loadAphFunctions();
+    if (result < 0) return false;
+    if (gAPH_isFeatureSupportedFn == nullptr) return false;
+    // The binding expects a feature identifier; we use the integer constant
+    // APERF_HINT_HIGH_PERFORMANCE_AUDIO cast into the expected parameter type.
+    return gAPH_isFeatureSupportedFn(
+            reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_HIGH_PERFORMANCE_AUDIO)));
+}
+
 int AdpfWrapper::open(pid_t threadId,
-                      int64_t targetDurationNanos) {
+                      int64_t targetDurationNanos,
+                      bool highPerformanceAudio) {
     std::lock_guard<std::mutex> lock(mLock);
     int result = loadAphFunctions();
     if (result < 0) return result;
@@ -120,6 +168,41 @@ int AdpfWrapper::open(pid_t threadId,
         // algorithm that is not based on PID.
         targetDurationNanos = (targetDurationNanos & ~0xFF) | 0xA5;
     }
+    // If caller requested highPerformanceAudio and we have the newer config-based
+    // session creation API, try to create a session with a creation config.
+    if (highPerformanceAudio && gAPH_isFeatureSupportedFn != nullptr
+            && gAPH_isFeatureSupportedFn(
+                    reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_SESSIONS)))
+            && gAPH_isFeatureSupportedFn(
+                    reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_HIGH_PERFORMANCE_AUDIO)))
+            && gAPH_createSessionUsingConfigFn != nullptr
+            && gAPH_sessionConfigCreateFn != nullptr
+            && gAPH_sessionConfigReleaseFn != nullptr
+            && gAPH_sessionConfigSetTidsFn != nullptr
+            && gAPH_sessionConfigSetTargetWorkDurationNanosFn != nullptr
+            && gAPH_sessionConfigSetHighPerformanceAudioFn != nullptr) {
+
+        void* config = gAPH_sessionConfigCreateFn();
+        if (config != nullptr) {
+            // set tids
+            gAPH_sessionConfigSetTidsFn(config, &thread32, 1);
+            // set target duration
+            gAPH_sessionConfigSetTargetWorkDurationNanosFn(config, targetDurationNanos);
+            // set high performance audio hint
+            gAPH_sessionConfigSetHighPerformanceAudioFn(config, true);
+
+            APerformanceHintSession *sessionOut = nullptr;
+            int createResult = gAPH_createSessionUsingConfigFn(manager, config, &sessionOut);
+            // release config now
+            gAPH_sessionConfigReleaseFn(config);
+            if (createResult == 0 && sessionOut != nullptr) {
+                mHintSession = sessionOut;
+                return 0;
+            }
+            // otherwise fall through to legacy createSession
+        }
+    }
+
     mHintSession = gAPH_createSessionFn(manager, &thread32, 1 /* size */, targetDurationNanos);
     if (mHintSession == nullptr) {
         return -1;

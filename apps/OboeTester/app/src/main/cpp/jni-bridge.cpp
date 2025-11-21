@@ -151,6 +151,11 @@ Java_com_mobileer_oboetester_NativeEngine_getCpuCount(JNIEnv *env, jclass type) 
     return sysconf(_SC_NPROCESSORS_CONF);
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_NativeEngine_isHighPerformanceAudioSupported(JNIEnv *env, jclass type) {
+    return oboe::AdpfWrapper::isHighPerformanceAudioSupported();
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_NativeEngine_setCpuAffinityMask(JNIEnv *env,
                                                                      jclass type,
@@ -349,6 +354,17 @@ Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintEnabled(
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         oboeStream->setPerformanceHintEnabled(enabled);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintConfig(
+        JNIEnv *env, jobject, jint streamIndex, jboolean highPerformance) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        oboe::PerformanceHintConfig cfg;
+        cfg.highPerformanceAudio = (highPerformance == JNI_TRUE);
+        oboeStream->setPerformanceHintConfig(cfg);
     }
 }
 
@@ -1206,10 +1222,10 @@ JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobject thiz,
         jint targetDurationMs, jint numBursts, jint numVoices, jint numAlternateVoices,
         jint alternatingPeriodMs, jboolean adpfEnabled, jboolean adpfWorkloadIncreaseEnabled,
-        jboolean hearWorkload) {
+        jboolean hearWorkload, jboolean highPerformanceAudio) {
     return sAudioWorkload.start(targetDurationMs, numBursts, numVoices,
                                 numAlternateVoices, alternatingPeriodMs, adpfEnabled,
-                                adpfWorkloadIncreaseEnabled, hearWorkload);
+                                adpfWorkloadIncreaseEnabled, hearWorkload, highPerformanceAudio);
 }
 
 JNIEXPORT jint JNICALL
@@ -1437,10 +1453,19 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, 
                                                    jint alternatingPeriodMillis,
                                                    jboolean adpfEnabled,
                                                    jboolean adpfWorkloadIncreaseEnabled,
-                                                   jboolean hearWorkload) {
-    return sAudioWorkloadRunner.start(targetDurationMs, numBursts, numVoices,
+                                                   jboolean hearWorkload,
+                                                   jboolean highPerformanceAudio) {
+    int32_t result = sAudioWorkloadRunner.start(targetDurationMs, numBursts, numVoices,
                                       alternateNumVoices, alternatingPeriodMillis, adpfEnabled,
-                                      adpfWorkloadIncreaseEnabled, hearWorkload);
+                                      adpfWorkloadIncreaseEnabled, hearWorkload, highPerformanceAudio);
+    // When the runner starts, set performance hint config on the active stream
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(0);
+    if (oboeStream != nullptr) {
+        oboe::PerformanceHintConfig cfg;
+        cfg.highPerformanceAudio = (highPerformanceAudio == JNI_TRUE);
+        oboeStream->setPerformanceHintConfig(cfg);
+    }
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL

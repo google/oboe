@@ -172,6 +172,12 @@ abstract class OboeAudioStream extends AudioStreamBase {
     private native void setPerformanceHintEnabled(int streamIndex, boolean checked);
 
     @Override
+    public void setPerformanceHintConfig(boolean highPerformance) {
+        setPerformanceHintConfig(mStreamIndex, highPerformance);
+    }
+    private native void setPerformanceHintConfig(int streamIndex, boolean highPerformance);
+
+    @Override
     public void setHearWorkload(boolean checked) {
         setHearWorkload(mStreamIndex, checked);
     }

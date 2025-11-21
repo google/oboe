@@ -149,7 +149,7 @@ public:
      */
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
-                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
+                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload, bool highPerformanceAudio) {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (!mStream) {
             LOGE("Error: Stream not open.");
@@ -176,6 +176,10 @@ public:
         mHearWorkload = hearWorkload;
         mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
         mStream->setPerformanceHintEnabled(adpfEnabled);
+        // Apply performance hint configuration if requested via runner flags.
+        oboe::PerformanceHintConfig cfg;
+        cfg.highPerformanceAudio = highPerformanceAudio;
+        mStream->setPerformanceHintConfig(cfg);
         mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
         oboe::Result result = mStream->start();

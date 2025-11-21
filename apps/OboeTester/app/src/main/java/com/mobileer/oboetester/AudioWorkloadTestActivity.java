@@ -47,6 +47,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     private CheckBox mEnableAdpfBox;
     private CheckBox mEnableAdpfWorkloadIncreaseBox;
     private CheckBox mHearWorkloadBox;
+    private CheckBox mHighPerformanceAudioBox;
 
     private int mCpuCount;
     private LinearLayout mAffinityLayout;
@@ -149,6 +150,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         mEnableAdpfBox = (CheckBox) findViewById(R.id.enable_adpf);
         mEnableAdpfWorkloadIncreaseBox = (CheckBox) findViewById(R.id.enable_adpf_workload_increase);
         mHearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
+        mHighPerformanceAudioBox = (CheckBox) findViewById(R.id.high_performance_audio);
 
         mOpenButton = (Button) findViewById(R.id.button_open);
         mStartButton = (Button) findViewById(R.id.button_start);
@@ -224,7 +226,8 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         int result = start(mTargetDurationMsSlider.getValue(), mNumBurstsSlider.getValue(),
                 mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue(),
                 mAlternatingPeriodMsSlider.getValue(), mEnableAdpfBox.isChecked(),
-                mEnableAdpfWorkloadIncreaseBox.isChecked(), mHearWorkloadBox.isChecked());
+                mEnableAdpfWorkloadIncreaseBox.isChecked(), mHearWorkloadBox.isChecked(),
+                mHighPerformanceAudioBox.isChecked());
         if (result != OPERATION_SUCCESS) {
             showErrorToast("start failed! Error:" + result);
             return;
@@ -318,6 +321,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
         mEnableAdpfBox.setEnabled(enabled);
         mEnableAdpfWorkloadIncreaseBox.setEnabled(enabled);
         mHearWorkloadBox.setEnabled(enabled);
+        mHighPerformanceAudioBox.setEnabled(enabled);
     }
 
     public void updateStreamInfoView() {
@@ -331,7 +335,8 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     private native int getBufferSizeInFrames();
     private native int start(int targetDurationMs, int numBursts, int numVoices,
                              int numAlternateVoices, int alternatingPeriodMs, boolean adpfEnabled,
-                             boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload);
+                             boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload,
+                             boolean highPerformanceAudio);
     private native int getCpuCount();
     private native int setCpuAffinityForCallback(int mask);
     private native int getXRunCount();

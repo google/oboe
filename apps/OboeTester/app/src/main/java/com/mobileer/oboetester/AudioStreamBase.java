@@ -88,6 +88,12 @@ public abstract class AudioStreamBase {
     }
     public void setHearWorkload(boolean checked) {
     }
+    /**
+     * Configure performance hint options for this stream. Default implementation is no-op.
+     * @param highPerformance true to request high performance audio mode when creating the session.
+     */
+    public void setPerformanceHintConfig(boolean highPerformance) {
+    }
     public int notifyWorkloadIncrease(boolean cpu, boolean gpu) {
         return -1;
     }
