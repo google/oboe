@@ -6,6 +6,8 @@ public class NativeEngine {
 
     static native boolean isMMapExclusiveSupported();
 
+    static native boolean isHighPerformanceAudioSupported();
+
     static native void setWorkaroundsEnabled(boolean enabled);
 
     static native boolean areWorkaroundsEnabled();

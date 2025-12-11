@@ -67,14 +67,15 @@ public:
      * stream).
      */
     int32_t start(
-            int32_t targetDurationMs,
-            int32_t numBursts,
-            int32_t numVoices,
-            int32_t alternateNumVoices,
-            int32_t alternatingPeriodMs,
-            bool adpfEnabled,
-            bool adpfWorkloadIncreaseEnabled,
-            bool hearWorkload) {
+        int32_t targetDurationMs,
+        int32_t numBursts,
+        int32_t numVoices,
+        int32_t alternateNumVoices,
+        int32_t alternatingPeriodMs,
+        bool adpfEnabled,
+        bool adpfWorkloadIncreaseEnabled,
+        bool hearWorkload,
+        bool highPerformanceAudio) {
         if (mIsRunning) {
             LOGE("Error: Test already running.");
             return -1;
@@ -90,15 +91,16 @@ public:
         mIsDone = false;
         mResult = 0;
 
-        int32_t result = mAudioWorkloadTest.start(
-                targetDurationMs,
-                numBursts,
-                numVoices,
-                alternateNumVoices,
-                alternatingPeriodMs,
-                adpfEnabled,
-                adpfWorkloadIncreaseEnabled,
-                hearWorkload);
+    int32_t result = mAudioWorkloadTest.start(
+        targetDurationMs,
+        numBursts,
+        numVoices,
+        alternateNumVoices,
+        alternatingPeriodMs,
+        adpfEnabled,
+        adpfWorkloadIncreaseEnabled,
+        hearWorkload,
+        highPerformanceAudio);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {
             mResult = -1;

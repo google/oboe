@@ -283,7 +283,8 @@ void AudioStreamAAudio::beginPerformanceHintInCallback() {
         if (!mAdpfOpenAttempted) {
             int64_t targetDurationNanos = (mFramesPerBurst * 1e9) / getSampleRate();
             // This has to be called from the callback thread so we get the right TID.
-            int adpfResult = mAdpfWrapper.open(gettid(), targetDurationNanos);
+            int adpfResult = mAdpfWrapper.open(gettid(), targetDurationNanos,
+                                               mPerformanceHintConfig.highPerformanceAudio);
             if (adpfResult < 0) {
                 LOGW("WARNING ADPF not supported, %d\n", adpfResult);
             } else {
