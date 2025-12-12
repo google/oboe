@@ -16,12 +16,13 @@
 package com.mobileer.oboetester;
 
 import java.util.ArrayList;
-
+import android.util.Log; 
 /**
  * Analyze a recording and extract edges for latency analysis.
  */
 public class TapLatencyAnalyser {
     public static final int TYPE_TAP = 0;
+    public static final int TYPE_TONE =1;
     float[] mHighPassBuffer;
 
     private float mDroop = 0.995f;
@@ -90,23 +91,41 @@ public class TapLatencyAnalyser {
         float fast = 0.0f;
         final float slowCoefficient = 0.01f;
         final float fastCoefficient = 0.10f;
-        float lowThreshold = EDGE_THRESHOLD;
+    	final float EDGE_THRESHOLD = 0.01f;     // trigger threshold for tap
+        final float REARM_FRACTION = 0.3f;      // fraction of last peak to rearm
+        final int MIN_TONE_DELAY = 2000;       //  samples between TAP and TONE (~45 ms at 44.1kHz)
+        float lastPeak = 0.0f;
         boolean armed = true;
+        boolean tapDetected = false;
+        boolean toneDetected = false;
+        int lastTapIndex = -1;
+
         int sampleIndex = 0;
+
         for (float level : peakBuffer) {
-            slow = slow + (level - slow) * slowCoefficient; // low pass filter
-            fast = fast + (level - fast) * fastCoefficient; // low pass filter
-            if (armed && (fast > EDGE_THRESHOLD) && (fast > (2.0 * slow))) {
-                events.add(new TapLatencyEvent(TYPE_TAP, sampleIndex));
-                armed = false;
-                // Set a new, lower threshold based on the height of the detected peak.
-                // This allows us to detect a second, smaller peak, but not to trigger
-                // on the smaller variations that occur after the initial peak.
-                lowThreshold = fast * LOW_FRACTION;
+		    slow = slow + (level - slow) * slowCoefficient; // low pass filter
+		    fast = fast + (level - fast) * fastCoefficient; // low pass filter
+		    if (armed && !tapDetected && (fast > EDGE_THRESHOLD) && (fast > 2.0f * slow)) {
+			    Log.i("TTL", "TTL Event of TYPE_TAP detected at " + sampleIndex + " fast=" + fast);
+			    events.add(new TapLatencyEvent(TYPE_TAP, sampleIndex));
+			    armed = false;
+			    tapDetected = true;
+			    lastPeak = fast;
+               	lastTapIndex = sampleIndex;
             }
-            // Use hysteresis when rearming.
-            if (fast < lowThreshold) {
-                armed = true;
+
+	    	if (tapDetected && !toneDetected && !armed && (sampleIndex - lastTapIndex) > MIN_TONE_DELAY) {
+                if ((fast > EDGE_THRESHOLD) && (fast > 1.5f * slow)) {
+                    Log.i("TTL", "TTL Event of TYPE_TONE detected at " + sampleIndex + " fast=" + fast);
+                    events.add(new TapLatencyEvent(TYPE_TONE, sampleIndex));
+                    toneDetected = true;
+                }
+            }
+
+            // Rearm only when signal has fallen enough
+            if (!armed && (fast < lastPeak * REARM_FRACTION)) {
+                Log.i("TTL", "Signal has settled, rearming now (fast=" + fast + ")");
+			    armed = true;
             }
             sampleIndex++;
         }
