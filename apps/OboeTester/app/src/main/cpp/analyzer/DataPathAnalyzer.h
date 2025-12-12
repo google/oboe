@@ -17,85 +17,46 @@
 #ifndef ANALYZER_DATA_PATH_ANALYZER_H
 #define ANALYZER_DATA_PATH_ANALYZER_H
 
-#include <algorithm>
-#include <cctype>
-#include <iomanip>
-#include <iostream>
-#include <math.h>
-
+#include <string>
+#include <vector>
 #include "BaseSineAnalyzer.h"
-#include "InfiniteRecording.h"
-#include "LatencyAnalyzer.h"
 
-/**
- * Output a steady sine wave and analyze the return signal.
- *
- * Use a cosine transform to measure the predicted magnitude and relative phase of the
- * looped back sine wave.
- */
 class DataPathAnalyzer : public BaseSineAnalyzer {
 public:
 
-    double calculatePhaseError(double p1, double p2) {
-        double diff = p1 - p2;
-        // Wrap around the circle.
-        while (diff > M_PI) {
-            diff -= (2 * M_PI);
-        }
-        while (diff < -M_PI) {
-            diff += (2 * M_PI);
-        }
-        return diff;
-    }
+    result_code processInputFrame(const float *frameData, int channelCount) override;
+    std::string analyze() override;
+    void reset() override;
 
-    /**
-     * @param frameData contains microphone data with sine signal feedback
-     * @param channelCount
-     */
-    result_code processInputFrame(const float *frameData, int /* channelCount */) override {
-        result_code result = RESULT_OK;
+    double getMaxMagnitude();
 
-        float sample = frameData[getInputChannel()];
-        mInfiniteRecording.write(sample);
-
-        if (transformSample(sample)) {
-            // Analyze magnitude and phase on every period.
-            if (mPhaseOffset != kPhaseInvalid) {
-                double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
-                if (diff < mPhaseTolerance) {
-                    mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
-                }
-                mPreviousPhaseOffset = mPhaseOffset;
-            }
-        }
-        return result;
-    }
-
-    std::string analyze() override {
-        std::stringstream report;
-        report << "DataPathAnalyzer ------------------\n";
-        report << LOOPBACK_RESULT_TAG "sine.magnitude     = " << std::setw(8)
-               << mMagnitude << "\n";
-        report << LOOPBACK_RESULT_TAG "frames.accumulated = " << std::setw(8)
-               << mFramesAccumulated << "\n";
-        report << LOOPBACK_RESULT_TAG "sine.period        = " << std::setw(8)
-               << mSinePeriod << "\n";
-        return report.str();
-    }
-
-    void reset() override {
-        BaseSineAnalyzer::reset();
-        mPreviousPhaseOffset = 999.0; // Arbitrary high offset to prevent early lock.
-        mMaxMagnitude = 0.0;
-    }
-
-    double getMaxMagnitude() {
-        return mMaxMagnitude;
-    }
+    std::string getFrequencyResponse();
+    std::string getDistortionReport();
+    int getAnalysisResult();
 
 private:
+    double calculatePhaseError(double p1, double p2);
+
     double  mPreviousPhaseOffset = 0.0;
-    double  mPhaseTolerance = 2 * M_PI  / 48;
+    double  mPhaseTolerance = 2 * M_PI / 48;
     double  mMaxMagnitude = 0.0;
+
+    // For multi-tone analysis
+    std::vector<float> mFftBuffer;
+    int mFftBufferSize = 4096;
+    int mFftBufferIndex = 0;
+    long mFftBufferStartFrame = 0;
+    std::string mDistortionReport;
+    std::string mFrequencyResponse;
+
+    // For chirp analysis
+    std::vector<float> mSpectrogramBuffer;
+    int mSpectrogramWindowSize = 1024;
+    int mSpectrogramHopSize = 512;
+
+    // For analysis result
+    int mAnalysisResult = 0; // 0 = pass, 1 = fail
+    const double mMinSinad = 10.0; // dB
 };
+
 #endif // ANALYZER_DATA_PATH_ANALYZER_H

@@ -150,6 +150,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private CheckBox mCheckBoxAllSampleRates;
     private TextView mInstructionsTextView;
 
+    private RadioGroup mRadioGroupSignalType;
+    private int mSignalType = 0; // 0 for Sine, 1 for Chirp, 2 for Multi-tone
+
     private static final int[] INPUT_PRESETS = {
             StreamConfiguration.INPUT_PRESET_GENERIC,
             StreamConfiguration.INPUT_PRESET_CAMCORDER,
@@ -286,22 +289,43 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
         public String getCurrentStatusReport() {
             StringBuffer message = new StringBuffer();
-            message.append(
-                    "magnitude = " + getMagnitudeText(mMagnitude)
-                    + ", max = " + getMagnitudeText(mMaxMagnitude)
-                    + "\nphase = " + getMagnitudeText(mPhase)
-                    + ", jitter = " + getJitterText()
-                    + ", #" + mPhaseCount
-                    + "\n"
-                    + mAutomatedTestRunner.getPassFailReport()
-                    + "\n"
-            );
+            switch (mSignalType) {
+                case 0: // Sine
+                    message.append(
+                            "magnitude = " + getMagnitudeText(mMagnitude)
+                                    + ", max = " + getMagnitudeText(mMaxMagnitude)
+                                    + "\nphase = " + getMagnitudeText(mPhase)
+                                    + ", jitter = " + getJitterText()
+                                    + ", #" + mPhaseCount
+                                    + "\n"
+                    );
+                    break;
+                case 1: // Chirp
+                    message.append("Chirp Analysis:\n" + getFrequencyResponse() + "\n");
+                    break;
+                case 2: // Multi-tone
+                    message.append("Multi-tone Analysis:\n" + getDistortionReport() + "\n");
+                    break;
+                default:
+                    message.append("Unknown signal type\n");
+                    break;
+            }
+            message.append(mAutomatedTestRunner.getPassFailReport() + "\n");
             return message.toString();
         }
 
         public String getShortReport() {
-            return "maxMag = " + getMagnitudeText(mMaxMagnitude)
-                    + ", jitter = " + getJitterText();
+            switch (mSignalType) {
+                case 0: // Sine
+                    return "maxMag = " + getMagnitudeText(mMaxMagnitude)
+                            + ", jitter = " + getJitterText();
+                case 1: // Chirp
+                    return "Chirp: " + getFrequencyResponse();
+                case 2: // Multi-tone
+                    return "Multi: " + getDistortionReport();
+                default:
+                    return "Unknown signal type";
+            }
         }
 
         @Override
@@ -343,6 +367,11 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
 
     native double getPhaseDataPaths();
 
+    native void setSignalType(int type);
+    native String getFrequencyResponse();
+    native String getDistortionReport();
+    native int getAnalysisResult();
+
     @Override
     protected void inflateActivity() {
         setContentView(R.layout.activity_data_paths);
@@ -363,6 +392,18 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
         mRadioOutputChannelMasksNone = (RadioButton) findViewById(R.id.radio_out_ch_masks_none);
         mRadioOutputChannelMasksSome = (RadioButton) findViewById(R.id.radio_out_ch_masks_some);
         mRadioOutputChannelMasksAll = (RadioButton) findViewById(R.id.radio_out_ch_masks_all);
+
+        mRadioGroupSignalType = (RadioGroup) findViewById(R.id.group_signal_type);
+        mRadioGroupSignalType.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_signal_sine) {
+                mSignalType = 0;
+            } else if (checkedId == R.id.radio_signal_chirp) {
+                mSignalType = 1;
+            } else if (checkedId == R.id.radio_signal_multitone) {
+                mSignalType = 2;
+            }
+            setSignalType(mSignalType);
+        });
     }
 
     @Override
@@ -425,6 +466,19 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     // @return reasons for failure of empty string
     @Override
     public String didTestFail() {
+        if (mSignalType == 1) { // Chirp
+            if (getAnalysisResult() != 0) {
+                return ", chirp";
+            }
+        }
+        if (mSignalType == 2) { // Multi-tone
+            if (getAnalysisResult() != 0) {
+                return ", sinad";
+            }
+        }
+        if (mSignalType != 0) {
+            return "";
+        }
         String why = "";
         if (mMaxMagnitude <= MIN_REQUIRED_MAGNITUDE) {
             why += ", mag";
