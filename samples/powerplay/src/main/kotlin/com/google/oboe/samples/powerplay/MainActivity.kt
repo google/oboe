@@ -60,6 +60,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -99,6 +100,7 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
@@ -171,6 +173,8 @@ class MainActivity : ComponentActivity() {
         val isPlaying = remember {
             mutableStateOf(false)
         }
+        var sliderPosition by remember { mutableFloatStateOf(0f) }
+
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
@@ -240,13 +244,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(54.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
-                ) {
-                }
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     "Performance Modes"
                 )
@@ -334,6 +331,29 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(start = 8.dp)
                     )
+                }
+                if (offload.intValue == 3) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
+                            .padding(top = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Slider(
+                            value = sliderPosition,
+                            onValueChange = { sliderPosition = it },
+                            valueRange = 0f..20f,
+                            steps = 19
+                        )
+                        Text(
+                            text = "Buffer Size: " + if (sliderPosition.roundToInt() == 0) {
+                                "Default"
+                            } else {
+                                "${sliderPosition.roundToInt()} seconds"
+                            }
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
