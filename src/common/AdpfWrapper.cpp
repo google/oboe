@@ -40,7 +40,7 @@ typedef void* (*APH_sessionConfig_create)();
 typedef void (*APH_sessionConfig_release)(void*);
 typedef void (*APH_sessionConfig_setTids)(void*, const pid_t*, size_t);
 typedef void (*APH_sessionConfig_setTargetWorkDurationNanos)(void*, int64_t);
-typedef void (*APH_sessionConfig_setHighPerformanceAudio)(void*, bool);
+typedef void (*APH_sessionConfig_setAudioPerformance)(void*, bool);
 typedef bool (*APH_isFeatureSupported)(void* /*APerformanceHintFeature*/);
 
 static bool gAPerformanceHintBindingInitialized = false;
@@ -56,7 +56,7 @@ static APH_sessionConfig_create gAPH_sessionConfigCreateFn = nullptr;
 static APH_sessionConfig_release gAPH_sessionConfigReleaseFn = nullptr;
 static APH_sessionConfig_setTids gAPH_sessionConfigSetTidsFn = nullptr;
 static APH_sessionConfig_setTargetWorkDurationNanos gAPH_sessionConfigSetTargetWorkDurationNanosFn = nullptr;
-static APH_sessionConfig_setHighPerformanceAudio gAPH_sessionConfigSetHighPerformanceAudioFn = nullptr;
+static APH_sessionConfig_setAudioPerformance gAPH_sessionConfigSetAudioPerformanceFn = nullptr;
 static APH_isFeatureSupported gAPH_isFeatureSupportedFn = nullptr;
 
 #ifndef __ANDROID_API_B__
@@ -67,8 +67,8 @@ static APH_isFeatureSupported gAPH_isFeatureSupportedFn = nullptr;
 #define APERF_HINT_SESSIONS 0
 #endif
 
-#ifndef APERF_HINT_HIGH_PERFORMANCE_AUDIO
-#define APERF_HINT_HIGH_PERFORMANCE_AUDIO 6
+#ifndef APERF_HINT_AUDIO_PERFORMANCE
+#define APERF_HINT_AUDIO_PERFORMANCE 6
 #endif
 
 static int loadAphFunctions() {
@@ -127,8 +127,8 @@ static int loadAphFunctions() {
         gAPH_sessionConfigSetTidsFn = (APH_sessionConfig_setTids)dlsym(handle_, "ASessionCreationConfig_setTids");
         gAPH_sessionConfigSetTargetWorkDurationNanosFn = (APH_sessionConfig_setTargetWorkDurationNanos)dlsym(
                 handle_, "ASessionCreationConfig_setTargetWorkDurationNanos");
-        gAPH_sessionConfigSetHighPerformanceAudioFn = (APH_sessionConfig_setHighPerformanceAudio)dlsym(
-                handle_, "ASessionCreationConfig_setHighPerformanceAudio");
+        gAPH_sessionConfigSetAudioPerformanceFn = (APH_sessionConfig_setAudioPerformance)dlsym(
+                handle_, "ASessionCreationConfig_setAudioPerformance");
         gAPH_isFeatureSupportedFn = (APH_isFeatureSupported)dlsym(
                 handle_, "APerformanceHint_isFeatureSupported");
     }
@@ -146,9 +146,9 @@ bool AdpfWrapper::isHighPerformanceAudioSupported() {
     if (result < 0) return false;
     if (gAPH_isFeatureSupportedFn == nullptr) return false;
     // The binding expects a feature identifier; we use the integer constant
-    // APERF_HINT_HIGH_PERFORMANCE_AUDIO cast into the expected parameter type.
+    // APERF_HINT_AUDIO_PERFORMANCE cast into the expected parameter type.
     return gAPH_isFeatureSupportedFn(
-            reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_HIGH_PERFORMANCE_AUDIO)));
+            reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_AUDIO_PERFORMANCE)));
 }
 
 int AdpfWrapper::open(pid_t threadId,
@@ -174,13 +174,13 @@ int AdpfWrapper::open(pid_t threadId,
             && gAPH_isFeatureSupportedFn(
                     reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_SESSIONS)))
             && gAPH_isFeatureSupportedFn(
-                    reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_HIGH_PERFORMANCE_AUDIO)))
+                    reinterpret_cast<void *>(static_cast<int32_t>(APERF_HINT_AUDIO_PERFORMANCE)))
             && gAPH_createSessionUsingConfigFn != nullptr
             && gAPH_sessionConfigCreateFn != nullptr
             && gAPH_sessionConfigReleaseFn != nullptr
             && gAPH_sessionConfigSetTidsFn != nullptr
             && gAPH_sessionConfigSetTargetWorkDurationNanosFn != nullptr
-            && gAPH_sessionConfigSetHighPerformanceAudioFn != nullptr) {
+            && gAPH_sessionConfigSetAudioPerformanceFn != nullptr) {
 
         void* config = gAPH_sessionConfigCreateFn();
         if (config != nullptr) {
@@ -189,7 +189,7 @@ int AdpfWrapper::open(pid_t threadId,
             // set target duration
             gAPH_sessionConfigSetTargetWorkDurationNanosFn(config, targetDurationNanos);
             // set high performance audio hint
-            gAPH_sessionConfigSetHighPerformanceAudioFn(config, true);
+            gAPH_sessionConfigSetAudioPerformanceFn(config, true);
 
             APerformanceHintSession *sessionOut = nullptr;
             int createResult = gAPH_createSessionUsingConfigFn(manager, config, &sessionOut);
