@@ -66,6 +66,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -109,6 +110,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
+    private var sampleRate: Int = 48000;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
         val format = AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
-            .setSampleRate(48000)
+            .setSampleRate(sampleRate)
             .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
             .build()
 
@@ -340,18 +342,36 @@ class MainActivity : ComponentActivity() {
                             .padding(top = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val playerState by player.getPlayerStateLive().observeAsState()
+                        val isPlaying = playerState == PlayerState.Playing
+                        val requestedFrames = remember { mutableIntStateOf(0) }
+                        val actualSize = remember { mutableIntStateOf(0) }
+
                         Slider(
                             value = sliderPosition,
-                            onValueChange = { sliderPosition = it },
+                            onValueChange = { newValue ->
+                                sliderPosition = newValue
+                                requestedFrames.intValue = (sliderPosition * sampleRate).toInt()
+                            },
+                            onValueChangeFinished = {
+                                requestedFrames.intValue = (sliderPosition * sampleRate).toInt()
+                                actualSize.intValue = player.setBufferSizeInFrames(requestedFrames.intValue)
+                            },
+                            enabled = isPlaying,
                             valueRange = 0f..20f,
                             steps = 19
                         )
+
                         Text(
-                            text = "Buffer Size: " + if (sliderPosition.roundToInt() == 0) {
-                                "Default"
+                            text = if (!isPlaying) {
+                                "Start playing to adjust BufferSize"
                             } else {
-                                "${sliderPosition.roundToInt()} seconds"
-                            }
+                                val label = if (sliderPosition == 0f) "Max (Safe)" else "BufferSize"
+                                // Show what we requested vs what the hardware actually granted
+                                "$label | Req: ${requestedFrames.intValue} | Actual: ${actualSize.intValue}"
+                            },
+                            color = if (isPlaying) Color.Black else Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }

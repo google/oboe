@@ -206,3 +206,39 @@ int32_t PowerPlayMultiPlayer::getCurrentlyPlayingIndex() {
     // No source is currently playing.
     return -1;
 }
+
+int32_t PowerPlayMultiPlayer::setBufferSizeInFrames(int32_t bufferSizeInFrames) {
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "setBufferSizeInFrames: mAudioStream is null");
+        return static_cast<int32_t>(oboe::Result::ErrorNull);
+    }
+
+    int32_t targetFrames = bufferSizeInFrames;
+
+    // If the requested size is 0 (Default/Auto), use the maximum capacity.
+    if (targetFrames <= 0) {
+        targetFrames = mAudioStream->getBufferCapacityInFrames();
+        __android_log_print(ANDROID_LOG_INFO, TAG,
+                            "Buffer size 0 requested. Defaulting to Capacity: %d frames",
+                            targetFrames);
+    } else {
+        __android_log_print(ANDROID_LOG_INFO, TAG,
+                            "Requesting buffer size change to %d frames", targetFrames);
+    }
+
+    auto result = mAudioStream->setBufferSizeInFrames(targetFrames);
+
+    if (result) {
+        int32_t actualFrames = result.value();
+        __android_log_print(ANDROID_LOG_INFO, TAG,
+                            "Buffer size successfully set to %d frames (Current Capacity: %d)",
+                            actualFrames, mAudioStream->getBufferCapacityInFrames());
+        return actualFrames;
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "setBufferSizeInFrames failed: %s",
+                            oboe::convertToText(result.error()));
+        return static_cast<int32_t>(result.error());
+    }
+}
