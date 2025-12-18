@@ -358,21 +358,33 @@ class MainActivity : ComponentActivity() {
                                 actualSize.intValue = player.setBufferSizeInFrames(requestedFrames.intValue)
                             },
                             enabled = isPlaying,
-                            valueRange = 0f..20f,
-                            steps = 19
+                            valueRange = 0f..30f,
                         )
 
-                        Text(
-                            text = if (!isPlaying) {
-                                "Start playing to adjust BufferSize"
-                            } else {
-                                val label = if (sliderPosition == 0f) "Max (Safe)" else "BufferSize"
-                                // Show what we requested vs what the hardware actually granted
-                                "$label | Req: ${requestedFrames.intValue} | Actual: ${actualSize.intValue}"
-                            },
-                            color = if (isPlaying) Color.Black else Color.Gray,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        if (!isPlaying) {
+                            Text(
+                                text = "Start playing to adjust BufferSize",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        } else {
+                            val label = if (sliderPosition == 0f) "Maximum BufferSize" else "BufferSize"
+                            val actualSeconds = if (sampleRate > 0) actualSize.intValue.toDouble() / sampleRate else 0.0
+                            val formattedSeconds = "%.3f".format(actualSeconds)
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Requested: ${requestedFrames.intValue} Frames ($label)",
+                                    color = Color.Black,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = "Actual: ${actualSize.intValue} Frames ($formattedSeconds seconds)",
+                                    color = Color.Black,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
