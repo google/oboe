@@ -166,7 +166,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
                                     TAG,
                                     "Failed to flush from frame. Error: %s",
                                     convertToText(result.error()));
-                return;
             }
         }
     }
