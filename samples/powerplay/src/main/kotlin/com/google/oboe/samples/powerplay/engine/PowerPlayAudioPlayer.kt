@@ -62,7 +62,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         assetFD.close()
     }
 
-
     /**
      * Sets whether the audio stream should use MMap audio.
      * @param enabled True to enable MMap, false to disable.
@@ -80,6 +79,19 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      * @return True if MMap is supported, false otherwise.
      */
     fun isMMapSupported(): Boolean = isMMapSupportedNative()
+
+    /**
+     * Sets the buffer size in frames for the audio stream.
+     *
+     * Lower buffer sizes provide lower latency but increase the risk of audio glitches (underruns).
+     * This can only be set if the user is in PCM Offload mode.
+     *
+     * @param bufferSizeInFrames The requested buffer size in frames.
+     * @return The actual buffer size set by the native audio engine.
+     */
+    fun setBufferSizeInFrames(bufferSizeInFrames: Int): Int = setBufferSizeInFramesNative(bufferSizeInFrames)
+
+    fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
 
     /**
      * Native functions.
@@ -102,6 +114,8 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun setMMapEnabledNative(enabled: Boolean): Boolean
     private external fun isMMapEnabledNative(): Boolean
     private external fun isMMapSupportedNative(): Boolean
+    private external fun setBufferSizeInFramesNative(bufferSizeInFrames: Int): Int
+    private external fun getBufferCapacityInFramesNative(): Int
 
     /**
      * Companion

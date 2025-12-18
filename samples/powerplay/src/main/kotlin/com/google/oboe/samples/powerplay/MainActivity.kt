@@ -60,6 +60,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -107,6 +108,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
+    private var sampleRate: Int = 48000;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,7 +116,7 @@ class MainActivity : ComponentActivity() {
 
         val format = AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
-            .setSampleRate(48000)
+            .setSampleRate(sampleRate)
             .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
             .build()
 
@@ -171,6 +173,8 @@ class MainActivity : ComponentActivity() {
         val isPlaying = remember {
             mutableStateOf(false)
         }
+        var sliderPosition by remember { mutableFloatStateOf(0f) }
+
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
@@ -240,13 +244,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 Spacer(modifier = Modifier.height(54.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
-                ) {
-                }
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     "Performance Modes"
                 )
@@ -334,6 +331,47 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(start = 8.dp)
                     )
+                }
+                if (offload.intValue == 3) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
+                            .padding(top = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val requestedFrames = remember { mutableIntStateOf(0) }
+                        val actualFrames = remember { mutableIntStateOf(0) }
+
+                        Slider(
+                            value = sliderPosition,
+                            onValueChange = { newValue ->
+                                sliderPosition = newValue
+                                requestedFrames.intValue = sliderPosition.toInt()
+                            },
+                            onValueChangeFinished = {
+                                requestedFrames.intValue = sliderPosition.toInt()
+                                actualFrames.value = player.setBufferSizeInFrames(requestedFrames.intValue)
+                            },
+                            valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
+                        )
+
+                        val actualSeconds = actualFrames.value.toDouble() / sampleRate
+                        val formattedSeconds = "%.3f".format(actualSeconds)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "Actual: ${actualFrames.value} Frames ($formattedSeconds seconds)",
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(

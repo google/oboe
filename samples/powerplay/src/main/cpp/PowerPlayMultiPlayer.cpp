@@ -166,7 +166,6 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
                                     TAG,
                                     "Failed to flush from frame. Error: %s",
                                     convertToText(result.error()));
-                return;
             }
         }
     }
@@ -205,4 +204,35 @@ int32_t PowerPlayMultiPlayer::getCurrentlyPlayingIndex() {
 
     // No source is currently playing.
     return -1;
+}
+
+int32_t PowerPlayMultiPlayer::setBufferSizeInFrames(int32_t requestedFrames) {
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "setBufferSizeInFrames: Stream is null");
+        return static_cast<int32_t>(Result::ErrorNull);
+    }
+
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Requesting buffer size: %d frames (Input: %d)",
+                        requestedFrames, requestedFrames);
+
+    const auto result = mAudioStream->setBufferSizeInFrames(requestedFrames);
+
+    if (!result) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to set buffer size: %s",
+                            convertToText(result.error()));
+        return static_cast<int32_t>(result.error());
+    }
+
+    // Return the actual value granted by the hardware.
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Buffer size set to %d frames.", result.value());
+    return result.value();
+}
+
+int32_t PowerPlayMultiPlayer::getBufferCapacityInFrames() {
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "getBufferCapacityInFrames: Stream is null");
+        return static_cast<int32_t>(Result::ErrorNull);
+    }
+
+    return mAudioStream->getBufferCapacityInFrames();
 }

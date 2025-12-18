@@ -254,7 +254,26 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isMMapSupport
     return PowerPlayMultiPlayer::isMMapSupported();
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.setBufferSizeInFramesNative()
+ */
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setBufferSizeInFramesNative(
+        JNIEnv *env,
+        jobject,
+        jint bufferSizeInFrames) {
+    return player.setBufferSizeInFrames(bufferSizeInFrames);
+}
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getBufferSizeInFramesNative()
+ */
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getBufferCapacityInFramesNative(
+        JNIEnv *env,
+        jobject) {
+    return player.getBufferCapacityInFrames();
+}
 
 #ifdef __cplusplus
 }

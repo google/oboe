@@ -46,6 +46,9 @@ public:
 
     int32_t getCurrentlyPlayingIndex();
 
+    int32_t setBufferSizeInFrames(int32_t bufferSizeInFrames);
+
+    int32_t getBufferCapacityInFrames();
 
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
