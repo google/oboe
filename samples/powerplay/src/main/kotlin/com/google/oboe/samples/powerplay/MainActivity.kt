@@ -341,24 +341,22 @@ class MainActivity : ComponentActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         val requestedFrames = remember { mutableIntStateOf(0) }
-                        val actualSize = remember { mutableIntStateOf(0) }
+                        val actualFrames = remember { mutableIntStateOf(0) }
 
                         Slider(
                             value = sliderPosition,
                             onValueChange = { newValue ->
                                 sliderPosition = newValue
-                                requestedFrames.intValue = (sliderPosition * sampleRate).toInt()
+                                requestedFrames.intValue = sliderPosition.toInt()
                             },
                             onValueChangeFinished = {
-                                requestedFrames.intValue = (sliderPosition * sampleRate).toInt()
-                                actualSize.intValue =
-                                    player.setBufferSizeInFrames(requestedFrames.intValue)
+                                requestedFrames.intValue = sliderPosition.toInt()
+                                actualFrames.value = player.setBufferSizeInFrames(requestedFrames.intValue)
                             },
-                            valueRange = 0f..30f,
+                            valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
                         )
 
-                        val actualSeconds =
-                            if (sampleRate > 0) actualSize.intValue.toDouble() / sampleRate else 0.0
+                        val actualSeconds = actualFrames.value.toDouble() / sampleRate
                         val formattedSeconds = "%.3f".format(actualSeconds)
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -368,7 +366,7 @@ class MainActivity : ComponentActivity() {
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Text(
-                                text = "Actual: ${actualSize.intValue} Frames ($formattedSeconds seconds)",
+                                text = "Actual: ${actualFrames.value} Frames ($formattedSeconds seconds)",
                                 color = Color.Black,
                                 style = MaterialTheme.typography.bodySmall
                             )

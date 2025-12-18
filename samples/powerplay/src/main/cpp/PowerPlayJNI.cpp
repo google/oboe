@@ -265,6 +265,15 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setBufferSize
     return player.setBufferSizeInFrames(bufferSizeInFrames);
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getBufferSizeInFramesNative()
+ */
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getBufferCapacityInFramesNative(
+        JNIEnv *env,
+        jobject) {
+    return player.getBufferCapacityInFrames();
+}
 
 #ifdef __cplusplus
 }

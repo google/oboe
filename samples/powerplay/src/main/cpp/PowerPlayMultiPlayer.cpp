@@ -212,9 +212,6 @@ int32_t PowerPlayMultiPlayer::setBufferSizeInFrames(int32_t requestedFrames) {
         return static_cast<int32_t>(Result::ErrorNull);
     }
 
-    // Determine target size: Use maximum capacity if 0 or less is requested.
-    const int32_t capacity = mAudioStream->getBufferCapacityInFrames();
-
     __android_log_print(ANDROID_LOG_INFO, TAG, "Requesting buffer size: %d frames (Input: %d)",
                         requestedFrames, requestedFrames);
 
@@ -227,10 +224,15 @@ int32_t PowerPlayMultiPlayer::setBufferSizeInFrames(int32_t requestedFrames) {
     }
 
     // Return the actual value granted by the hardware.
-    const int32_t actualFrames = result.value();
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Buffer size set to %d frames (Max Capacity: %d)",
-                        actualFrames, capacity);
-
-    return actualFrames;
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Buffer size set to %d frames.", result.value());
+    return result.value();
 }
 
+int32_t PowerPlayMultiPlayer::getBufferCapacityInFrames() {
+    if (mAudioStream == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "getBufferCapacityInFrames: Stream is null");
+        return static_cast<int32_t>(Result::ErrorNull);
+    }
+
+    return mAudioStream->getBufferCapacityInFrames();
+}

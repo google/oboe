@@ -91,6 +91,8 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      */
     fun setBufferSizeInFrames(bufferSizeInFrames: Int): Int = setBufferSizeInFramesNative(bufferSizeInFrames)
 
+    fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
+
     /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
@@ -113,6 +115,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun isMMapEnabledNative(): Boolean
     private external fun isMMapSupportedNative(): Boolean
     private external fun setBufferSizeInFramesNative(bufferSizeInFrames: Int): Int
+    private external fun getBufferCapacityInFramesNative(): Int
 
     /**
      * Companion
