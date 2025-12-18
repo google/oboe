@@ -214,12 +214,11 @@ int32_t PowerPlayMultiPlayer::setBufferSizeInFrames(int32_t requestedFrames) {
 
     // Determine target size: Use maximum capacity if 0 or less is requested.
     const int32_t capacity = mAudioStream->getBufferCapacityInFrames();
-    const int32_t targetFrames = (requestedFrames <= 0 || requestedFrames > capacity) ? capacity : requestedFrames;
 
     __android_log_print(ANDROID_LOG_INFO, TAG, "Requesting buffer size: %d frames (Input: %d)",
-                        targetFrames, requestedFrames);
+                        requestedFrames, requestedFrames);
 
-    const auto result = mAudioStream->setBufferSizeInFrames(targetFrames);
+    const auto result = mAudioStream->setBufferSizeInFrames(requestedFrames);
 
     if (!result) {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to set buffer size: %s",

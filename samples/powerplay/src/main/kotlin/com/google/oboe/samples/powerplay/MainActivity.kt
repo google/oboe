@@ -66,7 +66,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -101,7 +100,6 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
-import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
@@ -342,8 +340,6 @@ class MainActivity : ComponentActivity() {
                             .padding(top = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val playerState by player.getPlayerStateLive().observeAsState()
-                        val isPlaying = playerState == PlayerState.Playing
                         val requestedFrames = remember { mutableIntStateOf(0) }
                         val actualSize = remember { mutableIntStateOf(0) }
 
@@ -355,35 +351,27 @@ class MainActivity : ComponentActivity() {
                             },
                             onValueChangeFinished = {
                                 requestedFrames.intValue = (sliderPosition * sampleRate).toInt()
-                                actualSize.intValue = player.setBufferSizeInFrames(requestedFrames.intValue)
+                                actualSize.intValue =
+                                    player.setBufferSizeInFrames(requestedFrames.intValue)
                             },
-                            enabled = isPlaying,
                             valueRange = 0f..30f,
                         )
 
-                        if (!isPlaying) {
+                        val actualSeconds =
+                            if (sampleRate > 0) actualSize.intValue.toDouble() / sampleRate else 0.0
+                        val formattedSeconds = "%.3f".format(actualSeconds)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Start playing to adjust BufferSize",
-                                color = Color.Gray,
+                                text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
+                                color = Color.Black,
                                 style = MaterialTheme.typography.bodySmall
                             )
-                        } else {
-                            val label = if (sliderPosition == 0f) "Maximum BufferSize" else "BufferSize"
-                            val actualSeconds = if (sampleRate > 0) actualSize.intValue.toDouble() / sampleRate else 0.0
-                            val formattedSeconds = "%.3f".format(actualSeconds)
-
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = "Requested: ${requestedFrames.intValue} Frames ($label)",
-                                    color = Color.Black,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Text(
-                                    text = "Actual: ${actualSize.intValue} Frames ($formattedSeconds seconds)",
-                                    color = Color.Black,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
+                            Text(
+                                text = "Actual: ${actualSize.intValue} Frames ($formattedSeconds seconds)",
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                     }
                 }
