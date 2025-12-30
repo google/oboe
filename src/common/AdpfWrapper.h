@@ -43,7 +43,8 @@ namespace oboe {
          * @return zero or negative error
          */
         int open(pid_t threadId,
-                 int64_t targetDurationNanos);
+                int64_t targetDurationNanos,
+                bool highPerformanceAudio = false);
 
         bool isOpen() const {
             return (mHintSession != nullptr);
@@ -70,6 +71,14 @@ namespace oboe {
         static void setUseAlternative(bool enabled) {
             sUseAlternativeHack = enabled;
         }
+
+        /**
+         * Return true if the platform reports support for the high-performance-audio
+         * feature (APerfHintFeature::APERF_HINT_HIGH_PERFORMANCE_AUDIO).
+         * This is a static helper that will attempt to bind to the native API if
+         * necessary.
+         */
+        static bool isHighPerformanceAudioSupported();
 
         /**
          * Report the measured duration of a callback.
