@@ -44,8 +44,11 @@ AudioStream::~AudioStream() {
 Result AudioStream::close() {
     closePerformanceHint();
     // Update local counters so they can be read after the close.
-    updateFramesWritten();
-    updateFramesRead();
+    // But don't update the counters if the stream is disconnected.
+    if (mErrorCallbackResult != Result::ErrorDisconnected) {
+        updateFramesWritten();
+        updateFramesRead();
+    }
     return Result::OK;
 }
 
