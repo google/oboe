@@ -326,10 +326,10 @@ Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_NativeEngine_setReportActualDurationEnabled(JNIEnv *env,
+Java_com_mobileer_oboetester_NativeEngine_setReportActualDurationDisabled(JNIEnv *env,
                                                                          jclass type,
                                                                          jboolean enabled) {
-    engine.getCurrentActivity()->setReportActualDurationEnabled(enabled);
+    engine.getCurrentActivity()->setReportActualDurationDisabled(enabled);
 }
 
 JNIEXPORT jint JNICALL
@@ -370,7 +370,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_setPerformanceHintConfig(
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         oboe::PerformanceHintConfig cfg;
-        cfg.highPerformanceAudio = (highPerformance == JNI_TRUE);
+        cfg.highPerformanceAudio = highPerformance;
         oboeStream->setPerformanceHintConfig(cfg);
     }
 }
@@ -1230,11 +1230,11 @@ Java_com_mobileer_oboetester_AudioWorkloadTestActivity_start(JNIEnv *env, jobjec
         jint targetDurationMs, jint numBursts, jint numVoices, jint numAlternateVoices,
         jint alternatingPeriodMs, jboolean adpfEnabled, jboolean adpfWorkloadIncreaseEnabled,
         jboolean hearWorkload, jboolean highPerformanceAudio,
-        jboolean reportActualDurationEnabled) {
+        jboolean reportActualDurationDisabled) {
     return sAudioWorkload.start(targetDurationMs, numBursts, numVoices,
                                 numAlternateVoices, alternatingPeriodMs, adpfEnabled,
                                 adpfWorkloadIncreaseEnabled, hearWorkload, highPerformanceAudio,
-                                reportActualDurationEnabled);
+                                reportActualDurationDisabled);
 }
 
 JNIEXPORT jint JNICALL
@@ -1464,18 +1464,11 @@ Java_com_mobileer_oboetester_AudioWorkloadTestRunnerActivity_start(JNIEnv *env, 
                                                    jboolean adpfWorkloadIncreaseEnabled,
                                                    jboolean hearWorkload,
                                                    jboolean highPerformanceAudio,
-                                                   jboolean reportActualDurationEnabled) {
+                                                   jboolean reportActualDurationDisabled) {
     int32_t result = sAudioWorkloadRunner.start(targetDurationMs, numBursts, numVoices,
                                       alternateNumVoices, alternatingPeriodMillis, adpfEnabled,
                                       adpfWorkloadIncreaseEnabled, hearWorkload, highPerformanceAudio,
-                                      reportActualDurationEnabled);
-    // When the runner starts, set performance hint config on the active stream
-    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(0);
-    if (oboeStream != nullptr) {
-        oboe::PerformanceHintConfig cfg;
-        cfg.highPerformanceAudio = (highPerformanceAudio == JNI_TRUE);
-        oboeStream->setPerformanceHintConfig(cfg);
-    }
+                                      reportActualDurationDisabled);
     return result;
 }
 

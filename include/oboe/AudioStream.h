@@ -577,9 +577,9 @@ public:
     /**
      * Control whether the actual duration is reported to ADPF.
      * This only affects AAudio streams. By default, it is enabled.
-     * @param enabled true to enable reporting actual duration to ADPF
+     * @param disabled true to disable reporting actual duration to ADPF
      */
-    virtual void setReportActualDurationEnabled([[maybe_unused]] bool enabled) {}
+    virtual void setReportActualDurationDisabled([[maybe_unused]] bool disabled) {}
 
     /**
      * This only tells you if the feature has been requested.

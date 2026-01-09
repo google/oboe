@@ -20,5 +20,5 @@ public class NativeEngine {
 
     static native void setNotifyWorkloadIncreaseEnabled(boolean enabled);
 
-    static native void setReportActualDurationEnabled(boolean enabled);
+    static native void setReportActualDurationDisabled(boolean enabled);
 }

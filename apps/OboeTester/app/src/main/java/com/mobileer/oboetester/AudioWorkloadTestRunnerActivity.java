@@ -112,11 +112,11 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
         boolean adpfWorkloadIncreaseEnabled = mEnableAdpfWorkloadIncreaseBox.isChecked();
         boolean hearWorkload = mHearWorkloadBox.isChecked();
         boolean highPerformanceAudio = mHighPerformanceAudioBox.isChecked();
-        boolean reportActualDurationEnabled = !mDisableAdpfDurationBox.isChecked();
+        boolean reportActualDurationDisabled = mDisableAdpfDurationBox.isChecked();
 
         int result = start(targetDurationMs, numBursts, numVoices, alternateNumVoices,
             alternatingPeriodMs, adpfEnabled, adpfWorkloadIncreaseEnabled, hearWorkload,
-            highPerformanceAudio, reportActualDurationEnabled);
+            highPerformanceAudio, reportActualDurationDisabled);
         if (result != OPERATION_SUCCESS) {
             showErrorToast("start failed! Error:" + result);
             return;
@@ -171,7 +171,7 @@ public class AudioWorkloadTestRunnerActivity extends BaseOboeTesterActivity {
                             int alternateNumVoices, int alternatingPeriodMs, boolean adpfEnabled,
                             boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload,
                             boolean highPerformanceAudio,
-                            boolean reportActualDurationEnabled);
+                            boolean reportActualDurationDisabled);
     public native boolean stopIfDone();
     public native String getStatus();
     public native int stop();

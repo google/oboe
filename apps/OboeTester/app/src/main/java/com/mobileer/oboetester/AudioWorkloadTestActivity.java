@@ -226,13 +226,13 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     }
 
     public void startTest(View view) {
-        boolean reportActualDurationEnabled = !mDisableAdpfDurationBox.isChecked();
+        boolean reportActualDurationDisabled = mDisableAdpfDurationBox.isChecked();
 
         int result = start(mTargetDurationMsSlider.getValue(), mNumBurstsSlider.getValue(),
             mNumVoicesSlider.getValue(), mAlternateNumVoicesSlider.getValue(),
             mAlternatingPeriodMsSlider.getValue(), mEnableAdpfBox.isChecked(),
             mEnableAdpfWorkloadIncreaseBox.isChecked(), mHearWorkloadBox.isChecked(),
-            mHighPerformanceAudioBox.isChecked(), reportActualDurationEnabled);
+            mHighPerformanceAudioBox.isChecked(), reportActualDurationDisabled);
         if (result != OPERATION_SUCCESS) {
             showErrorToast("start failed! Error:" + result);
             return;
@@ -342,7 +342,7 @@ public class AudioWorkloadTestActivity extends BaseOboeTesterActivity {
     private native int start(int targetDurationMs, int numBursts, int numVoices,
                              int numAlternateVoices, int alternatingPeriodMs, boolean adpfEnabled,
                              boolean adpfWorkloadIncreaseEnabled, boolean hearWorkload,
-                             boolean highPerformanceAudio, boolean reportActualDurationEnabled);
+                             boolean highPerformanceAudio, boolean reportActualDurationDisabled);
     private native int getCpuCount();
     private native int setCpuAffinityForCallback(int mask);
     private native int getXRunCount();

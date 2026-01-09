@@ -341,10 +341,10 @@ public:
         oboeCallbackProxy->setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
-    void setReportActualDurationEnabled(bool enabled) {
+    void setReportActualDurationDisabled(bool disabled) {
         std::shared_ptr<oboe::AudioStream> stream = getOutputStream();
         if (stream) {
-            stream->setReportActualDurationEnabled(enabled);
+            stream->setReportActualDurationDisabled(disabled);
         }
     }
 

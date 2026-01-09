@@ -145,6 +145,7 @@ There are some optional parameters for just the "cpu_load" test:
     --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
     --ez use_workload_increase_api {true, false} // if true and using ADPF, notify adpf with workload increase/reset apis. Default is false.
     --ez use_high_performance_audio {true, false} // if true, request highPerformanceAudio in the performance hint session creation config. Default is false.
+    --ez disable_adpf_duration {true, false} // if true, disable updating the actual adpf duration per callback. Default is false.
 
 For example, a complete command for a "latency" test might be:
 

@@ -100,9 +100,8 @@ public:
         mAdpfOpenAttempted = false;
     }
 
-    void setReportActualDurationEnabled(bool enabled) override {
-        // Public API expects 'enabled'; internally we manage a 'disabled' flag.
-        mAdpfWrapper.setReportActualDurationDisabled(!enabled);
+    void setReportActualDurationDisabled(bool disabled) override {
+        mAdpfWrapper.setReportActualDurationDisabled(disabled);
     }
 
     oboe::Result reportWorkload(int32_t appWorkload) override {
