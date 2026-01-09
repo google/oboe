@@ -65,6 +65,10 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     public static final boolean VALUE_DEFAULT_SCROLL_GRAPHICS = false;
     public static final String KEY_USE_WORKLOAD_INCREASE_API = "use_workload_increase_api";
     public static final boolean VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API = false;
+    public static final String KEY_USE_HIGH_PERFORMANCE_AUDIO = "use_high_performance_audio";
+    public static final boolean VALUE_DEFAULT_USE_HIGH_PERFORMANCE_AUDIO = false;
+    public static final String KEY_DISABLE_ADPF_DURATION = "disable_adpf_duration";
+    public static final boolean VALUE_DEFAULT_DISABLE_ADPF_DURATION = false;
 
     private Button mStopButton;
     private Button mStartButton;
@@ -79,6 +83,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mUseAltAdpfBox;
     private CheckBox mPerfHintBox;
     private CheckBox mWorkloadReportBox;
+    private CheckBox mHighPerformanceAudioBox;
+    private CheckBox mDisableAdpfDurationBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private CheckBox mSustainedPerformanceModeBox;
@@ -88,6 +94,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private boolean mShouldUseWorkloadReporting;
     private boolean mEnableWorkloadIncreaseApi;
     private int mLastNotifyWorkloadResult;
+    private boolean mShouldUseHighPerformanceAudio;
+    private boolean mDisableAdpfDuration;
 
     private static final int WORKLOAD_LOW = 1;
     private int mWorkloadHigh; // this will get set later
@@ -309,6 +317,15 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
 
         mPerfHintBox = (CheckBox) findViewById(R.id.enable_perf_hint);
         mWorkloadReportBox = (CheckBox) findViewById(R.id.enable_workload_report);
+        mHighPerformanceAudioBox = (CheckBox) findViewById(R.id.high_performance_audio);
+
+        // If the platform does not support the high-performance-audio APERF feature,
+        // hide or disable the UI control so users don't attempt to enable it.
+        boolean hpSupported = NativeEngine.isHighPerformanceAudioSupported();
+        if (!hpSupported) {
+            mHighPerformanceAudioBox.setEnabled(false);
+            mHighPerformanceAudioBox.setVisibility(View.GONE);
+        }
 
         // TODO remove when finished with ADPF experiments.
         mUseAltAdpfBox = (CheckBox) findViewById(R.id.use_alternative_adpf);
@@ -319,6 +336,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
 
+        mDisableAdpfDurationBox = (CheckBox) findViewById(R.id.disable_adpf_duration);
+        mDisableAdpfDurationBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            NativeEngine.setReportActualDurationDisabled(checkBox.isChecked());
+        });
+        NativeEngine.setReportActualDurationDisabled(mDisableAdpfDurationBox.isChecked());
+
         mPerfHintBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;
             mShouldUseADPF = checkBox.isChecked();
@@ -326,6 +350,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mUseAltAdpfBox.setEnabled(!mShouldUseADPF);
             mWorkloadReportBox.setEnabled(mShouldUseADPF);
             mWorkloadIncreaseApiBox.setEnabled(mShouldUseADPF);
+            mHighPerformanceAudioBox.setEnabled(!mShouldUseADPF);
         });
 
         mWorkloadReportBox.setOnClickListener(buttonView -> {
@@ -342,6 +367,11 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
         });
         mWorkloadIncreaseApiBox.setEnabled(mEnableWorkloadIncreaseApi);
+
+        mHighPerformanceAudioBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            mAudioOutTester.getCurrentAudioStream().setPerformanceHintConfig(checkBox.isChecked());
+        });
 
         CheckBox hearWorkloadBox = (CheckBox) findViewById(R.id.hear_workload);
         hearWorkloadBox.setOnClickListener(buttonView -> {
@@ -395,6 +425,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         NativeEngine.setWorkloadReportingEnabled(enabled);
     }
 
+    private void setHighPerformanceAudio(boolean enabled) {
+        mShouldUseHighPerformanceAudio = enabled;
+        if (mAudioOutTester != null && mAudioOutTester.getCurrentAudioStream() != null) {
+            mAudioOutTester.getCurrentAudioStream().setPerformanceHintConfig(enabled);
+        }
+    }
+
     private void setNotifyWorkloadIncreaseEnabled(boolean enabled) {
         NativeEngine.setNotifyWorkloadIncreaseEnabled(enabled);
     }
@@ -434,6 +471,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
         }
         try {
             super.startAudio();
+            setHighPerformanceAudio(mShouldUseHighPerformanceAudio);
             setPerformanceHintEnabled(mShouldUseADPF);
             updateButtons(true);
             postResult("Running test");
@@ -477,10 +515,15 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                             VALUE_DEFAULT_SCROLL_GRAPHICS);
             mEnableWorkloadIncreaseApi = mBundleFromIntent.getBoolean(KEY_USE_WORKLOAD_INCREASE_API,
                     VALUE_DEFAULT_USE_WORKLOAD_INCREASE_API);
-
+            mShouldUseHighPerformanceAudio = mBundleFromIntent.getBoolean(KEY_USE_HIGH_PERFORMANCE_AUDIO,
+                    VALUE_DEFAULT_USE_HIGH_PERFORMANCE_AUDIO);
+            mDisableAdpfDuration = mBundleFromIntent.getBoolean(KEY_DISABLE_ADPF_DURATION,
+                    VALUE_DEFAULT_DISABLE_ADPF_DURATION);
             startTest();
 
             runOnUiThread(() -> {
+                mHighPerformanceAudioBox.setChecked(mShouldUseHighPerformanceAudio);
+                setHighPerformanceAudio(mShouldUseHighPerformanceAudio);
                 mPerfHintBox.setChecked(mShouldUseADPF);
                 setPerformanceHintEnabled(mShouldUseADPF);
                 mWorkloadReportBox.setChecked(mShouldUseWorkloadReporting);
@@ -488,6 +531,8 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
                 mWorkloadIncreaseApiBox.setChecked(mEnableWorkloadIncreaseApi);
                 setNotifyWorkloadIncreaseEnabled(mEnableWorkloadIncreaseApi);
                 mDrawAlwaysBox.setChecked(mDrawChartAlways);
+                mDisableAdpfDurationBox.setChecked(mDisableAdpfDuration);
+                NativeEngine.setReportActualDurationDisabled(mDisableAdpfDuration);
             });
 
             
