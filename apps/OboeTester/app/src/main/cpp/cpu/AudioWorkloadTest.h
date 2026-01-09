@@ -98,6 +98,9 @@ public:
             return static_cast<int32_t>(result);
         }
 
+        // Apply the current setting for reporting actual duration once the stream exists.
+        mStream->setReportActualDurationEnabled(mReportActualDurationEnabled);
+
         mFramesPerBurst = mStream->getFramesPerBurst();
         mSampleRate = mStream->getSampleRate();
         mPreviousXRunCount = 0;
@@ -149,7 +152,8 @@ public:
      */
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
-                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload, bool highPerformanceAudio) {
+                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload, bool highPerformanceAudio,
+                  bool reportActualDurationEnabled) {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (!mStream) {
             LOGE("Error: Stream not open.");
@@ -175,7 +179,9 @@ public:
         mRunning = true;
         mHearWorkload = hearWorkload;
         mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
+        mReportActualDurationEnabled = reportActualDurationEnabled;
         mStream->setPerformanceHintEnabled(adpfEnabled);
+        mStream->setReportActualDurationEnabled(mReportActualDurationEnabled);
         // Apply performance hint configuration if requested via runner flags.
         oboe::PerformanceHintConfig cfg;
         cfg.highPerformanceAudio = highPerformanceAudio;
@@ -426,6 +432,7 @@ private:
     std::atomic<int64_t> mStartTimeMs{0};
     std::atomic<bool> mHearWorkload{false};
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
+    std::atomic<bool> mReportActualDurationEnabled{true};
 
     // Lock to protect mCallbackStatistics
     std::mutex mStatisticsLock;

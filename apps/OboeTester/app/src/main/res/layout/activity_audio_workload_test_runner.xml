@@ -149,6 +149,26 @@
                 android:text="High Performance Audio" />
         </LinearLayout>
 
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/small_horizontal_margin"
+            android:paddingTop="@dimen/small_vertical_margin"
+            android:paddingRight="@dimen/small_horizontal_margin"
+            android:paddingBottom="@dimen/small_vertical_margin"
+            tools:context="com.mobileer.oboetester.AudioWorkloadTestRunnerActivity">
+
+            <CheckBox
+                android:id="@+id/disable_adpf_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8sp"
+                android:text="No ADPF dur" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

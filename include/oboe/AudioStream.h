@@ -575,6 +575,13 @@ public:
     }
 
     /**
+     * Control whether the actual duration is reported to ADPF.
+     * This only affects AAudio streams. By default, it is enabled.
+     * @param enabled true to enable reporting actual duration to ADPF
+     */
+    virtual void setReportActualDurationEnabled([[maybe_unused]] bool enabled) {}
+
+    /**
      * This only tells you if the feature has been requested.
      * It does not tell you if the PerformanceHint feature is implemented or active on the device.
      *

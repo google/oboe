@@ -75,7 +75,8 @@ public:
         bool adpfEnabled,
         bool adpfWorkloadIncreaseEnabled,
         bool hearWorkload,
-        bool highPerformanceAudio) {
+        bool highPerformanceAudio,
+        bool reportActualDurationEnabled) {
         if (mIsRunning) {
             LOGE("Error: Test already running.");
             return -1;
@@ -100,7 +101,8 @@ public:
         adpfEnabled,
         adpfWorkloadIncreaseEnabled,
         hearWorkload,
-        highPerformanceAudio);
+        highPerformanceAudio,
+        reportActualDurationEnabled);
 
         if (result != static_cast<int32_t>(oboe::Result::OK)) {
             mResult = -1;

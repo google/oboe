@@ -82,6 +82,7 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
     private CheckBox mPerfHintBox;
     private CheckBox mWorkloadReportBox;
     private CheckBox mHighPerformanceAudioBox;
+    private CheckBox mDisableAdpfDurationBox;
     private boolean mDrawChartAlways = true;
     private CheckBox mDrawAlwaysBox;
     private CheckBox mSustainedPerformanceModeBox;
@@ -331,6 +332,13 @@ public class DynamicWorkloadActivity extends TestOutputActivityBase {
             mPerfHintBox.setEnabled(!checkBox.isChecked());
         });
         mUseAltAdpfBox.setVisibility(View.GONE);
+
+        mDisableAdpfDurationBox = (CheckBox) findViewById(R.id.disable_adpf_duration);
+        mDisableAdpfDurationBox.setOnClickListener(buttonView -> {
+            CheckBox checkBox = (CheckBox) buttonView;
+            NativeEngine.setReportActualDurationEnabled(!checkBox.isChecked());
+        });
+        NativeEngine.setReportActualDurationEnabled(!mDisableAdpfDurationBox.isChecked());
 
         mPerfHintBox.setOnClickListener(buttonView -> {
             CheckBox checkBox = (CheckBox) buttonView;

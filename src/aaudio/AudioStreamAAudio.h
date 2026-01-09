@@ -100,6 +100,11 @@ public:
         mAdpfOpenAttempted = false;
     }
 
+    void setReportActualDurationEnabled(bool enabled) override {
+        // Public API expects 'enabled'; internally we manage a 'disabled' flag.
+        mAdpfWrapper.setReportActualDurationDisabled(!enabled);
+    }
+
     oboe::Result reportWorkload(int32_t appWorkload) override {
         if (!isPerformanceHintEnabled()) {
             return oboe::Result::ErrorInvalidState;

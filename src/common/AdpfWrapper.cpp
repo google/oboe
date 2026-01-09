@@ -140,6 +140,10 @@ static int loadAphFunctions() {
 
 bool AdpfWrapper::sUseAlternativeHack = false; // TODO remove hack
 
+void AdpfWrapper::setReportActualDurationDisabled(bool disabled) {
+    mIsReportActualDurationDisabled = disabled;
+}
+
 bool AdpfWrapper::isHighPerformanceAudioSupported() {
     // Ensure the performance hint functions are loaded.
     int result = loadAphFunctions();
@@ -211,6 +215,8 @@ int AdpfWrapper::open(pid_t threadId,
 }
 
 void AdpfWrapper::reportActualDuration(int64_t actualDurationNanos) {
+    // Skip reporting when disabled; report only when enabled.
+    if (mIsReportActualDurationDisabled) return;
     //LOGD("ADPF Oboe %s(dur=%lld)", __func__, (long long)actualDurationNanos);
     std::lock_guard<std::mutex> lock(mLock);
     if (mHintSession != nullptr) {
