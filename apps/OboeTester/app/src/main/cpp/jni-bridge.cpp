@@ -328,8 +328,8 @@ Java_com_mobileer_oboetester_TestAudioActivity_setUseAlternativeAdpf(JNIEnv *env
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_NativeEngine_setReportActualDurationDisabled(JNIEnv *env,
                                                                          jclass type,
-                                                                         jboolean enabled) {
-    engine.getCurrentActivity()->setReportActualDurationDisabled(enabled);
+                                                                         jboolean disabled) {
+    engine.getCurrentActivity()->setReportActualDurationDisabled(disabled);
 }
 
 JNIEXPORT jint JNICALL
