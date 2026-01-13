@@ -25,6 +25,7 @@
 
 #include "oboe/Utilities.h"
 #include "OboeDebug.h"
+#include "Trace.h"
 
 namespace oboe {
 
@@ -70,6 +71,10 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
 
     beginPerformanceHintInCallback();
 
+    if (Trace::getInstance().isEnabled()) {
+        Trace::getInstance().beginSection("OboeCallback");
+    }
+
     // Call the app to do the work.
     DataCallbackResult result;
     if (mDataCallback) {
@@ -77,6 +82,11 @@ DataCallbackResult AudioStream::fireDataCallback(void *audioData, int32_t numFra
     } else {
         result = onDefaultCallback(audioData, numFrames);
     }
+
+    if (Trace::getInstance().isEnabled()) {
+        Trace::getInstance().endSection();
+    }
+
     // On Oreo, we might get called after returning stop.
     // So block that here.
     setDataCallbackEnabled(result == DataCallbackResult::Continue);
@@ -94,6 +104,10 @@ int32_t AudioStream::firePartialDataCallback(void *audioData, int numFrames) {
 
     beginPerformanceHintInCallback();
 
+    if (Trace::getInstance().isEnabled()) {
+        Trace::getInstance().beginSection("PartialOboeCallback");
+    }
+
     // Call the app to do the work.
     int32_t result;
     if (mPartialDataCallback) {
@@ -101,6 +115,10 @@ int32_t AudioStream::firePartialDataCallback(void *audioData, int numFrames) {
     } else {
         LOGE("AudioStream::%s, called without a partial data callback!", __func__);
         result = -1; // This should not happen, return negative value to stop the stream.
+    }
+
+    if (Trace::getInstance().isEnabled()) {
+        Trace::getInstance().endSection();
     }
 
     endPerformanceHintInCallback(numFrames);

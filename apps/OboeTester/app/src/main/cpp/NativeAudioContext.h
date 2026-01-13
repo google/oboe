@@ -341,6 +341,13 @@ public:
         oboeCallbackProxy->setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
+    void setReportActualDurationDisabled(bool disabled) {
+        std::shared_ptr<oboe::AudioStream> stream = getOutputStream();
+        if (stream) {
+            stream->setReportActualDurationDisabled(disabled);
+        }
+    }
+
     int32_t setBufferSizeInFrames(int streamIndex, int threshold);
 
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,

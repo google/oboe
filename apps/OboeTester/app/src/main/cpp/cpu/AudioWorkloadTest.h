@@ -98,6 +98,9 @@ public:
             return static_cast<int32_t>(result);
         }
 
+        // Apply the current setting for reporting actual duration once the stream exists.
+        mStream->setReportActualDurationDisabled(mReportActualDurationDisabled);
+
         mFramesPerBurst = mStream->getFramesPerBurst();
         mSampleRate = mStream->getSampleRate();
         mPreviousXRunCount = 0;
@@ -149,7 +152,8 @@ public:
      */
     int32_t start(int32_t targetDurationMillis, int32_t numBursts, int32_t numVoices,
                   int32_t alternateNumVoices, int32_t alternatingPeriodMs, bool adpfEnabled,
-                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload) {
+                  bool adpfWorkloadIncreaseEnabled, bool hearWorkload, bool highPerformanceAudio,
+                  bool reportActualDurationDisabled) {
         std::lock_guard<std::mutex> lock(mStreamLock);
         if (!mStream) {
             LOGE("Error: Stream not open.");
@@ -175,7 +179,13 @@ public:
         mRunning = true;
         mHearWorkload = hearWorkload;
         mAdpfWorkloadIncreaseEnabled = adpfWorkloadIncreaseEnabled;
+        mReportActualDurationDisabled = reportActualDurationDisabled;
         mStream->setPerformanceHintEnabled(adpfEnabled);
+        mStream->setReportActualDurationDisabled(mReportActualDurationDisabled);
+        // Apply performance hint configuration if requested via runner flags.
+        oboe::PerformanceHintConfig cfg;
+        cfg.highPerformanceAudio = highPerformanceAudio;
+        mStream->setPerformanceHintConfig(cfg);
         mStream->setBufferSizeInFrames(mNumBursts * mFramesPerBurst);
         mBufferSizeInFrames = mStream->getBufferSizeInFrames();
         oboe::Result result = mStream->start();
@@ -422,6 +432,7 @@ private:
     std::atomic<int64_t> mStartTimeMs{0};
     std::atomic<bool> mHearWorkload{false};
     std::atomic<bool> mAdpfWorkloadIncreaseEnabled{false};
+    std::atomic<bool> mReportActualDurationDisabled{false};
 
     // Lock to protect mCallbackStatistics
     std::mutex mStatisticsLock;

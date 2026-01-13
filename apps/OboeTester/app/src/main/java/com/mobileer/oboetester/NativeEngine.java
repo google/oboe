@@ -6,6 +6,8 @@ public class NativeEngine {
 
     static native boolean isMMapExclusiveSupported();
 
+    static native boolean isHighPerformanceAudioSupported();
+
     static native void setWorkaroundsEnabled(boolean enabled);
 
     static native boolean areWorkaroundsEnabled();
@@ -17,4 +19,6 @@ public class NativeEngine {
     static native void setWorkloadReportingEnabled(boolean enabled);
 
     static native void setNotifyWorkloadIncreaseEnabled(boolean enabled);
+
+    static native void setReportActualDurationDisabled(boolean disabled);
 }
