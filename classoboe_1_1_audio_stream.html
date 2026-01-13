@@ -199,6 +199,13 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getDelayBeforeClos
 <tr class="separator:af2d5e150a46fe166a99982f4a072ddbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad588d956ff4bb9669f37ec143b94818d" id="r_ad588d956ff4bb9669f37ec143b94818d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad588d956ff4bb9669f37ec143b94818d">setPerformanceHintEnabled</a> (bool enabled)</td></tr>
 <tr class="separator:ad588d956ff4bb9669f37ec143b94818d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfdc00a13da87f2ab3db54fe626395a5" id="r_abfdc00a13da87f2ab3db54fe626395a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abfdc00a13da87f2ab3db54fe626395a5">setPerformanceHintConfig</a> (const <a class="el" href="structoboe_1_1_performance_hint_config.html">PerformanceHintConfig</a> &amp;config)</td></tr>
+<tr class="separator:abfdc00a13da87f2ab3db54fe626395a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac57b34735168e6b30d30e46d07b51af6" id="r_ac57b34735168e6b30d30e46d07b51af6"><td class="memItemLeft" align="right" valign="top"><a id="ac57b34735168e6b30d30e46d07b51af6" name="ac57b34735168e6b30d30e46d07b51af6"></a>
+<a class="el" href="structoboe_1_1_performance_hint_config.html">PerformanceHintConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getPerformanceHintConfig</b> () const</td></tr>
+<tr class="separator:ac57b34735168e6b30d30e46d07b51af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70b9c14f43ddc06948a2a17618073c69" id="r_a70b9c14f43ddc06948a2a17618073c69"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70b9c14f43ddc06948a2a17618073c69">setReportActualDurationDisabled</a> (bool disabled)</td></tr>
+<tr class="separator:a70b9c14f43ddc06948a2a17618073c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9fdffea9e3a3f693fcbbbca699a22c6b" id="r_a9fdffea9e3a3f693fcbbbca699a22c6b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9fdffea9e3a3f693fcbbbca699a22c6b">isPerformanceHintEnabled</a> ()</td></tr>
 <tr class="separator:a9fdffea9e3a3f693fcbbbca699a22c6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cf8ce01c8db830f89b70c782fe18d90" id="r_a9cf8ce01c8db830f89b70c782fe18d90"><td class="memItemLeft" align="right" valign="top">virtual oboe::Result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9cf8ce01c8db830f89b70c782fe18d90">reportWorkload</a> (int32_t appWorkload)</td></tr>
@@ -351,6 +358,9 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:addb945e8ab2bc395cc99c8ae6504c2cd" id="r_addb945e8ab2bc395cc99c8ae6504c2cd"><td class="memItemLeft" align="right" valign="top"><a id="addb945e8ab2bc395cc99c8ae6504c2cd" name="addb945e8ab2bc395cc99c8ae6504c2cd"></a>
 std::weak_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream.html">AudioStream</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mWeakThis</b></td></tr>
 <tr class="separator:addb945e8ab2bc395cc99c8ae6504c2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b3f218279d77666ddcfb397e35f6d18" id="r_a2b3f218279d77666ddcfb397e35f6d18"><td class="memItemLeft" align="right" valign="top"><a id="a2b3f218279d77666ddcfb397e35f6d18" name="a2b3f218279d77666ddcfb397e35f6d18"></a>
+<a class="el" href="structoboe_1_1_performance_hint_config.html">PerformanceHintConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mPerformanceHintConfig</b></td></tr>
+<tr class="separator:a2b3f218279d77666ddcfb397e35f6d18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88a63317b7c58815bac074976b00aa23" id="r_a88a63317b7c58815bac074976b00aa23"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88a63317b7c58815bac074976b00aa23">mFramesWritten</a> {}</td></tr>
 <tr class="separator:a88a63317b7c58815bac074976b00aa23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07e82f9b9e2e4800f23ae9a7193c3b58" id="r_a07e82f9b9e2e4800f23ae9a7193c3b58"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a07e82f9b9e2e4800f23ae9a7193c3b58">mFramesRead</a> {}</td></tr>
@@ -1826,6 +1836,32 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
 
 </div>
 </div>
+<a id="abfdc00a13da87f2ab3db54fe626395a5" name="abfdc00a13da87f2ab3db54fe626395a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfdc00a13da87f2ab3db54fe626395a5">&#9670;&#160;</a></span>setPerformanceHintConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void oboe::AudioStream::setPerformanceHintConfig </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structoboe_1_1_performance_hint_config.html">PerformanceHintConfig</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Configure performance hint behavior for this stream. The configuration currently supports enabling highPerformanceAudio mode when creating the underlying hint session. </p>
+
+</div>
+</div>
 <a id="ad588d956ff4bb9669f37ec143b94818d" name="ad588d956ff4bb9669f37ec143b94818d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad588d956ff4bb9669f37ec143b94818d">&#9670;&#160;</a></span>setPerformanceHintEnabled()</h2>
 
@@ -1894,6 +1930,37 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>AudioStreamBuilder</
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Result::OK if the playback parameters are set successfully. Result::ErrorIllegalArgument if the given stream is not an output stream or the requested parameters are invalid. Result::ErrorUnimplemented if the device or the stream doesn't support setting playback parameters. Result::ErrorInvalidState if the stream is not initialized successfully. </dd></dl>
+
+</div>
+</div>
+<a id="a70b9c14f43ddc06948a2a17618073c69" name="a70b9c14f43ddc06948a2a17618073c69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70b9c14f43ddc06948a2a17618073c69">&#9670;&#160;</a></span>setReportActualDurationDisabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void oboe::AudioStream::setReportActualDurationDisabled </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>disabled</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Control whether the actual duration is reported to ADPF. This only affects AAudio streams. By default, it is enabled. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">disabled</td><td>true to disable reporting actual duration to ADPF </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
