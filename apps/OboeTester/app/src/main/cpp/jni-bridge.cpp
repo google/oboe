@@ -59,6 +59,9 @@ static jfieldID g_stretchModeField = nullptr;
 static jfieldID g_pitchField = nullptr;
 static jfieldID g_speedField = nullptr;
 
+static jclass g_recordingStatsClass = nullptr;
+static jmethodID g_recordingStatsConstructor = nullptr;
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint nativeApi,
@@ -1117,6 +1120,16 @@ Java_com_mobileer_oboetester_ManualGlitchActivity_getRecentSamples(JNIEnv *env, 
     return numSamples;
 }
 
+JNIEXPORT jobject JNICALL
+Java_com_mobileer_oboetester_RecorderActivity_getRecordingStatsJni(JNIEnv *env, jobject) {
+
+    ActivityRecording::RecordingStats params = engine.mActivityRecording.getRecordingStats();
+
+    return env->NewObject(g_recordingStatsClass, g_recordingStatsConstructor,
+                          (jfloat)params.peakAbs,
+                          (params.n > 0) ? (float)std::sqrt(params.sumSq / (float)params.n) : 0.0F);
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestAudioActivity_setDefaultAudioValues(JNIEnv *env, jclass clazz,
                                                                      jint audio_manager_sample_rate,
@@ -1397,6 +1410,28 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
             g_playbackParametersClass, "<init>", "(IIFF)V");
     if (g_playbackParametersConstructor == nullptr) {
         LOGE("JNI_OnLoad: Could not find constructor for %s", playbackParametersClassName);
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+
+    const char* recordingStatsClassName = "com/mobileer/oboetester/RecordingStats";
+    jclass localRecordingStatsClass = env->FindClass(recordingStatsClassName);
+    if (localRecordingStatsClass == nullptr) {
+        LOGE("JNI_OnLoad: Could not find class %s", recordingStatsClassName);
+        if (env->ExceptionCheck()) env->ExceptionDescribe();
+        return JNI_ERR;
+    }
+    g_recordingStatsClass = (jclass)env->NewGlobalRef(localRecordingStatsClass);
+    env->DeleteLocalRef(localRecordingStatsClass);
+    if (g_recordingStatsClass == nullptr) {
+        LOGE("JNI_OnLoad: Could not create global ref for %s", recordingStatsClassName);
+        return JNI_ERR;
+    }
+
+    g_recordingStatsConstructor = env->GetMethodID(
+            g_recordingStatsClass, "<init>", "(FF)V");
+    if (g_recordingStatsConstructor == nullptr) {
+        LOGE("JNI_OnLoad: Could not find constructor for %s", recordingStatsClassName);
         if (env->ExceptionCheck()) env->ExceptionDescribe();
         return JNI_ERR;
     }
