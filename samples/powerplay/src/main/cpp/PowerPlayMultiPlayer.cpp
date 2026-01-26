@@ -131,8 +131,10 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         return;
     }
 
-    // If the performance mode has changed, we need to reopen the stream.
-    if (performanceMode != mLastPerformanceMode) {
+    // If the performance mode has changed, or if MMAP is disabled but currently used,
+    bool isMMapGlobal = isMMapEnabled();
+    bool isMMapCurrentlyUsed = OboeExtensions::isMMapUsed(mAudioStream.get());
+    if (performanceMode != mLastPerformanceMode || (!isMMapGlobal && isMMapCurrentlyUsed)) {
         teardownAudioStream();
 
         // Attempt here to reopen the stream with the new performance mode.
