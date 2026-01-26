@@ -18,6 +18,7 @@
 #define _PLAYER_SAMPLESOURCE_
 
 #include <cstdint>
+#include <atomic>
 
 #include "DataSource.h"
 
@@ -62,6 +63,13 @@ public:
     bool isPlaying() { return mIsPlaying; }
 
     int32_t getPlayHeadPosition() const { return mCurSampleIndex; }
+
+    int32_t getNumFrames() const {
+        if (mSampleBuffer == nullptr) return 0;
+        int32_t channels = mSampleBuffer->getProperties().channelCount;
+        if (channels <= 0) return 0;
+        return mSampleBuffer->getNumSamples() / channels;
+    }
 
     void setPan(float pan) {
         if (pan < PAN_HARDLEFT) {

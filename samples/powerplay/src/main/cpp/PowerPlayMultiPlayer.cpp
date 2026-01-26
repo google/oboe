@@ -15,6 +15,7 @@
  */
 #include <android/log.h>
 #include "PowerPlayMultiPlayer.h"
+#include "PowerPlaySampleSource.h"
 
 static const char *TAG = "PowerPlayMultiPlayer";
 
@@ -238,4 +239,33 @@ int32_t PowerPlayMultiPlayer::getBufferCapacityInFrames() {
     }
 
     return mAudioStream->getBufferCapacityInFrames();
+}
+
+int32_t PowerPlayMultiPlayer::getCurrentPosition() {
+    int32_t index = getCurrentlyPlayingIndex();
+    if (index != -1) {
+        auto source = dynamic_cast<PowerPlaySampleSource*>(mSampleSources[index]);
+        if (source) {
+            return source->getPositionInFrames();
+        }
+    }
+    return 0;
+}
+
+int32_t PowerPlayMultiPlayer::getDuration() {
+    int32_t index = getCurrentlyPlayingIndex();
+    if (index != -1) {
+        return mSampleSources[index]->getNumFrames();
+    }
+    return 0;
+}
+
+void PowerPlayMultiPlayer::seekTo(int32_t positionFrames) {
+    int32_t index = getCurrentlyPlayingIndex();
+    if (index != -1) {
+        auto source = dynamic_cast<PowerPlaySampleSource*>(mSampleSources[index]);
+        if (source) {
+            source->setPositionInFrames(positionFrames);
+        }
+    }
 }

@@ -50,6 +50,12 @@ public:
 
     int32_t getBufferCapacityInFrames();
 
+    int32_t getCurrentPosition();
+
+    int32_t getDuration();
+
+    void seekTo(int32_t positionFrames);
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:

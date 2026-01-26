@@ -16,11 +16,15 @@
 
 package com.google.oboe.samples.powerplay
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
@@ -57,6 +61,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -66,6 +71,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +106,7 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
@@ -108,7 +115,22 @@ class MainActivity : ComponentActivity() {
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
-    private var sampleRate: Int = 48000;
+    private var sampleRate: Int = 48000
+    private var isBound = mutableStateOf(false)
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as AudioForegroundService.LocalBinder
+            player = binder.getService().player
+            // Re-check support flags as player is now available
+            isMMapSupported = player.isMMapSupported()
+            isBound.value = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound.value = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,7 +150,7 @@ class MainActivity : ComponentActivity() {
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
         isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
-        isMMapSupported = player.isMMapSupported()
+        // isMMapSupported checked in connection callback
 
         setContent {
             MusicPlayerTheme {
@@ -136,7 +158,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SongScreen()
+                    if (isBound.value) {
+                        SongScreen()
+                    } else {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             }
         }
@@ -144,13 +172,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        player.stopPlaying(0)
-        player.teardownAudioStream()
+        if (isBound.value) {
+            unbindService(connection)
+            isBound.value = false
+        }
+        // Player lifecycle is now managed by Service
     }
 
     private fun setUpPowerPlayAudioPlayer() {
-        player = PowerPlayAudioPlayer()
-        player.setupAudioStream()
+        val intent = Intent(this, AudioForegroundService::class.java)
+        startForegroundService(intent) // Starts the service
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
     /***
@@ -160,7 +192,7 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun SongScreen() {
-        val playList = getPlayList()
+        val playList = PlayList
         val pagerState = rememberPagerState(pageCount = { playList.count() })
         val playingSongIndex = remember {
             mutableIntStateOf(0)
@@ -170,18 +202,30 @@ class MainActivity : ComponentActivity() {
         }
 
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
-        val isPlaying = remember {
-            mutableStateOf(false)
-        }
+        
+        val playerState by player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
+        val isPlaying = playerState == PlayerState.Playing
+        
         var sliderPosition by remember { mutableFloatStateOf(0f) }
+        var currentPosition by remember { mutableFloatStateOf(0f) }
+        var duration by remember { mutableFloatStateOf(1f) }
 
+        // Poll for playback progress
+        LaunchedEffect(isPlaying) {
+            while (isPlaying) {
+                currentPosition = player.getCurrentPosition().toFloat()
+                val dur = player.getDuration()
+                if (dur > 0) duration = dur.toFloat()
+                delay(100)
+            }
+        }
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
                 .distinctUntilChanged()
                 .collect { page ->
                     playingSongIndex.intValue = pagerState.currentPage
-                    if (isPlaying.value) {
+                    if (isPlaying) {
                         player.startPlaying(
                             playingSongIndex.intValue,
                             OboePerformanceMode.fromInt(offload.intValue)
@@ -238,12 +282,33 @@ class MainActivity : ComponentActivity() {
                 ) { page ->
                     val painter = painterResource(id = playList[page].cover)
                     if (page == pagerState.currentPage) {
-                        VinylAlbumCoverAnimation(isSongPlaying = isPlaying.value, painter = painter)
+                        VinylAlbumCoverAnimation(isSongPlaying = isPlaying, painter = painter)
                     } else {
                         VinylAlbumCoverAnimation(isSongPlaying = false, painter = painter)
                     }
                 }
-                Spacer(modifier = Modifier.height(54.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Song Progress Slider
+                Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                    Slider(
+                        value = currentPosition,
+                        valueRange = 0f..duration,
+                        onValueChange = { 
+                            currentPosition = it
+                            player.seekTo(it.toInt())
+                        }
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = (currentPosition.toLong() * 1000 / sampleRate).convertToText())
+                        Text(text = (duration.toLong() * 1000 / sampleRate).convertToText())
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     "Performance Modes"
                 )
@@ -256,7 +321,7 @@ class MainActivity : ComponentActivity() {
                     val (selectedOption, onOptionSelected) = remember {
                         mutableStateOf(radioOptions[0])
                     }
-                    val enabled = !isPlaying.value
+                    val enabled = !isPlaying
                     radioOptions.forEachIndexed { index, text ->
                         Row(
                             Modifier
@@ -309,12 +374,12 @@ class MainActivity : ComponentActivity() {
                         Checkbox(
                             checked = !isMMapEnabled.value,
                             onCheckedChange = {
-                                if (!isPlaying.value) {
+                                if (!isPlaying) {
                                     isMMapEnabled.value = !it
                                     player.setMMapEnabled(isMMapEnabled.value)
                                 }
                             },
-                            enabled = !isPlaying.value
+                            enabled = !isPlaying
                         )
                         Text(
                             text = "Disable MMAP",
@@ -380,10 +445,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(
-                        icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
+                        icon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
                         size = 100.dp,
                         onClick = {
-                            when (isPlaying.value) {
+                            when (isPlaying) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> {
                                     player.startPlaying(
@@ -393,8 +458,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-                            isPlaying.value =
-                                player.getPlayerStateLive().value == PlayerState.Playing
+                            // isPlaying is now observed from flow
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                 }
@@ -562,40 +626,4 @@ class MainActivity : ComponentActivity() {
         return "$minutesString:$secondsString"
     }
 
-
-    /***
-     * Return a play list of type Music data class
-     */
-    private fun getPlayList(): List<Music> {
-        return listOf(
-            Music(
-                name = "Chemical Reaction",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_1,
-                fileName = "song1.wav",
-            ),
-            Music(
-                name = "Digital Noca",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_2,
-                fileName = "song2.wav",
-            ),
-            Music(
-                name = "Window Seat",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_3,
-                fileName = "song3.wav",
-            ),
-        )
-    }
-
-    /***
-     * Data class to represent a music in the list
-     */
-    data class Music(
-        val name: String,
-        val artist: String,
-        val fileName: String,
-        val cover: Int,
-    )
 }

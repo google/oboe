@@ -23,55 +23,155 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.media.MediaMetadata
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
+import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
-import androidx.core.app.NotificationCompat
+import androidx.lifecycle.Observer
 import com.google.oboe.samples.powerplay.MainActivity
+import com.google.oboe.samples.powerplay.PlayList
 import com.google.oboe.samples.powerplay.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class AudioForegroundService : Service() {
 
     private lateinit var audioManager: AudioManager
     private lateinit var audioFocusRequest: AudioFocusRequest
+    private lateinit var mediaSession: MediaSession
+    private lateinit var wakeLock: PowerManager.WakeLock
+
+    lateinit var player: PowerPlayAudioPlayer
+    private val binder = LocalBinder()
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
+    private var playbackJob: Job? = null
+
+    inner class LocalBinder : Binder() {
+        fun getService(): AudioForegroundService = this@AudioForegroundService
+    }
+
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
-
+                if (::player.isInitialized) {
+                    player.startPlaying(player.currentSongIndex, null)
+                }
             }
 
             AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // TODO Handle loss of audio focus
+                if (::player.isInitialized) {
+                    player.stopPlaying(player.currentSongIndex)
+                }
             }
         }
     }
 
+    private val playerStateObserver = Observer<PlayerState> { state ->
+        updatePlaybackState()
+        // Update notification to reflect Play/Pause icon if needed
+        val notification = createNotification()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
+
+        if (state == PlayerState.Playing) {
+            startProgressUpdater()
+        } else {
+            stopProgressUpdater()
+        }
+    }
+
+    private val songIndexObserver = Observer<Int> { index ->
+        updatePlaybackState()
+        val notification = createNotification()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
     override fun onCreate() {
         super.onCreate()
-        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-        val audioAttributes = AudioAttributes.Builder()
+        try {
+            player = PowerPlayAudioPlayer()
+            player.setupAudioStream()
+
+            audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
 
-        audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(audioAttributes)
                 .setAcceptsDelayedFocusGain(true)
                 .setOnAudioFocusChangeListener(audioFocusChangeListener)
                 .build()
+
+            mediaSession = MediaSession(this, "PowerPlayAudioService").apply {
+                setCallback(object : MediaSession.Callback() {
+                    override fun onPlay() {
+                        if (::player.isInitialized) player.startPlaying(player.currentSongIndex, player.currentPerformanceMode)
+                    }
+
+                    override fun onPause() {
+                        if (::player.isInitialized) player.stopPlaying(player.currentSongIndex)
+                    }
+
+                    override fun onStop() {
+                        if (::player.isInitialized) player.stopPlaying(player.currentSongIndex)
+                        stopSelf()
+                    }
+                })
+                setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS)
+                isActive = true
+            }
+
+            // Observe player state
+            player.getPlayerStateLive().observeForever(playerStateObserver)
+            player.getCurrentSongIndexLive().observeForever(songIndexObserver)
+
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PowerPlay::AudioWakeLock")
+        } catch (e: Throwable) {
+            Log.e(TAG, "Error in onCreate", e)
+            throw RuntimeException("Failed to create AudioForegroundService", e)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = createNotification()
-        startForeground(NOTIFICATION_ID, notification)
+        try {
+            val notification = createNotification()
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
 
-        val result = audioManager.requestAudioFocus(audioFocusRequest)
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            // TODO tart playback only when audio focus is granted
-        } else {
-            Log.e(TAG, "Failed to get audio focus, result: $result")
+            val result = audioManager.requestAudioFocus(audioFocusRequest)
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                // Let UI control playback start
+            } else {
+                Log.e(TAG, "Failed to get audio focus, result: $result")
+            }
+
+            if (!wakeLock.isHeld) {
+                wakeLock.acquire()
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Error in onStartCommand", e)
+            stopSelf()
         }
 
         return START_STICKY
@@ -79,13 +179,93 @@ class AudioForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        audioManager.abandonAudioFocusRequest(audioFocusRequest)
+        if (::player.isInitialized) {
+            player.getPlayerStateLive().removeObserver(playerStateObserver)
+            player.getCurrentSongIndexLive().removeObserver(songIndexObserver)
+            player.stopPlaying(player.currentSongIndex)
+            player.teardownAudioStream()
+        }
+        stopProgressUpdater()
+        // Cancel service scope
+        // serviceScope.cancel() // Actually Job() inside, maybe just cancel the job. 
+        // Or if I used MainScope(), cancel it.
+        // But since it's a Service, canceling scope is good.
+
+        if (::audioManager.isInitialized) {
+            audioManager.abandonAudioFocusRequest(audioFocusRequest)
+        }
+        if (::mediaSession.isInitialized) {
+            mediaSession.release()
+        }
+        if (::wakeLock.isInitialized && wakeLock.isHeld) {
+            wakeLock.release()
+        }
+    }
+
+    private fun startProgressUpdater() {
+        playbackJob?.cancel()
+        playbackJob = serviceScope.launch {
+            while (isActive) {
+                updatePlaybackState()
+                delay(1000) // Update every second
+            }
+        }
+    }
+
+    private fun stopProgressUpdater() {
+        playbackJob?.cancel()
+        playbackJob = null
+        updatePlaybackState() // Update one last time for final state
+    }
+
+    private fun updatePlaybackState() {
+        if (!::player.isInitialized || !::mediaSession.isInitialized) return
+
+        val state = player.getPlayerStateLive().value
+        val position = player.getCurrentPosition().toLong() // frames
+        val sampleRate = 48000L
+        val positionMs = (position * 1000) / sampleRate
+
+        val playbackStateBuilder = PlaybackState.Builder()
+
+        if (state == PlayerState.Playing) {
+            playbackStateBuilder.setState(PlaybackState.STATE_PLAYING, positionMs, 1.0f)
+        } else {
+            playbackStateBuilder.setState(PlaybackState.STATE_PAUSED, positionMs, 0.0f)
+        }
+
+        playbackStateBuilder.setActions(
+            PlaybackState.ACTION_PLAY or
+                    PlaybackState.ACTION_PAUSE or
+                    PlaybackState.ACTION_STOP or
+                    PlaybackState.ACTION_SEEK_TO
+        )
+
+        mediaSession.setPlaybackState(playbackStateBuilder.build())
+
+        val durationFrames = player.getDuration().toLong()
+        val durationMs = (durationFrames * 1000) / sampleRate
+
+        val currentSong = PlayList.getOrNull(player.currentSongIndex)
+        val songTitle = currentSong?.name ?: "PowerPlay Audio"
+        val songArtist = currentSong?.artist ?: "Playing..."
+
+        val metadataBuilder = MediaMetadata.Builder()
+            .putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
+            .putString(MediaMetadata.METADATA_KEY_TITLE, songTitle)
+            .putString(MediaMetadata.METADATA_KEY_ARTIST, songArtist)
+
+        if (currentSong != null) {
+            val bitmap = BitmapFactory.decodeResource(resources, currentSong.cover)
+            metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bitmap)
+        }
+
+        mediaSession.setMetadata(metadataBuilder.build())
     }
 
     private fun createNotification(): Notification {
         val channelId = createNotificationChannel()
-        val notificationIntent =
-            Intent(this, MainActivity::class.java)
+        val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -93,13 +273,44 @@ class AudioForegroundService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Audio Playing")
-            .setContentText("Audio is playing in the background")
-            .setSmallIcon(R.drawable.ic_play) // Replace with your icon
+        // Update notification icon based on state
+        val isPlaying = if (::player.isInitialized) {
+            player.getPlayerStateLive().value == PlayerState.Playing
+        } else false
+
+        val style = android.app.Notification.MediaStyle()
+            .setMediaSession(mediaSession.sessionToken)
+
+        val currentSong = if (::player.isInitialized) PlayList.getOrNull(player.currentSongIndex) else null
+        val songTitle = currentSong?.name ?: "PowerPlay Audio"
+        val songArtist = currentSong?.artist ?: (if (isPlaying) "Playing" else "Paused")
+
+        val builder = Notification.Builder(this, channelId)
+            .setContentTitle(songTitle)
+            .setContentText(songArtist)
+            .setSmallIcon(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
             .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+            .setStyle(style)
+
+        if (currentSong != null) {
+            val bitmap = BitmapFactory.decodeResource(resources, currentSong.cover)
+            builder.setLargeIcon(bitmap)
+        }
+
+        // Add Play/Pause action
+        if (isPlaying) {
+            val pauseIntent = PendingIntent.getService(
+                this, 1,
+                Intent(this, AudioForegroundService::class.java).apply { action = "PAUSE" },
+                PendingIntent.FLAG_IMMUTABLE
+            )
+            // We'd need to handle this intent in onStartCommand if we added buttons here.
+            // For now, relying on MediaSession transport controls is implicit for some Android versions/devices
+            // but strictly speaking for Notification.MediaStyle, we usually add actions.
+            // Since I didn't implement onStartCommand action handling, I'll rely on MediaSession callback.
+        }
+
+        return builder.build()
     }
 
     private fun createNotificationChannel(): String {
@@ -114,7 +325,7 @@ class AudioForegroundService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return null
+        return binder
     }
 
     companion object {

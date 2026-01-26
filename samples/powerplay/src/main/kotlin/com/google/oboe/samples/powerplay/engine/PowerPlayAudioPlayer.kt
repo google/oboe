@@ -26,6 +26,13 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private var _playerState = MutableStateFlow<PlayerState>(PlayerState.NoResultYet)
     fun getPlayerStateLive() = _playerState.asLiveData()
 
+    private var _currentSongIndex = MutableStateFlow(0)
+    fun getCurrentSongIndexLive() = _currentSongIndex.asLiveData()
+    val currentSongIndex: Int get() = _currentSongIndex.value
+
+    private var _currentPerformanceMode = OboePerformanceMode.None
+    val currentPerformanceMode: OboePerformanceMode get() = _currentPerformanceMode
+
     /**
      * Native passthrough functions
      */
@@ -35,7 +42,11 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     }
 
     fun startPlaying(index: Int, mode: OboePerformanceMode?) {
-        startPlayingNative(index, mode ?: OboePerformanceMode.None)
+        val actualMode = mode ?: _currentPerformanceMode
+        _currentPerformanceMode = actualMode
+        _currentSongIndex.update { index }
+
+        startPlayingNative(index, actualMode)
         _playerState.update { PlayerState.Playing }
     }
 
@@ -93,6 +104,10 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
 
     fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
 
+    fun getCurrentPosition(): Int = getCurrentPositionNative()
+    fun getDuration(): Int = getDurationNative()
+    fun seekTo(positionFrames: Int) = seekToNative(positionFrames)
+
     /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
@@ -116,6 +131,9 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun isMMapSupportedNative(): Boolean
     private external fun setBufferSizeInFramesNative(bufferSizeInFrames: Int): Int
     private external fun getBufferCapacityInFramesNative(): Int
+    private external fun getCurrentPositionNative(): Int
+    private external fun getDurationNative(): Int
+    private external fun seekToNative(positionFrames: Int)
 
     /**
      * Companion
