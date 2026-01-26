@@ -160,12 +160,14 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         const auto isPlayHeadAtStart = mSampleSources[index]->getPlayHeadPosition() == 0;
 
         if (isOffloaded && isPlayHeadAtStart) {
-            const auto result = mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
-            if (result != Result::OK) {
-                __android_log_print(ANDROID_LOG_ERROR,
-                                    TAG,
-                                    "Failed to flush from frame. Error: %s",
-                                    convertToText(result.error()));
+            if (mAudioStream->getFramesWritten() > 0) {
+                const auto result = mAudioStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
+                if (result != Result::OK) {
+                    __android_log_print(ANDROID_LOG_ERROR,
+                                        TAG,
+                                        "Failed to flush from frame. Error: %s",
+                                        convertToText(result.error()));
+                }
             }
         }
     }
