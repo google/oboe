@@ -19,6 +19,7 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -34,6 +35,7 @@ public class RecorderActivity extends TestInputActivity {
     private Button mStopButton;
     private Button mPlayButton;
     private Button mShareButton;
+    private TextView mStatusView;
     private boolean mGotRecording;
 
     @Override
@@ -49,6 +51,7 @@ public class RecorderActivity extends TestInputActivity {
         mStopButton = (Button) findViewById(R.id.button_stop_record_play);
         mPlayButton = (Button) findViewById(R.id.button_start_playback);
         mShareButton = (Button) findViewById(R.id.button_share);
+        mStatusView = (TextView) findViewById(R.id.status_view);
         mRecorderState = AUDIO_STATE_STOPPED;
         mGotRecording = false;
         updateButtons();
@@ -75,6 +78,19 @@ public class RecorderActivity extends TestInputActivity {
         closeAudio();
         mRecorderState = AUDIO_STATE_STOPPED;
         updateButtons();
+
+        StringBuilder text = new StringBuilder();
+        for (StreamContext streamContext: mStreamContexts) {
+            RecordingStats recordingStats = getRecordingStatsJni();
+            text
+                .append("Peak amplitude: ")
+                .append(recordingStats.peak)
+                .append("\n")
+                .append("Rms: ")
+                .append(recordingStats.rms)
+                .append("\n");
+        }
+        mStatusView.setText(text);
     }
 
     public void onStartPlayback(View view) {
@@ -106,4 +122,5 @@ public class RecorderActivity extends TestInputActivity {
         return "recording";
     }
 
+    private native RecordingStats getRecordingStatsJni();
 }

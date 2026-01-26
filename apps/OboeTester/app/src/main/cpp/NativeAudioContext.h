@@ -456,6 +456,15 @@ public:
     PlayRecordingCallback        mPlayRecordingCallback;
     oboe::AudioStream           *playbackStream = nullptr;
 
+    struct RecordingStats {
+        double peakAbs = 0.0;
+        double sumSq   = 0.0;
+        int64_t n      = 0;      // total samples
+    };
+
+    RecordingStats computeRecordingStats();
+
+    ActivityRecording::RecordingStats getRecordingStats();
 };
 
 /**
