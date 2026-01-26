@@ -67,6 +67,8 @@ private:
     std::shared_ptr<MyPresentationCallback> mPresentationCallback;
 
     oboe::PerformanceMode mLastPerformanceMode;
+
+    bool mLastMMapEnabled;
 };
 
 #endif //SAMPLES_POWERPLAYMULTIPLAYER_H

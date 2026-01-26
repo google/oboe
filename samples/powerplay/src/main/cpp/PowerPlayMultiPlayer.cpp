@@ -38,6 +38,7 @@ void PowerPlayMultiPlayer::setupAudioStream(int32_t channelCount,
 bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "openStream()");
     mLastPerformanceMode = performanceMode;
+    mLastMMapEnabled = isMMapEnabled();
 
     // Use shared_ptr to prevent use of a deleted callback.
     mDataCallback = std::make_shared<MyDataCallback>(this);
@@ -132,7 +133,9 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
     }
 
     // If the performance mode has changed, we need to reopen the stream.
-    if (performanceMode != mLastPerformanceMode) {
+    // Also reopen if the user has changed the MMAP policy (enabled/disabled) since the stream was opened.
+    if (performanceMode != mLastPerformanceMode ||
+        isMMapEnabled() != mLastMMapEnabled) {
         teardownAudioStream();
 
         // Attempt here to reopen the stream with the new performance mode.
