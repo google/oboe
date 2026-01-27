@@ -246,7 +246,23 @@ int32_t PowerPlayMultiPlayer::getCurrentPosition() {
     if (index != -1) {
         auto source = dynamic_cast<PowerPlaySampleSource*>(mSampleSources[index]);
         if (source) {
-            return source->getPositionInFrames();
+            int64_t sourceFrameIndex = source->getPositionInFrames();
+
+            if (mAudioStream != nullptr) {
+                int64_t framesWritten = mAudioStream->getFramesWritten();
+                int64_t framesPresented = 0;
+                int64_t presentationTimeNs = 0;
+
+                auto result = mAudioStream->getTimestamp(CLOCK_MONOTONIC, &framesPresented, &presentationTimeNs);
+
+                if (result == Result::OK) {
+                     int64_t latencyFrames = framesWritten - framesPresented;
+                     int64_t playhead = sourceFrameIndex - latencyFrames;
+                     if (playhead < 0) playhead = 0;
+                     return (int32_t)playhead;
+                }
+            }
+            return (int32_t)sourceFrameIndex;
         }
     }
     return 0;
