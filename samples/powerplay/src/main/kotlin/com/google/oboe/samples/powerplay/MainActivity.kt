@@ -40,6 +40,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -144,7 +145,6 @@ class MainActivity : ComponentActivity() {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as AudioForegroundService.LocalBinder
             player = binder.getService().player
-            // Re-check support flags as player is now available
             isMMapSupported = player.isMMapSupported()
             isBound.value = true
         }
@@ -172,7 +172,6 @@ class MainActivity : ComponentActivity() {
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
         isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
-        // isMMapSupported checked in connection callback
 
         setContent {
             MusicPlayerTheme {
@@ -198,7 +197,6 @@ class MainActivity : ComponentActivity() {
             unbindService(connection)
             isBound.value = false
         }
-        // Player lifecycle is now managed by Service
     }
 
     private fun setUpPowerPlayAudioPlayer() {
@@ -215,7 +213,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SongScreen() {
         val playList = PlayList
-        // Initialize state from player to ensure sync with Service
         val initialPage = remember { player.currentSongIndex }
         val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
         val playingSongIndex = remember {
@@ -226,20 +223,13 @@ class MainActivity : ComponentActivity() {
         }
 
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
-        
-        // Use State object directly to avoid stale closure capture
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
-        
         var sliderPosition by remember { mutableFloatStateOf(0f) }
-        var currentPosition by remember { mutableFloatStateOf(0f) }
-        var duration by remember { mutableFloatStateOf(1f) }
-        
-        // Bottom sheet state
+
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         
-        // Info dialog state
         var showInfoDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(pagerState) {
@@ -258,8 +248,6 @@ class MainActivity : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
-            // Check if assets are already loaded to avoid resetting if service is running
-            // Since we can't easily check, we reload. But we loop looping.
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
@@ -273,8 +261,6 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
-
-            // Settings icon at bottom-right
             IconButton(
                 onClick = { showBottomSheet = true },
                 modifier = Modifier
@@ -289,7 +275,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
             
-            // Info icon at bottom-left
             IconButton(
                 onClick = { showInfoDialog = true },
                 modifier = Modifier
@@ -316,7 +301,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
-                    (scaleIn() + fadeIn()) with (scaleOut() + fadeOut())
+                    (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
                 }, label = "") {
                     Text(
                         text = playList[it].artist, fontSize = 12.sp, color = Color.Black,
@@ -361,18 +346,15 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-
-                            // isPlaying is now observed from flow
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                 }
             }
         }
 
-        // Performance Modes Bottom Sheet
         if (showBottomSheet) {
             ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
+                onDismissRequest = { },
                 sheetState = sheetState,
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -383,12 +365,11 @@ class MainActivity : ComponentActivity() {
                     isPlaying = isPlaying,
                     sliderPosition = sliderPosition,
                     onSliderPositionChange = { sliderPosition = it },
-                    onDismiss = { showBottomSheet = false }
+                    onDismiss = { }
                 )
             }
         }
         
-        // Info Dialog showing current audio settings
         if (showInfoDialog) {
             val performanceModeText = when (offload.intValue) {
                 0 -> "None"
@@ -405,7 +386,7 @@ class MainActivity : ComponentActivity() {
             }
             
             AlertDialog(
-                onDismissRequest = { showInfoDialog = false },
+                onDismissRequest = { },
                 title = {
                     Text(
                         text = "Audio Settings Info",
@@ -431,7 +412,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = { showInfoDialog = false }) {
+                    TextButton(onClick = { }) {
                         Text("Close")
                     }
                 },
@@ -465,7 +446,6 @@ class MainActivity : ComponentActivity() {
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
             Text(
                 text = "Performance Modes",
                 fontSize = 20.sp,
@@ -473,8 +453,6 @@ class MainActivity : ComponentActivity() {
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
-            // Radio Group for Performance Modes
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -523,8 +501,6 @@ class MainActivity : ComponentActivity() {
             }
             
             Spacer(modifier = Modifier.height(12.dp))
-            
-            // Status Label
             Text(
                 text = when (offload.intValue) {
                     0 -> "Performance Mode: None"
@@ -537,8 +513,6 @@ class MainActivity : ComponentActivity() {
             )
             
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // MMAP Control
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -620,8 +594,6 @@ class MainActivity : ComponentActivity() {
             }
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Circular X dismiss button
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -661,7 +633,6 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun VinylAlbumCoverAnimation(
-        modifier: Modifier = Modifier,
         isSongPlaying: Boolean = true,
         painter: Painter
     ) {
@@ -672,7 +643,6 @@ class MainActivity : ComponentActivity() {
         val rotation = remember {
             Animatable(currentRotation)
         }
-
         LaunchedEffect(isSongPlaying) {
             if (isSongPlaying) {
                 rotation.animateTo(
