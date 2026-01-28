@@ -109,10 +109,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
 
     fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
 
-    fun getCurrentPosition(): Int = getCurrentPositionNative()
-    fun getDuration(): Int = getDurationNative()
-    fun seekTo(positionFrames: Int) = seekToNative(positionFrames)
-
     /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
@@ -137,9 +133,6 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun isMMapSupportedNative(): Boolean
     private external fun setBufferSizeInFramesNative(bufferSizeInFrames: Int): Int
     private external fun getBufferCapacityInFramesNative(): Int
-    private external fun getCurrentPositionNative(): Int
-    private external fun getDurationNative(): Int
-    private external fun seekToNative(positionFrames: Int)
 
     /**
      * Companion

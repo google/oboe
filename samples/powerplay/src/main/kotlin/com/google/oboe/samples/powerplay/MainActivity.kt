@@ -242,16 +242,6 @@ class MainActivity : ComponentActivity() {
         // Info dialog state
         var showInfoDialog by remember { mutableStateOf(false) }
 
-        // Poll for playback progress
-        LaunchedEffect(isPlaying) {
-            while (isPlaying) {
-                currentPosition = player.getCurrentPosition().toFloat()
-                val dur = player.getDuration()
-                if (dur > 0) duration = dur.toFloat()
-                delay(100)
-            }
-        }
-
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
                 .distinctUntilChanged()
@@ -352,36 +342,6 @@ class MainActivity : ComponentActivity() {
                         VinylAlbumCoverAnimation(isSongPlaying = false, painter = painter)
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Song Progress Slider
-                Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-                    val isOffload = offload.intValue == 3
-                    Slider(
-                        value = currentPosition,
-                        valueRange = 0f..duration,
-                        enabled = !isOffload,
-                        onValueChange = { 
-                            currentPosition = it
-                            player.seekTo(it.toInt())
-                        },
-                        modifier = Modifier.alpha(if (isOffload) 0f else 1f)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            modifier = Modifier.alpha(if (isOffload) 0f else 1f),
-                            text = (currentPosition.toLong() * 1000 / sampleRate).convertToText()
-                        )
-                        Text(
-                            modifier = Modifier.alpha(if (isOffload) 0f else 1f),
-                            text = (duration.toLong() * 1000 / sampleRate).convertToText()
-                        )
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -611,7 +571,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
             
-            // Buffer Size Slider (only in PCM Offload mode) - animated entrance
             AnimatedVisibility(
                 visible = offload.intValue == 3,
                 enter = androidx.compose.animation.expandVertically() + fadeIn(),

@@ -28,7 +28,6 @@
 
 #include <player/OneShotSampleSource.h>
 #include "PowerPlayMultiPlayer.h"
-#include "PowerPlaySampleSource.h"
 
 static const char *TAG = "PowerPlayJNI";
 
@@ -154,7 +153,7 @@ JNIEXPORT void JNICALL Java_com_google_oboe_samples_powerplay_engine_PowerPlayAu
     auto *sampleBuffer = new SampleBuffer();
     sampleBuffer->loadSampleData(&reader);
 
-    const auto source = new PowerPlaySampleSource(sampleBuffer, 0);
+    const auto source = new OneShotSampleSource(sampleBuffer, 0);
     player.addSampleSource(source, sampleBuffer);
 
     delete[] buf;
@@ -288,37 +287,6 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getBufferCapa
     return player.getBufferCapacityInFrames();
 }
 
-/**
- * Native (JNI) implementation of PowerPlayAudioPlayer.getCurrentPositionNative()
- */
-JNIEXPORT jint JNICALL
-Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getCurrentPositionNative(
-        JNIEnv *,
-        jobject) {
-    return player.getCurrentPosition();
-}
-
-/**
- * Native (JNI) implementation of PowerPlayAudioPlayer.getDurationNative()
- */
-JNIEXPORT jint JNICALL
-Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getDurationNative(
-        JNIEnv *,
-        jobject,
-        jint index) {
-    return player.getDuration(index);
-}
-
-/**
- * Native (JNI) implementation of PowerPlayAudioPlayer.seekToNative()
- */
-JNIEXPORT void JNICALL
-Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_seekToNative(
-        JNIEnv *,
-        jobject,
-        jint positionFrames) {
-    player.seekTo(positionFrames);
-}
 
 #ifdef __cplusplus
 }

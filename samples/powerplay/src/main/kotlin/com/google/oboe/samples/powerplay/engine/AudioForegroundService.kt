@@ -82,17 +82,6 @@ class AudioForegroundService : Service() {
         }
     }
 
-    private val playerStateObserver = Observer<PlayerState> { state ->
-        updatePlaybackState()
-        updateNotification()
-
-        if (state == PlayerState.Playing) {
-            startProgressUpdater()
-        } else {
-            stopProgressUpdater()
-        }
-    }
-
     private val songIndexObserver = Observer<Int> { index ->
         loadAlbumArt(index)
     }
@@ -134,8 +123,6 @@ class AudioForegroundService : Service() {
                 isActive = true
             }
 
-            // Observe player state
-            player.getPlayerStateLive().observeForever(playerStateObserver)
             player.getCurrentSongIndexLive().observeForever(songIndexObserver)
 
             val powerManager = getSystemService(POWER_SERVICE) as PowerManager
@@ -176,12 +163,10 @@ class AudioForegroundService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         if (::player.isInitialized) {
-            player.getPlayerStateLive().removeObserver(playerStateObserver)
             player.getCurrentSongIndexLive().removeObserver(songIndexObserver)
             player.stopPlaying(player.currentSongIndex)
             player.teardownAudioStream()
         }
-        stopProgressUpdater()
 
         if (::audioManager.isInitialized) {
             audioManager.abandonAudioFocusRequest(audioFocusRequest)
@@ -206,61 +191,14 @@ class AudioForegroundService : Service() {
         }
     }
 
-    private fun startProgressUpdater() {
-        playbackJob?.cancel()
-        playbackJob = serviceScope.launch {
-            while (isActive) {
-                updatePlaybackState()
-                delay(1000) // Update every second
-            }
-        }
-    }
-
-    private fun stopProgressUpdater() {
-        playbackJob?.cancel()
-        playbackJob = null
-        updatePlaybackState() // Update one last time for final state
-    }
-
-    private fun updatePlaybackState() {
-        if (!::player.isInitialized || !::mediaSession.isInitialized) return
-
-        val state = player.getPlayerStateLive().value
-        val position = player.getCurrentPosition().toLong() // frames
-        val sampleRate = 48000L
-        val positionMs = (position * 1000) / sampleRate
-
-        val playbackStateBuilder = PlaybackState.Builder()
-
-        if (state == PlayerState.Playing) {
-            playbackStateBuilder.setState(PlaybackState.STATE_PLAYING, positionMs, 1.0f)
-        } else {
-            playbackStateBuilder.setState(PlaybackState.STATE_PAUSED, positionMs, 0.0f)
-        }
-
-        playbackStateBuilder.setActions(
-            PlaybackState.ACTION_PLAY or
-                    PlaybackState.ACTION_PAUSE or
-                    PlaybackState.ACTION_STOP or
-                    PlaybackState.ACTION_SEEK_TO
-        )
-
-        mediaSession.setPlaybackState(playbackStateBuilder.build())
-    }
-
     private fun updateMetadata() {
         if (!::player.isInitialized || !::mediaSession.isInitialized) return
-        
-        val sampleRate = 48000L
-        val durationFrames = player.getDuration().toLong()
-        val durationMs = (durationFrames * 1000) / sampleRate
 
         val currentSong = PlayList.getOrNull(player.currentSongIndex)
         val songTitle = currentSong?.name ?: "PowerPlay Audio"
         val songArtist = currentSong?.artist ?: "Playing..."
 
         val metadataBuilder = MediaMetadata.Builder()
-            .putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
             .putString(MediaMetadata.METADATA_KEY_TITLE, songTitle)
             .putString(MediaMetadata.METADATA_KEY_ARTIST, songArtist)
 

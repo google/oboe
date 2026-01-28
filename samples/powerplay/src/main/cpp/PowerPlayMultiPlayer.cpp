@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 #include <android/log.h>
-#include <time.h>
+#include <ctime>
 #include "PowerPlayMultiPlayer.h"
-#include "PowerPlaySampleSource.h"
 
 static const char *TAG = "PowerPlayMultiPlayer";
 
@@ -235,58 +234,4 @@ int32_t PowerPlayMultiPlayer::getBufferCapacityInFrames() {
     }
 
     return mAudioStream->getBufferCapacityInFrames();
-}
-
-int32_t PowerPlayMultiPlayer::getCurrentPosition() {
-    int32_t index = getCurrentlyPlayingIndex();
-    if (index != -1) {
-        auto source = dynamic_cast<PowerPlaySampleSource*>(mSampleSources[index]);
-        if (source) {
-            int64_t sourceFrameIndex = source->getPositionInFrames();
-
-            if (mAudioStream != nullptr) {
-                int64_t framesWritten = mAudioStream->getFramesWritten();
-                int64_t framesPresented = 0;
-                int64_t presentationTimeNs = 0;
-
-                auto result = mAudioStream->getTimestamp(CLOCK_MONOTONIC, &framesPresented, &presentationTimeNs);
-
-                if (result == Result::OK) {
-                     struct timespec now;
-                     clock_gettime(CLOCK_MONOTONIC, &now);
-                     int64_t nowNs = (now.tv_sec * 1000000000LL) + now.tv_nsec;
-
-                     int64_t deltaNs = nowNs - presentationTimeNs;
-                     if (deltaNs < 0) deltaNs = 0;
-
-                     int64_t deltaFrames = (deltaNs * mAudioStream->getSampleRate()) / 1000000000LL;
-                     int64_t currentFramesPresented = framesPresented + deltaFrames;
-
-                     int64_t latencyFrames = framesWritten - currentFramesPresented;
-                     int64_t playhead = sourceFrameIndex - latencyFrames;
-                     if (playhead < 0) playhead = 0;
-                     return (int32_t)playhead;
-                }
-            }
-            return (int32_t)sourceFrameIndex;
-        }
-    }
-    return 0;
-}
-
-int32_t PowerPlayMultiPlayer::getDuration(int32_t index) {
-    if (index < 0 || index >= mSampleSources.size()) {
-        return 0;
-    }
-    return mSampleSources[index]->getNumFrames();
-}
-
-void PowerPlayMultiPlayer::seekTo(int32_t positionFrames) {
-    int32_t index = getCurrentlyPlayingIndex();
-    if (index != -1) {
-        auto source = dynamic_cast<PowerPlaySampleSource*>(mSampleSources[index]);
-        if (source) {
-            source->setPositionInFrames(positionFrames);
-        }
-    }
 }
