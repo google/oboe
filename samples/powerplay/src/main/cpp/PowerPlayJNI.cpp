@@ -275,6 +275,47 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getBufferCapa
     return player.getBufferCapacityInFrames();
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.setVolumeNative()
+ */
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setVolumeNative(
+        JNIEnv *env,
+        jobject,
+        jfloat volume) {
+    int32_t currentIndex = player.getCurrentlyPlayingIndex();
+    if (currentIndex >= 0) {
+        player.setGain(currentIndex, volume);
+        return;
+    }
+
+    // Set gain for all tracks if nothing is playing.
+    for (int i = 0; i < 3; ++i) {
+        player.setGain(i, volume);
+    }
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.isOffloadedNative()
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isOffloadedNative(
+        JNIEnv *env,
+        jobject) {
+    return player.isOffloaded();
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getCurrentlyPlayingIndexNative()
+ */
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getCurrentlyPlayingIndexNative(
+        JNIEnv *env,
+        jobject) {
+    return player.getCurrentlyPlayingIndex();
+}
+
 #ifdef __cplusplus
 }
 #endif
+

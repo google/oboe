@@ -239,3 +239,11 @@ int32_t PowerPlayMultiPlayer::getBufferCapacityInFrames() {
 
     return mAudioStream->getBufferCapacityInFrames();
 }
+
+bool PowerPlayMultiPlayer::isOffloaded() {
+  if (mAudioStream == nullptr) {
+    return false;
+  }
+
+  return mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded;
+}
