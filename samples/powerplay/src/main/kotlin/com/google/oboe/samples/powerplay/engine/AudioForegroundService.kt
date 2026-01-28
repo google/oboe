@@ -163,7 +163,7 @@ class AudioForegroundService : Service() {
             }
 
             if (!wakeLock.isHeld) {
-                wakeLock.acquire()
+                wakeLock.acquire(10*60*1000L /*10 minutes*/)
             }
         } catch (e: Throwable) {
             Log.e(TAG, "Error in onStartCommand", e)
@@ -182,10 +182,6 @@ class AudioForegroundService : Service() {
             player.teardownAudioStream()
         }
         stopProgressUpdater()
-        // Cancel service scope
-        // serviceScope.cancel() // Actually Job() inside, maybe just cancel the job. 
-        // Or if I used MainScope(), cancel it.
-        // But since it's a Service, canceling scope is good.
 
         if (::audioManager.isInitialized) {
             audioManager.abandonAudioFocusRequest(audioFocusRequest)
@@ -268,6 +264,7 @@ class AudioForegroundService : Service() {
             .putString(MediaMetadata.METADATA_KEY_TITLE, songTitle)
             .putString(MediaMetadata.METADATA_KEY_ARTIST, songArtist)
 
+
         if (currentAlbumArt != null) {
             metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, currentAlbumArt)
         }
@@ -277,7 +274,7 @@ class AudioForegroundService : Service() {
 
     private fun updateNotification() {
          val notification = createNotification()
-         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
          notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
@@ -291,7 +288,6 @@ class AudioForegroundService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Update notification icon based on state
         val isPlaying = if (::player.isInitialized) {
             player.getPlayerStateLive().value == PlayerState.Playing
         } else false
@@ -314,17 +310,12 @@ class AudioForegroundService : Service() {
             builder.setLargeIcon(currentAlbumArt)
         }
 
-        // Add Play/Pause action
         if (isPlaying) {
             val pauseIntent = PendingIntent.getService(
                 this, 1,
                 Intent(this, AudioForegroundService::class.java).apply { action = "PAUSE" },
                 PendingIntent.FLAG_IMMUTABLE
             )
-            // We'd need to handle this intent in onStartCommand if we added buttons here.
-            // For now, relying on MediaSession transport controls is implicit for some Android versions/devices
-            // but strictly speaking for Notification.MediaStyle, we usually add actions.
-            // Since I didn't implement onStartCommand action handling, I'll rely on MediaSession callback.
         }
 
         return builder.build()
