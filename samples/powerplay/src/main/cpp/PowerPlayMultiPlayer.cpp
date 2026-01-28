@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include <android/log.h>
-#include <ctime>
 #include "PowerPlayMultiPlayer.h"
 
 static const char *TAG = "PowerPlayMultiPlayer";

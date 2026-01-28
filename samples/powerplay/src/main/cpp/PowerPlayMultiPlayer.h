@@ -44,15 +44,11 @@ public:
 
     static bool isMMapSupported();
 
-    bool isMMapUsed();
-
     int32_t getCurrentlyPlayingIndex();
 
     int32_t setBufferSizeInFrames(int32_t bufferSizeInFrames);
 
     int32_t getBufferCapacityInFrames();
-
-    int32_t getCurrentPosition();
 
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {

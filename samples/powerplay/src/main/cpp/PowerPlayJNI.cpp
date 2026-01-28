@@ -287,7 +287,6 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getBufferCapa
     return player.getBufferCapacityInFrames();
 }
 
-
 #ifdef __cplusplus
 }
 #endif
