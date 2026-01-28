@@ -50,6 +50,8 @@ public:
 
     int32_t getBufferCapacityInFrames();
 
+    bool isOffloaded();
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:

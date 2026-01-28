@@ -100,7 +100,12 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
+import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
+import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
 import kotlinx.coroutines.flow.distinctUntilChanged
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
 
@@ -108,7 +113,16 @@ class MainActivity : ComponentActivity() {
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
-    private var sampleRate: Int = 48000;
+    private var sampleRate: Int = 48000
+
+    // Automation state
+    private val handler = Handler(Looper.getMainLooper())
+    private var autoStopRunnable: Runnable? = null
+    private var toggleOffloadRunnable: Runnable? = null
+    private var isAutomationMode = false
+    private var currentPerformanceMode: OboePerformanceMode = OboePerformanceMode.None
+    private var pendingAutomationIntent: Intent? = null
+    private var assetsLoaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -140,17 +154,205 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // Process automation intent if provided
+        // Note: Intent processing is deferred until assets are loaded in SongScreen
+        pendingAutomationIntent = intent
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        player.stopPlaying(0)
+        cancelScheduledTasks()
+        player.stopPlaying(player.getCurrentlyPlayingIndex().coerceAtLeast(0))
         player.teardownAudioStream()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // If assets are loaded, process immediately; otherwise defer
+        if (assetsLoaded) {
+            processIntent(intent)
+        } else {
+            pendingAutomationIntent = intent
+        }
     }
 
     private fun setUpPowerPlayAudioPlayer() {
         player = PowerPlayAudioPlayer()
         player.setupAudioStream()
+    }
+
+    /**
+     * Process Intent extras for automation commands.
+     * Supports ADB commands like:
+     * adb shell am start -n com.google.oboe.samples.powerplay/.MainActivity \
+     *     --es command play --es perf_mode offload --ez background true
+     */
+    private fun processIntent(intent: Intent?) {
+        val extras = intent?.extras ?: return
+        if (extras.isEmpty) return
+
+        isAutomationMode = true
+        Log.i(LOG_TAG, "Processing automation intent")
+
+        // Get playlist for song index validation
+        val playList = getPlayList()
+
+        // Parse configuration from Intent
+        val songIndex = IntentBasedTestSupport.getSongIndex(extras, playList.size)
+        val perfMode = IntentBasedTestSupport.getPerformanceMode(extras)
+        val volume = IntentBasedTestSupport.getNormalizedVolume(extras)
+        val command = IntentBasedTestSupport.getCommand(extras)
+        val goBackground = IntentBasedTestSupport.isBackgroundRequested(extras)
+        val durationMs = IntentBasedTestSupport.getDurationMs(extras)
+        val useMMap = IntentBasedTestSupport.getMMapEnabled(extras, player.isMMapEnabled())
+        val bufferFrames = IntentBasedTestSupport.getBufferFrames(extras)
+        val toggleOffload = IntentBasedTestSupport.isToggleOffloadRequested(extras)
+        val toggleIntervalMs = IntentBasedTestSupport.getToggleIntervalMs(extras)
+
+        // Apply MMAP setting (must be done before playing)
+        if (useMMap != player.isMMapEnabled()) {
+            player.setMMapEnabled(useMMap)
+            Log.i(LOG_TAG, "MMAP set to: $useMMap")
+        }
+
+        // Store current performance mode
+        currentPerformanceMode = perfMode
+
+        // Execute command
+        when (command?.lowercase()) {
+            IntentBasedTestSupport.COMMAND_PLAY -> {
+                // Stop any currently playing track first
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                }
+
+                player.startPlaying(songIndex, currentPerformanceMode)
+
+                // Apply volume after starting (sample sources must exist)
+                player.setVolume(volume)
+                Log.i(LOG_TAG, "Volume set to: ${(volume * 100).toInt()}%")
+
+                logStatus(
+                    IntentBasedTestSupport.STATUS_PLAYING,
+                    "SONG" to songIndex,
+                    "OFFLOAD" to player.isOffloaded(),
+                    "MMAP" to player.isMMapEnabled()
+                )
+
+                // Apply buffer size (only effective in offload mode)
+                if (bufferFrames > 0 && currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded) {
+                    val actualFrames = player.setBufferSizeInFrames(bufferFrames)
+                    Log.i(LOG_TAG, "Buffer size set to: $actualFrames frames")
+                }
+
+                // Schedule auto-stop if duration is set
+                if (durationMs > 0) {
+                    scheduleAutoStop(songIndex, durationMs)
+                }
+
+                // Schedule toggle offload stress test if requested
+                if (toggleOffload) {
+                    scheduleToggleOffload(songIndex, toggleIntervalMs)
+                }
+
+                // Move to background if requested
+                if (goBackground) {
+                    moveTaskToBack(true)
+                    Log.i(LOG_TAG, "Moved to background")
+                }
+            }
+
+            IntentBasedTestSupport.COMMAND_PAUSE -> {
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                    logStatus(IntentBasedTestSupport.STATUS_PAUSED)
+                }
+                cancelScheduledTasks()
+            }
+
+            IntentBasedTestSupport.COMMAND_STOP -> {
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                    logStatus(IntentBasedTestSupport.STATUS_STOPPED)
+                }
+                cancelScheduledTasks()
+                if (goBackground) {
+                    finishAndRemoveTask()
+                }
+            }
+
+            else -> {
+                // No command specified, just apply settings
+                Log.i(LOG_TAG, "No command specified, settings applied")
+            }
+        }
+    }
+
+    private fun scheduleAutoStop(songIndex: Int, durationMs: Long) {
+        cancelAutoStop()
+        autoStopRunnable = Runnable {
+            player.stopPlaying(songIndex)
+            logStatus(IntentBasedTestSupport.STATUS_STOPPED, "REASON" to "AUTO_STOP")
+            cancelScheduledTasks()
+        }
+        handler.postDelayed(autoStopRunnable!!, durationMs)
+        Log.i(LOG_TAG, "Auto-stop scheduled in ${durationMs}ms")
+    }
+
+    private fun scheduleToggleOffload(songIndex: Int, intervalMs: Long) {
+        cancelToggleOffload()
+        var useOffload = currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded
+
+        toggleOffloadRunnable = object : Runnable {
+            override fun run() {
+                useOffload = !useOffload
+                val newMode = if (useOffload) {
+                    OboePerformanceMode.PowerSavingOffloaded
+                } else {
+                    OboePerformanceMode.PowerSaving
+                }
+
+                // Stop and restart with new mode
+                player.stopPlaying(songIndex)
+                player.startPlaying(songIndex, newMode)
+
+                logStatus(
+                    IntentBasedTestSupport.STATUS_PLAYING,
+                    "TOGGLE" to "OFFLOAD",
+                    "OFFLOAD" to player.isOffloaded()
+                )
+
+                // Schedule next toggle
+                handler.postDelayed(this, intervalMs)
+            }
+        }
+        handler.postDelayed(toggleOffloadRunnable!!, intervalMs)
+        Log.i(LOG_TAG, "Toggle offload stress test started (interval: ${intervalMs}ms)")
+    }
+
+    private fun cancelAutoStop() {
+        autoStopRunnable?.let { handler.removeCallbacks(it) }
+        autoStopRunnable = null
+    }
+
+    private fun cancelToggleOffload() {
+        toggleOffloadRunnable?.let { handler.removeCallbacks(it) }
+        toggleOffloadRunnable = null
+    }
+
+    private fun cancelScheduledTasks() {
+        cancelAutoStop()
+        cancelToggleOffload()
+    }
+
+    private fun logStatus(status: String, vararg extras: Pair<String, Any>) {
+        val message = IntentBasedTestSupport.formatStatusLog(status, *extras)
+        Log.i(LOG_TAG, message)
     }
 
     /***
@@ -194,6 +396,12 @@ class MainActivity : ComponentActivity() {
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
+            }
+            // Assets are now loaded, process any pending automation intent
+            assetsLoaded = true
+            pendingAutomationIntent?.let {
+                processIntent(it)
+                pendingAutomationIntent = null
             }
         }
 

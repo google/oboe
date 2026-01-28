@@ -94,6 +94,27 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
 
     /**
+     * Sets the playback volume (gain) for the audio stream.
+     *
+     * @param volume Volume level from 0.0 (mute) to 1.0 (full volume)
+     */
+    fun setVolume(volume: Float) = setVolumeNative(volume)
+
+    /**
+     * Checks if the current audio stream is using PCM Offload.
+     *
+     * @return true if offload is active, false otherwise
+     */
+    fun isOffloaded(): Boolean = isOffloadedNative()
+
+    /**
+     * Gets the index of the currently playing track.
+     *
+     * @return Track index (0-based) or -1 if nothing is playing
+     */
+    fun getCurrentlyPlayingIndex(): Int = getCurrentlyPlayingIndexNative()
+
+    /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
      */
@@ -116,6 +137,9 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun isMMapSupportedNative(): Boolean
     private external fun setBufferSizeInFramesNative(bufferSizeInFrames: Int): Int
     private external fun getBufferCapacityInFramesNative(): Int
+    private external fun setVolumeNative(volume: Float)
+    private external fun isOffloadedNative(): Boolean
+    private external fun getCurrentlyPlayingIndexNative(): Int
 
     /**
      * Companion
