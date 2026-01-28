@@ -28,6 +28,7 @@ import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -54,7 +55,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
@@ -62,12 +67,25 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -189,7 +207,7 @@ class MainActivity : ComponentActivity() {
     /***
      * Brings together all UI elements for the player
      */
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     @Preview
     @Composable
     fun SongScreen() {
@@ -213,6 +231,10 @@ class MainActivity : ComponentActivity() {
         var sliderPosition by remember { mutableFloatStateOf(0f) }
         var currentPosition by remember { mutableFloatStateOf(0f) }
         var duration by remember { mutableFloatStateOf(1f) }
+        
+        // Bottom sheet state
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         // Poll for playback progress
         LaunchedEffect(isPlaying) {
@@ -248,13 +270,28 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-
-
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
             contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
+
+            // Settings icon at bottom of screen
+            IconButton(
+                onClick = { showBottomSheet = true },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Performance Settings",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
@@ -325,137 +362,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    "Performance Modes"
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column {
-                    val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
-                    if (isOffloadSupported) radioOptions.add("PCM Offload")
-
-                    val (selectedOption, onOptionSelected) = remember {
-                        mutableStateOf(radioOptions[offload.intValue])
-                    }
-                    val enabled = !isPlaying
-                    radioOptions.forEachIndexed { index, text ->
-                        Row(
-                            Modifier
-                                .height(32.dp)
-                                .selectable(
-                                    selected = (text == selectedOption),
-                                    enabled = enabled,
-                                    onClick = {
-                                        if (enabled) {
-                                            onOptionSelected(text)
-                                            player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
-                                            offload.intValue = index
-                                        }
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (text == selectedOption),
-                                onClick = null,
-                                enabled = enabled
-                            )
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    when (offload.intValue) {
-                        0 -> "Performance Mode: None"
-                        1 -> "Performance Mode: Low Latency"
-                        2 -> "Performance Mode: Power Saving"
-                        else -> "Performance Mode: PCM Offload"
-                    }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
-                        .padding(vertical = 4.dp)
-                ) {
-                    if (isMMapSupported) {
-                        Checkbox(
-                            checked = !isMMapEnabled.value,
-                            onCheckedChange = {
-                                if (!isPlaying) {
-                                    isMMapEnabled.value = !it
-                                    player.setMMapEnabled(isMMapEnabled.value)
-                                }
-                            },
-                            enabled = !isPlaying
-                        )
-                        Text(
-                            text = "Disable MMAP",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-
-                    }
-                    Text(
-                        text = when (isMMapEnabled.value) {
-                            true -> "| Current Mode: MMAP"
-                            false -> "| Current Mode: Classic"
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-                if (offload.intValue == 3) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
-                            .padding(top = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val requestedFrames = remember { mutableIntStateOf(0) }
-                        val actualFrames = remember { mutableIntStateOf(0) }
-
-                        Slider(
-                            value = sliderPosition,
-                            onValueChange = { newValue ->
-                                sliderPosition = newValue
-                                requestedFrames.intValue = sliderPosition.toInt()
-                            },
-                            onValueChangeFinished = {
-                                requestedFrames.intValue = sliderPosition.toInt()
-                                actualFrames.value = player.setBufferSizeInFrames(requestedFrames.intValue)
-                            },
-                            valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
-                        )
-
-                        val actualSeconds = actualFrames.value.toDouble() / sampleRate
-                        val formattedSeconds = "%.3f".format(actualSeconds)
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = "Actual: ${actualFrames.value} Frames ($formattedSeconds seconds)",
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
@@ -479,6 +385,224 @@ class MainActivity : ComponentActivity() {
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                 }
+            }
+        }
+
+        // Performance Modes Bottom Sheet
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                containerColor = Color.White,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            ) {
+                PerformanceBottomSheetContent(
+                    offload = offload,
+                    isMMapEnabled = isMMapEnabled,
+                    isPlaying = isPlaying,
+                    sliderPosition = sliderPosition,
+                    onSliderPositionChange = { sliderPosition = it },
+                    onDismiss = { showBottomSheet = false }
+                )
+            }
+        }
+    }
+
+    /**
+     * Bottom sheet content for Performance Modes settings
+     */
+    @Composable
+    fun PerformanceBottomSheetContent(
+        offload: androidx.compose.runtime.MutableIntState,
+        isMMapEnabled: androidx.compose.runtime.MutableState<Boolean>,
+        isPlaying: Boolean,
+        sliderPosition: Float,
+        onSliderPositionChange: (Float) -> Unit,
+        onDismiss: () -> Unit
+    ) {
+        var localSliderPosition by remember { mutableFloatStateOf(sliderPosition) }
+        val requestedFrames = remember { mutableIntStateOf(0) }
+        val actualFrames = remember { mutableIntStateOf(0) }
+        
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header
+            Text(
+                text = "Performance Modes",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Radio Group for Performance Modes
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
+                if (isOffloadSupported) radioOptions.add("PCM Offload")
+
+                val (selectedOption, onOptionSelected) = remember {
+                    mutableStateOf(radioOptions[offload.intValue])
+                }
+                val enabled = !isPlaying
+                radioOptions.forEachIndexed { index, text ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .selectable(
+                                selected = (text == selectedOption),
+                                enabled = enabled,
+                                onClick = {
+                                    if (enabled) {
+                                        onOptionSelected(text)
+                                        player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
+                                        offload.intValue = index
+                                    }
+                                },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (text == selectedOption),
+                            onClick = null,
+                            enabled = enabled,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Status Label
+            Text(
+                text = when (offload.intValue) {
+                    0 -> "Performance Mode: None"
+                    1 -> "Performance Mode: Low Latency"
+                    2 -> "Performance Mode: Power Saving"
+                    else -> "Performance Mode: PCM Offload"
+                },
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // MMAP Control
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (isMMapSupported) {
+                    Checkbox(
+                        checked = !isMMapEnabled.value,
+                        onCheckedChange = {
+                            if (!isPlaying) {
+                                isMMapEnabled.value = !it
+                                player.setMMapEnabled(isMMapEnabled.value)
+                            }
+                        },
+                        enabled = !isPlaying
+                    )
+                    Text(
+                        text = "Disable MMAP",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                Text(
+                    text = when (isMMapEnabled.value) {
+                        true -> "| Current Mode: MMAP"
+                        false -> "| Current Mode: Classic"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            
+            // Buffer Size Slider (only in PCM Offload mode) - animated entrance
+            AnimatedVisibility(
+                visible = offload.intValue == 3,
+                enter = androidx.compose.animation.expandVertically() + fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Slider(
+                        value = localSliderPosition,
+                        onValueChange = { newValue ->
+                            localSliderPosition = newValue
+                            requestedFrames.intValue = localSliderPosition.toInt()
+                            onSliderPositionChange(newValue)
+                        },
+                        onValueChangeFinished = {
+                            requestedFrames.intValue = localSliderPosition.toInt()
+                            actualFrames.intValue = player.setBufferSizeInFrames(requestedFrames.intValue)
+                        },
+                        valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    val actualSeconds = actualFrames.intValue.toDouble() / sampleRate
+                    val formattedSeconds = "%.3f".format(actualSeconds)
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Actual: ${actualFrames.intValue} Frames ($formattedSeconds seconds)",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Circular X dismiss button
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF0F0F0))
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.DarkGray,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
