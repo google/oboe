@@ -36,13 +36,13 @@ public:
 
     void triggerDown(int32_t index, oboe::PerformanceMode performanceMode) override;
 
+    void updatePerformanceMode(oboe::PerformanceMode performanceMode);
+
     static bool setMMapEnabled(bool enabled);
 
     static bool isMMapEnabled();
 
     static bool isMMapSupported();
-
-    bool isMMapUsed();
 
     int32_t getCurrentlyPlayingIndex();
 

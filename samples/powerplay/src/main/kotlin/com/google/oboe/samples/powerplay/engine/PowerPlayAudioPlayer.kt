@@ -26,6 +26,13 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private var _playerState = MutableStateFlow<PlayerState>(PlayerState.NoResultYet)
     fun getPlayerStateLive() = _playerState.asLiveData()
 
+    private var _currentSongIndex = MutableStateFlow(0)
+    fun getCurrentSongIndexLive() = _currentSongIndex.asLiveData()
+    val currentSongIndex: Int get() = _currentSongIndex.value
+
+    private var _currentPerformanceMode = OboePerformanceMode.None
+    val currentPerformanceMode: OboePerformanceMode get() = _currentPerformanceMode
+
     /**
      * Native passthrough functions
      */
@@ -35,13 +42,22 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     }
 
     fun startPlaying(index: Int, mode: OboePerformanceMode?) {
-        startPlayingNative(index, mode ?: OboePerformanceMode.None)
+        val actualMode = mode ?: _currentPerformanceMode
+        _currentPerformanceMode = actualMode
+        _currentSongIndex.update { index }
+
+        startPlayingNative(index, actualMode)
         _playerState.update { PlayerState.Playing }
     }
 
     fun stopPlaying(index: Int) {
         stopPlayingNative(index)
         _playerState.update { PlayerState.Stopped }
+    }
+
+    fun updatePerformanceMode(mode: OboePerformanceMode) {
+        _currentPerformanceMode = mode
+        updatePerformanceModeNative(mode)
     }
 
     fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
@@ -111,6 +127,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun setLoopingNative(index: Int, looping: Boolean)
     private external fun startPlayingNative(index: Int, mode: OboePerformanceMode)
     private external fun stopPlayingNative(index: Int)
+    private external fun updatePerformanceModeNative(mode: OboePerformanceMode)
     private external fun setMMapEnabledNative(enabled: Boolean): Boolean
     private external fun isMMapEnabledNative(): Boolean
     private external fun isMMapSupportedNative(): Boolean

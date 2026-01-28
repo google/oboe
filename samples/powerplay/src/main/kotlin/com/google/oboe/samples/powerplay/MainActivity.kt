@@ -16,14 +16,19 @@
 
 package com.google.oboe.samples.powerplay
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -35,6 +40,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -50,22 +56,44 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +102,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
@@ -100,6 +129,7 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : ComponentActivity() {
@@ -108,7 +138,21 @@ class MainActivity : ComponentActivity() {
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
-    private var sampleRate: Int = 48000;
+    private var sampleRate: Int = 48000
+    private var isBound = mutableStateOf(false)
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as AudioForegroundService.LocalBinder
+            player = binder.getService().player
+            isMMapSupported = player.isMMapSupported()
+            isBound.value = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound.value = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,7 +172,6 @@ class MainActivity : ComponentActivity() {
 
         serviceIntent = Intent(this, AudioForegroundService::class.java)
         isOffloadSupported = AudioManager.isOffloadedPlaybackSupported(format, attributes)
-        isMMapSupported = player.isMMapSupported()
 
         setContent {
             MusicPlayerTheme {
@@ -136,7 +179,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SongScreen()
+                    if (isBound.value) {
+                        SongScreen()
+                    } else {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             }
         }
@@ -144,44 +193,52 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        player.stopPlaying(0)
-        player.teardownAudioStream()
+        if (isBound.value) {
+            unbindService(connection)
+            isBound.value = false
+        }
     }
 
     private fun setUpPowerPlayAudioPlayer() {
-        player = PowerPlayAudioPlayer()
-        player.setupAudioStream()
+        val intent = Intent(this, AudioForegroundService::class.java)
+        startForegroundService(intent) // Starts the service
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
     /***
      * Brings together all UI elements for the player
      */
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     @Preview
     @Composable
     fun SongScreen() {
-        val playList = getPlayList()
-        val pagerState = rememberPagerState(pageCount = { playList.count() })
+        val playList = PlayList
+        val initialPage = remember { player.currentSongIndex }
+        val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
         val playingSongIndex = remember {
-            mutableIntStateOf(0)
+            mutableIntStateOf(initialPage)
         }
         val offload = remember {
-            mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
+            mutableIntStateOf(player.currentPerformanceMode.ordinal)
         }
 
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
-        val isPlaying = remember {
-            mutableStateOf(false)
-        }
+        val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
+        val isPlaying = playerStateWrapper.value == PlayerState.Playing
         var sliderPosition by remember { mutableFloatStateOf(0f) }
 
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        
+        var showInfoDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
                 .distinctUntilChanged()
                 .collect { page ->
                     playingSongIndex.intValue = pagerState.currentPage
-                    if (isPlaying.value) {
+                    // Check the latest value of playerState state object
+                    if (playerStateWrapper.value == PlayerState.Playing) {
                         player.startPlaying(
                             playingSongIndex.intValue,
                             OboePerformanceMode.fromInt(offload.intValue)
@@ -197,13 +254,40 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-
-
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
             contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
+            IconButton(
+                onClick = { showBottomSheet = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Performance Settings",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            
+            IconButton(
+                onClick = { showInfoDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Audio Info",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
@@ -217,7 +301,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
-                    (scaleIn() + fadeIn()) with (scaleOut() + fadeOut())
+                    (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
                 }, label = "") {
                     Text(
                         text = playList[it].artist, fontSize = 12.sp, color = Color.Black,
@@ -238,139 +322,9 @@ class MainActivity : ComponentActivity() {
                 ) { page ->
                     val painter = painterResource(id = playList[page].cover)
                     if (page == pagerState.currentPage) {
-                        VinylAlbumCoverAnimation(isSongPlaying = isPlaying.value, painter = painter)
+                        VinylAlbumCoverAnimation(isSongPlaying = isPlaying, painter = painter)
                     } else {
                         VinylAlbumCoverAnimation(isSongPlaying = false, painter = painter)
-                    }
-                }
-                Spacer(modifier = Modifier.height(54.dp))
-                Text(
-                    "Performance Modes"
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column {
-                    val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
-                    if (isOffloadSupported) radioOptions.add("PCM Offload")
-
-                    val (selectedOption, onOptionSelected) = remember {
-                        mutableStateOf(radioOptions[0])
-                    }
-                    val enabled = !isPlaying.value
-                    radioOptions.forEachIndexed { index, text ->
-                        Row(
-                            Modifier
-                                .height(32.dp)
-                                .selectable(
-                                    selected = (text == selectedOption),
-                                    enabled = enabled,
-                                    onClick = {
-                                        if (enabled) {
-                                            onOptionSelected(text)
-                                            offload.intValue = index
-                                        }
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (text == selectedOption),
-                                onClick = null,
-                                enabled = enabled
-                            )
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    when (offload.intValue) {
-                        0 -> "Performance Mode: None"
-                        1 -> "Performance Mode: Low Latency"
-                        2 -> "Performance Mode: Power Saving"
-                        else -> "Performance Mode: PCM Offload"
-                    }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
-                        .padding(vertical = 4.dp)
-                ) {
-                    if (isMMapSupported) {
-                        Checkbox(
-                            checked = !isMMapEnabled.value,
-                            onCheckedChange = {
-                                if (!isPlaying.value) {
-                                    isMMapEnabled.value = !it
-                                    player.setMMapEnabled(isMMapEnabled.value)
-                                }
-                            },
-                            enabled = !isPlaying.value
-                        )
-                        Text(
-                            text = "Disable MMAP",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-
-                    }
-                    Text(
-                        text = when (isMMapEnabled.value) {
-                            true -> "| Current Mode: MMAP"
-                            false -> "| Current Mode: Classic"
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-                if (offload.intValue == 3) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
-                            .padding(top = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val requestedFrames = remember { mutableIntStateOf(0) }
-                        val actualFrames = remember { mutableIntStateOf(0) }
-
-                        Slider(
-                            value = sliderPosition,
-                            onValueChange = { newValue ->
-                                sliderPosition = newValue
-                                requestedFrames.intValue = sliderPosition.toInt()
-                            },
-                            onValueChangeFinished = {
-                                requestedFrames.intValue = sliderPosition.toInt()
-                                actualFrames.value = player.setBufferSizeInFrames(requestedFrames.intValue)
-                            },
-                            valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
-                        )
-
-                        val actualSeconds = actualFrames.value.toDouble() / sampleRate
-                        val formattedSeconds = "%.3f".format(actualSeconds)
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = "Actual: ${actualFrames.value} Frames ($formattedSeconds seconds)",
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -380,10 +334,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Spacer(modifier = Modifier.width(20.dp))
                     ControlButton(
-                        icon = if (isPlaying.value) R.drawable.ic_pause else R.drawable.ic_play,
+                        icon = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
                         size = 100.dp,
                         onClick = {
-                            when (isPlaying.value) {
+                            when (isPlaying) {
                                 true -> player.stopPlaying(playingSongIndex.intValue)
                                 false -> {
                                     player.startPlaying(
@@ -392,12 +346,268 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-
-                            isPlaying.value =
-                                player.getPlayerStateLive().value == PlayerState.Playing
                         })
                     Spacer(modifier = Modifier.width(20.dp))
                 }
+            }
+        }
+
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { },
+                sheetState = sheetState,
+                containerColor = Color.White,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            ) {
+                PerformanceBottomSheetContent(
+                    offload = offload,
+                    isMMapEnabled = isMMapEnabled,
+                    isPlaying = isPlaying,
+                    sliderPosition = sliderPosition,
+                    onSliderPositionChange = { sliderPosition = it },
+                    onDismiss = { }
+                )
+            }
+        }
+        
+        if (showInfoDialog) {
+            val performanceModeText = when (offload.intValue) {
+                0 -> "None"
+                1 -> "Low Latency"
+                2 -> "Power Saving"
+                else -> "PCM Offload"
+            }
+            val mmapModeText = if (isMMapEnabled.value) "MMAP" else "Classic"
+            val bufferInfo = if (offload.intValue == 3) {
+                val bufferSeconds = sliderPosition.toDouble() / sampleRate
+                "%.3f seconds".format(bufferSeconds)
+            } else {
+                "N/A (not in PCM Offload mode)"
+            }
+            
+            AlertDialog(
+                onDismissRequest = { },
+                title = {
+                    Text(
+                        text = "Audio Settings Info",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row {
+                            Text("Performance Mode: ", fontWeight = FontWeight.Medium)
+                            Text(performanceModeText)
+                        }
+                        Row {
+                            Text("Audio Mode: ", fontWeight = FontWeight.Medium)
+                            Text(mmapModeText)
+                        }
+                        Row {
+                            Text("Buffer Size: ", fontWeight = FontWeight.Medium)
+                            Text(bufferInfo)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { }) {
+                        Text("Close")
+                    }
+                },
+                containerColor = Color.White,
+                titleContentColor = Color.Black,
+                textContentColor = Color.Black
+            )
+        }
+    }
+
+    /**
+     * Bottom sheet content for Performance Modes settings
+     */
+    @Composable
+    fun PerformanceBottomSheetContent(
+        offload: androidx.compose.runtime.MutableIntState,
+        isMMapEnabled: androidx.compose.runtime.MutableState<Boolean>,
+        isPlaying: Boolean,
+        sliderPosition: Float,
+        onSliderPositionChange: (Float) -> Unit,
+        onDismiss: () -> Unit
+    ) {
+        var localSliderPosition by remember { mutableFloatStateOf(sliderPosition) }
+        val requestedFrames = remember { mutableIntStateOf(0) }
+        val actualFrames = remember { mutableIntStateOf(0) }
+        
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Performance Modes",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
+                if (isOffloadSupported) radioOptions.add("PCM Offload")
+
+                val (selectedOption, onOptionSelected) = remember {
+                    mutableStateOf(radioOptions[offload.intValue])
+                }
+                val enabled = !isPlaying
+                radioOptions.forEachIndexed { index, text ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .selectable(
+                                selected = (text == selectedOption),
+                                enabled = enabled,
+                                onClick = {
+                                    if (enabled) {
+                                        onOptionSelected(text)
+                                        player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
+                                        offload.intValue = index
+                                    }
+                                },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (text == selectedOption),
+                            onClick = null,
+                            enabled = enabled,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = when (offload.intValue) {
+                    0 -> "Performance Mode: None"
+                    1 -> "Performance Mode: Low Latency"
+                    2 -> "Performance Mode: Power Saving"
+                    else -> "Performance Mode: PCM Offload"
+                },
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (isMMapSupported) {
+                    Checkbox(
+                        checked = !isMMapEnabled.value,
+                        onCheckedChange = {
+                            if (!isPlaying) {
+                                isMMapEnabled.value = !it
+                                player.setMMapEnabled(isMMapEnabled.value)
+                            }
+                        },
+                        enabled = !isPlaying
+                    )
+                    Text(
+                        text = "Disable MMAP",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                Text(
+                    text = when (isMMapEnabled.value) {
+                        true -> "| Current Mode: MMAP"
+                        false -> "| Current Mode: Classic"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            
+            AnimatedVisibility(
+                visible = offload.intValue == 3,
+                enter = androidx.compose.animation.expandVertically() + fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Slider(
+                        value = localSliderPosition,
+                        onValueChange = { newValue ->
+                            localSliderPosition = newValue
+                            requestedFrames.intValue = localSliderPosition.toInt()
+                            onSliderPositionChange(newValue)
+                        },
+                        onValueChangeFinished = {
+                            requestedFrames.intValue = localSliderPosition.toInt()
+                            actualFrames.intValue = player.setBufferSizeInFrames(requestedFrames.intValue)
+                        },
+                        valueRange = 0f..player.getBufferCapacityInFrames().toFloat(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    val actualSeconds = actualFrames.intValue.toDouble() / sampleRate
+                    val formattedSeconds = "%.3f".format(actualSeconds)
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Requested: ${requestedFrames.intValue} Frames (BufferSize)",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Actual: ${actualFrames.intValue} Frames ($formattedSeconds seconds)",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF0F0F0))
+                    .clickable { onDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.DarkGray,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
@@ -423,7 +633,6 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun VinylAlbumCoverAnimation(
-        modifier: Modifier = Modifier,
         isSongPlaying: Boolean = true,
         painter: Painter
     ) {
@@ -434,7 +643,6 @@ class MainActivity : ComponentActivity() {
         val rotation = remember {
             Animatable(currentRotation)
         }
-
         LaunchedEffect(isSongPlaying) {
             if (isSongPlaying) {
                 rotation.animateTo(
@@ -562,40 +770,4 @@ class MainActivity : ComponentActivity() {
         return "$minutesString:$secondsString"
     }
 
-
-    /***
-     * Return a play list of type Music data class
-     */
-    private fun getPlayList(): List<Music> {
-        return listOf(
-            Music(
-                name = "Chemical Reaction",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_1,
-                fileName = "song1.wav",
-            ),
-            Music(
-                name = "Digital Noca",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_2,
-                fileName = "song2.wav",
-            ),
-            Music(
-                name = "Window Seat",
-                artist = "Momo Oboe",
-                cover = R.drawable.album_art_3,
-                fileName = "song3.wav",
-            ),
-        )
-    }
-
-    /***
-     * Data class to represent a music in the list
-     */
-    data class Music(
-        val name: String,
-        val artist: String,
-        val fileName: String,
-        val cover: Int,
-    )
 }

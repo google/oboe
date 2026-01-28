@@ -47,6 +47,6 @@ enum class OboePerformanceMode(val value: Int) {
     PowerSavingOffloaded(3); // AAUDIO_PERFORMANCE_MODE_POWER_SAVING_OFFLOADED
 
     companion object {
-        fun fromInt(value: Int) = entries.firstOrNull { it.value == value }
+        fun fromInt(value: Int) = entries.first { it.value == value }
     }
 }
