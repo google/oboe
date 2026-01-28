@@ -80,6 +80,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
@@ -193,18 +194,21 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SongScreen() {
         val playList = PlayList
-        val pagerState = rememberPagerState(pageCount = { playList.count() })
+        // Initialize state from player to ensure sync with Service
+        val initialPage = remember { player.currentSongIndex }
+        val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
         val playingSongIndex = remember {
-            mutableIntStateOf(0)
+            mutableIntStateOf(initialPage)
         }
         val offload = remember {
-            mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
+            mutableIntStateOf(player.currentPerformanceMode.ordinal)
         }
 
         val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
         
-        val playerState by player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
-        val isPlaying = playerState == PlayerState.Playing
+        // Use State object directly to avoid stale closure capture
+        val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
+        val isPlaying = playerStateWrapper.value == PlayerState.Playing
         
         var sliderPosition by remember { mutableFloatStateOf(0f) }
         var currentPosition by remember { mutableFloatStateOf(0f) }
@@ -225,7 +229,8 @@ class MainActivity : ComponentActivity() {
                 .distinctUntilChanged()
                 .collect { page ->
                     playingSongIndex.intValue = pagerState.currentPage
-                    if (isPlaying) {
+                    // Check the latest value of playerState state object
+                    if (playerStateWrapper.value == PlayerState.Playing) {
                         player.startPlaying(
                             playingSongIndex.intValue,
                             OboePerformanceMode.fromInt(offload.intValue)
@@ -235,6 +240,8 @@ class MainActivity : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
+            // Check if assets are already loaded to avoid resetting if service is running
+            // Since we can't easily check, we reload. But we loop looping.
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
@@ -291,20 +298,29 @@ class MainActivity : ComponentActivity() {
                 
                 // Song Progress Slider
                 Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                    val isOffload = offload.intValue == 3
                     Slider(
                         value = currentPosition,
                         valueRange = 0f..duration,
+                        enabled = !isOffload,
                         onValueChange = { 
                             currentPosition = it
                             player.seekTo(it.toInt())
-                        }
+                        },
+                        modifier = Modifier.alpha(if (isOffload) 0f else 1f)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = (currentPosition.toLong() * 1000 / sampleRate).convertToText())
-                        Text(text = (duration.toLong() * 1000 / sampleRate).convertToText())
+                        Text(
+                            modifier = Modifier.alpha(if (isOffload) 0f else 1f),
+                            text = (currentPosition.toLong() * 1000 / sampleRate).convertToText()
+                        )
+                        Text(
+                            modifier = Modifier.alpha(if (isOffload) 0f else 1f),
+                            text = (duration.toLong() * 1000 / sampleRate).convertToText()
+                        )
                     }
                 }
 
@@ -319,7 +335,7 @@ class MainActivity : ComponentActivity() {
                     if (isOffloadSupported) radioOptions.add("PCM Offload")
 
                     val (selectedOption, onOptionSelected) = remember {
-                        mutableStateOf(radioOptions[0])
+                        mutableStateOf(radioOptions[offload.intValue])
                     }
                     val enabled = !isPlaying
                     radioOptions.forEachIndexed { index, text ->
