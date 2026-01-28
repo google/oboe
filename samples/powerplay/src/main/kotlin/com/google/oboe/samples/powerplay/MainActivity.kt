@@ -79,10 +79,13 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -235,6 +238,9 @@ class MainActivity : ComponentActivity() {
         // Bottom sheet state
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        
+        // Info dialog state
+        var showInfoDialog by remember { mutableStateOf(false) }
 
         // Poll for playback progress
         LaunchedEffect(isPlaying) {
@@ -278,16 +284,31 @@ class MainActivity : ComponentActivity() {
         ) {
             val configuration = LocalConfiguration.current
 
-            // Settings icon at bottom of screen
+            // Settings icon at bottom-right
             IconButton(
                 onClick = { showBottomSheet = true },
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 32.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(32.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Performance Settings",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            
+            // Info icon at bottom-left
+            IconButton(
+                onClick = { showInfoDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Audio Info",
                     tint = Color.Black,
                     modifier = Modifier.size(32.dp)
                 )
@@ -405,6 +426,59 @@ class MainActivity : ComponentActivity() {
                     onDismiss = { showBottomSheet = false }
                 )
             }
+        }
+        
+        // Info Dialog showing current audio settings
+        if (showInfoDialog) {
+            val performanceModeText = when (offload.intValue) {
+                0 -> "None"
+                1 -> "Low Latency"
+                2 -> "Power Saving"
+                else -> "PCM Offload"
+            }
+            val mmapModeText = if (isMMapEnabled.value) "MMAP" else "Classic"
+            val bufferInfo = if (offload.intValue == 3) {
+                val bufferSeconds = sliderPosition.toDouble() / sampleRate
+                "%.3f seconds".format(bufferSeconds)
+            } else {
+                "N/A (not in PCM Offload mode)"
+            }
+            
+            AlertDialog(
+                onDismissRequest = { showInfoDialog = false },
+                title = {
+                    Text(
+                        text = "Audio Settings Info",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row {
+                            Text("Performance Mode: ", fontWeight = FontWeight.Medium)
+                            Text(performanceModeText)
+                        }
+                        Row {
+                            Text("Audio Mode: ", fontWeight = FontWeight.Medium)
+                            Text(mmapModeText)
+                        }
+                        Row {
+                            Text("Buffer Size: ", fontWeight = FontWeight.Medium)
+                            Text(bufferInfo)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showInfoDialog = false }) {
+                        Text("Close")
+                    }
+                },
+                containerColor = Color.White,
+                titleContentColor = Color.Black,
+                textContentColor = Color.Black
+            )
         }
     }
 
