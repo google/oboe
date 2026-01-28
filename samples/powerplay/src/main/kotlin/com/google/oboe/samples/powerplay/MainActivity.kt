@@ -124,6 +124,13 @@ class MainActivity : ComponentActivity() {
     private var pendingAutomationIntent: Intent? = null
     private var assetsLoaded = false
 
+    // Shared UI state (updated by automation, observed by Compose)
+    private val isPlayingState = mutableStateOf(false)
+    private val songIndexState = mutableIntStateOf(0)
+    private val performanceModeState = mutableIntStateOf(0)
+    private val volumeState = mutableFloatStateOf(1.0f)
+    private val isMMapEnabledState = mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpPowerPlayAudioPlayer()
@@ -181,6 +188,8 @@ class MainActivity : ComponentActivity() {
     private fun setUpPowerPlayAudioPlayer() {
         player = PowerPlayAudioPlayer()
         player.setupAudioStream()
+        // Initialize shared UI state from player
+        isMMapEnabledState.value = player.isMMapEnabled()
     }
 
     /**
@@ -214,6 +223,7 @@ class MainActivity : ComponentActivity() {
         // Apply MMAP setting (must be done before playing)
         if (useMMap != player.isMMapEnabled()) {
             player.setMMapEnabled(useMMap)
+            isMMapEnabledState.value = useMMap
             Log.i(LOG_TAG, "MMAP set to: $useMMap")
         }
 
@@ -234,6 +244,12 @@ class MainActivity : ComponentActivity() {
                 // Apply volume after starting (sample sources must exist)
                 player.setVolume(volume)
                 Log.i(LOG_TAG, "Volume set to: ${(volume * 100).toInt()}%")
+
+                // Update shared UI state
+                isPlayingState.value = true
+                songIndexState.intValue = songIndex
+                performanceModeState.intValue = perfMode.value
+                volumeState.floatValue = volume
 
                 logStatus(
                     IntentBasedTestSupport.STATUS_PLAYING,
@@ -269,6 +285,7 @@ class MainActivity : ComponentActivity() {
                 val currentIndex = player.getCurrentlyPlayingIndex()
                 if (currentIndex >= 0) {
                     player.stopPlaying(currentIndex)
+                    isPlayingState.value = false
                     logStatus(IntentBasedTestSupport.STATUS_PAUSED)
                 }
                 cancelScheduledTasks()
@@ -278,6 +295,7 @@ class MainActivity : ComponentActivity() {
                 val currentIndex = player.getCurrentlyPlayingIndex()
                 if (currentIndex >= 0) {
                     player.stopPlaying(currentIndex)
+                    isPlayingState.value = false
                     logStatus(IntentBasedTestSupport.STATUS_STOPPED)
                 }
                 cancelScheduledTasks()
@@ -297,6 +315,7 @@ class MainActivity : ComponentActivity() {
         cancelAutoStop()
         autoStopRunnable = Runnable {
             player.stopPlaying(songIndex)
+            isPlayingState.value = false
             logStatus(IntentBasedTestSupport.STATUS_STOPPED, "REASON" to "AUTO_STOP")
             cancelScheduledTasks()
         }
@@ -320,6 +339,9 @@ class MainActivity : ComponentActivity() {
                 // Stop and restart with new mode
                 player.stopPlaying(songIndex)
                 player.startPlaying(songIndex, newMode)
+
+                // Update UI state
+                performanceModeState.intValue = newMode.value
 
                 logStatus(
                     IntentBasedTestSupport.STATUS_PLAYING,
@@ -364,19 +386,21 @@ class MainActivity : ComponentActivity() {
     fun SongScreen() {
         val playList = getPlayList()
         val pagerState = rememberPagerState(pageCount = { playList.count() })
-        val playingSongIndex = remember {
-            mutableIntStateOf(0)
-        }
-        val offload = remember {
-            mutableIntStateOf(0) // 0: None, 1: Low Latency, 2: Power Saving, 3: PCM Offload
-        }
+        
+        // Use shared state from class level (automation can update these)
+        val playingSongIndex = songIndexState
+        val offload = performanceModeState
+        val isPlaying = isPlayingState
+        val isMMapEnabled = isMMapEnabledState
+        
+        var sliderPosition by remember { mutableFloatStateOf(volumeState.floatValue) }
 
-        val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
-        val isPlaying = remember {
-            mutableStateOf(false)
+        // Sync pager with song index when automation changes it
+        LaunchedEffect(playingSongIndex.intValue) {
+            if (pagerState.currentPage != playingSongIndex.intValue) {
+                pagerState.animateScrollToPage(playingSongIndex.intValue)
+            }
         }
-        var sliderPosition by remember { mutableFloatStateOf(0f) }
-
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
@@ -461,8 +485,10 @@ class MainActivity : ComponentActivity() {
                     val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
                     if (isOffloadSupported) radioOptions.add("PCM Offload")
 
-                    val (selectedOption, onOptionSelected) = remember {
-                        mutableStateOf(radioOptions[0])
+                    // Derive selectedOption from shared offload state
+                    val selectedOption = radioOptions.getOrElse(offload.intValue) { radioOptions[0] }
+                    val onOptionSelected: (String) -> Unit = { selected ->
+                        offload.intValue = radioOptions.indexOf(selected).coerceAtLeast(0)
                     }
                     val enabled = !isPlaying.value
                     radioOptions.forEachIndexed { index, text ->
@@ -475,7 +501,6 @@ class MainActivity : ComponentActivity() {
                                     onClick = {
                                         if (enabled) {
                                             onOptionSelected(text)
-                                            offload.intValue = index
                                         }
                                     },
                                     role = Role.RadioButton
