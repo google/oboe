@@ -24,7 +24,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -47,7 +46,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class AudioForegroundService : Service() {
 
@@ -55,7 +53,6 @@ class AudioForegroundService : Service() {
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var mediaSession: MediaSession
     private lateinit var wakeLock: PowerManager.WakeLock
-    private var currentAlbumArt: Bitmap? = null
 
     lateinit var player: PowerPlayAudioPlayer
     private val binder = LocalBinder()
@@ -85,7 +82,10 @@ class AudioForegroundService : Service() {
 
     private val playerStateObserver = Observer<PlayerState> { state ->
         updatePlaybackState()
-        updateNotification()
+        // Update notification to reflect Play/Pause icon if needed
+        val notification = createNotification()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
 
         if (state == PlayerState.Playing) {
             startProgressUpdater()
@@ -95,7 +95,10 @@ class AudioForegroundService : Service() {
     }
 
     private val songIndexObserver = Observer<Int> { index ->
-        loadAlbumArt(index)
+        updatePlaybackState()
+        val notification = createNotification()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     override fun onCreate() {
@@ -199,18 +202,6 @@ class AudioForegroundService : Service() {
         }
     }
 
-    private fun loadAlbumArt(index: Int) {
-        serviceScope.launch(Dispatchers.IO) {
-            val song = PlayList.getOrNull(index)
-            val bitmap = song?.let { BitmapFactory.decodeResource(resources, it.cover) }
-            withContext(Dispatchers.Main) {
-                currentAlbumArt = bitmap
-                updateMetadata()
-                updateNotification()
-            }
-        }
-    }
-
     private fun startProgressUpdater() {
         playbackJob?.cancel()
         playbackJob = serviceScope.launch {
@@ -251,12 +242,7 @@ class AudioForegroundService : Service() {
         )
 
         mediaSession.setPlaybackState(playbackStateBuilder.build())
-    }
 
-    private fun updateMetadata() {
-        if (!::player.isInitialized || !::mediaSession.isInitialized) return
-        
-        val sampleRate = 48000L
         val durationFrames = player.getDuration().toLong()
         val durationMs = (durationFrames * 1000) / sampleRate
 
@@ -269,17 +255,12 @@ class AudioForegroundService : Service() {
             .putString(MediaMetadata.METADATA_KEY_TITLE, songTitle)
             .putString(MediaMetadata.METADATA_KEY_ARTIST, songArtist)
 
-        if (currentAlbumArt != null) {
-            metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, currentAlbumArt)
+        if (currentSong != null) {
+            val bitmap = BitmapFactory.decodeResource(resources, currentSong.cover)
+            metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bitmap)
         }
 
         mediaSession.setMetadata(metadataBuilder.build())
-    }
-
-    private fun updateNotification() {
-         val notification = createNotification()
-         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     private fun createNotification(): Notification {
@@ -311,8 +292,9 @@ class AudioForegroundService : Service() {
             .setContentIntent(pendingIntent)
             .setStyle(style)
 
-        if (currentAlbumArt != null) {
-            builder.setLargeIcon(currentAlbumArt)
+        if (currentSong != null) {
+            val bitmap = BitmapFactory.decodeResource(resources, currentSong.cover)
+            builder.setLargeIcon(bitmap)
         }
 
         // Add Play/Pause action

@@ -55,6 +55,11 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         _playerState.update { PlayerState.Stopped }
     }
 
+    fun updatePerformanceMode(mode: OboePerformanceMode) {
+        _currentPerformanceMode = mode
+        updatePerformanceModeNative(mode)
+    }
+
     fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
     fun teardownAudioStream() = teardownAudioStreamNative()
     fun unloadAssets() = unloadAssetsNative()
@@ -126,6 +131,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun setLoopingNative(index: Int, looping: Boolean)
     private external fun startPlayingNative(index: Int, mode: OboePerformanceMode)
     private external fun stopPlayingNative(index: Int)
+    private external fun updatePerformanceModeNative(mode: OboePerformanceMode)
     private external fun setMMapEnabledNative(enabled: Boolean): Boolean
     private external fun isMMapEnabledNative(): Boolean
     private external fun isMMapSupportedNative(): Boolean

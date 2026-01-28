@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <android/log.h>
+#include <time.h>
 #include "PowerPlayMultiPlayer.h"
 #include "PowerPlaySampleSource.h"
 
@@ -133,22 +134,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         return;
     }
 
-    // If the performance mode has changed, we need to reopen the stream.
-    // Also reopen if the user has changed the MMAP policy (enabled/disabled) since the stream was opened.
-    if (performanceMode != mLastPerformanceMode ||
-        isMMapEnabled() != mLastMMapEnabled) {
-        teardownAudioStream();
-
-        // Attempt here to reopen the stream with the new performance mode.
-        const auto result = openStream(performanceMode);
-        if (!result) {
-            // Something went wrong and the stream could not be reopened.
-            __android_log_print(ANDROID_LOG_ERROR,
-                                TAG,
-                                "Failed to reopen stream with new performance mode");
-            return;
-        }
-    }
+    updatePerformanceMode(performanceMode);
 
     // Assure previous sample is stopped and the play head is reset to zero, avoiding the
     // currently playing index. Only allow the playback head to reset when the song has changed.
@@ -182,6 +168,16 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
                                 TAG,
                                 "Unable to start the audio stream.");
         }
+    }
+}
+
+void PowerPlayMultiPlayer::updatePerformanceMode(oboe::PerformanceMode performanceMode) {
+    if (performanceMode != mLastPerformanceMode ||
+        isMMapEnabled() != mLastMMapEnabled) {
+
+        __android_log_print(ANDROID_LOG_INFO, TAG, "updatePerformanceMode: Reopening stream");
+        teardownAudioStream();
+        openStream(performanceMode);
     }
 }
 
@@ -256,7 +252,17 @@ int32_t PowerPlayMultiPlayer::getCurrentPosition() {
                 auto result = mAudioStream->getTimestamp(CLOCK_MONOTONIC, &framesPresented, &presentationTimeNs);
 
                 if (result == Result::OK) {
-                     int64_t latencyFrames = framesWritten - framesPresented;
+                     struct timespec now;
+                     clock_gettime(CLOCK_MONOTONIC, &now);
+                     int64_t nowNs = (now.tv_sec * 1000000000LL) + now.tv_nsec;
+
+                     int64_t deltaNs = nowNs - presentationTimeNs;
+                     if (deltaNs < 0) deltaNs = 0;
+
+                     int64_t deltaFrames = (deltaNs * mAudioStream->getSampleRate()) / 1000000000LL;
+                     int64_t currentFramesPresented = framesPresented + deltaFrames;
+
+                     int64_t latencyFrames = framesWritten - currentFramesPresented;
                      int64_t playhead = sourceFrameIndex - latencyFrames;
                      if (playhead < 0) playhead = 0;
                      return (int32_t)playhead;

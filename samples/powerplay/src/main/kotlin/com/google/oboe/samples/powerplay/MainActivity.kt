@@ -332,6 +332,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = {
                                         if (enabled) {
                                             onOptionSelected(text)
+                                            player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
                                             offload.intValue = index
                                         }
                                     },
