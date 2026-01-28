@@ -172,21 +172,12 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
 }
 
 void PowerPlayMultiPlayer::updatePerformanceMode(oboe::PerformanceMode performanceMode) {
-    // If the performance mode has changed, we need to reopen the stream.
-    // Also reopen if the user has changed the MMAP policy (enabled/disabled) since the stream was opened.
     if (performanceMode != mLastPerformanceMode ||
-            isMMapEnabled() != mLastMMapEnabled) {
-        teardownAudioStream();
+        isMMapEnabled() != mLastMMapEnabled) {
 
-        // Attempt here to reopen the stream with the new performance mode.
-        const auto result = openStream(performanceMode);
-        if (!result) {
-            // Something went wrong and the stream could not be reopened.
-            __android_log_print(ANDROID_LOG_ERROR,
-                    TAG,
-                    "Failed to reopen stream with new performance mode");
-            return;
-        }
+        __android_log_print(ANDROID_LOG_INFO, TAG, "updatePerformanceMode: Reopening stream");
+        teardownAudioStream();
+        openStream(performanceMode);
     }
 }
 
@@ -283,12 +274,11 @@ int32_t PowerPlayMultiPlayer::getCurrentPosition() {
     return 0;
 }
 
-int32_t PowerPlayMultiPlayer::getDuration() {
-    int32_t index = getCurrentlyPlayingIndex();
-    if (index != -1) {
-        return mSampleSources[index]->getNumFrames();
+int32_t PowerPlayMultiPlayer::getDuration(int32_t index) {
+    if (index < 0 || index >= mSampleSources.size()) {
+        return 0;
     }
-    return 0;
+    return mSampleSources[index]->getNumFrames();
 }
 
 void PowerPlayMultiPlayer::seekTo(int32_t positionFrames) {

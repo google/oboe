@@ -304,8 +304,9 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getCurrentPos
 JNIEXPORT jint JNICALL
 Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getDurationNative(
         JNIEnv *,
-        jobject) {
-    return player.getDuration();
+        jobject,
+        jint index) {
+    return player.getDuration(index);
 }
 
 /**

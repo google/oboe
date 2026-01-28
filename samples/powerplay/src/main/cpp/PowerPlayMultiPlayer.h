@@ -54,7 +54,7 @@ public:
 
     int32_t getCurrentPosition();
 
-    int32_t getDuration();
+    int32_t getDuration(int32_t index);
 
     void seekTo(int32_t positionFrames);
 

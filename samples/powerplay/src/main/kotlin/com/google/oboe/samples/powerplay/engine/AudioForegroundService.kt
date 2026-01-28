@@ -264,7 +264,6 @@ class AudioForegroundService : Service() {
             .putString(MediaMetadata.METADATA_KEY_TITLE, songTitle)
             .putString(MediaMetadata.METADATA_KEY_ARTIST, songArtist)
 
-
         if (currentAlbumArt != null) {
             metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, currentAlbumArt)
         }
