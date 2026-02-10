@@ -34,7 +34,6 @@ import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Binder
 import android.os.IBinder
-import android.os.PowerManager
 import android.util.Log
 import androidx.lifecycle.Observer
 import com.google.oboe.samples.powerplay.MainActivity
@@ -53,7 +52,6 @@ class AudioForegroundService : Service() {
     private lateinit var audioManager: AudioManager
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var mediaSession: MediaSession
-    private lateinit var wakeLock: PowerManager.WakeLock
     private var currentAlbumArt: Bitmap? = null
 
     lateinit var player: PowerPlayAudioPlayer
@@ -125,9 +123,7 @@ class AudioForegroundService : Service() {
 
             player.getCurrentSongIndexLive().observeForever(songIndexObserver)
 
-            val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "PowerPlay::AudioWakeLock")
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate", e)
             throw RuntimeException("Failed to create AudioForegroundService", e)
         }
@@ -149,10 +145,7 @@ class AudioForegroundService : Service() {
                 Log.e(TAG, "Failed to get audio focus, result: $result")
             }
 
-            if (!wakeLock.isHeld) {
-                wakeLock.acquire(10*60*1000L /*10 minutes*/)
-            }
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error in onStartCommand", e)
             stopSelf()
         }
@@ -173,9 +166,6 @@ class AudioForegroundService : Service() {
         }
         if (::mediaSession.isInitialized) {
             mediaSession.release()
-        }
-        if (::wakeLock.isInitialized && wakeLock.isHeld) {
-            wakeLock.release()
         }
     }
 
