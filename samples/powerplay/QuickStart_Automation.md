@@ -30,8 +30,6 @@ adb logcat -s PowerPlay:V
 | `duration_ms`        | int     | Auto-stop after N milliseconds                             | `--ei duration_ms 10000`       |
 | `use_mmap`           | boolean | Enable/disable MMAP audio path                             | `--ez use_mmap false`          |
 | `buffer_frames`      | int     | Buffer size in frames (offload only)                       | `--ei buffer_frames 4096`      |
-| `toggle_offload`     | boolean | Enable offload stress test                                 | `--ez toggle_offload true`     |
-| `toggle_interval_ms` | int     | Toggle interval in ms                                      | `--ei toggle_interval_ms 5000` |
 
 ## Common Test Scenarios
 
@@ -56,15 +54,6 @@ adb shell am start -n com.google.oboe.samples.powerplay/.MainActivity \
     --es command play \
     --es perf_mode offload \
     --ei duration_ms 10000
-```
-
-### Offload Toggle Stress Test
-```bash
-adb shell am start -n com.google.oboe.samples.powerplay/.MainActivity \
-    --es command play \
-    --es perf_mode offload \
-    --ez toggle_offload true \
-    --ei toggle_interval_ms 3000
 ```
 
 ### Compare Performance Modes

@@ -118,7 +118,6 @@ class MainActivity : ComponentActivity() {
     // Automation state
     private val handler = Handler(Looper.getMainLooper())
     private var autoStopRunnable: Runnable? = null
-    private var toggleOffloadRunnable: Runnable? = null
     private var isAutomationMode = false
     private var currentPerformanceMode: OboePerformanceMode = OboePerformanceMode.None
     private var pendingAutomationIntent: Intent? = null
@@ -217,8 +216,6 @@ class MainActivity : ComponentActivity() {
         val durationMs = IntentBasedTestSupport.getDurationMs(extras)
         val useMMap = IntentBasedTestSupport.getMMapEnabled(extras, player.isMMapEnabled())
         val bufferFrames = IntentBasedTestSupport.getBufferFrames(extras)
-        val toggleOffload = IntentBasedTestSupport.isToggleOffloadRequested(extras)
-        val toggleIntervalMs = IntentBasedTestSupport.getToggleIntervalMs(extras)
 
         // Apply MMAP setting (must be done before playing)
         if (useMMap != player.isMMapEnabled()) {
@@ -267,11 +264,6 @@ class MainActivity : ComponentActivity() {
                 // Schedule auto-stop if duration is set
                 if (durationMs > 0) {
                     scheduleAutoStop(songIndex, durationMs)
-                }
-
-                // Schedule toggle offload stress test if requested
-                if (toggleOffload) {
-                    scheduleToggleOffload(songIndex, toggleIntervalMs)
                 }
 
                 // Move to background if requested
@@ -323,53 +315,13 @@ class MainActivity : ComponentActivity() {
         Log.i(LOG_TAG, "Auto-stop scheduled in ${durationMs}ms")
     }
 
-    private fun scheduleToggleOffload(songIndex: Int, intervalMs: Long) {
-        cancelToggleOffload()
-        var useOffload = currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded
-
-        toggleOffloadRunnable = object : Runnable {
-            override fun run() {
-                useOffload = !useOffload
-                val newMode = if (useOffload) {
-                    OboePerformanceMode.PowerSavingOffloaded
-                } else {
-                    OboePerformanceMode.PowerSaving
-                }
-
-                // Stop and restart with new mode
-                player.stopPlaying(songIndex)
-                player.startPlaying(songIndex, newMode)
-
-                // Update UI state
-                performanceModeState.intValue = newMode.value
-
-                logStatus(
-                    IntentBasedTestSupport.STATUS_PLAYING,
-                    "TOGGLE" to "OFFLOAD",
-                    "OFFLOAD" to player.isOffloaded()
-                )
-
-                // Schedule next toggle
-                handler.postDelayed(this, intervalMs)
-            }
-        }
-        handler.postDelayed(toggleOffloadRunnable!!, intervalMs)
-        Log.i(LOG_TAG, "Toggle offload stress test started (interval: ${intervalMs}ms)")
-    }
-
     private fun cancelAutoStop() {
         autoStopRunnable?.let { handler.removeCallbacks(it) }
         autoStopRunnable = null
     }
 
-    private fun cancelToggleOffload() {
-        toggleOffloadRunnable?.let { handler.removeCallbacks(it) }
-        toggleOffloadRunnable = null
-    }
-
     private fun cancelScheduledTasks() {
         cancelAutoStop()
-        cancelToggleOffload()
     }
 
     private fun logStatus(status: String, vararg extras: Pair<String, Any>) {

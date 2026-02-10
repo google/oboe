@@ -81,8 +81,5 @@ adb logcat -d -s "$LOG_TAG:V" > powerplay_test.log
 
 echo ""
 echo "To run additional tests:"
-echo "  # Toggle offload stress test"
-echo "  adb shell am start -n $ACTIVITY --es command play --es perf_mode offload --ez toggle_offload true"
-echo ""
 echo "  # Background playback"
 echo "  adb shell am start -n $ACTIVITY --es command play --es perf_mode offload --ez background true"

@@ -62,12 +62,6 @@ object IntentBasedTestSupport {
     /** Buffer size in frames (only applicable in PCM Offload mode) */
     const val KEY_BUFFER_FRAMES = "buffer_frames"
 
-    /** Enable toggle offload stress test mode */
-    const val KEY_TOGGLE_OFFLOAD = "toggle_offload"
-
-    /** Toggle interval in milliseconds for stress test */
-    const val KEY_TOGGLE_INTERVAL_MS = "toggle_interval_ms"
-
     // ============================================================================
     // Command Values
     // ============================================================================
@@ -92,7 +86,6 @@ object IntentBasedTestSupport {
     const val DEFAULT_SONG_INDEX = 0
     const val DEFAULT_VOLUME = 100
     const val DEFAULT_DURATION_MS = -1 // No auto-stop
-    const val DEFAULT_TOGGLE_INTERVAL_MS = 5000L
 
     // ============================================================================
     // Status Log Tags for Machine Parsing
@@ -217,26 +210,6 @@ object IntentBasedTestSupport {
      */
     fun getBufferFrames(bundle: Bundle): Int {
         return bundle.getInt(KEY_BUFFER_FRAMES, 0)
-    }
-
-    /**
-     * Check if toggle offload stress test is requested.
-     *
-     * @param bundle Intent extras bundle
-     * @return true if toggle offload mode should be enabled
-     */
-    fun isToggleOffloadRequested(bundle: Bundle): Boolean {
-        return bundle.getBoolean(KEY_TOGGLE_OFFLOAD, false)
-    }
-
-    /**
-     * Get toggle interval for stress test.
-     *
-     * @param bundle Intent extras bundle
-     * @return Toggle interval in milliseconds
-     */
-    fun getToggleIntervalMs(bundle: Bundle): Long {
-        return bundle.getInt(KEY_TOGGLE_INTERVAL_MS, DEFAULT_TOGGLE_INTERVAL_MS.toInt()).toLong()
     }
 
     /**
