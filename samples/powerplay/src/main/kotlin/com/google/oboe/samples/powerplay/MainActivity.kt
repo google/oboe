@@ -538,7 +538,7 @@ class MainActivity : ComponentActivity() {
                         VinylAlbumCoverAnimation(isSongPlaying = false, painter = painter)
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Progress Slider
