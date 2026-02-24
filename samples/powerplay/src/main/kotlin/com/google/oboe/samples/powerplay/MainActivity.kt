@@ -41,7 +41,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +55,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
@@ -82,14 +80,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,7 +97,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
@@ -129,8 +123,12 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
+import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
 
 class MainActivity : ComponentActivity() {
 
@@ -139,6 +137,7 @@ class MainActivity : ComponentActivity() {
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
     private var sampleRate: Int = 48000
+
     private var isBound = mutableStateOf(false)
 
     private val connection = object : ServiceConnection {
@@ -153,6 +152,21 @@ class MainActivity : ComponentActivity() {
             isBound.value = false
         }
     }
+
+    // Automation state
+    private val handler = Handler(Looper.getMainLooper())
+    private var autoStopRunnable: Runnable? = null
+    private var isAutomationMode = false
+    private var currentPerformanceMode: OboePerformanceMode = OboePerformanceMode.None
+    private var pendingAutomationIntent: Intent? = null
+    private var assetsLoaded = false
+
+    // Shared UI state (updated by automation, observed by Compose)
+    private val isPlayingState = mutableStateOf(false)
+    private val songIndexState = mutableIntStateOf(0)
+    private val performanceModeState = mutableIntStateOf(0)
+    private val volumeState = mutableFloatStateOf(1.0f)
+    private val isMMapEnabledState = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -189,6 +203,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        // Process automation intent if provided
+        // Note: Intent processing is deferred until assets are loaded in SongScreen
+        pendingAutomationIntent = intent
     }
 
     override fun onDestroy() {
@@ -197,6 +215,21 @@ class MainActivity : ComponentActivity() {
             unbindService(connection)
             isBound.value = false
         }
+
+        cancelScheduledTasks()
+        player.stopPlaying(player.getCurrentlyPlayingIndex().coerceAtLeast(0))
+        player.teardownAudioStream()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // If assets are loaded, process immediately; otherwise defer
+        if (assetsLoaded) {
+            processIntent(intent)
+        } else {
+            pendingAutomationIntent = intent
+        }
     }
 
     private fun setUpPowerPlayAudioPlayer() {
@@ -204,6 +237,145 @@ class MainActivity : ComponentActivity() {
         startForegroundService(intent) // Starts the service
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
+
+    /**
+     * Process Intent extras for automation commands.
+     * Supports ADB commands like:
+     * adb shell am start -n com.google.oboe.samples.powerplay/.MainActivity \
+     *     --es command play --es perf_mode offload --ez background true
+     */
+    private fun processIntent(intent: Intent?) {
+        val extras = intent?.extras ?: return
+        if (extras.isEmpty) return
+
+        isAutomationMode = true
+        Log.i(LOG_TAG, "Processing automation intent")
+
+        // Get playlist for song index validation
+        val playList = PlayList
+
+        // Parse configuration from Intent
+        val songIndex = IntentBasedTestSupport.getSongIndex(extras, playList.size)
+        val perfMode = IntentBasedTestSupport.getPerformanceMode(extras)
+        val volume = IntentBasedTestSupport.getNormalizedVolume(extras)
+        val command = IntentBasedTestSupport.getCommand(extras)
+        val goBackground = IntentBasedTestSupport.isBackgroundRequested(extras)
+        val durationMs = IntentBasedTestSupport.getDurationMs(extras)
+        val useMMap = IntentBasedTestSupport.getMMapEnabled(extras, player.isMMapEnabled())
+        val bufferFrames = IntentBasedTestSupport.getBufferFrames(extras)
+
+        // Apply MMAP setting (must be done before playing)
+        if (useMMap != player.isMMapEnabled()) {
+            player.setMMapEnabled(useMMap)
+            isMMapEnabledState.value = useMMap
+            Log.i(LOG_TAG, "MMAP set to: $useMMap")
+        }
+
+        // Store current performance mode
+        currentPerformanceMode = perfMode
+
+        // Execute command
+        when (command?.lowercase()) {
+            IntentBasedTestSupport.COMMAND_PLAY -> {
+                // Stop any currently playing track first
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                }
+
+                player.startPlaying(songIndex, currentPerformanceMode)
+
+                // Apply volume after starting (sample sources must exist)
+                player.setVolume(volume)
+                Log.i(LOG_TAG, "Volume set to: ${(volume * 100).toInt()}%")
+
+                // Update shared UI state
+                isPlayingState.value = true
+                songIndexState.intValue = songIndex
+                performanceModeState.intValue = perfMode.value
+                volumeState.floatValue = volume
+
+                logStatus(
+                    IntentBasedTestSupport.STATUS_PLAYING,
+                    "SONG" to songIndex,
+                    "OFFLOAD" to player.isOffloaded(),
+                    "MMAP" to player.isMMapEnabled()
+                )
+
+                // Apply buffer size (only effective in offload mode)
+                if (bufferFrames > 0 && currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded) {
+                    val actualFrames = player.setBufferSizeInFrames(bufferFrames)
+                    Log.i(LOG_TAG, "Buffer size set to: $actualFrames frames")
+                }
+
+                // Schedule auto-stop if duration is set
+                if (durationMs > 0) {
+                    scheduleAutoStop(songIndex, durationMs)
+                }
+
+                // Move to background if requested
+                if (goBackground) {
+                    moveTaskToBack(true)
+                    Log.i(LOG_TAG, "Moved to background")
+                }
+            }
+
+            IntentBasedTestSupport.COMMAND_PAUSE -> {
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                    isPlayingState.value = false
+                    logStatus(IntentBasedTestSupport.STATUS_PAUSED)
+                }
+                cancelScheduledTasks()
+            }
+
+            IntentBasedTestSupport.COMMAND_STOP -> {
+                val currentIndex = player.getCurrentlyPlayingIndex()
+                if (currentIndex >= 0) {
+                    player.stopPlaying(currentIndex)
+                    isPlayingState.value = false
+                    logStatus(IntentBasedTestSupport.STATUS_STOPPED)
+                }
+                cancelScheduledTasks()
+                if (goBackground) {
+                    finishAndRemoveTask()
+                }
+            }
+
+            else -> {
+                // No command specified, just apply settings
+                Log.i(LOG_TAG, "No command specified, settings applied")
+            }
+        }
+    }
+
+    private fun scheduleAutoStop(songIndex: Int, durationMs: Long) {
+        cancelAutoStop()
+        autoStopRunnable = Runnable {
+            player.stopPlaying(songIndex)
+            isPlayingState.value = false
+            logStatus(IntentBasedTestSupport.STATUS_STOPPED, "REASON" to "AUTO_STOP")
+            cancelScheduledTasks()
+        }
+        handler.postDelayed(autoStopRunnable!!, durationMs)
+        Log.i(LOG_TAG, "Auto-stop scheduled in ${durationMs}ms")
+    }
+
+    private fun cancelAutoStop() {
+        autoStopRunnable?.let { handler.removeCallbacks(it) }
+        autoStopRunnable = null
+    }
+
+    private fun cancelScheduledTasks() {
+        cancelAutoStop()
+    }
+
+    private fun logStatus(status: String, vararg extras: Pair<String, Any>) {
+        val message = IntentBasedTestSupport.formatStatusLog(status, *extras)
+        Log.i(LOG_TAG, message)
+    }
+
 
     /***
      * Brings together all UI elements for the player
@@ -215,22 +387,27 @@ class MainActivity : ComponentActivity() {
         val playList = PlayList
         val initialPage = remember { player.currentSongIndex }
         val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
-        val playingSongIndex = remember {
-            mutableIntStateOf(initialPage)
-        }
-        val offload = remember {
-            mutableIntStateOf(player.currentPerformanceMode.ordinal)
-        }
 
-        val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
+        // Use shared state from class level (automation can update these)
+        val playingSongIndex = songIndexState
+        val offload = performanceModeState
+        val isMMapEnabled = isMMapEnabledState
+
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
         var sliderPosition by remember { mutableFloatStateOf(0f) }
 
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        
+
         var showInfoDialog by remember { mutableStateOf(false) }
+
+        // Sync pager with song index when automation changes it
+        LaunchedEffect(playingSongIndex.intValue) {
+            if (pagerState.currentPage != playingSongIndex.intValue) {
+                pagerState.animateScrollToPage(playingSongIndex.intValue)
+            }
+        }
 
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
@@ -248,9 +425,18 @@ class MainActivity : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
+            // Sync UI MMap state with Player
+            isMMapEnabled.value = player.isMMapEnabled()
+
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
+            }
+            // Assets are now loaded, process any pending automation intent
+            assetsLoaded = true
+            pendingAutomationIntent?.let {
+                processIntent(it)
+                pendingAutomationIntent = null
             }
         }
 
@@ -274,7 +460,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-            
+
             IconButton(
                 onClick = { showInfoDialog = true },
                 modifier = Modifier
@@ -291,7 +477,7 @@ class MainActivity : ComponentActivity() {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
-                    (scaleIn() + fadeIn()) with (scaleOut() + fadeOut())
+                    (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut())
                 }, label = "") {
                     Text(
                         text = playList[it].name, fontSize = 24.sp,
@@ -354,7 +540,7 @@ class MainActivity : ComponentActivity() {
 
         if (showBottomSheet) {
             ModalBottomSheet(
-                onDismissRequest = { },
+                onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -365,11 +551,11 @@ class MainActivity : ComponentActivity() {
                     isPlaying = isPlaying,
                     sliderPosition = sliderPosition,
                     onSliderPositionChange = { sliderPosition = it },
-                    onDismiss = { }
+                    onDismiss = { showBottomSheet = false }
                 )
             }
         }
-        
+
         if (showInfoDialog) {
             val performanceModeText = when (offload.intValue) {
                 0 -> "None"
@@ -384,9 +570,9 @@ class MainActivity : ComponentActivity() {
             } else {
                 "N/A (not in PCM Offload mode)"
             }
-            
+
             AlertDialog(
-                onDismissRequest = { },
+                onDismissRequest = { showInfoDialog = false },
                 title = {
                     Text(
                         text = "Audio Settings Info",
@@ -412,7 +598,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = { }) {
+                    TextButton(onClick = { showInfoDialog = false }) {
                         Text("Close")
                     }
                 },
@@ -438,7 +624,7 @@ class MainActivity : ComponentActivity() {
         var localSliderPosition by remember { mutableFloatStateOf(sliderPosition) }
         val requestedFrames = remember { mutableIntStateOf(0) }
         val actualFrames = remember { mutableIntStateOf(0) }
-        
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -499,7 +685,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = when (offload.intValue) {
@@ -511,7 +697,7 @@ class MainActivity : ComponentActivity() {
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyMedium
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -544,7 +730,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
-            
+
             AnimatedVisibility(
                 visible = offload.intValue == 3,
                 enter = androidx.compose.animation.expandVertically() + fadeIn(),
@@ -555,7 +741,7 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Slider(
                         value = localSliderPosition,
                         onValueChange = { newValue ->
@@ -592,7 +778,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
             Box(
                 modifier = Modifier
