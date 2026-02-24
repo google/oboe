@@ -327,6 +327,38 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getCurrentlyP
     return player.getCurrentlyPlayingIndex();
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getPlaybackPositionMillisNative()
+ */
+JNIEXPORT jlong JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getPlaybackPositionMillisNative(
+        JNIEnv *env,
+        jobject) {
+    return (jlong) player.getPlaybackPositionMillis();
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.seekToNative()
+ */
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_seekToNative(
+        JNIEnv *env,
+        jobject,
+        jint positionMillis) {
+    player.seekTo(positionMillis);
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getDurationMillisNative()
+ */
+JNIEXPORT jlong JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getDurationMillisNative(
+        JNIEnv *env,
+        jobject,
+        jint index) {
+    return (jlong) player.getDurationMillis(index);
+}
+
 #ifdef __cplusplus
 }
 #endif

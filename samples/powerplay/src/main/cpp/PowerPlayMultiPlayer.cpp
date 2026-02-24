@@ -242,3 +242,86 @@ bool PowerPlayMultiPlayer::isOffloaded() {
 
   return mAudioStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded;
 }
+
+int64_t PowerPlayMultiPlayer::getPlaybackPositionMillis() {
+    if (mAudioStream == nullptr) return 0;
+
+    int32_t index = getCurrentlyPlayingIndex();
+    if (index == -1) return 0;
+
+    auto* sampleSource = mSampleSources[index];
+    auto* sampleBuffer = sampleSource->getSampleBuffer();
+    if (!sampleBuffer) return 0;
+    int32_t sampleChannels = sampleBuffer->getProperties().channelCount;
+
+    int64_t framePosition = 0;
+    int64_t timeNanoseconds = 0;
+    auto result = mAudioStream->getTimestamp(CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
+
+    int32_t sampleRate = mAudioStream->getSampleRate();
+    if (sampleRate <= 0) return 0;
+
+    int64_t readFrames = sampleSource->getPlayHeadPosition() / sampleChannels;
+    int64_t presentedFrame = 0;
+
+    if (result == Result::OK) {
+        // Calculate the latency: how many frames are between the callback and the speakers.
+        int64_t framesWritten = mAudioStream->getFramesWritten();
+        int64_t latencyFrames = framesWritten - framePosition;
+        if (latencyFrames < 0) latencyFrames = 0;
+
+        presentedFrame = readFrames - latencyFrames;
+    } else {
+        // Fallback to callback position if timestamp is not available.
+        presentedFrame = readFrames;
+    }
+
+    if (presentedFrame < 0) presentedFrame = 0;
+
+    return (presentedFrame * 1000) / sampleRate;
+}
+
+void PowerPlayMultiPlayer::seekTo(int32_t positionMillis) {
+    if (mAudioStream == nullptr) return;
+
+    int32_t index = getCurrentlyPlayingIndex();
+    if (index == -1) return;
+
+    int32_t sampleRate = mAudioStream->getSampleRate();
+    if (sampleRate <= 0) return;
+
+    auto* sampleSource = mSampleSources[index];
+    auto* sampleBuffer = sampleSource->getSampleBuffer();
+    if (!sampleBuffer) return;
+    int32_t sampleChannels = sampleBuffer->getProperties().channelCount;
+
+    int64_t targetFrame = (static_cast<int64_t>(positionMillis) * sampleRate) / 1000;
+
+    // Boundary check for the current sample.
+    if (sampleBuffer) {
+        if (targetFrame < 0) targetFrame = 0;
+        int64_t totalFrames = sampleBuffer->getNumSamples() / sampleChannels;
+        if (targetFrame >= totalFrames) {
+            targetFrame = totalFrames - 1;
+        }
+    }
+
+    sampleSource->setPlayHeadPosition(static_cast<int32_t>(targetFrame * sampleChannels));
+
+    // If offloaded, flush the stream so the seek is immediate.
+    if (isOffloaded()) {
+        mAudioStream->flush();
+    }
+}
+
+int64_t PowerPlayMultiPlayer::getDurationMillis(int32_t index) {
+    if (index < 0 || index >= mSampleSources.size()) return 0;
+    auto* sampleBuffer = mSampleSources[index]->getSampleBuffer();
+    if (!sampleBuffer) return 0;
+
+    int32_t channelCount = sampleBuffer->getProperties().channelCount;
+    int32_t sampleRate = mSampleRate;
+    if (sampleRate <= 0 || channelCount <= 0) return 0;
+
+    return (static_cast<int64_t>(sampleBuffer->getNumSamples() / channelCount) * 1000) / sampleRate;
+}

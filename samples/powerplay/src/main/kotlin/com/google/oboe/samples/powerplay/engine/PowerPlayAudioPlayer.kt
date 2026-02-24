@@ -131,6 +131,21 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun getCurrentlyPlayingIndex(): Int = getCurrentlyPlayingIndexNative()
 
     /**
+     * Gets the current playback position in milliseconds.
+     */
+    fun getPlaybackPositionMillis(): Long = getPlaybackPositionMillisNative()
+
+    /**
+     * Seeks to a specific position in milliseconds.
+     */
+    fun seekTo(positionMillis: Int) = seekToNative(positionMillis)
+
+    /**
+     * Gets the duration of the track at the specified index in milliseconds.
+     */
+    fun getDurationMillis(index: Int): Long = getDurationMillisNative(index)
+
+    /**
      * Native functions.
      * Load the library containing the native code including the JNI functions.
      */
@@ -157,6 +172,9 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun setVolumeNative(volume: Float)
     private external fun isOffloadedNative(): Boolean
     private external fun getCurrentlyPlayingIndexNative(): Int
+    private external fun getPlaybackPositionMillisNative(): Long
+    private external fun seekToNative(positionMillis: Int)
+    private external fun getDurationMillisNative(index: Int): Long
 
     /**
      * Companion

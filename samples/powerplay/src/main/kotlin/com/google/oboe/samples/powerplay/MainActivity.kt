@@ -91,6 +91,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -129,6 +130,7 @@ import android.os.Looper
 import android.util.Log
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
@@ -402,11 +404,33 @@ class MainActivity : ComponentActivity() {
 
         var showInfoDialog by remember { mutableStateOf(false) }
 
+        // Real-time progress slider state
+        var assetsReady by remember { mutableStateOf(false) }
+        var playbackPosition by remember { mutableLongStateOf(0L) }
+        var isSeeking by remember { mutableStateOf(false) }
+        val duration = remember(playingSongIndex.intValue, assetsReady) { player.getDurationMillis(playingSongIndex.intValue) }
+
+        // Polling loop for slider position (~60fps)
+        LaunchedEffect(isPlaying) {
+            if (isPlaying) {
+                while (true) {
+                    if (!isSeeking) {
+                        playbackPosition = player.getPlaybackPositionMillis()
+                    }
+                    delay(16)
+                }
+            } else {
+                playbackPosition = player.getPlaybackPositionMillis()
+            }
+        }
+
         // Sync pager with song index when automation changes it
         LaunchedEffect(playingSongIndex.intValue) {
             if (pagerState.currentPage != playingSongIndex.intValue) {
                 pagerState.animateScrollToPage(playingSongIndex.intValue)
             }
+            // Update playback position when song changes
+            playbackPosition = player.getPlaybackPositionMillis()
         }
 
         LaunchedEffect(pagerState) {
@@ -434,6 +458,7 @@ class MainActivity : ComponentActivity() {
             }
             // Assets are now loaded, process any pending automation intent
             assetsLoaded = true
+            assetsReady = true
             pendingAutomationIntent?.let {
                 processIntent(it)
                 pendingAutomationIntent = null
@@ -513,7 +538,49 @@ class MainActivity : ComponentActivity() {
                         VinylAlbumCoverAnimation(isSongPlaying = false, painter = painter)
                     }
                 }
+                
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Progress Slider
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    Slider(
+                        value = if (duration > 0) playbackPosition.toFloat() / duration else 0f,
+                        onValueChange = { newValue ->
+                            isSeeking = true
+                            playbackPosition = (newValue * duration).toLong()
+                        },
+                        onValueChangeFinished = {
+                            player.seekTo(playbackPosition.toInt())
+                            isSeeking = false
+                        },
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = playbackPosition.convertToText(),
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = duration.convertToText(),
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically

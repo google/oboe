@@ -63,6 +63,14 @@ public:
 
     int32_t getPlayHeadPosition() const { return mCurSampleIndex; }
 
+    void setPlayHeadPosition(int32_t position) {
+        if (mSampleBuffer != nullptr && position >= 0 && position < mSampleBuffer->getNumSamples()) {
+            mCurSampleIndex = position;
+        }
+    }
+
+    SampleBuffer* getSampleBuffer() { return mSampleBuffer; }
+
     void setPan(float pan) {
         if (pan < PAN_HARDLEFT) {
             mPan = PAN_HARDLEFT;
