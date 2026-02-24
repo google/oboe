@@ -132,22 +132,7 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
         return;
     }
 
-    // If the performance mode has changed, we need to reopen the stream.
-    // Also reopen if the user has changed the MMAP policy (enabled/disabled) since the stream was opened.
-    if (performanceMode != mLastPerformanceMode ||
-        isMMapEnabled() != mLastMMapEnabled) {
-        teardownAudioStream();
-
-        // Attempt here to reopen the stream with the new performance mode.
-        const auto result = openStream(performanceMode);
-        if (!result) {
-            // Something went wrong and the stream could not be reopened.
-            __android_log_print(ANDROID_LOG_ERROR,
-                                TAG,
-                                "Failed to reopen stream with new performance mode");
-            return;
-        }
-    }
+    updatePerformanceMode(performanceMode);
 
     // Assure previous sample is stopped and the play head is reset to zero, avoiding the
     // currently playing index. Only allow the playback head to reset when the song has changed.
@@ -181,6 +166,16 @@ void PowerPlayMultiPlayer::triggerDown(int32_t index, oboe::PerformanceMode perf
                                 TAG,
                                 "Unable to start the audio stream.");
         }
+    }
+}
+
+void PowerPlayMultiPlayer::updatePerformanceMode(oboe::PerformanceMode performanceMode) {
+    if (performanceMode != mLastPerformanceMode ||
+        isMMapEnabled() != mLastMMapEnabled) {
+
+        __android_log_print(ANDROID_LOG_INFO, TAG, "updatePerformanceMode: Reopening stream");
+        teardownAudioStream();
+        openStream(performanceMode);
     }
 }
 

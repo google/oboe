@@ -212,6 +212,18 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_stopPlayingNa
 }
 
 /**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.updatePerformanceModeNative()
+ */
+JNIEXPORT void JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_updatePerformanceModeNative(
+        JNIEnv *env,
+        jobject,
+        jobject mode) {
+    auto performanceMode = getPerformanceMode(env, mode);
+    player.updatePerformanceMode(performanceMode);
+}
+
+/**
  * Native (JNI) implementation of PowerPlayAudioPlayer.setLoopingNative()
  */
 JNIEXPORT void JNICALL
