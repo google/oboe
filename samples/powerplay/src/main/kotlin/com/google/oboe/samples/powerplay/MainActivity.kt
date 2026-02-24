@@ -41,7 +41,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +55,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
@@ -82,14 +80,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.foundation.background
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,7 +97,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
@@ -129,7 +123,6 @@ import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
 import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import android.os.Handler
 import android.os.Looper
@@ -259,7 +252,7 @@ class MainActivity : ComponentActivity() {
         Log.i(LOG_TAG, "Processing automation intent")
 
         // Get playlist for song index validation
-        val playList = getPlayList()
+        val playList = PlayList
 
         // Parse configuration from Intent
         val songIndex = IntentBasedTestSupport.getSongIndex(extras, playList.size)
@@ -394,20 +387,12 @@ class MainActivity : ComponentActivity() {
         val playList = PlayList
         val initialPage = remember { player.currentSongIndex }
         val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
-        val playingSongIndex = remember {
-            mutableIntStateOf(initialPage)
-        }
-        val offload = remember {
-            mutableIntStateOf(player.currentPerformanceMode.ordinal)
-        }
 
         // Use shared state from class level (automation can update these)
         val playingSongIndex = songIndexState
         val offload = performanceModeState
-        val isPlaying = isPlayingState
         val isMMapEnabled = isMMapEnabledState
 
-        val isMMapEnabled = remember { mutableStateOf(player.isMMapEnabled()) }
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
         var sliderPosition by remember { mutableFloatStateOf(0f) }
@@ -440,6 +425,9 @@ class MainActivity : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
+            // Sync UI MMap state with Player
+            isMMapEnabled.value = player.isMMapEnabled()
+
             playList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
@@ -489,7 +477,7 @@ class MainActivity : ComponentActivity() {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
-                    (scaleIn() + fadeIn()) with (scaleOut() + fadeOut())
+                    (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut())
                 }, label = "") {
                     Text(
                         text = playList[it].name, fontSize = 24.sp,
@@ -552,7 +540,7 @@ class MainActivity : ComponentActivity() {
 
         if (showBottomSheet) {
             ModalBottomSheet(
-                onDismissRequest = { },
+                onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -563,7 +551,7 @@ class MainActivity : ComponentActivity() {
                     isPlaying = isPlaying,
                     sliderPosition = sliderPosition,
                     onSliderPositionChange = { sliderPosition = it },
-                    onDismiss = { }
+                    onDismiss = { showBottomSheet = false }
                 )
             }
         }
@@ -584,7 +572,7 @@ class MainActivity : ComponentActivity() {
             }
 
             AlertDialog(
-                onDismissRequest = { },
+                onDismissRequest = { showInfoDialog = false },
                 title = {
                     Text(
                         text = "Audio Settings Info",
@@ -610,7 +598,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = { }) {
+                    TextButton(onClick = { showInfoDialog = false }) {
                         Text("Close")
                     }
                 },
