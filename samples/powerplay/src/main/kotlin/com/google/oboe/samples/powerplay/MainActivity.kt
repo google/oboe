@@ -411,8 +411,8 @@ class MainActivity : ComponentActivity() {
         val duration = remember(playingSongIndex.intValue, assetsReady) { player.getDurationMillis(playingSongIndex.intValue) }
 
         // Polling loop for slider position (~60fps)
-        LaunchedEffect(isPlaying) {
-            if (isPlaying) {
+        LaunchedEffect(isPlaying, offload.intValue) {
+            if (isPlaying && offload.intValue != 3) {
                 while (true) {
                     if (!isSeeking) {
                         playbackPosition = player.getPlaybackPositionMillis()
@@ -542,40 +542,42 @@ class MainActivity : ComponentActivity() {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Progress Slider
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
-                ) {
-                    Slider(
-                        value = if (duration > 0) playbackPosition.toFloat() / duration else 0f,
-                        onValueChange = { newValue ->
-                            isSeeking = true
-                            playbackPosition = (newValue * duration).toLong()
-                        },
-                        onValueChangeFinished = {
-                            player.seekTo(playbackPosition.toInt())
-                            isSeeking = false
-                        },
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                AnimatedVisibility(visible = offload.intValue != 3) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
                     ) {
-                        Text(
-                            text = playbackPosition.convertToText(),
-                            fontSize = 12.sp,
-                            color = Color.Gray
+                        Slider(
+                            value = if (duration > 0) playbackPosition.toFloat() / duration else 0f,
+                            onValueChange = { newValue ->
+                                isSeeking = true
+                                playbackPosition = (newValue * duration).toLong()
+                            },
+                            onValueChangeFinished = {
+                                player.seekTo(playbackPosition.toInt())
+                                isSeeking = false
+                            },
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.primary
+                            )
                         )
-                        Text(
-                            text = duration.convertToText(),
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = playbackPosition.convertToText(),
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = duration.convertToText(),
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 }
 
