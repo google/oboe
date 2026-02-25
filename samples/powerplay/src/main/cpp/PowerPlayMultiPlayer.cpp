@@ -307,11 +307,6 @@ void PowerPlayMultiPlayer::seekTo(int32_t positionMillis) {
     }
 
     sampleSource->setPlayHeadPosition(static_cast<int32_t>(targetFrame * sampleChannels));
-
-    // If offloaded, flush the stream so the seek is immediate.
-    if (isOffloaded()) {
-        mAudioStream->flush();
-    }
 }
 
 int64_t PowerPlayMultiPlayer::getDurationMillis(int32_t index) {
