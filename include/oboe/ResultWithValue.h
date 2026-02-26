@@ -136,8 +136,8 @@ public:
     }
 
 private:
-    const T             mValue;
-    const oboe::Result  mError;
+    T             mValue;
+    oboe::Result  mError;
 };
 
 /**
