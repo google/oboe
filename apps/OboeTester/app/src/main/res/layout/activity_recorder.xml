@@ -98,7 +98,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/statusView"
+            android:id="@+id/status_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lines="3"

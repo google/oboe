@@ -715,6 +715,47 @@ oboe::Result ActivityRecording::startPlayback() {
     return result;
 }
 
+ActivityRecording::RecordingStats ActivityRecording::computeRecordingStats() {
+    constexpr int chunkFrames = 512;
+
+    mRecording->rewind();
+
+    const int ch = mRecording->getChannelCount();
+    auto buffer = std::make_unique<float[]>(chunkFrames * ch);
+
+    const int32_t totalFrames = mRecording->getSizeInFrames();
+    int32_t frameIndex = 0;
+
+    RecordingStats recordingStats;
+
+    while (frameIndex < totalFrames) {
+        const int framesToRead = std::min<int>(chunkFrames, totalFrames - frameIndex);
+        const int framesRead = mRecording->read(buffer.get(), framesToRead);
+        if (framesRead <= 0) break;
+
+        const int samplesRead = framesRead * ch;
+
+        for (int i = 0; i < samplesRead; ++i) {
+            const double x = buffer[i];
+            recordingStats.peakAbs = std::max(recordingStats.peakAbs, std::abs(x));
+            recordingStats.sumSq += x * x;
+        }
+        recordingStats.n += samplesRead;
+
+        frameIndex += framesRead;
+
+        bool lastRemainingFramesRead = framesRead < framesToRead;
+        if (lastRemainingFramesRead) break;
+    }
+
+    return recordingStats;
+}
+
+ActivityRecording::RecordingStats ActivityRecording::getRecordingStats() {
+    return computeRecordingStats();
+}
+
+
 // ======================================================================= ActivityTapToTone
 void ActivityTapToTone::configureAfterOpen() {
     monoToMulti = std::make_unique<MonoToMultiConverter>(mChannelCount);
