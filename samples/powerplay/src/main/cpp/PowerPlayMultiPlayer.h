@@ -52,6 +52,12 @@ public:
 
     bool isOffloaded();
 
+    int64_t getPlaybackPositionMillis();
+
+    void seekTo(int32_t positionMillis);
+
+    int64_t getDurationMillis(int32_t index);
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:
