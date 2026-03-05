@@ -64,6 +64,8 @@ public class TestDisconnectActivity extends TestAudioActivity {
 
     protected AutomatedTestRunner mAutomatedTestRunner;
 
+    private native int getRoutingChangedCount();
+
     // Receive a broadcast Intent when a headset is plugged in or unplugged.
     // Display a count on screen.
     public class PluginBroadcastReceiver extends BroadcastReceiver {
@@ -396,6 +398,7 @@ public class TestDisconnectActivity extends TestAudioActivity {
         }
 
         int oldPlugCount = mPlugCount;
+        int oldRoutingChangedCount = getRoutingChangedCount();
         if (!openFailed && valid) {
             mTestFailed = false;
             // poll until stream started
@@ -418,12 +421,15 @@ public class TestDisconnectActivity extends TestAudioActivity {
                 }
             }
 
+            int currentRoutingCount = getRoutingChangedCount();
             // Wait for timeout or stream to disconnect.
             while (!mTestFailed && mAutomatedTestRunner.isThreadEnabled() && !mSkipTest && (timeoutCount > 0) &&
-                    stream.getState() == StreamConfiguration.STREAM_STATE_STARTED) {
+                    stream.getState() == StreamConfiguration.STREAM_STATE_STARTED &&
+                    oldRoutingChangedCount == currentRoutingCount) {
                 flushLog();
                 Thread.sleep(POLL_DURATION_MILLIS);
                 timeoutCount--;
+                currentRoutingCount = getRoutingChangedCount();
                 if (timeoutCount == 0) {
                     mTestFailed = true;
                 } else {
@@ -442,9 +448,12 @@ public class TestDisconnectActivity extends TestAudioActivity {
                     }
                 } else {
                     int error = stream.getLastErrorCallbackResult();
-                    if (error != StreamConfiguration.ERROR_DISCONNECTED) {
+                    if (error != StreamConfiguration.ERROR_DISCONNECTED &&
+                        oldRoutingChangedCount == currentRoutingCount) {
                         log("onErrorCallback error = " + error
-                                + ", expected " + StreamConfiguration.ERROR_DISCONNECTED);
+                                + ", expected " + StreamConfiguration.ERROR_DISCONNECTED +
+                                ", old routing count = " + oldRoutingChangedCount +
+                                ", current routing count = " + currentRoutingCount);
                         mTestFailed = true;
                     }
                 }

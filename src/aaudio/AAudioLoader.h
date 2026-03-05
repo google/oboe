@@ -82,6 +82,15 @@ typedef void (*AAudioStream_presentationEndCallback)(
         void* userData);
 #endif
 
+#if OBOE_USING_NDK && __NDK_MAJOR__ < 30
+// Defined in Android C
+typedef void (*AAudioStream_routingChangedCallback)(
+        AAudioStream* stream,
+        void* userData,
+        const int32_t* deviceIds,
+        int32_t numDevices);
+#endif
+
 #ifndef __ANDROID_API_Q__
 #define __ANDROID_API_Q__ 29
 #endif
@@ -104,6 +113,10 @@ typedef void (*AAudioStream_presentationEndCallback)(
 
 #ifndef __ANDROID_API_B__
 #define __ANDROID_API_B__ 36
+#endif
+
+#ifndef __ANDROID_API_C__
+#define __ANDROID_API_C__ 37
 #endif
 
 #if OBOE_USING_NDK && __NDK_MAJOR__ < 30
@@ -201,6 +214,10 @@ class AAudioLoader {
                                        AAudioStream_presentationEndCallback,
                                        void *);
 
+    typedef void (*signature_V_PBRCCPV)(AAudioStreamBuilder *,
+                                        AAudioStream_routingChangedCallback,
+                                        void *);
+
     typedef aaudio_format_t (*signature_F_PS)(AAudioStream *stream);
 
     typedef int32_t (*signature_I_PSPVIL)(AAudioStream *, void *, int32_t, int64_t);
@@ -278,6 +295,7 @@ class AAudioLoader {
     signature_V_PBPDPV  builder_setDataCallback = nullptr;
     signature_V_PBPEPV  builder_setErrorCallback = nullptr;
     signature_V_PBPRPV  builder_setPresentationEndCallback = nullptr;
+    signature_V_PBRCCPV builder_setRoutingChangedCallback = nullptr;
     signature_V_PBPDPV  builder_setPartialDataCallback = nullptr;
 
     signature_I_PB      builder_delete = nullptr;
@@ -382,6 +400,7 @@ class AAudioLoader {
     signature_I_I       load_I_I(const char *name);
     signature_I         load_I(const char *name);
     signature_V_PBPRPV  load_V_PBPRPV(const char *name);
+    signature_V_PBRCCPV load_V_PBRCCPV(const char *name);
     signature_I_PSII    load_I_PSII(const char *name);
     signature_I_PSPIPI  load_I_PSPIPI(const char *name);
     signature_I_PSIPL   load_I_PSIPL(const char *name);
