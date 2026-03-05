@@ -1007,6 +1007,24 @@ Java_com_mobileer_oboetester_TestDataPathsActivity_getPhaseDataPaths(JNIEnv *env
     return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseOffset();
 }
 
+JNIEXPORT double JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_getAveragePhaseError(
+    JNIEnv* env, jobject instance) {
+  return engine.mActivityDataPath.getDataPathAnalyzer()->getAveragePhaseError();
+}
+
+JNIEXPORT bool JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_isPhaseJitterValid(
+    JNIEnv* env, jobject instance) {
+  return engine.mActivityDataPath.getDataPathAnalyzer()->isPhaseJitterValid();
+}
+
+JNIEXPORT int JNICALL
+Java_com_mobileer_oboetester_TestDataPathsActivity_getPhaseCount(JNIEnv *env,
+                                                     jobject instance) {
+    return engine.mActivityDataPath.getDataPathAnalyzer()->getPhaseCount();
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestDataPathsActivity_setSignalType(JNIEnv *env,
                                                                           jobject instance,
