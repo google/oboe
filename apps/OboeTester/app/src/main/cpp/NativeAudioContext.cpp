@@ -888,12 +888,22 @@ void ActivityDataPath::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStrea
 }
 
 // =================================================================== ActivityTestDisconnect
+ActivityTestDisconnect::ActivityTestDisconnect() {
+    mRoutingCallback = std::make_shared<TestRoutingCallback>(this);
+}
+
 void ActivityTestDisconnect::close(int32_t streamIndex) {
     ActivityContext::close(streamIndex);
     mSinkFloat.reset();
 }
 
+void ActivityTestDisconnect::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityContext::configureBuilder(isInput, builder);
+    builder.setRoutingCallback(mRoutingCallback);
+}
+
 void ActivityTestDisconnect::configureAfterOpen() {
+    mRoutingChangedCount = 0;
     std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
     std::shared_ptr<oboe::AudioStream> inputStream = getInputStream();
     if (outputStream) {

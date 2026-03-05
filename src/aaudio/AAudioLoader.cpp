@@ -102,8 +102,12 @@ int AAudioLoader::open() {
         builder_setSpatializationBehavior = load_V_PBI("AAudioStreamBuilder_setSpatializationBehavior");
     }
 
-    if (getSdkVersion() >= __ANDROID_API_B__) {
+    if (getSdkVersion() >= __ANDROID_API_B__ || isAtLeastPreReleaseCodename("Baklava")) {
         builder_setPresentationEndCallback = load_V_PBPRPV("AAudioStreamBuilder_setPresentationEndCallback");
+    }
+
+    if (getSdkVersion() >= __ANDROID_API_C__) {
+        builder_setRoutingChangedCallback = load_V_PBRCCPV("AAudioStreamBuilder_setRoutingChangedCallback");
     }
 
     builder_delete             = load_I_PB("AAudioStreamBuilder_delete");
@@ -358,6 +362,12 @@ AAudioLoader::signature_V_PBPRPV AAudioLoader::load_V_PBPRPV(const char *functio
     void *proc = dlsym(mLibHandle, functionName);
     AAudioLoader_check(proc, functionName);
     return reinterpret_cast<signature_V_PBPRPV>(proc);
+}
+
+AAudioLoader::signature_V_PBRCCPV AAudioLoader::load_V_PBRCCPV(const char *functionName) {
+    void *proc = dlsym(mLibHandle, functionName);
+    AAudioLoader_check(proc, functionName);
+    return reinterpret_cast<signature_V_PBRCCPV>(proc);
 }
 
 AAudioLoader::signature_I_PSII AAudioLoader::load_I_PSII(const char *functionName) {

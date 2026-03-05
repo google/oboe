@@ -85,6 +85,10 @@ public:
 
     StreamState getState() override;
 
+    int32_t getDeviceId() override;
+
+    std::vector<int32_t> getDeviceIds() override;
+
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
     }
@@ -154,6 +158,12 @@ protected:
             AAudioStream *stream,
             void *userData);
 
+    static void internalRoutingChangedCallback(
+            AAudioStream *stream,
+            void *userData,
+            const int32_t *deviceIds,
+            int32_t numDevices);
+
     void *getUnderlyingStream() const override {
         return mAAudioStream.load();
     }
@@ -166,6 +176,8 @@ protected:
     void beginPerformanceHintInCallback() override;
 
     void endPerformanceHintInCallback(int32_t numFrames) override;
+
+    void onRoutingChanged();
 
     // set by callback (or app when idle)
     std::atomic<bool>    mAdpfOpenAttempted{false};
@@ -195,6 +207,8 @@ private:
 
     // We may not use this but it is so small that it is not worth allocating dynamically.
     AudioStreamErrorCallback mDefaultErrorCallback;
+
+    std::atomic<int32_t> mRoutingChangedCount{0};
 };
 
 } // namespace oboe

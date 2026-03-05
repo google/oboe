@@ -1590,4 +1590,9 @@ Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffer(JNIEnv *env, jobjec
     }
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestDisconnectActivity_getRoutingChangedCount(JNIEnv *env, jobject) {
+    return engine.mActivityTestDisconnect.getRoutingChangedCount();
+}
+
 } // extern "C"
