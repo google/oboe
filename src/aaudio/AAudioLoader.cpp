@@ -102,7 +102,7 @@ int AAudioLoader::open() {
         builder_setSpatializationBehavior = load_V_PBI("AAudioStreamBuilder_setSpatializationBehavior");
     }
 
-    if (getSdkVersion() >= __ANDROID_API_B__ || isAtLeastPreReleaseCodename("Baklava")) {
+    if (getSdkVersion() >= __ANDROID_API_B__) {
         builder_setPresentationEndCallback = load_V_PBPRPV("AAudioStreamBuilder_setPresentationEndCallback");
     }
 

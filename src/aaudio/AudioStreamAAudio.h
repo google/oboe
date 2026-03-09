@@ -85,9 +85,9 @@ public:
 
     StreamState getState() override;
 
-    int32_t getDeviceId() override;
+    int32_t getDeviceId() const override;
 
-    std::vector<int32_t> getDeviceIds() override;
+    std::vector<int32_t> getDeviceIds() const override;
 
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
@@ -177,7 +177,7 @@ protected:
 
     void endPerformanceHintInCallback(int32_t numFrames) override;
 
-    void onRoutingChanged();
+    void onRoutingChanged(std::vector<int32_t> deviceIds);
 
     // set by callback (or app when idle)
     std::atomic<bool>    mAdpfOpenAttempted{false};
@@ -208,7 +208,11 @@ private:
     // We may not use this but it is so small that it is not worth allocating dynamically.
     AudioStreamErrorCallback mDefaultErrorCallback;
 
-    std::atomic<int32_t> mRoutingChangedCount{0};
+    struct UpdatedDeviceIds {
+        std::atomic<int> idx{0};
+        std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
+    };
+    UpdatedDeviceIds mUpdatedDeviceIds;
 };
 
 } // namespace oboe

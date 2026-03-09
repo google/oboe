@@ -119,6 +119,14 @@ public:
         return mChildStream->getState();
     }
 
+    int32_t getDeviceId() const override {
+        return mChildStream->getDeviceId();
+    }
+
+    std::vector<int32_t> getDeviceIds() const override {
+        return mChildStream->getDeviceIds();
+    }
+
     Result waitForStateChange(
             StreamState inputState,
             StreamState *nextState,

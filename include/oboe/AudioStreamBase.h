@@ -104,11 +104,11 @@ public:
     /**
      * @return the device ID of the stream.
      */
-    virtual int32_t getDeviceId() {
+    virtual int32_t getDeviceId() const {
         return mDeviceIds.empty() ? kUnspecified :  mDeviceIds[0];
     }
 
-    virtual std::vector<int32_t> getDeviceIds() {
+    virtual std::vector<int32_t> getDeviceIds() const {
         return mDeviceIds;
     }
 

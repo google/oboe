@@ -369,12 +369,12 @@ The data in the buffer must match the data format returned by `mStream->getDataF
 
 A routing changed can happen when there is any peripheral connected/disconnected or any system-wide event, such as system Settings enable/disable a route, happens.
 
-Before Android 17, when the routed device(s) is changed, Android aaudio framework will always disconnect the stream. See **Disconnected audio stream** section for more information about stream disconnection.
+Before Android 17, when the routed device(s) is changed, Android AAudio framework will always disconnect the stream. See **Disconnected audio stream** section for more information about stream disconnection.
 In Android API level 37, routing changed callback is introduced to notify apps when the routed devices are changed.
 
-Instead of disconnecting stream at all cases, Android aaudio will now evaluate if the audio configuration stays similar when the routed device(s) is changed.
-If the configuration stays the same but just the routed device(s) is changed, aaudio framework will fire a routing changed callback if it is register when opening.
-This usually happens when the stream is offloaded or it is not on mmap path. If the audio configuration may be affected by routing changed, aaudio framework will
+Instead of disconnecting stream at all cases, Android AAudio will now evaluate if the audio configuration stays similar when the routed device(s) is changed.
+If the configuration stays the same but just the routed device(s) is changed, AAudio framework will fire a routing changed callback if it is register when opening.
+This usually happens when the stream is offloaded or it is not on mmap path. If the audio configuration may be affected by routing changed, AAudio framework will
 disconnect the stream. See **Disconnected audio stream** section for how to handle stream disconnection.
 
 If your apps need to be notified when the routed device is changed, write a class which extends `AudioStreamRoutingCallback` and then register your class using `builder.setRoutingCallback(yourCallbackClass)`.
