@@ -208,6 +208,10 @@ private:
     // We may not use this but it is so small that it is not worth allocating dynamically.
     AudioStreamErrorCallback mDefaultErrorCallback;
 
+    // With AAudio introduce routing changed callback in Android 17, aaudio may not disconnect
+    // the stream when routing is changed. In that case, UpdatedDeviceIds is introduced to track
+    // the device ids. When there is routing callback, set the value to `deviceIds[idx^1]` and then
+    // flip the `idx` to `idx^1`. The get device query will then return `deviceIds[idx]`.
     struct UpdatedDeviceIds {
         std::atomic<int> idx{0};
         std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
