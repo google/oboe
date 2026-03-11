@@ -87,6 +87,7 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     public static final boolean VALUE_DEFAULT_USE_OUTPUT_DEVICES = true;
 
     public static final int DURATION_SECONDS = 4;
+    public static final int EARLY_STOP_DURATION_SECONDS = 1;
     private final static double MIN_REQUIRED_MAGNITUDE = 0.001;
     private final static double MAX_ALLOWED_JITTER = 0.1; // Matches CTS Verifier
     // This must match the value of kPhaseInvalid in BaseSineAnalyzer.h
@@ -135,8 +136,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     private double mMaxMagnitude;
     private int    mPhaseCount;
     private double mPhase;
-    private double mPhaseErrorSum;
-    private double mPhaseErrorCount;
 
     private boolean mSkipRemainingTests;
 
@@ -256,35 +255,17 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             mMaxMagnitude = -1.0;
             mPhaseCount = 0;
             mPhase = 0.0;
-            mPhaseErrorSum = 0.0;
-            mPhaseErrorCount = 0;
             super.startSniffer();
         }
 
         private void gatherData() {
             mMagnitude = getMagnitude();
             mMaxMagnitude = getMaxMagnitude();
-            Log.d(TAG, String.format(Locale.getDefault(), "magnitude = %7.4f, maxMagnitude = %7.4f",
-                    mMagnitude, mMaxMagnitude));
-            // Only look at the phase if we have a signal.
-            if (mMagnitude >= MIN_REQUIRED_MAGNITUDE) {
-                double phase = getPhaseDataPaths();
-                if (phase != PHASE_INVALID) {
-                    // Wait for the analyzer to get a lock on the signal.
-                    // Arbitrary number of phase measurements before we start measuring jitter.
-                    final int kMinPhaseMeasurementsRequired = 4;
-                    if (mPhaseCount >= kMinPhaseMeasurementsRequired) {
-                        double phaseError = Math.abs(calculatePhaseError(phase, mPhase));
-                        // collect average error
-                        mPhaseErrorSum += phaseError;
-                        mPhaseErrorCount++;
-                        Log.d(TAG, String.format(Locale.getDefault(), "phase = %7.4f, mPhase = %7.4f, phaseError = %7.4f, jitter = %7.4f",
-                                phase, mPhase, phaseError, getAveragePhaseError()));
-                    }
-                    mPhase = phase;
-                }
-                mPhaseCount++;
-            }
+            mPhase = getPhaseDataPaths();
+            mPhaseCount = getPhaseCount();
+            Log.d(TAG, String.format(Locale.getDefault(),
+                    "magnitude = %7.4f, maxMagnitude = %7.4f, phase = %7.4f, phaseCount = %d, jitter = %7.4f",
+                    mMagnitude, mMaxMagnitude, mPhase, mPhaseCount, getAveragePhaseError()));
         }
 
         public String getCurrentStatusReport() {
@@ -366,6 +347,9 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     native double getMaxMagnitude();
 
     native double getPhaseDataPaths();
+    native int getPhaseCount();
+    native double getAveragePhaseError();
+    native boolean isPhaseJitterValid();
 
     native void setSignalType(int type);
     native String getFrequencyResponse();
@@ -457,10 +441,13 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
     }
 
     @Override
-    protected boolean isFinishedEarly() {
-        return (mMaxMagnitude > MIN_REQUIRED_MAGNITUDE)
-                && (getAveragePhaseError() < MAX_ALLOWED_JITTER)
-                && isPhaseJitterValid();
+    protected boolean isFinishedEarly(double runningTimeSeconds) {
+        if (mSignalType == 0) { // Sine
+            boolean passed = mMagnitude > MIN_REQUIRED_MAGNITUDE && getAveragePhaseError() < MAX_ALLOWED_JITTER
+                    && isPhaseJitterValid();
+            return passed && (runningTimeSeconds >= EARLY_STOP_DURATION_SECONDS);
+        }
+        return false;
     }
 
     // @return reasons for failure of empty string
@@ -489,18 +476,6 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             why += ", jitterHigh";
         }
         return why;
-    }
-
-    private double getAveragePhaseError() {
-        // If we have no measurements then return maximum possible phase jitter
-        // to avoid dividing by zero.
-        return (mPhaseErrorCount > 0) ? (mPhaseErrorSum / mPhaseErrorCount) : Math.PI;
-    }
-
-    private boolean isPhaseJitterValid() {
-        // Arbitrary number of measurements to be considered valid.
-        final int kMinPhaseErrorCount = 5;
-        return mPhaseErrorCount >= kMinPhaseErrorCount;
     }
 
     String getOneLineSummary() {

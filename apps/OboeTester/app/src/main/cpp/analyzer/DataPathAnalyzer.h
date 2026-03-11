@@ -29,17 +29,25 @@ public:
     void reset() override;
 
     double getMaxMagnitude();
+    double getAveragePhaseError();
+    int getPhaseCount();
+    bool isPhaseJitterValid();
 
     std::string getFrequencyResponse();
     std::string getDistortionReport();
     int getAnalysisResult();
 
 private:
+    static constexpr double kMinSmoothedMagnitude = 0.001;
+
     double calculatePhaseError(double p1, double p2);
 
     double  mPreviousPhaseOffset = 0.0;
     double  mPhaseTolerance = 2 * M_PI / 48;
     double  mMaxMagnitude = 0.0;
+    int     mPhaseCount = 0;
+    double  mPhaseErrorSum = 0.0;
+    int     mPhaseErrorCount = 0;
 
     // For multi-tone analysis
     std::vector<float> mFftBuffer;

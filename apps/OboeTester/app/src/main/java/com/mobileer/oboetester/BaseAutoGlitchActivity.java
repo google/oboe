@@ -344,13 +344,13 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
             long now = System.currentTimeMillis();
             long startedAt = now;
             long endTime = System.currentTimeMillis() + (mDurationSeconds * 1000);
-            boolean finishedEarly = false;
-            while (now < endTime && !finishedEarly) {
+            while (now < endTime) {
                 Thread.sleep(100); // Let test run.
                 now = System.currentTimeMillis();
-                finishedEarly = isFinishedEarly();
-                if (finishedEarly) {
+                double runningTimeSeconds = (now - startedAt) / 1000.0;
+                if (isFinishedEarly(runningTimeSeconds)) {
                     log("Finished early after " + (now - startedAt) + " msec.");
+                    break;
                 }
             }
         }
@@ -585,7 +585,7 @@ public class BaseAutoGlitchActivity extends GlitchActivity {
         return null;
     }
 
-    protected boolean isFinishedEarly() {
+    protected boolean isFinishedEarly(double runningTimeSeconds) {
         return false;
     }
 

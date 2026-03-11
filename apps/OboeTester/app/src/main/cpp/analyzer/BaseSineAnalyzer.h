@@ -130,7 +130,7 @@ public:
             switch (mSignalType) {
                 case Chirp: {
                     if (mFrameCounter < getSampleRate() * kChirpDurationSeconds) {
-                        float sinOut = sinf(mOutputPhase);
+                        double sinOut = sin(mOutputPhase);
                         // Simple linear chirp from kChirpStartFrequency to mChirpEndFrequencyActual
                         // in kChirpDurationSeconds seconds.
                         double freq = kChirpStartFrequency
@@ -157,7 +157,7 @@ public:
                 }
                 case Sine:
                 default: {
-                    float sinOut = sinf(mOutputPhase);
+                    double sinOut = sin(mOutputPhase);
                     incrementOutputPhase();
                     output = (sinOut * mOutputAmplitude)
                             + (mWhiteNoise.nextRandomDouble() * getNoiseAmplitude());
@@ -214,8 +214,8 @@ public:
      */
     bool transformSample(float sample) {
         // Compare incoming signal with the reference input sine wave.
-        mSinAccumulator += static_cast<double>(sample) * sinf(mInputPhase);
-        mCosAccumulator += static_cast<double>(sample) * cosf(mInputPhase);
+        mSinAccumulator += static_cast<double>(sample) * sin(mInputPhase);
+        mCosAccumulator += static_cast<double>(sample) * cos(mInputPhase);
         incrementInputPhase();
 
         mFramesAccumulated++;
@@ -224,7 +224,8 @@ public:
             const double coefficient = 0.1;
             double magnitude = calculateMagnitudePhase(&mPhaseOffset);
 
-            ALOGD("%s(), phaseOffset = %f\n", __func__, mPhaseOffset);
+            ALOGD("%s(), magnitude = %f, phaseOffset = %f\n", __func__,
+                  magnitude, mPhaseOffset);
             if (mPhaseOffset != kPhaseInvalid) {
                 // One pole averaging filter for magnitude.
                 setMagnitude((mMagnitude * (1.0 - coefficient)) + (magnitude * coefficient));

@@ -169,12 +169,20 @@ BaseSineAnalyzer::result_code DataPathAnalyzer::processInputFrame(const float *f
 
             if (transformSample(sample)) {
                 // Analyze magnitude and phase on every period.
-                if (mPhaseOffset != kPhaseInvalid) {
-                    double diff = fabs(calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
+                if (mPhaseOffset != kPhaseInvalid &&
+                    mMagnitude >= kMinSmoothedMagnitude) {
+                    double diff = fabs(
+                        calculatePhaseError(mPhaseOffset, mPreviousPhaseOffset));
                     if (diff < mPhaseTolerance) {
                         mMaxMagnitude = std::max(mMagnitude, mMaxMagnitude);
                     }
+                    constexpr int kMinPhaseCount = 4;
+                    if (mPhaseCount >= kMinPhaseCount) {
+                        mPhaseErrorSum += diff;
+                        mPhaseErrorCount++;
+                    }
                     mPreviousPhaseOffset = mPhaseOffset;
+                    mPhaseCount++;
                 }
             }
             break;
@@ -207,6 +215,9 @@ std::string DataPathAnalyzer::analyze() {
 
 void DataPathAnalyzer::reset() {
     BaseSineAnalyzer::reset();
+    mPhaseErrorSum = 0.0;
+    mPhaseErrorCount = 0;
+    mPhaseCount = 0;
     mPreviousPhaseOffset = 999.0; // Arbitrary high offset to prevent early lock.
     mMaxMagnitude = 0.0;
 }
@@ -227,3 +238,14 @@ int DataPathAnalyzer::getAnalysisResult() {
     return mAnalysisResult;
 }
 
+double DataPathAnalyzer::getAveragePhaseError() {
+  return mPhaseErrorCount > 0 ? mPhaseErrorSum / mPhaseErrorCount : M_PI;
+}
+
+int DataPathAnalyzer::getPhaseCount() { return mPhaseCount; }
+
+bool DataPathAnalyzer::isPhaseJitterValid() { 
+    // Arbitrary number of measurements to be considered valid.
+    constexpr int kMinPhaseErrorCount = 5;
+    return mPhaseErrorCount >= kMinPhaseErrorCount;
+ }
