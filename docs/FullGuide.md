@@ -369,7 +369,7 @@ The data in the buffer must match the data format returned by `mStream->getDataF
 
 A routing changed can happen when there is any peripheral connected/disconnected or any system-wide event, such as system Settings enable/disable a route, happens.
 
-Before Android 17, when the routed device(s) is changed, Android AAudio framework will always disconnect the stream. See **Disconnected audio stream** section for more information about stream disconnection.
+Before Android API level 37, when the routed device(s) is changed, Android AAudio framework will always disconnect the stream. See **Disconnected audio stream** section for more information about stream disconnection.
 In Android API level 37, routing changed callback is introduced to notify apps when the routed devices are changed.
 
 Instead of disconnecting stream at all cases, Android AAudio will now evaluate if the audio configuration stays similar when the routed device(s) is changed.
