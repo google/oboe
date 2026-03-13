@@ -213,6 +213,32 @@ static void oboe_aaudio_presentation_end_thread_proc_shared(
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
 }
 
+static void oboe_aaudio_routing_changed_thread_proc_common(
+        AudioStreamAAudio *oboeStream, const int32_t *deviceIds, int32_t numDevices) {
+    auto routingCallback = oboeStream->getRoutingCallback();
+    if (routingCallback == nullptr) return;
+    routingCallback->onRoutingChanged(oboeStream, deviceIds, numDevices);
+}
+
+// Callback thread for raw pointers
+static void oboe_aaudio_routing_changed_thread_proc(
+        AudioStreamAAudio *oboeStream, std::vector<int32_t> deviceIds) {
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    oboe_aaudio_routing_changed_thread_proc_common(oboeStream, deviceIds.data(),
+                                                   static_cast<int32_t>(deviceIds.size()));
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
+}
+
+// Callback thread for shared pointers
+static void oboe_aaudio_routing_changed_thread_proc_shared(
+        std::shared_ptr<AudioStream> sharedStream, std::vector<int32_t> deviceIds) {
+    LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
+    oboe_aaudio_routing_changed_thread_proc_common(oboeStream, deviceIds.data(),
+                                                   static_cast<int32_t>(deviceIds.size()));
+    LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
+}
+
 namespace oboe {
 
 /*
@@ -496,6 +522,12 @@ Result AudioStreamAAudio::open() {
         mLibLoader->builder_setPresentationEndCallback(aaudioBuilder,
                                                        internalPresentationEndCallback,
                                                        this);
+    }
+
+    if (mLibLoader->builder_setRoutingChangedCallback != nullptr) {
+        mLibLoader->builder_setRoutingChangedCallback(aaudioBuilder,
+                                                      internalRoutingChangedCallback,
+                                                      this);
     }
 
     // ============= OPEN THE STREAM ================
@@ -925,6 +957,22 @@ StreamState AudioStreamAAudio::getState() {
     }
 }
 
+void AudioStreamAAudio::onRoutingChanged(std::vector<int32_t> deviceIds) {
+    int nextIdx = mUpdatedDeviceIds.idx.load() ^ 1;
+    mUpdatedDeviceIds.deviceIds[nextIdx] = deviceIds;
+    mUpdatedDeviceIds.idx.store(nextIdx);
+}
+
+int32_t AudioStreamAAudio::getDeviceId() const {
+    auto deviceIds = mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()];
+    return deviceIds.empty() ? kUnspecified : deviceIds[0];
+}
+
+std::vector<int32_t> AudioStreamAAudio::getDeviceIds() const {
+    auto deviceIds = mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()];
+    return deviceIds;
+}
+
 int32_t AudioStreamAAudio::getBufferSizeInFrames() {
     std::shared_lock<std::shared_mutex> lock(mAAudioStreamLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -1062,6 +1110,40 @@ void AudioStreamAAudio::internalPresentationEndCallback(AAudioStream *stream, vo
     }
 }
 
+void AudioStreamAAudio::internalRoutingChangedCallback(
+        AAudioStream *stream, void *userData, const int32_t *deviceIds, int32_t numDevices) {
+    AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
+
+    // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
+    auto [isStreamAlive, sharedStream] =
+            AAudioStreamCollection::getInstance().getStream(oboeStream);
+    if (!isStreamAlive) {
+        // Client has closed the stream, no need to call the routing changed callback here.
+        return;
+    }
+
+    std::vector<int32_t> deviceIdsCopy(deviceIds, deviceIds + numDevices);
+
+    if (stream != oboeStream->getUnderlyingStream()) {
+        LOGW("%s() stream already closed or closing", __func__); // might happen if there are bugs
+    } else if (sharedStream) {
+        oboeStream->onRoutingChanged(deviceIdsCopy);
+        if (oboeStream->getRoutingCallback() != nullptr) {
+            // Handle routing change on a separate thread using shared pointer.
+            std::thread t(oboe_aaudio_routing_changed_thread_proc_shared, sharedStream,
+                          deviceIdsCopy);
+            t.detach();
+        }
+    } else {
+        oboeStream->onRoutingChanged(deviceIdsCopy);
+        if (oboeStream->getRoutingCallback() != nullptr) {
+            // Handle routing change on a separate thread.
+            std::thread t(oboe_aaudio_routing_changed_thread_proc, oboeStream, deviceIdsCopy);
+            t.detach();
+        }
+    }
+}
+
 Result AudioStreamAAudio::setOffloadDelayPadding(
         int32_t delayInFrames, int32_t paddingInFrames) {
     if (mLibLoader->stream_setOffloadDelayPadding == nullptr) {
@@ -1142,10 +1224,11 @@ void AudioStreamAAudio::updateDeviceIds() {
         for (int i = 0; i < deviceIdSize; i++) {
             mDeviceIds.push_back(deviceIds[i]);
         }
+        mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()] = mDeviceIds;
     }
 
     // This should not happen in most cases. Please file a bug on Oboe if you see this happening.
-    if (mDeviceIds.empty()) {
+    if (getDeviceIds().empty()) {
         LOGW("updateDeviceIds() returns an empty array.");
     }
 }

@@ -813,7 +813,7 @@ private:
  */
 class ActivityTestDisconnect : public ActivityContext {
 public:
-    ActivityTestDisconnect() {}
+    ActivityTestDisconnect();
 
     virtual ~ActivityTestDisconnect() = default;
 
@@ -832,9 +832,35 @@ public:
         return oboe::Result::ErrorNull;
     }
 
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
     void configureAfterOpen() override;
 
+    int32_t getRoutingChangedCount() {
+        return mRoutingChangedCount;
+    }
+
+    void onRoutingChanged() {
+        mRoutingChangedCount++;
+    }
+
 private:
+    class TestRoutingCallback : public oboe::AudioStreamRoutingCallback {
+    public:
+        TestRoutingCallback(ActivityTestDisconnect *activity)
+                : mActivity(activity) {}
+        virtual ~TestRoutingCallback() = default;
+        void onRoutingChanged(oboe::AudioStream* /* audioStream */,
+                              const int32_t* /* deviceIds */,
+                              int32_t /* numDevices */) override {
+            mActivity->onRoutingChanged();
+        }
+    private:
+        ActivityTestDisconnect *mActivity;
+    };
+
+    std::shared_ptr<TestRoutingCallback>    mRoutingCallback;
+    std::atomic<int32_t>                    mRoutingChangedCount{0};
     std::unique_ptr<SineOscillator>         sineOscillator;
     std::unique_ptr<MonoToMultiConverter>   monoToMulti;
     std::shared_ptr<oboe::flowgraph::SinkFloat>   mSinkFloat;

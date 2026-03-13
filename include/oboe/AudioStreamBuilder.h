@@ -600,6 +600,26 @@ public:
     }
 
     /**
+     * Specifies an object to handle routing related callbacks from the underlying API.
+     * This will be called when the routed devices of the stream are changed.
+     *
+     * <strong>Important: See AudioStreamCallback for restrictions on what may be called
+     * from the callback methods.</strong>
+     *
+     * We pass a shared_ptr so that the routingCallback object cannot be deleted before the
+     * stream is deleted. If the stream was created using a shared_ptr then the stream cannot be
+     * deleted before the routing callback has finished running.
+     *
+     * @param sharedRoutingCallback
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setRoutingCallback(
+            std::shared_ptr<AudioStreamRoutingCallback> sharedRoutingCallback) {
+        mSharedRoutingCallback = sharedRoutingCallback;
+        return this;
+    }
+
+    /**
      * Specifies an object to handle data or error related callbacks from the underlying API.
      *
      * This is the equivalent of calling both setDataCallback() and setErrorCallback().

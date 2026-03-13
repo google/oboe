@@ -85,6 +85,10 @@ public:
 
     StreamState getState() override;
 
+    int32_t getDeviceId() const override;
+
+    std::vector<int32_t> getDeviceIds() const override;
+
     AudioApi getAudioApi() const override {
         return AudioApi::AAudio;
     }
@@ -154,6 +158,12 @@ protected:
             AAudioStream *stream,
             void *userData);
 
+    static void internalRoutingChangedCallback(
+            AAudioStream *stream,
+            void *userData,
+            const int32_t *deviceIds,
+            int32_t numDevices);
+
     void *getUnderlyingStream() const override {
         return mAAudioStream.load();
     }
@@ -166,6 +176,8 @@ protected:
     void beginPerformanceHintInCallback() override;
 
     void endPerformanceHintInCallback(int32_t numFrames) override;
+
+    void onRoutingChanged(std::vector<int32_t> deviceIds);
 
     // set by callback (or app when idle)
     std::atomic<bool>    mAdpfOpenAttempted{false};
@@ -195,6 +207,16 @@ private:
 
     // We may not use this but it is so small that it is not worth allocating dynamically.
     AudioStreamErrorCallback mDefaultErrorCallback;
+
+    // With AAudio introduce routing changed callback in Android 17, aaudio may not disconnect
+    // the stream when routing is changed. In that case, UpdatedDeviceIds is introduced to track
+    // the device ids. When there is routing callback, set the value to `deviceIds[idx^1]` and then
+    // flip the `idx` to `idx^1`. The get device query will then return `deviceIds[idx]`.
+    struct UpdatedDeviceIds {
+        std::atomic<int> idx{0};
+        std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
+    };
+    UpdatedDeviceIds mUpdatedDeviceIds;
 };
 
 } // namespace oboe

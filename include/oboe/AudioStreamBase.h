@@ -104,11 +104,11 @@ public:
     /**
      * @return the device ID of the stream.
      */
-    int32_t getDeviceId() const {
+    virtual int32_t getDeviceId() const {
         return mDeviceIds.empty() ? kUnspecified :  mDeviceIds[0];
     }
 
-    std::vector<int32_t> getDeviceIds() const {
+    virtual std::vector<int32_t> getDeviceIds() const {
         return mDeviceIds;
     }
 
@@ -142,6 +142,14 @@ public:
      */
     std::shared_ptr<AudioStreamPresentationCallback> getPresentationCallback() const {
         return mSharedPresentationCallback;
+    }
+
+    /**
+     * For internal use only.
+     * @return the routing callback object for this stream, if set.
+     */
+    std::shared_ptr<AudioStreamRoutingCallback> getRoutingCallback() const {
+        return mSharedRoutingCallback;
     }
 
     /**
@@ -315,6 +323,8 @@ protected:
     std::shared_ptr<AudioStreamErrorCallback> mSharedErrorCallback;
 
     std::shared_ptr<AudioStreamPresentationCallback> mSharedPresentationCallback;
+
+    std::shared_ptr<AudioStreamRoutingCallback> mSharedRoutingCallback;
 
     /** Number of audio frames which will be requested in each callback */
     int32_t                         mFramesPerCallback = kUnspecified;

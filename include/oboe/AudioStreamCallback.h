@@ -191,6 +191,26 @@ public:
 };
 
 /**
+ * AudioStreamRoutingCallback defines a callback interface for
+ * being notified when the routed devices of a stream are changed.
+ *
+ * It is used with AudioStreamBuilder::setRoutingCallback().
+ */
+class AudioStreamRoutingCallback {
+public:
+    /**
+     * This will be called when the routed devices of the stream are changed.
+     *
+     * @param audioStream pointer to the associated stream
+     * @param deviceIds a pointer to a list of current routed device ids.
+     * @param numDevices the number of current routed devices.
+     */
+    virtual void onRoutingChanged(AudioStream* /* audioStream */,
+                                  const int32_t* /* deviceIds */,
+                                  int32_t /* numDevices */) {}
+};
+
+/**
  * AudioStreamPartialDataCallback defines a callback interface for
  * moving data to/from an audio stream using `onAudioReady`
  *
