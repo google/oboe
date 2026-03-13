@@ -167,6 +167,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a25b7a33be321404664a88a8fe9127e14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac63369a8965375a2f71267158f127e0d" id="r_ac63369a8965375a2f71267158f127e0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_builder.html">AudioStreamBuilder</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac63369a8965375a2f71267158f127e0d">setPresentationCallback</a> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_presentation_callback.html">AudioStreamPresentationCallback</a> &gt; sharedPresentationCallback)</td></tr>
 <tr class="separator:ac63369a8965375a2f71267158f127e0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b666e14d5fc119d11bda60b2a318eeb" id="r_a5b666e14d5fc119d11bda60b2a318eeb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_builder.html">AudioStreamBuilder</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5b666e14d5fc119d11bda60b2a318eeb">setRoutingCallback</a> (std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_routing_callback.html">AudioStreamRoutingCallback</a> &gt; sharedRoutingCallback)</td></tr>
+<tr class="separator:a5b666e14d5fc119d11bda60b2a318eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6df286286451120f8dae20358e0897c" id="r_af6df286286451120f8dae20358e0897c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_builder.html">AudioStreamBuilder</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af6df286286451120f8dae20358e0897c">setCallback</a> (<a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> *streamCallback)</td></tr>
 <tr class="separator:af6df286286451120f8dae20358e0897c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d9e47dff2e81540c59349813c7d3566" id="r_a5d9e47dff2e81540c59349813c7d3566"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_builder.html">AudioStreamBuilder</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5d9e47dff2e81540c59349813c7d3566">setChannelConversionAllowed</a> (bool allowed)</td></tr>
@@ -212,11 +214,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1fb033fc963f971bd1aa8f6707e49b41 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ddb935de0e24dd7ae8e2cfbecac9fdc inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a2ddb935de0e24dd7ae8e2cfbecac9fdc"><td class="memItemLeft" align="right" valign="top">PerformanceMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a2ddb935de0e24dd7ae8e2cfbecac9fdc">getPerformanceMode</a> () const</td></tr>
 <tr class="separator:a2ddb935de0e24dd7ae8e2cfbecac9fdc inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a093057d625bc896864b959974c265f21 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a093057d625bc896864b959974c265f21"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a093057d625bc896864b959974c265f21">getDeviceId</a> () const</td></tr>
-<tr class="separator:a093057d625bc896864b959974c265f21 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09f1bb95625469d682b15c90fb7d0d6b inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a09f1bb95625469d682b15c90fb7d0d6b"><td class="memItemLeft" align="right" valign="top">
-std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getDeviceIds</b> () const</td></tr>
-<tr class="separator:a09f1bb95625469d682b15c90fb7d0d6b inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17e5c392f19de3b8664535242a2a9d9c inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a17e5c392f19de3b8664535242a2a9d9c"><td class="memItemLeft" align="right" valign="top">virtual int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a17e5c392f19de3b8664535242a2a9d9c">getDeviceId</a> () const</td></tr>
+<tr class="separator:a17e5c392f19de3b8664535242a2a9d9c inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57cc2958d0dd089ee6a76d9575fa05d0 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a57cc2958d0dd089ee6a76d9575fa05d0"><td class="memItemLeft" align="right" valign="top">
+virtual std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getDeviceIds</b> () const</td></tr>
+<tr class="separator:a57cc2958d0dd089ee6a76d9575fa05d0 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d2b0c8664fb85f0425bf081d02bda63 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a1d2b0c8664fb85f0425bf081d02bda63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_data_callback.html">AudioStreamDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a1d2b0c8664fb85f0425bf081d02bda63">getDataCallback</a> () const</td></tr>
 <tr class="separator:a1d2b0c8664fb85f0425bf081d02bda63 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade17e1b92eda38857766263be18201ae inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_ade17e1b92eda38857766263be18201ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classoboe_1_1_audio_stream_partial_data_callback.html">AudioStreamPartialDataCallback</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#ade17e1b92eda38857766263be18201ae">getPartialDataCallback</a> () const</td></tr>
@@ -225,6 +227,8 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <tr class="separator:a75eca223a8e8793f47d23f42b89acfab inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8041b52bb5c6085e92fb22de8ab9d1e3 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a8041b52bb5c6085e92fb22de8ab9d1e3"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_presentation_callback.html">AudioStreamPresentationCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a8041b52bb5c6085e92fb22de8ab9d1e3">getPresentationCallback</a> () const</td></tr>
 <tr class="separator:a8041b52bb5c6085e92fb22de8ab9d1e3 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7338358c5955491ad076ac4739ff03e1 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a7338358c5955491ad076ac4739ff03e1"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_routing_callback.html">AudioStreamRoutingCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a7338358c5955491ad076ac4739ff03e1">getRoutingCallback</a> () const</td></tr>
+<tr class="separator:a7338358c5955491ad076ac4739ff03e1 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a54d38b985a2eb12c6972104dc0ce73 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a9a54d38b985a2eb12c6972104dc0ce73"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a9a54d38b985a2eb12c6972104dc0ce73">isDataCallbackSpecified</a> () const</td></tr>
 <tr class="separator:a9a54d38b985a2eb12c6972104dc0ce73 inherit pub_methods_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a054a576db5a7aa1b333311aa975d5289 inherit pub_methods_classoboe_1_1_audio_stream_base" id="r_a054a576db5a7aa1b333311aa975d5289"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a054a576db5a7aa1b333311aa975d5289">isPartialDataCallbackSpecified</a> () const</td></tr>
@@ -301,6 +305,9 @@ std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_error_callbac
 <tr class="memitem:a67590123a2056747eb67b9db4640f03f inherit pro_attribs_classoboe_1_1_audio_stream_base" id="r_a67590123a2056747eb67b9db4640f03f"><td class="memItemLeft" align="right" valign="top">
 std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_presentation_callback.html">AudioStreamPresentationCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mSharedPresentationCallback</b></td></tr>
 <tr class="separator:a67590123a2056747eb67b9db4640f03f inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa64878d801386f8cd94b39b88ad4b406 inherit pro_attribs_classoboe_1_1_audio_stream_base" id="r_aa64878d801386f8cd94b39b88ad4b406"><td class="memItemLeft" align="right" valign="top">
+std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_routing_callback.html">AudioStreamRoutingCallback</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mSharedRoutingCallback</b></td></tr>
+<tr class="separator:aa64878d801386f8cd94b39b88ad4b406 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3962eb94420ad0ecea70029236001899 inherit pro_attribs_classoboe_1_1_audio_stream_base" id="r_a3962eb94420ad0ecea70029236001899"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a3962eb94420ad0ecea70029236001899">mFramesPerCallback</a> = kUnspecified</td></tr>
 <tr class="separator:a3962eb94420ad0ecea70029236001899 inherit pro_attribs_classoboe_1_1_audio_stream_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ff460bac9d14dfeac4eeddfcbb6e206 inherit pro_attribs_classoboe_1_1_audio_stream_base" id="r_a5ff460bac9d14dfeac4eeddfcbb6e206"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classoboe_1_1_audio_stream_base.html#a5ff460bac9d14dfeac4eeddfcbb6e206">mChannelCount</a> = kUnspecified</td></tr>
@@ -922,7 +929,7 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <p>Request a stream to a specific audio input/output device given an audio device ID.</p>
 <p>In most cases, the primary device will be the appropriate device to use, and the deviceId can be left kUnspecified.</p>
 <p>The ID could be obtained from the Java AudioManager. AudioManager.getDevices() returns an array of AudioDeviceInfo, which contains a getId() method. That ID can be passed to this function.</p>
-<p>It is possible that you may not get the device that you requested. So if it is important to you, you should call stream-&gt;<a class="el" href="classoboe_1_1_audio_stream_base.html#a093057d625bc896864b959974c265f21">getDeviceId()</a> after the stream is opened to verify the actual ID.</p>
+<p>It is possible that you may not get the device that you requested. So if it is important to you, you should call stream-&gt;<a class="el" href="classoboe_1_1_audio_stream_base.html#a17e5c392f19de3b8664535242a2a9d9c">getDeviceId()</a> after the stream is opened to verify the actual ID.</p>
 <p>Note that when using OpenSL ES, this will be ignored and the created stream will have deviceId kUnspecified.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1402,6 +1409,41 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">privacySensitive</td><td>PrivacySensitiveMode::Enabled if capture from this stream must be marked as privacy sensitive, PrivacySensitiveMode::Disabled if stream should be marked as not sensitive. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>pointer to the builder so calls can be chained </dd></dl>
+
+</div>
+</div>
+<a id="a5b666e14d5fc119d11bda60b2a318eeb" name="a5b666e14d5fc119d11bda60b2a318eeb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b666e14d5fc119d11bda60b2a318eeb">&#9670;&#160;</a></span>setRoutingCallback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classoboe_1_1_audio_stream_builder.html">AudioStreamBuilder</a> * oboe::AudioStreamBuilder::setRoutingCallback </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_routing_callback.html">AudioStreamRoutingCallback</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>sharedRoutingCallback</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Specifies an object to handle routing related callbacks from the underlying API. This will be called when the routed devices of the stream are changed.</p>
+<p><b>Important: See <a class="el" href="classoboe_1_1_audio_stream_callback.html">AudioStreamCallback</a> for restrictions on what may be called from the callback methods.</b></p>
+<p>We pass a shared_ptr so that the routingCallback object cannot be deleted before the stream is deleted. If the stream was created using a shared_ptr then the stream cannot be deleted before the routing callback has finished running.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sharedRoutingCallback</td><td></td></tr>
   </table>
   </dd>
 </dl>
