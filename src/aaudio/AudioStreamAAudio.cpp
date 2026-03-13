@@ -72,23 +72,37 @@ public:
     }
 
     /**
-     * Get a shared pointer to the stream. This is typically called from a callback thread.
+     * Get a shared pointer to the stream and its parent (if wrapped by FilterAudioStream).
+     * This is typically called from a callback thread.
+     *
+     * The shared pointers are valid only if the stream is opened with shared pointer and is not closed.
      *
      * @param stream raw pointer to the stream.
-     * @return a pair of a boolean and a shared pointer to the stream. The boolean indicates
-     *         if the stream is present in the collection. The shared pointer is valid only if
-     *         the stream is opened with shared pointer and is not closed.
+     * @return tuple:
+     *         - bool: indicates if the stream is present in the collection.
+     *         - shared_ptr to the stream.
+     *         - shared_ptr to the parent stream if wrapped by FilterAudioStream, nullptr otherwise.
      */
-    std::pair<bool, std::shared_ptr<oboe::AudioStream>> getStream(AudioStreamAAudio* stream) {
+    std::tuple<bool,
+            std::shared_ptr<oboe::AudioStream>,
+            std::shared_ptr<oboe::AudioStream>>
+    getStream(AudioStreamAAudio* stream) {
         if (stream == nullptr) {
-            return {false, nullptr};
+            return {false, nullptr, nullptr};
         }
         std::lock_guard<std::mutex> lock(mLock);
         if (mStreams.find(stream) != mStreams.end()) {
             auto sharedStream = stream->lockWeakThis();
-            return {true, sharedStream};
+
+            // If wrapped by FilterAudioStream, the parent must remain alive because
+            // callbacks are routed through it.
+            std::shared_ptr<AudioStream> sharedParentStream;
+            if (sharedStream && sharedStream->hasParentStream()) {
+                sharedParentStream = sharedStream->getParentStream()->lockWeakThis();
+            }
+            return {true, sharedStream, sharedParentStream};
         }
-        return {false, nullptr};
+        return {false, nullptr, nullptr};
     }
 
 private:
@@ -107,7 +121,7 @@ static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         int32_t numFrames) {
 
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    auto [isStreamAlive, sharedStream] =
+    auto [isStreamAlive, sharedStream, sharedParentStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
     if (!isStreamAlive) {
         // Note that the stream is removed from the collection when close is called. However,
@@ -132,7 +146,7 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
         void *audioData,
         int32_t numFrames) {
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
-    auto [isStreamAlive, sharedStream] =
+    auto [isStreamAlive, sharedStream, sharedParentStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
     if (!isStreamAlive) {
         // Note that the stream is removed from the collection when close is called. However,
@@ -183,9 +197,10 @@ static void oboe_aaudio_error_thread_proc(AudioStreamAAudio *oboeStream,
 
 // Callback thread for shared pointers.
 static void oboe_aaudio_error_thread_proc_shared(std::shared_ptr<AudioStream> sharedStream,
+                                          std::shared_ptr<AudioStream> sharedParentStream,
                                           Result error) {
     LOGD("%s(,%d) - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__, error);
-    // Hold the shared pointer while we use the raw pointer.
+    // Hold the shared pointer(s) while we use the raw pointer.
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
     oboe_aaudio_error_thread_proc_common(oboeStream, error);
     LOGD("%s() - exiting <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", __func__);
@@ -206,7 +221,8 @@ static void oboe_aaudio_presentation_thread_proc(AudioStreamAAudio *oboeStream) 
 
 // Callback thread for shared pointers
 static void oboe_aaudio_presentation_end_thread_proc_shared(
-        std::shared_ptr<AudioStream> sharedStream) {
+        std::shared_ptr<AudioStream> sharedStream,
+        std::shared_ptr<AudioStream> sharedParentStream) {
     LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
     oboe_aaudio_presentation_thread_proc_common(oboeStream);
@@ -231,7 +247,9 @@ static void oboe_aaudio_routing_changed_thread_proc(
 
 // Callback thread for shared pointers
 static void oboe_aaudio_routing_changed_thread_proc_shared(
-        std::shared_ptr<AudioStream> sharedStream, std::vector<int32_t> deviceIds) {
+        std::shared_ptr<AudioStream> sharedStream,
+        std::shared_ptr<AudioStream> sharedParentStream,
+        std::vector<int32_t> deviceIds) {
     LOGD("%s() - entering >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", __func__);
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(sharedStream.get());
     oboe_aaudio_routing_changed_thread_proc_common(oboeStream, deviceIds.data(),
@@ -278,7 +296,7 @@ void AudioStreamAAudio::internalErrorCallback(
     }
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
-    auto [isStreamAlive, sharedStream] =
+    auto [isStreamAlive, sharedStream, sharedParentStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
     if (!isStreamAlive) {
         // The stream is already closed. No need to call error callback.
@@ -295,7 +313,8 @@ void AudioStreamAAudio::internalErrorCallback(
         LOGW("%s() stream already closed or closing", __func__); // might happen if there are bugs
     } else if (sharedStream) {
         // Handle error on a separate thread using shared pointer.
-        std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream, oboeResult);
+        std::thread t(oboe_aaudio_error_thread_proc_shared, sharedStream, sharedParentStream,
+                      oboeResult);
         t.detach();
     } else {
         // Handle error on a separate thread.
@@ -1090,7 +1109,7 @@ void AudioStreamAAudio::internalPresentationEndCallback(AAudioStream *stream, vo
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
-    auto [isStreamAlive, sharedStream] =
+    auto [isStreamAlive, sharedStream, sharedParentStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
     if (!isStreamAlive) {
         // Client has closed the stream, no need to call the presentation end callback here.
@@ -1101,7 +1120,8 @@ void AudioStreamAAudio::internalPresentationEndCallback(AAudioStream *stream, vo
         LOGW("%s() stream already closed or closing", __func__); // might happen if there are bugs
     } else if (sharedStream) {
         // Handle error on a separate thread using shared pointer.
-        std::thread t(oboe_aaudio_presentation_end_thread_proc_shared, sharedStream);
+        std::thread t(oboe_aaudio_presentation_end_thread_proc_shared, sharedStream,
+                      sharedParentStream);
         t.detach();
     } else {
         // Handle error on a separate thread.
@@ -1115,7 +1135,7 @@ void AudioStreamAAudio::internalRoutingChangedCallback(
     AudioStreamAAudio *oboeStream = reinterpret_cast<AudioStreamAAudio*>(userData);
 
     // Prevents deletion of the stream if the app is using AudioStreamBuilder::openStream(shared_ptr)
-    auto [isStreamAlive, sharedStream] =
+    auto [isStreamAlive, sharedStream, sharedParentStream] =
             AAudioStreamCollection::getInstance().getStream(oboeStream);
     if (!isStreamAlive) {
         // Client has closed the stream, no need to call the routing changed callback here.
@@ -1131,7 +1151,7 @@ void AudioStreamAAudio::internalRoutingChangedCallback(
         if (oboeStream->getRoutingCallback() != nullptr) {
             // Handle routing change on a separate thread using shared pointer.
             std::thread t(oboe_aaudio_routing_changed_thread_proc_shared, sharedStream,
-                          deviceIdsCopy);
+                          sharedParentStream, deviceIdsCopy);
             t.detach();
         }
     } else {
