@@ -43,8 +43,7 @@ namespace oboe {
          * @return zero or negative error
          */
         int open(pid_t threadId,
-                int64_t targetDurationNanos,
-                bool highPerformanceAudio = false);
+                 int64_t targetDurationNanos);
 
         bool isOpen() const {
             return (mHintSession != nullptr);
@@ -71,20 +70,6 @@ namespace oboe {
         static void setUseAlternative(bool enabled) {
             sUseAlternativeHack = enabled;
         }
-
-        /**
-         * Control whether the actual duration reporting to ADPF is disabled.
-         * @param disabled set true to disable reporting; false to enable.
-         */
-        void setReportActualDurationDisabled(bool disabled);
-
-        /**
-         * Return true if the platform reports support for the high-performance-audio
-         * feature (APerfHintFeature::APERF_HINT_HIGH_PERFORMANCE_AUDIO).
-         * This is a static helper that will attempt to bind to the native API if
-         * necessary.
-         */
-        static bool isHighPerformanceAudioSupported();
 
         /**
          * Report the measured duration of a callback.
@@ -183,7 +168,6 @@ namespace oboe {
         APerformanceHintSession *mHintSession = nullptr;
         int64_t mBeginCallbackNanos = 0;
         static bool sUseAlternativeHack;
-        bool mIsReportActualDurationDisabled = false;
         int32_t mPreviousWorkload = 0;
         double mNanosPerWorkloadUnit = 0.0;
     };
