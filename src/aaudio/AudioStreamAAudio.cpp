@@ -422,7 +422,7 @@ Result AudioStreamAAudio::open() {
     } else {
         mLibLoader->builder_setChannelCount(aaudioBuilder, mChannelCount);
     }
-    mLibLoader->builder_setDeviceId(aaudioBuilder, getDeviceId());
+    mLibLoader->builder_setDeviceId(aaudioBuilder, AudioStreamBase::getDeviceId());
     mLibLoader->builder_setDirection(aaudioBuilder, static_cast<aaudio_direction_t>(mDirection));
     mLibLoader->builder_setFormat(aaudioBuilder, static_cast<aaudio_format_t>(mFormat));
     mLibLoader->builder_setSampleRate(aaudioBuilder, mSampleRate);
@@ -1223,8 +1223,8 @@ void AudioStreamAAudio::updateDeviceIds() {
         for (int i = 0; i < deviceIdSize; i++) {
             mDeviceIds.push_back(deviceIds[i]);
         }
-        mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()] = mDeviceIds;
     }
+    mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()] = mDeviceIds;
 
     // This should not happen in most cases. Please file a bug on Oboe if you see this happening.
     if (getDeviceIds().empty()) {
