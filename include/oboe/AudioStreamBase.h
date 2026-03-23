@@ -205,7 +205,8 @@ public:
     InputPreset getInputPreset() const { return mInputPreset; }
 
     /**
-     * @return the stream's session ID allocation strategy (None or Allocate).
+     * @return the session ID, SessionId::None, or SessionId::Allocate.
+     * Positive values represent the actual allocated session ID.
      */
     SessionId getSessionId() const { return mSessionId; }
 

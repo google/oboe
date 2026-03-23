@@ -507,6 +507,8 @@ namespace oboe {
     /**
      * This attribute can be used to allocate a session ID to the audio stream.
      *
+     * Positive values represent the actual allocated session ID.
+     *
      * This attribute only has an effect on Android API 28+.
      */
     enum SessionId {
