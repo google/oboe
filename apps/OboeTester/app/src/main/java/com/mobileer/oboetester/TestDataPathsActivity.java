@@ -437,6 +437,25 @@ public class TestDataPathsActivity  extends BaseAutoGlitchActivity {
             why += ", inPre(" + requestedInConfig.getInputPreset()
                     + "!=" + actualInConfig.getInputPreset() + "),";
         }
+
+        // Skip if USB loopback has mismatched hardware sample rates
+        AudioDeviceInfo outputDeviceInfo = getDeviceInfoById(actualOutConfig.getDeviceId());
+        if (outputDeviceInfo != null) {
+            int deviceType = outputDeviceInfo.getType();
+            if (deviceType == AudioDeviceInfo.TYPE_USB_DEVICE
+                    || deviceType == AudioDeviceInfo.TYPE_USB_HEADSET) {
+                AudioStreamBase inStream = mAudioInputTester.getCurrentAudioStream();
+                AudioStreamBase outStream = mAudioOutTester.getCurrentAudioStream();
+                if (inStream != null && outStream != null) {
+                    int inHwSr = inStream.getHardwareSampleRate();
+                    int outHwSr = outStream.getHardwareSampleRate();
+                    if (inHwSr != outHwSr && inHwSr != 0 && outHwSr != 0) {
+                        why += ", hwSampleRate(in=" + inHwSr + " != out=" + outHwSr + "),";
+                    }
+                }
+            }
+        }
+
         return why;
     }
 
