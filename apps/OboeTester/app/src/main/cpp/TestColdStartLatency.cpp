@@ -102,8 +102,30 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
 }
 
 void TestColdStartLatency::waitForValidTimestamp() {
-    while (!mStream->getTimestamp(CLOCK_MONOTONIC)) {
-        usleep(kPollPeriodMillis * 1000);
+    std::shared_ptr<oboe::AudioStream> stream = mStream;
+    if (!stream) return;
+
+    int32_t timeoutCount = 0;
+    const int32_t kMaxTimeoutCount = 3000 / kPollPeriodMillis; // 3 seconds timeout
+
+    if (stream->getDirection() == Direction::Output) {
+        while (!stream->getTimestamp(CLOCK_MONOTONIC)) {
+            oboe::StreamState state = stream->getState();
+            if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+                break;
+            }
+            usleep(kPollPeriodMillis * 1000);
+            if (++timeoutCount > kMaxTimeoutCount) break;
+        }
+    } else {
+        while (stream->getFramesRead() == 0) {
+            oboe::StreamState state = stream->getState();
+            if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+                break;
+            }
+            usleep(kPollPeriodMillis * 1000);
+            if (++timeoutCount > kMaxTimeoutCount) break;
+        }
     }
 }
 
