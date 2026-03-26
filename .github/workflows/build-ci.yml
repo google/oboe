@@ -23,7 +23,7 @@ jobs:
         java-version: 18
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
     
     - name: build samples and apps
       uses: github/codeql-action/init@v4
