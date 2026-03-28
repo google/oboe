@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015 The Android Open Source Project
  *
@@ -17,16 +18,24 @@ package com.mobileer.oboetester;
 
 import java.util.ArrayList;
 
+import android.util.Log;
+
 /**
  * Analyze a recording and extract edges for latency analysis.
  */
 public class TapLatencyAnalyser {
     public static final int TYPE_TAP = 0;
+    public static final int TYPE_TONE = 1;
     float[] mHighPassBuffer;
 
     private float mDroop = 0.995f;
     private static final float EDGE_THRESHOLD = 0.01f;
     private static final float LOW_FRACTION = 0.5f;
+
+    private static final float SETTLE_FRACTION = 0.25f; // 75% decay
+    private static final float REARM_FRACTION  = 0.30f;
+    private static final float SLOPE_EPSILON   = 0.002f;
+    private static final int MAX_SETTLE_SAMPLES = 5000;
 
     public static class TapLatencyEvent {
         public int type;
@@ -93,19 +102,60 @@ public class TapLatencyAnalyser {
         float lowThreshold = EDGE_THRESHOLD;
         boolean armed = true;
         int sampleIndex = 0;
+
+        boolean tapDetected = false;
+        boolean tapSettled = false;
+        boolean toneDetected = false;
+
+        float lastPeak = 0.0f;
+        int lastTapIndex = 0;
+
         for (float level : peakBuffer) {
             slow = slow + (level - slow) * slowCoefficient; // low pass filter
             fast = fast + (level - fast) * fastCoefficient; // low pass filter
-            if (armed && (fast > EDGE_THRESHOLD) && (fast > (2.0 * slow))) {
+            if (armed && !tapDetected  && (fast > EDGE_THRESHOLD) && (fast > (2.0 * slow))) {
                 events.add(new TapLatencyEvent(TYPE_TAP, sampleIndex));
                 armed = false;
                 // Set a new, lower threshold based on the height of the detected peak.
                 // This allows us to detect a second, smaller peak, but not to trigger
                 // on the smaller variations that occur after the initial peak.
                 lowThreshold = fast * LOW_FRACTION;
+                tapDetected = true;
+                tapSettled = false;
+                lastPeak = fast;
+                lastTapIndex = sampleIndex;
+                continue;
             }
+
+            if (tapDetected && !tapSettled) {
+
+                if (fast > lastPeak) {
+                    lastPeak = fast;
+                }
+                boolean amplitudeSettled =
+                        fast < lastPeak * SETTLE_FRACTION;
+
+                boolean slopeSettled =
+                        Math.abs(fast - slow) < SLOPE_EPSILON;
+
+                boolean timeout =
+                        (sampleIndex - lastTapIndex) > MAX_SETTLE_SAMPLES;
+
+                if ((amplitudeSettled && slopeSettled) || timeout) {
+                    tapSettled = true;
+                }
+            }
+
+            if (tapDetected && tapSettled && !toneDetected) {
+                if (fast > EDGE_THRESHOLD &&
+                        fast > (1.5f * slow)) {
+                    events.add(new TapLatencyEvent(TYPE_TONE, sampleIndex));
+                    toneDetected = true;
+                }
+            }
+
             // Use hysteresis when rearming.
-            if (fast < lowThreshold) {
+            if (!armed && fast < lastPeak * REARM_FRACTION) {
                 armed = true;
             }
             sampleIndex++;
@@ -134,3 +184,4 @@ public class TapLatencyAnalyser {
         }
     }
 }
+
