@@ -30,6 +30,10 @@ public class TapToToneTester {
 
     private final Activity mActivity;
     private final WaveformView mWaveformView;
+    WaveformView mFastWaveformView;
+    WaveformView mSlowWaveformView;
+    WaveformView mLowThresholdWaveformView;
+    WaveformView mArmedWaveformView;
     private final TextView mResultView;
     private final Spinner mAudioSourceSpinner;
 
@@ -55,8 +59,12 @@ public class TapToToneTester {
         mActivity = activity;
         mTapInstructions = tapInstructions;
         mResultView = (TextView) activity.findViewById(R.id.resultView);
-        mWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio);
+        mWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio_original);
         mWaveformView.setEnabled(false);
+        mFastWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio_fast_avg);
+        mSlowWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio_slow_avg);
+        mLowThresholdWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio_lowThreshold);
+        mArmedWaveformView = (WaveformView) activity.findViewById(R.id.waveview_audio_armed_waveform);
 
         float analysisTimeMax = ANALYSIS_TIME_TOTAL + mAnalysisTimeMargin;
         mRecorder = new AudioRecordThread(ANALYSIS_SAMPLE_RATE,
@@ -180,7 +188,7 @@ public class TapToToneTester {
                 for (int i = 0; i < numEdges; i++) {
                     cursors[i] = result.events[i].sampleIndex;
                 }
-                mWaveformView.setCursorData(cursors);
+                mArmedWaveformView.setCursorData(cursors);
             }
             // Did we get a good measurement?
             if (result.events.length < 2) {
@@ -203,6 +211,10 @@ public class TapToToneTester {
                 text = String.format(Locale.getDefault(), "tap-to-tone latency = %3d msec\n", latencyMillis);
             }
             mWaveformView.setSampleData(result.filtered);
+            mFastWaveformView.setSampleData(mTapLatencyAnalyser.getFastBuffer());
+            mSlowWaveformView.setSampleData(mTapLatencyAnalyser.getSlowBuffer());
+            mLowThresholdWaveformView.setSampleData(mTapLatencyAnalyser.getLowThresholdBuffer());
+            mArmedWaveformView.setSampleData(mTapLatencyAnalyser.getArmedIndexes());
         }
 
         if (mMeasurementCount > 0) {
@@ -217,6 +229,10 @@ public class TapToToneTester {
             public void run() {
                 mResultView.setText(postText);
                 mWaveformView.postInvalidate();
+                mFastWaveformView.postInvalidate();
+                mSlowWaveformView.postInvalidate();
+                mLowThresholdWaveformView.postInvalidate();
+                mArmedWaveformView.postInvalidate();
             }
         });
 

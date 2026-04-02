@@ -23,6 +23,10 @@ import java.util.ArrayList;
 public class TapLatencyAnalyser {
     public static final int TYPE_TAP = 0;
     float[] mHighPassBuffer;
+    float[] mFastBuffer;
+    float[] mSlowBuffer;
+    float[] mLowThresholdBuffer;
+    float [] mArmedIndexes;
 
     private float mDroop = 0.995f;
     private static final float EDGE_THRESHOLD = 0.01f;
@@ -56,6 +60,10 @@ public class TapLatencyAnalyser {
 
         // Apply envelope follower.
         float[] peakBuffer = new float[numSamples];
+        mFastBuffer = new float[numSamples];
+        mSlowBuffer = new float[numSamples];
+        mLowThresholdBuffer = new float[numSamples];
+        mArmedIndexes = new float[numSamples];
         fillPeakBuffer(mHighPassBuffer, 0, numSamples, peakBuffer);
         // Look for two attacks.
         return scanForEdges(peakBuffer, numSamples);
@@ -69,6 +77,22 @@ public class TapLatencyAnalyser {
         return mHighPassBuffer;
     }
 
+
+    public float[] getFastBuffer() {
+        return mFastBuffer;
+    }
+
+    public float[] getSlowBuffer() {
+        return mSlowBuffer;
+    }
+
+    public float[] getLowThresholdBuffer() {
+        return mLowThresholdBuffer;
+    }
+
+    public float[] getArmedIndexes() {
+        return mArmedIndexes;
+    }
     // Based on https://en.wikipedia.org/wiki/High-pass_filter
     private void highPassFilter(
             float[] buffer, int offset, int numSamples, float[] highPassBuffer) {
@@ -124,6 +148,8 @@ public class TapLatencyAnalyser {
         for (float level : peakBuffer) {
             slow = slow + (level - slow) * slowCoefficient; // low pass filter
             fast = fast + (level - fast) * fastCoefficient; // low pass filter
+            mSlowBuffer[sampleIndex] = slow;
+            mFastBuffer[sampleIndex] = fast;
             if (armed && (fast > EDGE_THRESHOLD) && (fast > (2.0 * slow))) {
                 events.add(new TapLatencyEvent(TYPE_TAP, sampleIndex));
                 armed = false;
@@ -132,9 +158,15 @@ public class TapLatencyAnalyser {
                 // on the smaller variations that occur after the initial peak.
                 lowThreshold = fast * LOW_FRACTION;
             }
+            mLowThresholdBuffer[sampleIndex] = lowThreshold;
             // Use hysteresis when rearming.
             if (fast < lowThreshold) {
                 armed = true;
+            }
+            if (armed) {
+                mArmedIndexes[sampleIndex] = 1.0f;
+            } else {
+                mArmedIndexes[sampleIndex] = 0.0f;
             }
             sampleIndex++;
         }
