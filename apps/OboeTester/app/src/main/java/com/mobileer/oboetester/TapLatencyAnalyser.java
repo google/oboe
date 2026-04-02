@@ -49,6 +49,11 @@ public class TapLatencyAnalyser {
         // Use high pass filter to remove rumble from air conditioners.
         mHighPassBuffer = new float[numSamples];
         highPassFilter(buffer, offset, numSamples, mHighPassBuffer);
+
+        float[] mAverageBuffer = new float[numSamples];
+        averageFilter(mHighPassBuffer, numSamples, mAverageBuffer);
+        mHighPassBuffer = mAverageBuffer;
+
         // Apply envelope follower.
         float[] peakBuffer = new float[numSamples];
         fillPeakBuffer(mHighPassBuffer, 0, numSamples, peakBuffer);
@@ -81,6 +86,29 @@ public class TapLatencyAnalyser {
             highPassBuffer[i] = yn;
             xn1 = xn;
             yn1 = yn;
+        }
+    }
+
+    private void averageFilter(float[] buffer, int numSamples, float[] averageBuffer) {
+        double sum = 0.0;
+        for (int i = 0; i < numSamples; i++) {
+            sum += buffer[i];
+        }
+        double avg = sum / numSamples;
+
+        double sumSq = 0.0;
+        for (int i = 0; i < numSamples; i++) {
+            double diff = buffer[i] - avg;
+            sumSq += diff * diff;
+        }
+        double stdDev = Math.sqrt(sumSq / numSamples);
+
+        for (int i = 0; i < numSamples; i++) {
+            if ( (buffer[i] >= avg + stdDev * 1.5) || (buffer[i] <= avg - stdDev * 1.5)) {
+                averageBuffer[i] = buffer[i];
+            } else {
+                averageBuffer[i] = 0.0f;
+            }
         }
     }
 
