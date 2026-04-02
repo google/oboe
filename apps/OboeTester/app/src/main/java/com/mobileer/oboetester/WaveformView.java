@@ -73,6 +73,12 @@ public class WaveformView extends View {
         mMessagePaint.setTextSize(MESSAGE_TEXT_SIZE);
     }
 
+    public void updateTheme(int waveColor, int backgroundColor, int cursorColor) {
+        mWavePaint.setColor(waveColor);
+        mBackgroundPaint.setColor(backgroundColor);
+        mCursorPaint.setColor(cursorColor);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mCurrentWidth = w;
