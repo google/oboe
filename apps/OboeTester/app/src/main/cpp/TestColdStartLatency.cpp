@@ -60,8 +60,10 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
 }
 
 int32_t TestColdStartLatency::start() {
+    std::shared_ptr<oboe::AudioStream> stream = mStream;
+    if (!stream) return (int32_t)Result::ErrorNull;
     mBeginStartNanos = AudioClock::getNanoseconds();
-    Result result = mStream->requestStart();
+    Result result = stream->requestStart();
     int64_t endStartNanos = AudioClock::getNanoseconds();
     int64_t actualDurationNanos = endStartNanos - mBeginStartNanos;
     mStartTimeMicros = actualDurationNanos / NANOS_PER_MICROSECOND;
@@ -69,19 +71,23 @@ int32_t TestColdStartLatency::start() {
 }
 
 int32_t TestColdStartLatency::close() {
-    if (!mStream) {
+    std::shared_ptr<oboe::AudioStream> stream = mStream;
+    if (!stream) {
         return (int32_t)Result::OK;
     }
-    Result result1 = mStream->requestStop();
-    Result result2 = mStream->close();
+    Result result1 = stream->requestStop();
+    Result result2 = stream->close();
     return (int32_t)((result1 != Result::OK) ? result1 : result2);
 }
 
 int32_t TestColdStartLatency::getColdStartTimeMicros() {
+    std::shared_ptr<oboe::AudioStream> stream = mStream;
+    if (!stream) return -1;
+
     int64_t position;
     int64_t timestampNanos;
-    if (mStream->getDirection() == Direction::Output) {
-        auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
+    if (stream->getDirection() == Direction::Output) {
+        auto result = stream->getTimestamp(CLOCK_MONOTONIC);
         if (!result) {
             return -1; // ERROR
         }
@@ -90,10 +96,10 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
         position = frameTimestamp.position;
         timestampNanos = frameTimestamp.timestamp;
     } else {
-        position = mStream->getFramesRead();
+        position = stream->getFramesRead();
         timestampNanos = AudioClock::getNanoseconds();
     }
-    double sampleRate = (double) mStream->getSampleRate();
+    double sampleRate = (double) stream->getSampleRate();
 
     int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
     int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
@@ -102,8 +108,30 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
 }
 
 void TestColdStartLatency::waitForValidTimestamp() {
-    while (!mStream->getTimestamp(CLOCK_MONOTONIC)) {
-        usleep(kPollPeriodMillis * 1000);
+    std::shared_ptr<oboe::AudioStream> stream = mStream;
+    if (!stream) return;
+
+    int32_t timeoutCount = 0;
+    const int32_t kMaxTimeoutCount = 3000 / kPollPeriodMillis; // 3 seconds timeout
+
+    if (stream->getDirection() == Direction::Output) {
+        while (!stream->getTimestamp(CLOCK_MONOTONIC)) {
+            oboe::StreamState state = stream->getState();
+            if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+                break;
+            }
+            usleep(kPollPeriodMillis * 1000);
+            if (++timeoutCount > kMaxTimeoutCount) break;
+        }
+    } else {
+        while (stream->getFramesRead() == 0) {
+            oboe::StreamState state = stream->getState();
+            if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
+                break;
+            }
+            usleep(kPollPeriodMillis * 1000);
+            if (++timeoutCount > kMaxTimeoutCount) break;
+        }
     }
 }
 
