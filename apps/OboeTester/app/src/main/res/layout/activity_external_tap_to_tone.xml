@@ -98,9 +98,39 @@
             android:textStyle="bold"
             android:text="@string/tap_help" />
 
-        <com.mobileer.oboetester.WaveformView
-            android:id="@+id/waveview_audio"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent">
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio_original"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio_fast_avg"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio_slow_avg"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio_lowThreshold"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+            <com.mobileer.oboetester.WaveformView
+                android:id="@+id/waveview_audio_armed_waveform"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:minHeight="100dp"
+                />
+        </FrameLayout>
     </LinearLayout>
 </LinearLayout>
