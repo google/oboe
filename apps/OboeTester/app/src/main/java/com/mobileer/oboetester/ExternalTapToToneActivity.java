@@ -1,5 +1,6 @@
 package com.mobileer.oboetester;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,6 +33,18 @@ public class ExternalTapToToneActivity extends AppCompatActivity {
         mStartButton = (Button) findViewById(R.id.button_start);
         mStopButton = (Button) findViewById(R.id.button_stop);
         mAnalyzeButton = (Button) findViewById(R.id.button_analyze);
+
+        WaveformView mWaveformView = (WaveformView) findViewById(R.id.waveview_audio_original);
+        WaveformView mFastWaveformView = (WaveformView) findViewById(R.id.waveview_audio_fast_avg);
+        WaveformView mSlowWaveformView = (WaveformView) findViewById(R.id.waveview_audio_slow_avg);
+        WaveformView mLowThresholdWaveformView = (WaveformView) findViewById(R.id.waveview_audio_lowThreshold);
+        WaveformView mArmedWaveformView = (WaveformView) findViewById(R.id.waveview_audio_armed_waveform);
+
+        update(R.id.waveview_audio_original, Color.BLUE, Color.argb(128,0, 120, 0), Color.TRANSPARENT);
+        update(R.id.waveview_audio_fast_avg, Color.argb(255,0, 247, 255), Color.TRANSPARENT, Color.argb(70, 255, 238, 0));
+        update(R.id.waveview_audio_slow_avg, Color.argb(255, 174, 0, 255), Color.TRANSPARENT, Color.argb(70, 255, 238, 0));
+        update(R.id.waveview_audio_lowThreshold, Color.argb(255, 255, 132, 0), Color.TRANSPARENT, Color.argb(70, 255, 238, 0));
+        update(R.id.waveview_audio_armed_waveform, Color.argb(50, 255, 238, 0), Color.TRANSPARENT, Color.RED);
         updateButtons(false);
     }
 
@@ -94,5 +107,8 @@ public class ExternalTapToToneActivity extends AppCompatActivity {
         });
     }
 
-
+    private void update(int waveformViewId, int waveColor, int backgroundColor, int cursorColor) {
+        WaveformView waveformView = (WaveformView) findViewById(waveformViewId);
+        waveformView.updateTheme(waveColor, backgroundColor, cursorColor);
+    }
 }
