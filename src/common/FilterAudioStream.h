@@ -62,6 +62,9 @@ public:
         mHardwareSampleRate = mChildStream->getHardwareSampleRate();
         mHardwareChannelCount = mChildStream->getHardwareChannelCount();
         mHardwareFormat = mChildStream->getHardwareFormat();
+
+        // Link child to parent so parent can be retained in callbacks.
+        mChildStream->setParentStream(this);
     }
 
     virtual ~FilterAudioStream() = default;
