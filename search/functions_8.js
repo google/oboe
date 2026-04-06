@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['notifyworkloadincrease_0',['notifyWorkloadIncrease',['../classoboe_1_1_audio_stream.html#aab76b523480d65f25f7df3c99f2dce47',1,'oboe::AudioStream']]],
-  ['notifyworkloadreset_1',['notifyWorkloadReset',['../classoboe_1_1_audio_stream.html#a3625762def846a6f4b3f48548bfa1b9c',1,'oboe::AudioStream']]],
-  ['notifyworkloadspike_2',['notifyWorkloadSpike',['../classoboe_1_1_audio_stream.html#a5124210a3410ab9e36ea4c4b8b30e7b1',1,'oboe::AudioStream']]]
+  ['latencytuner_0',['LatencyTuner',['../classoboe_1_1_latency_tuner.html#a0263b9a55825c0a403653b2b508073ea',1,'oboe::LatencyTuner::LatencyTuner(AudioStream &amp;stream)'],['../classoboe_1_1_latency_tuner.html#ab437bd10605af9e5733d043f8adc0b43',1,'oboe::LatencyTuner::LatencyTuner(AudioStream &amp;stream, int32_t maximumBufferSize)']]]
 ];

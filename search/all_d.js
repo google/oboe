@@ -1,15 +1,7 @@
 var searchData=
 [
-  ['read_0',['read',['../classoboe_1_1_audio_stream.html#a42a645b6ad3dc89db751b7f55db72ded',1,'oboe::AudioStream::read()'],['../classoboe_1_1_fifo_buffer.html#ac0c8b4162d69088e873a0caa8ecd311c',1,'oboe::FifoBuffer::read()']]],
-  ['readinput_1',['readInput',['../classoboe_1_1_full_duplex_stream.html#a803ab86b309082109a777df15df9d5af',1,'oboe::FullDuplexStream']]],
-  ['readnow_2',['readNow',['../classoboe_1_1_fifo_buffer.html#a2c60c13c50ff726d8fc321ffa40762d9',1,'oboe::FifoBuffer']]],
-  ['reference_3',['API reference',['../index.html',1,'']]],
-  ['release_4',['release',['../classoboe_1_1_audio_stream.html#a4eff89cae5bffa989e2413557e64c386',1,'oboe::AudioStream']]],
-  ['reportworkload_5',['reportWorkload',['../classoboe_1_1_audio_stream.html#a9cf8ce01c8db830f89b70c782fe18d90',1,'oboe::AudioStream']]],
-  ['requestflush_6',['requestFlush',['../classoboe_1_1_audio_stream.html#a6bd5d633ff999e4da1faf3cd949aa602',1,'oboe::AudioStream']]],
-  ['requestpause_7',['requestPause',['../classoboe_1_1_audio_stream.html#a7f18bb3cc5490fd7fbc1f6da63c730f6',1,'oboe::AudioStream']]],
-  ['requestreset_8',['requestReset',['../classoboe_1_1_latency_tuner.html#a6c0142e08dc65eda8f758b4794450867',1,'oboe::LatencyTuner']]],
-  ['requeststart_9',['requestStart',['../classoboe_1_1_audio_stream.html#a3c484e314dee8dfed1d419f487b5d601',1,'oboe::AudioStream']]],
-  ['requeststop_10',['requestStop',['../classoboe_1_1_audio_stream.html#a820e634f741e6b5efdcef8104cecb919',1,'oboe::AudioStream']]],
-  ['resultwithvalue_11',['ResultWithValue',['../classoboe_1_1_result_with_value.html',1,'oboe::ResultWithValue&lt; T &gt;'],['../classoboe_1_1_result_with_value.html#aae75caa0d16a9e23a012f77fb50c5927',1,'oboe::ResultWithValue::ResultWithValue(oboe::Result error)'],['../classoboe_1_1_result_with_value.html#a600309367db58d71f0ec16e90f7ebea5',1,'oboe::ResultWithValue::ResultWithValue(T value)']]]
+  ['patch_0',['Patch',['../structoboe_1_1_version.html#a690110f2b3e887892da8f29ab5c057b2',1,'oboe::Version']]],
+  ['pause_1',['pause',['../classoboe_1_1_audio_stream.html#a04f29836748a8e5842aef2be200022ad',1,'oboe::AudioStream']]],
+  ['pitch_2',['pitch',['../structoboe_1_1_playback_parameters.html#a56b6a48fe9b8a69de30ae77d7fe7165e',1,'oboe::PlaybackParameters']]],
+  ['playbackparameters_3',['PlaybackParameters',['../structoboe_1_1_playback_parameters.html',1,'oboe']]]
 ];
