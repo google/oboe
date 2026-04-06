@@ -787,6 +787,30 @@ public:
         return mWeakThis.lock();
     }
 
+    /**
+     * Returns a pointer to the parent stream if this stream is wrapped
+     * by a parent FilterAudioStream. May be unassigned if no parent exists.
+     */
+    AudioStream *getParentStream() const {
+        return mParentStream;
+    }
+
+    /**
+     * Returns true if this stream is owned by a parent FilterAudioStream.
+     * When true, the parent must remain alive during callbacks.
+     */
+    bool hasParentStream() const {
+        return mHasParentStream;
+    }
+
+    /**
+     * Sets the parent wrapper stream. For internal use only.
+     */
+    void setParentStream(AudioStream *parentStream) {
+        mParentStream = parentStream;
+        mHasParentStream = parentStream != nullptr;
+    }
+
 protected:
 
     /**
@@ -897,6 +921,13 @@ protected:
     }
 
     std::weak_ptr<AudioStream> mWeakThis; // weak pointer to this object
+
+    // Pointer to parent stream.
+    // Non-empty only when wrapped by another AudioStream.
+    AudioStream *mParentStream{};
+
+    // Flag to indicate whether this stream is wrapped by a parent.
+    bool mHasParentStream{};
 
     /**
      * Number of frames which have been written into the stream
