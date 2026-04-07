@@ -36,11 +36,11 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     }
 
     public void onLaunchColdStartLatencyTest(View view) {
-        launchTestActivity(TestColdStartLatencyActivity.class);
+        launchTestThatDoesRecording(TestColdStartLatencyActivity.class);
     }
 
     public void onLaunchRapidCycleTest(View view) {
-        launchTestActivity(TestRapidCycleActivity.class);
+        launchTestThatDoesRecording(TestRapidCycleActivity.class);
     }
 
     public void onLaunchAudioWorkloadTest(View view) {
