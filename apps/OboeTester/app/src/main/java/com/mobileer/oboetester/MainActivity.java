@@ -50,11 +50,6 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_INPUT = "input";
     public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
 
-    static {
-        // Must match name in CMakeLists.txt
-        System.loadLibrary("oboetester");
-    }
-
     private Spinner mModeSpinner;
     private TextView mCallbackSizeEditor;
     protected TextView mDeviceView;
