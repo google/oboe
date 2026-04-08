@@ -626,7 +626,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-
             // Bottom-left: Info button
             IconButton(
                 onClick = { showInfoDialog = true },
@@ -641,7 +640,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-
             // Top-right: Add local file button
             IconButton(
                 onClick = { filePickerLauncher.launch(arrayOf("audio/wav", "audio/x-wav")) },
@@ -677,7 +675,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-
             // Loading overlay
             if (isLoading) {
                 Box(
