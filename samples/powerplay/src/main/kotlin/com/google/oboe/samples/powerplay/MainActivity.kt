@@ -25,8 +25,11 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -84,6 +87,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,8 +97,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -131,6 +138,7 @@ import android.util.Log
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -169,6 +177,18 @@ class MainActivity : ComponentActivity() {
     private val performanceModeState = mutableIntStateOf(0)
     private val volumeState = mutableFloatStateOf(1.0f)
     private val isMMapEnabledState = mutableStateOf(false)
+
+    // Dynamic playlist (bundled + user-loaded local files)
+    private val dynamicPlayList = mutableStateListOf<Music>()
+    private val isLoadingFile = mutableStateOf(false)
+
+    // File picker launcher for loading local WAV files
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri ?: return@registerForActivityResult
+        handleLocalFileSelected(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -254,7 +274,7 @@ class MainActivity : ComponentActivity() {
         Log.i(LOG_TAG, "Processing automation intent")
 
         // Get playlist for song index validation
-        val playList = PlayList
+        val playList = BundledPlayList
 
         // Parse configuration from Intent
         val songIndex = IntentBasedTestSupport.getSongIndex(extras, playList.size)
@@ -373,6 +393,114 @@ class MainActivity : ComponentActivity() {
         cancelAutoStop()
     }
 
+    /**
+     * Handles a local WAV file selected by the user via the file picker.
+     */
+    private fun handleLocalFileSelected(uri: android.net.Uri) {
+        isLoadingFile.value = true
+
+        Thread {
+            try {
+                // Get the file name from the URI
+                val fileName = getFileNameFromUri(uri) ?: "Unknown.wav"
+
+                // Check file extension
+                if (!fileName.lowercase().endsWith(".wav")) {
+                    runOnUiThread {
+                        isLoadingFile.value = false
+                        Toast.makeText(this, "Only .wav files are supported", Toast.LENGTH_SHORT).show()
+                    }
+                    return@Thread
+                }
+
+                val newIndex = dynamicPlayList.size
+
+                // Load the file via PowerPlayAudioPlayer
+                val wavInfo = player.loadLocalFile(contentResolver, uri, newIndex)
+
+                runOnUiThread {
+                    isLoadingFile.value = false
+
+                    if (wavInfo == null) {
+                        Toast.makeText(this, "Failed to load WAV file. File may be too large (max 256MB) or invalid.", Toast.LENGTH_LONG).show()
+                        return@runOnUiThread
+                    }
+
+                    // Add the new track to the dynamic playlist
+                    val displayName = fileName.removeSuffix(".wav").removeSuffix(".WAV")
+                    dynamicPlayList.add(
+                        Music(
+                            name = displayName,
+                            artist = "Local File",
+                            fileName = fileName,
+                            cover = R.drawable.album_art_local,
+                            isLocal = true,
+                            uri = uri,
+                            wavInfo = wavInfo
+                        )
+                    )
+
+                    // Set looping for the new track
+                    player.setLooping(newIndex, true)
+
+                    // Scroll to the new track
+                    songIndexState.intValue = newIndex
+
+                    Toast.makeText(
+                        this,
+                        "Loaded: $displayName (${wavInfo.sampleRate}Hz, ${wavInfo.channelLayoutName}, ${wavInfo.bitsPerSample}bit ${wavInfo.encodingName})",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error loading local file", e)
+                runOnUiThread {
+                    isLoadingFile.value = false
+                    Toast.makeText(this, "Error loading file: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    /**
+     * Extracts the file name from a content URI.
+     */
+    private fun getFileNameFromUri(uri: android.net.Uri): String? {
+        var name: String? = null
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (nameIndex >= 0 && cursor.moveToFirst()) {
+                name = cursor.getString(nameIndex)
+            }
+        }
+        return name
+    }
+
+    /**
+     * Removes a local file from the dynamic playlist.
+     */
+    private fun removeLocalTrack(index: Int) {
+        if (index < 0 || index >= dynamicPlayList.size) return
+        if (!dynamicPlayList[index].isLocal) return
+
+        // Stop if currently playing
+        val currentlyPlaying = player.getCurrentlyPlayingIndex()
+        if (currentlyPlaying == index) {
+            player.stopPlaying(index)
+        }
+
+        // Remove from native engine
+        player.removeSampleSource(index)
+
+        // Remove from dynamic playlist
+        dynamicPlayList.removeAt(index)
+
+        // Adjust the current song index if needed
+        if (songIndexState.intValue >= dynamicPlayList.size) {
+            songIndexState.intValue = (dynamicPlayList.size - 1).coerceAtLeast(0)
+        }
+    }
+
     private fun logStatus(status: String, vararg extras: Pair<String, Any>) {
         val message = IntentBasedTestSupport.formatStatusLog(status, *extras)
         Log.i(LOG_TAG, message)
@@ -386,14 +514,16 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun SongScreen() {
-        val playList = PlayList
+        val playList = dynamicPlayList
         val initialPage = remember { player.currentSongIndex }
-        val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.count() })
+        val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.size })
+        val coroutineScope = rememberCoroutineScope()
 
         // Use shared state from class level (automation can update these)
         val playingSongIndex = songIndexState
         val offload = performanceModeState
         val isMMapEnabled = isMMapEnabledState
+        val isLoading = isLoadingFile.value
 
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
@@ -408,7 +538,7 @@ class MainActivity : ComponentActivity() {
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
         var isSeeking by remember { mutableStateOf(false) }
-        val duration = remember(playingSongIndex.intValue, assetsReady) { player.getDurationMillis(playingSongIndex.intValue) }
+        val duration = remember(playingSongIndex.intValue, assetsReady, playList.size) { player.getDurationMillis(playingSongIndex.intValue) }
 
         // Polling loop for slider position (~60fps)
         LaunchedEffect(isPlaying, offload.intValue) {
@@ -426,7 +556,8 @@ class MainActivity : ComponentActivity() {
 
         // Sync pager with song index when automation changes it
         LaunchedEffect(playingSongIndex.intValue) {
-            if (pagerState.currentPage != playingSongIndex.intValue) {
+            if (pagerState.currentPage != playingSongIndex.intValue &&
+                playingSongIndex.intValue < playList.size) {
                 pagerState.animateScrollToPage(playingSongIndex.intValue)
             }
             // Update playback position when song changes
@@ -452,7 +583,11 @@ class MainActivity : ComponentActivity() {
             // Sync UI MMap state with Player
             isMMapEnabled.value = player.isMMapEnabled()
 
-            playList.forEachIndexed { index, it ->
+            // Initialize the dynamic playlist from bundled songs
+            dynamicPlayList.clear()
+            dynamicPlayList.addAll(BundledPlayList)
+
+            BundledPlayList.forEachIndexed { index, it ->
                 player.loadFile(assets, it.fileName, index)
                 player.setLooping(index, true)
             }
@@ -472,6 +607,8 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
+
+            // Bottom-right: Settings button
             IconButton(
                 onClick = { showBottomSheet = true },
                 modifier = Modifier
@@ -486,6 +623,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            // Bottom-left: Info button
             IconButton(
                 onClick = { showInfoDialog = true },
                 modifier = Modifier
@@ -500,12 +638,60 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            // Top-right: Add local file button
+            IconButton(
+                onClick = { filePickerLauncher.launch(arrayOf("audio/wav", "audio/x-wav")) },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Local WAV File",
+                    tint = if (isLoading) Color.Gray else Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Top-left: Remove button (only for local tracks)
+            val currentTrack = playList.getOrNull(playingSongIndex.intValue)
+            if (currentTrack?.isLocal == true) {
+                IconButton(
+                    onClick = {
+                        removeLocalTrack(playingSongIndex.intValue)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Remove Local Track",
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+
+            // Loading overlay
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 24.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                }
+            }
+
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
                     (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut())
                 }, label = "") {
+                    val track = playList.getOrNull(it)
                     Text(
-                        text = playList[it].name, fontSize = 24.sp,
+                        text = track?.name ?: "", fontSize = 24.sp,
                         color = Color.Black,
                         style = TextStyle(fontWeight = FontWeight.ExtraBold)
                     )
@@ -514,8 +700,9 @@ class MainActivity : ComponentActivity() {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
                     (scaleIn() + fadeIn()).togetherWith(scaleOut() + fadeOut())
                 }, label = "") {
+                    val track = playList.getOrNull(it)
                     Text(
-                        text = playList[it].artist, fontSize = 12.sp, color = Color.Black,
+                        text = track?.artist ?: "", fontSize = 12.sp, color = Color.Black,
                         style = TextStyle(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -639,6 +826,8 @@ class MainActivity : ComponentActivity() {
             } else {
                 "N/A (not in PCM Offload mode)"
             }
+            val currentTrackInfo = playList.getOrNull(playingSongIndex.intValue)
+            val wavInfo = currentTrackInfo?.wavInfo
 
             AlertDialog(
                 onDismissRequest = { showInfoDialog = false },
@@ -663,6 +852,46 @@ class MainActivity : ComponentActivity() {
                         Row {
                             Text("Buffer Size: ", fontWeight = FontWeight.Medium)
                             Text(bufferInfo)
+                        }
+
+                        // WAV file properties section (for local files or all files if info available)
+                        if (wavInfo != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "WAV File Properties",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            Row {
+                                Text("Sample Rate: ", fontWeight = FontWeight.Medium)
+                                Text("${wavInfo.sampleRate} Hz")
+                            }
+                            Row {
+                                Text("Channels: ", fontWeight = FontWeight.Medium)
+                                Text(wavInfo.channelLayoutName)
+                            }
+                            Row {
+                                Text("Bit Depth: ", fontWeight = FontWeight.Medium)
+                                Text("${wavInfo.bitsPerSample}-bit")
+                            }
+                            Row {
+                                Text("Encoding: ", fontWeight = FontWeight.Medium)
+                                Text(wavInfo.encodingName)
+                            }
+                            Row {
+                                Text("Duration: ", fontWeight = FontWeight.Medium)
+                                Text(wavInfo.durationMs.convertToText())
+                            }
+                        }
+
+                        // Source indicator
+                        if (currentTrackInfo?.isLocal == true) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Source: Local File",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
                         }
                     }
                 },

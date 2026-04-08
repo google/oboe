@@ -320,3 +320,34 @@ int64_t PowerPlayMultiPlayer::getDurationMillis(int32_t index) {
 
     return (static_cast<int64_t>(sampleBuffer->getNumSamples() / channelCount) * 1000) / sampleRate;
 }
+
+bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
+    if (index < 0 || index >= mSampleSources.size()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "removeSampleSource: Invalid index %d (size=%zu)",
+                            index, mSampleSources.size());
+        return false;
+    }
+
+    // Stop playback if this source is currently playing.
+    if (mSampleSources[index]->isPlaying()) {
+        mSampleSources[index]->setStopMode(false);
+    }
+
+    // Delete the source and buffer at this index.
+    delete mSampleSources[index];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-abstract-non-virtual-dtor"
+    delete mSampleBuffers[index];
+#pragma GCC diagnostic pop
+
+    // Remove from vectors.
+    mSampleSources.erase(mSampleSources.begin() + index);
+    mSampleBuffers.erase(mSampleBuffers.begin() + index);
+    mNumSampleBuffers--;
+
+    __android_log_print(ANDROID_LOG_INFO, TAG,
+                        "removeSampleSource: Removed index %d, %d sources remaining",
+                        index, mNumSampleBuffers);
+    return true;
+}
