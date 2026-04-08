@@ -68,17 +68,21 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun unloadAssets() = unloadAssetsNative()
 
     /**
-     * Loads the file into memory from assets
+     * Loads a file from assets into memory and returns its WAV properties.
+     * Reads the file bytes once, probes the header, then loads the sample data.
      */
-    fun loadFile(assetMgr: AssetManager, filename: String, id: Int) {
+    fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
         val assetFD = assetMgr.openFd(filename)
         val stream = assetFD.createInputStream()
         val len = assetFD.getLength().toInt()
         val bytes = ByteArray(len)
 
         stream.read(bytes, 0, len)
-        loadAssetNative(bytes, id)
         assetFD.close()
+
+        val wavInfo = getWavFileInfo(bytes)
+        loadAssetNative(bytes, id)
+        return wavInfo
     }
 
     /**

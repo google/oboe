@@ -413,4 +413,3 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_removeSampleS
 #ifdef __cplusplus
 }
 #endif
-

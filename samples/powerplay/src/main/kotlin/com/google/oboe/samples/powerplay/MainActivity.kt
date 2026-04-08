@@ -587,8 +587,12 @@ class MainActivity : ComponentActivity() {
             dynamicPlayList.clear()
             dynamicPlayList.addAll(BundledPlayList)
 
-            BundledPlayList.forEachIndexed { index, it ->
-                player.loadFile(assets, it.fileName, index)
+            BundledPlayList.forEachIndexed { index, song ->
+                // Load asset and probe WAV info in a single read
+                val wavInfo = player.loadFile(assets, song.fileName, index)
+                if (wavInfo != null) {
+                    dynamicPlayList[index] = song.copy(wavInfo = wavInfo)
+                }
                 player.setLooping(index, true)
             }
             // Assets are now loaded, process any pending automation intent
