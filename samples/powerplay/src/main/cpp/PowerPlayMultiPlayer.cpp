@@ -55,6 +55,8 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setFormat(AudioFormat::Float)
             ->setSampleRate(48000)
             ->setPerformanceMode(performanceMode)
+            ->setUsage(Usage::Media)
+            ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
             ->setSharingMode(SharingMode::Exclusive);
 
