@@ -163,7 +163,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     private val handler = Handler(Looper.getMainLooper())
     private var autoStopRunnable: Runnable? = null
     private var isAutomationMode = false
@@ -171,17 +170,14 @@ class MainActivity : ComponentActivity() {
     private var pendingAutomationIntent: Intent? = null
     private var assetsLoaded = false
 
-
     private val isPlayingState = mutableStateOf(false)
     private val songIndexState = mutableIntStateOf(0)
     private val performanceModeState = mutableIntStateOf(0)
     private val volumeState = mutableFloatStateOf(1.0f)
     private val isMMapEnabledState = mutableStateOf(false)
 
-
     private val dynamicPlayList = mutableStateListOf<Music>()
     private val isLoadingFile = mutableStateOf(false)
-
 
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -271,7 +267,6 @@ class MainActivity : ComponentActivity() {
         isAutomationMode = true
         Log.i(LOG_TAG, "Processing automation intent")
 
-
         val playList = BundledPlayList
 
         // Parse configuration from Intent
@@ -283,33 +278,22 @@ class MainActivity : ComponentActivity() {
         val durationMs = IntentBasedTestSupport.getDurationMs(extras)
         val useMMap = IntentBasedTestSupport.getMMapEnabled(extras, player.isMMapEnabled())
         val bufferFrames = IntentBasedTestSupport.getBufferFrames(extras)
-
-
         if (useMMap != player.isMMapEnabled()) {
             player.setMMapEnabled(useMMap)
             isMMapEnabledState.value = useMMap
             Log.i(LOG_TAG, "MMAP set to: $useMMap")
         }
-
-
         currentPerformanceMode = perfMode
-
-
         when (command?.lowercase()) {
             IntentBasedTestSupport.COMMAND_PLAY -> {
-
                 val currentIndex = player.getCurrentlyPlayingIndex()
                 if (currentIndex >= 0) {
                     player.stopPlaying(currentIndex)
                 }
 
                 player.startPlaying(songIndex, currentPerformanceMode)
-
-
                 player.setVolume(volume)
                 Log.i(LOG_TAG, "Volume set to: ${(volume * 100).toInt()}%")
-
-
                 isPlayingState.value = true
                 songIndexState.intValue = songIndex
                 performanceModeState.intValue = perfMode.value
@@ -321,19 +305,13 @@ class MainActivity : ComponentActivity() {
                     "OFFLOAD" to player.isOffloaded(),
                     "MMAP" to player.isMMapEnabled()
                 )
-
-
                 if (bufferFrames > 0 && currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded) {
                     val actualFrames = player.setBufferSizeInFrames(bufferFrames)
                     Log.i(LOG_TAG, "Buffer size set to: $actualFrames frames")
                 }
-
-
                 if (durationMs > 0) {
                     scheduleAutoStop(songIndex, durationMs)
                 }
-
-
                 if (goBackground) {
                     moveTaskToBack(true)
                     Log.i(LOG_TAG, "Moved to background")
@@ -364,7 +342,6 @@ class MainActivity : ComponentActivity() {
             }
 
             else -> {
-
                 Log.i(LOG_TAG, "No command specified, settings applied")
             }
         }
@@ -399,10 +376,7 @@ class MainActivity : ComponentActivity() {
 
         Thread {
             try {
-
                 val fileName = getFileNameFromUri(uri) ?: "Unknown.wav"
-
-
                 if (!fileName.lowercase().endsWith(".wav")) {
                     runOnUiThread {
                         isLoadingFile.value = false
@@ -412,8 +386,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val newIndex = dynamicPlayList.size
-
-
                 val wavInfo = player.loadLocalFile(contentResolver, uri, newIndex)
 
                 runOnUiThread {
@@ -423,8 +395,6 @@ class MainActivity : ComponentActivity() {
                         Toast.makeText(this, "Failed to load WAV file. File may be too large (max 256MB) or invalid.", Toast.LENGTH_LONG).show()
                         return@runOnUiThread
                     }
-
-
                     val displayName = fileName.removeSuffix(".wav").removeSuffix(".WAV")
                     dynamicPlayList.add(
                         Music(
@@ -437,11 +407,7 @@ class MainActivity : ComponentActivity() {
                             wavInfo = wavInfo
                         )
                     )
-
-
                     player.setLooping(newIndex, true)
-
-
                     songIndexState.intValue = newIndex
 
                     Toast.makeText(
@@ -480,20 +446,12 @@ class MainActivity : ComponentActivity() {
     private fun removeLocalTrack(index: Int) {
         if (index < 0 || index >= dynamicPlayList.size) return
         if (!dynamicPlayList[index].isLocal) return
-
-
         val currentlyPlaying = player.getCurrentlyPlayingIndex()
         if (currentlyPlaying == index) {
             player.stopPlaying(index)
         }
-
-
         player.removeSampleSource(index)
-
-
         dynamicPlayList.removeAt(index)
-
-
         if (songIndexState.intValue >= dynamicPlayList.size) {
             songIndexState.intValue = (dynamicPlayList.size - 1).coerceAtLeast(0)
         }
@@ -503,9 +461,6 @@ class MainActivity : ComponentActivity() {
         val message = IntentBasedTestSupport.formatStatusLog(status, *extras)
         Log.i(LOG_TAG, message)
     }
-
-
-
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     @Preview
     @Composable
@@ -514,8 +469,6 @@ class MainActivity : ComponentActivity() {
         val initialPage = remember { player.currentSongIndex }
         val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.size })
         val coroutineScope = rememberCoroutineScope()
-
-
         val playingSongIndex = songIndexState
         val offload = performanceModeState
         val isMMapEnabled = isMMapEnabledState
@@ -529,14 +482,10 @@ class MainActivity : ComponentActivity() {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         var showInfoDialog by remember { mutableStateOf(false) }
-
-
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
         var isSeeking by remember { mutableStateOf(false) }
         val duration = remember(playingSongIndex.intValue, assetsReady, playList.size) { player.getDurationMillis(playingSongIndex.intValue) }
-
-
         LaunchedEffect(isPlaying, offload.intValue) {
             if (isPlaying && offload.intValue != 3) {
                 while (true) {
@@ -549,8 +498,6 @@ class MainActivity : ComponentActivity() {
                 playbackPosition = player.getPlaybackPositionMillis()
             }
         }
-
-
         LaunchedEffect(playingSongIndex.intValue) {
             if (pagerState.currentPage != playingSongIndex.intValue &&
                 playingSongIndex.intValue < playList.size) {
@@ -574,17 +521,11 @@ class MainActivity : ComponentActivity() {
                     }
                 }
         }
-
         LaunchedEffect(Unit) {
-
             isMMapEnabled.value = player.isMMapEnabled()
-
-
             dynamicPlayList.clear()
             dynamicPlayList.addAll(BundledPlayList)
-
             BundledPlayList.forEachIndexed { index, song ->
-
                 val wavInfo = player.loadFile(assets, song.fileName, index)
                 if (wavInfo != null) {
                     dynamicPlayList[index] = song.copy(wavInfo = wavInfo)
@@ -607,8 +548,6 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             val configuration = LocalConfiguration.current
-
-
             IconButton(
                 onClick = { showBottomSheet = true },
                 modifier = Modifier
@@ -651,8 +590,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-
-
             val currentTrack = playList.getOrNull(playingSongIndex.intValue)
             if (currentTrack?.isLocal == true) {
                 IconButton(
@@ -706,7 +643,6 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
                 HorizontalPager(
                     modifier = Modifier.fillMaxWidth(),
                     state = pagerState,
@@ -722,7 +658,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
 
                 AnimatedVisibility(visible = offload.intValue != 3) {
                     Column(
@@ -848,8 +783,6 @@ class MainActivity : ComponentActivity() {
                             Text("Buffer Size: ", fontWeight = FontWeight.Medium)
                             Text(bufferInfo)
                         }
-
-
                         if (wavInfo != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -878,8 +811,6 @@ class MainActivity : ComponentActivity() {
                                 Text(wavInfo.durationMs.convertToText())
                             }
                         }
-
-
                         if (currentTrackInfo?.isLocal == true) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -1160,8 +1091,6 @@ class MainActivity : ComponentActivity() {
         rotationDegrees: Float = 0f,
         painter: Painter
     ) {
-
-
         val roundedShape = object : Shape {
             override fun createOutline(
                 size: Size,
@@ -1188,15 +1117,11 @@ class MainActivity : ComponentActivity() {
                 return Outline.Generic(p3)
             }
         }
-
-
         Box(
             modifier = modifier
                 .aspectRatio(1.0f)
                 .clip(roundedShape)
         ) {
-
-
             Image(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1204,8 +1129,6 @@ class MainActivity : ComponentActivity() {
                 painter = painterResource(id = R.drawable.vinyl_background),
                 contentDescription = "Vinyl Background"
             )
-
-
 
             Image(
                 modifier = Modifier
