@@ -32,7 +32,7 @@ struct AudioProperties {
 class SampleBuffer {
 public:
     SampleBuffer() : mNumSamples(0) {};
-    ~SampleBuffer() { unloadSampleData(); }
+    virtual ~SampleBuffer() { unloadSampleData(); }
 
     // Data load/unload
     void loadSampleData(parselib::WavStreamReader* reader);
