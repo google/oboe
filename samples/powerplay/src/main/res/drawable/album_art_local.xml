@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="300dp"
+    android:viewportWidth="300"
+    android:viewportHeight="300">
+
+    <!-- Background circle -->
+    <path
+        android:pathData="M150,150m-140,0a140,140 0,1 1,280 0a140,140 0,1 1,-280 0"
+        android:fillColor="#E8E0F0" />
+
+    <!-- Music note body (beamed eighth notes) -->
+    <path
+        android:pathData="M110,200 C110,188 98,180 86,183 C74,186 68,198 72,208 C76,218 88,222 100,218 C106,216 110,212 110,206 L110,120
+        M200,180 C200,168 188,160 176,163 C164,166 158,178 162,188 C166,198 178,202 190,198 C196,196 200,192 200,186 L200,100"
+        android:fillColor="#7C4DFF"
+        android:strokeWidth="0" />
+
+    <!-- Stems -->
+    <path
+        android:pathData="M110,206 L110,110 M200,186 L200,90"
+        android:strokeColor="#7C4DFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+
+    <!-- Beam connecting the notes -->
+    <path
+        android:pathData="M110,110 L200,90 L200,105 L110,125 Z"
+        android:fillColor="#7C4DFF" />
+
+    <!-- Small "+" indicator -->
+    <path
+        android:pathData="M240,60 L240,40 M230,50 L250,50"
+        android:strokeColor="#B388FF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+</vector>

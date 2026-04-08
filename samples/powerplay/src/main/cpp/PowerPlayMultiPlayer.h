@@ -58,6 +58,8 @@ public:
 
     int64_t getDurationMillis(int32_t index);
 
+    bool removeSampleSource(int32_t index);
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:

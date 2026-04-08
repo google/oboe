@@ -37,7 +37,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.Observer
 import com.google.oboe.samples.powerplay.MainActivity
-import com.google.oboe.samples.powerplay.PlayList
+import com.google.oboe.samples.powerplay.BundledPlayList
 import com.google.oboe.samples.powerplay.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -171,7 +171,7 @@ class AudioForegroundService : Service() {
 
     private fun loadAlbumArt(index: Int) {
         serviceScope.launch(Dispatchers.IO) {
-            val song = PlayList.getOrNull(index)
+            val song = BundledPlayList.getOrNull(index)
             val bitmap = song?.let { BitmapFactory.decodeResource(resources, it.cover) }
             withContext(Dispatchers.Main) {
                 currentAlbumArt = bitmap
@@ -184,7 +184,7 @@ class AudioForegroundService : Service() {
     private fun updateMetadata() {
         if (!::player.isInitialized || !::mediaSession.isInitialized) return
 
-        val currentSong = PlayList.getOrNull(player.currentSongIndex)
+        val currentSong = BundledPlayList.getOrNull(player.currentSongIndex)
         val songTitle = currentSong?.name ?: "PowerPlay Audio"
         val songArtist = currentSong?.artist ?: "Playing..."
 
@@ -222,7 +222,7 @@ class AudioForegroundService : Service() {
         val style = android.app.Notification.MediaStyle()
             .setMediaSession(mediaSession.sessionToken)
 
-        val currentSong = if (::player.isInitialized) PlayList.getOrNull(player.currentSongIndex) else null
+        val currentSong = if (::player.isInitialized) BundledPlayList.getOrNull(player.currentSongIndex) else null
         val songTitle = currentSong?.name ?: "PowerPlay Audio"
         val songArtist = currentSong?.artist ?: (if (isPlaying) "Playing" else "Paused")
 

@@ -359,7 +359,67 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getDurationMi
     return (jlong) player.getDurationMillis(index);
 }
 
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.getWavFileInfoNative()
+ * Parses WAV header and returns audio properties without loading sample data.
+ * Returns an intArray: [sampleRate, numChannels, bitsPerSample, encoding, numFramesHigh, numFramesLow]
+ */
+JNIEXPORT jintArray JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getWavFileInfoNative(
+        JNIEnv *env,
+        jobject,
+        jbyteArray bytearray) {
+    const int32_t len = env->GetArrayLength(bytearray);
+    auto *buf = new unsigned char[len];
+    env->GetByteArrayRegion(bytearray, 0, len, reinterpret_cast<jbyte *>(buf));
+
+    MemInputStream stream(buf, len);
+    WavStreamReader reader(&stream);
+    reader.parse();
+
+    if (!reader.isValid()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                "getWavFileInfoNative: WAV parse failed - missing fmt or data chunk");
+        jintArray result = env->NewIntArray(6);
+        jint values[6] = {0, 0, 0, 0, 0, 0};
+        env->SetIntArrayRegion(result, 0, 6, values);
+        delete[] buf;
+        return result;
+    }
+
+    int32_t sampleRate = reader.getSampleRate();
+    int32_t numChannels = reader.getNumChannels();
+    int32_t bitsPerSample = reader.getBitsPerSample();
+    int32_t encoding = reader.getSampleEncoding();
+    int64_t numFrames = static_cast<int64_t>(reader.getNumSampleFrames());
+
+    // Pack into int array: [sampleRate, numChannels, bitsPerSample, encoding, numFramesHigh, numFramesLow]
+    jintArray result = env->NewIntArray(6);
+    jint values[6] = {
+        sampleRate,
+        numChannels,
+        bitsPerSample,
+        encoding,
+        static_cast<jint>((numFrames >> 32) & 0xFFFFFFFF),
+        static_cast<jint>(numFrames & 0xFFFFFFFF)
+    };
+    env->SetIntArrayRegion(result, 0, 6, values);
+
+    delete[] buf;
+    return result;
+}
+
+/**
+ * Native (JNI) implementation of PowerPlayAudioPlayer.removeSampleSourceNative()
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_removeSampleSourceNative(
+        JNIEnv *env,
+        jobject,
+        jint index) {
+    return player.removeSampleSource(index);
+}
+
 #ifdef __cplusplus
 }
 #endif
-

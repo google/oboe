@@ -35,17 +35,23 @@ class WavStreamReader {
 public:
     WavStreamReader(InputStream *stream);
 
-    int getSampleRate() { return mFmtChunk->mSampleRate; }
+    bool isValid() { return mFmtChunk != nullptr && mDataChunk != nullptr; }
+
+    int getSampleRate() { return mFmtChunk != nullptr ? mFmtChunk->mSampleRate : 0; }
 
     int getNumSampleFrames() {
+        if (mDataChunk == nullptr || mFmtChunk == nullptr ||
+            mFmtChunk->mSampleSize == 0 || mFmtChunk->mNumChannels == 0) {
+            return 0;
+        }
         return mDataChunk->mChunkSize / (mFmtChunk->mSampleSize / 8) / mFmtChunk->mNumChannels;
     }
 
-    int getNumChannels() { return mFmtChunk != 0 ? mFmtChunk->mNumChannels : 0; }
+    int getNumChannels() { return mFmtChunk != nullptr ? mFmtChunk->mNumChannels : 0; }
 
     int getSampleEncoding();
 
-    int getBitsPerSample() { return mFmtChunk->mSampleSize; }
+    int getBitsPerSample() { return mFmtChunk != nullptr ? mFmtChunk->mSampleSize : 0; }
 
     void parse();
 

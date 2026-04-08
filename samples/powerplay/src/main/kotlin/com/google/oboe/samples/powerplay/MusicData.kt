@@ -15,14 +15,23 @@
  */
 package com.google.oboe.samples.powerplay
 
+import android.net.Uri
+import com.google.oboe.samples.powerplay.engine.WavFileInfo
+
 data class Music(
     val name: String,
     val artist: String,
     val fileName: String,
     val cover: Int,
+    val isLocal: Boolean = false,
+    val uri: Uri? = null,
+    val wavInfo: WavFileInfo? = null
 )
 
-val PlayList = listOf(
+/**
+ * The default bundled playlist. These are loaded from the assets directory.
+ */
+val BundledPlayList = listOf(
     Music(
         name = "Chemical Reaction",
         artist = "Momo Oboe",

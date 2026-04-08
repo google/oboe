@@ -64,11 +64,36 @@ void WavFmtChunkHeader::read(InputStream *stream) {
     stream->read(&mBlockAlign, sizeof(mBlockAlign));
     stream->read(&mSampleSize, sizeof(mSampleSize));
 
-    if (mEncodingId != ENCODING_PCM && mEncodingId != ENCODING_IEEE_FLOAT) {
-        // only read this if NOT PCM
+    if (mEncodingId == ENCODING_EXTENSIBLE) {
         stream->read(&mExtraBytes, sizeof(mExtraBytes));
+
+        RiffInt16 validBitsPerSample;
+        stream->read(&validBitsPerSample, sizeof(validBitsPerSample));
+
+        RiffInt32 channelMask;
+        stream->read(&channelMask, sizeof(channelMask));
+
+        RiffInt16 subFormatEncoding;
+        stream->read(&subFormatEncoding, sizeof(subFormatEncoding));
+        mEncodingId = subFormatEncoding;
+
+        stream->advance(14);
+    } else if (mEncodingId != ENCODING_PCM &&
+        mEncodingId != ENCODING_IEEE_FLOAT) {
+
+        // other non-PCM formats (e.g., ADPCM)
+        stream->read(&mExtraBytes, sizeof(mExtraBytes));
+
+        // Skip any remaining extension data beyond the 18 bytes already read
+        int bytesRemaining = mChunkSize - 18;
+        if (bytesRemaining > 0) {
+            stream->advance(bytesRemaining);
+        }
     } else {
         mExtraBytes = (short) (mChunkSize - 16);
+        if (mExtraBytes > 0) {
+            stream->advance(mExtraBytes);
+        }
     }
 }
 

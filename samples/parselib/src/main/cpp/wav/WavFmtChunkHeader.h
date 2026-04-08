@@ -33,6 +33,7 @@ public:
     static const short ENCODING_PCM = 1;
     static const short ENCODING_ADPCM = 2; // Microsoft ADPCM Format
     static const short ENCODING_IEEE_FLOAT = 3; // samples from -1.0 -> 1.0
+    static const short ENCODING_EXTENSIBLE = (short)0xFFFE; // WAVEFORMATEXTENSIBLE
 
     RiffInt16 mEncodingId;  /** Microsoft WAV encoding ID (see above) */
     RiffInt16 mNumChannels;

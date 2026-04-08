@@ -55,6 +55,8 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setFormat(AudioFormat::Float)
             ->setSampleRate(48000)
             ->setPerformanceMode(performanceMode)
+            ->setUsage(Usage::Media)
+            ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
             ->setSharingMode(SharingMode::Exclusive);
 
@@ -319,4 +321,32 @@ int64_t PowerPlayMultiPlayer::getDurationMillis(int32_t index) {
     if (sampleRate <= 0 || channelCount <= 0) return 0;
 
     return (static_cast<int64_t>(sampleBuffer->getNumSamples() / channelCount) * 1000) / sampleRate;
+}
+
+bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
+    if (index < 0 || index >= mSampleSources.size()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                            "removeSampleSource: Invalid index %d (size=%zu)",
+                            index, mSampleSources.size());
+        return false;
+    }
+
+    if (mSampleSources[index]->isPlaying()) {
+        mSampleSources[index]->setStopMode(false);
+    }
+
+    delete mSampleSources[index];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-abstract-non-virtual-dtor"
+    delete mSampleBuffers[index];
+#pragma GCC diagnostic pop
+
+    mSampleSources.erase(mSampleSources.begin() + index);
+    mSampleBuffers.erase(mSampleBuffers.begin() + index);
+    mNumSampleBuffers--;
+
+    __android_log_print(ANDROID_LOG_INFO, TAG,
+                        "removeSampleSource: Removed index %d, %d sources remaining",
+                        index, mNumSampleBuffers);
+    return true;
 }

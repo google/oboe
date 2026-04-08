@@ -16,7 +16,10 @@
 
 package com.google.oboe.samples.powerplay.engine
 
+import android.content.ContentResolver
 import android.content.res.AssetManager
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,8 +39,8 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     /**
      * Native passthrough functions
      */
-    fun setupAudioStream() {
-        setupAudioStreamNative(NUM_PLAY_CHANNELS)
+    fun setupAudioStream(channelCount: Int = NUM_PLAY_CHANNELS) {
+        setupAudioStreamNative(channelCount)
         _playerState.update { PlayerState.Initialized }
     }
 
@@ -65,18 +68,96 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun unloadAssets() = unloadAssetsNative()
 
     /**
-     * Loads the file into memory
+     * Loads a file from assets into memory and returns its WAV properties.
+     * Reads the file bytes once, probes the header, then loads the sample data.
      */
-    fun loadFile(assetMgr: AssetManager, filename: String, id: Int) {
+    fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
         val assetFD = assetMgr.openFd(filename)
         val stream = assetFD.createInputStream()
         val len = assetFD.getLength().toInt()
         val bytes = ByteArray(len)
 
         stream.read(bytes, 0, len)
-        loadAssetNative(bytes, id)
         assetFD.close()
+
+        val wavInfo = getWavFileInfo(bytes)
+        loadAssetNative(bytes, id)
+        return wavInfo
     }
+
+    /**
+     * Probes a WAV file's audio properties without loading sample data.
+     * @param wavBytes The raw bytes of the WAV file
+     * @return WavFileInfo containing parsed audio properties, or null on failure
+     */
+    fun getWavFileInfo(wavBytes: ByteArray): WavFileInfo? {
+        return try {
+            val info = getWavFileInfoNative(wavBytes)
+            if (info.size != 6) return null
+
+            val sampleRate = info[0]
+            val numChannels = info[1]
+            val bitsPerSample = info[2]
+            val encoding = info[3]
+            val numFrames = (info[4].toLong() shl 32) or (info[5].toLong() and 0xFFFFFFFFL)
+            val durationMs = if (sampleRate > 0) (numFrames * 1000L) / sampleRate else 0L
+
+            WavFileInfo(
+                sampleRate = sampleRate,
+                numChannels = numChannels,
+                bitsPerSample = bitsPerSample,
+                encoding = encoding,
+                numSampleFrames = numFrames,
+                durationMs = durationMs
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse WAV file info", e)
+            null
+        }
+    }
+
+    /**
+     * Loads a local WAV file from a content URI.
+     * @param contentResolver The ContentResolver to read the URI
+     * @param uri The content URI of the WAV file
+     * @param index The sample source index to load into
+     * @return WavFileInfo if successful, null on failure
+     */
+    fun loadLocalFile(contentResolver: ContentResolver, uri: Uri, index: Int): WavFileInfo? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+                ?: throw IllegalStateException("Cannot open input stream for URI: $uri")
+
+            val bytes = inputStream.use { it.readBytes() }
+
+            // Check 256MB limit
+            if (bytes.size > MAX_FILE_SIZE_BYTES) {
+                Log.e(TAG, "File too large: ${bytes.size} bytes (max: $MAX_FILE_SIZE_BYTES)")
+                return null
+            }
+
+            val wavInfo = getWavFileInfo(bytes) ?: return null
+
+            // Load the sample data
+            loadAssetNative(bytes, index)
+
+            Log.i(TAG, "Loaded local file: ${wavInfo.sampleRate}Hz, " +
+                    "${wavInfo.numChannels}ch, ${wavInfo.bitsPerSample}bit, " +
+                    "${wavInfo.encodingName}, ${wavInfo.durationMs}ms")
+
+            wavInfo
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load local file", e)
+            null
+        }
+    }
+
+    /**
+     * Removes a sample source at the given index.
+     * @param index The index of the sample source to remove
+     * @return true if successfully removed
+     */
+    fun removeSampleSource(index: Int): Boolean = removeSampleSourceNative(index)
 
     /**
      * Sets whether the audio stream should use MMap audio.
@@ -175,15 +256,24 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun getPlaybackPositionMillisNative(): Long
     private external fun seekToNative(positionMillis: Int)
     private external fun getDurationMillisNative(index: Int): Long
+    private external fun getWavFileInfoNative(wavBytes: ByteArray): IntArray
+    private external fun removeSampleSourceNative(index: Int): Boolean
 
     /**
      * Companion
      */
     companion object {
+        private const val TAG = "PowerPlayAudioPlayer"
+
         /**
-         * The number of channels in the player Stream. 2 for Stereo Playback, set to 1 for Mono playback.
+         * The default number of channels in the player Stream. 2 for Stereo Playback.
          */
         const val NUM_PLAY_CHANNELS: Int = 2
+
+        /**
+         * Maximum file size for local WAV files (256MB).
+         */
+        const val MAX_FILE_SIZE_BYTES: Int = 256 * 1024 * 1024
     }
 }
 
