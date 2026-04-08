@@ -163,7 +163,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Automation state
+
     private val handler = Handler(Looper.getMainLooper())
     private var autoStopRunnable: Runnable? = null
     private var isAutomationMode = false
@@ -171,18 +171,18 @@ class MainActivity : ComponentActivity() {
     private var pendingAutomationIntent: Intent? = null
     private var assetsLoaded = false
 
-    // Shared UI state (updated by automation, observed by Compose)
+
     private val isPlayingState = mutableStateOf(false)
     private val songIndexState = mutableIntStateOf(0)
     private val performanceModeState = mutableIntStateOf(0)
     private val volumeState = mutableFloatStateOf(1.0f)
     private val isMMapEnabledState = mutableStateOf(false)
 
-    // Dynamic playlist (bundled + user-loaded local files)
+
     private val dynamicPlayList = mutableStateListOf<Music>()
     private val isLoadingFile = mutableStateOf(false)
 
-    // File picker launcher for loading local WAV files
+
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -226,8 +226,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Process automation intent if provided
-        // Note: Intent processing is deferred until assets are loaded in SongScreen
         pendingAutomationIntent = intent
     }
 
@@ -246,7 +244,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // If assets are loaded, process immediately; otherwise defer
+
         if (assetsLoaded) {
             processIntent(intent)
         } else {
@@ -256,7 +254,7 @@ class MainActivity : ComponentActivity() {
 
     private fun setUpPowerPlayAudioPlayer() {
         val intent = Intent(this, AudioForegroundService::class.java)
-        startForegroundService(intent) // Starts the service
+        startForegroundService(intent)
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
@@ -273,7 +271,7 @@ class MainActivity : ComponentActivity() {
         isAutomationMode = true
         Log.i(LOG_TAG, "Processing automation intent")
 
-        // Get playlist for song index validation
+
         val playList = BundledPlayList
 
         // Parse configuration from Intent
@@ -286,20 +284,20 @@ class MainActivity : ComponentActivity() {
         val useMMap = IntentBasedTestSupport.getMMapEnabled(extras, player.isMMapEnabled())
         val bufferFrames = IntentBasedTestSupport.getBufferFrames(extras)
 
-        // Apply MMAP setting (must be done before playing)
+
         if (useMMap != player.isMMapEnabled()) {
             player.setMMapEnabled(useMMap)
             isMMapEnabledState.value = useMMap
             Log.i(LOG_TAG, "MMAP set to: $useMMap")
         }
 
-        // Store current performance mode
+
         currentPerformanceMode = perfMode
 
-        // Execute command
+
         when (command?.lowercase()) {
             IntentBasedTestSupport.COMMAND_PLAY -> {
-                // Stop any currently playing track first
+
                 val currentIndex = player.getCurrentlyPlayingIndex()
                 if (currentIndex >= 0) {
                     player.stopPlaying(currentIndex)
@@ -307,11 +305,11 @@ class MainActivity : ComponentActivity() {
 
                 player.startPlaying(songIndex, currentPerformanceMode)
 
-                // Apply volume after starting (sample sources must exist)
+
                 player.setVolume(volume)
                 Log.i(LOG_TAG, "Volume set to: ${(volume * 100).toInt()}%")
 
-                // Update shared UI state
+
                 isPlayingState.value = true
                 songIndexState.intValue = songIndex
                 performanceModeState.intValue = perfMode.value
@@ -324,18 +322,18 @@ class MainActivity : ComponentActivity() {
                     "MMAP" to player.isMMapEnabled()
                 )
 
-                // Apply buffer size (only effective in offload mode)
+
                 if (bufferFrames > 0 && currentPerformanceMode == OboePerformanceMode.PowerSavingOffloaded) {
                     val actualFrames = player.setBufferSizeInFrames(bufferFrames)
                     Log.i(LOG_TAG, "Buffer size set to: $actualFrames frames")
                 }
 
-                // Schedule auto-stop if duration is set
+
                 if (durationMs > 0) {
                     scheduleAutoStop(songIndex, durationMs)
                 }
 
-                // Move to background if requested
+
                 if (goBackground) {
                     moveTaskToBack(true)
                     Log.i(LOG_TAG, "Moved to background")
@@ -366,7 +364,7 @@ class MainActivity : ComponentActivity() {
             }
 
             else -> {
-                // No command specified, just apply settings
+
                 Log.i(LOG_TAG, "No command specified, settings applied")
             }
         }
@@ -401,10 +399,10 @@ class MainActivity : ComponentActivity() {
 
         Thread {
             try {
-                // Get the file name from the URI
+
                 val fileName = getFileNameFromUri(uri) ?: "Unknown.wav"
 
-                // Check file extension
+
                 if (!fileName.lowercase().endsWith(".wav")) {
                     runOnUiThread {
                         isLoadingFile.value = false
@@ -415,7 +413,7 @@ class MainActivity : ComponentActivity() {
 
                 val newIndex = dynamicPlayList.size
 
-                // Load the file via PowerPlayAudioPlayer
+
                 val wavInfo = player.loadLocalFile(contentResolver, uri, newIndex)
 
                 runOnUiThread {
@@ -426,7 +424,7 @@ class MainActivity : ComponentActivity() {
                         return@runOnUiThread
                     }
 
-                    // Add the new track to the dynamic playlist
+
                     val displayName = fileName.removeSuffix(".wav").removeSuffix(".WAV")
                     dynamicPlayList.add(
                         Music(
@@ -440,10 +438,10 @@ class MainActivity : ComponentActivity() {
                         )
                     )
 
-                    // Set looping for the new track
+
                     player.setLooping(newIndex, true)
 
-                    // Scroll to the new track
+
                     songIndexState.intValue = newIndex
 
                     Toast.makeText(
@@ -483,19 +481,19 @@ class MainActivity : ComponentActivity() {
         if (index < 0 || index >= dynamicPlayList.size) return
         if (!dynamicPlayList[index].isLocal) return
 
-        // Stop if currently playing
+
         val currentlyPlaying = player.getCurrentlyPlayingIndex()
         if (currentlyPlaying == index) {
             player.stopPlaying(index)
         }
 
-        // Remove from native engine
+
         player.removeSampleSource(index)
 
-        // Remove from dynamic playlist
+
         dynamicPlayList.removeAt(index)
 
-        // Adjust the current song index if needed
+
         if (songIndexState.intValue >= dynamicPlayList.size) {
             songIndexState.intValue = (dynamicPlayList.size - 1).coerceAtLeast(0)
         }
@@ -507,9 +505,7 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    /***
-     * Brings together all UI elements for the player
-     */
+
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
     @Preview
     @Composable
@@ -519,7 +515,7 @@ class MainActivity : ComponentActivity() {
         val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { playList.size })
         val coroutineScope = rememberCoroutineScope()
 
-        // Use shared state from class level (automation can update these)
+
         val playingSongIndex = songIndexState
         val offload = performanceModeState
         val isMMapEnabled = isMMapEnabledState
@@ -534,13 +530,13 @@ class MainActivity : ComponentActivity() {
 
         var showInfoDialog by remember { mutableStateOf(false) }
 
-        // Real-time progress slider state
+
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
         var isSeeking by remember { mutableStateOf(false) }
         val duration = remember(playingSongIndex.intValue, assetsReady, playList.size) { player.getDurationMillis(playingSongIndex.intValue) }
 
-        // Polling loop for slider position (~60fps)
+
         LaunchedEffect(isPlaying, offload.intValue) {
             if (isPlaying && offload.intValue != 3) {
                 while (true) {
@@ -554,13 +550,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Sync pager with song index when automation changes it
+
         LaunchedEffect(playingSongIndex.intValue) {
             if (pagerState.currentPage != playingSongIndex.intValue &&
                 playingSongIndex.intValue < playList.size) {
                 pagerState.animateScrollToPage(playingSongIndex.intValue)
             }
-            // Update playback position when song changes
+
             playbackPosition = player.getPlaybackPositionMillis()
         }
 
@@ -569,7 +565,7 @@ class MainActivity : ComponentActivity() {
                 .distinctUntilChanged()
                 .collect { page ->
                     playingSongIndex.intValue = pagerState.currentPage
-                    // Check the latest value of playerState state object
+
                     if (playerStateWrapper.value == PlayerState.Playing) {
                         player.startPlaying(
                             playingSongIndex.intValue,
@@ -580,22 +576,22 @@ class MainActivity : ComponentActivity() {
         }
 
         LaunchedEffect(Unit) {
-            // Sync UI MMap state with Player
+
             isMMapEnabled.value = player.isMMapEnabled()
 
-            // Initialize the dynamic playlist from bundled songs
+
             dynamicPlayList.clear()
             dynamicPlayList.addAll(BundledPlayList)
 
             BundledPlayList.forEachIndexed { index, song ->
-                // Load asset and probe WAV info in a single read
+
                 val wavInfo = player.loadFile(assets, song.fileName, index)
                 if (wavInfo != null) {
                     dynamicPlayList[index] = song.copy(wavInfo = wavInfo)
                 }
                 player.setLooping(index, true)
             }
-            // Assets are now loaded, process any pending automation intent
+
             assetsLoaded = true
             assetsReady = true
             pendingAutomationIntent?.let {
@@ -612,7 +608,7 @@ class MainActivity : ComponentActivity() {
         ) {
             val configuration = LocalConfiguration.current
 
-            // Bottom-right: Settings button
+
             IconButton(
                 onClick = { showBottomSheet = true },
                 modifier = Modifier
@@ -626,7 +622,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-            // Bottom-left: Info button
+
             IconButton(
                 onClick = { showInfoDialog = true },
                 modifier = Modifier
@@ -640,7 +636,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-            // Top-right: Add local file button
+
             IconButton(
                 onClick = { filePickerLauncher.launch(arrayOf("audio/wav", "audio/x-wav")) },
                 enabled = !isLoading,
@@ -656,7 +652,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            // Top-left: Remove button (only for local tracks)
+
             val currentTrack = playList.getOrNull(playingSongIndex.intValue)
             if (currentTrack?.isLocal == true) {
                 IconButton(
@@ -675,7 +671,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            // Loading overlay
+
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -710,9 +706,7 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                /***
-                 * Includes animated song album cover
-                 */
+
                 HorizontalPager(
                     modifier = Modifier.fillMaxWidth(),
                     state = pagerState,
@@ -729,7 +723,7 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Progress Slider
+
                 AnimatedVisibility(visible = offload.intValue != 3) {
                     Column(
                         modifier = Modifier
@@ -855,7 +849,7 @@ class MainActivity : ComponentActivity() {
                             Text(bufferInfo)
                         }
 
-                        // WAV file properties section (for local files or all files if info available)
+
                         if (wavInfo != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -885,7 +879,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Source indicator
+
                         if (currentTrackInfo?.isLocal == true) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -1167,9 +1161,7 @@ class MainActivity : ComponentActivity() {
         painter: Painter
     ) {
 
-        /**
-         * Creates a custom outline for a rounded shape
-         */
+
         val roundedShape = object : Shape {
             override fun createOutline(
                 size: Size,
@@ -1197,18 +1189,14 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        /**
-         * Container defining the layout for a vinyl-themed UI element.
-         */
+
         Box(
             modifier = modifier
                 .aspectRatio(1.0f)
                 .clip(roundedShape)
         ) {
 
-            /**
-             * Vinyl background image
-             */
+
             Image(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1218,9 +1206,7 @@ class MainActivity : ComponentActivity() {
             )
 
 
-            /**
-             * Song album cover image overlaid on the vinyl background image
-             */
+
             Image(
                 modifier = Modifier
                     .fillMaxSize(0.5f)

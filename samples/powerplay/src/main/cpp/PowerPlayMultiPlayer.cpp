@@ -329,19 +329,16 @@ bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
         return false;
     }
 
-    // Stop playback if this source is currently playing.
     if (mSampleSources[index]->isPlaying()) {
         mSampleSources[index]->setStopMode(false);
     }
 
-    // Delete the source and buffer at this index.
     delete mSampleSources[index];
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdelete-non-abstract-non-virtual-dtor"
     delete mSampleBuffers[index];
 #pragma GCC diagnostic pop
 
-    // Remove from vectors.
     mSampleSources.erase(mSampleSources.begin() + index);
     mSampleBuffers.erase(mSampleBuffers.begin() + index);
     mNumSampleBuffers--;
