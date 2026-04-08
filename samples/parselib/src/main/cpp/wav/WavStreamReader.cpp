@@ -202,6 +202,7 @@ int WavStreamReader::getDataFloat_PCM24(float *buff, int numFrames) {
     static constexpr float kSampleFullScale = (float) 0x80000000;
     static constexpr float kInverseScale = 1.0f / kSampleFullScale;
 
+    int samplesRead = 0;
     uint8_t buffer[3];
     for(int sampleIndex = 0; sampleIndex < numSamples; sampleIndex++) {
         if (mStream->read(buffer, 3) < 3) {
@@ -209,9 +210,10 @@ int WavStreamReader::getDataFloat_PCM24(float *buff, int numFrames) {
         }
         int32_t sample = (buffer[0] << 8) | (buffer[1] << 16) | (buffer[2] << 24);
         buff[sampleIndex] = (float)sample * kInverseScale;
+        samplesRead++;
     }
 
-    return numFrames;
+    return samplesRead / numChannels;
 }
 
 /**

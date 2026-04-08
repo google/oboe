@@ -377,6 +377,16 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getWavFileInf
     WavStreamReader reader(&stream);
     reader.parse();
 
+    if (!reader.isValid()) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG,
+                "getWavFileInfoNative: WAV parse failed - missing fmt or data chunk");
+        jintArray result = env->NewIntArray(6);
+        jint values[6] = {0, 0, 0, 0, 0, 0};
+        env->SetIntArrayRegion(result, 0, 6, values);
+        delete[] buf;
+        return result;
+    }
+
     int32_t sampleRate = reader.getSampleRate();
     int32_t numChannels = reader.getNumChannels();
     int32_t bitsPerSample = reader.getBitsPerSample();
