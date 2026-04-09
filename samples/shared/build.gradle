@@ -1,0 +1,10 @@
+apply plugin: 'com.android.library'
+
+android {
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 36
+        compileSdkVersion 36
+    }
+    namespace 'com.google.oboe.samples.shared'
+}
