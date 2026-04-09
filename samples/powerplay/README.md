@@ -25,4 +25,4 @@ An energy-efficient audio player sample application demonstrating the use of the
 
 Images
 -----------
-![powerplay_image](powerplay_image.png)
+<img src="powerplay_image.png" alt="powerplay_image" width="250"/>
