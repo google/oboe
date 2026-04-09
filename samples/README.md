@@ -12,6 +12,8 @@ There is an associated codelab to follow along with. (Java)
 1. [LiveEffect](LiveEffect): Loops audio from input stream to output stream to demonstrate duplex capability. (Java)
 1. [SoundBoard](SoundBoard): A 25 to 40 note dynamic synthesizer, demonstating combining signals. The stream restarts
 when the display rotates. (Kotlin)
+1. [OboeDJ](OboeDJ): A high-performance DJ app with two independent playback decks and real-time scratching. (Kotlin/Compose)
+1. [PowerPlay](powerplay): Demonstrates power-efficient audio features like PCM Offload and automation via ADB. (Kotlin/Compose)
 
 Pre-requisites
 -------------
