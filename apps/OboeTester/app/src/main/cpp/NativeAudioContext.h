@@ -560,11 +560,11 @@ public:
     void trigger() override {
         if (mUseToneGeneratorType == "Blip"){
             mExactBlipGenerator.trigger();
-        }else if(mUseToneGeneratorType == "Saw"){
+        } else if (mUseToneGeneratorType == "Saw"){
             mSawPingGenerator.trigger();
-        }else if(mUseToneGeneratorType == "NoisePulse"){
+        } else if (mUseToneGeneratorType == "NoisePulse"){
             mNoisePulseGenerator.trigger();
-        }else{
+        } else {
             // By default use Blip
             mExactBlipGenerator.trigger();
         }
@@ -577,7 +577,7 @@ public:
 
     std::string                  mUseToneGeneratorType;
     SawPingGenerator             mSawPingGenerator;
-    BlipGenerator           mExactBlipGenerator;
+    BlipGenerator                mExactBlipGenerator;
     NoisePulseGenerator          mNoisePulseGenerator;
 };
 

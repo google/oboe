@@ -775,11 +775,11 @@ void ActivityTapToTone::configureAfterOpen() {
 
     if (mUseToneGeneratorType == "Blip"){
         mExactBlipGenerator.output.connect(&(monoToMulti->input));
-    }else if(mUseToneGeneratorType == "Saw"){
+    } else if (mUseToneGeneratorType == "Saw"){
         mSawPingGenerator.output.connect(&(monoToMulti->input));
-    }else if(mUseToneGeneratorType == "NoisePulse"){
+    } else if (mUseToneGeneratorType == "NoisePulse"){
         mNoisePulseGenerator.output.connect(&(monoToMulti->input));
-    }else{
+    } else {
         mExactBlipGenerator.output.connect(&(monoToMulti->input));
     }
 

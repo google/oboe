@@ -72,26 +72,26 @@ public class TapLatencyAnalyser {
         mAverageFilterUsedInAuto = false;
         float[] highPassBuffer = new float[numSamples];
         highPassFilter(buffer, offset, numSamples, highPassBuffer);
-        TapLatencyEvent[] events_from_highpass = applyEnvelopeFollowerAndScanForEdges(highPassBuffer, numSamples);
+        TapLatencyEvent[] eventsFromHighpass = applyEnvelopeFollowerAndScanForEdges(highPassBuffer, numSamples);
 
         float[] avgFilteredBuffer = new float[numSamples];
         averageFilter(highPassBuffer, numSamples, avgFilteredBuffer);
-        TapLatencyEvent[] events_from_avg = applyEnvelopeFollowerAndScanForEdges(avgFilteredBuffer, numSamples);
+        TapLatencyEvent[] eventsFromAvg = applyEnvelopeFollowerAndScanForEdges(avgFilteredBuffer, numSamples);
 
         if (mFilterType == FilterType.HIGH_PASS){
             mFilteredBuffer = highPassBuffer;
-            return events_from_highpass;
+            return eventsFromHighpass;
         }else if(mFilterType == FilterType.AVERAGE){
             mFilteredBuffer = avgFilteredBuffer;
-            return events_from_avg;
+            return eventsFromAvg;
         }else{
-            if (events_from_highpass.length == 2) {
+            if (eventsFromHighpass.length == 2) {
                 mFilteredBuffer = highPassBuffer;
-                return events_from_highpass;
+                return eventsFromHighpass;
             } else {
                 mFilteredBuffer = avgFilteredBuffer;
                 mAverageFilterUsedInAuto = true;
-                return events_from_avg;
+                return eventsFromAvg;
             }
         }
     }
