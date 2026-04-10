@@ -370,4 +370,17 @@
         <item>Default</item>
         <item>Voice</item>
     </string-array>
+
+    <string name="filter_type_prompt">Choose a Filter</string>
+    <string-array name="filter_types">
+        <item>AUTO</item>
+        <item>HIGHPASS</item>
+        <item>AVERAGE</item>
+    </string-array>
+
+    <string name="tone_type_prompt">Choose a Tone</string>
+    <string-array name="tone_types">
+        <item>Blip</item>
+        <item>Saw</item>
+    </string-array>
 </resources>

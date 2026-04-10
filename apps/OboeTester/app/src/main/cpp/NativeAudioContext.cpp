@@ -771,11 +771,16 @@ void ActivityTapToTone::configureAfterOpen() {
     mSawPingGenerator.setSampleRate(outputStream->getSampleRate());
     mSawPingGenerator.frequency.setValue(FREQUENCY_SAW_PING);
     mSawPingGenerator.amplitude.setValue(AMPLITUDE_SAW_PING);
+    mBlipGenerator.setSampleRate(outputStream->getSampleRate());
 
-    if (mUseNoisePulse) {
+    if (mUseToneGeneratorType == "Blip"){
+        mBlipGenerator.output.connect(&(monoToMulti->input));
+    } else if (mUseToneGeneratorType == "Saw"){
+        mSawPingGenerator.output.connect(&(monoToMulti->input));
+    } else if (mUseToneGeneratorType == "NoisePulse"){
         mNoisePulseGenerator.output.connect(&(monoToMulti->input));
     } else {
-        mSawPingGenerator.output.connect(&(monoToMulti->input));
+        mBlipGenerator.output.connect(&(monoToMulti->input));
     }
 
     monoToMulti->output.connect(&(mSinkFloat.get()->input));

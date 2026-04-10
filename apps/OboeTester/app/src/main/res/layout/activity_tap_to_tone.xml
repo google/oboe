@@ -28,8 +28,6 @@
     </LinearLayout>
 
     <ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fillViewport="true" >
@@ -48,24 +46,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Use Noise Pulse: " />
-
-                <CheckBox
-                    android:id="@+id/checkbox_use_noise_pulse"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="onUseNoisePulseClicked"
-                    android:checked="true" />
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -119,14 +99,50 @@
                     android:entries="@array/senders" />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Filter:" />
+
+                <Spinner
+                    android:id="@+id/filter_type_spinner"
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/filter_types" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tone type:" />
+
+                <Spinner
+                    android:id="@+id/tone_type_spinner"
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/tone_types" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/resultView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:lines="2"
+                android:lines="3"
+                android:text="@string/tap_help"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:text="@string/tap_help" />
+                android:textStyle="bold" />
 
             <FrameLayout
                 android:layout_width="match_parent"

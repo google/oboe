@@ -33,8 +33,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.mobileer.audio_device.AudioDeviceListEntry;
@@ -59,12 +60,12 @@ public class TapToToneActivity extends TestOutputActivityBase {
 
     private Button mStopButton;
     private Button mStartButton;
-    private CheckBox mUseNoisePulseCheckBox;
 
     private MidiOutputPortConnectionSelector mPortSelector;
     private final MyNoteListener mTestListener = new MyNoteListener();
 
     private AudioDeviceSpinner mInputDeviceSpinner;
+    private Spinner mToneTypeSpinner;
 
     @Override
     protected void inflateActivity() {
@@ -132,8 +133,18 @@ public class TapToToneActivity extends TestOutputActivityBase {
         mInputDeviceSpinner = (AudioDeviceSpinner) findViewById(R.id.input_devices_spinner);
         mInputDeviceSpinner.setDirectionType(AudioManager.GET_DEVICES_INPUTS);
 
-        mUseNoisePulseCheckBox = (CheckBox) findViewById(R.id.checkbox_use_noise_pulse);
-        useNoisePulse(mUseNoisePulseCheckBox.isChecked());
+        mToneTypeSpinner = (Spinner) findViewById(R.id.tone_type_spinner);
+        mToneTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                useToneGenerator(parent.getItemAtPosition(position).toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        useToneGenerator(mToneTypeSpinner.getSelectedItem().toString());
     }
 
     private void update(int waveformViewId, int waveColor, int backgroundColor, int cursorColor) {
@@ -314,7 +325,7 @@ public class TapToToneActivity extends TestOutputActivityBase {
                 ((AudioDeviceListEntry) mInputDeviceSpinner.getSelectedItem()).getDeviceInfo();
         mTapToToneTester.setInputDevice(deviceInfo);
         mInputDeviceSpinner.setEnabled(false);
-        mUseNoisePulseCheckBox.setEnabled(false);
+        mToneTypeSpinner.setEnabled(false);
         mTapToToneTester.resetLatency();
         mTapToToneTester.start();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -323,13 +334,9 @@ public class TapToToneActivity extends TestOutputActivityBase {
     private void stopTapToToneTester() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mInputDeviceSpinner.setEnabled(true);
-        mUseNoisePulseCheckBox.setEnabled(true);
         mTapToToneTester.stop();
+        mToneTypeSpinner.setEnabled(true);
     }
 
-    public void onUseNoisePulseClicked(View view) {
-        useNoisePulse(mUseNoisePulseCheckBox.isChecked());
-    }
-
-    public native void useNoisePulse(boolean enabled);
+    public native void useToneGenerator(String type);
 }

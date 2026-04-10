@@ -15,18 +15,31 @@
  */
 package com.mobileer.oboetester;
 
+import android.util.Log;
 import java.util.ArrayList;
 
 /**
  * Analyze a recording and extract edges for latency analysis.
  */
 public class TapLatencyAnalyser {
+    public static final String TAG = "TapLatencyAnalyser";
     public static final int TYPE_TAP = 0;
-    float[] mHighPassBuffer;
+
+    public enum FilterType {
+        AUTO,
+        HIGH_PASS,
+        AVERAGE
+    }
+
+    private FilterType mFilterType = FilterType.AUTO;
+
+    private float[] mFilteredBuffer;
     float[] mFastBuffer;
     float[] mSlowBuffer;
     float[] mLowThresholdBuffer;
     float [] mArmedIndexes;
+
+    private boolean mAverageFilterUsedInAuto = false;
 
     private float mDroop = 0.995f;
     private static final float EDGE_THRESHOLD = 0.01f;
@@ -51,20 +64,42 @@ public class TapLatencyAnalyser {
      */
     public TapLatencyEvent[] analyze(float[] buffer, int offset, int numSamples) {
         // Use high pass filter to remove rumble from air conditioners.
-        mHighPassBuffer = new float[numSamples];
-        highPassFilter(buffer, offset, numSamples, mHighPassBuffer);
-
-        float[] mAverageBuffer = new float[numSamples];
-        averageFilter(mHighPassBuffer, numSamples, mAverageBuffer);
-        mHighPassBuffer = mAverageBuffer;
-
-        // Apply envelope follower.
-        float[] peakBuffer = new float[numSamples];
         mFastBuffer = new float[numSamples];
         mSlowBuffer = new float[numSamples];
         mLowThresholdBuffer = new float[numSamples];
         mArmedIndexes = new float[numSamples];
-        fillPeakBuffer(mHighPassBuffer, 0, numSamples, peakBuffer);
+
+        mAverageFilterUsedInAuto = false;
+        float[] highPassBuffer = new float[numSamples];
+        highPassFilter(buffer, offset, numSamples, highPassBuffer);
+        TapLatencyEvent[] eventsFromHighpass = applyEnvelopeFollowerAndScanForEdges(highPassBuffer, numSamples);
+
+        float[] avgFilteredBuffer = new float[numSamples];
+        averageFilter(highPassBuffer, numSamples, avgFilteredBuffer);
+        TapLatencyEvent[] eventsFromAvg = applyEnvelopeFollowerAndScanForEdges(avgFilteredBuffer, numSamples);
+
+        if (mFilterType == FilterType.HIGH_PASS){
+            mFilteredBuffer = highPassBuffer;
+            return eventsFromHighpass;
+        }else if(mFilterType == FilterType.AVERAGE){
+            mFilteredBuffer = avgFilteredBuffer;
+            return eventsFromAvg;
+        }else{
+            if (eventsFromHighpass.length == 2) {
+                mFilteredBuffer = highPassBuffer;
+                return eventsFromHighpass;
+            } else {
+                mFilteredBuffer = avgFilteredBuffer;
+                mAverageFilterUsedInAuto = true;
+                return eventsFromAvg;
+            }
+        }
+    }
+
+    public TapLatencyEvent[] applyEnvelopeFollowerAndScanForEdges(float[] buffer, int numSamples) {
+        // Apply envelope follower.
+        float[] peakBuffer = new float[numSamples];
+        fillPeakBuffer(buffer, 0, numSamples, peakBuffer);
         // Look for two attacks.
         return scanForEdges(peakBuffer, numSamples);
     }
@@ -74,7 +109,7 @@ public class TapLatencyAnalyser {
      *   High-pass filtered to emphasize high-frequency events such as edges.
      */
     public float[] getFilteredBuffer() {
-        return mHighPassBuffer;
+        return mFilteredBuffer;
     }
 
 
@@ -93,6 +128,16 @@ public class TapLatencyAnalyser {
     public float[] getArmedIndexes() {
         return mArmedIndexes;
     }
+
+    public void setFilterType(FilterType filterType) {
+        mFilterType = filterType;
+        Log.d(TAG, "setFilterType: " + filterType);
+    }
+
+    public boolean getAverageFilterUsedInAuto() {
+        return mAverageFilterUsedInAuto;
+    }
+
     // Based on https://en.wikipedia.org/wiki/High-pass_filter
     private void highPassFilter(
             float[] buffer, int offset, int numSamples, float[] highPassBuffer) {
@@ -114,6 +159,10 @@ public class TapLatencyAnalyser {
     }
 
     private void averageFilter(float[] buffer, int numSamples, float[] averageBuffer) {
+        if (numSamples <= 0) {
+            Log.e("TapLatencyAnalyser", "averageFilter: numSamples = " + numSamples);
+            return;
+        }
         double sum = 0.0;
         for (int i = 0; i < numSamples; i++) {
             sum += buffer[i];
