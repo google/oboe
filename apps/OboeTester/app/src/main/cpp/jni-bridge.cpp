@@ -1139,10 +1139,12 @@ Java_com_mobileer_oboetester_TestAudioActivity_setDuck(JNIEnv *env, jobject, jbo
 }
 
 JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_TapToToneActivity_useNoisePulse(JNIEnv *env,
-                                                             jclass clazz,
-                                                             jboolean enabled) {
-    engine.mActivityTapToTone.useNoisePulse(enabled);
+Java_com_mobileer_oboetester_TapToToneActivity_useToneGenerator(JNIEnv *env,
+                                                             jobject,
+                                                             jstring type) {
+    const char *typeStr = env->GetStringUTFChars(type, nullptr);
+    engine.mActivityTapToTone.useToneGenerator(typeStr);
+    env->ReleaseStringUTFChars(type, typeStr);
 }
 
 static TestErrorCallback sErrorCallbackTester;

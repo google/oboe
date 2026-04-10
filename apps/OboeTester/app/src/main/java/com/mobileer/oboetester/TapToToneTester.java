@@ -36,6 +36,7 @@ public class TapToToneTester {
     WaveformView mArmedWaveformView;
     private final TextView mResultView;
     private final Spinner mAudioSourceSpinner;
+    private final Spinner mFilterTypeSpinner;
 
     private final String mTapInstructions;
     private float mAnalysisTimeMargin = ANALYSIS_TIME_MARGIN;
@@ -47,6 +48,7 @@ public class TapToToneTester {
     private int mLatencySumSamples;
     private int mLatencyMin;
     private int mLatencyMax;
+    private int mNumOfTimesAvgFilterUsed = 0;
 
     public static class TestResult {
         public float[] samples;
@@ -97,16 +99,31 @@ public class TapToToneTester {
         mRecorder.setAudioSource((String) mAudioSourceSpinner.getAdapter().getItem(0));
 
         mTapLatencyAnalyser = new TapLatencyAnalyser();
+
+        mFilterTypeSpinner = (Spinner) activity.findViewById(R.id.filter_type_spinner);
+        mFilterTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                mTapLatencyAnalyser.setFilterType(TapLatencyAnalyser.FilterType.values()[position]);
+                mNumOfTimesAvgFilterUsed = 0;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
     }
 
     public void start() throws IOException {
         mRecorder.startAudio();
         mWaveformView.setEnabled(true);
+        mFilterTypeSpinner.setEnabled(false);
     }
 
     public void stop() {
         mRecorder.stopAudio();
         mWaveformView.setEnabled(false);
+        mFilterTypeSpinner.setEnabled(true);
     }
 
     /**
@@ -209,6 +226,13 @@ public class TapToToneTester {
                 }
 
                 text = String.format(Locale.getDefault(), "tap-to-tone latency = %3d msec\n", latencyMillis);
+
+                if (mTapLatencyAnalyser.getAverageFilterUsedInAuto()) {
+                    mNumOfTimesAvgFilterUsed++;
+                }
+                if (mNumOfTimesAvgFilterUsed > 0){
+                    text = text + String.format(Locale.getDefault(), "Avg filter used %d/%d times\n", mNumOfTimesAvgFilterUsed, mMeasurementCount);
+                }
             }
             mWaveformView.setSampleData(result.filtered);
             mFastWaveformView.setSampleData(mTapLatencyAnalyser.getFastBuffer());

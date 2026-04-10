@@ -60,6 +60,7 @@
 #include "OboeTools.h"
 #include "PlayRecordingCallback.h"
 #include "SawPingGenerator.h"
+#include "BlipGenerator.h"
 
 // These must match order in strings.xml and in StreamConfiguration.java
 #define NATIVE_MODE_UNSPECIFIED  0
@@ -557,19 +558,26 @@ public:
     void configureAfterOpen() override;
 
     void trigger() override {
-        if (mUseNoisePulse) {
-            mNoisePulseGenerator.trigger();
-        } else {
+        if (mUseToneGeneratorType == "Blip"){
+            mExactBlipGenerator.trigger();
+        }else if(mUseToneGeneratorType == "Saw"){
             mSawPingGenerator.trigger();
+        }else if(mUseToneGeneratorType == "NoisePulse"){
+            mNoisePulseGenerator.trigger();
+        }else{
+            // By default use Blip
+            mExactBlipGenerator.trigger();
         }
     }
 
-    void useNoisePulse(bool enabled) {
-        mUseNoisePulse = enabled;
+    void useToneGenerator(std::string type) {
+        mUseToneGeneratorType = type;
+        LOGD("Using %s tone generator\n", type.c_str());
     }
 
-    bool                         mUseNoisePulse;
+    std::string                  mUseToneGeneratorType;
     SawPingGenerator             mSawPingGenerator;
+    BlipGenerator           mExactBlipGenerator;
     NoisePulseGenerator          mNoisePulseGenerator;
 };
 
