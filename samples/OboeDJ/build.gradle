@@ -51,6 +51,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':audio-device')
     implementation project(':parselib') // We need parselib for WAV reading
+    implementation project(':shared')
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     
