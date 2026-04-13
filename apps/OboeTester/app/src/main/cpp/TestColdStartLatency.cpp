@@ -25,7 +25,7 @@
 using namespace oboe;
 
 int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMmap, bool
-useExclusive) {
+        useExclusive) {
 
     mDataCallback = std::make_shared<MyDataCallback>();
 
@@ -38,7 +38,7 @@ useExclusive) {
     AudioStreamBuilder builder;
     Result result = builder.setFormat(AudioFormat::Float)
             ->setPerformanceMode(useLowLatency ? PerformanceMode::LowLatency :
-                                 PerformanceMode::None)
+                    PerformanceMode::None)
             ->setDirection(useInput ? Direction::Input : Direction::Output)
             ->setChannelCount(kChannelCount)
             ->setDataCallback(mDataCallback)
@@ -60,6 +60,7 @@ useExclusive) {
 }
 
 int32_t TestColdStartLatency::start() {
+    if (!mStream) return (int32_t)Result::ErrorNull;
     mBeginStartNanos = AudioClock::getNanoseconds();
     Result result = mStream->requestStart();
     int64_t endStartNanos = AudioClock::getNanoseconds();
@@ -78,6 +79,7 @@ int32_t TestColdStartLatency::close() {
 }
 
 int32_t TestColdStartLatency::getColdStartTimeMicros() {
+    if (!mStream) return -1;
     int64_t position;
     int64_t timestampNanos;
     if (mStream->getDirection() == Direction::Output) {
@@ -102,6 +104,7 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
 }
 
 void TestColdStartLatency::waitForValidTimestamp() {
+    if (!mStream) return;
     int32_t timeoutCount = 0;
     const int32_t kMaxTimeoutCount = 3000 / kPollPeriodMillis; // 3 seconds timeout
 
