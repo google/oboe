@@ -25,7 +25,7 @@
 using namespace oboe;
 
 int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMmap, bool
-        useExclusive) {
+useExclusive) {
 
     mDataCallback = std::make_shared<MyDataCallback>();
 
@@ -38,7 +38,7 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
     AudioStreamBuilder builder;
     Result result = builder.setFormat(AudioFormat::Float)
             ->setPerformanceMode(useLowLatency ? PerformanceMode::LowLatency :
-                    PerformanceMode::None)
+                                 PerformanceMode::None)
             ->setDirection(useInput ? Direction::Input : Direction::Output)
             ->setChannelCount(kChannelCount)
             ->setDataCallback(mDataCallback)
@@ -60,10 +60,8 @@ int32_t TestColdStartLatency::open(bool useInput, bool useLowLatency, bool useMm
 }
 
 int32_t TestColdStartLatency::start() {
-    std::shared_ptr<oboe::AudioStream> stream = mStream;
-    if (!stream) return (int32_t)Result::ErrorNull;
     mBeginStartNanos = AudioClock::getNanoseconds();
-    Result result = stream->requestStart();
+    Result result = mStream->requestStart();
     int64_t endStartNanos = AudioClock::getNanoseconds();
     int64_t actualDurationNanos = endStartNanos - mBeginStartNanos;
     mStartTimeMicros = actualDurationNanos / NANOS_PER_MICROSECOND;
@@ -71,23 +69,19 @@ int32_t TestColdStartLatency::start() {
 }
 
 int32_t TestColdStartLatency::close() {
-    std::shared_ptr<oboe::AudioStream> stream = mStream;
-    if (!stream) {
+    if (!mStream) {
         return (int32_t)Result::OK;
     }
-    Result result1 = stream->requestStop();
-    Result result2 = stream->close();
+    Result result1 = mStream->requestStop();
+    Result result2 = mStream->close();
     return (int32_t)((result1 != Result::OK) ? result1 : result2);
 }
 
 int32_t TestColdStartLatency::getColdStartTimeMicros() {
-    std::shared_ptr<oboe::AudioStream> stream = mStream;
-    if (!stream) return -1;
-
     int64_t position;
     int64_t timestampNanos;
-    if (stream->getDirection() == Direction::Output) {
-        auto result = stream->getTimestamp(CLOCK_MONOTONIC);
+    if (mStream->getDirection() == Direction::Output) {
+        auto result = mStream->getTimestamp(CLOCK_MONOTONIC);
         if (!result) {
             return -1; // ERROR
         }
@@ -96,10 +90,10 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
         position = frameTimestamp.position;
         timestampNanos = frameTimestamp.timestamp;
     } else {
-        position = stream->getFramesRead();
+        position = mStream->getFramesRead();
         timestampNanos = AudioClock::getNanoseconds();
     }
-    double sampleRate = (double) stream->getSampleRate();
+    double sampleRate = (double) mStream->getSampleRate();
 
     int64_t elapsedNanos = NANOS_PER_SECOND * (position / sampleRate);
     int64_t timeOfFrameZero = timestampNanos - elapsedNanos;
@@ -108,15 +102,12 @@ int32_t TestColdStartLatency::getColdStartTimeMicros() {
 }
 
 void TestColdStartLatency::waitForValidTimestamp() {
-    std::shared_ptr<oboe::AudioStream> stream = mStream;
-    if (!stream) return;
-
     int32_t timeoutCount = 0;
     const int32_t kMaxTimeoutCount = 3000 / kPollPeriodMillis; // 3 seconds timeout
 
-    if (stream->getDirection() == Direction::Output) {
-        while (!stream->getTimestamp(CLOCK_MONOTONIC)) {
-            oboe::StreamState state = stream->getState();
+    if (mStream->getDirection() == Direction::Output) {
+        while (!mStream->getTimestamp(CLOCK_MONOTONIC)) {
+            oboe::StreamState state = mStream->getState();
             if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
                 break;
             }
@@ -124,8 +115,8 @@ void TestColdStartLatency::waitForValidTimestamp() {
             if (++timeoutCount > kMaxTimeoutCount) break;
         }
     } else {
-        while (stream->getFramesRead() == 0) {
-            oboe::StreamState state = stream->getState();
+        while (mStream->getFramesRead() == 0) {
+            oboe::StreamState state = mStream->getState();
             if (state != oboe::StreamState::Starting && state != oboe::StreamState::Started) {
                 break;
             }
