@@ -60,6 +60,8 @@ public:
 
     bool removeSampleSource(int32_t index);
 
+    void setPlaybackParameters(float speed, float pitch);
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:
@@ -79,6 +81,8 @@ private:
     oboe::PerformanceMode mLastPerformanceMode;
 
     bool mLastMMapEnabled;
+    float mPlaybackSpeed = 1.0f;
+    float mPlaybackPitch = 1.0f;
 };
 
 #endif //SAMPLES_POWERPLAYMULTIPLAYER_H

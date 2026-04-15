@@ -477,6 +477,8 @@ class MainActivity : ComponentActivity() {
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
         var sliderPosition by remember { mutableFloatStateOf(0f) }
+        var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
+        var playbackPitch by remember { mutableFloatStateOf(1.0f) }
 
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -737,6 +739,16 @@ class MainActivity : ComponentActivity() {
                     isPlaying = isPlaying,
                     sliderPosition = sliderPosition,
                     onSliderPositionChange = { sliderPosition = it },
+                    playbackSpeed = playbackSpeed,
+                    playbackPitch = playbackPitch,
+                    onSpeedChange = {
+                        playbackSpeed = it
+                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                    },
+                    onPitchChange = {
+                        playbackPitch = it
+                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                    },
                     onDismiss = { showBottomSheet = false }
                 )
             }
@@ -843,6 +855,10 @@ class MainActivity : ComponentActivity() {
         isPlaying: Boolean,
         sliderPosition: Float,
         onSliderPositionChange: (Float) -> Unit,
+        playbackSpeed: Float,
+        playbackPitch: Float,
+        onSpeedChange: (Float) -> Unit,
+        onPitchChange: (Float) -> Unit,
         onDismiss: () -> Unit
     ) {
         var localSliderPosition by remember { mutableFloatStateOf(sliderPosition) }
@@ -954,6 +970,50 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
+
+            val isPlaybackParamsSupported = android.os.Build.VERSION.SDK_INT >= 37
+            val isOffload = offload.intValue == 3
+            val canUseParams = isPlaybackParamsSupported && !isOffload
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Playback Speed: ${"%.2f".format(playbackSpeed)}x" + 
+                    if (!isPlaybackParamsSupported) " (Requires API 37)" 
+                    else if (isOffload) " (Not supported in Offload mode)" else "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (canUseParams) Color.Unspecified else Color.Gray
+            )
+            Slider(
+                value = playbackSpeed,
+                onValueChange = onSpeedChange,
+                valueRange = 0.5f..2.0f,
+                enabled = canUseParams,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Playback Pitch: ${"%.2f".format(playbackPitch)}x" + 
+                    if (!isPlaybackParamsSupported) " (Requires API 37)" 
+                    else if (isOffload) " (Not supported in Offload mode)" else "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (canUseParams) Color.Unspecified else Color.Gray
+            )
+            Slider(
+                value = playbackPitch,
+                onValueChange = onPitchChange,
+                valueRange = 0.5f..2.0f,
+                enabled = canUseParams,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
 
             AnimatedVisibility(
                 visible = offload.intValue == 3,
