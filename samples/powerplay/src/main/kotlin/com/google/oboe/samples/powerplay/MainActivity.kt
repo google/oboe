@@ -987,7 +987,7 @@ class MainActivity : ComponentActivity() {
                 
                 if (isMMap) {
                     canUseSpeed = when (fileSampleRate) {
-                        44100 -> false
+                        44100 -> true // Allowed as per testing
                         48000, 96000 -> true
                         else -> false // Default to false for safety
                     }
