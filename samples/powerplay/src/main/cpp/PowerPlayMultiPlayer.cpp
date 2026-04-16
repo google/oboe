@@ -58,7 +58,6 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setUsage(Usage::Media)
             ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
-            ->setBufferCapacityInFrames(8192)
             ->setSharingMode(SharingMode::Exclusive);
 
     Result result = builder.openStream(mAudioStream);

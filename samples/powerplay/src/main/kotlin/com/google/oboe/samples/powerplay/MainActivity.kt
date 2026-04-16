@@ -982,28 +982,11 @@ class MainActivity : ComponentActivity() {
             var canUseSpeed = isPlaybackParamsSupported
             var canUsePitch = isPlaybackParamsSupported
 
-            if (isOffload) {
-                canUsePitch = false // Pitch is always disabled in offload according to rules
-                
-                if (isMMap) {
-                    canUseSpeed = when (fileSampleRate) {
-                        44100 -> true // Allowed as per testing
-                        48000, 96000 -> true
-                        else -> false // Default to false for safety
-                    }
-                } else {
-                    // Classic PCM Offload
-                    canUseSpeed = when (fileSampleRate) {
-                        44100, 48000, 96000 -> true
-                        else -> true // Default to true for Classic
-                    }
-                }
-            }
+            // For testing: allow everything except API 37 gate
+            // The previous offload restrictions have been removed to test allowing everything.
 
             Spacer(modifier = Modifier.height(16.dp))
-            val speedSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" 
-                else if (isOffload && !canUseSpeed) " (Not supported for ${fileSampleRate/1000}kHz in MMAP Offload)" 
-                else ""
+            val speedSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
             Text(
                 text = "Playback Speed: ${"%.2f".format(playbackSpeed)}x$speedSupportText",
                 style = MaterialTheme.typography.bodyMedium,
@@ -1025,9 +1008,7 @@ class MainActivity : ComponentActivity() {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            val pitchSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" 
-                else if (isOffload) " (Not supported in Offload mode)" 
-                else ""
+            val pitchSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
             Text(
                 text = "Playback Pitch: ${"%.2f".format(playbackPitch)}x$pitchSupportText",
                 style = MaterialTheme.typography.bodyMedium,
