@@ -31,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Spinner;
 
 import com.mobileer.audio_device.CommunicationDeviceSpinner;
 
@@ -44,6 +45,7 @@ public class CommunicationDeviceView extends LinearLayout {
     private BroadcastReceiver mScoStateReceiver;
     private boolean mScoStateReceiverRegistered = false;
     private CommunicationDeviceSpinner mDeviceSpinner;
+    private Spinner mModeSpinner;
     private int mScoState;
 
     private AudioManager.OnCommunicationDeviceChangedListener mCommDeviceListener;
@@ -141,6 +143,19 @@ public class CommunicationDeviceView extends LinearLayout {
             }
         });
 
+        mModeSpinner = (Spinner) findViewById(R.id.spinnerAudioMode);
+        mModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("OboeTester", "CommunicationDeviceView: setting audio mode to " + l);
+                mAudioManager.setMode((int) l);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
         showCommDeviceStatus();
     }
 
@@ -168,6 +183,7 @@ public class CommunicationDeviceView extends LinearLayout {
                 mAudioManager.removeOnCommunicationDeviceChangedListener(mCommDeviceListener);
             }
         }
+        mAudioManager.setMode(AudioManager.MODE_NORMAL);
     }
 
     public void onSetSpeakerphoneOn(View view) {

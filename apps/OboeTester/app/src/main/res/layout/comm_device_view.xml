@@ -10,6 +10,23 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Audio Mode: " />
+
+        <Spinner
+            android:id="@+id/spinnerAudioMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/audio_modes" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
         <CheckBox
             android:id="@+id/setSpeakerphoneOn"
             android:layout_width="wrap_content"
