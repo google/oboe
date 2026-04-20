@@ -85,6 +85,14 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint spatializationBehavior,
                                                        jstring packageName,
                                                        jstring attributionTag);
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_startNative(JNIEnv *env, jobject, jint);
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_pauseNative(JNIEnv *env, jobject, jint);
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_stopNative(JNIEnv *env, jobject, jint);
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_flushNative(JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_close(JNIEnv *env, jobject, jint);
 
@@ -311,6 +319,39 @@ Java_com_mobileer_oboetester_TestAudioActivity_getPlaybackParametersNative(
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_startPlaybackNative(JNIEnv *env, jobject) {
     return (jint) engine.getCurrentActivity()->startPlayback();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_startNative(JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream) return (jint) oboeStream->requestStart();
+    return (jint) oboe::Result::ErrorNull;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_pauseNative(JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream) return (jint) oboeStream->requestPause();
+    return (jint) oboe::Result::ErrorNull;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_stopNative(JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream) return (jint) oboeStream->requestStop();
+    return (jint) oboe::Result::ErrorNull;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_flushNative(JNIEnv *env, jobject, jint streamIndex) {
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream) return (jint) oboeStream->requestFlush();
+    return (jint) oboe::Result::ErrorNull;
+}
+
+JNIEXPORT jdouble JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getPeakLevelNative(JNIEnv *env, jobject, jint streamIndex, jint channelIndex) {
+    return engine.getCurrentActivity()->getPeakLevel(streamIndex, channelIndex);
 }
 
 JNIEXPORT void JNICALL

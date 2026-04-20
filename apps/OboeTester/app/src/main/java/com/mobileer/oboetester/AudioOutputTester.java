@@ -25,13 +25,10 @@ public class AudioOutputTester extends AudioStreamTester {
     private static AudioOutputTester mInstance;
 
     public static synchronized AudioOutputTester getInstance() {
-        if (mInstance == null) {
-            mInstance = new AudioOutputTester();
-        }
-        return mInstance;
+        return new AudioOutputTester();
     }
 
-    private AudioOutputTester() {
+    public AudioOutputTester() {
         super();
         Log.i(TapToToneActivity.TAG, "create OboeAudioOutputStream ---------");
         mOboeAudioOutputStream = new OboeAudioOutputStream();

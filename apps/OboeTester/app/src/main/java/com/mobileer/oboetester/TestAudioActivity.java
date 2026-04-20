@@ -94,6 +94,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
     public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
+    public static final int ACTIVITY_TEST_MULTI_STREAM = 10;
 
     private static final int MP3_RES_ID = R.raw.sine441stereo;
     private static final AudioConfig MP3_FILE_CONFIG =
@@ -301,6 +302,9 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                         | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             case ACTIVITY_DYNAMIC_WORKLOAD:
                 return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            case ACTIVITY_TEST_MULTI_STREAM:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             default:
                 Log.i(TAG, "getServiceType() called on unknown activity type " + getActivityType());
                 return 0;

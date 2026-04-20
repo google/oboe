@@ -95,6 +95,10 @@
             android:label="@string/title_data_paths"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".TestMultiStreamActivity"
+            android:exported="true"
+            android:label="Multi-Stream Test" />
+        <activity
             android:name=".ExtraTestsActivity"
             android:exported="true"
             android:label="@string/title_extra_tests"

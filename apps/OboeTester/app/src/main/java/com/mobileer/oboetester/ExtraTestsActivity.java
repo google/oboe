@@ -54,4 +54,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     public void onLaunchReverseJniTest(View view) {
         launchTestActivity(ReverseJniActivity.class);
     }
+
+    public void onLaunchTestMultiStream(View view) {
+        launchTestActivity(TestMultiStreamActivity.class);
+    }
 }
