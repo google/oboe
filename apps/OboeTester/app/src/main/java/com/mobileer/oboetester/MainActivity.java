@@ -50,7 +50,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_INPUT = "input";
     public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
 
-    private Spinner mModeSpinner;
+
     private TextView mCallbackSizeEditor;
     protected TextView mDeviceView;
     private TextView mVersionTextView;
@@ -77,22 +77,6 @@ public class MainActivity extends BaseOboeTesterActivity {
 
         mDeviceView = (TextView) findViewById(R.id.deviceView);
         updateNativeAudioUI();
-
-        // Set mode, eg. MODE_IN_COMMUNICATION
-        mModeSpinner = (Spinner) findViewById(R.id.spinnerAudioMode);
-        // Update AudioManager now in case user is trying to affect a different app.
-        mModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                long mode = mModeSpinner.getSelectedItemId();
-                AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                myAudioMgr.setMode((int)mode);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
-        });
 
         try {
             PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -271,9 +255,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     private void applyUserOptions() {
         updateCallbackSize();
 
-        long mode = mModeSpinner.getSelectedItemId();
-        AudioManager myAudioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        myAudioMgr.setMode((int) mode);
+
 
         NativeEngine.setWorkaroundsEnabled(mWorkaroundsCheckBox.isChecked());
         TestAudioActivity.setBackgroundEnabled(mBackgroundCheckBox.isChecked());
