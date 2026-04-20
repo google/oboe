@@ -145,6 +145,21 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     public native void close(int streamIndex);
 
+    public int start() { return startNative(mStreamIndex); }
+    public native int startNative(int streamIndex);
+
+    public int pause() { return pauseNative(mStreamIndex); }
+    public native int pauseNative(int streamIndex);
+
+    public int stop() { return stopNative(mStreamIndex); }
+    public native int stopNative(int streamIndex);
+
+    public int flush() { return flushNative(mStreamIndex); }
+    public native int flushNative(int streamIndex);
+
+    public double getPeakLevel(int channelIndex) { return getPeakLevelNative(mStreamIndex, channelIndex); }
+    public native double getPeakLevelNative(int streamIndex, int channelIndex);
+
     @Override
     public int getBufferCapacityInFrames() {
         return getBufferCapacityInFrames(mStreamIndex);

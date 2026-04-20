@@ -21,7 +21,7 @@ import android.util.Log;
 class AudioInputTester extends AudioStreamTester{
     private static AudioInputTester mInstance;
 
-    private AudioInputTester() {
+    public AudioInputTester() {
         super();
         Log.i(TapToToneActivity.TAG, "create OboeAudioStream ---------");
 
@@ -30,10 +30,7 @@ class AudioInputTester extends AudioStreamTester{
     }
 
     public static synchronized AudioInputTester getInstance() {
-        if (mInstance == null) {
-            mInstance = new AudioInputTester();
-        }
-        return mInstance;
+        return new AudioInputTester();
     }
 
     public native double getPeakLevel(int i);

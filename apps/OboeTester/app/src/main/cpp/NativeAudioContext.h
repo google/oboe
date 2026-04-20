@@ -222,6 +222,10 @@ public:
         return 0.0;
     }
 
+    virtual double getPeakLevel(int streamIndex, int channelIndex) {
+        return 0.0;
+    }
+
     static int64_t getNanoseconds(clockid_t clockId = CLOCK_MONOTONIC) {
         struct timespec time;
         int result = clock_gettime(clockId, &time);
@@ -868,6 +872,142 @@ private:
 };
 
 /**
+ * Test multiple streams.
+ */
+class ActivityTestMultiStream : public ActivityContext {
+public:
+    class MultiStreamCallback : public oboe::AudioStreamDataCallback {
+    public:
+        MultiStreamCallback() {
+            for (int i = 0; i < 8; i++) mPeakLevels[i] = 0.0;
+        }
+        
+        oboe::DataCallbackResult onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) override {
+            int channelCount = audioStream->getChannelCount();
+            if (channelCount > 8) channelCount = 8;
+            
+            if (audioStream->getDirection() == oboe::Direction::Output) {
+                int channelCount = audioStream->getChannelCount();
+                float phaseIncrement = 440.0f * M_PI * 2 / (float)audioStream->getSampleRate();
+                if (audioStream->getFormat() == oboe::AudioFormat::Float) {
+                    float *floatData = (float *) audioData;
+                    for (int i = 0; i < numFrames; i++) {
+                        float sample = sinf(mPhase) * 0.5f;
+                        mPhase += phaseIncrement;
+                        if (mPhase > M_PI * 2) mPhase -= (float)(M_PI * 2);
+                        for (int c = 0; c < channelCount; c++) {
+                            *floatData++ = sample;
+                        }
+                    }
+                } else if (audioStream->getFormat() == oboe::AudioFormat::I16) {
+                    int16_t *shortData = (int16_t *) audioData;
+                    for (int i = 0; i < numFrames; i++) {
+                        float sample = sinf(mPhase) * 0.5f;
+                        mPhase += phaseIncrement;
+                        if (mPhase > M_PI * 2) mPhase -= (float)(M_PI * 2);
+                        for (int c = 0; c < channelCount; c++) {
+                            *shortData++ = (int16_t)(sample * 32767);
+                        }
+                    }
+                } else if (audioStream->getFormat() == oboe::AudioFormat::I24) {
+                    uint8_t *byteData = (uint8_t *) audioData;
+                    for (int i = 0; i < numFrames; i++) {
+                        float sample = sinf(mPhase) * 0.5f;
+                        mPhase += phaseIncrement;
+                        if (mPhase > M_PI * 2) mPhase -= (float)(M_PI * 2);
+                        int32_t sample24 = (int32_t)(sample * 8388607);
+                        for (int c = 0; c < channelCount; c++) {
+                            *byteData++ = (uint8_t)(sample24 & 0xFF);
+                            *byteData++ = (uint8_t)((sample24 >> 8) & 0xFF);
+                            *byteData++ = (uint8_t)((sample24 >> 16) & 0xFF);
+                        }
+                    }
+                }
+            }
+
+            // Measure peak level for both input and output
+            if (audioStream->getFormat() == oboe::AudioFormat::Float) {
+                float *floatData = (float *) audioData;
+                for (int i = 0; i < numFrames; i++) {
+                    for (int c = 0; c < channelCount; c++) {
+                        float sample = std::abs(*floatData++);
+                        if (sample > mPeakLevels[c]) mPeakLevels[c] = sample;
+                    }
+                }
+            } else if (audioStream->getFormat() == oboe::AudioFormat::I16) {
+                int16_t *shortData = (int16_t *) audioData;
+                for (int i = 0; i < numFrames; i++) {
+                    for (int c = 0; c < channelCount; c++) {
+                        float sample = std::abs(*shortData++) / 32768.0f;
+                        if (sample > mPeakLevels[c]) mPeakLevels[c] = sample;
+                    }
+                }
+            } else if (audioStream->getFormat() == oboe::AudioFormat::I24) {
+                uint8_t *byteData = (uint8_t *) audioData;
+                for (int i = 0; i < numFrames; i++) {
+                    for (int c = 0; c < channelCount; c++) {
+                        int32_t sample24 = (byteData[0]) | (byteData[1] << 8) | (byteData[2] << 16);
+                        if (sample24 & 0x800000) sample24 |= ~0xFFFFFF; // sign extend
+                        float sample = std::abs(sample24) / 8388608.0f;
+                        byteData += 3;
+                        if (sample > mPeakLevels[c]) mPeakLevels[c] = sample;
+                    }
+                }
+            }
+
+            return oboe::DataCallbackResult::Continue;
+        }
+
+        double getPeakLevel(int index) {
+            if (index < 0 || index >= 8) return 0.0;
+            double peak = mPeakLevels[index];
+            mPeakLevels[index] = 0.0;
+            return peak;
+        }
+    private:
+        float mPhase = 0.0f;
+        double mPeakLevels[8];
+    };
+
+    ActivityTestMultiStream() = default;
+
+    virtual ~ActivityTestMultiStream() = default;
+
+    void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override {
+        std::shared_ptr<MultiStreamCallback> callback = std::make_shared<MultiStreamCallback>();
+        mCallbacks.push_back(callback);
+        builder.setDataCallback(callback);
+    }
+
+    oboe::Result startStreams() override {
+        oboe::Result result = oboe::Result::OK;
+        for (auto entry : mOboeStreams) {
+            std::shared_ptr<oboe::AudioStream> oboeStream = entry.second;
+            if (oboeStream) {
+                result = oboeStream->requestStart();
+                if (result != oboe::Result::OK) break;
+            }
+        }
+        return result;
+    }
+    
+    double getPeakLevel(int streamIndex, int channelIndex) override {
+        std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
+        if (oboeStream) {
+            oboe::AudioStreamDataCallback *callback = oboeStream->getDataCallback();
+            if (callback) {
+                MultiStreamCallback *myCallback = static_cast<MultiStreamCallback*>(callback);
+                return myCallback->getPeakLevel(channelIndex);
+            }
+        }
+        return 0.0;
+    }
+
+private:
+    std::vector<std::shared_ptr<MultiStreamCallback>> mCallbacks;
+};
+
+/**
  * Global context for native tests.
  * Switch between various ActivityContexts.
  */
@@ -910,6 +1050,9 @@ public:
             case ActivityType::DataPath:
                 currentActivity = &mActivityDataPath;
                 break;
+            case ActivityType::TestMultiStream:
+                currentActivity = &mActivityTestMultiStream;
+                break;
         }
     }
 
@@ -926,6 +1069,7 @@ public:
     ActivityGlitches             mActivityGlitches;
     ActivityDataPath             mActivityDataPath;
     ActivityTestDisconnect       mActivityTestDisconnect;
+    ActivityTestMultiStream      mActivityTestMultiStream;
 
 private:
 
@@ -941,6 +1085,8 @@ private:
         Glitches = 6,
         TestDisconnect = 7,
         DataPath = 8,
+        DynamicWorkload = 9,
+        TestMultiStream = 10,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;
