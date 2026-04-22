@@ -477,6 +477,8 @@ class MainActivity : ComponentActivity() {
         val playerStateWrapper = player.getPlayerStateLive().observeAsState(PlayerState.NoResultYet)
         val isPlaying = playerStateWrapper.value == PlayerState.Playing
         var sliderPosition by remember { mutableFloatStateOf(0f) }
+        var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
+        var playbackPitch by remember { mutableFloatStateOf(1.0f) }
 
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -731,12 +733,24 @@ class MainActivity : ComponentActivity() {
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
             ) {
+                val currentTrack = playList.getOrNull(playingSongIndex.intValue)
                 PerformanceBottomSheetContent(
                     offload = offload,
                     isMMapEnabled = isMMapEnabled,
                     isPlaying = isPlaying,
                     sliderPosition = sliderPosition,
                     onSliderPositionChange = { sliderPosition = it },
+                    playbackSpeed = playbackSpeed,
+                    playbackPitch = playbackPitch,
+                    onSpeedChange = {
+                        playbackSpeed = it
+                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                    },
+                    onPitchChange = {
+                        playbackPitch = it
+                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                    },
+                    fileSampleRate = currentTrack?.wavInfo?.sampleRate ?: 48000,
                     onDismiss = { showBottomSheet = false }
                 )
             }
@@ -843,11 +857,17 @@ class MainActivity : ComponentActivity() {
         isPlaying: Boolean,
         sliderPosition: Float,
         onSliderPositionChange: (Float) -> Unit,
+        playbackSpeed: Float,
+        playbackPitch: Float,
+        onSpeedChange: (Float) -> Unit,
+        onPitchChange: (Float) -> Unit,
+        fileSampleRate: Int,
         onDismiss: () -> Unit
     ) {
         var localSliderPosition by remember { mutableFloatStateOf(sliderPosition) }
         val requestedFrames = remember { mutableIntStateOf(0) }
         val actualFrames = remember { mutableIntStateOf(0) }
+        var isModified by remember { mutableStateOf(playbackSpeed != 1.0f || playbackPitch != 1.0f) }
 
         Column(
             modifier = Modifier
@@ -953,6 +973,80 @@ class MainActivity : ComponentActivity() {
                     color = Color.Gray,
                     modifier = Modifier.padding(start = 8.dp)
                 )
+            }
+
+            val isPlaybackParamsSupported = android.os.Build.VERSION.SDK_INT >= 37
+            val isOffload = offload.intValue == 3
+            val isMMap = isMMapEnabled.value
+
+            var canUseSpeed = isPlaybackParamsSupported
+            var canUsePitch = isPlaybackParamsSupported
+
+            // For testing: allow everything except API 37 gate
+            // The previous offload restrictions have been removed to test allowing everything.
+
+            Spacer(modifier = Modifier.height(16.dp))
+            val speedSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
+            Text(
+                text = "Playback Speed: ${"%.2f".format(playbackSpeed)}x$speedSupportText",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (canUseSpeed) Color.Unspecified else Color.Gray
+            )
+            Slider(
+                value = playbackSpeed,
+                onValueChange = onSpeedChange,
+                onValueChangeFinished = {
+                    isModified = (playbackSpeed != 1.0f || playbackPitch != 1.0f)
+                },
+                valueRange = 0.5f..2.0f,
+                enabled = canUseSpeed,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            val pitchSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
+            Text(
+                text = "Playback Pitch: ${"%.2f".format(playbackPitch)}x$pitchSupportText",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (canUsePitch) Color.Unspecified else Color.Gray
+            )
+            Slider(
+                value = playbackPitch,
+                onValueChange = onPitchChange,
+                onValueChangeFinished = {
+                    isModified = (playbackSpeed != 1.0f || playbackPitch != 1.0f)
+                },
+                valueRange = 0.5f..2.0f,
+                enabled = canUsePitch,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            AnimatedVisibility(
+                visible = isModified,
+                enter = androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(durationMillis = 500)) + androidx.compose.animation.expandVertically(),
+                exit = androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(durationMillis = 500)) + androidx.compose.animation.shrinkVertically()
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextButton(
+                        onClick = {
+                            onSpeedChange(1.0f)
+                            onPitchChange(1.0f)
+                            isModified = false
+                        },
+                        enabled = canUseSpeed || canUsePitch
+                    ) {
+                        Text("Reset to Defaults")
+                    }
+                }
             }
 
             AnimatedVisibility(

@@ -58,6 +58,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setUsage(Usage::Media)
             ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
+            ->setBufferCapacityInFrames(8192)
             ->setSharingMode(SharingMode::Exclusive);
 
     Result result = builder.openStream(mAudioStream);
@@ -71,9 +72,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
     if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::PowerSavingOffloaded ||
         !OboeExtensions::isMMapUsed(mAudioStream.get())) {
-        constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
-        result = mAudioStream->setBufferSizeInFrames(
-                mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getBufferCapacityInFrames());
         if (result != Result::OK) {
             __android_log_print(
                     ANDROID_LOG_WARN,
@@ -84,6 +83,10 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     }
 
     mSampleRate = mAudioStream->getSampleRate();
+
+    // Apply stored playback parameters
+    setPlaybackParameters(mPlaybackSpeed, mPlaybackPitch);
+
     return true;
 }
 
@@ -349,4 +352,22 @@ bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
                         "removeSampleSource: Removed index %d, %d sources remaining",
                         index, mNumSampleBuffers);
     return true;
+}
+
+void PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
+    mPlaybackSpeed = speed;
+    mPlaybackPitch = pitch;
+    if (mAudioStream) {
+        oboe::PlaybackParameters params = {
+            oboe::FallbackMode::Default,
+            oboe::StretchMode::Default,
+            pitch,
+            speed
+        };
+        auto result = mAudioStream->setPlaybackParameters(params);
+        if (result != oboe::Result::OK) {
+            __android_log_print(ANDROID_LOG_ERROR, "PowerPlayMultiPlayer",
+                                "setPlaybackParameters failed: %s", oboe::convertToText(result));
+        }
+    }
 }
