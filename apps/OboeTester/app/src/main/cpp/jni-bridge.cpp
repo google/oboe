@@ -793,6 +793,11 @@ Java_com_mobileer_oboetester_OboeAudioOutputStream_setAmplitude(JNIEnv *env, job
     engine.getCurrentActivity()->setAmplitude(amplitude);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioOutputStream_setBalance(JNIEnv *env, jobject, jfloat balance) {
+    engine.getCurrentActivity()->setBalance(balance);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_getOboeVersionNumber(JNIEnv *env,
                                                                           jclass type) {

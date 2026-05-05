@@ -19,12 +19,12 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.widget.AdapterView;
 import java.io.IOException;
 import android.os.Handler;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class FrequencyActivity extends AnalyzerActivity {
     private Button mStartButton;
@@ -35,6 +35,13 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private FrequencyThresholdView mWaveformViewBottomThreshold;
     private TextView mTestResultView;
     private EditText mThresholdEditText;
+
+    private Spinner mOutputSignalSpinner;
+    private Spinner mInputPresetSpinner;
+    private FrequencySetting mFrequencySetting;
+    private TextView mBalanceTextView;
+    private android.widget.SeekBar mBalanceSeekBar;
+
     private static final int WAVEFORM_UPDATE_MS = 500;
     private static final float MIN_DBFS = -100.0f;
     private static final float MAX_DBFS = 0.0f;
@@ -44,7 +51,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private boolean mIsUpdaterRunning = false;
 
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
-    private FrequencyBandSpec mLoopbackSpec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,13 +79,71 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(false);
 
-        // Initialize hardcoded Loopback Spec
-        List<FrequencyBandSpec.BandThreshold> bands = new ArrayList<>();
-        bands.add(new FrequencyBandSpec.BandThreshold(4.0f, 4.0f, -50.0f, -4.0f));
-        bands.add(new FrequencyBandSpec.BandThreshold(4.0f, 4.0f, -4.0f, -4.0f));
-        bands.add(new FrequencyBandSpec.BandThreshold(4.0f, 5.0f, -4.0f, -5.0f));
-        bands.add(new FrequencyBandSpec.BandThreshold(5.0f, 5.0f, -5.0f, -30.0f));
-        mLoopbackSpec = new FrequencyBandSpec(new int[]{50, 500, 4000, 12000, 20000}, bands);
+        mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
+        String[] outputSignals = {"White Noise", "Sine", "Silence"};
+        android.widget.ArrayAdapter<String> outputSignalAdapter = new android.widget.ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, outputSignals);
+        outputSignalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mOutputSignalSpinner.setAdapter(outputSignalAdapter);
+        mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
+
+        mInputPresetSpinner = (Spinner) findViewById(R.id.spinnerInputPreset);
+        String[] inputPresets = {"VOICE_RECOGNITION", "UNPROCESSED"};
+        android.widget.ArrayAdapter<String> inputPresetAdapter = new android.widget.ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, inputPresets);
+        inputPresetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mInputPresetSpinner.setAdapter(inputPresetAdapter);
+        mInputPresetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selected = (String) parent.getItemAtPosition(position);
+                int preset = StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION;
+                if (selected.equals("UNPROCESSED")) {
+                    preset = StreamConfiguration.INPUT_PRESET_UNPROCESSED;
+                }
+                mAudioInputTester.requestedConfiguration.setInputPreset(preset);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        mBalanceTextView = (TextView) findViewById(R.id.textBalanceSlider);
+        mBalanceSeekBar = (android.widget.SeekBar) findViewById(R.id.faderBalanceSlider);
+        mBalanceSeekBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
+                float balance = progress / 100.0f;
+                mAudioOutTester.setBalance(balance);
+                mBalanceTextView.setText(String.format(java.util.Locale.getDefault(), "Balance: %.2f", balance));
+            }
+            @Override
+            public void onStartTrackingTouch(android.widget.SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
+        });
+
+        mFrequencySetting = new FrequencySetting(this,
+                findViewById(R.id.radioGroupBands),
+                findViewById(R.id.bandSpecContainer),
+                findViewById(R.id.spinnerPresets),
+                new FrequencySetting.OnSettingChangedListener() {
+                    @Override
+                    public void onSettingChanged() {
+                        FrequencyPreset active = mFrequencySetting.getActivePreset();
+                        if (active != null) {
+                            if (active.inputPreset == StreamConfiguration.INPUT_PRESET_UNPROCESSED) {
+                                mInputPresetSpinner.setSelection(1);
+                            } else {
+                                mInputPresetSpinner.setSelection(0);
+                            }
+
+                            mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
+                            mBalanceSeekBar.setProgress((int) (active.balance * 100));
+                        }
+                    }
+                });
     }
 
     @Override
@@ -104,12 +168,15 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
     public void onStartAudioTest(View view) {
         try {
-            mAudioOutTester.setSignalType(0);
             openAudio();
             startAudio();
             mStartButton.setEnabled(false);
             mStopButton.setEnabled(true);
             mShareButton.setEnabled(false);
+            if (mFrequencySetting != null) mFrequencySetting.setEnabled(false);
+            if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(false);
+            if (mInputPresetSpinner != null) mInputPresetSpinner.setEnabled(false);
+            if (mThresholdEditText != null) mThresholdEditText.setEnabled(false);
             startWaveformUpdater();
             keepScreenOn(true);
         } catch (IOException e) {
@@ -124,10 +191,25 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(true);
+        if (mFrequencySetting != null) mFrequencySetting.setEnabled(true);
+        if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(true);
+        if (mInputPresetSpinner != null) mInputPresetSpinner.setEnabled(true);
+        if (mThresholdEditText != null) mThresholdEditText.setEnabled(true);
         keepScreenOn(false);
     }
 
     private native int getWindowSize();
+    private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            mAudioOutTester.setSignalType(pos);
+        }
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            mAudioOutTester.setSignalType(0);
+        }
+    }
+
     private native int getFftMagnitude(float[] waveform);
     private native int getFftFrequencies(float[] frequencies);
 
@@ -148,8 +230,9 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         // Use default threshold
                     }
 
+                    FrequencyBandSpec spec = mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
                     FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
-                            mWaveformBuffer, numSamples, frequencies, numFreqs, mLoopbackSpec, passThreshold);
+                            mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold);
                     
                     if (numFreqs > 0) {
                         mWaveformViewTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);

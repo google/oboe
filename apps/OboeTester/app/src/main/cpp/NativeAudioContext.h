@@ -309,6 +309,8 @@ public:
 
     virtual void setSignalType(int signalType) {}
 
+    virtual void setBalance(float balance) {}
+
     virtual void setAmplitude(float amplitude) {}
 
     virtual void setDuck(bool isDucked) {}
@@ -887,6 +889,10 @@ class ActivityFrequency : public ActivityFullDuplex {
 
   void setSignalType(int signalType) override {
       mFrequencyAnalyzer.setSignalType(signalType);
+  }
+
+  void setBalance(float balance) override {
+      mFrequencyAnalyzer.setBalance(balance);
   }
 
   FrequencyAnalyzer *getFrequencyAnalyzer() {

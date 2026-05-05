@@ -55,6 +55,10 @@ public class AudioOutputTester extends AudioStreamTester {
         mOboeAudioOutputStream.setAmplitude(amplitude);
     }
 
+    public void setBalance(float balance) {
+        mOboeAudioOutputStream.setBalance(balance);
+    }
+
     public int getLastErrorCallbackResult() {return mOboeAudioOutputStream.getLastErrorCallbackResult();};
 
     public long getFramesRead() {return mOboeAudioOutputStream.getFramesRead();};

@@ -205,6 +205,16 @@
         <item>White Noise</item>
     </string-array>
 
+    <string name="source_white_noise">White Noise</string>
+    <string name="source_sine">Sine</string>
+    <string name="source_silence">Silence</string>
+
+    <string-array name="frequency_output_signals">
+        <item>@string/source_white_noise</item>
+        <item>@string/source_sine</item>
+        <item>@string/source_silence</item>
+    </string-array>
+
     <string name="hang_prompt">, Hang(ms)</string>
     <string-array name="hang_times">
         <item>0</item>

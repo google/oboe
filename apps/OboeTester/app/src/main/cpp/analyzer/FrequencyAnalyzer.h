@@ -22,6 +22,7 @@ public:
 
     result_code processInputFrame(const float *frameData, int channelCount) override;
     void setSignalType(int signalType);
+    void setBalance(float balance) { mBalance = balance; }
     int getWindowSize();
     result_code processOutputFrame(float *frameData, int channelCount) override;
 
@@ -38,6 +39,7 @@ private:
 
     PseudoRandom  mWhiteNoise;
     float         mAmplitude = 0.5f;
+    float         mBalance = 0.5f;
     int           mSignalType = 0;
     double        mOutputPhase = 0.0;
     double        mPhaseIncrement = 0.0;
