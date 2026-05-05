@@ -22,7 +22,12 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DualFrequencyActivity extends AnalyzerActivity {
 
@@ -30,6 +35,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private Button mStartButton2, mStopButton2;
     private FftWaveformView mWaveformViewTest1, mWaveformViewSubtraction, mWaveformViewTest2;
     private TextView mTestResultView;
+    private FrequencySetting mFrequencySetting;
+    private FrequencyPreset mSelectedPreset;
 
     private static final int WAVEFORM_UPDATE_MS = 500;
     private static final float MIN_DBFS = -100.0f;
@@ -55,6 +62,18 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStartButton2 = findViewById(R.id.button_start_2);
         mStopButton2 = findViewById(R.id.button_stop_2);
         mTestResultView = findViewById(R.id.testResultView);
+
+        mFrequencySetting = new FrequencySetting(this,
+                FrequencyPresetRepository.GROUP_DUAL,
+                findViewById(R.id.radioGroupBands),
+                findViewById(R.id.bandSpecContainer),
+                findViewById(R.id.preset_spinner),
+                new FrequencySetting.OnSettingChangedListener() {
+                    @Override
+                    public void onSettingChanged() {
+                        mSelectedPreset = mFrequencySetting.getActivePreset();
+                    }
+                });
 
         mWaveformViewTest1 = findViewById(R.id.waveform_test1);
         mWaveformViewTest1.setDbfsRange(MIN_DBFS, MAX_DBFS);

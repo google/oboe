@@ -115,6 +115,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
         finalInputConfigView.hideSettingsView();
 
         mFrequencySetting = new FrequencySetting(this,
+                FrequencyPresetRepository.GROUP_FREQUENCY,
                 findViewById(R.id.radioGroupBands),
                 findViewById(R.id.bandSpecContainer),
                 findViewById(R.id.spinnerPresets),

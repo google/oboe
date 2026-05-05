@@ -65,14 +65,14 @@ public class FrequencySetting {
 
     private List<FrequencyPreset> mPresets = new ArrayList<>();
 
-    public FrequencySetting(Context context, RadioGroup radioGroup, LinearLayout container, Spinner presetSpinner, OnSettingChangedListener listener) {
+    public FrequencySetting(Context context, int group, RadioGroup radioGroup, LinearLayout container, Spinner presetSpinner, OnSettingChangedListener listener) {
         mContext = context;
         mRadioGroupBands = radioGroup;
         mBandSpecContainer = container;
         mPresetSpinner = presetSpinner;
         mListener = listener;
 
-        FrequencyPresetRepository repo = new FrequencyPresetRepository();
+        FrequencyPresetRepository repo = new FrequencyPresetRepository(group);
         mPresets = repo.getPresets();
         setupPresetSpinner();
 
