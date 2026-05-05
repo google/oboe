@@ -29,7 +29,7 @@ public class FrequencyAnalyzer {
         public float averageMagnitudeBand1;
     }
 
-    public AnalysisResult analyze(float[] waveformBuffer, int numSamples, float[] frequencies, int numFreqs, FrequencyBandSpec spec, float passThreshold) {
+    public AnalysisResult analyze(float[] waveformBuffer, int numSamples, float[] frequencies, int numFreqs, FrequencyBandSpec spec, float passThreshold, boolean alignToBand1) {
         if (spec == null || spec.getFrequencyAnchors() == null || spec.getBands() == null) {
             return null;
         }
@@ -48,7 +48,7 @@ public class FrequencyAnalyzer {
 
         // Calculate averageMagnitudeBand1 for threshold alignment
         float averageMagnitudeBand1 = 0.0f;
-        if (numFreqs > 0 && numPoints >= 3) {
+        if (alignToBand1 && numFreqs > 0 && numPoints >= 3) {
             float band1StartFreq = anchors[1];
             float band1StopFreq = anchors[2];
             float sumMag = 0.0f;

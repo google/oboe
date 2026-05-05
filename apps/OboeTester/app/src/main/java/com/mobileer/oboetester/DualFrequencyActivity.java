@@ -37,6 +37,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private TextView mTestResultView;
     private FrequencySetting mFrequencySetting;
     private FrequencyPreset mSelectedPreset;
+    private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
     private static final int WAVEFORM_UPDATE_MS = 500;
     private static final float MIN_DBFS = -100.0f;
@@ -209,15 +210,37 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                         mWaveformViewTest2.setSampleData(samplesToDraw);
                         mWaveformViewTest2.postInvalidate();
 
-                        // 2. Draw the subtracted FFT on the bottom graph
                         if (mTest1WaveformBuffer != null) {
                             float[] subtractedSamples = new float[numSamples];
+                            float[] rawDiffBuffer = new float[numSamples];
                             for (int i = 0; i < numSamples; i++) {
                                 float diff = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
+                                rawDiffBuffer[i] = diff;
                                 subtractedSamples[i] = mapSubtractedDbfsToView(diff);
                             }
                             mWaveformViewSubtraction.setSampleData(subtractedSamples);
                             mWaveformViewSubtraction.postInvalidate();
+
+                            // Run Java Analyzer on subtracted FFT
+                            float[] frequencies = new float[numSamples];
+                            int numFreqs = getFftFrequencies(frequencies);
+
+                            FrequencyBandSpec spec = mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
+                            float passThreshold = 50.0f; // failure rate 50%
+
+                            FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
+                                    rawDiffBuffer, numSamples, frequencies, numFreqs, spec, passThreshold, true);
+
+                            if (result != null) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
+                                sb.append("Bands: ");
+                                for (int b = 0; b < result.bandEnergyPercentages.length; b++) {
+                                    sb.append(String.format(java.util.Locale.getDefault(), "[B%d: %.1f%%] ", b, result.bandEnergyPercentages[b]));
+                                }
+                                mTestResultView.setText(sb.toString());
+                                mTestResultView.setTextColor(result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50") : android.graphics.Color.RED);
+                            }
                         }
                     }
                 }

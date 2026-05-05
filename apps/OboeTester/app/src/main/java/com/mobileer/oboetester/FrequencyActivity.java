@@ -221,7 +221,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
                     FrequencyBandSpec spec = mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
                     FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
-                            mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold);
+                            mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold, true);
                     
                     if (numFreqs > 0) {
                         mWaveformViewTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
