@@ -21,8 +21,12 @@ import java.util.List;
 public class FrequencyAnalyzer {
 
     public static class AnalysisResult {
+        public float[] thresholdFrequencies;
+        public float[] alignedTopThresholdsDbfs;
+        public float[] alignedBottomThresholdsDbfs;
         public boolean testPassed;
         public float[] bandEnergyPercentages;
+        public float averageMagnitudeBand1;
     }
 
     public AnalysisResult analyze(float[] waveformBuffer, int numSamples, float[] frequencies, int numFreqs, FrequencyBandSpec spec, float passThreshold) {
@@ -93,6 +97,22 @@ public class FrequencyAnalyzer {
             }
         }
         result.testPassed = allPass;
+
+
+        result.thresholdFrequencies = new float[numBands * 2];
+        result.alignedTopThresholdsDbfs = new float[numBands * 2];
+        result.alignedBottomThresholdsDbfs = new float[numBands * 2];
+
+        List<FrequencyBandSpec.BandThreshold> bands = spec.getBands();
+        for (int b = 0; b < numBands; b++) {
+            result.thresholdFrequencies[b * 2] = anchors[b];
+            result.thresholdFrequencies[b * 2 + 1] = anchors[b + 1];
+            result.alignedTopThresholdsDbfs[b * 2] = bands.get(b).startTop + averageMagnitudeBand1;
+            result.alignedTopThresholdsDbfs[b * 2 + 1] = bands.get(b).stopTop + averageMagnitudeBand1;
+            result.alignedBottomThresholdsDbfs[b * 2] = bands.get(b).startBottom + averageMagnitudeBand1;
+            result.alignedBottomThresholdsDbfs[b * 2 + 1] = bands.get(b).stopBottom + averageMagnitudeBand1;
+        }
+        result.averageMagnitudeBand1 = averageMagnitudeBand1;
 
         return result;
     }

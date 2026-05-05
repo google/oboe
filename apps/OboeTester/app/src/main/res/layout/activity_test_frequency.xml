@@ -91,6 +91,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="16dp">
+                <com.mobileer.oboetester.FftWaveformView
+                    android:id="@+id/waveform_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#E0E0E0" />
+                <com.mobileer.oboetester.FrequencyThresholdView
+                    android:id="@+id/waveform_view_bottom_threshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <com.mobileer.oboetester.FrequencyThresholdView
+                    android:id="@+id/waveform_view_top_threshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/testResultView"
                 android:layout_width="match_parent"

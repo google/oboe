@@ -30,9 +30,14 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private Button mStartButton;
     private Button mStopButton;
     private Button mShareButton;
+    private FftWaveformView mWaveformView;
+    private FrequencyThresholdView mWaveformViewTopThreshold;
+    private FrequencyThresholdView mWaveformViewBottomThreshold;
     private TextView mTestResultView;
     private EditText mThresholdEditText;
     private static final int WAVEFORM_UPDATE_MS = 500;
+    private static final float MIN_DBFS = -100.0f;
+    private static final float MAX_DBFS = 0.0f;
 
     private float[] mWaveformBuffer;
     private Handler mHandler = new Handler();
@@ -49,6 +54,21 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mShareButton = (Button) findViewById(R.id.button_share);
         mTestResultView = (TextView) findViewById(R.id.testResultView);
         mThresholdEditText = (EditText) findViewById(R.id.thresholdEditText);
+
+        mWaveformView = findViewById(R.id.waveform_view);
+        mWaveformView.setDbfsRange(MIN_DBFS, MAX_DBFS);
+
+        mWaveformViewTopThreshold = findViewById(R.id.waveform_view_top_threshold);
+        mWaveformViewTopThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FFE91E63"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
+
+        mWaveformViewBottomThreshold = findViewById(R.id.waveform_view_bottom_threshold);
+        mWaveformViewBottomThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FF4CAF50"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
 
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(false);
@@ -131,7 +151,31 @@ public final class FrequencyActivity extends AnalyzerActivity {
                     FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
                             mWaveformBuffer, numSamples, frequencies, numFreqs, mLoopbackSpec, passThreshold);
                     
+                    if (numFreqs > 0) {
+                        mWaveformViewTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
+                        mWaveformViewBottomThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
+                    }
+
                     if (result != null) {
+                        mWaveformViewTopThreshold.setFrequencies(result.thresholdFrequencies);
+                        mWaveformViewBottomThreshold.setFrequencies(result.thresholdFrequencies);
+
+                        int numPoints = result.thresholdFrequencies.length;
+                        float[] topThresholdSamples = new float[numPoints];
+                        float[] bottomThresholdSamples = new float[numPoints];
+
+                        for (int i = 0; i < numPoints; i++) {
+                            topThresholdSamples[i] = mapDbfsToView(result.alignedTopThresholdsDbfs[i]);
+                            bottomThresholdSamples[i] = mapDbfsToView(result.alignedBottomThresholdsDbfs[i]);
+                        }
+
+                        mWaveformViewTopThreshold.setSampleData(topThresholdSamples);
+                        mWaveformViewTopThreshold.postInvalidate();
+                        mWaveformViewBottomThreshold.setSampleData(bottomThresholdSamples);
+                        mWaveformViewBottomThreshold.postInvalidate();
+
+                        mWaveformViewTopThreshold.setAverageMagnitude(mapDbfsToView(result.averageMagnitudeBand1));
+
                         StringBuilder sb = new StringBuilder();
                         sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
                         sb.append("Bands: ");
@@ -140,7 +184,16 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         }
                         mTestResultView.setText(sb.toString());
                         mTestResultView.setTextColor(result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50") : android.graphics.Color.RED);
+                    } else {
+                        mWaveformViewTopThreshold.clearAverageMagnitude();
                     }
+
+                    float[] samplesToDraw = new float[numSamples];
+                    for (int i = 0; i < numSamples; i++) {
+                        samplesToDraw[i] = mapDbfsToView(mWaveformBuffer[i]);
+                    }
+                    mWaveformView.setSampleData(samplesToDraw);
+                    mWaveformView.postInvalidate();
                 }
             } finally {
                 if (mIsUpdaterRunning) {
@@ -149,6 +202,13 @@ public final class FrequencyActivity extends AnalyzerActivity {
             }
         }
     };
+
+    private float mapDbfsToView(float dbfs) {
+        float mapped = ((dbfs - MIN_DBFS) / (MAX_DBFS - MIN_DBFS)) * 2.0f - 1.0f;
+        if (mapped < -1.0f) mapped = -1.0f;
+        if (mapped > 1.0f) mapped = 1.0f;
+        return mapped;
+    }
 
     private void startWaveformUpdater() {
         if (!mIsUpdaterRunning) {

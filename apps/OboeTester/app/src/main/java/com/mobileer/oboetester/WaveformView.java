@@ -31,19 +31,19 @@ import android.view.View;
  */
 public class WaveformView extends View {
     private static final float MESSAGE_TEXT_SIZE = 80;
-    private Paint mWavePaint;
-    private Paint mBackgroundPaint;
-    private Paint mMessagePaint;
-    private int mCurrentWidth;
-    private int mCurrentHeight;
-    private float[] mData;
-    private int mSampleCount;
-    private int mSampleOffset;
-    private float mOffsetY;
-    private float mScaleY;
-    private int[] mCursors;
-    private String mMessage;
-    private Paint mCursorPaint;
+    protected Paint mWavePaint;
+    protected Paint mBackgroundPaint;
+    protected Paint mMessagePaint;
+    protected int mCurrentWidth;
+    protected int mCurrentHeight;
+    protected float[] mData;
+    protected int mSampleCount;
+    protected int mSampleOffset;
+    protected float mOffsetY;
+    protected float mScaleY;
+    protected int[] mCursors;
+    protected String mMessage;
+    protected Paint mCursorPaint;
 
     public WaveformView(Context context, AttributeSet attrs) {
         super(context, attrs);
