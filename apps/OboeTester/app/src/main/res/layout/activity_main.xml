@@ -161,6 +161,16 @@
                 android:text="Data Paths" />
 
             <Button
+                android:id="@+id/button_test_frequency"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestFrequency"
+                android:text="Frequency" />
+
+            <Button
                 android:id="@+id/button_extra_tests"
                 android:layout_gravity="fill"
                 android:layout_width="0dp"

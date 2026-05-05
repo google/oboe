@@ -248,6 +248,10 @@ public class MainActivity extends BaseOboeTesterActivity {
         launchTestActivity(DeviceReportActivity.class);
     }
 
+    public void onLaunchTestFrequency(View view) {
+        launchTestThatDoesRecording(FrequencyActivity.class);
+    }
+
     public void onLaunchExtratests(View view) {
         launchTestActivity(ExtraTestsActivity.class);
     }
