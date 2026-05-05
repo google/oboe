@@ -139,6 +139,10 @@
             android:label="Frequency Test"
             android:exported="true"
             android:screenOrientation="portrait"/>
+        <activity android:name=".DualFrequencyActivity"
+            android:label="Dual Frequency Test"
+            android:exported="true"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".AudioWorkloadTestActivity"
             android:label="@string/title_audio_workload_test"

@@ -957,6 +957,9 @@ public:
             case ActivityType::Frequency:
                 currentActivity = &mActivityFrequency;
                 break;
+            case ActivityType::DualFrequency:
+                currentActivity = &mActivityFrequency;
+                break;
         }
     }
 
@@ -990,6 +993,7 @@ private:
         TestDisconnect = 7,
         DataPath = 8,
         Frequency = 10,
+        DualFrequency = 11,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;

@@ -171,6 +171,16 @@
                 android:text="Frequency" />
 
             <Button
+                android:id="@+id/button_test_dual_frequency"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestDualFrequency"
+                android:text="Dual Frequency" />
+
+            <Button
                 android:id="@+id/button_extra_tests"
                 android:layout_gravity="fill"
                 android:layout_width="0dp"

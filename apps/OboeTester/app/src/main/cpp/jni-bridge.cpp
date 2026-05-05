@@ -1090,6 +1090,48 @@ Java_com_mobileer_oboetester_FrequencyActivity_getWindowSize(JNIEnv *env, jobjec
     }
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_DualFrequencyActivity_getFftMagnitude(JNIEnv *env, jobject instance,
+                                                                   jfloatArray waveform_) {
+    float *waveform = env->GetFloatArrayElements(waveform_, nullptr);
+    jsize length = env->GetArrayLength(waveform_);
+    jsize numSamples = 0;
+
+    FrequencyAnalyzer *analyzer = engine.mActivityFrequency.getFrequencyAnalyzer();
+    if (analyzer) {
+        numSamples = analyzer->getFftMagnitude(waveform, length);
+    }
+
+    env->ReleaseFloatArrayElements(waveform_, waveform, 0);
+    return numSamples;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_DualFrequencyActivity_getFftFrequencies(JNIEnv *env, jobject instance,
+                                                                     jfloatArray frequencies_) {
+    float *frequencies = env->GetFloatArrayElements(frequencies_, nullptr);
+    jsize length = env->GetArrayLength(frequencies_);
+    jsize numSamples = 0;
+
+    FrequencyAnalyzer *analyzer = engine.mActivityFrequency.getFrequencyAnalyzer();
+    if (analyzer) {
+        numSamples = analyzer->getFftFrequencies(frequencies, length);
+    }
+
+    env->ReleaseFloatArrayElements(frequencies_, frequencies, 0);
+    return numSamples;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_DualFrequencyActivity_getWindowSize(JNIEnv *env, jobject instance) {
+    FrequencyAnalyzer *analyzer = engine.mActivityFrequency.getFrequencyAnalyzer();
+    if (analyzer) {
+        return analyzer->getWindowSize();
+    } else {
+        return 0;
+    }
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_GlitchActivity_setTolerance(JNIEnv *env,
                                                                    jobject instance,

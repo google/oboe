@@ -95,6 +95,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public static final int ACTIVITY_DATA_PATHS = 8;
     public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
     public static final int ACTIVITY_FREQUENCY = 10;
+    public static final int ACTIVITY_DUAL_FREQUENCY = 11;
 
     private static final int MP3_RES_ID = R.raw.sine441stereo;
     private static final AudioConfig MP3_FILE_CONFIG =
@@ -303,6 +304,9 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             case ACTIVITY_DYNAMIC_WORKLOAD:
                 return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
             case ACTIVITY_FREQUENCY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DUAL_FREQUENCY:
                 return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
                         | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             default:
