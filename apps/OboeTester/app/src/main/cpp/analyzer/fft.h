@@ -23,7 +23,7 @@ using Complex = std::complex<double>;
 using CVector = std::vector<Complex>;
 
 // Radix-2 Cooley-Tukey FFT
-void fft(CVector &a) {
+inline void fft(CVector &a) {
     int n = a.size();
     if (n <= 1) return;
 

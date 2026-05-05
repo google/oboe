@@ -60,7 +60,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     public void onStartAudioTest(View view) {
         try {
             // In NativeAudioContext.h, WhiteNoise is index 4
-            mAudioOutTester.setSignalType(4); 
+            mAudioOutTester.setSignalType(0);
             openAudio();
             startAudio();
             mStartButton.setEnabled(false);

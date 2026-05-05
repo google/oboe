@@ -933,6 +933,29 @@ void ActivityDataPath::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStrea
     }
 }
 
+// ======================================================================= ActivityFrequency
+void ActivityFrequency::configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) {
+    ActivityFullDuplex::configureBuilder(isInput, builder);
+
+    if (mFullDuplexAnalyzer.get() == nullptr) {
+        mFullDuplexAnalyzer = std::make_unique<FullDuplexAnalyzer>(&mFrequencyAnalyzer);
+    }
+    if (!isInput) {
+        // Output uses a callback, input is polled by the analyzer.
+        builder.setCallback(oboeCallbackProxy.get());
+        oboeCallbackProxy->setDataCallback(mFullDuplexAnalyzer.get());
+    }
+}
+
+void ActivityFrequency::finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) {
+    if (isInput) {
+        mFullDuplexAnalyzer->setSharedInputStream(oboeStream);
+        mFullDuplexAnalyzer->setRecording(mRecording.get());
+    } else {
+        mFullDuplexAnalyzer->setSharedOutputStream(oboeStream);
+    }
+}
+
 // =================================================================== ActivityTestDisconnect
 ActivityTestDisconnect::ActivityTestDisconnect() {
     mRoutingCallback = std::make_shared<TestRoutingCallback>(this);

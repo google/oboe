@@ -53,6 +53,7 @@
 #include "FullDuplexEcho.h"
 #include "analyzer/GlitchAnalyzer.h"
 #include "analyzer/DataPathAnalyzer.h"
+#include "analyzer/FrequencyAnalyzer.h"
 #include "InputStreamCallbackAnalyzer.h"
 #include "MultiChannelRecording.h"
 #include "NoisePulseGenerator.h"
@@ -868,6 +869,43 @@ private:
 };
 
 /**
+ * Test frequency
+ */
+class ActivityFrequency : public ActivityFullDuplex {
+ public:
+  ActivityFrequency() {
+      mFullDuplexAnalyzer = std::make_unique<FullDuplexAnalyzer>(&mFrequencyAnalyzer);
+  }
+  virtual ~ActivityFrequency() = default;
+
+  oboe::Result startStreams() override {
+      mFrequencyAnalyzer.reset();
+      return mFullDuplexAnalyzer->start();
+  }
+
+  void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
+
+  void setSignalType(int signalType) override {
+      mFrequencyAnalyzer.setSignalType(signalType);
+  }
+
+  FrequencyAnalyzer *getFrequencyAnalyzer() {
+      return &mFrequencyAnalyzer;
+  }
+
+  FullDuplexAnalyzer *getFullDuplexAnalyzer() override {
+      return mFullDuplexAnalyzer.get();
+  }
+
+ protected:
+  void finishOpen(bool isInput, std::shared_ptr<oboe::AudioStream> &oboeStream) override;
+
+ private:
+  std::unique_ptr<FullDuplexAnalyzer> mFullDuplexAnalyzer;
+  FrequencyAnalyzer mFrequencyAnalyzer;
+};
+
+/**
  * Global context for native tests.
  * Switch between various ActivityContexts.
  */
@@ -910,6 +948,9 @@ public:
             case ActivityType::DataPath:
                 currentActivity = &mActivityDataPath;
                 break;
+            case ActivityType::Frequency:
+                currentActivity = &mActivityFrequency;
+                break;
         }
     }
 
@@ -926,6 +967,7 @@ public:
     ActivityGlitches             mActivityGlitches;
     ActivityDataPath             mActivityDataPath;
     ActivityTestDisconnect       mActivityTestDisconnect;
+    ActivityFrequency            mActivityFrequency;
 
 private:
 
@@ -941,6 +983,7 @@ private:
         Glitches = 6,
         TestDisconnect = 7,
         DataPath = 8,
+        Frequency = 10,
     };
 
     ActivityType                 mActivityType = ActivityType::Undefined;
