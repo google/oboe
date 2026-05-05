@@ -81,6 +81,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:measureWithLargestChild="true"
             android:orientation="horizontal">
 
             <Button
@@ -89,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="onMeasure"
-                android:text="@string/measure"
+                android:text="@string/test"
                 android:textSize="10sp" />
 
             <Button

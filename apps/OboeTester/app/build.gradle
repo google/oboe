@@ -25,6 +25,15 @@ android {
             jniDebuggable true
         }
     }
+    flavorDimensions = ["device"]
+    productFlavors {
+        mobile {
+            dimension "device"
+        }
+        watch {
+            dimension "device"
+        }
+    }
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"

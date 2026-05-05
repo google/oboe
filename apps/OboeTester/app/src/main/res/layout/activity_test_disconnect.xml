@@ -27,6 +27,12 @@
 
     </LinearLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -73,28 +79,29 @@
                 android:text="Inputs" />
         </LinearLayout>
 
-        <LinearLayout
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:columnCount="@integer/action_buttons_columns">
 
             <Button
                 android:id="@+id/button_fail"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:onClick="onFailTest"
                 android:text="@string/failTest" />
 
             <Button
                 android:id="@+id/button_skip"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:onClick="onSkipTest"
                 android:text="@string/skipTest" />
-
-        </LinearLayout>
+        </GridLayout>
 
         <com.mobileer.oboetester.AutomatedTestRunner
             android:id="@+id/auto_test_runner"
@@ -102,4 +109,5 @@
             android:layout_height="match_parent"
             android:orientation="vertical" />
     </LinearLayout>
+    </ScrollView>
 </LinearLayout>

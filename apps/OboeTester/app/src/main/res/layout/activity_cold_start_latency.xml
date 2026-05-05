@@ -28,6 +28,12 @@
 
     </LinearLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
     <LinearLayout
         android:id="@+id/buttonGrid"
         android:layout_width="match_parent"
@@ -57,10 +63,10 @@
         </RadioGroup>
 
 
-        <LinearLayout
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:columnCount="@integer/main_grid_columns">
 
             <CheckBox
                 android:id="@+id/checkbox_mmap"
@@ -85,7 +91,7 @@
                 android:layout_marginRight="8sp"
                 android:text="EXCLUSIVE"
                 android:checked="true" />
-        </LinearLayout>
+        </GridLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -141,28 +147,30 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:columnCount="@integer/action_buttons_columns">
 
             <Button
                 android:id="@+id/button_start_test"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:backgroundTint="@color/button_tint"
                 android:onClick="onStartColdStartLatencyTest"
-                android:text="Start Test" />
+                android:text="Start" />
             <Button
                 android:id="@+id/button_stop_test"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:backgroundTint="@color/button_tint"
                 android:onClick="onStopColdStartLatencyTest"
-                android:text="Stop Test" />
-        </LinearLayout>
+                android:text="Stop" />
+        </GridLayout>
 
         <ScrollView
             android:id="@+id/text_log_scroller"
@@ -179,4 +187,5 @@
         </ScrollView>
 
     </LinearLayout>
+    </ScrollView>
 </LinearLayout>

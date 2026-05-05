@@ -31,16 +31,16 @@
         android:gravity="center"
         android:orientation="horizontal" />
 
-    <LinearLayout
+    <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:columnCount="@integer/audio_buttons_columns">
 
         <Button
             android:id="@+id/button_open"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="openAudio"
@@ -51,7 +51,7 @@
             android:id="@+id/button_start"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="startAudio"
@@ -62,7 +62,7 @@
             android:id="@+id/button_pause"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="pauseAudio"
@@ -73,7 +73,7 @@
             android:id="@+id/button_flush"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="flushAudio"
@@ -84,7 +84,7 @@
             android:id="@+id/button_stop"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="stopAudio"
@@ -95,7 +95,7 @@
             android:id="@+id/button_release"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="releaseAudio"
@@ -106,13 +106,13 @@
             android:id="@+id/button_close"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_columnWeight="1"
             android:backgroundTint="@xml/button_color_selector"
             android:backgroundTintMode="src_atop"
             android:onClick="closeAudio"
             android:text="@string/closeAudio"
             android:textSize="12sp" />
-    </LinearLayout>
+    </GridLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

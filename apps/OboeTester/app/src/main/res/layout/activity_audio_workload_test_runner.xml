@@ -42,6 +42,12 @@
 
     </LinearLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
     <LinearLayout
         android:id="@+id/buttonGrid"
         android:layout_width="match_parent"
@@ -142,16 +148,17 @@
                 android:text="Hear Workload" />
         </LinearLayout>
 
-        <LinearLayout
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:columnCount="@integer/action_buttons_columns">
 
             <Button
                 android:id="@+id/button_start_test"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:backgroundTint="@xml/button_color_selector"
                 android:backgroundTintMode="src_atop"
                 android:onClick="startTest"
@@ -160,14 +167,14 @@
             <Button
                 android:id="@+id/button_stop_test"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:backgroundTint="@xml/button_color_selector"
                 android:backgroundTintMode="src_atop"
                 android:onClick="stopTest"
                 android:text="@string/stopAudio" />
-
-        </LinearLayout>
+        </GridLayout>
 
         <TextView
             android:id="@+id/status_text_view"
@@ -188,4 +195,5 @@
             android:textSize="18sp"
             android:textStyle="bold" />
     </LinearLayout>
+    </ScrollView>
 </LinearLayout>

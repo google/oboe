@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="main_grid_columns">2</integer>
+    <integer name="audio_buttons_columns">7</integer>
+    <integer name="action_buttons_columns">2</integer>
+</resources>
