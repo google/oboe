@@ -60,7 +60,7 @@ public:
 
     bool removeSampleSource(int32_t index);
 
-    void setPlaybackParameters(float speed, float pitch);
+    bool setPlaybackParameters(float speed, float pitch);
 
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {

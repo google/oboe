@@ -423,13 +423,13 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_removeSampleS
 /**
  * Native (JNI) implementation of PowerPlayAudioPlayer.setPlaybackParametersNative()
  */
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_setPlaybackParametersNative(
         JNIEnv *env,
         jobject,
         jfloat speed,
         jfloat pitch) {
-    player.setPlaybackParameters(speed, pitch);
+    return player.setPlaybackParameters(speed, pitch);
 }
 
 #ifdef __cplusplus

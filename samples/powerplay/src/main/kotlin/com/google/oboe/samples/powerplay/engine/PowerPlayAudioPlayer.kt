@@ -66,7 +66,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
     fun teardownAudioStream() = teardownAudioStreamNative()
     fun unloadAssets() = unloadAssetsNative()
-    fun setPlaybackParameters(speed: Float, pitch: Float) = setPlaybackParametersNative(speed, pitch)
+    fun setPlaybackParameters(speed: Float, pitch: Float): Boolean = setPlaybackParametersNative(speed, pitch)
 
     /**
      * Loads a file from assets into memory and returns its WAV properties.
@@ -259,7 +259,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun getDurationMillisNative(index: Int): Long
     private external fun getWavFileInfoNative(wavBytes: ByteArray): IntArray
     private external fun removeSampleSourceNative(index: Int): Boolean
-    private external fun setPlaybackParametersNative(speed: Float, pitch: Float)
+    private external fun setPlaybackParametersNative(speed: Float, pitch: Float): Boolean
 
     /**
      * Companion

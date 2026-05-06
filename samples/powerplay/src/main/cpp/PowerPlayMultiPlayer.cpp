@@ -353,9 +353,7 @@ bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
     return true;
 }
 
-void PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
-    mPlaybackSpeed = speed;
-    mPlaybackPitch = pitch;
+bool PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
     if (mAudioStream) {
         oboe::PlaybackParameters params = {
             oboe::FallbackMode::Default,
@@ -367,6 +365,10 @@ void PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
         if (result != oboe::Result::OK) {
             __android_log_print(ANDROID_LOG_ERROR, "PowerPlayMultiPlayer",
                                 "setPlaybackParameters failed: %s", oboe::convertToText(result));
+            return false;
         }
     }
+    mPlaybackSpeed = speed;
+    mPlaybackPitch = pitch;
+    return true;
 }

@@ -743,12 +743,18 @@ class MainActivity : ComponentActivity() {
                     playbackSpeed = playbackSpeed,
                     playbackPitch = playbackPitch,
                     onSpeedChange = {
-                        playbackSpeed = it
-                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                        val success = player.setPlaybackParameters(it, playbackPitch)
+                        if (success) {
+                            playbackSpeed = it
+                        }
+                        success
                     },
                     onPitchChange = {
-                        playbackPitch = it
-                        player.setPlaybackParameters(playbackSpeed, playbackPitch)
+                        val success = player.setPlaybackParameters(playbackSpeed, it)
+                        if (success) {
+                            playbackPitch = it
+                        }
+                        success
                     },
                     fileSampleRate = currentTrack?.wavInfo?.sampleRate ?: 48000,
                     onDismiss = { showBottomSheet = false }
@@ -859,8 +865,8 @@ class MainActivity : ComponentActivity() {
         onSliderPositionChange: (Float) -> Unit,
         playbackSpeed: Float,
         playbackPitch: Float,
-        onSpeedChange: (Float) -> Unit,
-        onPitchChange: (Float) -> Unit,
+        onSpeedChange: (Float) -> Boolean,
+        onPitchChange: (Float) -> Boolean,
         fileSampleRate: Int,
         onDismiss: () -> Unit
     ) {
@@ -868,6 +874,12 @@ class MainActivity : ComponentActivity() {
         val requestedFrames = remember { mutableIntStateOf(0) }
         val actualFrames = remember { mutableIntStateOf(0) }
         var isModified by remember { mutableStateOf(playbackSpeed != 1.0f || playbackPitch != 1.0f) }
+
+        var localSpeed by remember { mutableFloatStateOf(playbackSpeed) }
+        var localPitch by remember { mutableFloatStateOf(playbackPitch) }
+
+        LaunchedEffect(playbackSpeed) { localSpeed = playbackSpeed }
+        LaunchedEffect(playbackPitch) { localPitch = playbackPitch }
 
         Column(
             modifier = Modifier
@@ -993,9 +1005,15 @@ class MainActivity : ComponentActivity() {
                 color = if (canUseSpeed) Color.Unspecified else Color.Gray
             )
             Slider(
-                value = playbackSpeed,
-                onValueChange = onSpeedChange,
+                value = localSpeed,
+                onValueChange = {
+                    localSpeed = it
+                    onSpeedChange(it)
+                },
                 onValueChangeFinished = {
+                    if (localSpeed != playbackSpeed) {
+                        localSpeed = playbackSpeed
+                    }
                     isModified = (playbackSpeed != 1.0f || playbackPitch != 1.0f)
                 },
                 valueRange = 0.5f..2.0f,
@@ -1015,9 +1033,15 @@ class MainActivity : ComponentActivity() {
                 color = if (canUsePitch) Color.Unspecified else Color.Gray
             )
             Slider(
-                value = playbackPitch,
-                onValueChange = onPitchChange,
+                value = localPitch,
+                onValueChange = {
+                    localPitch = it
+                    onPitchChange(it)
+                },
                 onValueChangeFinished = {
+                    if (localPitch != playbackPitch) {
+                        localPitch = playbackPitch
+                    }
                     isModified = (playbackSpeed != 1.0f || playbackPitch != 1.0f)
                 },
                 valueRange = 0.5f..2.0f,
