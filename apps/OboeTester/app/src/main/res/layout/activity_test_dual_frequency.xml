@@ -143,7 +143,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Device Set 1 &amp; 2 FFTs (Overlapped)"
+                    android:text="Device Set 1 &amp; 2 FFTs"
                     android:textStyle="bold" />
                 
                 <FrameLayout
@@ -169,11 +169,26 @@
                     android:textStyle="bold"
                     android:layout_marginTop="8dp" />
                 
-                <com.mobileer.oboetester.FftWaveformView
-                    android:id="@+id/waveform_subtraction"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:background="#E0E0E0" />
+                    android:layout_height="200dp">
+                    
+                    <com.mobileer.oboetester.FftWaveformView
+                        android:id="@+id/waveform_subtraction"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="#E0E0E0" />
+
+                    <com.mobileer.oboetester.FrequencyThresholdView
+                        android:id="@+id/waveform_subtraction_bottom_threshold"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <com.mobileer.oboetester.FrequencyThresholdView
+                        android:id="@+id/waveform_subtraction_top_threshold"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </FrameLayout>
             </LinearLayout>
 
             <TextView
@@ -185,17 +200,6 @@
                 android:textColor="#000000"
                 android:padding="4dp"
                 android:layout_marginTop="8dp"/>
-
-            <TextView
-                android:id="@+id/testAnalysisResultView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Analysis: N/A"
-                android:textSize="16sp"
-                android:textColor="#000000"
-                android:textStyle="bold"
-                android:padding="4dp"
-                android:layout_marginTop="4dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"

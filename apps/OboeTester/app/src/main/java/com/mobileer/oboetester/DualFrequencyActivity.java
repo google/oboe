@@ -35,6 +35,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private Button mStartButton2, mStopButton2;
     private FftWaveformView mWaveformViewTest1, mWaveformViewSubtraction, mWaveformViewTest2;
     private TextView mTestResultView;
+    private FrequencyThresholdView mSubtractedTopThreshold;
+    private FrequencyThresholdView mSubtractedBottomThreshold;
     private FrequencySetting mFrequencySetting;
     private FrequencyPreset mSelectedPreset;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
@@ -63,6 +65,18 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStartButton2 = findViewById(R.id.button_start_2);
         mStopButton2 = findViewById(R.id.button_stop_2);
         mTestResultView = findViewById(R.id.testResultView);
+
+        mSubtractedTopThreshold = findViewById(R.id.waveform_subtraction_top_threshold);
+        mSubtractedTopThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FFE91E63"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
+
+        mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
+        mSubtractedBottomThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FF4CAF50"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
 
         mFrequencySetting = new FrequencySetting(this,
                 FrequencyPresetRepository.GROUP_DUAL,
@@ -210,6 +224,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                         mWaveformViewTest2.setSampleData(samplesToDraw);
                         mWaveformViewTest2.postInvalidate();
 
+                        // 2. Draw the subtracted FFT on the bottom graph
                         if (mTest1WaveformBuffer != null) {
                             float[] subtractedSamples = new float[numSamples];
                             float[] rawDiffBuffer = new float[numSamples];
@@ -232,6 +247,28 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                                     rawDiffBuffer, numSamples, frequencies, numFreqs, spec, passThreshold, true);
 
                             if (result != null) {
+                                if (numFreqs > 0) {
+                                    mSubtractedTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
+                                    mSubtractedBottomThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
+                                }
+
+                                mSubtractedTopThreshold.setFrequencies(result.thresholdFrequencies);
+                                mSubtractedBottomThreshold.setFrequencies(result.thresholdFrequencies);
+
+                                int numPoints = result.thresholdFrequencies.length;
+                                float[] topThresholdSamples = new float[numPoints];
+                                float[] bottomThresholdSamples = new float[numPoints];
+
+                                for (int i = 0; i < numPoints; i++) {
+                                    topThresholdSamples[i] = mapSubtractedDbfsToView(result.alignedTopThresholdsDbfs[i]);
+                                    bottomThresholdSamples[i] = mapSubtractedDbfsToView(result.alignedBottomThresholdsDbfs[i]);
+                                }
+
+                                mSubtractedTopThreshold.setSampleData(topThresholdSamples);
+                                mSubtractedTopThreshold.postInvalidate();
+                                mSubtractedBottomThreshold.setSampleData(bottomThresholdSamples);
+                                mSubtractedBottomThreshold.postInvalidate();
+
                                 StringBuilder sb = new StringBuilder();
                                 sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
                                 sb.append("Bands: ");
