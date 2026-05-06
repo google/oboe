@@ -71,9 +71,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
 
     if (mAudioStream->getPerformanceMode() != oboe::PerformanceMode::PowerSavingOffloaded ||
         !OboeExtensions::isMMapUsed(mAudioStream.get())) {
-        constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
-        result = mAudioStream->setBufferSizeInFrames(
-                mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getBufferCapacityInFrames());
         if (result != Result::OK) {
             __android_log_print(
                     ANDROID_LOG_WARN,
@@ -84,6 +82,10 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
     }
 
     mSampleRate = mAudioStream->getSampleRate();
+
+    // Apply stored playback parameters
+    setPlaybackParameters(mPlaybackSpeed, mPlaybackPitch);
+
     return true;
 }
 
@@ -348,5 +350,25 @@ bool PowerPlayMultiPlayer::removeSampleSource(int32_t index) {
     __android_log_print(ANDROID_LOG_INFO, TAG,
                         "removeSampleSource: Removed index %d, %d sources remaining",
                         index, mNumSampleBuffers);
+    return true;
+}
+
+bool PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
+    if (mAudioStream) {
+        oboe::PlaybackParameters params = {
+            oboe::FallbackMode::Default,
+            oboe::StretchMode::Default,
+            pitch,
+            speed
+        };
+        auto result = mAudioStream->setPlaybackParameters(params);
+        if (result != oboe::Result::OK) {
+            __android_log_print(ANDROID_LOG_ERROR, "PowerPlayMultiPlayer",
+                                "setPlaybackParameters failed: %s", oboe::convertToText(result));
+            return false;
+        }
+    }
+    mPlaybackSpeed = speed;
+    mPlaybackPitch = pitch;
     return true;
 }
