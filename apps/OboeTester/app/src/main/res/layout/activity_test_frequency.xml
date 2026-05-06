@@ -110,21 +110,48 @@
                     android:layout_height="match_parent" />
             </FrameLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/testResultView"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Preset: "
-                android:textStyle="bold" />
-            <Spinner
-                android:id="@+id/spinnerPresets"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+                android:text="RESULT: N/A"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:padding="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Preset: "
+                    android:textStyle="bold" />
+                <Spinner
+                    android:id="@+id/spinnerPresets"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pass Threshold (%): "
+                    android:textStyle="bold" />
+                <EditText
+                    android:id="@+id/thresholdEditText"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:text="30" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -168,19 +195,7 @@
                         android:max="100"
                         android:progress="50" />
                 </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mic Preset:" />
-                    <Spinner
-                        android:id="@+id/spinnerInputPreset"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -218,33 +233,19 @@
                     android:orientation="vertical"/>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/testResultView"
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/inputStreamConfiguration"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="RESULT: N/A"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:padding="4dp"/>
+                android:gravity="center"
+                android:orientation="horizontal" />
 
-            <LinearLayout
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/outputStreamConfiguration"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pass Threshold (%): "
-                    android:textStyle="bold" />
-                <EditText
-                    android:id="@+id/thresholdEditText"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:inputType="numberDecimal"
-                    android:text="30" />
-            </LinearLayout>
+                android:gravity="center"
+                android:orientation="horizontal" />
 
         </LinearLayout>
     </ScrollView>

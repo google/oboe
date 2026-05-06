@@ -37,7 +37,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private EditText mThresholdEditText;
 
     private Spinner mOutputSignalSpinner;
-    private Spinner mInputPresetSpinner;
     private FrequencySetting mFrequencySetting;
     private TextView mBalanceTextView;
     private android.widget.SeekBar mBalanceSeekBar;
@@ -87,28 +86,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mOutputSignalSpinner.setAdapter(outputSignalAdapter);
         mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
 
-        mInputPresetSpinner = (Spinner) findViewById(R.id.spinnerInputPreset);
-        String[] inputPresets = {"VOICE_RECOGNITION", "UNPROCESSED"};
-        android.widget.ArrayAdapter<String> inputPresetAdapter = new android.widget.ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, inputPresets);
-        inputPresetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mInputPresetSpinner.setAdapter(inputPresetAdapter);
-        mInputPresetSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = (String) parent.getItemAtPosition(position);
-                int preset = StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION;
-                if (selected.equals("UNPROCESSED")) {
-                    preset = StreamConfiguration.INPUT_PRESET_UNPROCESSED;
-                }
-                mAudioInputTester.requestedConfiguration.setInputPreset(preset);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
         mBalanceTextView = (TextView) findViewById(R.id.textBalanceSlider);
         mBalanceSeekBar = (android.widget.SeekBar) findViewById(R.id.faderBalanceSlider);
         mBalanceSeekBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
@@ -124,6 +101,19 @@ public final class FrequencyActivity extends AnalyzerActivity {
             public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
         });
 
+        StreamConfigurationView inputConfigView = null;
+        StreamConfigurationView outputConfigView = null;
+        for (TestAudioActivity.StreamContext context : mStreamContexts) {
+            if (context.isInput() && context.configurationView != null) {
+                inputConfigView = context.configurationView;
+            } else if (!context.isInput() && context.configurationView != null) {
+                outputConfigView = context.configurationView;
+                outputConfigView.hideSettingsView();
+            }
+        }
+        final StreamConfigurationView finalInputConfigView = inputConfigView;
+        finalInputConfigView.hideSettingsView();
+
         mFrequencySetting = new FrequencySetting(this,
                 findViewById(R.id.radioGroupBands),
                 findViewById(R.id.bandSpecContainer),
@@ -133,10 +123,8 @@ public final class FrequencyActivity extends AnalyzerActivity {
                     public void onSettingChanged() {
                         FrequencyPreset active = mFrequencySetting.getActivePreset();
                         if (active != null) {
-                            if (active.inputPreset == StreamConfiguration.INPUT_PRESET_UNPROCESSED) {
-                                mInputPresetSpinner.setSelection(1);
-                            } else {
-                                mInputPresetSpinner.setSelection(0);
+                            if (finalInputConfigView != null) {
+                                finalInputConfigView.setInputPreset(active.inputPreset);
                             }
 
                             mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
@@ -175,7 +163,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
             mShareButton.setEnabled(false);
             if (mFrequencySetting != null) mFrequencySetting.setEnabled(false);
             if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(false);
-            if (mInputPresetSpinner != null) mInputPresetSpinner.setEnabled(false);
             if (mThresholdEditText != null) mThresholdEditText.setEnabled(false);
             startWaveformUpdater();
             keepScreenOn(true);
@@ -193,7 +180,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mShareButton.setEnabled(true);
         if (mFrequencySetting != null) mFrequencySetting.setEnabled(true);
         if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(true);
-        if (mInputPresetSpinner != null) mInputPresetSpinner.setEnabled(true);
         if (mThresholdEditText != null) mThresholdEditText.setEnabled(true);
         keepScreenOn(false);
     }

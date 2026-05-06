@@ -602,6 +602,16 @@ public class StreamConfigurationView extends LinearLayout {
         mFormatSpinner.setSelection(format); // position matches format
     }
 
+    public void setInputPreset(int preset) {
+        String text = StreamConfiguration.convertInputPresetToText(preset);
+        for (int i = 0; i < mInputPresetSpinner.getCount(); i++) {
+            if (mInputPresetSpinner.getItemAtPosition(i).toString().equals(text)) {
+                mInputPresetSpinner.setSelection(i);
+                break;
+            }
+        }
+    }
+
     public void setFormatConversionAllowed(boolean allowed) {
         mFormatConversionBox.setChecked(allowed);
     }
