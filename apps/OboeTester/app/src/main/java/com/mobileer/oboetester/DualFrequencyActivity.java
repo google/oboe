@@ -34,11 +34,11 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private Button mStartButton1, mStopButton1;
     private Button mStartButton2, mStopButton2;
     private FftWaveformView mWaveformViewTest1, mWaveformViewSubtraction, mWaveformViewTest2;
+    private TextView mTestStatusView;
     private TextView mTestResultView;
     private FrequencyThresholdView mSubtractedTopThreshold;
     private FrequencyThresholdView mSubtractedBottomThreshold;
     private FrequencySetting mFrequencySetting;
-    private FrequencyPreset mSelectedPreset;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
     private static final int WAVEFORM_UPDATE_MS = 500;
@@ -64,6 +64,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStopButton1 = findViewById(R.id.button_stop_1);
         mStartButton2 = findViewById(R.id.button_start_2);
         mStopButton2 = findViewById(R.id.button_stop_2);
+        mTestStatusView = findViewById(R.id.testStatusView);
         mTestResultView = findViewById(R.id.testResultView);
 
         mSubtractedTopThreshold = findViewById(R.id.waveform_subtraction_top_threshold);
@@ -78,6 +79,18 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 android.graphics.Color.TRANSPARENT,
                 android.graphics.Color.RED);
 
+        StreamConfigurationView inputConfigView = null;
+        StreamConfigurationView outputConfigView = null;
+        for (TestAudioActivity.StreamContext context : mStreamContexts) {
+            if (context.isInput() && context.configurationView != null) {
+                inputConfigView = context.configurationView;
+            } else if (!context.isInput() && context.configurationView != null) {
+                outputConfigView = context.configurationView;
+                outputConfigView.hideSettingsView();
+            }
+        }
+        final StreamConfigurationView finalInputConfigView = inputConfigView;
+        finalInputConfigView.hideSettingsView();
         mFrequencySetting = new FrequencySetting(this,
                 FrequencyPresetRepository.GROUP_DUAL,
                 findViewById(R.id.radioGroupBands),
@@ -86,7 +99,11 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 new FrequencySetting.OnSettingChangedListener() {
                     @Override
                     public void onSettingChanged() {
-                        mSelectedPreset = mFrequencySetting.getActivePreset();
+                        if (finalInputConfigView != null) {
+                            finalInputConfigView.setInputPreset(
+                                mFrequencySetting.getActivePreset().inputPreset
+                            );
+                        }
                     }
                 });
 
@@ -137,7 +154,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
             mStopButton1.setEnabled(true);
             startWaveformUpdater();
             keepScreenOn(true);
-            mTestResultView.setText("Status: Running Test 1...");
+            mTestStatusView.setText("Status: Running Test 1...");
         } catch (IOException e) {
             showErrorToast(e.getMessage());
         }
@@ -156,7 +173,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         if (mWaveformBuffer != null) {
             mTest1WaveformBuffer = mWaveformBuffer.clone();
         }
-        mTestResultView.setText("Status: Test 1 Stopped. Ready for Test 2.");
+        mTestStatusView.setText("Status: Test 1 Stopped. Ready for Test 2.");
     }
 
     public void onStartTest2(View view) {
@@ -169,7 +186,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
             mStartButton1.setEnabled(false);
             startWaveformUpdater();
             keepScreenOn(true);
-            mTestResultView.setText("Status: Running Test 2...");
+            mTestStatusView.setText("Status: Running Test 2...");
         } catch (IOException e) {
             showErrorToast(e.getMessage());
         }
@@ -183,7 +200,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStopButton2.setEnabled(false);
         mStartButton1.setEnabled(true);
         keepScreenOn(false);
-        mTestResultView.setText("Status: Test 2 Stopped. Tests complete.");
+        mTestStatusView.setText("Status: Test 2 Stopped. Tests complete.");
     }
 
     private void startWaveformUpdater() {

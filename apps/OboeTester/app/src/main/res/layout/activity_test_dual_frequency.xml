@@ -39,24 +39,6 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin" >
 
-            <!-- Preset Selection -->
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Preset: "
-                    android:textStyle="bold" />
-                <Spinner
-                    android:id="@+id/preset_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
             <!-- Device Set 1 -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -192,7 +174,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/testResultView"
+                android:id="@+id/testStatusView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Status: N/A"
@@ -201,6 +183,33 @@
                 android:padding="4dp"
                 android:layout_marginTop="8dp"/>
 
+            <TextView
+                android:id="@+id/testResultView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Result: N/A"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:padding="4dp"
+                android:layout_marginTop="4dp"/>
+
+            <!-- Preset Selection -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Preset: "
+                    android:textStyle="bold" />
+                <Spinner
+                    android:id="@+id/preset_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -243,6 +252,21 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"/>
             </LinearLayout>
+
+            <!-- Stream configuration -->
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/inputStreamConfiguration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" />
+
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/outputStreamConfiguration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" />
 
         </LinearLayout>
     </ScrollView>
