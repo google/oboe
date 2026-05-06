@@ -13,7 +13,7 @@
     <string name="closeAudio">Close</string>
     <string name="recordAudio">Record</string>
     <string name="playAudio">Play</string>
-    <string name="measure">Measure</string>
+    <string name="test">Test</string>
     <string name="cancel">Cancel</string>
     <string name="scan">Scan</string>
     <string name="clear">Clear</string>
@@ -280,7 +280,7 @@
     <string name="cpu_affinity">CPUs:</string>
 
     <string name="src_prompt">SRC:</string>
-    <string name="average">Average</string>
+    <string name="average">Avg</string>
     <string name="failTest">Fail</string>
     <string name="skipTest">Skip</string>
     <string name="test_datapath_instructions">Attach peripherals\nVolume up, [START]</string>

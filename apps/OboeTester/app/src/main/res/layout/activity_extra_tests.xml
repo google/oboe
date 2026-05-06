@@ -28,13 +28,24 @@
 
     </LinearLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+
     <GridLayout
         android:id="@+id/buttonGrid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:columnCount="@integer/main_grid_columns"
         app:layout_constraintTop_toBottomOf="@+id/title_bar">
 
         <Button
@@ -142,9 +153,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
+            android:layout_columnSpan="@integer/main_grid_columns"
             android:layout_gravity="fill"
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchReverseJniTest"
             android:text="Reverse JNI" />
     </GridLayout>
+    </LinearLayout>
+    </ScrollView>
 </LinearLayout>
