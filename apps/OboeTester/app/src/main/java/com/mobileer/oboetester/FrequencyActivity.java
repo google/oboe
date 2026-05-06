@@ -129,6 +129,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
                             mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
                             mBalanceSeekBar.setProgress((int) (active.balance * 100));
+                            mThresholdEditText.setText(String.valueOf(active.passThreshold));
                         }
                     }
                 });

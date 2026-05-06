@@ -25,17 +25,19 @@ public class FrequencyPreset {
     public int[] anchors;
     public List<FrequencyBandSpec.BandThreshold> bands;
     public float balance = 0.5f;
+    public float passThreshold = 30.0f;
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float balance) {
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, float balance) {
         this.name = name;
         this.sourceResId = sourceResId;
         this.inputPreset = inputPreset;
         this.anchors = anchors;
         this.bands = bands;
         this.balance = balance;
+        this.passThreshold = passThreshold;
     }
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands) {
-        this(name, sourceResId, inputPreset, anchors, bands, 0.5f);
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold) {
+        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, 0.5f);
     }
 }
