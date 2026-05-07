@@ -38,7 +38,7 @@ private:
     const static int   WINDOW_SIZE = 4096;
 
     PseudoRandom  mWhiteNoise;
-    float         mAmplitude = 0.5f;
+    float         mAmplitude = 0.8f;
     float         mBalance = 0.5f;
     int           mSignalType = 0;
     double        mOutputPhase = 0.0;
@@ -50,6 +50,7 @@ private:
     int                mInputBufferIndex = 0;
     std::vector<double> mWindow;
     double             mIncoherentPower = 0.0;
+    double             mWindowSum = 0.0;
     AverageBuffer      mAverageBuffer;
     int                mMeasurementWindowFrames = 0;
     int                mFramesAccumulated = 0;

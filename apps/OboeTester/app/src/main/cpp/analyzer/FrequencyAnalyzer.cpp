@@ -5,9 +5,11 @@
 FrequencyAnalyzer::FrequencyAnalyzer() : LoopbackProcessor() {
     mWindow.resize(WINDOW_SIZE);
     mIncoherentPower = 0.0;
+    mWindowSum = 0.0;
     for (int i = 0; i < WINDOW_SIZE; i++) {
         mWindow[i] = 0.5 * (1.0 - cos(2.0 * M_PI * i / (WINDOW_SIZE - 1)));
         mIncoherentPower += mWindow[i] * mWindow[i];
+        mWindowSum += mWindow[i];
     }
     mInputBuffer.resize(WINDOW_SIZE);
     mAverageBuffer.resize(WINDOW_SIZE / 2);
@@ -54,7 +56,12 @@ LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float 
         // Accumulate magnitude
         std::vector<double> currentMagnitudes(WINDOW_SIZE / 2);
         for (int i = 0; i < WINDOW_SIZE / 2; i++) {
-            double mag = 4.0 * std::abs(fftInput[i]) / std::sqrt(mIncoherentPower);
+            double mag;
+            if (mSignalType == 1) { // Sine
+                mag = 2.0 * std::abs(fftInput[i]) / mWindowSum;
+            } else {
+                mag = 4.0 * std::abs(fftInput[i]) / std::sqrt(mIncoherentPower);
+            }
             if (mag < 1e-9) mag = 1e-9; // to prevent log(0)
             currentMagnitudes[i] = mag;
         }

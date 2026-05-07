@@ -42,7 +42,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private android.widget.SeekBar mBalanceSeekBar;
 
     private static final int WAVEFORM_UPDATE_MS = 500;
-    private static final float MIN_DBFS = -100.0f;
+    private static final float MIN_DBFS = -150.0f;
     private static final float MAX_DBFS = 0.0f;
 
     private float[] mWaveformBuffer;
