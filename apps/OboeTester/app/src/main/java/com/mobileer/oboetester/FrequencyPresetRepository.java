@@ -16,6 +16,7 @@
 
 package com.mobileer.oboetester;
 
+import android.media.AudioDeviceInfo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class FrequencyPresetRepository {
         bands2.add(new FrequencyBandSpec.BandThreshold(30.0f, 30.0f, -30.0f, -30.0f));
         mPresets.add(new FrequencyPreset("Built-in Mic and External Speaker", R.string.source_white_noise,
                 StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-                new int[]{30, 100, 4000, 12000, 20000}, bands2, 30.0f));
+                new int[]{30, 100, 4000, 12000, 20000}, bands2, 30.0f, AudioDeviceInfo.TYPE_BUILTIN_MIC, 0.5f));
 
         // 3. External Mic and External Speaker
         mPresets.add(new FrequencyPreset("External Mic and External Speaker", R.string.source_white_noise,
@@ -88,7 +89,7 @@ public class FrequencyPresetRepository {
         bands7.add(new FrequencyBandSpec.BandThreshold(-30.0f, -30.0f, -120.0f, -120.0f));
         mPresets.add(new FrequencyPreset("Unprocessed Tone test",
             R.string.source_sine, StreamConfiguration.INPUT_PRESET_UNPROCESSED,
-            new int[]{30, 900, 1100, 20000}, bands7, 50.0f));
+            new int[]{30, 900, 1100, 20000}, bands7, 50.0f, AudioDeviceInfo.TYPE_BUILTIN_MIC));
 
         // 8. Voice recognition test
         List<FrequencyBandSpec.BandThreshold> bands8 = new ArrayList<>();
@@ -97,6 +98,6 @@ public class FrequencyPresetRepository {
         bands8.add(new FrequencyBandSpec.BandThreshold(-30.0f, -30.0f, -120.0f, -120.0f));
         mPresets.add(new FrequencyPreset("Voice Recognition Tone test",
             R.string.source_sine, StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-            new int[]{5, 900, 1100, 20000}, bands8, 50.0f));
+            new int[]{5, 900, 1100, 20000}, bands8, 50.0f, AudioDeviceInfo.TYPE_BUILTIN_MIC));
     }
 }

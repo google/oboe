@@ -16,6 +16,7 @@
 
 package com.mobileer.oboetester;
 
+import android.media.AudioDeviceInfo;
 import java.util.List;
 
 public class FrequencyPreset {
@@ -26,8 +27,9 @@ public class FrequencyPreset {
     public List<FrequencyBandSpec.BandThreshold> bands;
     public float balance = 0.5f;
     public float passThreshold = 30.0f;
+    public int preferredInput = AudioDeviceInfo.TYPE_UNKNOWN;
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, float balance) {
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput, float balance) {
         this.name = name;
         this.sourceResId = sourceResId;
         this.inputPreset = inputPreset;
@@ -35,9 +37,14 @@ public class FrequencyPreset {
         this.bands = bands;
         this.balance = balance;
         this.passThreshold = passThreshold;
+        this.preferredInput = preferredInput;
+    }
+
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, float balance) {
+        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, AudioDeviceInfo.TYPE_UNKNOWN, balance);
     }
 
     public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold) {
-        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, 0.5f);
+        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, AudioDeviceInfo.TYPE_UNKNOWN, 0.5f);
     }
 }

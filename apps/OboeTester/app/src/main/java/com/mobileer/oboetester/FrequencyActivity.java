@@ -125,6 +125,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         if (active != null) {
                             if (finalInputConfigView != null) {
                                 finalInputConfigView.setInputPreset(active.inputPreset);
+                                finalInputConfigView.setPreferredInput(active.preferredInput);
                             }
 
                             mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
