@@ -128,5 +128,12 @@ public class FrequencyPresetRepository {
         mPresets.add(new FrequencyPreset("Voice Recognition", R.string.source_white_noise,
             StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION, new int[]{30, 100, 4000, 20000},
             bandsVoiceRec, 50.0f, AudioDeviceInfo.TYPE_UNKNOWN));
+
+        mPresets.add(new FrequencyPreset("Silence Unprocessed", R.string.source_silence, StreamConfiguration.INPUT_PRESET_UNPROCESSED,
+            new int[]{30, 100, 7000, 20000}, bandsUnprocessed, 50.0f, AudioDeviceInfo.TYPE_UNKNOWN));
+
+        mPresets.add(new FrequencyPreset("Silence Voice Recognition", R.string.source_silence,
+            StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION, new int[]{30, 100, 4000, 20000},
+            bandsVoiceRec, 50.0f, AudioDeviceInfo.TYPE_UNKNOWN));
     }
 }
