@@ -96,7 +96,18 @@ public class FrequencyAnalyzer {
                 allPass = false;
             }
         }
-        result.testPassed = allPass;
+
+        boolean band1CheckPassed = true;
+        FrequencyPreset.Band1CheckType checkType = spec.getBand1CheckType();
+        float band1Threshold = spec.getBand1Threshold();
+        if (checkType == FrequencyPreset.Band1CheckType.GREATER_THAN) {
+            band1CheckPassed = averageMagnitudeBand1 > band1Threshold;
+        } else if (checkType == FrequencyPreset.Band1CheckType.LESS_THAN) {
+            band1CheckPassed = averageMagnitudeBand1 < band1Threshold;
+        }
+
+        result.testPassed = allPass && band1CheckPassed;
+
 
 
         result.thresholdFrequencies = new float[numBands * 2];

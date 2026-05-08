@@ -253,6 +253,8 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         for (int b = 0; b < result.bandEnergyPercentages.length; b++) {
                             sb.append(String.format(java.util.Locale.getDefault(), "[B%d: %.1f%%] ", b, result.bandEnergyPercentages[b]));
                         }
+                        sb.append("\n");
+                        sb.append(String.format(java.util.Locale.getDefault(), "Avg band 1: %.2f dBFS\n", result.averageMagnitudeBand1));
                         mTestResultView.setText(sb.toString());
                         mTestResultView.setTextColor(result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50") : android.graphics.Color.RED);
                     } else {

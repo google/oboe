@@ -305,6 +305,15 @@ public class FrequencySetting {
             } catch (NumberFormatException e) {}
             bands.add(new FrequencyBandSpec.BandThreshold(startTop, stopTop, startBottom, stopBottom));
         }
-        return new FrequencyBandSpec(anchors, bands);
+
+        FrequencyPreset active = getActivePreset();
+        FrequencyPreset.Band1CheckType checkType = FrequencyPreset.Band1CheckType.NONE;
+        float threshold = 0.0f;
+        if (active != null) {
+            checkType = active.band1CheckType;
+            threshold = active.band1Threshold;
+        }
+        return new FrequencyBandSpec(anchors, bands, checkType, threshold);
     }
+
 }

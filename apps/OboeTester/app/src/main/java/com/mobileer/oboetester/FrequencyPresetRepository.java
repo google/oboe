@@ -40,7 +40,8 @@ public class FrequencyPresetRepository {
         bands1.add(new FrequencyBandSpec.BandThreshold(30.0f, 30.0f, -50.0f, -50.0f));
         mPresets.add(new FrequencyPreset("Background Test",
             R.string.source_silence, StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-            new int[]{50, 100, 4000, 12000, 20000}, bands1, 30.0f));
+            new int[]{50, 100, 4000, 12000, 20000}, bands1, 30.0f, AudioDeviceInfo.TYPE_UNKNOWN,
+            FrequencyPreset.Band1CheckType.LESS_THAN, -60.0f));
         // 2. Loopback Dongle
         List<FrequencyBandSpec.BandThreshold> bands2 = new ArrayList<>();
         bands2.add(new FrequencyBandSpec.BandThreshold(4.0f, 4.0f, -50.0f, -4.0f));
@@ -49,7 +50,8 @@ public class FrequencyPresetRepository {
         bands2.add(new FrequencyBandSpec.BandThreshold(5.0f, 5.0f, -5.0f, -30.0f));
         mPresets.add(new FrequencyPreset("Loopback Dongle",
                 R.string.source_white_noise, StreamConfiguration.INPUT_PRESET_UNPROCESSED,
-                new int[]{50, 500, 4000, 12000, 20000}, bands2, 30.0f));
+                new int[]{50, 500, 4000, 12000, 20000}, bands2, 30.0f, AudioDeviceInfo.TYPE_UNKNOWN,
+                FrequencyPreset.Band1CheckType.GREATER_THAN, -20.0f));
 
         // 3. Unprocessed Tone test
         List<FrequencyBandSpec.BandThreshold> bands3 = new ArrayList<>();
@@ -77,12 +79,14 @@ public class FrequencyPresetRepository {
         bands5.add(new FrequencyBandSpec.BandThreshold(30.0f, 30.0f, -30.0f, -30.0f));
         mPresets.add(new FrequencyPreset("Built-in Mic and External Speaker", R.string.source_white_noise,
                 StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-                new int[]{30, 100, 4000, 12000, 20000}, bands5, 30.0f, AudioDeviceInfo.TYPE_BUILTIN_MIC, 0.5f));
+                new int[]{30, 100, 4000, 12000, 20000}, bands5, 30.0f, AudioDeviceInfo.TYPE_BUILTIN_MIC,
+                FrequencyPreset.Band1CheckType.GREATER_THAN, -50.0f));
 
         // 6. External Mic and External Speaker
         mPresets.add(new FrequencyPreset("External Mic and External Speaker", R.string.source_white_noise,
                 StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-                new int[]{30, 100, 4000, 12000, 20000}, bands5, 30.0f)); // Same as above
+                new int[]{30, 100, 4000, 12000, 20000}, bands5, 30.0f, AudioDeviceInfo.TYPE_UNKNOWN,
+                FrequencyPreset.Band1CheckType.GREATER_THAN, -50.0f)); // Same as above
 
         // 7. External Mic and Left Built-in Speaker
         List<FrequencyBandSpec.BandThreshold> bands7 = new ArrayList<>();
@@ -92,11 +96,13 @@ public class FrequencyPresetRepository {
         bands7.add(new FrequencyBandSpec.BandThreshold(10.0f, 10.0f, -10.0f, -40.0f));
         mPresets.add(new FrequencyPreset("External Mic and Left Built-in Speaker",
                 R.string.source_white_noise, StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-                new int[]{50, 500, 4000, 12000, 20000}, bands7, 30.0f, 0.0f));
+                new int[]{50, 500, 4000, 12000, 20000}, bands7, 30.0f, AudioDeviceInfo.TYPE_UNKNOWN,
+                FrequencyPreset.Band1CheckType.GREATER_THAN, -50.0f, 0.0f));
 
         // 8. External Mic and Right Built-in Speaker
         mPresets.add(new FrequencyPreset("External Mic and Right Built-in Speaker",
                 R.string.source_white_noise, StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION,
-                new int[]{50, 500, 4000, 12000, 20000}, bands7, 30.0f, 1.0f));
+                new int[]{50, 500, 4000, 12000, 20000}, bands7, 30.0f, AudioDeviceInfo.TYPE_UNKNOWN,
+                FrequencyPreset.Band1CheckType.GREATER_THAN, -50.0f, 1.0f));
     }
 }

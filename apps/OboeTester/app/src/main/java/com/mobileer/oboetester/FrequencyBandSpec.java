@@ -21,6 +21,8 @@ import java.util.List;
 public class FrequencyBandSpec {
     private int[] mFrequencyAnchors;
     private List<BandThreshold> mBands;
+    private FrequencyPreset.Band1CheckType mBand1CheckType = FrequencyPreset.Band1CheckType.NONE;
+    private float mBand1Threshold = 0.0f;
 
     public static class BandThreshold {
         public float startTop;
@@ -36,9 +38,15 @@ public class FrequencyBandSpec {
         }
     }
 
-    public FrequencyBandSpec(int[] frequencyAnchors, List<BandThreshold> bands) {
+    public FrequencyBandSpec(int[] frequencyAnchors, List<BandThreshold> bands, FrequencyPreset.Band1CheckType band1CheckType, float band1Threshold) {
         this.mFrequencyAnchors = frequencyAnchors;
         this.mBands = bands;
+        this.mBand1CheckType = band1CheckType;
+        this.mBand1Threshold = band1Threshold;
+    }
+
+    public FrequencyBandSpec(int[] frequencyAnchors, List<BandThreshold> bands) {
+        this(frequencyAnchors, bands, FrequencyPreset.Band1CheckType.NONE, 0.0f);
     }
 
     public int[] getFrequencyAnchors() {
@@ -48,6 +56,15 @@ public class FrequencyBandSpec {
     public List<BandThreshold> getBands() {
         return mBands;
     }
+
+    public FrequencyPreset.Band1CheckType getBand1CheckType() {
+        return mBand1CheckType;
+    }
+
+    public float getBand1Threshold() {
+        return mBand1Threshold;
+    }
+
 
     public float getTopThresholdAt(float freq) {
         return getThresholdAt(freq, true);
