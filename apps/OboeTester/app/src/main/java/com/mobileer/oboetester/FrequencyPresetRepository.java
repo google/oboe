@@ -118,14 +118,14 @@ public class FrequencyPresetRepository {
         bandsUnprocessed.add(new FrequencyBandSpec.BandThreshold(20.0f, 20.0f, -20.0f, -20.0f));
         bandsUnprocessed.add(new FrequencyBandSpec.BandThreshold(10.0f, 10.0f, -10.0f, -10.0f));
         bandsUnprocessed.add(new FrequencyBandSpec.BandThreshold(30.0f, 30.0f, -30.0f, -30.0f));
-        mPresets.add(new FrequencyPreset("Unprocessed", 0, StreamConfiguration.INPUT_PRESET_UNPROCESSED,
+        mPresets.add(new FrequencyPreset("Unprocessed", R.string.source_white_noise, StreamConfiguration.INPUT_PRESET_UNPROCESSED,
             new int[]{30, 100, 7000, 20000}, bandsUnprocessed, 50.0f, AudioDeviceInfo.TYPE_UNKNOWN));
 
         List<FrequencyBandSpec.BandThreshold> bandsVoiceRec = new ArrayList<>();
         bandsVoiceRec.add(new FrequencyBandSpec.BandThreshold(20.0f, 20.0f, -20.0f, -20.0f));
         bandsVoiceRec.add(new FrequencyBandSpec.BandThreshold(6.0f, 6.0f, -6.0f, -6.0f));
         bandsVoiceRec.add(new FrequencyBandSpec.BandThreshold(30.0f, 30.0f, -30.0f, -30.0f));
-        mPresets.add(new FrequencyPreset("Voice Recognition", 0,
+        mPresets.add(new FrequencyPreset("Voice Recognition", R.string.source_white_noise,
             StreamConfiguration.INPUT_PRESET_VOICE_RECOGNITION, new int[]{30, 100, 4000, 20000},
             bandsVoiceRec, 50.0f, AudioDeviceInfo.TYPE_UNKNOWN));
     }

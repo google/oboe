@@ -17,17 +17,13 @@
 package com.mobileer.oboetester;
 
 import android.graphics.Color;
+import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class DualFrequencyActivity extends AnalyzerActivity {
 
@@ -39,6 +35,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private FrequencyThresholdView mSubtractedTopThreshold;
     private FrequencyThresholdView mSubtractedBottomThreshold;
     private FrequencySetting mFrequencySetting;
+    private StreamConfigurationView mInputConfigView;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
     private static final int WAVEFORM_UPDATE_MS = 500;
@@ -79,18 +76,19 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 android.graphics.Color.TRANSPARENT,
                 android.graphics.Color.RED);
 
-        StreamConfigurationView inputConfigView = null;
+        mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
         for (TestAudioActivity.StreamContext context : mStreamContexts) {
             if (context.isInput() && context.configurationView != null) {
-                inputConfigView = context.configurationView;
+                mInputConfigView = context.configurationView;
             } else if (!context.isInput() && context.configurationView != null) {
                 outputConfigView = context.configurationView;
                 outputConfigView.hideSettingsView();
             }
         }
-        final StreamConfigurationView finalInputConfigView = inputConfigView;
-        finalInputConfigView.hideSettingsView();
+        if (mInputConfigView != null) {
+            mInputConfigView.hideSettingsView();
+        }
         mFrequencySetting = new FrequencySetting(this,
                 FrequencyPresetRepository.GROUP_DUAL,
                 findViewById(R.id.radioGroupBands),
@@ -99,10 +97,12 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 new FrequencySetting.OnSettingChangedListener() {
                     @Override
                     public void onSettingChanged() {
-                        if (finalInputConfigView != null) {
-                            finalInputConfigView.setInputPreset(
-                                mFrequencySetting.getActivePreset().inputPreset
-                            );
+                        FrequencyPreset active = mFrequencySetting.getActivePreset();
+                        if (active != null) {
+                            if (mInputConfigView != null) {
+                                mInputConfigView.setInputPreset(active.inputPreset);
+                            }
+                            mAudioOutTester.setSignalType(FrequencySetting.getSignalIndexForSource(active.sourceResId));
                         }
                     }
                 });
@@ -148,6 +148,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     public void onStartTest1(View view) {
         try {
             mCurrentTest = 1;
+            if (mInputConfigView != null) {
+                mInputConfigView.setPreferredInput(AudioDeviceInfo.TYPE_BUILTIN_MIC);
+            }
             openAudio();
             startAudio();
             mStartButton1.setEnabled(false);
@@ -179,6 +182,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     public void onStartTest2(View view) {
         try {
             mCurrentTest = 2;
+            if (mInputConfigView != null) {
+                mInputConfigView.setPreferredInput(AudioDeviceInfo.TYPE_UNKNOWN);
+            }
             openAudio();
             startAudio();
             mStartButton2.setEnabled(false);
