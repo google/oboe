@@ -18,13 +18,13 @@ package com.mobileer.oboetester;
 
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.AudioDeviceInfo;
 import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1031,5 +1031,35 @@ public class StreamConfiguration {
 
         String joinedIds = TextUtils.join(",", deviceIdStrings);
         return "[" + joinedIds + "]";
+    }
+
+    public static String deviceTypeToString(int type) {
+        switch (type) {
+            case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE: return "BUILTIN_EARPIECE";
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER: return "BUILTIN_SPEAKER";
+            case AudioDeviceInfo.TYPE_WIRED_HEADSET: return "WIRED_HEADSET";
+            case AudioDeviceInfo.TYPE_WIRED_HEADPHONES: return "WIRED_HEADPHONES";
+            case AudioDeviceInfo.TYPE_LINE_ANALOG: return "LINE_ANALOG";
+            case AudioDeviceInfo.TYPE_LINE_DIGITAL: return "LINE_DIGITAL";
+            case AudioDeviceInfo.TYPE_BLUETOOTH_SCO: return "BLUETOOTH_SCO";
+            case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP: return "BLUETOOTH_A2DP";
+            case AudioDeviceInfo.TYPE_HDMI: return "HDMI";
+            case AudioDeviceInfo.TYPE_HDMI_ARC: return "HDMI_ARC";
+            case AudioDeviceInfo.TYPE_USB_DEVICE: return "USB_DEVICE";
+            case AudioDeviceInfo.TYPE_USB_ACCESSORY: return "USB_ACCESSORY";
+            case AudioDeviceInfo.TYPE_DOCK: return "DOCK";
+            case AudioDeviceInfo.TYPE_FM: return "FM";
+            case AudioDeviceInfo.TYPE_BUILTIN_MIC: return "BUILTIN_MIC";
+            case AudioDeviceInfo.TYPE_FM_TUNER: return "FM_TUNER";
+            case AudioDeviceInfo.TYPE_TV_TUNER: return "TV_TUNER";
+            case AudioDeviceInfo.TYPE_TELEPHONY: return "TELEPHONY";
+            case AudioDeviceInfo.TYPE_AUX_LINE: return "AUX_LINE";
+            case AudioDeviceInfo.TYPE_IP: return "IP";
+            case AudioDeviceInfo.TYPE_BUS: return "BUS";
+            case AudioDeviceInfo.TYPE_USB_HEADSET: return "USB_HEADSET";
+            case AudioDeviceInfo.TYPE_HEARING_AID: return "HEARING_AID";
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE: return "BUILTIN_SPEAKER_SAFE";
+            default: return "UNKNOWN(" + type + ")";
+        }
     }
 }

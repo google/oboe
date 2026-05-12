@@ -151,8 +151,15 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         try {
             mCurrentTest = 1;
             if (mInputConfigView != null) {
-                mInputConfigView.setPreferredInput(AudioDeviceInfo.TYPE_BUILTIN_MIC);
+                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_BUILTIN_MIC);
+                if (device != null) {
+                    mInputConfigView.setDeviceById(device.getId());
+                } else {
+                    mInputConfigView.setDeviceById(0); // Auto-select
+                    showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
+                }
             }
+            checkPreferredOutput();
             openAudio();
             startAudio();
             mStartButton1.setEnabled(false);
@@ -185,8 +192,15 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         try {
             mCurrentTest = 2;
             if (mInputConfigView != null) {
-                mInputConfigView.setPreferredInput(AudioDeviceInfo.TYPE_UNKNOWN);
+                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_USB_DEVICE);
+                if (device != null) {
+                    mInputConfigView.setDeviceById(device.getId());
+                } else {
+                    mInputConfigView.setDeviceById(0); // Auto-select
+                    showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
+                }
             }
+            checkPreferredOutput();
             openAudio();
             startAudio();
             mStartButton2.setEnabled(false);
@@ -209,6 +223,23 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStartButton1.setEnabled(true);
         keepScreenOn(false);
         mTestStatusView.setText("Status: Test 2 Stopped. Tests complete.");
+    }
+
+    private void checkPreferredOutput() {
+        FrequencyPreset active = mFrequencySetting.getActivePreset();
+        if (active != null) {
+            int preferredOutput = active.preferredOutput;
+            if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
+                int result = checkOutputDeviceSupported(preferredOutput);
+                if (result == DEVICE_NOT_FOUND) {
+                    showToast("WARNING: Preferred output device (" +
+                        StreamConfiguration.deviceTypeToString(preferredOutput) +
+                        ") not found!");
+                } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
+                    showToast("WARNING: USB device is plugged in while testing Built-in Speaker!");
+                }
+            }
+        }
     }
 
     private void startWaveformUpdater() {

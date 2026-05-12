@@ -40,7 +40,6 @@ import android.widget.TextView;
 import com.mobileer.audio_device.AudioDeviceListEntry;
 import com.mobileer.audio_device.AudioDeviceSpinner;
 import com.mobileer.audio_device.AudioDeviceAdapter;
-import android.media.AudioDeviceInfo;
 
 import java.util.Locale;
 
@@ -513,45 +512,21 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestAudioEffect.setEnabled(enabled);
     }
 
-    public void setPreferredInput(int preferredInputType) {
-        if (misOutput) return; // Only for input
-
-        if (preferredInputType != AudioDeviceInfo.TYPE_BUILTIN_MIC) {
-            mDeviceSpinner.setSelection(0); // Auto-select
-            return;
+    public boolean setDeviceById(int deviceId) {
+        if (deviceId == 0) { // AUTO_SELECT_DEVICE_ID
+            mDeviceSpinner.setSelection(0);
+            return true;
         }
-
         AudioDeviceAdapter adapter = (AudioDeviceAdapter) mDeviceSpinner.getAdapter();
-        int bestPosition = -1;
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            for (int i = 0; i < adapter.getCount(); i++) {
-                AudioDeviceListEntry entry = (AudioDeviceListEntry) adapter.getItem(i);
-                AudioDeviceInfo info = entry.getDeviceInfo();
-                if (info != null && info.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
-                    if ("bottom".equalsIgnoreCase(info.getAddress())) {
-                        bestPosition = i;
-                        break;
-                    }
-                }
+        for (int i = 0; i < adapter.getCount(); i++) {
+            AudioDeviceListEntry entry = (AudioDeviceListEntry) adapter.getItem(i);
+            if (entry.getId() == deviceId) {
+                mDeviceSpinner.setSelection(i);
+                return true;
             }
         }
-
-        // Fallback: if we couldn't find by address, just find the first built-in mic in the adapter
-        if (bestPosition == -1) {
-            for (int i = 0; i < adapter.getCount(); i++) {
-                AudioDeviceListEntry entry = (AudioDeviceListEntry) adapter.getItem(i);
-                AudioDeviceInfo info = entry.getDeviceInfo();
-                if (info != null && info.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
-                    bestPosition = i;
-                    break;
-                }
-            }
-        }
-
-        if (bestPosition != -1) {
-            mDeviceSpinner.setSelection(bestPosition);
-        }
+        mDeviceSpinner.setSelection(0); // Fallback to Auto-select
+        return false;
     }
 
     // This must be called on the UI thread.
@@ -792,4 +767,5 @@ public class StreamConfigurationView extends LinearLayout {
         }
         mLoudnessEnhancerSeekBar.setEnabled(isChecked);
     }
+
 }

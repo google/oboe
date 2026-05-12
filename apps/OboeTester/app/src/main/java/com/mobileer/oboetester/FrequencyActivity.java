@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import android.os.Bundle;
+import android.media.AudioDeviceInfo;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -40,6 +41,8 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private FrequencySetting mFrequencySetting;
     private TextView mBalanceTextView;
     private android.widget.SeekBar mBalanceSeekBar;
+    private StreamConfigurationView mInputConfigView;
+    private StreamConfigurationView mOutputConfigView;
 
     private static final int WAVEFORM_UPDATE_MS = 500;
     private static final float MIN_DBFS = -150.0f;
@@ -103,18 +106,15 @@ public final class FrequencyActivity extends AnalyzerActivity {
             public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
         });
 
-        StreamConfigurationView inputConfigView = null;
-        StreamConfigurationView outputConfigView = null;
         for (TestAudioActivity.StreamContext context : mStreamContexts) {
             if (context.isInput() && context.configurationView != null) {
-                inputConfigView = context.configurationView;
+                mInputConfigView = context.configurationView;
+                mInputConfigView.hideSettingsView();
             } else if (!context.isInput() && context.configurationView != null) {
-                outputConfigView = context.configurationView;
-                outputConfigView.hideSettingsView();
+                mOutputConfigView = context.configurationView;
+                mOutputConfigView.hideSettingsView();
             }
         }
-        final StreamConfigurationView finalInputConfigView = inputConfigView;
-        finalInputConfigView.hideSettingsView();
 
         mFrequencySetting = new FrequencySetting(this,
                 FrequencyPresetRepository.GROUP_FREQUENCY,
@@ -126,9 +126,18 @@ public final class FrequencyActivity extends AnalyzerActivity {
                     public void onSettingChanged() {
                         FrequencyPreset active = mFrequencySetting.getActivePreset();
                         if (active != null) {
-                            if (finalInputConfigView != null) {
-                                finalInputConfigView.setInputPreset(active.inputPreset);
-                                finalInputConfigView.setPreferredInput(active.preferredInput);
+                            if (mInputConfigView != null) {
+                                mInputConfigView.setInputPreset(active.inputPreset);
+                                if (active.preferredInput != AudioDeviceInfo.TYPE_UNKNOWN) {
+                                    AudioDeviceInfo device = findInputDeviceByType(active.preferredInput);
+                                    if (device != null) {
+                                        mInputConfigView.setDeviceById(device.getId());
+                                    } else {
+                                        mInputConfigView.setDeviceById(0); // Auto-select
+                                    }
+                                } else {
+                                    mInputConfigView.setDeviceById(0); // Auto-select
+                                }
                             }
 
                             mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
@@ -160,6 +169,33 @@ public final class FrequencyActivity extends AnalyzerActivity {
     }
 
     public void onStartAudioTest(View view) {
+        FrequencyPreset active = mFrequencySetting.getActivePreset();
+        if (active != null) {
+            // Check preferred input device
+            int preferredInput = active.preferredInput;
+            if (preferredInput != AudioDeviceInfo.TYPE_UNKNOWN) {
+                AudioDeviceInfo device = findInputDeviceByType(preferredInput);
+                if (device == null) {
+                    showToast("WARNING: Preferred input device (" +
+                            StreamConfiguration.deviceTypeToString(preferredInput) +
+                            ") not found!");
+                }
+            }
+
+            // Check preferred output device
+            int preferredOutput = active.preferredOutput;
+            if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
+                int result = checkOutputDeviceSupported(preferredOutput);
+                if (result == DEVICE_NOT_FOUND) {
+                    showToast("WARNING: Preferred output device (" +
+                            StreamConfiguration.deviceTypeToString(preferredOutput) +
+                            ") not found!");
+                } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
+                    showToast("WARNING: USB speaker is plugged in while testing Built-in Speaker!");
+                }
+            }
+        }
+
         try {
             openAudio();
             startAudio();
