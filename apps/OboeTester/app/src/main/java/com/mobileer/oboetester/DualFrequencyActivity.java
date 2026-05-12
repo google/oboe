@@ -50,7 +50,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private Handler mHandler = new Handler();
 
     private native int getWindowSize();
+
     private native int getFftMagnitude(float[] waveform);
+
     private native int getFftFrequencies(float[] frequencies);
 
     @Override
@@ -67,16 +69,16 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mSubtractedTopThreshold = findViewById(R.id.waveform_subtraction_top_threshold);
         mSubtractedTopThreshold.setDbfsRange(-50.0f, 50.0f);
         mSubtractedTopThreshold.updateTheme(
-                 android.graphics.Color.parseColor("#FFE91E63"),
-                 android.graphics.Color.TRANSPARENT,
-                 android.graphics.Color.RED);
- 
-         mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
-         mSubtractedBottomThreshold.setDbfsRange(-50.0f, 50.0f);
-         mSubtractedBottomThreshold.updateTheme(
-                 android.graphics.Color.parseColor("#FF4CAF50"),
-                 android.graphics.Color.TRANSPARENT,
-                 android.graphics.Color.RED);
+                android.graphics.Color.parseColor("#FFE91E63"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
+
+        mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
+        mSubtractedBottomThreshold.setDbfsRange(-50.0f, 50.0f);
+        mSubtractedBottomThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FF4CAF50"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
 
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
@@ -104,7 +106,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                             if (mInputConfigView != null) {
                                 mInputConfigView.setInputPreset(active.inputPreset);
                             }
-                            mAudioOutTester.setSignalType(FrequencySetting.getSignalIndexForSource(active.sourceResId));
+                            mAudioOutTester.setSignalType(
+                                    FrequencySetting.getSignalIndexForSource(active.sourceResId));
                         }
                     }
                 });
@@ -120,7 +123,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mWaveformViewSubtraction = findViewById(R.id.waveform_subtraction);
         mWaveformViewSubtraction.setDbfsRange(-50.0f, 50.0f);
         // Keep line red, but use normal background since they're not overlapping anymore
-        mWaveformViewSubtraction.updateTheme(Color.RED, getResources().getColor(R.color.waveform_background), Color.RED);
+        mWaveformViewSubtraction.updateTheme(Color.RED,
+                getResources().getColor(R.color.waveform_background), Color.RED);
 
         mStopButton1.setEnabled(false);
         mStartButton2.setEnabled(false);
@@ -233,8 +237,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 int result = checkOutputDeviceSupported(preferredOutput);
                 if (result == DEVICE_NOT_FOUND) {
                     showToast("WARNING: Preferred output device (" +
-                        StreamConfiguration.deviceTypeToString(preferredOutput) +
-                        ") not found!");
+                            StreamConfiguration.deviceTypeToString(preferredOutput) +
+                            ") not found!");
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB device is plugged in while testing Built-in Speaker!");
                 }
@@ -260,7 +264,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private Runnable mWaveformUpdater = new Runnable() {
         @Override
         public void run() {
-            if (!mIsUpdaterRunning) return;
+            if (!mIsUpdaterRunning) {
+                return;
+            }
             try {
                 int numSamples = getFftMagnitude(mWaveformBuffer);
                 if (numSamples > 0) {
@@ -271,12 +277,12 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                         // 1. Draw live Test 2 FFT overlapped on the top graph
                         mWaveformViewTest2.setSampleData(mWaveformBuffer, 0, numSamples);
                         mWaveformViewTest2.postInvalidate();
- 
+
                         // 2. Draw the subtracted FFT on the bottom graph
                         if (mTest1WaveformBuffer != null) {
                             float[] rawDiffBuffer = new float[numSamples];
                             for (int i = 0; i < numSamples; i++) {
-                             rawDiffBuffer[i] = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
+                                rawDiffBuffer[i] = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
                             }
                             mWaveformViewSubtraction.setSampleData(rawDiffBuffer, 0, numSamples);
                             mWaveformViewSubtraction.postInvalidate();
@@ -285,34 +291,45 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                             float[] frequencies = new float[numSamples];
                             int numFreqs = getFftFrequencies(frequencies);
 
-                            FrequencyBandSpec spec = mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
+                            FrequencyBandSpec spec =
+                                    mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
                             float passThreshold = 50.0f; // failure rate 50%
 
                             FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
-                                    rawDiffBuffer, numSamples, frequencies, numFreqs, spec, passThreshold, true);
+                                    rawDiffBuffer, numSamples, frequencies, numFreqs, spec,
+                                    passThreshold, true);
 
                             if (result != null) {
                                 if (numFreqs > 0) {
-                                    mSubtractedTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
-                                    mSubtractedBottomThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
+                                    mSubtractedTopThreshold.setMaxFrequency(
+                                            frequencies[numFreqs - 1]);
+                                    mSubtractedBottomThreshold.setMaxFrequency(
+                                            frequencies[numFreqs - 1]);
                                 }
 
                                 mSubtractedTopThreshold.setFrequencies(result.thresholdFrequencies);
-                                mSubtractedBottomThreshold.setFrequencies(result.thresholdFrequencies);
+                                mSubtractedBottomThreshold.setFrequencies(
+                                        result.thresholdFrequencies);
 
-                                mSubtractedTopThreshold.setSampleData(result.alignedTopThresholdsDbfs);
+                                mSubtractedTopThreshold.setSampleData(
+                                        result.alignedTopThresholdsDbfs);
                                 mSubtractedTopThreshold.postInvalidate();
-                                mSubtractedBottomThreshold.setSampleData(result.alignedBottomThresholdsDbfs);
+                                mSubtractedBottomThreshold.setSampleData(
+                                        result.alignedBottomThresholdsDbfs);
                                 mSubtractedBottomThreshold.postInvalidate();
 
                                 StringBuilder sb = new StringBuilder();
-                                sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
+                                sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL")
+                                        .append("\n");
                                 sb.append("Bands: ");
                                 for (int b = 0; b < result.bandEnergyPercentages.length; b++) {
-                                    sb.append(String.format(java.util.Locale.getDefault(), "[B%d: %.1f%%] ", b, result.bandEnergyPercentages[b]));
+                                    sb.append(String.format(java.util.Locale.getDefault(),
+                                            "[B%d: %.1f%%] ", b, result.bandEnergyPercentages[b]));
                                 }
                                 mTestResultView.setText(sb.toString());
-                                mTestResultView.setTextColor(result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50") : android.graphics.Color.RED);
+                                mTestResultView.setTextColor(
+                                        result.testPassed ? android.graphics.Color.parseColor(
+                                                "#FF4CAF50") : android.graphics.Color.RED);
                             }
                         }
                     }

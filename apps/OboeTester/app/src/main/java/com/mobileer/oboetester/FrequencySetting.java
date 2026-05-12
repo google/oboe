@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FrequencySetting {
+
     public static int getSignalIndexForSource(int sourceResId) {
         if (sourceResId == R.string.source_white_noise) {
             return 0;
@@ -48,15 +49,17 @@ public class FrequencySetting {
     private Spinner mPresetSpinner;
     private List<EditText> mFrequencyAnchorInputs = new ArrayList<>();
     private List<BandInputs> mBandInputsList = new ArrayList<>();
-    
+
     private boolean mIsLoadingPreset = false;
     private OnSettingChangedListener mListener;
 
     public interface OnSettingChangedListener {
+
         void onSettingChanged();
     }
 
     private static class BandInputs {
+
         EditText startTop;
         EditText stopTop;
         EditText startBottom;
@@ -65,7 +68,8 @@ public class FrequencySetting {
 
     private List<FrequencyPreset> mPresets = new ArrayList<>();
 
-    public FrequencySetting(Context context, int group, RadioGroup radioGroup, LinearLayout container, Spinner presetSpinner, OnSettingChangedListener listener) {
+    public FrequencySetting(Context context, int group, RadioGroup radioGroup,
+            LinearLayout container, Spinner presetSpinner, OnSettingChangedListener listener) {
         mContext = context;
         mRadioGroupBands = radioGroup;
         mBandSpecContainer = container;
@@ -109,8 +113,10 @@ public class FrequencySetting {
                     loadPreset(mPresets.get(position - 1));
                 }
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         mPresetSpinner.setSelection(1); // Default to Loopback Dongle
@@ -146,7 +152,9 @@ public class FrequencySetting {
     }
 
     private void notifySettingChanged() {
-        if (mIsLoadingPreset) return;
+        if (mIsLoadingPreset) {
+            return;
+        }
         mPresetSpinner.setSelection(0, false); // Set to Custom
         if (mListener != null) {
             mListener.onSettingChanged();
@@ -154,9 +162,18 @@ public class FrequencySetting {
     }
 
     private TextWatcher mTextWatcher = new TextWatcher() {
-        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-        @Override public void afterTextChanged(Editable s) { notifySettingChanged(); }
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            notifySettingChanged();
+        }
     };
 
     private void rebuildBandSpecUi(int numBands) {
@@ -180,7 +197,7 @@ public class FrequencySetting {
             input.setHint("F" + i);
             input.addTextChangedListener(mTextWatcher);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
             input.setLayoutParams(params);
             anchorsLayout.addView(input);
             mFrequencyAnchorInputs.add(input);
@@ -201,22 +218,24 @@ public class FrequencySetting {
             TextView topLabel = new TextView(mContext);
             topRow.addView(topLabel);
             LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             topLabel.setText("Top: ");
             topLabel.setLayoutParams(labelParams);
 
             LinearLayout.LayoutParams inputParams = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
 
             bandInputs.startTop = new EditText(mContext);
-            bandInputs.startTop.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            bandInputs.startTop.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
             bandInputs.startTop.setLayoutParams(inputParams);
             bandInputs.startTop.setHint("Start");
             bandInputs.startTop.addTextChangedListener(mTextWatcher);
             topRow.addView(bandInputs.startTop);
 
             bandInputs.stopTop = new EditText(mContext);
-            bandInputs.stopTop.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            bandInputs.stopTop.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
             bandInputs.stopTop.setLayoutParams(inputParams);
             bandInputs.stopTop.setHint("Stop");
             bandInputs.stopTop.addTextChangedListener(mTextWatcher);
@@ -232,14 +251,16 @@ public class FrequencySetting {
             bottomLabel.setLayoutParams(labelParams);
 
             bandInputs.startBottom = new EditText(mContext);
-            bandInputs.startBottom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            bandInputs.startBottom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
             bandInputs.startBottom.setLayoutParams(inputParams);
             bandInputs.startBottom.setHint("Start");
             bandInputs.startBottom.addTextChangedListener(mTextWatcher);
             bottomRow.addView(bandInputs.startBottom);
 
             bandInputs.stopBottom = new EditText(mContext);
-            bandInputs.stopBottom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            bandInputs.stopBottom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                    | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
             bandInputs.stopBottom.setLayoutParams(inputParams);
             bandInputs.stopBottom.setHint("Stop");
             bandInputs.stopBottom.addTextChangedListener(mTextWatcher);
@@ -293,17 +314,22 @@ public class FrequencySetting {
             float startTop = 0, stopTop = 0, startBottom = 0, stopBottom = 0;
             try {
                 startTop = Float.parseFloat(inputs.startTop.getText().toString());
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) {
+            }
             try {
                 stopTop = Float.parseFloat(inputs.stopTop.getText().toString());
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) {
+            }
             try {
                 startBottom = Float.parseFloat(inputs.startBottom.getText().toString());
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) {
+            }
             try {
                 stopBottom = Float.parseFloat(inputs.stopBottom.getText().toString());
-            } catch (NumberFormatException e) {}
-            bands.add(new FrequencyBandSpec.BandThreshold(startTop, stopTop, startBottom, stopBottom));
+            } catch (NumberFormatException e) {
+            }
+            bands.add(new FrequencyBandSpec.BandThreshold(startTop, stopTop, startBottom,
+                    stopBottom));
         }
 
         FrequencyPreset active = getActivePreset();

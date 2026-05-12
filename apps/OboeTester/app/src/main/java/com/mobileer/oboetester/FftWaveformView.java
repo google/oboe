@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import java.util.Locale;
 
 public class FftWaveformView extends WaveformView {
+
     private Paint mAxisPaint;
     private float mMinDbfs = -100.0f;
     private float mMaxDbfs = 0.0f;
@@ -66,9 +67,12 @@ public class FftWaveformView extends WaveformView {
         float midDbfs = (mMinDbfs + mMaxDbfs) / 2.0f;
 
         // Draw Y axis labels (dBFS) and lines
-        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", mMaxDbfs), 10, mOffsetY + mScaleY + 30, mAxisPaint);
-        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", midDbfs), 10, mOffsetY + 10, mAxisPaint);
-        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", mMinDbfs), 10, mOffsetY - mScaleY - 10, mAxisPaint);
+        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", mMaxDbfs), 10,
+                mOffsetY + mScaleY + 30, mAxisPaint);
+        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", midDbfs), 10, mOffsetY + 10,
+                mAxisPaint);
+        canvas.drawText(String.format(Locale.getDefault(), "%.0f dBFS", mMinDbfs), 10,
+                mOffsetY - mScaleY - 10, mAxisPaint);
 
         canvas.drawLine(0, mOffsetY + mScaleY, mCurrentWidth, mOffsetY + mScaleY, mAxisPaint);
         canvas.drawLine(0, mOffsetY, mCurrentWidth, mOffsetY, mAxisPaint);
@@ -86,8 +90,12 @@ public class FftWaveformView extends WaveformView {
 
     private float mapDbfsToView(float dbfs) {
         float mapped = ((dbfs - mMinDbfs) / (mMaxDbfs - mMinDbfs)) * 2.0f - 1.0f;
-        if (mapped < -1.0f) mapped = -1.0f;
-        if (mapped > 1.0f) mapped = 1.0f;
+        if (mapped < -1.0f) {
+            mapped = -1.0f;
+        }
+        if (mapped > 1.0f) {
+            mapped = 1.0f;
+        }
         return mapped;
     }
 }

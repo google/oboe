@@ -19,12 +19,14 @@ package com.mobileer.oboetester;
 import java.util.List;
 
 public class FrequencyBandSpec {
+
     private int[] mFrequencyAnchors;
     private List<BandThreshold> mBands;
     private FrequencyPreset.Band1CheckType mBand1CheckType = FrequencyPreset.Band1CheckType.NONE;
     private float mBand1Threshold = 0.0f;
 
     public static class BandThreshold {
+
         public float startTop;
         public float stopTop;
         public float startBottom;
@@ -38,7 +40,8 @@ public class FrequencyBandSpec {
         }
     }
 
-    public FrequencyBandSpec(int[] frequencyAnchors, List<BandThreshold> bands, FrequencyPreset.Band1CheckType band1CheckType, float band1Threshold) {
+    public FrequencyBandSpec(int[] frequencyAnchors, List<BandThreshold> bands,
+            FrequencyPreset.Band1CheckType band1CheckType, float band1Threshold) {
         this.mFrequencyAnchors = frequencyAnchors;
         this.mBands = bands;
         this.mBand1CheckType = band1CheckType;
@@ -75,7 +78,8 @@ public class FrequencyBandSpec {
     }
 
     private float getThresholdAt(float freq, boolean isTop) {
-        if (mFrequencyAnchors == null || mBands == null || mFrequencyAnchors.length < 2 || mBands.isEmpty()) {
+        if (mFrequencyAnchors == null || mBands == null || mFrequencyAnchors.length < 2
+                || mBands.isEmpty()) {
             return 0.0f;
         }
         // Frequency below first anchor

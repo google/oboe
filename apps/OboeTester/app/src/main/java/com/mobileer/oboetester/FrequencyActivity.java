@@ -28,6 +28,7 @@ import java.io.IOException;
 import android.os.Handler;
 
 public final class FrequencyActivity extends AnalyzerActivity {
+
     private Button mStartButton;
     private Button mStopButton;
     private Button mShareButton;
@@ -69,23 +70,24 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mWaveformViewTopThreshold = findViewById(R.id.waveform_view_top_threshold);
         mWaveformViewTopThreshold.setDbfsRange(MIN_DBFS, MAX_DBFS);
         mWaveformViewTopThreshold.updateTheme(
-                 android.graphics.Color.parseColor("#FFE91E63"),
-                 android.graphics.Color.TRANSPARENT,
-                 android.graphics.Color.RED);
- 
-         mWaveformViewBottomThreshold = findViewById(R.id.waveform_view_bottom_threshold);
-         mWaveformViewBottomThreshold.setDbfsRange(MIN_DBFS, MAX_DBFS);
-         mWaveformViewBottomThreshold.updateTheme(
-                 android.graphics.Color.parseColor("#FF4CAF50"),
-                 android.graphics.Color.TRANSPARENT,
-                 android.graphics.Color.RED);
+                android.graphics.Color.parseColor("#FFE91E63"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
+
+        mWaveformViewBottomThreshold = findViewById(R.id.waveform_view_bottom_threshold);
+        mWaveformViewBottomThreshold.setDbfsRange(MIN_DBFS, MAX_DBFS);
+        mWaveformViewBottomThreshold.updateTheme(
+                android.graphics.Color.parseColor("#FF4CAF50"),
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.RED);
 
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(false);
 
         mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         String[] outputSignals = {"White Noise", "Sine", "Silence"};
-        android.widget.ArrayAdapter<String> outputSignalAdapter = new android.widget.ArrayAdapter<>(this,
+        android.widget.ArrayAdapter<String> outputSignalAdapter = new android.widget.ArrayAdapter<>(
+                this,
                 android.R.layout.simple_spinner_item, outputSignals);
         outputSignalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mOutputSignalSpinner.setAdapter(outputSignalAdapter);
@@ -93,18 +95,26 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
         mBalanceTextView = (TextView) findViewById(R.id.textBalanceSlider);
         mBalanceSeekBar = (android.widget.SeekBar) findViewById(R.id.faderBalanceSlider);
-        mBalanceSeekBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
-                float balance = progress / 100.0f;
-                mAudioOutTester.setBalance(balance);
-                mBalanceTextView.setText(String.format(java.util.Locale.getDefault(), "Balance: %.2f", balance));
-            }
-            @Override
-            public void onStartTrackingTouch(android.widget.SeekBar seekBar) {}
-            @Override
-            public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
-        });
+        mBalanceSeekBar.setOnSeekBarChangeListener(
+                new android.widget.SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(android.widget.SeekBar seekBar, int progress,
+                            boolean fromUser) {
+                        float balance = progress / 100.0f;
+                        mAudioOutTester.setBalance(balance);
+                        mBalanceTextView.setText(
+                                String.format(java.util.Locale.getDefault(), "Balance: %.2f",
+                                        balance));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(android.widget.SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(android.widget.SeekBar seekBar) {
+                    }
+                });
 
         for (TestAudioActivity.StreamContext context : mStreamContexts) {
             if (context.isInput() && context.configurationView != null) {
@@ -129,7 +139,8 @@ public final class FrequencyActivity extends AnalyzerActivity {
                             if (mInputConfigView != null) {
                                 mInputConfigView.setInputPreset(active.inputPreset);
                                 if (active.preferredInput != AudioDeviceInfo.TYPE_UNKNOWN) {
-                                    AudioDeviceInfo device = findInputDeviceByType(active.preferredInput);
+                                    AudioDeviceInfo device = findInputDeviceByType(
+                                            active.preferredInput);
                                     if (device != null) {
                                         mInputConfigView.setDeviceById(device.getId());
                                     } else {
@@ -140,7 +151,8 @@ public final class FrequencyActivity extends AnalyzerActivity {
                                 }
                             }
 
-                            mOutputSignalSpinner.setSelection(FrequencySetting.getSignalIndexForSource(active.sourceResId));
+                            mOutputSignalSpinner.setSelection(
+                                    FrequencySetting.getSignalIndexForSource(active.sourceResId));
                             mBalanceSeekBar.setProgress((int) (active.balance * 100));
                             mThresholdEditText.setText(String.valueOf(active.passThreshold));
                         }
@@ -202,9 +214,15 @@ public final class FrequencyActivity extends AnalyzerActivity {
             mStartButton.setEnabled(false);
             mStopButton.setEnabled(true);
             mShareButton.setEnabled(false);
-            if (mFrequencySetting != null) mFrequencySetting.setEnabled(false);
-            if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(false);
-            if (mThresholdEditText != null) mThresholdEditText.setEnabled(false);
+            if (mFrequencySetting != null) {
+                mFrequencySetting.setEnabled(false);
+            }
+            if (mOutputSignalSpinner != null) {
+                mOutputSignalSpinner.setEnabled(false);
+            }
+            if (mThresholdEditText != null) {
+                mThresholdEditText.setEnabled(false);
+            }
             startWaveformUpdater();
             keepScreenOn(true);
         } catch (IOException e) {
@@ -219,18 +237,28 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mStartButton.setEnabled(true);
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(true);
-        if (mFrequencySetting != null) mFrequencySetting.setEnabled(true);
-        if (mOutputSignalSpinner != null) mOutputSignalSpinner.setEnabled(true);
-        if (mThresholdEditText != null) mThresholdEditText.setEnabled(true);
+        if (mFrequencySetting != null) {
+            mFrequencySetting.setEnabled(true);
+        }
+        if (mOutputSignalSpinner != null) {
+            mOutputSignalSpinner.setEnabled(true);
+        }
+        if (mThresholdEditText != null) {
+            mThresholdEditText.setEnabled(true);
+        }
         keepScreenOn(false);
     }
 
     private native int getWindowSize();
-    private class OutputSignalSpinnerListener implements android.widget.AdapterView.OnItemSelectedListener {
+
+    private class OutputSignalSpinnerListener implements
+            android.widget.AdapterView.OnItemSelectedListener {
+
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             mAudioOutTester.setSignalType(pos);
         }
+
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
             mAudioOutTester.setSignalType(0);
@@ -238,12 +266,15 @@ public final class FrequencyActivity extends AnalyzerActivity {
     }
 
     private native int getFftMagnitude(float[] waveform);
+
     private native int getFftFrequencies(float[] frequencies);
 
     private Runnable mWaveformUpdater = new Runnable() {
         @Override
         public void run() {
-            if (!mIsUpdaterRunning) return;
+            if (!mIsUpdaterRunning) {
+                return;
+            }
             try {
                 int numSamples = getFftMagnitude(mWaveformBuffer);
                 if (numSamples > 0) {
@@ -257,10 +288,12 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         // Use default threshold
                     }
 
-                    FrequencyBandSpec spec = mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
+                    FrequencyBandSpec spec =
+                            mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
                     FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
-                            mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold, true);
-                    
+                            mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold,
+                            true);
+
                     if (numFreqs > 0) {
                         mWaveformViewTopThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
                         mWaveformViewBottomThreshold.setMaxFrequency(frequencies[numFreqs - 1]);
@@ -272,21 +305,27 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
                         mWaveformViewTopThreshold.setSampleData(result.alignedTopThresholdsDbfs);
                         mWaveformViewTopThreshold.postInvalidate();
-                        mWaveformViewBottomThreshold.setSampleData(result.alignedBottomThresholdsDbfs);
+                        mWaveformViewBottomThreshold.setSampleData(
+                                result.alignedBottomThresholdsDbfs);
                         mWaveformViewBottomThreshold.postInvalidate();
 
                         mWaveformViewTopThreshold.setAverageMagnitude(result.averageMagnitudeBand1);
 
                         StringBuilder sb = new StringBuilder();
-                        sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
+                        sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL")
+                                .append("\n");
                         sb.append("Bands: ");
                         for (int b = 0; b < result.bandEnergyPercentages.length; b++) {
-                            sb.append(String.format(java.util.Locale.getDefault(), "[B%d: %.1f%%] ", b, result.bandEnergyPercentages[b]));
+                            sb.append(String.format(java.util.Locale.getDefault(), "[B%d: %.1f%%] ",
+                                    b, result.bandEnergyPercentages[b]));
                         }
                         sb.append("\n");
-                        sb.append(String.format(java.util.Locale.getDefault(), "Avg band 1: %.2f dBFS\n", result.averageMagnitudeBand1));
+                        sb.append(String.format(java.util.Locale.getDefault(),
+                                "Avg band 1: %.2f dBFS\n", result.averageMagnitudeBand1));
                         mTestResultView.setText(sb.toString());
-                        mTestResultView.setTextColor(result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50") : android.graphics.Color.RED);
+                        mTestResultView.setTextColor(
+                                result.testPassed ? android.graphics.Color.parseColor("#FF4CAF50")
+                                        : android.graphics.Color.RED);
                     } else {
                         mWaveformViewTopThreshold.clearAverageMagnitude();
                     }

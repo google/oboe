@@ -25,6 +25,7 @@ import android.view.View;
 import java.util.Locale;
 
 public class FrequencyThresholdView extends View {
+
     private float[] mFrequencies;
     private float[] mData;
     private float mMaxFrequency = 0.0f;
@@ -94,8 +95,12 @@ public class FrequencyThresholdView extends View {
 
     private float mapDbfsToView(float dbfs) {
         float mapped = ((dbfs - mMinDbfs) / (mMaxDbfs - mMinDbfs)) * 2.0f - 1.0f;
-        if (mapped < -1.0f) mapped = -1.0f;
-        if (mapped > 1.0f) mapped = 1.0f;
+        if (mapped < -1.0f) {
+            mapped = -1.0f;
+        }
+        if (mapped > 1.0f) {
+            mapped = 1.0f;
+        }
         return mapped;
     }
 
@@ -107,7 +112,8 @@ public class FrequencyThresholdView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mData == null || mFrequencies == null || mData.length == 0 || mFrequencies.length == 0) {
+        if (mData == null || mFrequencies == null || mData.length == 0
+                || mFrequencies.length == 0) {
             return;
         }
 
@@ -119,7 +125,9 @@ public class FrequencyThresholdView extends View {
         float scaleY = -0.90f * offsetY; // Scale down to match FftWaveformView
 
         float maxFreq = mMaxFrequency > 0 ? mMaxFrequency : mFrequencies[mFrequencies.length - 1];
-        if (maxFreq <= 0) return;
+        if (maxFreq <= 0) {
+            return;
+        }
 
         if (mShowAverageMagnitude) {
             float yAvg = (mAverageMagnitude * scaleY) + offsetY;
@@ -141,7 +149,9 @@ public class FrequencyThresholdView extends View {
         float y0 = (mData[0] * scaleY) + offsetY;
 
         for (int i = 1; i < mData.length; i++) {
-            if (i >= mFrequencies.length) break;
+            if (i >= mFrequencies.length) {
+                break;
+            }
             float x1 = (mFrequencies[i] / maxFreq) * width;
             float y1 = (mData[i] * scaleY) + offsetY;
             canvas.drawLine(x0, y0, x1, y1, mPaint);

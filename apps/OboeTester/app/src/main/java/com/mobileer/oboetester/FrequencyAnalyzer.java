@@ -21,6 +21,7 @@ import java.util.List;
 public class FrequencyAnalyzer {
 
     public static class AnalysisResult {
+
         public float[] thresholdFrequencies;
         public float[] alignedTopThresholdsDbfs;
         public float[] alignedBottomThresholdsDbfs;
@@ -29,7 +30,8 @@ public class FrequencyAnalyzer {
         public float averageMagnitudeBand1;
     }
 
-    public AnalysisResult analyze(float[] waveformBuffer, int numSamples, float[] frequencies, int numFreqs, FrequencyBandSpec spec, float passThreshold, boolean alignToBand1) {
+    public AnalysisResult analyze(float[] waveformBuffer, int numSamples, float[] frequencies,
+            int numFreqs, FrequencyBandSpec spec, float passThreshold, boolean alignToBand1) {
         if (spec == null || spec.getFrequencyAnchors() == null || spec.getBands() == null) {
             return null;
         }
@@ -87,7 +89,8 @@ public class FrequencyAnalyzer {
         boolean allPass = true;
         for (int b = 0; b < numBands; b++) {
             if (totalPoints[b] > 0) {
-                result.bandEnergyPercentages[b] = (pointsInBounds[b] / (float) totalPoints[b]) * 100.0f;
+                result.bandEnergyPercentages[b] =
+                        (pointsInBounds[b] / (float) totalPoints[b]) * 100.0f;
                 if (result.bandEnergyPercentages[b] < passThreshold) {
                     allPass = false;
                 }
@@ -108,8 +111,6 @@ public class FrequencyAnalyzer {
 
         result.testPassed = allPass && band1CheckPassed;
 
-
-
         result.thresholdFrequencies = new float[numBands * 2];
         result.alignedTopThresholdsDbfs = new float[numBands * 2];
         result.alignedBottomThresholdsDbfs = new float[numBands * 2];
@@ -119,9 +120,12 @@ public class FrequencyAnalyzer {
             result.thresholdFrequencies[b * 2] = anchors[b];
             result.thresholdFrequencies[b * 2 + 1] = anchors[b + 1];
             result.alignedTopThresholdsDbfs[b * 2] = bands.get(b).startTop + averageMagnitudeBand1;
-            result.alignedTopThresholdsDbfs[b * 2 + 1] = bands.get(b).stopTop + averageMagnitudeBand1;
-            result.alignedBottomThresholdsDbfs[b * 2] = bands.get(b).startBottom + averageMagnitudeBand1;
-            result.alignedBottomThresholdsDbfs[b * 2 + 1] = bands.get(b).stopBottom + averageMagnitudeBand1;
+            result.alignedTopThresholdsDbfs[b * 2 + 1] =
+                    bands.get(b).stopTop + averageMagnitudeBand1;
+            result.alignedBottomThresholdsDbfs[b * 2] =
+                    bands.get(b).startBottom + averageMagnitudeBand1;
+            result.alignedBottomThresholdsDbfs[b * 2 + 1] =
+                    bands.get(b).stopBottom + averageMagnitudeBand1;
         }
         result.averageMagnitudeBand1 = averageMagnitudeBand1;
 

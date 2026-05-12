@@ -20,6 +20,7 @@ import android.media.AudioDeviceInfo;
 import java.util.List;
 
 public class FrequencyPreset {
+
     public enum Band1CheckType {
         NONE,
         GREATER_THAN,
@@ -38,7 +39,10 @@ public class FrequencyPreset {
     public Band1CheckType band1CheckType = Band1CheckType.NONE;
     public float band1Threshold = 0.0f;
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput, int preferredOutput, Band1CheckType band1CheckType, float band1Threshold, float balance) {
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+            List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
+            int preferredOutput, Band1CheckType band1CheckType, float band1Threshold,
+            float balance) {
         this.name = name;
         this.sourceResId = sourceResId;
         this.inputPreset = inputPreset;
@@ -52,12 +56,18 @@ public class FrequencyPreset {
         this.band1Threshold = band1Threshold;
     }
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput, int preferredOutput, Band1CheckType band1CheckType, float band1Threshold) {
-        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput, preferredOutput, band1CheckType, band1Threshold, 0.5f);
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+            List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
+            int preferredOutput, Band1CheckType band1CheckType, float band1Threshold) {
+        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
+                preferredOutput, band1CheckType, band1Threshold, 0.5f);
     }
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors, List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput, int preferredOutput) {
-        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput, preferredOutput, Band1CheckType.NONE, 0.0f, 0.5f);
+    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+            List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
+            int preferredOutput) {
+        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
+                preferredOutput, Band1CheckType.NONE, 0.0f, 0.5f);
     }
 
 }
