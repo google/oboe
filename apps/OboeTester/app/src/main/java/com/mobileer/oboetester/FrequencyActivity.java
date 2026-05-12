@@ -64,16 +64,18 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mWaveformView.setDbfsRange(MIN_DBFS, MAX_DBFS);
 
         mWaveformViewTopThreshold = findViewById(R.id.waveform_view_top_threshold);
+        mWaveformViewTopThreshold.setDbfsRange(MIN_DBFS, MAX_DBFS);
         mWaveformViewTopThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FFE91E63"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
-
-        mWaveformViewBottomThreshold = findViewById(R.id.waveform_view_bottom_threshold);
-        mWaveformViewBottomThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FF4CAF50"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
+                 android.graphics.Color.parseColor("#FFE91E63"),
+                 android.graphics.Color.TRANSPARENT,
+                 android.graphics.Color.RED);
+ 
+         mWaveformViewBottomThreshold = findViewById(R.id.waveform_view_bottom_threshold);
+         mWaveformViewBottomThreshold.setDbfsRange(MIN_DBFS, MAX_DBFS);
+         mWaveformViewBottomThreshold.updateTheme(
+                 android.graphics.Color.parseColor("#FF4CAF50"),
+                 android.graphics.Color.TRANSPARENT,
+                 android.graphics.Color.RED);
 
         mStopButton.setEnabled(false);
         mShareButton.setEnabled(false);
@@ -232,21 +234,12 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         mWaveformViewTopThreshold.setFrequencies(result.thresholdFrequencies);
                         mWaveformViewBottomThreshold.setFrequencies(result.thresholdFrequencies);
 
-                        int numPoints = result.thresholdFrequencies.length;
-                        float[] topThresholdSamples = new float[numPoints];
-                        float[] bottomThresholdSamples = new float[numPoints];
-
-                        for (int i = 0; i < numPoints; i++) {
-                            topThresholdSamples[i] = mapDbfsToView(result.alignedTopThresholdsDbfs[i]);
-                            bottomThresholdSamples[i] = mapDbfsToView(result.alignedBottomThresholdsDbfs[i]);
-                        }
-
-                        mWaveformViewTopThreshold.setSampleData(topThresholdSamples);
+                        mWaveformViewTopThreshold.setSampleData(result.alignedTopThresholdsDbfs);
                         mWaveformViewTopThreshold.postInvalidate();
-                        mWaveformViewBottomThreshold.setSampleData(bottomThresholdSamples);
+                        mWaveformViewBottomThreshold.setSampleData(result.alignedBottomThresholdsDbfs);
                         mWaveformViewBottomThreshold.postInvalidate();
 
-                        mWaveformViewTopThreshold.setAverageMagnitude(mapDbfsToView(result.averageMagnitudeBand1));
+                        mWaveformViewTopThreshold.setAverageMagnitude(result.averageMagnitudeBand1);
 
                         StringBuilder sb = new StringBuilder();
                         sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL").append("\n");
@@ -262,11 +255,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         mWaveformViewTopThreshold.clearAverageMagnitude();
                     }
 
-                    float[] samplesToDraw = new float[numSamples];
-                    for (int i = 0; i < numSamples; i++) {
-                        samplesToDraw[i] = mapDbfsToView(mWaveformBuffer[i]);
-                    }
-                    mWaveformView.setSampleData(samplesToDraw);
+                    mWaveformView.setSampleData(mWaveformBuffer, 0, numSamples);
                     mWaveformView.postInvalidate();
                 }
             } finally {
@@ -277,12 +266,6 @@ public final class FrequencyActivity extends AnalyzerActivity {
         }
     };
 
-    private float mapDbfsToView(float dbfs) {
-        float mapped = ((dbfs - MIN_DBFS) / (MAX_DBFS - MIN_DBFS)) * 2.0f - 1.0f;
-        if (mapped < -1.0f) mapped = -1.0f;
-        if (mapped > 1.0f) mapped = 1.0f;
-        return mapped;
-    }
 
     private void startWaveformUpdater() {
         if (!mIsUpdaterRunning) {

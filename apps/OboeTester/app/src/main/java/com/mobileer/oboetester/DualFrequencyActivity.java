@@ -65,16 +65,18 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mTestResultView = findViewById(R.id.testResultView);
 
         mSubtractedTopThreshold = findViewById(R.id.waveform_subtraction_top_threshold);
+        mSubtractedTopThreshold.setDbfsRange(-50.0f, 50.0f);
         mSubtractedTopThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FFE91E63"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
-
-        mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
-        mSubtractedBottomThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FF4CAF50"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
+                 android.graphics.Color.parseColor("#FFE91E63"),
+                 android.graphics.Color.TRANSPARENT,
+                 android.graphics.Color.RED);
+ 
+         mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
+         mSubtractedBottomThreshold.setDbfsRange(-50.0f, 50.0f);
+         mSubtractedBottomThreshold.updateTheme(
+                 android.graphics.Color.parseColor("#FF4CAF50"),
+                 android.graphics.Color.TRANSPARENT,
+                 android.graphics.Color.RED);
 
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
@@ -232,31 +234,20 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 int numSamples = getFftMagnitude(mWaveformBuffer);
                 if (numSamples > 0) {
                     if (mCurrentTest == 1) {
-                        float[] samplesToDraw = new float[numSamples];
-                        for (int i = 0; i < numSamples; i++) {
-                            samplesToDraw[i] = mapDbfsToView(mWaveformBuffer[i]);
-                        }
-                        mWaveformViewTest1.setSampleData(samplesToDraw);
+                        mWaveformViewTest1.setSampleData(mWaveformBuffer, 0, numSamples);
                         mWaveformViewTest1.postInvalidate();
                     } else if (mCurrentTest == 2) {
                         // 1. Draw live Test 2 FFT overlapped on the top graph
-                        float[] samplesToDraw = new float[numSamples];
-                        for (int i = 0; i < numSamples; i++) {
-                            samplesToDraw[i] = mapDbfsToView(mWaveformBuffer[i]);
-                        }
-                        mWaveformViewTest2.setSampleData(samplesToDraw);
+                        mWaveformViewTest2.setSampleData(mWaveformBuffer, 0, numSamples);
                         mWaveformViewTest2.postInvalidate();
-
+ 
                         // 2. Draw the subtracted FFT on the bottom graph
                         if (mTest1WaveformBuffer != null) {
-                            float[] subtractedSamples = new float[numSamples];
                             float[] rawDiffBuffer = new float[numSamples];
                             for (int i = 0; i < numSamples; i++) {
-                                float diff = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
-                                rawDiffBuffer[i] = diff;
-                                subtractedSamples[i] = mapSubtractedDbfsToView(diff);
+                             rawDiffBuffer[i] = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
                             }
-                            mWaveformViewSubtraction.setSampleData(subtractedSamples);
+                            mWaveformViewSubtraction.setSampleData(rawDiffBuffer, 0, numSamples);
                             mWaveformViewSubtraction.postInvalidate();
 
                             // Run Java Analyzer on subtracted FFT
@@ -278,18 +269,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                                 mSubtractedTopThreshold.setFrequencies(result.thresholdFrequencies);
                                 mSubtractedBottomThreshold.setFrequencies(result.thresholdFrequencies);
 
-                                int numPoints = result.thresholdFrequencies.length;
-                                float[] topThresholdSamples = new float[numPoints];
-                                float[] bottomThresholdSamples = new float[numPoints];
-
-                                for (int i = 0; i < numPoints; i++) {
-                                    topThresholdSamples[i] = mapSubtractedDbfsToView(result.alignedTopThresholdsDbfs[i]);
-                                    bottomThresholdSamples[i] = mapSubtractedDbfsToView(result.alignedBottomThresholdsDbfs[i]);
-                                }
-
-                                mSubtractedTopThreshold.setSampleData(topThresholdSamples);
+                                mSubtractedTopThreshold.setSampleData(result.alignedTopThresholdsDbfs);
                                 mSubtractedTopThreshold.postInvalidate();
-                                mSubtractedBottomThreshold.setSampleData(bottomThresholdSamples);
+                                mSubtractedBottomThreshold.setSampleData(result.alignedBottomThresholdsDbfs);
                                 mSubtractedBottomThreshold.postInvalidate();
 
                                 StringBuilder sb = new StringBuilder();
@@ -312,20 +294,4 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         }
     };
 
-    private float mapSubtractedDbfsToView(float diff) {
-        // Map difference in range -50 to 50 dB
-        float min = -50.0f;
-        float max = 50.0f;
-        float mapped = ((diff - min) / (max - min)) * 2.0f - 1.0f;
-        if (mapped < -1.0f) mapped = -1.0f;
-        if (mapped > 1.0f) mapped = 1.0f;
-        return mapped;
-    }
-
-    private float mapDbfsToView(float dbfs) {
-        float mapped = ((dbfs - MIN_DBFS) / (MAX_DBFS - MIN_DBFS)) * 2.0f - 1.0f;
-        if (mapped < -1.0f) mapped = -1.0f;
-        if (mapped > 1.0f) mapped = 1.0f;
-        return mapped;
-    }
 }

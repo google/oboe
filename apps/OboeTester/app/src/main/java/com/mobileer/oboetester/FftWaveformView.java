@@ -74,4 +74,21 @@ public class FftWaveformView extends WaveformView {
         canvas.drawLine(0, mOffsetY, mCurrentWidth, mOffsetY, mAxisPaint);
         canvas.drawLine(0, mOffsetY - mScaleY, mCurrentWidth, mOffsetY - mScaleY, mAxisPaint);
     }
+
+    @Override
+    public void setSampleData(float[] samples, int offset, int count) {
+        float[] mappedSamples = new float[count];
+        for (int i = 0; i < count; i++) {
+            mappedSamples[i] = mapDbfsToView(samples[offset + i]);
+        }
+        super.setSampleData(mappedSamples, 0, count);
+    }
+
+    private float mapDbfsToView(float dbfs) {
+        float mapped = ((dbfs - mMinDbfs) / (mMaxDbfs - mMinDbfs)) * 2.0f - 1.0f;
+        if (mapped < -1.0f) mapped = -1.0f;
+        if (mapped > 1.0f) mapped = 1.0f;
+        return mapped;
+    }
 }
+

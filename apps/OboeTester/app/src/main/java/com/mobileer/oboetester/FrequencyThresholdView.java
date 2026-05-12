@@ -30,6 +30,8 @@ public class FrequencyThresholdView extends View {
     private float mMaxFrequency = 0.0f;
     private float mAverageMagnitude = 0.0f;
     private boolean mShowAverageMagnitude = false;
+    private float mMinDbfs = -100.0f;
+    private float mMaxDbfs = 0.0f;
 
     private Paint mPaint;
     private Paint mAxisPaint;
@@ -66,15 +68,35 @@ public class FrequencyThresholdView extends View {
         invalidate();
     }
 
-    public void setSampleData(float[] data) {
-        mData = data;
+    public void setDbfsRange(float minDbfs, float maxDbfs) {
+        mMinDbfs = minDbfs;
+        mMaxDbfs = maxDbfs;
         invalidate();
     }
 
-    public void setAverageMagnitude(float mappedValue) {
-        mAverageMagnitude = mappedValue;
+    public void setSampleData(float[] data) {
+        if (data == null) {
+            mData = null;
+        } else {
+            mData = new float[data.length];
+            for (int i = 0; i < data.length; i++) {
+                mData[i] = mapDbfsToView(data[i]);
+            }
+        }
+        invalidate();
+    }
+
+    public void setAverageMagnitude(float dbfs) {
+        mAverageMagnitude = mapDbfsToView(dbfs);
         mShowAverageMagnitude = true;
         invalidate();
+    }
+
+    private float mapDbfsToView(float dbfs) {
+        float mapped = ((dbfs - mMinDbfs) / (mMaxDbfs - mMinDbfs)) * 2.0f - 1.0f;
+        if (mapped < -1.0f) mapped = -1.0f;
+        if (mapped > 1.0f) mapped = 1.0f;
+        return mapped;
     }
 
     public void clearAverageMagnitude() {
