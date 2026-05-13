@@ -16,7 +16,6 @@
 
 package com.mobileer.oboetester;
 
-import android.media.AudioDeviceInfo;
 import java.util.List;
 
 public class FrequencyPreset {
@@ -27,17 +26,17 @@ public class FrequencyPreset {
         LESS_THAN
     }
 
-    public String name;
-    public int sourceResId;
-    public int inputPreset;
-    public int[] anchors;
-    public List<FrequencyBandSpec.BandThreshold> bands;
-    public float balance = 0.5f;
-    public float passThreshold = 30.0f;
-    public int preferredInput = AudioDeviceInfo.TYPE_UNKNOWN;
-    public int preferredOutput = AudioDeviceInfo.TYPE_UNKNOWN;
-    public Band1CheckType band1CheckType = Band1CheckType.NONE;
-    public float band1Threshold = 0.0f;
+    final public String name;
+    final public int sourceResId;
+    final public int inputPreset;
+    final public int[] anchors;
+    final public List<FrequencyBandSpec.BandThreshold> bands;
+    final public float balance;
+    final public float passThreshold;
+    final public int preferredInput;
+    final public int preferredOutput;
+    final public Band1CheckType band1CheckType;
+    final public float band1Threshold;
 
     public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
             List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
