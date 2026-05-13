@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">PowerPlay</string>
+    <string name="desc_equalizer">Adjust frequency bands to shape the sound.</string>
+    <string name="desc_bass_boost">Boost low frequencies for a richer bass response.</string>
+    <string name="desc_virtualizer">Create a spatialized surround sound experience.</string>
+    <string name="desc_reverb">Add environmental reverberation effects.</string>
+    <string name="desc_loudness">Enhance the overall volume safely without distortion.</string>
 </resources>

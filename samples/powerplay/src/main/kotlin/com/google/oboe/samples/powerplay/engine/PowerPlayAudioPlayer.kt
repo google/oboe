@@ -18,11 +18,12 @@ package com.google.oboe.samples.powerplay.engine
 
 import android.content.ContentResolver
 import android.content.res.AssetManager
-import android.media.audiofx.Equalizer
+
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.asLiveData
+import com.google.oboe.samples.powerplay.effects.EffectsController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -48,9 +49,15 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     /**
      * Native passthrough functions
      */
+    val effectsController = EffectsController()
+
     fun setupAudioStream(channelCount: Int = NUM_PLAY_CHANNELS) {
         setupAudioStreamNative(channelCount)
         _playerState.update { PlayerState.Initialized }
+        val sessionId = getSessionId()
+        if (sessionId > 0) {
+            effectsController.initialize(sessionId)
+        }
     }
 
     fun startPlaying(index: Int, mode: OboePerformanceMode?) {
@@ -70,90 +77,20 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun updatePerformanceMode(mode: OboePerformanceMode) {
         _currentPerformanceMode = mode
         updatePerformanceModeNative(mode)
+        effectsController.release()
+        val sessionId = getSessionId()
+        if (sessionId > 0) {
+            effectsController.initialize(sessionId)
+        }
     }
 
     fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
     fun teardownAudioStream() {
-        enableEqualizer(false)
+        effectsController.release()
         teardownAudioStreamNative()
     }
     fun unloadAssets() = unloadAssetsNative()
     fun setPlaybackParameters(speed: Float, pitch: Float): Boolean = setPlaybackParametersNative(speed, pitch)
-
-    private var equalizer: Equalizer? = null
-    private var _equalizerBands = mutableListOf<EqualizerBand>()
-
-    fun getEqualizerBands(): List<EqualizerBand> {
-        if (_equalizerBands.isEmpty()) {
-            val sessionId = getSessionId()
-            if (sessionId > 0) {
-                try {
-                    val eq = Equalizer(0, sessionId)
-                    val numBands = eq.numberOfBands
-                    val range = eq.bandLevelRange
-                    for (i in 0 until numBands) {
-                        val bandId = i.toShort()
-                        _equalizerBands.add(
-                            EqualizerBand(
-                                id = bandId,
-                                centerFreqHz = eq.getCenterFreq(bandId) / 1000, // Convert to Hz
-                                minLevelmB = range[0],
-                                maxLevelmB = range[1],
-                                currentLevelmB = 0 // Force start at 0
-                            )
-                        )
-                    }
-                    eq.release()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to query Equalizer bands", e)
-                }
-            }
-        }
-        return _equalizerBands
-    }
-
-    fun setEqualizerBandLevel(band: Short, level: Short) {
-        equalizer?.setBandLevel(band, level)
-        _equalizerBands.find { it.id == band }?.currentLevelmB = level
-    }
-
-    fun resetEqualizer() {
-        _equalizerBands.forEach { band ->
-            band.currentLevelmB = 0
-            equalizer?.setBandLevel(band.id, 0)
-        }
-    }
-
-    fun isEqualizerEnabled(): Boolean = equalizer != null
-
-    fun enableEqualizer(enable: Boolean) {
-        if (enable) {
-            val sessionId = getSessionId()
-            if (sessionId > 0) {
-                try {
-                    equalizer = Equalizer(0, sessionId).apply {
-                        enabled = true
-                        // Force all bands to 0
-                        val numBands = numberOfBands
-                        for (i in 0 until numBands) {
-                            setBandLevel(i.toShort(), 0)
-                        }
-                    }
-                    // Also update cache to 0
-                    _equalizerBands.forEach { it.currentLevelmB = 0 }
-                    Log.i(TAG, "Equalizer enabled and reset to defaults for session $sessionId")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to enable Equalizer", e)
-                }
-            } else {
-                Log.w(TAG, "Invalid session ID for Equalizer")
-            }
-        } else {
-            equalizer?.release()
-            equalizer = null
-            Log.i(TAG, "Equalizer disabled")
-        }
-    }
 
     /**
      * Loads a file from assets into memory and returns its WAV properties.

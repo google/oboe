@@ -139,6 +139,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
+import com.google.oboe.samples.powerplay.ui.effects.EffectsBottomSheet
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -789,7 +790,7 @@ class MainActivity : ComponentActivity() {
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
             ) {
-                EqualizerBottomSheetContent(onDismiss = { showEqualizerBottomSheet = false })
+                EffectsBottomSheet(effectsController = player.effectsController, onDismiss = { showEqualizerBottomSheet = false })
             }
         }
 
@@ -1173,108 +1174,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    fun EqualizerBottomSheetContent(onDismiss: () -> Unit) {
-        val equalizerBands = remember { player.getEqualizerBands() }
-        var isEqualizerEnabled by remember { mutableStateOf(player.isEqualizerEnabled()) }
-        var resetTrigger by remember { mutableStateOf(0) }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Equalizer",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Checkbox(
-                    checked = isEqualizerEnabled,
-                    onCheckedChange = {
-                        isEqualizerEnabled = it
-                        player.enableEqualizer(it)
-                    }
-                )
-                Text(
-                    text = "Enable Equalizer",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AnimatedVisibility(
-                visible = isEqualizerEnabled,
-                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    equalizerBands.forEach { band ->
-                        var level by remember(band.id, resetTrigger) { mutableFloatStateOf(band.currentLevelmB.toFloat()) }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "${band.centerFreqHz} Hz: ${"%.1f".format(level / 100f)} dB",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Slider(
-                            value = level,
-                            onValueChange = {
-                                level = it
-                                player.setEqualizerBandLevel(band.id, it.toInt().toShort())
-                            },
-                            valueRange = band.minLevelmB.toFloat()..band.maxLevelmB.toFloat(),
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TextButton(
-                        onClick = {
-                            player.resetEqualizer()
-                            resetTrigger++
-                        }
-                    ) {
-                        Text("Reset to Defaults")
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF0F0F0))
-                    .clickable { onDismiss() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = Color.DarkGray,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
 
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
