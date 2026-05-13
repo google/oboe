@@ -293,15 +293,13 @@ public final class FrequencyActivity extends AnalyzerActivity {
                             mWaveformBuffer, numSamples, frequencies, numFreqs, spec, passThreshold,
                             true);
 
-                    if (numFreqs > 0) {
-                        float maxFreq = frequencies[numFreqs - 1];
-                        float minFreq = frequencies[0];
-                        if (spec != null && spec.getFrequencyAnchors() != null
-                                && spec.getFrequencyAnchors().length > 0) {
-                            minFreq = spec.getFrequencyAnchors()[0];
-                        }
-                        mLineView.setXRange(minFreq, maxFreq);
+                    float maxFreq = frequencies[numFreqs - 1];
+                    float minFreq = frequencies[0];
+                    if (spec != null && spec.getFrequencyAnchors() != null
+                            && spec.getFrequencyAnchors().length > 0) {
+                        minFreq = spec.getFrequencyAnchors()[0];
                     }
+                    mLineView.setXRange(minFreq, maxFreq);
 
                     float[] yValues = java.util.Arrays.copyOf(mWaveformBuffer, numSamples);
                     if (mWaveformLineId == -1) {
@@ -342,7 +340,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                                     result.alignedBottomThresholdsDbfs);
                         }
 
-                        float[] avgMagX = new float[]{frequencies[0], frequencies[numFreqs - 1]};
+                        float[] avgMagX = new float[]{minFreq, maxFreq};
                         float[] avgMagY = new float[]{result.averageMagnitudeBand1,
                                 result.averageMagnitudeBand1};
                         if (mAvgMagLineId == -1) {
