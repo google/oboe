@@ -19,6 +19,8 @@ package com.mobileer.oboetester;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -30,7 +32,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FrequencySetting {
+public class FrequencySettingView extends LinearLayout {
 
     public static int getSignalIndexForSource(int sourceResId) {
         if (sourceResId == R.string.source_white_noise) {
@@ -54,12 +56,10 @@ public class FrequencySetting {
     private OnSettingChangedListener mListener;
 
     public interface OnSettingChangedListener {
-
         void onSettingChanged();
     }
 
     private static class BandInputs {
-
         EditText startTop;
         EditText stopTop;
         EditText startBottom;
@@ -68,12 +68,34 @@ public class FrequencySetting {
 
     private List<FrequencyPreset> mPresets = new ArrayList<>();
 
-    public FrequencySetting(Context context, int group, RadioGroup radioGroup,
-            LinearLayout container, Spinner presetSpinner, OnSettingChangedListener listener) {
+    public FrequencySettingView(Context context) {
+        super(context);
+        initializeViews(context, null);
+    }
+
+    public FrequencySettingView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        initializeViews(context, attrs);
+    }
+
+    public FrequencySettingView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        initializeViews(context, attrs);
+    }
+
+    private void initializeViews(Context context, AttributeSet attrs) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater.inflate(R.layout.frequency_setting, this);
+        setOrientation(LinearLayout.VERTICAL);
+
         mContext = context;
-        mRadioGroupBands = radioGroup;
-        mBandSpecContainer = container;
-        mPresetSpinner = presetSpinner;
+        mRadioGroupBands = findViewById(R.id.radioGroupBands);
+        mBandSpecContainer = findViewById(R.id.bandSpecContainer);
+        mPresetSpinner = findViewById(R.id.spinnerPresets);
+    }
+
+    public void initialize(int group, OnSettingChangedListener listener) {
         mListener = listener;
 
         FrequencyPresetRepository repo = new FrequencyPresetRepository(group);
@@ -272,6 +294,7 @@ public class FrequencySetting {
     }
 
     public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
         mRadioGroupBands.setEnabled(enabled);
         for (int i = 0; i < mRadioGroupBands.getChildCount(); i++) {
             mRadioGroupBands.getChildAt(i).setEnabled(enabled);
@@ -341,5 +364,4 @@ public class FrequencySetting {
         }
         return new FrequencyBandSpec(anchors, bands, checkType, threshold);
     }
-
 }

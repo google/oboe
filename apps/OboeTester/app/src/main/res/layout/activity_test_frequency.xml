@@ -119,21 +119,11 @@
                 android:textStyle="bold"
                 android:textColor="#000000"
                 android:padding="4dp"/>
-            <LinearLayout
+            <com.mobileer.oboetester.FrequencySettingView
+                android:id="@+id/frequency_setting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Preset: "
-                    android:textStyle="bold" />
-                <Spinner
-                    android:id="@+id/spinnerPresets"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                android:layout_marginTop="8dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -197,40 +187,7 @@
                 </LinearLayout>
 
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bands: "
-                        android:textStyle="bold" />
-                    <RadioGroup
-                        android:id="@+id/radioGroupBands"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <RadioButton
-                            android:id="@+id/radio3Bands"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="3"
-                            android:checked="true"/>
-                        <RadioButton
-                            android:id="@+id/radio4Bands"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="4"/>
-                    </RadioGroup>
-                </LinearLayout>
-                
-                <LinearLayout
-                    android:id="@+id/bandSpecContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+
             </LinearLayout>
 
             <com.mobileer.oboetester.StreamConfigurationView

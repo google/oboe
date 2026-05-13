@@ -39,7 +39,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private EditText mThresholdEditText;
 
     private Spinner mOutputSignalSpinner;
-    private FrequencySetting mFrequencySetting;
+    private FrequencySettingView mFrequencySetting;
     private TextView mBalanceTextView;
     private android.widget.SeekBar mBalanceSeekBar;
     private StreamConfigurationView mInputConfigView;
@@ -126,12 +126,9 @@ public final class FrequencyActivity extends AnalyzerActivity {
             }
         }
 
-        mFrequencySetting = new FrequencySetting(this,
-                FrequencyPresetRepository.GROUP_FREQUENCY,
-                findViewById(R.id.radioGroupBands),
-                findViewById(R.id.bandSpecContainer),
-                findViewById(R.id.spinnerPresets),
-                new FrequencySetting.OnSettingChangedListener() {
+        mFrequencySetting = findViewById(R.id.frequency_setting);
+        mFrequencySetting.initialize(FrequencyPresetRepository.GROUP_FREQUENCY,
+                new FrequencySettingView.OnSettingChangedListener() {
                     @Override
                     public void onSettingChanged() {
                         FrequencyPreset active = mFrequencySetting.getActivePreset();
@@ -152,7 +149,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                             }
 
                             mOutputSignalSpinner.setSelection(
-                                    FrequencySetting.getSignalIndexForSource(active.sourceResId));
+                                    FrequencySettingView.getSignalIndexForSource(active.sourceResId));
                             mBalanceSeekBar.setProgress((int) (active.balance * 100));
                             mThresholdEditText.setText(String.valueOf(active.passThreshold));
                         }

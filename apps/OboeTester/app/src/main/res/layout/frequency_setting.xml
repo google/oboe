@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Preset Selection -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Preset: "
+                android:textStyle="bold" />
+            <Spinner
+                android:id="@+id/spinnerPresets"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Bands and Thresholds Box -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="#F0F0F0"
+            android:layout_marginTop="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bands: "
+                    android:textStyle="bold" />
+                <RadioGroup
+                    android:id="@+id/radioGroupBands"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/radio3Bands"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3"
+                        android:checked="true"/>
+                    <RadioButton
+                        android:id="@+id/radio4Bands"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4"/>
+                </RadioGroup>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/bandSpecContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </LinearLayout>
+    </LinearLayout>
+</merge>

@@ -34,7 +34,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private TextView mTestResultView;
     private FrequencyThresholdView mSubtractedTopThreshold;
     private FrequencyThresholdView mSubtractedBottomThreshold;
-    private FrequencySetting mFrequencySetting;
+    private FrequencySettingView mFrequencySetting;
     private StreamConfigurationView mInputConfigView;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
@@ -93,12 +93,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         if (mInputConfigView != null) {
             mInputConfigView.hideSettingsView();
         }
-        mFrequencySetting = new FrequencySetting(this,
-                FrequencyPresetRepository.GROUP_DUAL,
-                findViewById(R.id.radioGroupBands),
-                findViewById(R.id.bandSpecContainer),
-                findViewById(R.id.preset_spinner),
-                new FrequencySetting.OnSettingChangedListener() {
+        mFrequencySetting = findViewById(R.id.frequency_setting);
+        mFrequencySetting.initialize(FrequencyPresetRepository.GROUP_DUAL,
+                new FrequencySettingView.OnSettingChangedListener() {
                     @Override
                     public void onSettingChanged() {
                         FrequencyPreset active = mFrequencySetting.getActivePreset();
@@ -107,7 +104,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                                 mInputConfigView.setInputPreset(active.inputPreset);
                             }
                             mAudioOutTester.setSignalType(
-                                    FrequencySetting.getSignalIndexForSource(active.sourceResId));
+                                    FrequencySettingView.getSignalIndexForSource(active.sourceResId));
                         }
                     }
                 });
