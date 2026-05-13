@@ -23,17 +23,17 @@
 class AverageBuffer {
 public:
     AverageBuffer() = default;
-    
+
     void resize(size_t size) {
         mAccumulator.resize(size);
         clear();
     }
-    
+
     void clear() {
         std::fill(mAccumulator.begin(), mAccumulator.end(), 0.0);
         mCount = 0;
     }
-    
+
     void accumulate(const double* data, size_t size) {
         if (size > mAccumulator.size()) {
             mAccumulator.resize(size, 0.0);
@@ -61,7 +61,7 @@ public:
 
 private:
     std::vector<double> mAccumulator;
-    int                 mCount = 0;
+    int mCount = 0;
 };
 
 #endif //OBOETESTER_AVERAGEBUFFER_H

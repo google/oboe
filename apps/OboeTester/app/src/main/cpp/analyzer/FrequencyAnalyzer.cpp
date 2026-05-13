@@ -56,7 +56,8 @@ void FrequencyAnalyzer::prepareToTest() {
     mMeasurementWindowFrames = MEASUREMENT_TIME_SEC * getSampleRate();
 }
 
-LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float *frameData, int channelCount) {
+LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float* frameData,
+                                                                    int channelCount) {
     float sample = frameData[getInputChannel()];
     mInputBuffer[mInputBufferIndex++] = sample;
     if (mInputBufferIndex >= WINDOW_SIZE) {
@@ -81,7 +82,8 @@ LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float 
             if (mag < 1e-9) mag = 1e-9; // to prevent log(0)
             currentMagnitudes[i] = mag;
         }
-        mAverageBuffer.accumulate(currentMagnitudes.data(), currentMagnitudes.size());
+        mAverageBuffer.accumulate(currentMagnitudes.data(),
+                                  currentMagnitudes.size());
         mInputBufferIndex = 0;
     }
 
@@ -113,7 +115,8 @@ int FrequencyAnalyzer::getWindowSize() {
     return WINDOW_SIZE;
 }
 
-LoopbackProcessor::result_code FrequencyAnalyzer::processOutputFrame(float *frameData, int channelCount) {
+LoopbackProcessor::result_code FrequencyAnalyzer::processOutputFrame(float* frameData,
+                                                                     int channelCount) {
     float output = 0.0f;
     if (mSignalType == 0) { // White noise
         output = mWhiteNoise.nextRandomDouble() * mAmplitude;
@@ -145,23 +148,23 @@ bool FrequencyAnalyzer::isDone() {
     return false;
 }
 
-int FrequencyAnalyzer::getFftMagnitude(float *buffer, int length) {
+int FrequencyAnalyzer::getFftMagnitude(float* buffer, int length) {
     std::lock_guard<std::mutex> lock(mFftBufferLock);
     if (mFftMagnitudeBuffer.empty()) {
         return 0;
     }
-    int numToCopy = std::min(length, (int)(WINDOW_SIZE / 2));
+    int numToCopy = std::min(length, (int) (WINDOW_SIZE / 2));
     for (int i = 0; i < numToCopy; i++) {
         buffer[i] = mFftMagnitudeBuffer[i];
     }
     return numToCopy;
 }
 
-int FrequencyAnalyzer::getFftFrequencies(float *buffer, int length) {
-    int numToCopy = std::min(length, (int)(WINDOW_SIZE / 2));
+int FrequencyAnalyzer::getFftFrequencies(float* buffer, int length) {
+    int numToCopy = std::min(length, (int) (WINDOW_SIZE / 2));
     double sampleRate = getSampleRate();
     for (int i = 0; i < numToCopy; i++) {
-        buffer[i] = (float)(i * sampleRate / WINDOW_SIZE);
+        buffer[i] = (float) (i * sampleRate / WINDOW_SIZE);
     }
     return numToCopy;
 }
