@@ -91,24 +91,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <FrameLayout
+            <com.mobileer.oboetester.LineView
+                android:id="@+id/line_view"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_marginTop="16dp">
-                <com.mobileer.oboetester.FftWaveformView
-                    android:id="@+id/waveform_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#E0E0E0" />
-                <com.mobileer.oboetester.FrequencyThresholdView
-                    android:id="@+id/waveform_view_bottom_threshold"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-                <com.mobileer.oboetester.FrequencyThresholdView
-                    android:id="@+id/waveform_view_top_threshold"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </FrameLayout>
+                android:layout_marginTop="16dp"
+                android:background="@color/waveform_background" />
+            <CheckBox
+                android:id="@+id/checkboxLogScale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="LogX" />
 
             <TextView
                 android:id="@+id/testResultView"

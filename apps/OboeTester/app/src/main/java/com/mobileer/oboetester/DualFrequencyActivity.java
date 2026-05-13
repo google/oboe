@@ -29,11 +29,16 @@ public class DualFrequencyActivity extends AnalyzerActivity {
 
     private Button mStartButton1, mStopButton1;
     private Button mStartButton2, mStopButton2;
-    private FftWaveformView mWaveformViewTest1, mWaveformViewSubtraction, mWaveformViewTest2;
+    private LineView mWaveformViewTests;
+    private int mTest1LineId = -1;
+    private int mTest2LineId = -1;
+
+    private LineView mWaveformViewSubtraction;
+    private int mSubtractionLineId = -1;
+    private int mTopThresholdLineId = -1;
+    private int mBottomThresholdLineId = -1;
     private TextView mTestStatusView;
     private TextView mTestResultView;
-    private FrequencyThresholdView mSubtractedTopThreshold;
-    private FrequencyThresholdView mSubtractedBottomThreshold;
     private FrequencySettingView mFrequencySetting;
     private StreamConfigurationView mInputConfigView;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
@@ -66,20 +71,6 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mTestStatusView = findViewById(R.id.testStatusView);
         mTestResultView = findViewById(R.id.testResultView);
 
-        mSubtractedTopThreshold = findViewById(R.id.waveform_subtraction_top_threshold);
-        mSubtractedTopThreshold.setDbfsRange(-50.0f, 50.0f);
-        mSubtractedTopThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FFE91E63"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
-
-        mSubtractedBottomThreshold = findViewById(R.id.waveform_subtraction_bottom_threshold);
-        mSubtractedBottomThreshold.setDbfsRange(-50.0f, 50.0f);
-        mSubtractedBottomThreshold.updateTheme(
-                android.graphics.Color.parseColor("#FF4CAF50"),
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.RED);
-
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
         for (TestAudioActivity.StreamContext context : mStreamContexts) {
@@ -104,24 +95,35 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                                 mInputConfigView.setInputPreset(active.inputPreset);
                             }
                             mAudioOutTester.setSignalType(
-                                    FrequencySettingView.getSignalIndexForSource(active.sourceResId));
+                                    FrequencySettingView.getSignalIndexForSource(
+                                            active.sourceResId));
                         }
                     }
                 });
 
-        mWaveformViewTest1 = findViewById(R.id.waveform_test1);
-        mWaveformViewTest1.setDbfsRange(MIN_DBFS, MAX_DBFS);
+        mWaveformViewTests = findViewById(R.id.waveform_view_tests);
+        mWaveformViewTests.setUnits("Hz", "dBFS");
+        mWaveformViewTests.setYRange(MIN_DBFS, MAX_DBFS);
+        mWaveformViewTests.setLogScaleX(true);
+        mWaveformViewTests.setGridLinesY(
+                new float[]{MIN_DBFS, (MIN_DBFS + MAX_DBFS) / 2.0f, MAX_DBFS}, true);
 
-        mWaveformViewTest2 = findViewById(R.id.waveform_test2);
-        mWaveformViewTest2.setDbfsRange(MIN_DBFS, MAX_DBFS);
-        // Overlap styling for View 1 Test 2: transparent background with green line to contrast with blue Test 1
-        mWaveformViewTest2.updateTheme(Color.GREEN, Color.TRANSPARENT, Color.GREEN);
+        mWaveformViewSubtraction = findViewById(R.id.waveform_view_subtraction);
+        mWaveformViewSubtraction.setUnits("Hz", "dBFS");
+        mWaveformViewSubtraction.setYRange(-50.0f, 50.0f);
+        mWaveformViewSubtraction.setLogScaleX(true);
+        mWaveformViewSubtraction.setGridLinesY(new float[]{-50.0f, 0.0f, 50.0f}, true);
 
-        mWaveformViewSubtraction = findViewById(R.id.waveform_subtraction);
-        mWaveformViewSubtraction.setDbfsRange(-50.0f, 50.0f);
-        // Keep line red, but use normal background since they're not overlapping anymore
-        mWaveformViewSubtraction.updateTheme(Color.RED,
-                getResources().getColor(R.color.waveform_background), Color.RED);
+        android.widget.CheckBox logScaleCheckbox = findViewById(R.id.checkboxLogScale);
+        logScaleCheckbox.setOnCheckedChangeListener(
+                new android.widget.CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(android.widget.CompoundButton buttonView,
+                            boolean isChecked) {
+                        mWaveformViewTests.setLogScaleX(isChecked);
+                        mWaveformViewSubtraction.setLogScaleX(isChecked);
+                    }
+                });
 
         mStopButton1.setEnabled(false);
         mStartButton2.setEnabled(false);
@@ -267,53 +269,87 @@ public class DualFrequencyActivity extends AnalyzerActivity {
             try {
                 int numSamples = getFftMagnitude(mWaveformBuffer);
                 if (numSamples > 0) {
-                    if (mCurrentTest == 1) {
-                        mWaveformViewTest1.setSampleData(mWaveformBuffer, 0, numSamples);
-                        mWaveformViewTest1.postInvalidate();
-                    } else if (mCurrentTest == 2) {
-                        // 1. Draw live Test 2 FFT overlapped on the top graph
-                        mWaveformViewTest2.setSampleData(mWaveformBuffer, 0, numSamples);
-                        mWaveformViewTest2.postInvalidate();
+                    float[] frequencies = new float[numSamples];
+                    int numFreqs = getFftFrequencies(frequencies);
 
-                        // 2. Draw the subtracted FFT on the bottom graph
+                    float minFreq = frequencies[0];
+                    float maxFreq = frequencies[numFreqs - 1];
+                    FrequencyBandSpec spec =
+                            mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
+                    if (spec != null && spec.getFrequencyAnchors() != null
+                            && spec.getFrequencyAnchors().length > 0) {
+                        minFreq = spec.getFrequencyAnchors()[0];
+                        int[] anchors = spec.getFrequencyAnchors();
+                        float[] cursorFreqs = new float[anchors.length];
+                        for (int i = 0; i < anchors.length; i++) {
+                            cursorFreqs[i] = anchors[i];
+                        }
+                        mWaveformViewTests.setGridLinesX(cursorFreqs, true);
+                        mWaveformViewSubtraction.setGridLinesX(cursorFreqs, true);
+                    }
+                    mWaveformViewTests.setXRange(minFreq, maxFreq);
+                    mWaveformViewSubtraction.setXRange(minFreq, maxFreq);
+
+                    if (mCurrentTest == 1) {
+                        float[] yValues = java.util.Arrays.copyOf(mWaveformBuffer, numSamples);
+                        if (mTest1LineId == -1) {
+                            @SuppressWarnings("deprecation")
+                            int color = getResources().getColor(R.color.waveform_line);
+                            mTest1LineId = mWaveformViewTests.addLine(frequencies, yValues, color,
+                                    LineView.DrawMode.BAR);
+                        } else {
+                            mWaveformViewTests.updateLine(mTest1LineId, frequencies, yValues);
+                        }
+                    } else if (mCurrentTest == 2) {
+                        float[] yValues = java.util.Arrays.copyOf(mWaveformBuffer, numSamples);
+                        if (mTest2LineId == -1) {
+                            mTest2LineId = mWaveformViewTests.addLine(frequencies, yValues,
+                                    android.graphics.Color.GREEN, LineView.DrawMode.BAR);
+                        } else {
+                            mWaveformViewTests.updateLine(mTest2LineId, frequencies, yValues);
+                        }
+
                         if (mTest1WaveformBuffer != null) {
                             float[] rawDiffBuffer = new float[numSamples];
                             for (int i = 0; i < numSamples; i++) {
                                 rawDiffBuffer[i] = mTest1WaveformBuffer[i] - mWaveformBuffer[i];
                             }
-                            mWaveformViewSubtraction.setSampleData(rawDiffBuffer, 0, numSamples);
-                            mWaveformViewSubtraction.postInvalidate();
+                            if (mSubtractionLineId == -1) {
+                                mSubtractionLineId = mWaveformViewSubtraction.addLine(frequencies,
+                                        rawDiffBuffer, android.graphics.Color.RED,
+                                        LineView.DrawMode.BAR);
+                            } else {
+                                mWaveformViewSubtraction.updateLine(mSubtractionLineId, frequencies,
+                                        rawDiffBuffer);
+                            }
 
-                            // Run Java Analyzer on subtracted FFT
-                            float[] frequencies = new float[numSamples];
-                            int numFreqs = getFftFrequencies(frequencies);
-
-                            FrequencyBandSpec spec =
-                                    mFrequencySetting != null ? mFrequencySetting.getSpec() : null;
-                            float passThreshold = 50.0f; // failure rate 50%
-
+                            float passThreshold = 50.0f;
                             FrequencyAnalyzer.AnalysisResult result = mFrequencyAnalyzer.analyze(
                                     rawDiffBuffer, numSamples, frequencies, numFreqs, spec,
                                     passThreshold, true);
 
                             if (result != null) {
-                                if (numFreqs > 0) {
-                                    mSubtractedTopThreshold.setMaxFrequency(
-                                            frequencies[numFreqs - 1]);
-                                    mSubtractedBottomThreshold.setMaxFrequency(
-                                            frequencies[numFreqs - 1]);
+                                if (mTopThresholdLineId == -1) {
+                                    mTopThresholdLineId = mWaveformViewSubtraction.addLine(
+                                            result.thresholdFrequencies,
+                                            result.alignedTopThresholdsDbfs,
+                                            android.graphics.Color.parseColor("#FFE91E63"));
+                                } else {
+                                    mWaveformViewSubtraction.updateLine(mTopThresholdLineId,
+                                            result.thresholdFrequencies,
+                                            result.alignedTopThresholdsDbfs);
                                 }
 
-                                mSubtractedTopThreshold.setFrequencies(result.thresholdFrequencies);
-                                mSubtractedBottomThreshold.setFrequencies(
-                                        result.thresholdFrequencies);
-
-                                mSubtractedTopThreshold.setSampleData(
-                                        result.alignedTopThresholdsDbfs);
-                                mSubtractedTopThreshold.postInvalidate();
-                                mSubtractedBottomThreshold.setSampleData(
-                                        result.alignedBottomThresholdsDbfs);
-                                mSubtractedBottomThreshold.postInvalidate();
+                                if (mBottomThresholdLineId == -1) {
+                                    mBottomThresholdLineId = mWaveformViewSubtraction.addLine(
+                                            result.thresholdFrequencies,
+                                            result.alignedBottomThresholdsDbfs,
+                                            android.graphics.Color.parseColor("#FF4CAF50"));
+                                } else {
+                                    mWaveformViewSubtraction.updateLine(mBottomThresholdLineId,
+                                            result.thresholdFrequencies,
+                                            result.alignedBottomThresholdsDbfs);
+                                }
 
                                 StringBuilder sb = new StringBuilder();
                                 sb.append("RESULT: ").append(result.testPassed ? "PASS" : "FAIL")
