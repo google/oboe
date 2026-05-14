@@ -2,7 +2,6 @@ package com.google.oboe.samples.powerplay.effects
 
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
-import android.media.audiofx.EnvironmentalReverb
 import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
 
@@ -15,8 +14,6 @@ class EffectsController {
     var equalizer: EqualizerManager? = null
         private set
     var bassBoost: BassBoostManager? = null
-        private set
-    var reverb: ReverbManager? = null
         private set
     var loudness: LoudnessManager? = null
         private set
@@ -41,12 +38,6 @@ class EffectsController {
             Log.w(TAG, "Bass Boost not supported")
         }
         
-        if (isEffectSupported(AudioEffect.EFFECT_TYPE_ENV_REVERB)) {
-            reverb = ReverbManager(sessionId)
-        } else {
-            Log.w(TAG, "Environmental Reverb not supported")
-        }
-        
         if (isEffectSupported(LoudnessEnhancer.EFFECT_TYPE_LOUDNESS_ENHANCER)) {
             loudness = LoudnessManager(sessionId)
         } else {
@@ -68,23 +59,20 @@ class EffectsController {
         Log.i(TAG, "Releasing effects")
         equalizer?.release()
         bassBoost?.release()
-        reverb?.release()
         loudness?.release()
         equalizer = null
         bassBoost = null
-        reverb = null
         loudness = null
     }
 
     enum class EffectType {
-        EQUALIZER, BASS_BOOST, REVERB, LOUDNESS
+        EQUALIZER, BASS_BOOST, LOUDNESS
     }
 
     fun getSupportedEffects(): List<EffectType> {
         val list = mutableListOf<EffectType>()
         if (equalizer?.isAvailable == true) list.add(EffectType.EQUALIZER)
         if (bassBoost?.isAvailable == true) list.add(EffectType.BASS_BOOST)
-        if (reverb?.isAvailable == true) list.add(EffectType.REVERB)
         if (loudness?.isAvailable == true) list.add(EffectType.LOUDNESS)
         return list
     }

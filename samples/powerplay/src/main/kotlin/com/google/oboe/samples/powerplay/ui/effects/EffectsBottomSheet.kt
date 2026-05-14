@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Menu
 import com.google.oboe.samples.powerplay.effects.EffectsController
@@ -68,7 +67,6 @@ fun EffectsBottomSheet(
         when (effect) {
             EffectsController.EffectType.EQUALIZER -> R.string.title_equalizer
             EffectsController.EffectType.BASS_BOOST -> R.string.title_bass_boost
-            EffectsController.EffectType.REVERB -> R.string.title_reverb
             EffectsController.EffectType.LOUDNESS -> R.string.title_loudness
         }
     }
@@ -76,7 +74,6 @@ fun EffectsBottomSheet(
         when (effect) {
             EffectsController.EffectType.EQUALIZER -> Icons.Default.Menu
             EffectsController.EffectType.BASS_BOOST -> Icons.Default.ThumbUp
-            EffectsController.EffectType.REVERB -> Icons.Default.Notifications
             EffectsController.EffectType.LOUDNESS -> Icons.Default.Star
         }
     }
@@ -84,7 +81,6 @@ fun EffectsBottomSheet(
         when (effect) {
             EffectsController.EffectType.EQUALIZER -> R.string.desc_equalizer
             EffectsController.EffectType.BASS_BOOST -> R.string.desc_bass_boost
-            EffectsController.EffectType.REVERB -> R.string.desc_reverb
             EffectsController.EffectType.LOUDNESS -> R.string.desc_loudness
         }
     }
@@ -148,7 +144,6 @@ fun EffectsBottomSheet(
             when (currentEffect) {
                 EffectsController.EffectType.EQUALIZER -> EqualizerTab(effectsController.equalizer)
                 EffectsController.EffectType.BASS_BOOST -> BassBoostTab(effectsController.bassBoost)
-                EffectsController.EffectType.REVERB -> ReverbTab(effectsController.reverb)
                 EffectsController.EffectType.LOUDNESS -> LoudnessTab(effectsController.loudness)
             }
         }
