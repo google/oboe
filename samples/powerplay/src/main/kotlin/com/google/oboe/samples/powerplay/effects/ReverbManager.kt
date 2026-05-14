@@ -24,6 +24,8 @@ class ReverbManager(sessionId: Int) {
         }
     }
 
+    val isAvailable: Boolean get() = reverb != null
+
     fun setPreset(preset: Preset) {
         currentPreset = preset
         if (reverb == null) return

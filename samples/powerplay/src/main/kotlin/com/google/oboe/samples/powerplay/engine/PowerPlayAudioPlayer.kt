@@ -24,16 +24,9 @@ import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.asLiveData
 import com.google.oboe.samples.powerplay.effects.EffectsController
+import com.google.oboe.samples.powerplay.effects.EqualizerBand
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-
-data class EqualizerBand(
-    val id: Short,
-    val centerFreqHz: Int,
-    val minLevelmB: Short,
-    val maxLevelmB: Short,
-    var currentLevelmB: Short
-)
 
 class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private var _playerState = MutableStateFlow<PlayerState>(PlayerState.NoResultYet)

@@ -34,6 +34,7 @@ import com.google.oboe.samples.powerplay.effects.EffectsController
 @Composable
 fun EffectsBottomSheet(
     effectsController: EffectsController?,
+    isOffloadMode: Boolean = false,
     onDismiss: () -> Unit
 ) {
     if (effectsController == null) {
@@ -43,25 +44,50 @@ fun EffectsBottomSheet(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Effects not initialized. Ensure stream is open with session ID.")
+            Text(stringResource(id = R.string.effects_not_initialized))
+        }
+        return
+    }
+
+    val supportedEffects = remember { effectsController.getSupportedEffects() }
+    
+    if (supportedEffects.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(stringResource(id = R.string.no_supported_effects))
         }
         return
     }
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Equalizer", "Bass Boost", "Reverb", "Loudness")
-    val icons = listOf(
-        Icons.Default.Menu,
-        Icons.Default.ThumbUp,
-        Icons.Default.Notifications,
-        Icons.Default.Star
-    )
-    val descriptions = listOf(
-        R.string.desc_equalizer,
-        R.string.desc_bass_boost,
-        R.string.desc_reverb,
-        R.string.desc_loudness
-    )
+    val tabs = supportedEffects.map { effect ->
+        when (effect) {
+            EffectsController.EffectType.EQUALIZER -> R.string.title_equalizer
+            EffectsController.EffectType.BASS_BOOST -> R.string.title_bass_boost
+            EffectsController.EffectType.REVERB -> R.string.title_reverb
+            EffectsController.EffectType.LOUDNESS -> R.string.title_loudness
+        }
+    }
+    val icons = supportedEffects.map { effect ->
+        when (effect) {
+            EffectsController.EffectType.EQUALIZER -> Icons.Default.Menu
+            EffectsController.EffectType.BASS_BOOST -> Icons.Default.ThumbUp
+            EffectsController.EffectType.REVERB -> Icons.Default.Notifications
+            EffectsController.EffectType.LOUDNESS -> Icons.Default.Star
+        }
+    }
+    val descriptions = supportedEffects.map { effect ->
+        when (effect) {
+            EffectsController.EffectType.EQUALIZER -> R.string.desc_equalizer
+            EffectsController.EffectType.BASS_BOOST -> R.string.desc_bass_boost
+            EffectsController.EffectType.REVERB -> R.string.desc_reverb
+            EffectsController.EffectType.LOUDNESS -> R.string.desc_loudness
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -69,8 +95,17 @@ fun EffectsBottomSheet(
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (isOffloadMode) {
+            Text(
+                text = stringResource(id = R.string.offload_mode_warning),
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
         TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
+            tabs.forEachIndexed { index, titleResId ->
+                val title = stringResource(id = titleResId)
                 Tab(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
@@ -82,7 +117,7 @@ fun EffectsBottomSheet(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = tabs[selectedTab],
+            text = stringResource(id = tabs[selectedTab]),
             fontSize = 20.sp,
             style = MaterialTheme.typography.titleLarge,
             color = Color.Black,
@@ -109,11 +144,12 @@ fun EffectsBottomSheet(
                 .padding(horizontal = 24.dp)
                 .animateContentSize()
         ) {
-            when (selectedTab) {
-                0 -> EqualizerTab(effectsController.equalizer)
-                1 -> BassBoostTab(effectsController.bassBoost)
-                2 -> ReverbTab(effectsController.reverb)
-                3 -> LoudnessTab(effectsController.loudness)
+            val currentEffect = supportedEffects[selectedTab]
+            when (currentEffect) {
+                EffectsController.EffectType.EQUALIZER -> EqualizerTab(effectsController.equalizer)
+                EffectsController.EffectType.BASS_BOOST -> BassBoostTab(effectsController.bassBoost)
+                EffectsController.EffectType.REVERB -> ReverbTab(effectsController.reverb)
+                EffectsController.EffectType.LOUDNESS -> LoudnessTab(effectsController.loudness)
             }
         }
     }

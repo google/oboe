@@ -75,4 +75,17 @@ class EffectsController {
         reverb = null
         loudness = null
     }
+
+    enum class EffectType {
+        EQUALIZER, BASS_BOOST, REVERB, LOUDNESS
+    }
+
+    fun getSupportedEffects(): List<EffectType> {
+        val list = mutableListOf<EffectType>()
+        if (equalizer?.isAvailable == true) list.add(EffectType.EQUALIZER)
+        if (bassBoost?.isAvailable == true) list.add(EffectType.BASS_BOOST)
+        if (reverb?.isAvailable == true) list.add(EffectType.REVERB)
+        if (loudness?.isAvailable == true) list.add(EffectType.LOUDNESS)
+        return list
+    }
 }

@@ -18,6 +18,8 @@ class LoudnessManager(sessionId: Int) {
         }
     }
 
+    val isAvailable: Boolean get() = loudnessEnhancer != null
+
     fun setTargetGain(gainmB: Int) {
         loudnessEnhancer?.setTargetGain(gainmB)
     }

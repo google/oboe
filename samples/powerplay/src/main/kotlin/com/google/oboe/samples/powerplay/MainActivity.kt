@@ -780,7 +780,11 @@ class MainActivity : ComponentActivity() {
                 containerColor = Color.White,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
             ) {
-                EffectsBottomSheet(effectsController = player.effectsController, onDismiss = { showEffectsBottomSheet = false })
+                EffectsBottomSheet(
+                    effectsController = player.effectsController,
+                    isOffloadMode = offload.intValue == 3,
+                    onDismiss = { showEffectsBottomSheet = false }
+                )
             }
         }
         if (showInfoDialog) {

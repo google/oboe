@@ -18,6 +18,8 @@ class BassBoostManager(sessionId: Int) {
         }
     }
 
+    val isAvailable: Boolean get() = bassBoost != null
+
     fun setStrength(strength: Short) {
         if (bassBoost?.strengthSupported == true) {
             bassBoost?.setStrength(strength)

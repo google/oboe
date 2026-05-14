@@ -32,6 +32,8 @@ class EqualizerManager(sessionId: Int) {
         }
     }
 
+    val isAvailable: Boolean get() = equalizer != null
+
     fun getBands(): List<EqualizerBand> {
         if (_bands.isEmpty() && equalizer != null) {
             val eq = equalizer!!
