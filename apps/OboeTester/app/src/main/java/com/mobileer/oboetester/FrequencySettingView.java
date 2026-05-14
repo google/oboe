@@ -29,6 +29,8 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.os.Bundle;
+import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,10 +58,12 @@ public class FrequencySettingView extends LinearLayout {
     private OnSettingChangedListener mListener;
 
     public interface OnSettingChangedListener {
+
         void onSettingChanged();
     }
 
     private static class BandInputs {
+
         EditText startTop;
         EditText stopTop;
         EditText startBottom;
@@ -363,5 +367,67 @@ public class FrequencySettingView extends LinearLayout {
             threshold = active.band1Threshold;
         }
         return new FrequencyBandSpec(anchors, bands, checkType, threshold);
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("superState", super.onSaveInstanceState());
+
+        String[] anchorTexts = new String[mFrequencyAnchorInputs.size()];
+        for (int i = 0; i < mFrequencyAnchorInputs.size(); i++) {
+            anchorTexts[i] = mFrequencyAnchorInputs.get(i).getText().toString();
+        }
+        bundle.putStringArray("anchors", anchorTexts);
+
+        String[] startTopTexts = new String[mBandInputsList.size()];
+        String[] stopTopTexts = new String[mBandInputsList.size()];
+        String[] startBotTexts = new String[mBandInputsList.size()];
+        String[] stopBotTexts = new String[mBandInputsList.size()];
+        for (int i = 0; i < mBandInputsList.size(); i++) {
+            BandInputs bi = mBandInputsList.get(i);
+            startTopTexts[i] = bi.startTop.getText().toString();
+            stopTopTexts[i] = bi.stopTop.getText().toString();
+            startBotTexts[i] = bi.startBottom.getText().toString();
+            stopBotTexts[i] = bi.stopBottom.getText().toString();
+        }
+        bundle.putStringArray("startTop", startTopTexts);
+        bundle.putStringArray("stopTop", stopTopTexts);
+        bundle.putStringArray("startBot", startBotTexts);
+        bundle.putStringArray("stopBot", stopBotTexts);
+
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof Bundle) {
+            Bundle bundle = (Bundle) state;
+            super.onRestoreInstanceState(bundle.getParcelable("superState"));
+
+            String[] anchorTexts = bundle.getStringArray("anchors");
+            if (anchorTexts != null) {
+                for (int i = 0; i < anchorTexts.length && i < mFrequencyAnchorInputs.size(); i++) {
+                    mFrequencyAnchorInputs.get(i).setText(anchorTexts[i]);
+                }
+            }
+
+            String[] startTopTexts = bundle.getStringArray("startTop");
+            String[] stopTopTexts = bundle.getStringArray("stopTop");
+            String[] startBotTexts = bundle.getStringArray("startBot");
+            String[] stopBotTexts = bundle.getStringArray("stopBot");
+            if (startTopTexts != null && stopTopTexts != null && startBotTexts != null
+                    && stopBotTexts != null) {
+                for (int i = 0; i < mBandInputsList.size() && i < startTopTexts.length; i++) {
+                    BandInputs bi = mBandInputsList.get(i);
+                    bi.startTop.setText(startTopTexts[i]);
+                    bi.stopTop.setText(stopTopTexts[i]);
+                    bi.startBottom.setText(startBotTexts[i]);
+                    bi.stopBottom.setText(stopBotTexts[i]);
+                }
+            }
+        } else {
+            super.onRestoreInstanceState(state);
+        }
     }
 }
