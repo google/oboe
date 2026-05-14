@@ -3,7 +3,7 @@ package com.google.oboe.samples.powerplay.effects
 import android.media.audiofx.BassBoost
 import android.util.Log
 
-class BassBoostManager(private val sessionId: Int) {
+class BassBoostManager(sessionId: Int) {
     private val TAG = "BassBoostManager"
     private var bassBoost: BassBoost? = null
 
@@ -25,12 +25,6 @@ class BassBoostManager(private val sessionId: Int) {
     }
 
     fun getStrength(): Short = bassBoost?.roundedStrength ?: 0
-
-    fun setEnabled(enable: Boolean) {
-        bassBoost?.enabled = enable
-    }
-
-    fun isEnabled(): Boolean = bassBoost?.enabled ?: false
 
     fun release() {
         bassBoost?.release()

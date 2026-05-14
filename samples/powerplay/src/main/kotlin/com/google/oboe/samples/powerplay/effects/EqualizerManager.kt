@@ -11,7 +11,7 @@ data class EqualizerBand(
     var currentLevelmB: Short
 )
 
-class EqualizerManager(private val sessionId: Int) {
+class EqualizerManager(sessionId: Int) {
     private val TAG = "EqualizerManager"
     private var equalizer: Equalizer? = null
     private val _bands = mutableListOf<EqualizerBand>()
@@ -57,12 +57,6 @@ class EqualizerManager(private val sessionId: Int) {
         equalizer?.setBandLevel(band, level)
         _bands.find { it.id == band }?.currentLevelmB = level
     }
-
-    fun setEnabled(enable: Boolean) {
-        equalizer?.enabled = enable
-    }
-
-    fun isEnabled(): Boolean = equalizer?.enabled ?: false
 
     fun reset() {
         _bands.forEach { band ->

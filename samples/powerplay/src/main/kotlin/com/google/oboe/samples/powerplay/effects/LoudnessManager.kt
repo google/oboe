@@ -3,7 +3,7 @@ package com.google.oboe.samples.powerplay.effects
 import android.media.audiofx.LoudnessEnhancer
 import android.util.Log
 
-class LoudnessManager(private val sessionId: Int) {
+class LoudnessManager(sessionId: Int) {
     private val TAG = "LoudnessManager"
     private var loudnessEnhancer: LoudnessEnhancer? = null
 

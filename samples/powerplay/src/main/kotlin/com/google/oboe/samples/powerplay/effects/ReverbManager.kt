@@ -3,7 +3,7 @@ package com.google.oboe.samples.powerplay.effects
 import android.media.audiofx.EnvironmentalReverb
 import android.util.Log
 
-class ReverbManager(private val sessionId: Int) {
+class ReverbManager(sessionId: Int) {
     private val TAG = "ReverbManager"
     private var reverb: EnvironmentalReverb? = null
 
