@@ -58,8 +58,13 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setUsage(Usage::Media)
             ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
-            ->setSharingMode(SharingMode::Exclusive)
-            ->setSessionId(SessionId::Allocate);
+            ->setSessionId(oboe::SessionId::Allocate);
+
+    if (performanceMode == oboe::PerformanceMode::PowerSavingOffloaded) {
+        builder.setSharingMode(oboe::SharingMode::Shared);
+    } else {
+        builder.setSharingMode(oboe::SharingMode::Exclusive);
+    }
 
     Result result = builder.openStream(mAudioStream);
     if (result != Result::OK) {
