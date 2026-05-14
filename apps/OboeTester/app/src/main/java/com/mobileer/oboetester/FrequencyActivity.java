@@ -70,7 +70,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mLineView.setUnits("Hz", "dBFS");
         mLineView.setYRange(gridLinesYDbfs[0], gridLinesYDbfs[gridLinesYDbfs.length - 1]);
         mLineView.setLogScaleX(true);
-        mLineView.setGridLinesY(gridLinesYDbfs, true);
+        mLineView.setGridLinesY(gridLinesYDbfs);
 
         android.widget.CheckBox logScaleCheckbox = findViewById(R.id.checkboxLogScale);
         logScaleCheckbox.setOnCheckedChangeListener(
@@ -318,7 +318,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                             for (int i = 0; i < anchors.length; i++) {
                                 cursorFreqs[i] = anchors[i];
                             }
-                            mLineView.setGridLinesX(cursorFreqs, true);
+                            mLineView.setGridLinesX(cursorFreqs);
                         }
 
                         if (mTopThresholdLineId == -1) {

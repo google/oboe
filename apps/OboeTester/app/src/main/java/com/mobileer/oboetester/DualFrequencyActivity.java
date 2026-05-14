@@ -106,13 +106,13 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mWaveformViewTests.setYRange(MIN_DBFS, MAX_DBFS);
         mWaveformViewTests.setLogScaleX(true);
         mWaveformViewTests.setGridLinesY(
-                new float[]{MIN_DBFS, (MIN_DBFS + MAX_DBFS) / 2.0f, MAX_DBFS}, true);
+                new float[]{MIN_DBFS, (MIN_DBFS + MAX_DBFS) / 2.0f, MAX_DBFS});
 
         mWaveformViewSubtraction = findViewById(R.id.waveform_view_subtraction);
         mWaveformViewSubtraction.setUnits("Hz", "dBFS");
         mWaveformViewSubtraction.setYRange(-50.0f, 50.0f);
         mWaveformViewSubtraction.setLogScaleX(true);
-        mWaveformViewSubtraction.setGridLinesY(new float[]{-50.0f, 0.0f, 50.0f}, true);
+        mWaveformViewSubtraction.setGridLinesY(new float[]{-50.0f, 0.0f, 50.0f});
 
         android.widget.CheckBox logScaleCheckbox = findViewById(R.id.checkboxLogScale);
         logScaleCheckbox.setOnCheckedChangeListener(
@@ -284,8 +284,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                         for (int i = 0; i < anchors.length; i++) {
                             cursorFreqs[i] = anchors[i];
                         }
-                        mWaveformViewTests.setGridLinesX(cursorFreqs, true);
-                        mWaveformViewSubtraction.setGridLinesX(cursorFreqs, true);
+                        mWaveformViewTests.setGridLinesX(cursorFreqs);
+                        mWaveformViewSubtraction.setGridLinesX(cursorFreqs);
                     }
                     mWaveformViewTests.setXRange(minFreq, maxFreq);
                     mWaveformViewSubtraction.setXRange(minFreq, maxFreq);

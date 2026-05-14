@@ -60,10 +60,7 @@ public class LineView extends View {
     private int mNextLineId = 1;
 
     private float[] mGridLinesX;
-    private boolean mShowGridLabelsX = true;
-
     private float[] mGridLinesY;
-    private boolean mShowGridLabelsY = true;
 
     private Paint mGridPaintX;
     private Paint mGridTextPaintX;
@@ -140,15 +137,13 @@ public class LineView extends View {
         postInvalidate();
     }
 
-    public void setGridLinesX(float[] xValues, boolean showLabels) {
+    public void setGridLinesX(float[] xValues) {
         mGridLinesX = xValues;
-        mShowGridLabelsX = showLabels;
         postInvalidate();
     }
 
-    public void setGridLinesY(float[] yValues, boolean showLabels) {
+    public void setGridLinesY(float[] yValues) {
         mGridLinesY = yValues;
-        mShowGridLabelsY = showLabels;
         postInvalidate();
     }
 
@@ -195,21 +190,21 @@ public class LineView extends View {
         return (mapped * scaleY) + offsetY;
     }
 
-    private float mapXToView(float xVal, float graphWidth) {
+    private float mapXToView(float xVal, float graphWidth, float paddingLeft) {
         if (mLogScaleX) {
             if (mMinX <= 0 || mMaxX <= mMinX) {
-                return 0.0f;
+                return paddingLeft;
             }
             double logMin = Math.log(mMinX);
             double logMax = Math.log(mMaxX);
             double logX = Math.log(xVal);
-            return (float) (((logX - logMin) / (logMax - logMin)) * graphWidth);
+            return (float) (((logX - logMin) / (logMax - logMin)) * graphWidth) + paddingLeft;
         } else {
             float rangeX = mMaxX - mMinX;
             if (rangeX <= 0) {
-                return 0.0f;
+                return paddingLeft;
             }
-            return ((xVal - mMinX) / rangeX) * graphWidth;
+            return ((xVal - mMinX) / rangeX) * graphWidth + paddingLeft;
         }
     }
 
@@ -230,8 +225,10 @@ public class LineView extends View {
         }
 
         float paddingBottom = 60.0f;
-        float paddingTop = 40.0f;
-        float graphWidth = width;
+        float paddingTop = 60.0f;
+        float paddingLeft = 100.0f;
+        float paddingRight = 100.0f;
+        float graphWidth = width - paddingLeft - paddingRight;
         float graphHeight = height - paddingBottom - paddingTop;
         float offsetY = paddingTop + (graphHeight / 2.0f);
         float scaleY = -0.90f * (graphHeight / 2.0f);
@@ -253,7 +250,7 @@ public class LineView extends View {
                     if (xVal < mMinX || xVal > mMaxX) {
                         continue;
                     }
-                    float x = mapXToView(xVal, graphWidth);
+                    float x = mapXToView(xVal, graphWidth, paddingLeft);
                     float y = mapYToView(line.yValues[i], scaleY, offsetY);
                     canvas.drawLine(x, yBottom, x, y, line.paint);
                 }
@@ -265,7 +262,7 @@ public class LineView extends View {
                     if (xVal < mMinX || xVal > mMaxX) {
                         continue;
                     }
-                    float x1 = mapXToView(xVal, graphWidth);
+                    float x1 = mapXToView(xVal, graphWidth, paddingLeft);
                     float y1 = mapYToView(line.yValues[i], scaleY, offsetY);
                     if (x0 != -1) {
                         canvas.drawLine(x0, y0, x1, y1, line.paint);
@@ -280,13 +277,14 @@ public class LineView extends View {
         if (mGridLinesY != null) {
             for (float yVal : mGridLinesY) {
                 float yPos = mapYToView(yVal, scaleY, offsetY);
-                canvas.drawLine(0, yPos, width, yPos, mGridPaintY);
-                if (mShowGridLabelsY) {
-                    String label =
-                            mUnitY.isEmpty() ? String.format(Locale.getDefault(), "%.0f", yVal)
-                                    : String.format(Locale.getDefault(), "%.0f %s", yVal, mUnitY);
-                    canvas.drawText(label, 10, yPos - 10, mGridTextPaintY);
-                }
+                canvas.drawLine(paddingLeft, yPos, width - paddingRight, yPos, mGridPaintY);
+                String label = String.format(Locale.getDefault(), "%.0f", yVal);
+                mGridTextPaintY.setTextAlign(Paint.Align.LEFT);
+                canvas.drawText(label, 10, yPos - 10, mGridTextPaintY);
+            }
+            if (!mUnitY.isEmpty()) {
+                mGridTextPaintY.setTextAlign(Paint.Align.LEFT);
+                canvas.drawText(mUnitY, 10, 30, mGridTextPaintY);
             }
         }
 
@@ -296,15 +294,20 @@ public class LineView extends View {
                 if (xVal < mMinX || xVal > mMaxX) {
                     continue;
                 }
-                float x = mapXToView(xVal, graphWidth);
-                canvas.drawLine(x, 0, x, height - paddingBottom, mGridPaintX);
-                if (mShowGridLabelsX) {
-                    String label =
-                            mUnitX.isEmpty() ? String.format(Locale.getDefault(), "%.0f", xVal)
-                                    : String.format(Locale.getDefault(), "%.0f %s", xVal, mUnitX);
-                    float xOffset = xVal >= mMaxX ? -120 : 5;
-                    canvas.drawText(label, x + xOffset, height - 15, mGridTextPaintX);
+                float x = mapXToView(xVal, graphWidth, paddingLeft);
+                canvas.drawLine(x, paddingTop, x, height - paddingBottom, mGridPaintX);
+                String label;
+                if (Math.abs(xVal) >= 1000 && xVal % 1000 == 0) {
+                    label = String.format(Locale.getDefault(), "%.0fk", xVal / 1000);
+                } else {
+                    label = String.format(Locale.getDefault(), "%.0f", xVal);
                 }
+                mGridTextPaintX.setTextAlign(Paint.Align.LEFT);
+                canvas.drawText(label, x + 5, height - 15, mGridTextPaintX);
+            }
+            if (!mUnitX.isEmpty()) {
+                mGridTextPaintX.setTextAlign(Paint.Align.RIGHT);
+                canvas.drawText(mUnitX, width - 5, height - 15, mGridTextPaintX);
             }
         }
     }
