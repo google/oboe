@@ -5,7 +5,7 @@ import android.media.audiofx.BassBoost
 import android.media.audiofx.EnvironmentalReverb
 import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
-import android.media.audiofx.Virtualizer
+
 import android.util.Log
 import java.util.UUID
 
@@ -15,8 +15,6 @@ class EffectsController {
     var equalizer: EqualizerManager? = null
         private set
     var bassBoost: BassBoostManager? = null
-        private set
-    var virtualizer: VirtualizerManager? = null
         private set
     var reverb: ReverbManager? = null
         private set
@@ -41,12 +39,6 @@ class EffectsController {
             bassBoost = BassBoostManager(sessionId)
         } else {
             Log.w(TAG, "Bass Boost not supported")
-        }
-        
-        if (isEffectSupported(Virtualizer.EFFECT_TYPE_VIRTUALIZER)) {
-            virtualizer = VirtualizerManager(sessionId)
-        } else {
-            Log.w(TAG, "Virtualizer not supported")
         }
         
         if (isEffectSupported(AudioEffect.EFFECT_TYPE_ENV_REVERB)) {
@@ -76,12 +68,10 @@ class EffectsController {
         Log.i(TAG, "Releasing effects")
         equalizer?.release()
         bassBoost?.release()
-        virtualizer?.release()
         reverb?.release()
         loudness?.release()
         equalizer = null
         bassBoost = null
-        virtualizer = null
         reverb = null
         loudness = null
     }

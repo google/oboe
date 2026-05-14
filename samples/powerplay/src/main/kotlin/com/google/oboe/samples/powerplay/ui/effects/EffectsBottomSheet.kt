@@ -49,18 +49,16 @@ fun EffectsBottomSheet(
     }
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Equalizer", "Bass Boost", "Virtualizer", "Reverb", "Loudness")
+    val tabs = listOf("Equalizer", "Bass Boost", "Reverb", "Loudness")
     val icons = listOf(
         Icons.Default.Menu,
         Icons.Default.ThumbUp,
-        Icons.Default.Refresh,
         Icons.Default.Notifications,
         Icons.Default.Star
     )
     val descriptions = listOf(
         R.string.desc_equalizer,
         R.string.desc_bass_boost,
-        R.string.desc_virtualizer,
         R.string.desc_reverb,
         R.string.desc_loudness
     )
@@ -114,9 +112,8 @@ fun EffectsBottomSheet(
             when (selectedTab) {
                 0 -> EqualizerTab(effectsController.equalizer)
                 1 -> BassBoostTab(effectsController.bassBoost)
-                2 -> VirtualizerTab(effectsController.virtualizer)
-                3 -> ReverbTab(effectsController.reverb)
-                4 -> LoudnessTab(effectsController.loudness)
+                2 -> ReverbTab(effectsController.reverb)
+                3 -> LoudnessTab(effectsController.loudness)
             }
         }
     }
