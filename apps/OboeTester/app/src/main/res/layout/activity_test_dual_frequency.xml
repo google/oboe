@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context="com.mobileer.oboetester.DualFrequencyActivity">
+
+    <LinearLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dual Frequency Test"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+    
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin" >
+
+            <!-- Device Set 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="#E8E8E8"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device Set 1: built-in mic vs external speaker"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/button_start_1"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:onClick="onStartTest1"
+                        android:text="Start 1" />
+
+                    <Button
+                        android:id="@+id/button_stop_1"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:onClick="onStopTest1"
+                        android:text="Stop 1" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Device Set 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:background="#E8E8E8"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Device Set 2: external mic and external speaker"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/button_start_2"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:onClick="onStartTest2"
+                        android:text="Start 2" />
+
+                    <Button
+                        android:id="@+id/button_stop_2"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:onClick="onStopTest2"
+                        android:text="Stop 2" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Stacked Views with Overlap in Top View -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Device Set 1 &amp; 2 FFTs"
+                        android:textStyle="bold" />
+                </LinearLayout>
+                
+                <com.mobileer.oboetester.LineView
+                    android:id="@+id/waveform_view_tests"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="8dp" />
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Subtracted FFT (Test 1 - Test 2)"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                
+                <com.mobileer.oboetester.LineView
+                    android:id="@+id/waveform_view_subtraction"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="8dp" />
+                <CheckBox
+                    android:id="@+id/checkboxLogScale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:checked="true"
+                    android:text="LogX" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/testStatusView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: N/A"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:padding="4dp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/testResultView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Result: N/A"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:padding="4dp"
+                android:layout_marginTop="4dp"/>
+
+            <com.mobileer.oboetester.FrequencySettingView
+                android:id="@+id/frequency_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" />
+
+
+            <!-- Stream configuration -->
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/inputStreamConfiguration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" />
+
+            <com.mobileer.oboetester.StreamConfigurationView
+                android:id="@+id/outputStreamConfiguration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -39,6 +39,7 @@ import android.widget.TextView;
 
 import com.mobileer.audio_device.AudioDeviceListEntry;
 import com.mobileer.audio_device.AudioDeviceSpinner;
+import com.mobileer.audio_device.AudioDeviceAdapter;
 
 import java.util.Locale;
 
@@ -511,6 +512,23 @@ public class StreamConfigurationView extends LinearLayout {
         mRequestAudioEffect.setEnabled(enabled);
     }
 
+    public boolean setDeviceById(int deviceId) {
+        if (deviceId == 0) { // AUTO_SELECT_DEVICE_ID
+            mDeviceSpinner.setSelection(0);
+            return true;
+        }
+        AudioDeviceAdapter adapter = (AudioDeviceAdapter) mDeviceSpinner.getAdapter();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            AudioDeviceListEntry entry = (AudioDeviceListEntry) adapter.getItem(i);
+            if (entry.getId() == deviceId) {
+                mDeviceSpinner.setSelection(i);
+                return true;
+            }
+        }
+        mDeviceSpinner.setSelection(0); // Fallback to Auto-select
+        return false;
+    }
+
     // This must be called on the UI thread.
     void updateDisplay(StreamConfiguration actualConfiguration) {
         int value;
@@ -600,6 +618,16 @@ public class StreamConfigurationView extends LinearLayout {
 
     public void setFormat(int format) {
         mFormatSpinner.setSelection(format); // position matches format
+    }
+
+    public void setInputPreset(int preset) {
+        String text = StreamConfiguration.convertInputPresetToText(preset);
+        for (int i = 0; i < mInputPresetSpinner.getCount(); i++) {
+            if (mInputPresetSpinner.getItemAtPosition(i).toString().equals(text)) {
+                mInputPresetSpinner.setSelection(i);
+                break;
+            }
+        }
     }
 
     public void setFormatConversionAllowed(boolean allowed) {
@@ -739,4 +767,5 @@ public class StreamConfigurationView extends LinearLayout {
         }
         mLoudnessEnhancerSeekBar.setEnabled(isChecked);
     }
+
 }

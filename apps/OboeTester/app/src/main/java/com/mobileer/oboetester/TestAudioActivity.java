@@ -94,6 +94,8 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
     public static final int ACTIVITY_TEST_DISCONNECT = 7;
     public static final int ACTIVITY_DATA_PATHS = 8;
     public static final int ACTIVITY_DYNAMIC_WORKLOAD = 9;
+    public static final int ACTIVITY_FREQUENCY = 10;
+    public static final int ACTIVITY_DUAL_FREQUENCY = 11;
 
     private static final int MP3_RES_ID = R.raw.sine441stereo;
     private static final AudioConfig MP3_FILE_CONFIG =
@@ -301,6 +303,12 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
                         | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             case ACTIVITY_DYNAMIC_WORKLOAD:
                 return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+            case ACTIVITY_FREQUENCY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            case ACTIVITY_DUAL_FREQUENCY:
+                return ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                        | ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
             default:
                 Log.i(TAG, "getServiceType() called on unknown activity type " + getActivityType());
                 return 0;
@@ -1205,6 +1213,75 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
         } catch (Exception e) {
             showErrorToast("Failed to load mp3 file " + e.getMessage());
         }
+    }
+
+    public static final int DEVICE_SUPPORTED = 1;
+    public static final int DEVICE_NOT_FOUND = 0;
+    public static final int DEVICE_CONFLICT_USB_PLUGGED = -1;
+
+    protected int checkOutputDeviceSupported(int preferredType) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+
+            if (preferredType == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                boolean builtinSpeakerExists = false;
+                boolean usbDevicePlugged = false;
+                for (AudioDeviceInfo device : devices) {
+                    if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER ||
+                        (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O &&
+                         device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE)) {
+                        builtinSpeakerExists = true;
+                    }
+                    if (device.getType() == AudioDeviceInfo.TYPE_USB_DEVICE ||
+                            device.getType() == AudioDeviceInfo.TYPE_USB_HEADSET) {
+                        usbDevicePlugged = true;
+                    }
+                }
+                if (usbDevicePlugged) {
+                    return DEVICE_CONFLICT_USB_PLUGGED;
+                }
+                return builtinSpeakerExists ? DEVICE_SUPPORTED : DEVICE_NOT_FOUND;
+            } else {
+                for (AudioDeviceInfo device : devices) {
+                    if (device.getType() == preferredType) {
+                        return DEVICE_SUPPORTED;
+                    }
+                }
+            }
+            return DEVICE_NOT_FOUND;
+        }
+        return DEVICE_SUPPORTED;
+    }
+
+    protected AudioDeviceInfo findInputDeviceByType(int type) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            AudioDeviceInfo[] devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+
+            if (type == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    for (AudioDeviceInfo device : devices) {
+                        if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
+                            if ("bottom".equalsIgnoreCase(device.getAddress())) {
+                                return device;
+                            }
+                        }
+                    }
+                }
+                // Fallback to first builtin mic
+                for (AudioDeviceInfo device : devices) {
+                    if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_MIC) {
+                        return device;
+                    }
+                }
+            } else {
+                for (AudioDeviceInfo device : devices) {
+                    if (device.getType() == type) {
+                        return device;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static class AudioConfig {

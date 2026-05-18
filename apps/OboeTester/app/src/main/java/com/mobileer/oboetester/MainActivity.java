@@ -29,9 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.core.view.WindowCompat;
@@ -246,6 +244,14 @@ public class MainActivity extends BaseOboeTesterActivity {
 
     public void onLaunchTestDeviceReport(View view)  {
         launchTestActivity(DeviceReportActivity.class);
+    }
+
+    public void onLaunchTestFrequency(View view) {
+        launchTestThatDoesRecording(FrequencyActivity.class);
+    }
+
+    public void onLaunchTestDualFrequency(View view) {
+        launchTestThatDoesRecording(DualFrequencyActivity.class);
     }
 
     public void onLaunchExtratests(View view) {

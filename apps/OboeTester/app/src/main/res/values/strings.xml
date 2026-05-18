@@ -205,6 +205,16 @@
         <item>White Noise</item>
     </string-array>
 
+    <string name="source_white_noise">White Noise</string>
+    <string name="source_sine">Sine</string>
+    <string name="source_silence">Silence</string>
+
+    <string-array name="frequency_output_signals">
+        <item>@string/source_white_noise</item>
+        <item>@string/source_sine</item>
+        <item>@string/source_silence</item>
+    </string-array>
+
     <string name="hang_prompt">, Hang(ms)</string>
     <string-array name="hang_times">
         <item>0</item>
@@ -250,6 +260,7 @@
     <string name="title_activity_rt_latency">Round Trip Latency</string>
     <string name="title_activity_glitches">Test Glitches</string>
     <string name="title_activity_auto_glitches">Auto Glitches</string>
+    <string name="title_activity_frequency_test">Frequency Test</string>
     <string name="title_test_disconnect">Test Disconnect</string>
     <string name="title_report_devices">Device Report</string>
     <string name="title_data_paths">Data Paths</string>
