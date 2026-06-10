@@ -58,7 +58,8 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setUsage(Usage::Media)
             ->setContentType(ContentType::Music)
             ->setFramesPerDataCallback(128)
-            ->setSharingMode(SharingMode::Exclusive);
+            ->setSessionId(oboe::SessionId::Allocate)
+            ->setSharingMode(oboe::SharingMode::Exclusive);
 
     Result result = builder.openStream(mAudioStream);
     if (result != Result::OK) {
@@ -371,4 +372,9 @@ bool PowerPlayMultiPlayer::setPlaybackParameters(float speed, float pitch) {
     mPlaybackSpeed = speed;
     mPlaybackPitch = pitch;
     return true;
+}
+
+int32_t PowerPlayMultiPlayer::getSessionId() {
+    if (mAudioStream == nullptr) return -1;
+    return static_cast<int32_t>(mAudioStream->getSessionId());
 }

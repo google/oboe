@@ -62,6 +62,8 @@ public:
 
     bool setPlaybackParameters(float speed, float pitch);
 
+    int32_t getSessionId();
+
 private:
     class MyPresentationCallback : public oboe::AudioStreamPresentationCallback {
     public:

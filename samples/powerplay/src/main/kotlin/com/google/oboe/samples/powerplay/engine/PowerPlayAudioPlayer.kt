@@ -18,10 +18,13 @@ package com.google.oboe.samples.powerplay.engine
 
 import android.content.ContentResolver
 import android.content.res.AssetManager
+
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.asLiveData
+import com.google.oboe.samples.powerplay.effects.EffectsController
+import com.google.oboe.samples.powerplay.effects.EqualizerBand
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -39,9 +42,15 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     /**
      * Native passthrough functions
      */
+    val effectsController = EffectsController()
+
     fun setupAudioStream(channelCount: Int = NUM_PLAY_CHANNELS) {
         setupAudioStreamNative(channelCount)
         _playerState.update { PlayerState.Initialized }
+        val sessionId = getSessionId()
+        if (sessionId > 0) {
+            effectsController.initialize(sessionId)
+        }
     }
 
     fun startPlaying(index: Int, mode: OboePerformanceMode?) {
@@ -61,10 +70,18 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     fun updatePerformanceMode(mode: OboePerformanceMode) {
         _currentPerformanceMode = mode
         updatePerformanceModeNative(mode)
+        effectsController.release()
+        val sessionId = getSessionId()
+        if (sessionId > 0) {
+            effectsController.initialize(sessionId)
+        }
     }
 
     fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
-    fun teardownAudioStream() = teardownAudioStreamNative()
+    fun teardownAudioStream() {
+        effectsController.release()
+        teardownAudioStreamNative()
+    }
     fun unloadAssets() = unloadAssetsNative()
     fun setPlaybackParameters(speed: Float, pitch: Float): Boolean = setPlaybackParametersNative(speed, pitch)
 
@@ -204,6 +221,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      * @return true if offload is active, false otherwise
      */
     fun isOffloaded(): Boolean = isOffloadedNative()
+    fun getSessionId(): Int = getSessionIdNative()
 
     /**
      * Gets the index of the currently playing track.
@@ -253,6 +271,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
     private external fun getBufferCapacityInFramesNative(): Int
     private external fun setVolumeNative(volume: Float)
     private external fun isOffloadedNative(): Boolean
+    private external fun getSessionIdNative(): Int
     private external fun getCurrentlyPlayingIndexNative(): Int
     private external fun getPlaybackPositionMillisNative(): Long
     private external fun seekToNative(positionMillis: Int)

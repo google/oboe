@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">PowerPlay</string>
+    <string name="desc_equalizer">Adjust frequency bands to shape the sound.</string>
+    <string name="desc_bass_boost">Boost low frequencies for a richer bass response.</string>
+    <string name="desc_virtualizer">Create a spatialized surround sound experience.</string>
+    <string name="desc_loudness">Enhance the overall volume safely without distortion.</string>
+    <string name="title_equalizer">Equalizer</string>
+    <string name="title_bass_boost">Bass Boost</string>
+    <string name="title_loudness">Loudness</string>
+    <string name="effects_not_initialized">Effects not initialized. Ensure stream is open with session ID.</string>
+    <string name="no_supported_effects">No supported effects found on this device.</string>
+    <string name="offload_mode_warning">Warning: Effects may not be supported in PCM Offload mode.</string>
 </resources>

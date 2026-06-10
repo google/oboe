@@ -89,7 +89,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -136,6 +139,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport
+import com.google.oboe.samples.powerplay.ui.effects.EffectsBottomSheet
 import com.google.oboe.samples.powerplay.automation.IntentBasedTestSupport.LOG_TAG
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -483,6 +487,9 @@ class MainActivity : ComponentActivity() {
         var showBottomSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+        var showEffectsBottomSheet by remember { mutableStateOf(false) }
+        val effectsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
         var showInfoDialog by remember { mutableStateOf(false) }
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
@@ -508,7 +515,6 @@ class MainActivity : ComponentActivity() {
 
             playbackPosition = player.getPlaybackPositionMillis()
         }
-
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }
                 .distinctUntilChanged()
@@ -542,7 +548,6 @@ class MainActivity : ComponentActivity() {
                 pendingAutomationIntent = null
             }
         }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -577,7 +582,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-
+            IconButton(
+                onClick = { showEffectsBottomSheet = true },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Effects",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
             IconButton(
                 onClick = { filePickerLauncher.launch(arrayOf("audio/wav", "audio/x-wav")) },
                 enabled = !isLoading,
@@ -610,7 +627,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -620,7 +636,6 @@ class MainActivity : ComponentActivity() {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 }
             }
-
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 AnimatedContent(targetState = playingSongIndex.intValue, transitionSpec = {
                     (scaleIn() + fadeIn()) togetherWith (scaleOut() + fadeOut())
@@ -699,9 +714,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
@@ -725,7 +738,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
@@ -761,7 +773,20 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
+        if (showEffectsBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showEffectsBottomSheet = false },
+                sheetState = effectsSheetState,
+                containerColor = Color.White,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            ) {
+                EffectsBottomSheet(
+                    effectsController = player.effectsController,
+                    isOffloadMode = offload.intValue == 3,
+                    onDismiss = { showEffectsBottomSheet = false }
+                )
+            }
+        }
         if (showInfoDialog) {
             val performanceModeText = when (offload.intValue) {
                 0 -> "None"
@@ -874,7 +899,6 @@ class MainActivity : ComponentActivity() {
         val requestedFrames = remember { mutableIntStateOf(0) }
         val actualFrames = remember { mutableIntStateOf(0) }
         var isModified by remember { mutableStateOf(playbackSpeed != 1.0f || playbackPitch != 1.0f) }
-
         var localSpeed by remember { mutableFloatStateOf(playbackSpeed) }
         var localPitch by remember { mutableFloatStateOf(playbackPitch) }
 
@@ -1072,7 +1096,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
             AnimatedVisibility(
                 visible = offload.intValue == 3,
                 enter = androidx.compose.animation.expandVertically() + fadeIn(),
@@ -1139,7 +1162,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     @Composable
     fun ControlButton(icon: Int, size: Dp, onClick: () -> Unit) {
         Box(

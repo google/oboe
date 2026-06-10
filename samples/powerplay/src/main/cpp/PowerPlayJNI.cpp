@@ -317,6 +317,13 @@ Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_isOffloadedNa
     return player.isOffloaded();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_google_oboe_samples_powerplay_engine_PowerPlayAudioPlayer_getSessionIdNative(
+        JNIEnv *env,
+        jobject) {
+    return player.getSessionId();
+}
+
 /**
  * Native (JNI) implementation of PowerPlayAudioPlayer.getCurrentlyPlayingIndexNative()
  */
