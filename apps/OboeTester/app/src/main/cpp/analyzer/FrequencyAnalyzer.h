@@ -20,10 +20,13 @@
 #include <vector>
 #include <mutex>
 #include <string>
+#include <thread>
+#include <condition_variable>
 #include "oboe/Oboe.h"
 #include "LatencyAnalyzer.h"
 #include "PseudoRandom.h"
 #include "AverageBuffer.h"
+#include "fft.h"
 
 /**
  * Analyze frequency response by playing a stimulus and measuring the input.
@@ -31,10 +34,11 @@
 class FrequencyAnalyzer : public LoopbackProcessor {
 public:
     FrequencyAnalyzer();
-    virtual ~FrequencyAnalyzer() = default;
+    virtual ~FrequencyAnalyzer();
 
     void reset() override;
     void prepareToTest() override;
+    void stop();
 
     result_code processInputFrame(const float* frameData,
                                   int channelCount) override;
@@ -54,6 +58,10 @@ private:
     const static int SINE_WAVE_FREQUENCY = 1000; // Hz
     const static int WINDOW_SIZE = 4096;
 
+    const static int FFT_THREAD_WAITTING = 0;
+    const static int FFT_THREAD_READY = 1;
+    const static int FFT_THREAD_END = 2;
+
     PseudoRandom mWhiteNoise;
     float mAmplitude = 0.8f;
     float mBalance = 0.5f;
@@ -71,6 +79,14 @@ private:
     AverageBuffer mAverageBuffer;
     int mMeasurementWindowFrames = 0;
     int mFramesAccumulated = 0;
+    std::mutex mFftThreadLock;
+    std::unique_ptr<std::thread> mFftThread;
+    std::condition_variable mFftThreadCond;
+    int mFftThreadFlag;
+    CVector mFftThreadInput;
+
+    void fftThreadFunction();
+    void joinFftThread();
 };
 
 #endif //OBOETESTER_FREQUENCYANALYZER_H

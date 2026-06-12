@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "FrequencyAnalyzer.h"
 #include <math.h>
-#include "fft.h"
+#include "FrequencyAnalyzer.h"
+#include "android_debug.h"
 
 FrequencyAnalyzer::FrequencyAnalyzer() : LoopbackProcessor() {
     mWindow.resize(WINDOW_SIZE);
@@ -29,31 +29,66 @@ FrequencyAnalyzer::FrequencyAnalyzer() : LoopbackProcessor() {
     }
     mInputBuffer.resize(WINDOW_SIZE);
     mAverageBuffer.resize(WINDOW_SIZE / 2);
+    mFftThreadInput.resize(WINDOW_SIZE);
 
     mInputBufferIndex = 0;
     mFramesAccumulated = 0;
     mOutputPhase = 0.0f;
 
+    mFftThreadFlag = FFT_THREAD_WAITTING;
+    mFftThread = nullptr;
     std::lock_guard<std::mutex> lock(mFftBufferLock);
     mFftMagnitudeBuffer.clear();
+}
+
+FrequencyAnalyzer::~FrequencyAnalyzer() {
+    joinFftThread();
+}
+
+void FrequencyAnalyzer::joinFftThread() {
+    if (mFftThread != nullptr && mFftThread->joinable()) {
+        {
+            std::lock_guard<std::mutex> lock(mFftThreadLock);
+            mFftThreadFlag = FFT_THREAD_END;
+            mFftThreadCond.notify_one();
+        }
+        mFftThread->join();
+        mFftThread = nullptr;
+    }
 }
 
 void FrequencyAnalyzer::reset() {
+    LOGD("FrequencyAnalyzer resets");
     LoopbackProcessor::reset();
     mInputBufferIndex = 0;
     mOutputPhase = 0.0f;
-
-    mAverageBuffer.clear();
-    mFramesAccumulated = 0;
-
-    std::lock_guard<std::mutex> lock(mFftBufferLock);
-    mFftMagnitudeBuffer.clear();
+    
+    // Reset resources for fft thread
+    {
+        std::lock_guard<std::mutex> threadLock(mFftThreadLock);
+        mAverageBuffer.clear();
+        mFramesAccumulated = 0;
+    }
+    // Clean output buffer
+    {
+        std::lock_guard<std::mutex> lock(mFftBufferLock);
+        mFftMagnitudeBuffer.clear();
+    }
 }
 
 void FrequencyAnalyzer::prepareToTest() {
+    LOGD("FrequencyAnalyzer prepares to test");
     LoopbackProcessor::prepareToTest();
     mPhaseIncrement = 2.0 * M_PI * SINE_WAVE_FREQUENCY / getSampleRate();
     mMeasurementWindowFrames = MEASUREMENT_TIME_SEC * getSampleRate();
+    joinFftThread();
+    mFftThreadFlag = FFT_THREAD_WAITTING;
+    mFftThread = std::make_unique<std::thread>(&FrequencyAnalyzer::fftThreadFunction, this);
+}
+
+void FrequencyAnalyzer::stop() {
+    LOGD("FrequencyAnalyzer stops");
+    joinFftThread();
 }
 
 LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float* frameData,
@@ -61,50 +96,67 @@ LoopbackProcessor::result_code FrequencyAnalyzer::processInputFrame(const float*
     float sample = frameData[getInputChannel()];
     mInputBuffer[mInputBufferIndex++] = sample;
     if (mInputBufferIndex >= WINDOW_SIZE) {
-        // Perform FFT
-        std::lock_guard<std::mutex> lock(mFftBufferLock);
-        CVector fftInput(WINDOW_SIZE);
+        // Set data for FFT thread
+        std::lock_guard<std::mutex> lock(mFftThreadLock);
         for (int i = 0; i < WINDOW_SIZE; i++) {
             double windowed = mInputBuffer[i] * mWindow[i];
-            fftInput[i] = Complex(windowed, 0);
+            mFftThreadInput[i] = Complex(windowed, 0);
         }
-        fft(fftInput);
-
-        // Accumulate magnitude
-        std::vector<double> currentMagnitudes(WINDOW_SIZE / 2);
-        for (int i = 0; i < WINDOW_SIZE / 2; i++) {
-            double mag;
-            if (mSignalType == 1) { // Sine
-                mag = 2.0 * std::abs(fftInput[i]) / mWindowSum;
-            } else {
-                mag = 4.0 * std::abs(fftInput[i]) / std::sqrt(mIncoherentPower);
-            }
-            if (mag < 1e-9) mag = 1e-9; // to prevent log(0)
-            currentMagnitudes[i] = mag;
-        }
-        mAverageBuffer.accumulate(currentMagnitudes.data(),
-                                  currentMagnitudes.size());
+        mFftThreadFlag = FFT_THREAD_READY;
+        mFftThreadCond.notify_one();
         mInputBufferIndex = 0;
     }
 
-    mFramesAccumulated++;
-    if (mFramesAccumulated >= mMeasurementWindowFrames) {
-        // End of measurement window! Compute the average and save it to mFftMagnitudeBuffer
-        std::lock_guard<std::mutex> lock(mFftBufferLock);
-        if (mFftMagnitudeBuffer.empty()) {
-            // First measurement window
-            mFftMagnitudeBuffer.resize(WINDOW_SIZE / 2);
-        }
-        for (int i = 0; i < WINDOW_SIZE / 2; i++) {
-            double avgMag = mAverageBuffer.getAverageAt(i);
-            double dbfs = 20.0 * std::log10(avgMag);
-            mFftMagnitudeBuffer[i] = static_cast<float>(dbfs);
-        }
-        mAverageBuffer.clear();
-        mFramesAccumulated = 0;
-    }
-
     return RESULT_OK;
+}
+
+void FrequencyAnalyzer::fftThreadFunction() {
+    bool isRunning = true;
+    LOGI("Fft thread started");
+    while (isRunning) {
+        // Wait for data or end condition
+        std::unique_lock<std::mutex> lock(mFftThreadLock);
+        mFftThreadCond.wait(lock, [&] () { return mFftThreadFlag != FFT_THREAD_WAITTING;});
+
+        if (mFftThreadFlag == FFT_THREAD_READY) {
+            fft(mFftThreadInput);
+            // Accumulate magnitude
+            std::vector<double> currentMagnitudes(WINDOW_SIZE / 2);
+            for (int i = 0; i < WINDOW_SIZE / 2; i++) {
+                double mag;
+                if (mSignalType == 1) { // Sine
+                    mag = 2.0 * std::abs(mFftThreadInput[i]) / mWindowSum;
+                } else {
+                    mag = 4.0 * std::abs(mFftThreadInput[i]) / std::sqrt(mIncoherentPower);
+                }
+                if (mag < 1e-9) mag = 1e-9; // to prevent log(0)
+                currentMagnitudes[i] = mag;
+            }
+            mAverageBuffer.accumulate(currentMagnitudes.data(),
+                                      currentMagnitudes.size());
+            mFramesAccumulated += WINDOW_SIZE;
+            if (mFramesAccumulated >= mMeasurementWindowFrames) {
+                LOGD("Fft thread is exporting the result");
+                // End of measurement window! Compute the average and save it to mFftMagnitudeBuffer
+                std::lock_guard<std::mutex> outputLock(mFftBufferLock);
+                if (mFftMagnitudeBuffer.empty()) {
+                    // First measurement window
+                    mFftMagnitudeBuffer.resize(WINDOW_SIZE / 2);
+                }
+                for (int i = 0; i < WINDOW_SIZE / 2; i++) {
+                    double avgMag = mAverageBuffer.getAverageAt(i);
+                    double dbfs = 20.0 * std::log10(avgMag);
+                    mFftMagnitudeBuffer[i] = static_cast<float>(dbfs);
+                }
+                mAverageBuffer.clear();
+                mFramesAccumulated = 0;
+            }
+            mFftThreadFlag = FFT_THREAD_WAITTING;
+        } else if (mFftThreadFlag == FFT_THREAD_END) {
+            isRunning = false;
+        }
+    }
+    LOGI("Fft thread stopped");
 }
 
 void FrequencyAnalyzer::setSignalType(int signalType) {

@@ -19,6 +19,9 @@ add_library(oboetester SHARED ${app_native_sources})
 # Set the path to the Oboe library directory
 set (OBOE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 
+# Set the path to the app source directory
+set (APP_NATIVE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp)
+
 # Add the Oboe library as a subproject. Since Oboe is an out-of-tree source library we must also
 # specify a binary directory
 add_subdirectory(${OBOE_DIR} ./oboe-bin)
@@ -27,6 +30,7 @@ add_subdirectory(${OBOE_DIR} ./oboe-bin)
 include_directories(
     ${OBOE_DIR}/include
     ${OBOE_DIR}/src
+    ${APP_NATIVE_SOURCE_DIR}
 )
 
 ### END OBOE INCLUDE SECTION ###
