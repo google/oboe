@@ -885,6 +885,11 @@ class ActivityFrequency : public ActivityFullDuplex {
       return mFullDuplexAnalyzer->start();
   }
 
+  oboe::Result stop() override {
+      mFrequencyAnalyzer.stop();
+      return ActivityFullDuplex::stop();
+  }
+
   void configureBuilder(bool isInput, oboe::AudioStreamBuilder &builder) override;
 
   void setSignalType(int signalType) override {
