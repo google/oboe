@@ -66,7 +66,16 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "Attempting to execute " + executablePath);
 
-            Process process = Runtime.getRuntime().exec(executablePath);
+            String gtestFilter = getIntent().getStringExtra("gtest_filter");
+            String[] command;
+            if (gtestFilter != null && !gtestFilter.isEmpty()) {
+                command = new String[]{executablePath, "--gtest_filter=" + gtestFilter};
+                Log.d(TAG, "Using gtest_filter: " + gtestFilter);
+            } else {
+                command = new String[]{executablePath};
+            }
+
+            Process process = Runtime.getRuntime().exec(command);
 
             BufferedReader stdInput = new BufferedReader(new
                     InputStreamReader(process.getInputStream()));

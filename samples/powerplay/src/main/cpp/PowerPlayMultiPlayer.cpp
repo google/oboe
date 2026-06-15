@@ -53,6 +53,7 @@ bool PowerPlayMultiPlayer::openStream(oboe::PerformanceMode performanceMode) {
             ->setErrorCallback(mErrorCallback)
             ->setPresentationCallback(mPresentationCallback)
             ->setFormat(AudioFormat::Float)
+            ->setFormatConversionAllowed(true)
             ->setSampleRate(48000)
             ->setPerformanceMode(performanceMode)
             ->setUsage(Usage::Media)

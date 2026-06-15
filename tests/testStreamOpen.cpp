@@ -351,6 +351,21 @@ TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsFloatWithFormatConversionAllo
     ASSERT_TRUE(closeStream());
 }
 
+TEST_F(StreamOpenOutput, PlaybackPowerSavingOffloadedFloatReturnsFloatWithFormatConversionAllowed) {
+    mBuilder.setDirection(Direction::Output);
+    mBuilder.setFormat(AudioFormat::Float);
+    mBuilder.setPerformanceMode(PerformanceMode::PowerSavingOffloaded);
+    mBuilder.setFormatConversionAllowed(true);
+    mBuilder.setChannelCount(2);
+    mBuilder.setSampleRate(48000);
+    mBuilder.setUsage(Usage::Media);
+    mBuilder.setContentType(ContentType::Music);
+    ASSERT_TRUE(openStream());
+    ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
+    ASSERT_TRUE(closeStream());
+}
+
+
 TEST_F(StreamOpenOutput, PlaybackFormatFloatReturnsFloatOnLollipopAndLater){
 
     if (getSdkVersion() >= __ANDROID_API_L__){

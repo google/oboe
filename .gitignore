@@ -5,4 +5,5 @@
 .idea
 build
 .logpile
+build_tests/
 

@@ -279,6 +279,18 @@ bool QuirksManager::isConversionNeeded(
              "stream", __func__);
     }
 
+    // Add quirk for float output when using PCM offload because offload generally doesn't support float.
+    if (isFloat
+            && !isInput
+            && builder.isFormatConversionAllowed()
+            && builder.getPerformanceMode() == PerformanceMode::PowerSavingOffloaded
+            ) {
+        childBuilder.setFormat(AudioFormat::I16);
+        conversionNeeded = true;
+        LOGI("QuirksManager::%s() float was requested in offload mode, forcing internal format to I16 and enabling conversion", __func__);
+    }
+
+
     // Channel Count conversions
     if (OboeGlobals::areWorkaroundsEnabled()
             && builder.isChannelConversionAllowed()
