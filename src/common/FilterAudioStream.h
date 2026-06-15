@@ -189,6 +189,25 @@ public:
         return result;
     }
 
+    ResultWithValue<int64_t> flushFromFrame(FlushFromAccuracy accuracy,
+                                            int64_t positionInFrames) override {
+        int64_t childPosition = static_cast<int64_t>(positionInFrames / mRateScaler);
+        auto result = mChildStream->flushFromFrame(accuracy, childPosition);
+        if (result) {
+            return ResultWithValue<int64_t>(static_cast<int64_t>(result.value() * mRateScaler));
+        }
+        return result;
+    }
+
+    oboe::Result setPlaybackParameters(const PlaybackParameters& parameters) override {
+        return mChildStream->setPlaybackParameters(parameters);
+    }
+
+    ResultWithValue<PlaybackParameters> getPlaybackParameters() override {
+        return mChildStream->getPlaybackParameters();
+    }
+
+
     DataCallbackResult onAudioReady(AudioStream *oboeStream,
             void *audioData,
             int32_t numFrames) override;

@@ -362,6 +362,23 @@ TEST_F(StreamOpenOutput, PlaybackPowerSavingOffloadedFloatReturnsFloatWithFormat
     mBuilder.setContentType(ContentType::Music);
     ASSERT_TRUE(openStream());
     ASSERT_EQ(mStream->getFormat(), AudioFormat::Float);
+
+    if (getSdkVersion() >= 35) {
+        auto flushRes = mStream->flushFromFrame(FlushFromAccuracy::Undefined, 0);
+        ASSERT_NE(flushRes.error(), Result::ErrorUnimplemented);
+    }
+
+    if (getSdkVersion() >= 37) {
+        PlaybackParameters params{};
+        params.speed = 1.0f;
+        params.pitch = 1.0f;
+        Result res = mStream->setPlaybackParameters(params);
+        ASSERT_NE(res, Result::ErrorUnimplemented);
+
+        auto getRes = mStream->getPlaybackParameters();
+        ASSERT_NE(getRes.error(), Result::ErrorUnimplemented);
+    }
+
     ASSERT_TRUE(closeStream());
 }
 
