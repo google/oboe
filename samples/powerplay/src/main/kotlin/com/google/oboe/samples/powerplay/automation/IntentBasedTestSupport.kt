@@ -117,7 +117,7 @@ object IntentBasedTestSupport {
     fun getPerformanceModeFromText(text: String?): OboePerformanceMode {
         return when (text?.lowercase()) {
             PERF_MODE_NONE -> OboePerformanceMode.None
-            PERF_MODE_LOW_LATENCY -> OboePerformanceMode.LowLatency
+            PERF_MODE_LOW_LATENCY -> OboePerformanceMode.None // Map low latency to None
             PERF_MODE_POWER_SAVING -> OboePerformanceMode.PowerSaving
             PERF_MODE_OFFLOAD -> OboePerformanceMode.PowerSavingOffloaded
             else -> OboePerformanceMode.None

@@ -790,7 +790,6 @@ class MainActivity : ComponentActivity() {
         if (showInfoDialog) {
             val performanceModeText = when (offload.intValue) {
                 0 -> "None"
-                1 -> "Low Latency"
                 2 -> "Power Saving"
                 else -> "PCM Offload"
             }
@@ -922,14 +921,21 @@ class MainActivity : ComponentActivity() {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
-                if (isOffloadSupported) radioOptions.add("PCM Offload")
+                val perfModeOptions = mutableListOf(
+                    "None" to OboePerformanceMode.None,
+                    "Power Saving" to OboePerformanceMode.PowerSaving
+                )
+                if (isOffloadSupported) {
+                    perfModeOptions.add("PCM Offload" to OboePerformanceMode.PowerSavingOffloaded)
+                }
 
                 val (selectedOption, onOptionSelected) = remember {
-                    mutableStateOf(radioOptions[offload.intValue])
+                    mutableStateOf(
+                        perfModeOptions.firstOrNull { it.second.value == offload.intValue }?.first ?: "None"
+                    )
                 }
                 val enabled = !isPlaying
-                radioOptions.forEachIndexed { index, text ->
+                perfModeOptions.forEach { (text, mode) ->
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -940,8 +946,8 @@ class MainActivity : ComponentActivity() {
                                 onClick = {
                                     if (enabled) {
                                         onOptionSelected(text)
-                                        player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
-                                        offload.intValue = index
+                                        player.updatePerformanceMode(mode)
+                                        offload.intValue = mode.value
                                     }
                                 },
                                 role = Role.RadioButton
@@ -970,46 +976,12 @@ class MainActivity : ComponentActivity() {
             Text(
                 text = when (offload.intValue) {
                     0 -> "Performance Mode: None"
-                    1 -> "Performance Mode: Low Latency"
                     2 -> "Performance Mode: Power Saving"
                     else -> "Performance Mode: PCM Offload"
                 },
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodyMedium
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if (isMMapSupported) {
-                    Checkbox(
-                        checked = !isMMapEnabled.value,
-                        onCheckedChange = {
-                            if (!isPlaying) {
-                                isMMapEnabled.value = !it
-                                player.setMMapEnabled(isMMapEnabled.value)
-                            }
-                        },
-                        enabled = !isPlaying
-                    )
-                    Text(
-                        text = "Disable MMAP",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-                Text(
-                    text = when (isMMapEnabled.value) {
-                        true -> "| Current Mode: MMAP"
-                        false -> "| Current Mode: Classic"
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
 
             val isPlaybackParamsSupported = android.os.Build.VERSION.SDK_INT >= 37
             val isOffload = offload.intValue == 3
