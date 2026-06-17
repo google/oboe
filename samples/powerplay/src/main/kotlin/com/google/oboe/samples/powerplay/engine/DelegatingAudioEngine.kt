@@ -26,7 +26,6 @@ import com.google.oboe.samples.powerplay.effects.EffectsController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class DelegatingAudioEngine(
@@ -38,6 +37,14 @@ class DelegatingAudioEngine(
 
     private val oboeEngine = PowerPlayAudioPlayer()
     private val exoPlayerEngine = ExoPlayerAudioEngine(context)
+
+    // Desired playback settings, mirrored to both engines. Tearing down and re-creating an
+    // engine's native stream on switch resets these to defaults, so they are re-applied to the
+    // newly active engine in switchEngine().
+    private var desiredVolume = 1.0f
+    private var desiredSpeed = 1.0f
+    private var desiredPitch = 1.0f
+    private var desiredLooping = false
 
     private val currentEngine: AudioEngine
         get() = when (_activeEngineType) {
@@ -100,6 +107,12 @@ class DelegatingAudioEngine(
 
         currentEngine.setupAudioStream()
 
+        // setupAudioStream creates a fresh native stream/player at default settings; restore the
+        // user's mirrored playback settings on the now-active engine.
+        currentEngine.setVolume(desiredVolume)
+        currentEngine.setPlaybackParameters(desiredSpeed, desiredPitch)
+        currentEngine.setLooping(index, desiredLooping)
+
         _playerState.value = currentEngine.playerStateFlow.value
         _currentSongIndex.value = currentEngine.currentSongIndexFlow.value
 
@@ -130,11 +143,13 @@ class DelegatingAudioEngine(
     }
 
     override fun setLooping(index: Int, looping: Boolean) {
+        desiredLooping = looping
         oboeEngine.setLooping(index, looping)
         exoPlayerEngine.setLooping(index, looping)
     }
 
     override fun setVolume(volume: Float) {
+        desiredVolume = volume
         oboeEngine.setVolume(volume)
         exoPlayerEngine.setVolume(volume)
     }
@@ -161,9 +176,12 @@ class DelegatingAudioEngine(
     }
 
     override fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
+        // Oboe probes the WAV header and returns the metadata; mirror the source into ExoPlayer
+        // and hand it the duration Oboe computed.
         val wavInfo = oboeEngine.loadFile(assetMgr, filename, id)
         if (wavInfo != null) {
-            exoPlayerEngine.loadFile(filename, id, wavInfo.durationMs)
+            exoPlayerEngine.loadFile(assetMgr, filename, id)
+            exoPlayerEngine.setTrackDuration(id, wavInfo.durationMs)
         }
         return wavInfo
     }
@@ -171,7 +189,8 @@ class DelegatingAudioEngine(
     override fun loadLocalFile(contentResolver: ContentResolver, uri: Uri, index: Int): WavFileInfo? {
         val wavInfo = oboeEngine.loadLocalFile(contentResolver, uri, index)
         if (wavInfo != null) {
-            exoPlayerEngine.loadLocalFile(uri, index, wavInfo.durationMs)
+            exoPlayerEngine.loadLocalFile(contentResolver, uri, index)
+            exoPlayerEngine.setTrackDuration(index, wavInfo.durationMs)
         }
         return wavInfo
     }
@@ -183,9 +202,13 @@ class DelegatingAudioEngine(
     }
 
     override fun setPlaybackParameters(speed: Float, pitch: Float): Boolean {
-        val r1 = oboeEngine.setPlaybackParameters(speed, pitch)
-        val r2 = exoPlayerEngine.setPlaybackParameters(speed, pitch)
-        return r1 && r2
+        desiredSpeed = speed
+        desiredPitch = pitch
+        val oboeResult = oboeEngine.setPlaybackParameters(speed, pitch)
+        val exoResult = exoPlayerEngine.setPlaybackParameters(speed, pitch)
+        // Report the result of the engine that is actually playing, so the inactive engine
+        // (e.g. Oboe failing below API 37) doesn't veto a change the active engine applied.
+        return if (_activeEngineType == AudioEngineType.Oboe) oboeResult else exoResult
     }
 
     override fun setMMapEnabled(enabled: Boolean) {

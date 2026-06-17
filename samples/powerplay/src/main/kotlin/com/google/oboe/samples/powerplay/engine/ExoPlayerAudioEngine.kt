@@ -33,6 +33,7 @@ import com.google.oboe.samples.powerplay.effects.EffectsController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import java.util.concurrent.ConcurrentHashMap
 
 class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
     private var exoPlayer: ExoPlayer? = null
@@ -41,7 +42,7 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
     override val playerStateFlow: StateFlow<PlayerState> get() = _playerState
     override fun getPlayerStateLive(): LiveData<PlayerState> = _playerState.asLiveData()
 
-    private var _currentSongIndex = MutableStateFlow(0)
+    private val _currentSongIndex = MutableStateFlow(0)
     override val currentSongIndexFlow: StateFlow<Int> get() = _currentSongIndex
     override fun getCurrentSongIndexLive(): LiveData<Int> = _currentSongIndex.asLiveData()
     override val currentSongIndex: Int get() = _currentSongIndex.value
@@ -50,8 +51,10 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
     override val effectsController: EffectsController? = null
     override val engineType = AudioEngineType.ExoPlayer
 
-    private val playlistItems = mutableMapOf<Int, MediaItem>()
-    private val trackDurations = mutableMapOf<Int, Long>()
+    // Written from the background file-loading thread and read on the main thread, so use a
+    // concurrent map to avoid corrupting the structure under concurrent access.
+    private val playlistItems = ConcurrentHashMap<Int, MediaItem>()
+    private val trackDurations = ConcurrentHashMap<Int, Long>()
 
     private var currentVolume = 1.0f
     private var currentPlaybackParameters = PlaybackParameters.DEFAULT
@@ -73,24 +76,10 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
         val playWhenReady = player.playWhenReady
 
         when (playbackState) {
-            Player.STATE_READY -> {
-                if (playWhenReady) {
-                    _playerState.update { PlayerState.Playing }
-                } else {
-                    _playerState.update { PlayerState.Stopped }
-                }
+            Player.STATE_READY, Player.STATE_BUFFERING -> {
+                _playerState.update { if (playWhenReady) PlayerState.Playing else PlayerState.Stopped }
             }
-            Player.STATE_ENDED -> {
-                _playerState.update { PlayerState.Stopped }
-            }
-            Player.STATE_BUFFERING -> {
-                if (playWhenReady) {
-                    _playerState.update { PlayerState.Playing }
-                } else {
-                    _playerState.update { PlayerState.Stopped }
-                }
-            }
-            Player.STATE_IDLE -> {
+            Player.STATE_ENDED, Player.STATE_IDLE -> {
                 _playerState.update { PlayerState.Stopped }
             }
         }
@@ -99,26 +88,30 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
     @OptIn(UnstableApi::class)
     override fun setupAudioStream(channelCount: Int) {
         if (exoPlayer == null) {
-            val builder = ExoPlayer.Builder(context)
-            exoPlayer = builder.build().apply {
+            exoPlayer = ExoPlayer.Builder(context).build().apply {
                 addListener(playerListener)
                 volume = currentVolume
                 playbackParameters = currentPlaybackParameters
-
-                val mode = if (offloadSchedulingEnabled) {
-                    TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
-                } else {
-                    TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
-                }
-                val offloadPrefs = TrackSelectionParameters.AudioOffloadPreferences.Builder()
-                    .setAudioOffloadMode(mode)
-                    .build()
-                trackSelectionParameters = trackSelectionParameters.buildUpon()
-                    .setAudioOffloadPreferences(offloadPrefs)
-                    .build()
+                applyOffloadPreferences(this)
             }
         }
         _playerState.update { PlayerState.Initialized }
+    }
+
+    /** Applies the current offload-scheduling preference to [player]. */
+    @OptIn(UnstableApi::class)
+    private fun applyOffloadPreferences(player: ExoPlayer) {
+        val mode = if (offloadSchedulingEnabled) {
+            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
+        } else {
+            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
+        }
+        val offloadPrefs = TrackSelectionParameters.AudioOffloadPreferences.Builder()
+            .setAudioOffloadMode(mode)
+            .build()
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+            .setAudioOffloadPreferences(offloadPrefs)
+            .build()
     }
 
     override fun startPlaying(index: Int, mode: OboePerformanceMode?) {
@@ -170,16 +163,12 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
         exoPlayer = null
     }
 
+    // ExoPlayer probes audio properties only after preparing an item, so loadFile/loadLocalFile
+    // just register the source URI here and return null; the WAV duration is supplied separately
+    // via setTrackDuration() from the duration the Oboe engine computed.
     override fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
-        val assetUri = Uri.parse("asset:///$filename")
-        playlistItems[id] = MediaItem.fromUri(assetUri)
+        playlistItems[id] = MediaItem.fromUri(Uri.parse("asset:///$filename"))
         return null
-    }
-
-    fun loadFile(filename: String, id: Int, durationMs: Long) {
-        val assetUri = Uri.parse("asset:///$filename")
-        playlistItems[id] = MediaItem.fromUri(assetUri)
-        trackDurations[id] = durationMs
     }
 
     override fun loadLocalFile(contentResolver: ContentResolver, uri: Uri, index: Int): WavFileInfo? {
@@ -187,15 +176,24 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
         return null
     }
 
-    fun loadLocalFile(uri: Uri, index: Int, durationMs: Long) {
-        playlistItems[index] = MediaItem.fromUri(uri)
+    /** Records the duration (probed by the Oboe engine) for the track at [index]. */
+    fun setTrackDuration(index: Int, durationMs: Long) {
         trackDurations[index] = durationMs
     }
 
     override fun removeSampleSource(index: Int): Boolean {
-        playlistItems.remove(index)
+        val existed = playlistItems.remove(index) != null
         trackDurations.remove(index)
-        return true
+        // The native Oboe player erases from a vector and the UI playlist uses removeAt(index),
+        // both of which shift higher indices down by one. Mirror that here so the index-keyed
+        // maps stay aligned with track positions.
+        playlistItems.keys.filter { it > index }.sorted().forEach { key ->
+            playlistItems[key - 1] = playlistItems.remove(key)!!
+        }
+        trackDurations.keys.filter { it > index }.sorted().forEach { key ->
+            trackDurations[key - 1] = trackDurations.remove(key)!!
+        }
+        return existed
     }
 
     override fun setLooping(index: Int, looping: Boolean) {
@@ -221,21 +219,7 @@ class ExoPlayerAudioEngine(private val context: Context) : AudioEngine {
     @OptIn(UnstableApi::class)
     override fun setOffloadSchedulingEnabled(enabled: Boolean) {
         offloadSchedulingEnabled = enabled
-        val mode = if (enabled) {
-            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED
-        } else {
-            TrackSelectionParameters.AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED
-        }
-
-        val offloadPrefs = TrackSelectionParameters.AudioOffloadPreferences.Builder()
-            .setAudioOffloadMode(mode)
-            .build()
-
-        exoPlayer?.let { player ->
-            player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-                .setAudioOffloadPreferences(offloadPrefs)
-                .build()
-        }
+        exoPlayer?.let { applyOffloadPreferences(it) }
     }
 
     override fun isOffloadSchedulingEnabled(): Boolean = offloadSchedulingEnabled

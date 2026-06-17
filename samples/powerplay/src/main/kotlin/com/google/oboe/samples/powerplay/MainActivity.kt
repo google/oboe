@@ -500,9 +500,12 @@ class MainActivity : ComponentActivity() {
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
         var isSeeking by remember { mutableStateOf(false) }
-        val duration = remember(playingSongIndex.intValue, assetsReady, playList.size) { player.getDurationMillis(playingSongIndex.intValue) }
-        LaunchedEffect(isPlaying, offload.intValue) {
-            if (isPlaying && offload.intValue != 3) {
+        val duration = remember(playingSongIndex.intValue, assetsReady, playList.size, engineTypeState.value) { player.getDurationMillis(playingSongIndex.intValue) }
+        // ExoPlayer reports position in every mode; only Oboe's PCM Offload mode (3) doesn't, so
+        // the seek bar / position polling are suppressed solely for that case.
+        val isPositionTrackable = engineTypeState.value == AudioEngineType.ExoPlayer || offload.intValue != 3
+        LaunchedEffect(isPlaying, offload.intValue, engineTypeState.value) {
+            if (isPlaying && isPositionTrackable) {
                 while (true) {
                     if (!isSeeking) {
                         playbackPosition = player.getPlaybackPositionMillis()
@@ -684,7 +687,7 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AnimatedVisibility(visible = offload.intValue != 3) {
+                AnimatedVisibility(visible = isPositionTrackable) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -923,7 +926,16 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(playbackSpeed) { localSpeed = playbackSpeed }
         LaunchedEffect(playbackPitch) { localPitch = playbackPitch }
 
-        var currentEngineType by remember { mutableStateOf(player.engineType) }
+        // engineTypeState is the single source of truth for the active engine, shared with the
+        // Effects button and the Info dialog. Updating it here keeps the whole screen in sync.
+        val onSelectEngine: (AudioEngineType) -> Unit = { type ->
+            if (engineTypeState.value != type) {
+                engineTypeState.value = type
+                (player as? DelegatingAudioEngine)?.switchEngine(type)
+                isMMapEnabled.value = player.isMMapEnabled()
+                isOffloadSchedulingEnabledState.value = player.isOffloadSchedulingEnabled()
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -946,25 +958,11 @@ class MainActivity : ComponentActivity() {
                 AudioEngineType.values().forEach { type ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable {
-                            if (currentEngineType != type) {
-                                currentEngineType = type
-                                (player as? DelegatingAudioEngine)?.switchEngine(type)
-                                isMMapEnabled.value = player.isMMapEnabled()
-                                isOffloadSchedulingEnabledState.value = player.isOffloadSchedulingEnabled()
-                            }
-                        }
+                        modifier = Modifier.clickable { onSelectEngine(type) }
                     ) {
                         RadioButton(
-                            selected = (currentEngineType == type),
-                            onClick = {
-                                if (currentEngineType != type) {
-                                    currentEngineType = type
-                                    (player as? DelegatingAudioEngine)?.switchEngine(type)
-                                    isMMapEnabled.value = player.isMMapEnabled()
-                                    isOffloadSchedulingEnabledState.value = player.isOffloadSchedulingEnabled()
-                                }
-                            }
+                            selected = (engineTypeState.value == type),
+                            onClick = { onSelectEngine(type) }
                         )
                         Text(
                             text = type.name,
@@ -975,7 +973,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            if (currentEngineType == AudioEngineType.ExoPlayer) {
+            if (engineTypeState.value == AudioEngineType.ExoPlayer) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -995,7 +993,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            if (currentEngineType == AudioEngineType.Oboe) {
+            if (engineTypeState.value == AudioEngineType.Oboe) {
                 Text(
                     text = "Performance Modes",
                     fontSize = 20.sp,
@@ -1100,14 +1098,14 @@ class MainActivity : ComponentActivity() {
             val isOffload = offload.intValue == 3
             val isMMap = isMMapEnabled.value
 
-            var canUseSpeed = isPlaybackParamsSupported || currentEngineType == AudioEngineType.ExoPlayer
-            var canUsePitch = isPlaybackParamsSupported || currentEngineType == AudioEngineType.ExoPlayer
+            val canUseSpeed = isPlaybackParamsSupported || engineTypeState.value == AudioEngineType.ExoPlayer
+            val canUsePitch = isPlaybackParamsSupported || engineTypeState.value == AudioEngineType.ExoPlayer
 
             // For testing: allow everything except API 37 gate
             // The previous offload restrictions have been removed to test allowing everything.
 
             Spacer(modifier = Modifier.height(16.dp))
-            val speedSupportText = if (!isPlaybackParamsSupported && currentEngineType == AudioEngineType.Oboe) " (Requires API 37)" else ""
+            val speedSupportText = if (!isPlaybackParamsSupported && engineTypeState.value == AudioEngineType.Oboe) " (Requires API 37)" else ""
             Text(
                 text = "Playback Speed: ${"%.2f".format(playbackSpeed)}x$speedSupportText",
                 style = MaterialTheme.typography.bodyMedium,
@@ -1135,7 +1133,7 @@ class MainActivity : ComponentActivity() {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            val pitchSupportText = if (!isPlaybackParamsSupported && currentEngineType == AudioEngineType.Oboe) " (Requires API 37)" else ""
+            val pitchSupportText = if (!isPlaybackParamsSupported && engineTypeState.value == AudioEngineType.Oboe) " (Requires API 37)" else ""
             Text(
                 text = "Playback Pitch: ${"%.2f".format(playbackPitch)}x$pitchSupportText",
                 style = MaterialTheme.typography.bodyMedium,
