@@ -37,12 +37,14 @@ public class FrequencyPreset {
     final public int preferredOutput;
     final public Band1CheckType band1CheckType;
     final public float band1Threshold;
+    final public int instructionsResId;
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+    public FrequencyPreset(String name, int instructionsResId, int sourceResId, int inputPreset, int[] anchors,
             List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
             int preferredOutput, Band1CheckType band1CheckType, float band1Threshold,
             float balance) {
         this.name = name;
+        this.instructionsResId = instructionsResId;
         this.sourceResId = sourceResId;
         this.inputPreset = inputPreset;
         this.anchors = anchors;
@@ -55,17 +57,17 @@ public class FrequencyPreset {
         this.band1Threshold = band1Threshold;
     }
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+    public FrequencyPreset(String name, int instructionsResId, int sourceResId, int inputPreset, int[] anchors,
             List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
             int preferredOutput, Band1CheckType band1CheckType, float band1Threshold) {
-        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
+        this(name, instructionsResId, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
                 preferredOutput, band1CheckType, band1Threshold, 0.5f);
     }
 
-    public FrequencyPreset(String name, int sourceResId, int inputPreset, int[] anchors,
+    public FrequencyPreset(String name, int instructionsResId, int sourceResId, int inputPreset, int[] anchors,
             List<FrequencyBandSpec.BandThreshold> bands, float passThreshold, int preferredInput,
             int preferredOutput) {
-        this(name, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
+        this(name, instructionsResId, sourceResId, inputPreset, anchors, bands, passThreshold, preferredInput,
                 preferredOutput, Band1CheckType.NONE, 0.0f, 0.5f);
     }
 

@@ -39,6 +39,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private int mBottomThresholdLineId = -1;
     private TextView mTestStatusView;
     private TextView mTestResultView;
+    private TextView mInstructionsView;
     private FrequencySettingView mFrequencySetting;
     private StreamConfigurationView mInputConfigView;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
@@ -70,6 +71,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStopButton2 = findViewById(R.id.button_stop_2);
         mTestStatusView = findViewById(R.id.testStatusView);
         mTestResultView = findViewById(R.id.testResultView);
+        mInstructionsView = findViewById(R.id.test_dual_frequency_instructions);
 
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
@@ -97,6 +99,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                             mAudioOutTester.setSignalType(
                                     FrequencySettingView.getSignalIndexForSource(
                                             active.sourceResId));
+                            if (mInstructionsView != null) {
+                                mInstructionsView.setText(active.instructionsResId);
+                            }
                         }
                     }
                 });

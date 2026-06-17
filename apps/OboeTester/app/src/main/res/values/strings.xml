@@ -296,7 +296,57 @@
     <string name="skipTest">Skip</string>
     <string name="test_datapath_instructions">Attach peripherals\nVolume up, [START]</string>
     <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [RUN]</string>
-
+    <string name="test_dual_frequency_instructions">
+        Connect a USB audio interface supporting both mic and speaker.<br/>
+        Place the mic next to the built-in mic, and the speaker 40 cm away.<br/>
+        Set the speaker volume to high level, then run tests 1 and 2.
+    </string>
+    <string name="test_dual_frequency_silent_instructions">
+        Connect a USB audio interface supporting mic. Connect the external speaker <br/>
+        to an auxiliary phone. Place the mic next to the built-in mic of device <br/>
+        under test and the speaker 40 cm away. Set the speaker volume to high level. <br/>
+        Play the white noise from the auxiliary phone then run tests 1 and 2.
+    </string>
+    <string name="test_frequency_background_instructions">
+        Run the test in a quiet, sound-isolated room.
+    </string>
+    <string name="test_frequency_loopback_dongle_instructions">
+        <![CDATA[Connect <a href="https://source.android.com/docs/core/audio/latency/loopback">loopback dongle</a>
+        via USB-C to 3.5 mm adapter, then run the test.]]>
+    </string>
+    <string name="test_frequency_external_speaker_instructions">
+        Connect a USB speaker and place it 40 cm away from the device under test.<br/>
+        Set the speaker volume to high level, then run the test.
+    </string>
+    <string name="test_frequency_unprocessed_tone_instructions">
+        @string/test_frequency_external_speaker_instructions
+    </string>
+    <string name="test_frequency_voice_recognition_tone_instructions">
+        @string/test_frequency_external_speaker_instructions
+    </string>
+    <string name="test_frequency_builtin_mic_and_external_speaker_instructions">
+        @string/test_frequency_external_speaker_instructions
+    </string>
+    <string name="test_frequency_external_mic_and_external_speaker_instructions">
+        Connect a USB audio interface supporting both mic and speaker.<br/>
+        Place the mic next to the built-in mic, and the speaker 40 cm away.<br/>
+        Set the speaker volume to high level, then run the test.
+    </string>
+    <string name="test_frequency_external_mic_instructions">
+        Connect a USB mic and place it 20 cm away from the device, then run the test.
+    </string>
+    <string name="test_frequency_external_mic_and_left_builtin_speaker_instructions">
+        @string/test_frequency_external_mic_instructions
+    </string>
+    <string name="test_frequency_external_mic_and_right_builtin_speaker_instructions">
+        @string/test_frequency_external_mic_instructions
+    </string>
+    <string name="test_frequency_default_instructions">
+        Select a preset or configure manually, then start the test.
+    </string>
+    <string name="common_instruction_title">
+        Instructions
+    </string>
     <string name="analyze">Analyze</string>
 
     <string name="routing_crash_intro">

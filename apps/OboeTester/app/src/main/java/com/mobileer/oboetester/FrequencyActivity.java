@@ -26,6 +26,9 @@ import android.widget.EditText;
 import android.widget.AdapterView;
 import java.io.IOException;
 import android.os.Handler;
+import androidx.core.text.HtmlCompat;
+import android.text.method.LinkMovementMethod;
+
 
 public final class FrequencyActivity extends AnalyzerActivity {
 
@@ -39,6 +42,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private int mAvgMagLineId = -1;
     private TextView mTestResultView;
     private EditText mThresholdEditText;
+    private TextView mInstructionsView;
 
     private Spinner mOutputSignalSpinner;
     private FrequencySettingView mFrequencySetting;
@@ -65,6 +69,10 @@ public final class FrequencyActivity extends AnalyzerActivity {
         mShareButton = (Button) findViewById(R.id.button_share);
         mTestResultView = (TextView) findViewById(R.id.testResultView);
         mThresholdEditText = (EditText) findViewById(R.id.thresholdEditText);
+        mInstructionsView = (TextView) findViewById(R.id.test_frequency_instructions);
+        if (mInstructionsView != null) {
+            mInstructionsView.setMovementMethod(LinkMovementMethod.getInstance());
+        }
 
         mLineView = findViewById(R.id.line_view);
         mLineView.setUnits("Hz", "dBFS");
@@ -154,6 +162,22 @@ public final class FrequencyActivity extends AnalyzerActivity {
                                             active.sourceResId));
                             mBalanceSeekBar.setProgress((int) (active.balance * 100));
                             mThresholdEditText.setText(String.valueOf(active.passThreshold));
+
+                            if (mInstructionsView != null) {
+                                if (active.instructionsResId != 0) {
+                                    mInstructionsView.setText(HtmlCompat.fromHtml(
+                                            getString(active.instructionsResId),
+                                            HtmlCompat.FROM_HTML_MODE_LEGACY));
+                                } else {
+                                    mInstructionsView.setText("");
+                                }
+                            }
+                        } else {
+                            if (mInstructionsView != null) {
+                                mInstructionsView.setText(HtmlCompat.fromHtml(
+                                        getString(R.string.test_frequency_default_instructions),
+                                        HtmlCompat.FROM_HTML_MODE_LEGACY));
+                            }
                         }
                     }
                 });
