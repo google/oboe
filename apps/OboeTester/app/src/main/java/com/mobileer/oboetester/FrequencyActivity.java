@@ -30,6 +30,9 @@ import java.io.IOException;
 import android.os.Handler;
 import androidx.core.text.HtmlCompat;
 import android.text.method.LinkMovementMethod;
+import android.graphics.Color;
+import android.media.AudioManager;
+import android.content.Context;
 
 
 public final class FrequencyActivity extends AnalyzerActivity {
@@ -52,6 +55,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private Spinner mOutputSignalSpinner;
     private Spinner mEnforcementSpinner;
     private FrequencySettingView mFrequencySetting;
+    private TestSupervisor mTestSupervisor;
     private TextView mBalanceTextView;
     private SeekBar mBalanceSeekBar;
     private StreamConfigurationView mInputConfigView;
@@ -194,6 +198,17 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         }
                     }
                 });
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mTestSupervisor = new TestSupervisor(audioManager, AudioManager.STREAM_MUSIC);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mTestSupervisor != null) {
+            mTestSupervisor.release();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -257,8 +272,43 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
         if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
             mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
-            mTestResultView.setTextColor(android.graphics.Color.RED);
+            mTestResultView.setTextColor(Color.RED);
             return;
+        }
+
+        if (enforcementLevel == ENFORCEMENT_HIGH) {
+            showMaxVolumeConfirmationDialog();
+        } else {
+            startAudioTestActual();
+        }
+    }
+
+    private void showMaxVolumeConfirmationDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Volume Warning")
+                .setMessage("High enforcement mode will set the volume to MAXIMUM. This may be very loud. Do you want to proceed?")
+                .setPositiveButton("Proceed", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        setVolumeToMax();
+                        startAudioTestActual();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void setVolumeToMax() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
+        }
+    }
+
+    private void startAudioTestActual() {
+        if (mTestSupervisor != null) {
+            mTestSupervisor.start();
         }
 
         try {
@@ -287,6 +337,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     }
 
     public void onStopAudioTest(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
         stopWaveformUpdater();
         stopAudio();
         closeAudio();
@@ -306,6 +357,31 @@ public final class FrequencyActivity extends AnalyzerActivity {
             mThresholdEditText.setEnabled(true);
         }
         keepScreenOn(false);
+
+        if (mTestSupervisor != null) {
+            mTestSupervisor.stop();
+            checkSupervisorEvents(enforcementLevel);
+        }
+    }
+
+    private void checkSupervisorEvents(int enforcementLevel) {
+        if (mTestSupervisor == null) return;
+        boolean volChanged = mTestSupervisor.isVolumeChanged();
+        boolean devChanged = mTestSupervisor.isDeviceChanged();
+        if (volChanged || devChanged) {
+            StringBuilder reason = new StringBuilder();
+            if (volChanged) reason.append("Volume changed");
+            if (devChanged) {
+                if (reason.length() > 0) reason.append(" & ");
+                reason.append("Device changed");
+            }
+            if (enforcementLevel == ENFORCEMENT_HIGH) {
+                mTestResultView.setText("RESULT: FAIL (" + reason.toString() + ")");
+                mTestResultView.setTextColor(Color.RED);
+            } else {
+                showToast("WARNING: " + reason.toString() + " during test!");
+            }
+        }
     }
 
     private native int getWindowSize();

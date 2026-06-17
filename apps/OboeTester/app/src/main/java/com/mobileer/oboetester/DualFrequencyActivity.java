@@ -26,6 +26,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Spinner;
 import java.io.IOException;
+import android.media.AudioManager;
+import android.content.Context;
 
 public class DualFrequencyActivity extends AnalyzerActivity {
 
@@ -48,6 +50,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private TextView mInstructionsView;
     private FrequencySettingView mFrequencySetting;
     private StreamConfigurationView mInputConfigView;
+    private TestSupervisor mTestSupervisor;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
     private static final int WAVEFORM_UPDATE_MS = 500;
@@ -146,6 +149,17 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStopButton1.setEnabled(false);
         mStartButton2.setEnabled(false);
         mStopButton2.setEnabled(false);
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mTestSupervisor = new TestSupervisor(audioManager, AudioManager.STREAM_MUSIC);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mTestSupervisor != null) {
+            mTestSupervisor.release();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -171,31 +185,137 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     public void onStartTest1(View view) {
         int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
         boolean failed = false;
-        try {
-            mCurrentTest = 1;
-            if (mInputConfigView != null) {
-                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_BUILTIN_MIC);
-                if (device != null) {
-                    mInputConfigView.setDeviceById(device.getId());
+        mCurrentTest = 1;
+        if (mInputConfigView != null) {
+            AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_BUILTIN_MIC);
+            if (device != null) {
+                mInputConfigView.setDeviceById(device.getId());
+            } else {
+                mInputConfigView.setDeviceById(0); // Auto-select
+                if (enforcementLevel == ENFORCEMENT_HIGH) {
+                    failed = true;
                 } else {
-                    mInputConfigView.setDeviceById(0); // Auto-select
-                    if (enforcementLevel == ENFORCEMENT_HIGH) {
-                        failed = true;
-                    } else {
-                        showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
-                    }
+                    showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
                 }
             }
-            if (!checkPreferredOutput(enforcementLevel)) {
-                failed = true;
-            }
+        }
+        if (!checkPreferredOutput(enforcementLevel)) {
+            failed = true;
+        }
 
-            if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
-                mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
-                mTestResultView.setTextColor(Color.RED);
-                return;
-            }
+        if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
+            mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+            mTestResultView.setTextColor(Color.RED);
+            mStartButton2.setEnabled(false);
+            return;
+        }
 
+        if (enforcementLevel == ENFORCEMENT_HIGH) {
+            showMaxVolumeConfirmationDialog(1);
+        } else {
+            startTest1Actual();
+        }
+    }
+
+    public void onStopTest1(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
+        stopWaveformUpdater();
+        stopAudio();
+        closeAudio();
+        mStartButton1.setEnabled(true);
+        mStopButton1.setEnabled(false);
+        if (mEnforcementSpinner != null) {
+            mEnforcementSpinner.setEnabled(true);
+        }
+        keepScreenOn(false);
+
+        boolean test1Ok = true;
+        if (mTestSupervisor != null) {
+            mTestSupervisor.stop();
+            test1Ok = checkSupervisorEvents(enforcementLevel);
+        }
+
+        if (test1Ok) {
+            mStartButton2.setEnabled(true);
+            // Save the current buffer for subtraction
+            if (mWaveformBuffer != null) {
+                mTest1WaveformBuffer = mWaveformBuffer.clone();
+            }
+            mTestStatusView.setText("Status: Test 1 Stopped. Ready for Test 2.");
+        } else {
+            mStartButton2.setEnabled(false);
+            mTest1WaveformBuffer = null;
+            mTestStatusView.setText("Status: Test 1 FAILED. Please re-run Test 1.");
+        }
+    }
+
+    public void onStartTest2(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
+        boolean failed = false;
+        mCurrentTest = 2;
+        if (mInputConfigView != null) {
+            AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_USB_DEVICE);
+            if (device != null) {
+                mInputConfigView.setDeviceById(device.getId());
+            } else {
+                mInputConfigView.setDeviceById(0); // Auto-select
+                if (enforcementLevel == ENFORCEMENT_HIGH) {
+                    failed = true;
+                } else {
+                    showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
+                }
+            }
+        }
+        if (!checkPreferredOutput(enforcementLevel)) {
+            failed = true;
+        }
+
+        if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
+            mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+            mTestResultView.setTextColor(Color.RED);
+            return;
+        }
+
+        if (enforcementLevel == ENFORCEMENT_HIGH) {
+            showMaxVolumeConfirmationDialog(2);
+        } else {
+            startTest2Actual();
+        }
+    }
+
+    private void showMaxVolumeConfirmationDialog(final int testNumber) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Volume Warning")
+                .setMessage("High enforcement mode will set the volume to MAXIMUM. This may be very loud. Do you want to proceed?")
+                .setPositiveButton("Proceed", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        setVolumeToMax();
+                        if (testNumber == 1) {
+                            startTest1Actual();
+                        } else if (testNumber == 2) {
+                            startTest2Actual();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void setVolumeToMax() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
+        }
+    }
+
+    private void startTest1Actual() {
+        mStartButton2.setEnabled(false);
+        if (mTestSupervisor != null) {
+            mTestSupervisor.start();
+        }
+        try {
             openAudio();
             startAudio();
             mStartButton1.setEnabled(false);
@@ -211,53 +331,11 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         }
     }
 
-    public void onStopTest1(View view) {
-        stopWaveformUpdater();
-        stopAudio();
-        closeAudio();
-        mStartButton1.setEnabled(true);
-        mStopButton1.setEnabled(false);
-        mStartButton2.setEnabled(true);
-        if (mEnforcementSpinner != null) {
-            mEnforcementSpinner.setEnabled(true);
+    private void startTest2Actual() {
+        if (mTestSupervisor != null) {
+            mTestSupervisor.start();
         }
-        keepScreenOn(false);
-
-        // Save the current buffer for subtraction
-        if (mWaveformBuffer != null) {
-            mTest1WaveformBuffer = mWaveformBuffer.clone();
-        }
-        mTestStatusView.setText("Status: Test 1 Stopped. Ready for Test 2.");
-    }
-
-    public void onStartTest2(View view) {
-        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
-        boolean failed = false;
         try {
-            mCurrentTest = 2;
-            if (mInputConfigView != null) {
-                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_USB_DEVICE);
-                if (device != null) {
-                    mInputConfigView.setDeviceById(device.getId());
-                } else {
-                    mInputConfigView.setDeviceById(0); // Auto-select
-                    if (enforcementLevel == ENFORCEMENT_HIGH) {
-                        failed = true;
-                    } else {
-                        showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
-                    }
-                }
-            }
-            if (!checkPreferredOutput(enforcementLevel)) {
-                failed = true;
-            }
-
-            if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
-                mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
-                mTestResultView.setTextColor(Color.RED);
-                return;
-            }
-
             openAudio();
             startAudio();
             mStartButton2.setEnabled(false);
@@ -275,6 +353,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     }
 
     public void onStopTest2(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
         stopWaveformUpdater();
         stopAudio();
         closeAudio();
@@ -286,6 +365,11 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         }
         keepScreenOn(false);
         mTestStatusView.setText("Status: Test 2 Stopped. Tests complete.");
+
+        if (mTestSupervisor != null) {
+            mTestSupervisor.stop();
+            checkSupervisorEvents(enforcementLevel);
+        }
     }
 
     private boolean checkPreferredOutput(int enforcementLevel) {
@@ -305,6 +389,28 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB device is plugged in while testing Built-in Speaker!");
                 }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkSupervisorEvents(int enforcementLevel) {
+        if (mTestSupervisor == null) return true;
+        boolean volChanged = mTestSupervisor.isVolumeChanged();
+        boolean devChanged = mTestSupervisor.isDeviceChanged();
+        if (volChanged || devChanged) {
+            StringBuilder reason = new StringBuilder();
+            if (volChanged) reason.append("Volume changed");
+            if (devChanged) {
+                if (reason.length() > 0) reason.append(" & ");
+                reason.append("Device changed");
+            }
+            if (enforcementLevel == ENFORCEMENT_HIGH) {
+                mTestResultView.setText("RESULT: FAIL (" + reason.toString() + ")");
+                mTestResultView.setTextColor(Color.RED);
+                return false;
+            } else {
+                showToast("WARNING: " + reason.toString() + " during test!");
             }
         }
         return true;
