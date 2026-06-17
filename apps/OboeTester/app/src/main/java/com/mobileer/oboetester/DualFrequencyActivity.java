@@ -16,12 +16,15 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import java.io.IOException;
 
@@ -29,6 +32,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
 
     private Button mStartButton1, mStopButton1;
     private Button mStartButton2, mStopButton2;
+    private CheckBox mEnforcementCheckBox;
     private LineView mWaveformViewTests;
     private int mTest1LineId = -1;
     private int mTest2LineId = -1;
@@ -42,6 +46,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private TextView mInstructionsView;
     private FrequencySettingView mFrequencySetting;
     private StreamConfigurationView mInputConfigView;
+    private TestSupervisor mTestSupervisor;
     private FrequencyAnalyzer mFrequencyAnalyzer = new FrequencyAnalyzer();
 
     private static final int WAVEFORM_UPDATE_MS = 500;
@@ -54,6 +59,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     private int mCurrentTest = 0; // 1 for test 1, 2 for test 2
 
     private Handler mHandler = new Handler();
+    private int[] mPreferredInputList = {AudioDeviceInfo.TYPE_BUILTIN_MIC, AudioDeviceInfo.TYPE_USB_DEVICE};
 
     private native int getWindowSize();
 
@@ -72,6 +78,7 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mTestStatusView = findViewById(R.id.testStatusView);
         mTestResultView = findViewById(R.id.testResultView);
         mInstructionsView = findViewById(R.id.test_dual_frequency_instructions);
+        mEnforcementCheckBox = findViewById(R.id.enforcement_check_box);
 
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
@@ -133,6 +140,15 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStopButton1.setEnabled(false);
         mStartButton2.setEnabled(false);
         mStopButton2.setEnabled(false);
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mTestSupervisor = new TestSupervisor(audioManager, AudioManager.STREAM_MUSIC);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mTestSupervisor.release();
+        super.onDestroy();
     }
 
     @Override
@@ -155,99 +171,179 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         return true;
     }
 
-    public void onStartTest1(View view) {
-        try {
+    public void onStartTest(View view) {
+        boolean isEnforced = mEnforcementCheckBox.isChecked();
+        if (view.getId() == mStartButton1.getId()) {
             mCurrentTest = 1;
-            if (mInputConfigView != null) {
-                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_BUILTIN_MIC);
-                if (device != null) {
-                    mInputConfigView.setDeviceById(device.getId());
-                } else {
-                    mInputConfigView.setDeviceById(0); // Auto-select
-                    showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
-                }
-            }
-            checkPreferredOutput();
-            openAudio();
-            startAudio();
-            mStartButton1.setEnabled(false);
-            mStopButton1.setEnabled(true);
-            startWaveformUpdater();
-            keepScreenOn(true);
-            mTestStatusView.setText("Status: Running Test 1...");
-        } catch (IOException e) {
-            showErrorToast(e.getMessage());
-        }
-    }
-
-    public void onStopTest1(View view) {
-        stopWaveformUpdater();
-        stopAudio();
-        closeAudio();
-        mStartButton1.setEnabled(true);
-        mStopButton1.setEnabled(false);
-        mStartButton2.setEnabled(true);
-        keepScreenOn(false);
-
-        // Save the current buffer for subtraction
-        if (mWaveformBuffer != null) {
-            mTest1WaveformBuffer = mWaveformBuffer.clone();
-        }
-        mTestStatusView.setText("Status: Test 1 Stopped. Ready for Test 2.");
-    }
-
-    public void onStartTest2(View view) {
-        try {
+        } else {
             mCurrentTest = 2;
-            if (mInputConfigView != null) {
-                AudioDeviceInfo device = findInputDeviceByType(AudioDeviceInfo.TYPE_USB_DEVICE);
-                if (device != null) {
-                    mInputConfigView.setDeviceById(device.getId());
-                } else {
-                    mInputConfigView.setDeviceById(0); // Auto-select
-                    showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
-                }
+        }
+        FrequencyPreset activePreset = mFrequencySetting.getActivePreset();
+        boolean inputReady = prepareInput(mPreferredInputList[mCurrentTest - 1]);
+        boolean outputReady = prepareOutput(activePreset);
+        boolean peripheralReady = inputReady && outputReady;
+
+        if (isEnforced && !peripheralReady) {
+            // Mark the test fail
+            mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+            mTestResultView.setTextColor(Color.RED);
+            return;
+        } else if (!peripheralReady) {
+            if (!inputReady) {
+                showToast("WARNING: Preferred input device is not found!");
             }
-            checkPreferredOutput();
+            if (!outputReady) {
+                showToast("WARNING: Preferred output device is not found!");
+            }
+        }
+        if (isEnforced) {
+            showMaxVolumeConfirmationDialog();
+        } else {
+            startTest();
+        }
+    }
+
+    public void onStopTest(View view) {
+        boolean isEnforced = mEnforcementCheckBox.isChecked();
+        stopWaveformUpdater();
+        stopAudio();
+        closeAudio();
+        keepScreenOn(false);
+        if (view.getId() == mStopButton1.getId()) {
+            mStartButton1.setEnabled(true);
+            mStopButton1.setEnabled(false);
+        } else {
+            mStartButton1.setEnabled(true);
+            mStartButton2.setEnabled(true);
+            mStopButton2.setEnabled(false);
+        }
+        mTestSupervisor.stop();
+        String events = checkSupervisorEvents();
+
+        // Process events
+        if (!events.isBlank()) {
+            if(isEnforced) {
+                // Override the result
+                mTestResultView.setText("RESULT: FAIL (" + events + ")");
+                mTestResultView.setTextColor(Color.RED);
+            } else {
+                // Show a toast
+                showToast("WARNING: " + events + " during test!");
+            }
+        }
+        // Update buttons
+        if (events.isBlank() || !isEnforced) {
+            if (view.getId() == mStopButton1.getId()) {
+                // Allow to start the second test
+                if (mWaveformBuffer != null) {
+                    mTest1WaveformBuffer = mWaveformBuffer.clone();
+                }
+                mStartButton2.setEnabled(true);
+            } else {
+                // Do nothing
+            }
+        }
+    }
+
+    private void startTest() {
+        if (mCurrentTest == 1) {
+            clearResult();
+        }
+        mTestSupervisor.start();
+        try {
             openAudio();
             startAudio();
-            mStartButton2.setEnabled(false);
-            mStopButton2.setEnabled(true);
-            mStartButton1.setEnabled(false);
             startWaveformUpdater();
             keepScreenOn(true);
-            mTestStatusView.setText("Status: Running Test 2...");
+
+            mStartButton2.setEnabled(false);
+            mStartButton1.setEnabled(false);
+            if (mCurrentTest == 1) {
+                mStopButton1.setEnabled(true);
+                mStopButton2.setEnabled(false);
+            } else {
+                mStopButton1.setEnabled(false);
+                mStopButton2.setEnabled(true);
+            }
+            mTestStatusView.setText("Status: Running Test " + mCurrentTest);
         } catch (IOException e) {
             showErrorToast(e.getMessage());
         }
     }
 
-    public void onStopTest2(View view) {
-        stopWaveformUpdater();
-        stopAudio();
-        closeAudio();
-        mStartButton2.setEnabled(true);
-        mStopButton2.setEnabled(false);
-        mStartButton1.setEnabled(true);
-        keepScreenOn(false);
-        mTestStatusView.setText("Status: Test 2 Stopped. Tests complete.");
+    private void clearResult() {
+        mTestResultView.setText("Result: N/A");
+        mTest1LineId = -1;
+        mTest2LineId = -1;
+        mSubtractionLineId = -1;
+        mTopThresholdLineId = -1;
+        mBottomThresholdLineId = -1;
+        mWaveformViewTests.removeAllLines();
+        mWaveformViewSubtraction.removeAllLines();
     }
 
-    private void checkPreferredOutput() {
-        FrequencyPreset active = mFrequencySetting.getActivePreset();
-        if (active != null) {
-            int preferredOutput = active.preferredOutput;
+    private void showMaxVolumeConfirmationDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Volume Warning")
+                .setMessage("High enforcement mode will set the volume to MAXIMUM. This may be very loud. Do you want to proceed?")
+                .setPositiveButton("Proceed", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        setVolumeToMax();
+                        startTest();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void setVolumeToMax() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
+        }
+    }
+
+    private boolean prepareInput(int inputType) {
+        AudioDeviceInfo device = findInputDeviceByType(inputType);
+        if (device != null) {
+            mInputConfigView.setDeviceById(device.getId());
+        } else {
+            mInputConfigView.setDeviceById(0); // Auto-select
+        }
+        return device != null;
+    }
+
+    private boolean prepareOutput(FrequencyPreset preset) {
+        if (preset != null) {
+            int preferredOutput = preset.preferredOutput;
             if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 int result = checkOutputDeviceSupported(preferredOutput);
                 if (result == DEVICE_NOT_FOUND) {
-                    showToast("WARNING: Preferred output device (" +
-                            StreamConfiguration.deviceTypeToString(preferredOutput) +
-                            ") not found!");
+                    return false;
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB device is plugged in while testing Built-in Speaker!");
                 }
             }
         }
+        return true;
+    }
+
+    private String checkSupervisorEvents() {
+        String noError = "";
+        boolean volChanged = mTestSupervisor.isVolumeChanged();
+        boolean devChanged = mTestSupervisor.isDeviceChanged();
+        if (volChanged || devChanged) {
+            StringBuilder reason = new StringBuilder();
+            if (volChanged) reason.append("Volume changed");
+            if (devChanged) {
+                if (reason.length() > 0) reason.append(" & ");
+                reason.append("Device changed");
+            }
+            return reason.toString();
+        }
+        return noError;
     }
 
     private void startWaveformUpdater() {

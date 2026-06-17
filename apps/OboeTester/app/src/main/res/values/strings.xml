@@ -347,6 +347,9 @@
     <string name="common_instruction_title">
         Instructions
     </string>
+    <string name="common_enforcement_title">
+        Enforcement
+    </string>
     <string name="analyze">Analyze</string>
 
     <string name="routing_crash_intro">
