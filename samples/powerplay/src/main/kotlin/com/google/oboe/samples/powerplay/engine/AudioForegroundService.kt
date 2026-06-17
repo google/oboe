@@ -54,7 +54,7 @@ class AudioForegroundService : Service() {
     private lateinit var mediaSession: MediaSession
     private var currentAlbumArt: Bitmap? = null
 
-    lateinit var player: PowerPlayAudioPlayer
+    lateinit var player: DelegatingAudioEngine
     private val binder = LocalBinder()
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
@@ -87,7 +87,7 @@ class AudioForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         try {
-            player = PowerPlayAudioPlayer()
+            player = DelegatingAudioEngine(this, serviceScope)
             player.setupAudioStream()
 
             audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
