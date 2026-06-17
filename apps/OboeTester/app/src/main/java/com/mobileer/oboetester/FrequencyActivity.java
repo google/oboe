@@ -19,11 +19,13 @@ package com.mobileer.oboetester;
 import android.os.Bundle;
 import android.media.AudioDeviceInfo;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.EditText;
-import android.widget.AdapterView;
 import java.io.IOException;
 import android.os.Handler;
 import androidx.core.text.HtmlCompat;
@@ -31,6 +33,9 @@ import android.text.method.LinkMovementMethod;
 
 
 public final class FrequencyActivity extends AnalyzerActivity {
+
+    public static final int ENFORCEMENT_MEDIUM = 0;
+    public static final int ENFORCEMENT_HIGH = 1;
 
     private Button mStartButton;
     private Button mStopButton;
@@ -45,9 +50,10 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private TextView mInstructionsView;
 
     private Spinner mOutputSignalSpinner;
+    private Spinner mEnforcementSpinner;
     private FrequencySettingView mFrequencySetting;
     private TextView mBalanceTextView;
-    private android.widget.SeekBar mBalanceSeekBar;
+    private SeekBar mBalanceSeekBar;
     private StreamConfigurationView mInputConfigView;
     private StreamConfigurationView mOutputConfigView;
 
@@ -95,19 +101,26 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
         mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         String[] outputSignals = {"White Noise", "Sine", "Silence"};
-        android.widget.ArrayAdapter<String> outputSignalAdapter = new android.widget.ArrayAdapter<>(
+        ArrayAdapter<String> outputSignalAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item, outputSignals);
         outputSignalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mOutputSignalSpinner.setAdapter(outputSignalAdapter);
         mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
 
+        mEnforcementSpinner = (Spinner) findViewById(R.id.spinnerEnforcement);
+        ArrayAdapter<CharSequence> enforcementAdapter = ArrayAdapter.createFromResource(
+                this, R.array.enforcement_levels, android.R.layout.simple_spinner_item);
+        enforcementAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mEnforcementSpinner.setAdapter(enforcementAdapter);
+        mEnforcementSpinner.setSelection(ENFORCEMENT_HIGH);
+
         mBalanceTextView = (TextView) findViewById(R.id.textBalanceSlider);
-        mBalanceSeekBar = (android.widget.SeekBar) findViewById(R.id.faderBalanceSlider);
+        mBalanceSeekBar = (SeekBar) findViewById(R.id.faderBalanceSlider);
         mBalanceSeekBar.setOnSeekBarChangeListener(
-                new android.widget.SeekBar.OnSeekBarChangeListener() {
+                new SeekBar.OnSeekBarChangeListener() {
                     @Override
-                    public void onProgressChanged(android.widget.SeekBar seekBar, int progress,
+                    public void onProgressChanged(SeekBar seekBar, int progress,
                             boolean fromUser) {
                         float balance = progress / 100.0f;
                         mAudioOutTester.setBalance(balance);
@@ -117,11 +130,11 @@ public final class FrequencyActivity extends AnalyzerActivity {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(android.widget.SeekBar seekBar) {
+                    public void onStartTrackingTouch(SeekBar seekBar) {
                     }
 
                     @Override
-                    public void onStopTrackingTouch(android.widget.SeekBar seekBar) {
+                    public void onStopTrackingTouch(SeekBar seekBar) {
                     }
                 });
 
@@ -205,15 +218,22 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
     public void onStartAudioTest(View view) {
         FrequencyPreset active = mFrequencySetting.getActivePreset();
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
+        boolean failed = false;
+
         if (active != null) {
             // Check preferred input device
             int preferredInput = active.preferredInput;
             if (preferredInput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 AudioDeviceInfo device = findInputDeviceByType(preferredInput);
                 if (device == null) {
-                    showToast("WARNING: Preferred input device (" +
+                    if (enforcementLevel == ENFORCEMENT_HIGH) {
+                        failed = true;
+                    } else {
+                        showToast("WARNING: Preferred input device (" +
                             StreamConfiguration.deviceTypeToString(preferredInput) +
                             ") not found!");
+                    }
                 }
             }
 
@@ -222,13 +242,23 @@ public final class FrequencyActivity extends AnalyzerActivity {
             if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 int result = checkOutputDeviceSupported(preferredOutput);
                 if (result == DEVICE_NOT_FOUND) {
-                    showToast("WARNING: Preferred output device (" +
+                    if (enforcementLevel == ENFORCEMENT_HIGH) {
+                        failed = true;
+                    } else {
+                        showToast("WARNING: Preferred output device (" +
                             StreamConfiguration.deviceTypeToString(preferredOutput) +
                             ") not found!");
+                    }
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB speaker is plugged in while testing Built-in Speaker!");
                 }
             }
+        }
+
+        if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
+            mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+            mTestResultView.setTextColor(android.graphics.Color.RED);
+            return;
         }
 
         try {
@@ -242,6 +272,9 @@ public final class FrequencyActivity extends AnalyzerActivity {
             }
             if (mOutputSignalSpinner != null) {
                 mOutputSignalSpinner.setEnabled(false);
+            }
+            if (mEnforcementSpinner != null) {
+                mEnforcementSpinner.setEnabled(false);
             }
             if (mThresholdEditText != null) {
                 mThresholdEditText.setEnabled(false);
@@ -265,6 +298,9 @@ public final class FrequencyActivity extends AnalyzerActivity {
         }
         if (mOutputSignalSpinner != null) {
             mOutputSignalSpinner.setEnabled(true);
+        }
+        if (mEnforcementSpinner != null) {
+            mEnforcementSpinner.setEnabled(true);
         }
         if (mThresholdEditText != null) {
             mThresholdEditText.setEnabled(true);

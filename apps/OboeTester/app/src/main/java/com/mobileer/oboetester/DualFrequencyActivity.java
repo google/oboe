@@ -21,14 +21,20 @@ import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Spinner;
 import java.io.IOException;
 
 public class DualFrequencyActivity extends AnalyzerActivity {
 
+    public static final int ENFORCEMENT_MEDIUM = 0;
+    public static final int ENFORCEMENT_HIGH = 1;
+
     private Button mStartButton1, mStopButton1;
     private Button mStartButton2, mStopButton2;
+    private Spinner mEnforcementSpinner;
     private LineView mWaveformViewTests;
     private int mTest1LineId = -1;
     private int mTest2LineId = -1;
@@ -72,6 +78,13 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mTestStatusView = findViewById(R.id.testStatusView);
         mTestResultView = findViewById(R.id.testResultView);
         mInstructionsView = findViewById(R.id.test_dual_frequency_instructions);
+
+        mEnforcementSpinner = findViewById(R.id.spinnerEnforcement);
+        ArrayAdapter<CharSequence> enforcementAdapter = ArrayAdapter.createFromResource(
+                this, R.array.enforcement_levels, android.R.layout.simple_spinner_item);
+        enforcementAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mEnforcementSpinner.setAdapter(enforcementAdapter);
+        mEnforcementSpinner.setSelection(ENFORCEMENT_HIGH);
 
         mInputConfigView = null;
         StreamConfigurationView outputConfigView = null;
@@ -156,6 +169,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     }
 
     public void onStartTest1(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
+        boolean failed = false;
         try {
             mCurrentTest = 1;
             if (mInputConfigView != null) {
@@ -164,14 +179,30 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                     mInputConfigView.setDeviceById(device.getId());
                 } else {
                     mInputConfigView.setDeviceById(0); // Auto-select
-                    showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
+                    if (enforcementLevel == ENFORCEMENT_HIGH) {
+                        failed = true;
+                    } else {
+                        showToast("WARNING: Preferred input device (BUILTIN_MIC) not found!");
+                    }
                 }
             }
-            checkPreferredOutput();
+            if (!checkPreferredOutput(enforcementLevel)) {
+                failed = true;
+            }
+
+            if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
+                mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+                mTestResultView.setTextColor(Color.RED);
+                return;
+            }
+
             openAudio();
             startAudio();
             mStartButton1.setEnabled(false);
             mStopButton1.setEnabled(true);
+            if (mEnforcementSpinner != null) {
+                mEnforcementSpinner.setEnabled(false);
+            }
             startWaveformUpdater();
             keepScreenOn(true);
             mTestStatusView.setText("Status: Running Test 1...");
@@ -187,6 +218,9 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStartButton1.setEnabled(true);
         mStopButton1.setEnabled(false);
         mStartButton2.setEnabled(true);
+        if (mEnforcementSpinner != null) {
+            mEnforcementSpinner.setEnabled(true);
+        }
         keepScreenOn(false);
 
         // Save the current buffer for subtraction
@@ -197,6 +231,8 @@ public class DualFrequencyActivity extends AnalyzerActivity {
     }
 
     public void onStartTest2(View view) {
+        int enforcementLevel = mEnforcementSpinner != null ? mEnforcementSpinner.getSelectedItemPosition() : ENFORCEMENT_MEDIUM;
+        boolean failed = false;
         try {
             mCurrentTest = 2;
             if (mInputConfigView != null) {
@@ -205,15 +241,31 @@ public class DualFrequencyActivity extends AnalyzerActivity {
                     mInputConfigView.setDeviceById(device.getId());
                 } else {
                     mInputConfigView.setDeviceById(0); // Auto-select
-                    showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
+                    if (enforcementLevel == ENFORCEMENT_HIGH) {
+                        failed = true;
+                    } else {
+                        showToast("WARNING: Preferred input device (USB_DEVICE) not found!");
+                    }
                 }
             }
-            checkPreferredOutput();
+            if (!checkPreferredOutput(enforcementLevel)) {
+                failed = true;
+            }
+
+            if (failed && enforcementLevel == ENFORCEMENT_HIGH) {
+                mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+                mTestResultView.setTextColor(Color.RED);
+                return;
+            }
+
             openAudio();
             startAudio();
             mStartButton2.setEnabled(false);
             mStopButton2.setEnabled(true);
             mStartButton1.setEnabled(false);
+            if (mEnforcementSpinner != null) {
+                mEnforcementSpinner.setEnabled(false);
+            }
             startWaveformUpdater();
             keepScreenOn(true);
             mTestStatusView.setText("Status: Running Test 2...");
@@ -229,25 +281,33 @@ public class DualFrequencyActivity extends AnalyzerActivity {
         mStartButton2.setEnabled(true);
         mStopButton2.setEnabled(false);
         mStartButton1.setEnabled(true);
+        if (mEnforcementSpinner != null) {
+            mEnforcementSpinner.setEnabled(true);
+        }
         keepScreenOn(false);
         mTestStatusView.setText("Status: Test 2 Stopped. Tests complete.");
     }
 
-    private void checkPreferredOutput() {
+    private boolean checkPreferredOutput(int enforcementLevel) {
         FrequencyPreset active = mFrequencySetting.getActivePreset();
         if (active != null) {
             int preferredOutput = active.preferredOutput;
             if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 int result = checkOutputDeviceSupported(preferredOutput);
                 if (result == DEVICE_NOT_FOUND) {
-                    showToast("WARNING: Preferred output device (" +
+                    if (enforcementLevel == ENFORCEMENT_HIGH) {
+                        return false;
+                    } else {
+                        showToast("WARNING: Preferred output device (" +
                             StreamConfiguration.deviceTypeToString(preferredOutput) +
                             ") not found!");
+                    }
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB device is plugged in while testing Built-in Speaker!");
                 }
             }
         }
+        return true;
     }
 
     private void startWaveformUpdater() {
