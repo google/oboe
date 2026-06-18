@@ -16,19 +16,19 @@
 
 package com.mobileer.oboetester;
 
-import android.os.Bundle;
 import android.media.AudioDeviceInfo;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.AdapterView;
-import java.io.IOException;
-import android.os.Handler;
 import androidx.core.text.HtmlCompat;
-import android.text.method.LinkMovementMethod;
-
+import java.io.IOException;
 
 public final class FrequencyActivity extends AnalyzerActivity {
 
@@ -170,6 +170,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
                                             HtmlCompat.FROM_HTML_MODE_LEGACY));
                                 } else {
                                     mInstructionsView.setText("");
+                                    Log.w(TAG, "Preset " + active.name + " has no instruction");
                                 }
                             }
                         } else {
