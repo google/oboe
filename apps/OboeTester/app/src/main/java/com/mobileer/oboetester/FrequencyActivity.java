@@ -53,7 +53,7 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private Spinner mOutputSignalSpinner;
     private CheckBox mEnforcementCheckBox;
     private FrequencySettingView mFrequencySetting;
-    private TestSupervisor mTestSupervisor;
+    private FrequencyTestObserver mTestObserver;
     private TextView mBalanceTextView;
     private SeekBar mBalanceSeekBar;
     private StreamConfigurationView mInputConfigView;
@@ -191,15 +191,14 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         }
                     }
                 });
-
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mTestSupervisor = new TestSupervisor(audioManager, AudioManager.STREAM_MUSIC);
+        mTestObserver = new FrequencyTestObserver(audioManager);
     }
 
     @Override
     protected void onDestroy() {
-        if (mTestSupervisor != null) {
-            mTestSupervisor.release();
+        if (mTestObserver != null) {
+            mTestObserver.release();
         }
         super.onDestroy();
     }
@@ -281,11 +280,11 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private void showMaxVolumeConfirmationDialog() {
         new android.app.AlertDialog.Builder(this)
                 .setTitle("Volume Warning")
-                .setMessage("High enforcement mode will set the volume to MAXIMUM. This may be very loud. Do you want to proceed?")
+                .setMessage("Enforcement mode will set the volume to MAXIMUM. This may be very loud."
+                    + " Do you want to proceed?")
                 .setPositiveButton("Proceed", new android.content.DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(android.content.DialogInterface dialog, int which) {
-                        setVolumeToMax();
                         startAudioTest();
                     }
                 })
@@ -293,21 +292,32 @@ public final class FrequencyActivity extends AnalyzerActivity {
                 .show();
     }
 
+    private int getOutputStreamType() {
+        if (mAudioOutTester != null) {
+            int usage = isStreamClosed()
+                    ? mAudioOutTester.requestedConfiguration.getUsage()
+                    : mAudioOutTester.actualConfiguration.getUsage();
+            return StreamConfiguration.convertUsageToStreamType(usage);
+        }
+        return AudioManager.STREAM_MUSIC;
+    }
+
     private void setVolumeToMax() {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (audioManager != null) {
-            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
+            int streamType = getOutputStreamType();
+            int maxVolume = audioManager.getStreamMaxVolume(streamType);
+            audioManager.setStreamVolume(streamType, maxVolume, 0);
         }
     }
 
     private void startAudioTest() {
-        if (mTestSupervisor != null) {
-            mTestSupervisor.start();
-        }
-
         try {
             openAudio();
+            if (mEnforcementCheckBox.isChecked()) {
+                setVolumeToMax();
+            }
+            mTestObserver.start(getOutputStreamType());
             startAudio();
             mStartButton.setEnabled(false);
             mStopButton.setEnabled(true);
@@ -346,17 +356,16 @@ public final class FrequencyActivity extends AnalyzerActivity {
         }
         keepScreenOn(false);
 
-        if (mTestSupervisor != null) {
-            mTestSupervisor.stop();
+        if (mTestObserver != null) {
+            mTestObserver.stop();
             checkSupervisorEvents();
         }
     }
 
     private void checkSupervisorEvents() {
         boolean isEnforced = mEnforcementCheckBox.isChecked();
-        if (mTestSupervisor == null) return;
-        boolean volChanged = mTestSupervisor.isVolumeChanged();
-        boolean devChanged = mTestSupervisor.isDeviceChanged();
+        boolean volChanged = mTestObserver.isVolumeChanged();
+        boolean devChanged = mTestObserver.isDeviceChanged();
         if (volChanged || devChanged) {
             StringBuilder reason = new StringBuilder();
             if (volChanged) reason.append("Volume changed");

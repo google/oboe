@@ -3,13 +3,19 @@ package com.mobileer.oboetester;
 import android.media.AudioManager;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
-import android.media.AudioAttributes;
 import android.util.Log;
-import java.util.List;
 import java.util.TimerTask;
 import java.util.Timer;
 
-public class TestSupervisor extends AudioDeviceCallback {
+/**
+ * Frequency tests require a high volume to generate a clear frequency response from the speaker and
+ * microphone; however, the volume level is often left unset. Additionally, peripheral adjustments
+ * or volume changes during testing can lead to unexpected results.
+ *
+ * This class monitors any changes related to peripherals and volume during the test execution to
+ * ensure test validity.
+ */
+public class FrequencyTestObserver extends AudioDeviceCallback {
   private static final String TAG = "TestSupervisor";
   private volatile boolean isVolumeChanged = false;
   private volatile int expectedLevel;
@@ -19,14 +25,14 @@ public class TestSupervisor extends AudioDeviceCallback {
   private Timer timer;
   private final int checkPeriodMs = 200;
 
-  public TestSupervisor(AudioManager audioManager, int streamType) {
+  public FrequencyTestObserver(AudioManager audioManager) {
     this.audioManager = audioManager;
     this.isDeviceChanged = false;
-    this.streamType = streamType;
     audioManager.registerAudioDeviceCallback(this, null);
   }
 
-  public void start() {
+  public void start(int streamType) {
+    this.streamType = streamType;
     expectedLevel = audioManager.getStreamVolume(streamType);
     isVolumeChanged = false;
     isDeviceChanged = false;
