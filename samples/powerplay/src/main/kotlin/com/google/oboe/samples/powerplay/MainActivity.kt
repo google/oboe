@@ -132,7 +132,9 @@ import androidx.compose.ui.unit.sp
 import com.google.oboe.samples.powerplay.engine.AudioForegroundService
 import com.google.oboe.samples.powerplay.engine.OboePerformanceMode
 import com.google.oboe.samples.powerplay.engine.PlayerState
-import com.google.oboe.samples.powerplay.engine.PowerPlayAudioPlayer
+import com.google.oboe.samples.powerplay.engine.AudioEngine
+import com.google.oboe.samples.powerplay.engine.AudioEngineType
+import com.google.oboe.samples.powerplay.engine.DelegatingAudioEngine
 import com.google.oboe.samples.powerplay.ui.theme.MusicPlayerTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import android.os.Handler
@@ -146,7 +148,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var player: PowerPlayAudioPlayer
+    private lateinit var player: AudioEngine
     private lateinit var serviceIntent: Intent
     private var isMMapSupported: Boolean = false
     private var isOffloadSupported: Boolean = false
@@ -159,6 +161,8 @@ class MainActivity : ComponentActivity() {
             val binder = service as AudioForegroundService.LocalBinder
             player = binder.getService().player
             isMMapSupported = player.isMMapSupported()
+            engineTypeState.value = player.engineType
+            isOffloadSchedulingEnabledState.value = player.isOffloadSchedulingEnabled()
             isBound.value = true
         }
 
@@ -179,6 +183,8 @@ class MainActivity : ComponentActivity() {
     private val performanceModeState = mutableIntStateOf(0)
     private val volumeState = mutableFloatStateOf(1.0f)
     private val isMMapEnabledState = mutableStateOf(false)
+    private val engineTypeState = mutableStateOf(AudioEngineType.Oboe)
+    private val isOffloadSchedulingEnabledState = mutableStateOf(false)
 
     private val dynamicPlayList = mutableStateListOf<Music>()
     private val isLoadingFile = mutableStateOf(false)
@@ -494,9 +500,12 @@ class MainActivity : ComponentActivity() {
         var assetsReady by remember { mutableStateOf(false) }
         var playbackPosition by remember { mutableLongStateOf(0L) }
         var isSeeking by remember { mutableStateOf(false) }
-        val duration = remember(playingSongIndex.intValue, assetsReady, playList.size) { player.getDurationMillis(playingSongIndex.intValue) }
-        LaunchedEffect(isPlaying, offload.intValue) {
-            if (isPlaying && offload.intValue != 3) {
+        val duration = remember(playingSongIndex.intValue, assetsReady, playList.size, engineTypeState.value) { player.getDurationMillis(playingSongIndex.intValue) }
+        // ExoPlayer reports position in every mode; only Oboe's PCM Offload mode (3) doesn't, so
+        // the seek bar / position polling are suppressed solely for that case.
+        val isPositionTrackable = engineTypeState.value == AudioEngineType.ExoPlayer || offload.intValue != 3
+        LaunchedEffect(isPlaying, offload.intValue, engineTypeState.value) {
+            if (isPlaying && isPositionTrackable) {
                 while (true) {
                     if (!isSeeking) {
                         playbackPosition = player.getPlaybackPositionMillis()
@@ -582,18 +591,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.size(32.dp)
                 )
             }
-            IconButton(
-                onClick = { showEffectsBottomSheet = true },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Effects",
-                    tint = Color.Black,
-                    modifier = Modifier.size(32.dp)
-                )
+            if (engineTypeState.value == AudioEngineType.Oboe) {
+                IconButton(
+                    onClick = { showEffectsBottomSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Effects",
+                        tint = Color.Black,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
             IconButton(
                 onClick = { filePickerLauncher.launch(arrayOf("audio/wav", "audio/x-wav")) },
@@ -676,7 +687,7 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AnimatedVisibility(visible = offload.intValue != 3) {
+                AnimatedVisibility(visible = isPositionTrackable) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -774,17 +785,20 @@ class MainActivity : ComponentActivity() {
             }
         }
         if (showEffectsBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showEffectsBottomSheet = false },
-                sheetState = effectsSheetState,
-                containerColor = Color.White,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-            ) {
-                EffectsBottomSheet(
-                    effectsController = player.effectsController,
-                    isOffloadMode = offload.intValue == 3,
-                    onDismiss = { showEffectsBottomSheet = false }
-                )
+            val controller = player.effectsController
+            if (controller != null) {
+                ModalBottomSheet(
+                    onDismissRequest = { showEffectsBottomSheet = false },
+                    sheetState = effectsSheetState,
+                    containerColor = Color.White,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                ) {
+                    EffectsBottomSheet(
+                        effectsController = controller,
+                        isOffloadMode = offload.intValue == 3,
+                        onDismiss = { showEffectsBottomSheet = false }
+                    )
+                }
             }
         }
         if (showInfoDialog) {
@@ -816,17 +830,24 @@ class MainActivity : ComponentActivity() {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Row {
-                            Text("Performance Mode: ", fontWeight = FontWeight.Medium)
-                            Text(performanceModeText)
-                        }
-                        Row {
-                            Text("Audio Mode: ", fontWeight = FontWeight.Medium)
-                            Text(mmapModeText)
-                        }
-                        Row {
-                            Text("Buffer Size: ", fontWeight = FontWeight.Medium)
-                            Text(bufferInfo)
+                        if (engineTypeState.value == AudioEngineType.Oboe) {
+                            Row {
+                                Text("Performance Mode: ", fontWeight = FontWeight.Medium)
+                                Text(performanceModeText)
+                            }
+                            Row {
+                                Text("Audio Mode: ", fontWeight = FontWeight.Medium)
+                                Text(mmapModeText)
+                            }
+                            Row {
+                                Text("Buffer Size: ", fontWeight = FontWeight.Medium)
+                                Text(bufferInfo)
+                            }
+                        } else {
+                            Row {
+                                Text("Engine: ", fontWeight = FontWeight.Medium)
+                                Text("ExoPlayer (Media3)")
+                            }
                         }
                         if (wavInfo != null) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -905,6 +926,17 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(playbackSpeed) { localSpeed = playbackSpeed }
         LaunchedEffect(playbackPitch) { localPitch = playbackPitch }
 
+        // engineTypeState is the single source of truth for the active engine, shared with the
+        // Effects button and the Info dialog. Updating it here keeps the whole screen in sync.
+        val onSelectEngine: (AudioEngineType) -> Unit = { type ->
+            if (engineTypeState.value != type) {
+                engineTypeState.value = type
+                (player as? DelegatingAudioEngine)?.switchEngine(type)
+                isMMapEnabled.value = player.isMMapEnabled()
+                isOffloadSchedulingEnabledState.value = player.isOffloadSchedulingEnabled()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -913,116 +945,167 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Performance Modes",
+                text = "Audio Engine",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-            Column(
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
-                if (isOffloadSupported) radioOptions.add("PCM Offload")
-
-                val (selectedOption, onOptionSelected) = remember {
-                    mutableStateOf(radioOptions[offload.intValue])
-                }
-                val enabled = !isPlaying
-                radioOptions.forEachIndexed { index, text ->
+                AudioEngineType.values().forEach { type ->
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .selectable(
-                                selected = (text == selectedOption),
-                                enabled = enabled,
-                                onClick = {
-                                    if (enabled) {
-                                        onOptionSelected(text)
-                                        player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
-                                        offload.intValue = index
-                                    }
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { onSelectEngine(type) }
                     ) {
                         RadioButton(
-                            selected = (text == selectedOption),
-                            onClick = null,
-                            enabled = enabled,
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = MaterialTheme.colorScheme.primary
-                            )
+                            selected = (engineTypeState.value == type),
+                            onClick = { onSelectEngine(type) }
                         )
                         Text(
-                            text = text,
+                            text = type.name,
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 12.dp)
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = when (offload.intValue) {
-                    0 -> "Performance Mode: None"
-                    1 -> "Performance Mode: Low Latency"
-                    2 -> "Performance Mode: Power Saving"
-                    else -> "Performance Mode: PCM Offload"
-                },
-                color = Color.Gray,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                if (isMMapSupported) {
+            if (engineTypeState.value == AudioEngineType.ExoPlayer) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                ) {
                     Checkbox(
-                        checked = !isMMapEnabled.value,
+                        checked = isOffloadSchedulingEnabledState.value,
                         onCheckedChange = {
-                            if (!isPlaying) {
-                                isMMapEnabled.value = !it
-                                player.setMMapEnabled(isMMapEnabled.value)
-                            }
-                        },
-                        enabled = !isPlaying
+                            isOffloadSchedulingEnabledState.value = it
+                            player.setOffloadSchedulingEnabled(it)
+                        }
                     )
                     Text(
-                        text = "Disable MMAP",
+                        text = "Enable Offload Scheduling",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
+            }
+
+            if (engineTypeState.value == AudioEngineType.Oboe) {
                 Text(
-                    text = when (isMMapEnabled.value) {
-                        true -> "| Current Mode: MMAP"
-                        false -> "| Current Mode: Classic"
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 8.dp)
+                    text = "Performance Modes",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val radioOptions = mutableListOf("None", "Low Latency", "Power Saving")
+                    if (isOffloadSupported) radioOptions.add("PCM Offload")
+
+                    val (selectedOption, onOptionSelected) = remember {
+                        mutableStateOf(radioOptions[offload.intValue])
+                    }
+                    val enabled = !isPlaying
+                    radioOptions.forEachIndexed { index, text ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .selectable(
+                                    selected = (text == selectedOption),
+                                    enabled = enabled,
+                                    onClick = {
+                                        if (enabled) {
+                                            onOptionSelected(text)
+                                            player.updatePerformanceMode(OboePerformanceMode.fromInt(index))
+                                            offload.intValue = index
+                                        }
+                                    },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (text == selectedOption),
+                                onClick = null,
+                                enabled = enabled,
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 12.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = when (offload.intValue) {
+                        0 -> "Performance Mode: None"
+                        1 -> "Performance Mode: Low Latency"
+                        2 -> "Performance Mode: Power Saving"
+                        else -> "Performance Mode: PCM Offload"
+                    },
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isMMapSupported) {
+                        Checkbox(
+                            checked = !isMMapEnabled.value,
+                            onCheckedChange = {
+                                if (!isPlaying) {
+                                    isMMapEnabled.value = !it
+                                    player.setMMapEnabled(isMMapEnabled.value)
+                                }
+                            },
+                            enabled = !isPlaying
+                        )
+                        Text(
+                            text = "Disable MMAP",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    Text(
+                        text = when (isMMapEnabled.value) {
+                            true -> "| Current Mode: MMAP"
+                            false -> "| Current Mode: Classic"
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
 
             val isPlaybackParamsSupported = android.os.Build.VERSION.SDK_INT >= 37
             val isOffload = offload.intValue == 3
             val isMMap = isMMapEnabled.value
 
-            var canUseSpeed = isPlaybackParamsSupported
-            var canUsePitch = isPlaybackParamsSupported
+            val canUseSpeed = isPlaybackParamsSupported || engineTypeState.value == AudioEngineType.ExoPlayer
+            val canUsePitch = isPlaybackParamsSupported || engineTypeState.value == AudioEngineType.ExoPlayer
 
             // For testing: allow everything except API 37 gate
             // The previous offload restrictions have been removed to test allowing everything.
 
             Spacer(modifier = Modifier.height(16.dp))
-            val speedSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
+            val speedSupportText = if (!isPlaybackParamsSupported && engineTypeState.value == AudioEngineType.Oboe) " (Requires API 37)" else ""
             Text(
                 text = "Playback Speed: ${"%.2f".format(playbackSpeed)}x$speedSupportText",
                 style = MaterialTheme.typography.bodyMedium,
@@ -1050,7 +1133,7 @@ class MainActivity : ComponentActivity() {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            val pitchSupportText = if (!isPlaybackParamsSupported) " (Requires API 37)" else ""
+            val pitchSupportText = if (!isPlaybackParamsSupported && engineTypeState.value == AudioEngineType.Oboe) " (Requires API 37)" else ""
             Text(
                 text = "Playback Pitch: ${"%.2f".format(playbackPitch)}x$pitchSupportText",
                 style = MaterialTheme.typography.bodyMedium,
