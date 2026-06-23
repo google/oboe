@@ -56,7 +56,7 @@ int32_t FixedBlockWriter::write(uint8_t *buffer, int32_t numBytes) {
     }
 
     // Write through if enough for a complete block.
-    while(bytesLeft > mSize) {
+    while(bytesLeft >= mSize) {
         int32_t bytesWritten = mFixedBlockProcessor.onProcessFixedBlock(buffer, mSize);
         if (bytesWritten < 0) return bytesWritten;
         buffer += bytesWritten;
