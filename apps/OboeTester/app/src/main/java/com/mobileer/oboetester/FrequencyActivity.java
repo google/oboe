@@ -16,17 +16,23 @@
 
 package com.mobileer.oboetester;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.EditText;
-import android.widget.AdapterView;
 import androidx.core.text.HtmlCompat;
 import java.io.IOException;
 
@@ -45,9 +51,11 @@ public final class FrequencyActivity extends AnalyzerActivity {
     private TextView mInstructionsView;
 
     private Spinner mOutputSignalSpinner;
+    private CheckBox mEnforcementCheckBox;
     private FrequencySettingView mFrequencySetting;
+    private FrequencyTestObserver mTestObserver;
     private TextView mBalanceTextView;
-    private android.widget.SeekBar mBalanceSeekBar;
+    private SeekBar mBalanceSeekBar;
     private StreamConfigurationView mInputConfigView;
     private StreamConfigurationView mOutputConfigView;
 
@@ -95,19 +103,20 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
         mOutputSignalSpinner = (Spinner) findViewById(R.id.spinnerOutputSignal);
         String[] outputSignals = {"White Noise", "Sine", "Silence"};
-        android.widget.ArrayAdapter<String> outputSignalAdapter = new android.widget.ArrayAdapter<>(
+        ArrayAdapter<String> outputSignalAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_item, outputSignals);
         outputSignalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mOutputSignalSpinner.setAdapter(outputSignalAdapter);
         mOutputSignalSpinner.setOnItemSelectedListener(new OutputSignalSpinnerListener());
+        mEnforcementCheckBox = findViewById(R.id.enforcement_check_box);
 
         mBalanceTextView = (TextView) findViewById(R.id.textBalanceSlider);
-        mBalanceSeekBar = (android.widget.SeekBar) findViewById(R.id.faderBalanceSlider);
+        mBalanceSeekBar = (SeekBar) findViewById(R.id.faderBalanceSlider);
         mBalanceSeekBar.setOnSeekBarChangeListener(
-                new android.widget.SeekBar.OnSeekBarChangeListener() {
+                new SeekBar.OnSeekBarChangeListener() {
                     @Override
-                    public void onProgressChanged(android.widget.SeekBar seekBar, int progress,
+                    public void onProgressChanged(SeekBar seekBar, int progress,
                             boolean fromUser) {
                         float balance = progress / 100.0f;
                         mAudioOutTester.setBalance(balance);
@@ -117,11 +126,11 @@ public final class FrequencyActivity extends AnalyzerActivity {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(android.widget.SeekBar seekBar) {
+                    public void onStartTrackingTouch(SeekBar seekBar) {
                     }
 
                     @Override
-                    public void onStopTrackingTouch(android.widget.SeekBar seekBar) {
+                    public void onStopTrackingTouch(SeekBar seekBar) {
                     }
                 });
 
@@ -182,6 +191,16 @@ public final class FrequencyActivity extends AnalyzerActivity {
                         }
                     }
                 });
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mTestObserver = new FrequencyTestObserver(audioManager);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mTestObserver != null) {
+            mTestObserver.release();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -206,15 +225,18 @@ public final class FrequencyActivity extends AnalyzerActivity {
 
     public void onStartAudioTest(View view) {
         FrequencyPreset active = mFrequencySetting.getActivePreset();
+        boolean isEnforced = mEnforcementCheckBox.isChecked();
+        boolean inputReady = true;
+        boolean outputReady =  true;
+
+        // Check peripherals
         if (active != null) {
             // Check preferred input device
             int preferredInput = active.preferredInput;
             if (preferredInput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 AudioDeviceInfo device = findInputDeviceByType(preferredInput);
                 if (device == null) {
-                    showToast("WARNING: Preferred input device (" +
-                            StreamConfiguration.deviceTypeToString(preferredInput) +
-                            ") not found!");
+                    inputReady = false;
                 }
             }
 
@@ -223,17 +245,79 @@ public final class FrequencyActivity extends AnalyzerActivity {
             if (preferredOutput != AudioDeviceInfo.TYPE_UNKNOWN) {
                 int result = checkOutputDeviceSupported(preferredOutput);
                 if (result == DEVICE_NOT_FOUND) {
-                    showToast("WARNING: Preferred output device (" +
-                            StreamConfiguration.deviceTypeToString(preferredOutput) +
-                            ") not found!");
+                    outputReady = false;
                 } else if (result == DEVICE_CONFLICT_USB_PLUGGED) {
                     showToast("WARNING: USB speaker is plugged in while testing Built-in Speaker!");
                 }
             }
         }
+        boolean peripheralReady = inputReady && outputReady;
+        if (isEnforced && !peripheralReady) {
+            // Override the result
+            mTestResultView.setText("RESULT: FAIL (Missing Peripherals)");
+            mTestResultView.setTextColor(Color.RED);
+            return;
+        }
+        // Show the toast if necessary
+        if (!inputReady) {
+            showToast("WARNING: Preferred input device (" +
+                StreamConfiguration.deviceTypeToString(active.preferredInput) +
+                ") not found!");
+        }
+        if (!outputReady) {
+            showToast("WARNING: Preferred output device (" +
+                StreamConfiguration.deviceTypeToString(active.preferredOutput) +
+                ") not found!");
+        }
+        // Move forward
+        if (isEnforced) {
+            showMaxVolumeConfirmationDialog();
+        } else {
+            startAudioTest();
+        }
+    }
 
+    private void showMaxVolumeConfirmationDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Volume Warning")
+                .setMessage("Enforcement mode will set the volume to MAXIMUM. This may be very loud."
+                    + " Do you want to proceed?")
+                .setPositiveButton("Proceed", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface dialog, int which) {
+                        startAudioTest();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private int getOutputStreamType() {
+        if (mAudioOutTester != null) {
+            int usage = isStreamClosed()
+                    ? mAudioOutTester.requestedConfiguration.getUsage()
+                    : mAudioOutTester.actualConfiguration.getUsage();
+            return StreamConfiguration.convertUsageToStreamType(usage);
+        }
+        return AudioManager.STREAM_MUSIC;
+    }
+
+    private void setVolumeToMax() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            int streamType = getOutputStreamType();
+            int maxVolume = audioManager.getStreamMaxVolume(streamType);
+            audioManager.setStreamVolume(streamType, maxVolume, 0);
+        }
+    }
+
+    private void startAudioTest() {
         try {
             openAudio();
+            if (mEnforcementCheckBox.isChecked()) {
+                setVolumeToMax();
+            }
+            mTestObserver.start(getOutputStreamType());
             startAudio();
             mStartButton.setEnabled(false);
             mStopButton.setEnabled(true);
@@ -271,6 +355,31 @@ public final class FrequencyActivity extends AnalyzerActivity {
             mThresholdEditText.setEnabled(true);
         }
         keepScreenOn(false);
+
+        if (mTestObserver != null) {
+            mTestObserver.stop();
+            checkSupervisorEvents();
+        }
+    }
+
+    private void checkSupervisorEvents() {
+        boolean isEnforced = mEnforcementCheckBox.isChecked();
+        boolean volChanged = mTestObserver.isVolumeChanged();
+        boolean devChanged = mTestObserver.isDeviceChanged();
+        if (volChanged || devChanged) {
+            StringBuilder reason = new StringBuilder();
+            if (volChanged) reason.append("Volume changed");
+            if (devChanged) {
+                if (reason.length() > 0) reason.append(" & ");
+                reason.append("Device changed");
+            }
+            if (isEnforced) {
+                mTestResultView.setText("RESULT: FAIL (" + reason.toString() + ")");
+                mTestResultView.setTextColor(Color.RED);
+            } else {
+                showToast("WARNING: " + reason.toString() + " during test!");
+            }
+        }
     }
 
     private native int getWindowSize();

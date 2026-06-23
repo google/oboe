@@ -1035,6 +1035,7 @@ public class StreamConfiguration {
 
     public static String deviceTypeToString(int type) {
         switch (type) {
+            case AudioDeviceInfo.TYPE_UNKNOWN: return "TYPE_UNKNOWN";
             case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE: return "BUILTIN_EARPIECE";
             case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER: return "BUILTIN_SPEAKER";
             case AudioDeviceInfo.TYPE_WIRED_HEADSET: return "WIRED_HEADSET";
