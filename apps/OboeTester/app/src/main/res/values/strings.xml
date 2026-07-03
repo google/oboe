@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Oboe Tester</string>
-    <string name="app_name_version">Oboe Tester,(%d) v %s, Oboe v %d.%d.%d"</string>
+    <string name="app_name_version">Oboe Tester,(%1$d) v %2$s, Oboe v %3$d.%4$d.%5$d</string>
     <string name="init_device">Device:</string>
     <string name="init_status">Status:</string>
     <string name="tap_help">Click START button!</string>
@@ -285,7 +285,7 @@
     <string name="device_report">Device Report</string>
     <string name="plug_or_unplug">Plug in or Unplug a Headset</string>
     <string name="report_magic_pass">PASS, got %X"</string>
-    <string name="report_magic_fail">FAIL, got %X, expected %X"</string>
+    <string name="report_magic_fail">FAIL, got %1$X, expected %2$X</string>
     <string name="log_of_test_results">Log of Test Results</string>
     <string name="save_file">Save</string>
     <string name="cpu_affinity">CPUs:</string>
