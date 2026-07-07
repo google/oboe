@@ -190,7 +190,7 @@ public class TestInputActivity  extends TestAudioActivity {
             String subjectText = file.getName();
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subjectText);
             Uri uri = FileProvider.getUriForFile(this,
-                    BuildConfig.APPLICATION_ID + ".provider",
+                    getPackageName() + ".provider",
                     file);
             sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
             sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
