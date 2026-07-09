@@ -139,6 +139,7 @@ public class DeviceReportActivity extends AppCompatActivity {
         report.append("App: ").append(MainActivity.getVersionText()).append("\n");
         report.append("Device: ").append(Build.MANUFACTURER).append(", ").append(Build.MODEL)
                 .append(", ").append(Build.PRODUCT).append("\n");
+        report.append("SDK_INT_FULL: ").append(Build.VERSION.SDK_INT_FULL).append("\n");
 
         report.append(reportExtraDeviceInfo());
         report.append("\n");
