@@ -313,7 +313,10 @@ static int measureLatencyFromPulse(AudioRecording &recorded,
         return result;
     }
     // Now do a fine resolution search near the coarse latency result.
-    int32_t recordedOffset = std::max(0, courseReport.latencyInFrames - (fineWindowSize / 2));
+    int32_t maxRecordedOffset = recorded.size() - pulse.size() - fineWindowSize;
+    int32_t recordedOffset = courseReport.latencyInFrames - (fineWindowSize / 2);
+    recordedOffset = std::min(maxRecordedOffset, recordedOffset);
+    recordedOffset = std::max(0, recordedOffset);
     result = measureLatencyFromPulsePartial(recorded,
                                             recordedOffset,
                                             fineWindowSize,
