@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 37
     defaultConfig {
         applicationId "com.google.oboe.tests.unittestrunner"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 37
         versionCode 1
         versionName "1.0"
     }

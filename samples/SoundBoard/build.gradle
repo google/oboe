@@ -1,12 +1,11 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 
 android {
+    compileSdkVersion 37
     defaultConfig {
         applicationId "com.google.oboe.samples.soundboard"
         minSdkVersion 21
-        targetSdkVersion 36
-        compileSdkVersion 36
+        targetSdkVersion 37
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -30,19 +29,16 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
         }
         debug {
-         debuggable true
+          debuggable true
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_18
         targetCompatibility JavaVersion.VERSION_18
-    }
-    kotlinOptions {
-        jvmTarget = '18'
     }
     externalNativeBuild {
         cmake {
