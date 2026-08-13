@@ -1,14 +1,12 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 37
     defaultConfig {
         applicationId 'com.google.oboe.samples.oboedj'
         minSdkVersion 23
-        targetSdkVersion 36
-        compileSdkVersion 36
+        targetSdkVersion 37
         versionCode 1
         versionName '1.0'
         externalNativeBuild {
@@ -22,16 +20,13 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                           'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_18
         targetCompatibility JavaVersion.VERSION_18
-    }
-    kotlinOptions {
-        jvmTarget = "18"
     }
     externalNativeBuild {
         cmake {
@@ -40,9 +35,6 @@ android {
     }
     buildFeatures {
         compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion compose_version
     }
     namespace 'com.google.oboe.samples.oboedj'
 }

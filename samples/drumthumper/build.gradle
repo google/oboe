@@ -1,8 +1,6 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-}
+apply plugin: 'com.android.application'
 android {
+    compileSdkVersion 37
     defaultConfig {
         // Usually the applicationId follows the same scheme as the application package name,
         // however, this sample will be published on the Google Play Store which will not allow an
@@ -11,8 +9,7 @@ android {
         // who publishes using the application Id prefix of "com.plausiblesoftware".
         applicationId "com.plausiblesoftware.drumthumper"
         minSdkVersion 23
-        compileSdkVersion 36
-        targetSdkVersion 36
+        targetSdkVersion 37
         versionCode 2
         versionName "1.01"
 
@@ -27,9 +24,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_18
         targetCompatibility JavaVersion.VERSION_18
-    }
-    kotlinOptions {
-        jvmTarget = '18'
     }
     externalNativeBuild {
         cmake {
