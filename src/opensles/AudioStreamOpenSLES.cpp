@@ -28,10 +28,9 @@ using namespace oboe;
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
     : AudioStreamBuffered(builder) {
-    // OpenSL ES does not support device IDs. So overwrite value from builder.
-    mDeviceIds.clear();
-    // OpenSL ES does not support session IDs. So overwrite value from builder.
-    mSessionId = SessionId::None;
+    // Device ID and session ID are deliberately not reset here. They are read from the
+    // builder during open() to configure the stream, e.g. to select the performance mode,
+    // and to log unsupported attributes. They are reset in finishCommonOpen().
 }
 
 static constexpr int32_t   kHighLatencyBufferSizeMillis = 20; // typical Android period
@@ -113,6 +112,13 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
 
     // Spatialization Behavior is not supported for OpenSL ES.
     mSpatializationBehavior = SpatializationBehavior::Never;
+
+    // Device ID and session ID are not supported for OpenSL ES. They are only used during
+    // open() to configure the stream and to log unsupported attributes, so they are reset
+    // here once the stream has been configured. This also keeps getDeviceId() and
+    // getSessionId() from reporting attributes that OpenSL ES does not actually provide.
+    mDeviceIds.clear();
+    mSessionId = SessionId::None;
 
     SLresult result = registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
