@@ -69,6 +69,10 @@ typedef int32_t aaudio_session_id_t;
 #define OBOE_USING_NDK 0
 #endif
 
+#ifndef __NDK_BETA__
+#define __NDK_BETA__ 0
+#endif
+
 #if __NDK_MAJOR__ < 24
 // Defined in SC_V2
 typedef uint32_t aaudio_channel_mask_t;
