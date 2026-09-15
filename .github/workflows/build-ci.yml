@@ -26,6 +26,8 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+      with:
+        packages: 'platform-tools'
     
     - name: build samples and apps
       uses: github/codeql-action/init@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
