@@ -112,7 +112,7 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
     mAllowedCapturePolicy = AllowedCapturePolicy::Unspecified;
 
     // Spatialization Behavior is not supported for OpenSL ES.
-    mSpatializationBehavior = SpatializationBehavior::Never;
+    mSpatializationBehavior = SpatializationBehavior::Auto;
 
     SLresult result = registerBufferQueueCallback();
     if (SL_RESULT_SUCCESS != result) {
