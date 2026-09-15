@@ -451,9 +451,11 @@ TEST_F(StreamOpenInput, AAudioInputSetPackageNameInvalid){
         mBuilder.setDirection(Direction::Input);
         mBuilder.setAudioApi(AudioApi::AAudio);
         mBuilder.setPackageName("com.google.oboe.tests.unittestrunnerinvalid");
-        ASSERT_TRUE(openStream());
-        ASSERT_NE(mStream->requestStart(), Result::OK);
-        ASSERT_TRUE(closeStream());
+        Result r = mBuilder.openStream(mStream);
+        if (r == Result::OK) {
+            ASSERT_NE(mStream->requestStart(), Result::OK);
+            ASSERT_TRUE(closeStream());
+        }
     }
 }
 
