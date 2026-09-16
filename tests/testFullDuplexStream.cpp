@@ -65,7 +65,9 @@ protected:
         mInputBuilder.setPerformanceMode(inputPerfMode);
         mInputBuilder.setChannelCount(1);
         mInputBuilder.setFormat(AudioFormat::Float);
-        mInputBuilder.setBufferCapacityInFrames(mOutputStream->getBufferCapacityInFrames() * 2);
+        mInputBuilder.setBufferCapacityInFrames(
+                std::max(mOutputStream->getBufferCapacityInFrames() * 2,
+                         mOutputStream->getFramesPerBurst() * 8));
         mInputBuilder.setSampleRate(mOutputStream->getSampleRate());
 
         r = mInputBuilder.openStream(mInputStream);
