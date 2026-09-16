@@ -417,7 +417,8 @@ public:
      * The AAudio system will use this information to select whether the stream will go through a
      * spatializer effect or not when the effect is supported and enabled.
      *
-     * This is SpatializationBehavior::Never by default.
+     * This is SpatializationBehavior::Auto by default.
+     * Setting SpatializationBehavior::Never is only supported on API 32 and above for AAudio.
      *
      * Available since API level 32.
      *

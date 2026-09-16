@@ -480,12 +480,12 @@ TEST_F(StreamOpenInput, AAudioInputSetAttributionTag){
 
 TEST_F(StreamOpenInput, AAudioInputSetSpatializationBehavior) {
     mBuilder.setDirection(Direction::Input);
-    mBuilder.setSpatializationBehavior(SpatializationBehavior::Auto);
+    mBuilder.setSpatializationBehavior(SpatializationBehavior::Never);
     ASSERT_TRUE(openStream());
     if (getSdkVersion() >= __ANDROID_API_S_V2__){
-        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
-    } else {
         ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    } else {
+        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
     }
     ASSERT_TRUE(closeStream());
 }
@@ -494,16 +494,20 @@ TEST_F(StreamOpenOutput, AAudioOutputSetSpatializationBehavior) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setSpatializationBehavior(SpatializationBehavior::Never);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    if (getSdkVersion() >= __ANDROID_API_S_V2__){
+        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    } else {
+        ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
+    }
     ASSERT_TRUE(closeStream());
 }
 
 TEST_F(StreamOpenOutput, OpenSLESOutputSetSpatializationBehavior) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setAudioApi(AudioApi::OpenSLES);
-    mBuilder.setSpatializationBehavior(SpatializationBehavior::Auto);
+    mBuilder.setSpatializationBehavior(SpatializationBehavior::Never);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
     ASSERT_TRUE(closeStream());
 }
 
@@ -511,7 +515,7 @@ TEST_F(StreamOpenInput, AAudioInputSetSpatializationBehaviorUnspecified) {
     mBuilder.setDirection(Direction::Input);
     mBuilder.setSpatializationBehavior(SpatializationBehavior::Unspecified);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
     ASSERT_TRUE(closeStream());
 }
 
@@ -519,7 +523,7 @@ TEST_F(StreamOpenOutput, AAudioOutputSetSpatializationBehaviorUnspecified) {
     mBuilder.setDirection(Direction::Output);
     mBuilder.setSpatializationBehavior(SpatializationBehavior::Unspecified);
     ASSERT_TRUE(openStream());
-    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Never);
+    ASSERT_EQ(mStream->getSpatializationBehavior(), SpatializationBehavior::Auto);
     ASSERT_TRUE(closeStream());
 }
 
