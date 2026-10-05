@@ -162,6 +162,8 @@ public class AudioQueryTools {
         report.append(getSystemPropertyLine("ro.product.name"));
         report.append(getSystemPropertyLine("ro.product.device"));
         report.append(getSystemPropertyLine("ro.product.cpu.abi"));
+        report.append(getSystemPropertyLine("ro.product.first_api_level"));
+        report.append(getSystemPropertyLine("ro.vendor.api_level"));
         report.append(getSystemPropertyLine("ro.soc.manufacturer"));
         report.append(getSystemPropertyLine("ro.soc.model"));
         report.append(getSystemPropertyLine("ro.arch"));
