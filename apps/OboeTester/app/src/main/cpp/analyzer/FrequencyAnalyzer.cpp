@@ -16,7 +16,7 @@
 
 #include <math.h>
 #include "FrequencyAnalyzer.h"
-#include "android_debug.h"
+#include "common/OboeDebug.h"
 
 FrequencyAnalyzer::FrequencyAnalyzer() : LoopbackProcessor() {
     mWindow.resize(WINDOW_SIZE);
