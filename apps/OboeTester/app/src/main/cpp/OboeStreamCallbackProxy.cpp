@@ -19,6 +19,55 @@
 #include "OboeStreamCallbackProxy.h"
 
 bool OboeStreamCallbackProxy::mCallbackReturnStop = false;
+std::atomic<bool> OboeStreamCallbackProxy::sLatencyTunerEnabled{false};
+std::atomic<bool> OboeStreamCallbackProxy::sLatencyTunerResetRequested{false};
+std::atomic<bool> OboeStreamCallbackProxy::sLatencyTunerParamsDirty{false};
+std::atomic<int32_t> OboeStreamCallbackProxy::sTunerIdleCount{oboe::LatencyTuner::kDefaultIdleCount};
+std::atomic<int32_t> OboeStreamCallbackProxy::sTunerSettleCount{oboe::LatencyTuner::kDefaultSettleCount};
+std::atomic<int32_t> OboeStreamCallbackProxy::sTunerXRunThreshold{1};
+std::atomic<int32_t> OboeStreamCallbackProxy::sTunerCallbacksBeforeStepDown{0};
+std::atomic<bool> OboeStreamCallbackProxy::sTunerStepDownBackoffEnabled{true};
+
+void OboeStreamCallbackProxy::clearLatencyTuner() {
+    std::lock_guard<std::mutex> lock(mLatencyTunerLock);
+    mLatencyTuner.reset();
+    mLatencyTunerStream = nullptr;
+}
+
+void OboeStreamCallbackProxy::applyLatencyTunerParamsLocked() {
+    if (mLatencyTuner == nullptr) return;
+    mLatencyTuner->setIdleCount(sTunerIdleCount.load());
+    mLatencyTuner->setSettleCount(sTunerSettleCount.load());
+    mLatencyTuner->setXRunThreshold(sTunerXRunThreshold.load());
+    mLatencyTuner->setCallbacksBeforeStepDown(sTunerCallbacksBeforeStepDown.load());
+    mLatencyTuner->setStepDownBackoffEnabled(sTunerStepDownBackoffEnabled.load());
+}
+
+void OboeStreamCallbackProxy::tuneLatencyIfEnabled(oboe::AudioStream *audioStream) {
+    if (!sLatencyTunerEnabled.load() || audioStream == nullptr
+            || audioStream->getDirection() != oboe::Direction::Output) {
+        return;
+    }
+    std::unique_lock<std::mutex> lock(mLatencyTunerLock, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        return;
+    }
+    if (mLatencyTuner == nullptr || mLatencyTunerStream != audioStream) {
+        mLatencyTunerStream = audioStream;
+        mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*audioStream);
+        applyLatencyTunerParamsLocked();
+        sLatencyTunerParamsDirty.store(false);
+        sLatencyTunerResetRequested.store(false);
+    } else {
+        if (sLatencyTunerParamsDirty.exchange(false)) {
+            applyLatencyTunerParamsLocked();
+        }
+        if (sLatencyTunerResetRequested.exchange(false)) {
+            mLatencyTuner->requestReset();
+        }
+    }
+    mLatencyTuner->tune();
+}
 
 void OboeStreamCallbackProxy::preDataCallback(oboe::AudioStream *audioStream,
                                               int numFrames,
@@ -66,6 +115,8 @@ void OboeStreamCallbackProxy::postDataCallback(oboe::AudioStream *audioStream,
                         ? static_cast<float *>(audioData) : nullptr;
         mSynthWorkload.renderStereo(buffer, numFrames);
     }
+
+    tuneLatencyIfEnabled(audioStream);
 
     // Measure CPU load.
     int64_t currentTimeNanos = getNanoseconds();

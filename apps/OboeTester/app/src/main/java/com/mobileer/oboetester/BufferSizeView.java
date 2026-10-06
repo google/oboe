@@ -20,6 +20,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -32,6 +35,10 @@ public class BufferSizeView extends LinearLayout {
     private static final int FADER_THRESHOLD_MAX = 1000; // must match layout
     private static final int USE_FADER = -1;
     private static final int DEFAULT_NUM_BURSTS = 2;
+    private static final int DEFAULT_TUNER_IDLE_COUNT = 8;
+    private static final int DEFAULT_TUNER_SETTLE_COUNT = 8;
+    private static final int DEFAULT_TUNER_XRUN_THRESHOLD = 1;
+    private static final int DEFAULT_TUNER_STEP_DOWN_CALLBACKS = 500;
     private TextView mTextLabel;
     private SeekBar mFader;
     private ExponentialTaper mTaper;
@@ -39,6 +46,9 @@ public class BufferSizeView extends LinearLayout {
     private RadioButton mBufferSizeRadio1;
     private RadioButton mBufferSizeRadio2;
     private RadioButton mBufferSizeRadio3;
+    private CheckBox mCheckBoxLatencyTuner;
+    private CheckBox mCheckBoxTunerStepDown;
+    private Button mButtonResetLatencyTuner;
     private int mCachedCapacity;
     private int mFramesPerBurst;
     private int mNumBursts;
@@ -121,9 +131,66 @@ public class BufferSizeView extends LinearLayout {
             }
         });
 
+        mCheckBoxLatencyTuner = (CheckBox) findViewById(R.id.checkboxLatencyTuner);
+        mCheckBoxTunerStepDown = (CheckBox) findViewById(R.id.checkboxTunerStepDown);
+        mButtonResetLatencyTuner = (Button) findViewById(R.id.buttonResetLatencyTuner);
+
+        if (mCheckBoxLatencyTuner != null) {
+            mCheckBoxLatencyTuner.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            OboeAudioStream.setUseLatencyTuner(isChecked);
+                            applyLatencyTunerParamsFromUi();
+                            updateLatencyTunerWidgets();
+                        }
+                    });
+        }
+        if (mCheckBoxTunerStepDown != null) {
+            mCheckBoxTunerStepDown.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            applyLatencyTunerParamsFromUi();
+                        }
+                    });
+        }
+        if (mButtonResetLatencyTuner != null) {
+            mButtonResetLatencyTuner.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    OboeAudioStream.requestLatencyTunerReset();
+                }
+            });
+        }
+        updateLatencyTunerWidgets();
+
         mNumBursts = DEFAULT_NUM_BURSTS;
         updateRadioButtons();
         updateBufferSize();
+    }
+
+    private void applyLatencyTunerParamsFromUi() {
+        boolean stepDownEnabled =
+                mCheckBoxTunerStepDown != null && mCheckBoxTunerStepDown.isChecked();
+        int stepDownCallbacks = stepDownEnabled ? DEFAULT_TUNER_STEP_DOWN_CALLBACKS : 0;
+        OboeAudioStream.setLatencyTunerParams(
+                DEFAULT_TUNER_IDLE_COUNT,
+                DEFAULT_TUNER_SETTLE_COUNT,
+                DEFAULT_TUNER_XRUN_THRESHOLD,
+                stepDownCallbacks,
+                true /* stepDownBackoff */);
+    }
+
+    private void updateLatencyTunerWidgets() {
+        boolean tunerEnabled =
+                mCheckBoxLatencyTuner != null && mCheckBoxLatencyTuner.isChecked();
+        if (mCheckBoxTunerStepDown != null) {
+            mCheckBoxTunerStepDown.setEnabled(isEnabled() && tunerEnabled);
+        }
+        if (mButtonResetLatencyTuner != null) {
+            mButtonResetLatencyTuner.setEnabled(isEnabled() && tunerEnabled);
+        }
     }
 
     public void updateRadioButtons() {
@@ -154,6 +221,10 @@ public class BufferSizeView extends LinearLayout {
             int framesPerBurst = mStream.getFramesPerBurst();
             if (framesPerBurst > 0) mFramesPerBurst = framesPerBurst;
         }
+        if (mCheckBoxLatencyTuner != null) {
+            mCheckBoxLatencyTuner.setChecked(OboeAudioStream.isLatencyTunerEnabled());
+        }
+        updateLatencyTunerWidgets();
         updateBufferSize();
     }
 
@@ -218,5 +289,9 @@ public class BufferSizeView extends LinearLayout {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         mFader.setEnabled(enabled);
+        if (mCheckBoxLatencyTuner != null) {
+            mCheckBoxLatencyTuner.setEnabled(enabled);
+        }
+        updateLatencyTunerWidgets();
     }
 }

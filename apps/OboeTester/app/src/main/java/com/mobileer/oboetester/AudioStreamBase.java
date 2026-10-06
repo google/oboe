@@ -75,6 +75,11 @@ public abstract class AudioStreamBase {
         status.callbackTimeStr = getCallbackTimeStr();
         status.cpuLoad = getCpuLoad();
         status.state = getState();
+        status.latencyTunerState = getLatencyTunerState();
+        status.latencyTunerBumpUpCount = getLatencyTunerBumpUpCount();
+        status.latencyTunerStepDownCount = getLatencyTunerStepDownCount();
+        status.latencyTunerSuppressedXRunCount = getLatencyTunerSuppressedXRunCount();
+        status.latencyTunerEffectiveMinBufferSize = getLatencyTunerEffectiveMinBufferSize();
         mSampleRateMonitor.add(status.framesRead);
         status.measuredRate = mSampleRateMonitor.getRate();
         return status;
@@ -134,6 +139,11 @@ public abstract class AudioStreamBase {
         public float cpuLoad;
         public String callbackTimeStr;
         public int measuredRate;
+        public int latencyTunerState = -1;
+        public int latencyTunerBumpUpCount;
+        public int latencyTunerStepDownCount;
+        public int latencyTunerSuppressedXRunCount;
+        public int latencyTunerEffectiveMinBufferSize;
 
         // These are constantly changing.
         String dump(int framesPerBurst) {
@@ -168,6 +178,15 @@ public abstract class AudioStreamBase {
             }
             buffer.append(",   xRun# = " + ((xRunCount < 0) ? "?" : xRunCount));
 
+            if (latencyTunerState >= 0) {
+                buffer.append("\nlatencyTuner = "
+                        + convertLatencyTunerStateToString(latencyTunerState)
+                        + ", +" + latencyTunerBumpUpCount
+                        + " / -" + latencyTunerStepDownCount
+                        + " (sup=" + latencyTunerSuppressedXRunCount
+                        + ", min=" + latencyTunerEffectiveMinBufferSize + ")");
+            }
+
             return buffer.toString();
         }
         /**
@@ -181,6 +200,14 @@ public abstract class AudioStreamBase {
                 return "Invalid - " + stateId;
             }
             return STATE_ARRAY[stateId];
+        }
+
+        public static String convertLatencyTunerStateToString(int stateId) {
+            final String[] TUNER_STATE_ARRAY = {"Idle", "Active", "Settling", "AtMax", "Unsup."};
+            if (stateId < 0 || stateId >= TUNER_STATE_ARRAY.length) {
+                return "Off";
+            }
+            return TUNER_STATE_ARRAY[stateId];
         }
     }
 
@@ -272,6 +299,16 @@ public abstract class AudioStreamBase {
     public String getCallbackTimeStr() { return "?"; };
 
     public int getState() { return -1; }
+
+    public int getLatencyTunerState() { return -1; }
+
+    public int getLatencyTunerBumpUpCount() { return 0; }
+
+    public int getLatencyTunerStepDownCount() { return 0; }
+
+    public int getLatencyTunerSuppressedXRunCount() { return 0; }
+
+    public int getLatencyTunerEffectiveMinBufferSize() { return 0; }
 
     public void setWorkload(int workload) {}
 

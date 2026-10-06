@@ -51,4 +51,33 @@
         android:progress="1000" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+
+        <CheckBox
+            android:id="@+id/checkboxLatencyTuner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LatencyTuner" />
+
+        <CheckBox
+            android:id="@+id/checkboxTunerStepDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="StepDown" />
+
+        <Button
+            android:id="@+id/buttonResetLatencyTuner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:minHeight="0dp"
+            android:paddingVertical="4dp"
+            android:text="Reset Tuner" />
+    </LinearLayout>
 </LinearLayout>
