@@ -768,6 +768,67 @@ Java_com_mobileer_oboetester_OboeAudioStream_isMMap(JNIEnv *env, jobject instanc
     return engine.getCurrentActivity()->isMMapUsed(streamIndex);
 }
 
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setUseLatencyTuner(
+        JNIEnv * /*env*/, jclass /*type*/, jboolean enabled) {
+    OboeStreamCallbackProxy::setLatencyTunerEnabled(enabled);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_isLatencyTunerEnabled(
+        JNIEnv * /*env*/, jclass /*type*/) {
+    return OboeStreamCallbackProxy::isLatencyTunerEnabled();
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_setLatencyTunerParams(
+        JNIEnv * /*env*/,
+        jclass /*type*/,
+        jint idleCount,
+        jint settleCount,
+        jint xRunThreshold,
+        jint callbacksBeforeStepDown,
+        jboolean stepDownBackoff) {
+    OboeStreamCallbackProxy::setLatencyTunerParams(
+            idleCount, settleCount, xRunThreshold, callbacksBeforeStepDown, stepDownBackoff);
+}
+
+JNIEXPORT void JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_requestLatencyTunerReset(
+        JNIEnv * /*env*/, jclass /*type*/) {
+    OboeStreamCallbackProxy::requestLatencyTunerReset();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerState(
+        JNIEnv * /*env*/, jobject /*instance*/) {
+    return engine.getCurrentActivity()->getLatencyTunerState();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerBumpUpCount(
+        JNIEnv * /*env*/, jobject /*instance*/) {
+    return engine.getCurrentActivity()->getLatencyTunerBumpUpCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerStepDownCount(
+        JNIEnv * /*env*/, jobject /*instance*/) {
+    return engine.getCurrentActivity()->getLatencyTunerStepDownCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerSuppressedXRunCount(
+        JNIEnv * /*env*/, jobject /*instance*/) {
+    return engine.getCurrentActivity()->getLatencyTunerSuppressedXRunCount();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerEffectiveMinBufferSize(
+        JNIEnv * /*env*/, jobject /*instance*/) {
+    return engine.getCurrentActivity()->getLatencyTunerEffectiveMinBufferSize();
+}
+
 // ================= OboeAudioOutputStream ================================
 
 JNIEXPORT void JNICALL

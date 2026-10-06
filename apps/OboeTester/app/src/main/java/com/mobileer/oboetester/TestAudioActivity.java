@@ -1178,6 +1178,33 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             int framesPerBurst = streamTester.getCurrentAudioStream().getFramesPerBurst();
             status.framesPerCallback = getFramesPerCallback();
             report.append("timestamp.latency = " + latencyStatistics.dump() + "\n");
+            if (OboeAudioStream.isLatencyTunerEnabled() || status.latencyTunerState >= 0) {
+                report.append(
+                        "latency.tuner.enabled = "
+                                + OboeAudioStream.isLatencyTunerEnabled()
+                                + "\n");
+                report.append(
+                        "latency.tuner.state = "
+                                + AudioStreamBase.StreamStatus.convertLatencyTunerStateToString(
+                                        status.latencyTunerState)
+                                + "\n");
+                report.append(
+                        "latency.tuner.bump.up.count = "
+                                + status.latencyTunerBumpUpCount
+                                + "\n");
+                report.append(
+                        "latency.tuner.step.down.count = "
+                                + status.latencyTunerStepDownCount
+                                + "\n");
+                report.append(
+                        "latency.tuner.suppressed.xrun.count = "
+                                + status.latencyTunerSuppressedXRunCount
+                                + "\n");
+                report.append(
+                        "latency.tuner.effective.min.buffer.size = "
+                                + status.latencyTunerEffectiveMinBufferSize
+                                + "\n");
+            }
             // TODO The following report is not in a name=value format!
             // report.append(status.dump(framesPerBurst));
         }
