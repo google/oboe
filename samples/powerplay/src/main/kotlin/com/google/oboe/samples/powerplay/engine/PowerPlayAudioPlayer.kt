@@ -26,25 +26,30 @@ import androidx.lifecycle.asLiveData
 import com.google.oboe.samples.powerplay.effects.EffectsController
 import com.google.oboe.samples.powerplay.effects.EqualizerBand
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
+class PowerPlayAudioPlayer() : AudioEngine, DefaultLifecycleObserver {
+    override val engineType = AudioEngineType.Oboe
+
     private var _playerState = MutableStateFlow<PlayerState>(PlayerState.NoResultYet)
-    fun getPlayerStateLive() = _playerState.asLiveData()
+    override val playerStateFlow: StateFlow<PlayerState> get() = _playerState
+    override fun getPlayerStateLive() = _playerState.asLiveData()
 
     private var _currentSongIndex = MutableStateFlow(0)
-    fun getCurrentSongIndexLive() = _currentSongIndex.asLiveData()
-    val currentSongIndex: Int get() = _currentSongIndex.value
+    override val currentSongIndexFlow: StateFlow<Int> get() = _currentSongIndex
+    override fun getCurrentSongIndexLive() = _currentSongIndex.asLiveData()
+    override val currentSongIndex: Int get() = _currentSongIndex.value
 
     private var _currentPerformanceMode = OboePerformanceMode.None
-    val currentPerformanceMode: OboePerformanceMode get() = _currentPerformanceMode
+    override val currentPerformanceMode: OboePerformanceMode get() = _currentPerformanceMode
 
     /**
      * Native passthrough functions
      */
-    val effectsController = EffectsController()
+    override val effectsController = EffectsController()
 
-    fun setupAudioStream(channelCount: Int = NUM_PLAY_CHANNELS) {
+    override fun setupAudioStream(channelCount: Int) {
         setupAudioStreamNative(channelCount)
         _playerState.update { PlayerState.Initialized }
         val sessionId = getSessionId()
@@ -53,7 +58,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         }
     }
 
-    fun startPlaying(index: Int, mode: OboePerformanceMode?) {
+    override fun startPlaying(index: Int, mode: OboePerformanceMode?) {
         val actualMode = mode ?: _currentPerformanceMode
         _currentPerformanceMode = actualMode
         _currentSongIndex.update { index }
@@ -62,12 +67,12 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         _playerState.update { PlayerState.Playing }
     }
 
-    fun stopPlaying(index: Int) {
+    override fun stopPlaying(index: Int) {
         stopPlayingNative(index)
         _playerState.update { PlayerState.Stopped }
     }
 
-    fun updatePerformanceMode(mode: OboePerformanceMode) {
+    override fun updatePerformanceMode(mode: OboePerformanceMode) {
         _currentPerformanceMode = mode
         updatePerformanceModeNative(mode)
         effectsController.release()
@@ -77,19 +82,21 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
         }
     }
 
-    fun setLooping(index: Int, looping: Boolean) = setLoopingNative(index, looping)
-    fun teardownAudioStream() {
+    override fun setLooping(index: Int, looping: Boolean) {
+        setLoopingNative(index, looping)
+    }
+    override fun teardownAudioStream() {
         effectsController.release()
         teardownAudioStreamNative()
     }
     fun unloadAssets() = unloadAssetsNative()
-    fun setPlaybackParameters(speed: Float, pitch: Float): Boolean = setPlaybackParametersNative(speed, pitch)
+    override fun setPlaybackParameters(speed: Float, pitch: Float): Boolean = setPlaybackParametersNative(speed, pitch)
 
     /**
      * Loads a file from assets into memory and returns its WAV properties.
      * Reads the file bytes once, probes the header, then loads the sample data.
      */
-    fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
+    override fun loadFile(assetMgr: AssetManager, filename: String, id: Int): WavFileInfo? {
         val assetFD = assetMgr.openFd(filename)
         val stream = assetFD.createInputStream()
         val len = assetFD.getLength().toInt()
@@ -141,7 +148,7 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      * @param index The sample source index to load into
      * @return WavFileInfo if successful, null on failure
      */
-    fun loadLocalFile(contentResolver: ContentResolver, uri: Uri, index: Int): WavFileInfo? {
+    override fun loadLocalFile(contentResolver: ContentResolver, uri: Uri, index: Int): WavFileInfo? {
         return try {
             val inputStream = contentResolver.openInputStream(uri)
                 ?: throw IllegalStateException("Cannot open input stream for URI: $uri")
@@ -175,25 +182,27 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      * @param index The index of the sample source to remove
      * @return true if successfully removed
      */
-    fun removeSampleSource(index: Int): Boolean = removeSampleSourceNative(index)
+    override fun removeSampleSource(index: Int): Boolean = removeSampleSourceNative(index)
 
     /**
      * Sets whether the audio stream should use MMap audio.
      * @param enabled True to enable MMap, false to disable.
      */
-    fun setMMapEnabled(enabled: Boolean) = setMMapEnabledNative(enabled)
+    override fun setMMapEnabled(enabled: Boolean) {
+        setMMapEnabledNative(enabled)
+    }
 
     /**
      * Checks if MMap is currently enabled.
      * @return True if MMap is enabled, false otherwise.
      */
-    fun isMMapEnabled(): Boolean = isMMapEnabledNative()
+    override fun isMMapEnabled(): Boolean = isMMapEnabledNative()
 
     /**
      * Checks if MMap is supported by the current device.
      * @return True if MMap is supported, false otherwise.
      */
-    fun isMMapSupported(): Boolean = isMMapSupportedNative()
+    override fun isMMapSupported(): Boolean = isMMapSupportedNative()
 
     /**
      * Sets the buffer size in frames for the audio stream.
@@ -204,46 +213,49 @@ class PowerPlayAudioPlayer() : DefaultLifecycleObserver {
      * @param bufferSizeInFrames The requested buffer size in frames.
      * @return The actual buffer size set by the native audio engine.
      */
-    fun setBufferSizeInFrames(bufferSizeInFrames: Int): Int = setBufferSizeInFramesNative(bufferSizeInFrames)
+    override fun setBufferSizeInFrames(bufferSizeInFrames: Int): Int = setBufferSizeInFramesNative(bufferSizeInFrames)
 
-    fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
+    override fun getBufferCapacityInFrames(): Int = getBufferCapacityInFramesNative()
 
     /**
      * Sets the playback volume (gain) for the audio stream.
      *
      * @param volume Volume level from 0.0 (mute) to 1.0 (full volume)
      */
-    fun setVolume(volume: Float) = setVolumeNative(volume)
+    override fun setVolume(volume: Float) = setVolumeNative(volume)
 
     /**
      * Checks if the current audio stream is using PCM Offload.
      *
      * @return true if offload is active, false otherwise
      */
-    fun isOffloaded(): Boolean = isOffloadedNative()
-    fun getSessionId(): Int = getSessionIdNative()
+    override fun isOffloaded(): Boolean = isOffloadedNative()
+    override fun getSessionId(): Int = getSessionIdNative()
 
     /**
      * Gets the index of the currently playing track.
      *
      * @return Track index (0-based) or -1 if nothing is playing
      */
-    fun getCurrentlyPlayingIndex(): Int = getCurrentlyPlayingIndexNative()
+    override fun getCurrentlyPlayingIndex(): Int = getCurrentlyPlayingIndexNative()
 
     /**
      * Gets the current playback position in milliseconds.
      */
-    fun getPlaybackPositionMillis(): Long = getPlaybackPositionMillisNative()
+    override fun getPlaybackPositionMillis(): Long = getPlaybackPositionMillisNative()
 
     /**
      * Seeks to a specific position in milliseconds.
      */
-    fun seekTo(positionMillis: Int) = seekToNative(positionMillis)
+    override fun seekTo(positionMillis: Int) = seekToNative(positionMillis)
 
     /**
      * Gets the duration of the track at the specified index in milliseconds.
      */
-    fun getDurationMillis(index: Int): Long = getDurationMillisNative(index)
+    override fun getDurationMillis(index: Int): Long = getDurationMillisNative(index)
+
+    override fun setOffloadSchedulingEnabled(enabled: Boolean) {}
+    override fun isOffloadSchedulingEnabled(): Boolean = false
 
     /**
      * Native functions.
