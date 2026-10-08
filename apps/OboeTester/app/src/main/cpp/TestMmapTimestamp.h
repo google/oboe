@@ -157,6 +157,7 @@ private:
                                int32_t timeoutMs,
                                TimestampSample *outSample,
                                oboe::Result *outLastResult = nullptr);
+    static int64_t projectTimestampToHostTime(const TimestampSample &s, int32_t sampleRate);
 
     void appendTelemetryLine(const std::string &line);
     void setScorecardCell(size_t rowIndex,
@@ -176,6 +177,7 @@ private:
     std::string mCurrentProgress;
     std::vector<StreamScoreRow> mScorecard;
     std::vector<Finding> mFindings;
+    bool mHasRun = false;
     bool mSuiteCompleted = false;
     bool mSuiteStoppedByUser = false;
 
