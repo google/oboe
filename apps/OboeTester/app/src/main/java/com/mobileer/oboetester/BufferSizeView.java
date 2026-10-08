@@ -52,6 +52,7 @@ public class BufferSizeView extends LinearLayout {
     private int mCachedCapacity;
     private int mFramesPerBurst;
     private int mNumBursts;
+    private boolean mIsUpdatingUi = false;
 
     private SeekBar.OnSeekBarChangeListener mFaderListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
@@ -140,6 +141,7 @@ public class BufferSizeView extends LinearLayout {
                     new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            if (mIsUpdatingUi) return;
                             OboeAudioStream.setUseLatencyTuner(isChecked);
                             applyLatencyTunerParamsFromUi();
                             updateLatencyTunerWidgets();
@@ -151,6 +153,7 @@ public class BufferSizeView extends LinearLayout {
                     new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            if (mIsUpdatingUi) return;
                             applyLatencyTunerParamsFromUi();
                         }
                     });
@@ -163,6 +166,8 @@ public class BufferSizeView extends LinearLayout {
                 }
             });
         }
+        OboeAudioStream.setUseLatencyTuner(false);
+        applyLatencyTunerParamsFromUi();
         updateLatencyTunerWidgets();
 
         mNumBursts = DEFAULT_NUM_BURSTS;
@@ -221,8 +226,16 @@ public class BufferSizeView extends LinearLayout {
             int framesPerBurst = mStream.getFramesPerBurst();
             if (framesPerBurst > 0) mFramesPerBurst = framesPerBurst;
         }
-        if (mCheckBoxLatencyTuner != null) {
-            mCheckBoxLatencyTuner.setChecked(OboeAudioStream.isLatencyTunerEnabled());
+        mIsUpdatingUi = true;
+        try {
+            if (mCheckBoxLatencyTuner != null) {
+                mCheckBoxLatencyTuner.setChecked(OboeAudioStream.isLatencyTunerEnabled());
+            }
+            if (mCheckBoxTunerStepDown != null) {
+                mCheckBoxTunerStepDown.setChecked(OboeAudioStream.isLatencyTunerStepDownEnabled());
+            }
+        } finally {
+            mIsUpdatingUi = false;
         }
         updateLatencyTunerWidgets();
         updateBufferSize();

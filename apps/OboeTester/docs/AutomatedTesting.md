@@ -103,6 +103,12 @@ There are several optional parameters in common for glitch, latency, input, and 
     --es out_sharing        {"shared", "exclusive"} // output sharing mode, default is "exclusive"
     --ez in_use_mmap        {"true", 1, "false", 0} // if true then MMAP is allowed, if false then MMAP will be disabled
     --ez out_use_mmap       {"true", 1, "false", 0} // if true then MMAP is allowed, if false then MMAP will be disabled
+    --ez use_latency_tuner  {"true", 1, "false", 0} // if true, dynamically tune the output stream buffer size using oboe::LatencyTuner. Default is false.
+    --ei tuner_idle_count   {callbacks}  // number of initial callbacks in State::Idle before tuning begins. Default is 8.
+    --ei tuner_settle_count {callbacks}  // number of cooldown callbacks in State::Settling after each buffer size increase. Default is 8.
+    --ei tuner_xrun_threshold {count}    // number of xRun callback events required before increasing buffer size. Default is 1.
+    --ei tuner_step_down_callbacks {callbacks} // number of consecutive glitch-free callbacks before stepping buffer size down, or 0 to disable. Default is 0.
+    --ez tuner_step_down_backoff {"true", 1, "false", 0} // if true, lock the dynamic minimum buffer size floor after a failed step-down. Default is true.
 
 There are some optional parameters in common for glitch, input, and output tests:
 
@@ -228,6 +234,17 @@ out.burst.frames = 96
 out.buffer.size.frames = 192
 out.buffer.capacity.frames = 1920
 out.xruns = 0
+```
+
+When `--ez use_latency_tuner true` is specified, the report also includes `LatencyTuner` telemetry:
+
+```
+latency.tuner.enabled = true
+latency.tuner.state = Active
+latency.tuner.bump.up.count = 1
+latency.tuner.step.down.count = 0
+latency.tuner.suppressed.xrun.count = 2
+latency.tuner.effective.min.buffer.size = 192
 ```
 
 ### Latency Report

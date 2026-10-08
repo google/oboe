@@ -96,6 +96,34 @@ public class AnalyzerActivity extends TestInputActivity {
         report.append(String.format(Locale.getDefault(), "out.buffer.capacity.frames = %d\n", bufferCapacity));
         report.append(String.format(Locale.getDefault(), "out.xruns = %d\n", outStream.getXRunCount()));
         report.append(String.format(Locale.getDefault(), "out.frames.written = %d\n", outStream.getFramesWritten()));
+        AudioStreamBase.StreamStatus outStatus = outStream.getStreamStatus();
+        if (OboeAudioStream.isLatencyTunerEnabled() || outStatus.latencyTunerState >= 0) {
+            report.append(
+                    "latency.tuner.enabled = "
+                            + OboeAudioStream.isLatencyTunerEnabled()
+                            + "\n");
+            report.append(
+                    "latency.tuner.state = "
+                            + AudioStreamBase.StreamStatus.convertLatencyTunerStateToString(
+                                    outStatus.latencyTunerState)
+                            + "\n");
+            report.append(
+                    "latency.tuner.bump.up.count = "
+                            + outStatus.latencyTunerBumpUpCount
+                            + "\n");
+            report.append(
+                    "latency.tuner.step.down.count = "
+                            + outStatus.latencyTunerStepDownCount
+                            + "\n");
+            report.append(
+                    "latency.tuner.suppressed.xrun.count = "
+                            + outStatus.latencyTunerSuppressedXRunCount
+                            + "\n");
+            report.append(
+                    "latency.tuner.effective.min.buffer.size = "
+                            + outStatus.latencyTunerEffectiveMinBufferSize
+                            + "\n");
+        }
 
         return report.toString();
     }

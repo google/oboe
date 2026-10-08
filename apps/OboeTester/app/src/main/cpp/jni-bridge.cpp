@@ -780,6 +780,12 @@ Java_com_mobileer_oboetester_OboeAudioStream_isLatencyTunerEnabled(
     return OboeStreamCallbackProxy::isLatencyTunerEnabled();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_isLatencyTunerStepDownEnabled(
+        JNIEnv * /*env*/, jclass /*type*/) {
+    return OboeStreamCallbackProxy::isLatencyTunerStepDownEnabled();
+}
+
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setLatencyTunerParams(
         JNIEnv * /*env*/,

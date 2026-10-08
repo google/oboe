@@ -209,6 +209,10 @@ public:
         return sLatencyTunerEnabled.load();
     }
 
+    static bool isLatencyTunerStepDownEnabled() {
+        return sTunerCallbacksBeforeStepDown.load() > 0;
+    }
+
     static void setLatencyTunerParams(int32_t idleCount,
                                       int32_t settleCount,
                                       int32_t xRunThreshold,
@@ -227,6 +231,15 @@ public:
     }
 
     void clearLatencyTuner();
+
+    void setMinimumBufferSize(int32_t bufferSize) {
+        if (bufferSize <= 0) return;
+        mMinimumBufferSize.store(bufferSize);
+        std::lock_guard<std::mutex> lock(mLatencyTunerLock);
+        if (mLatencyTuner != nullptr) {
+            mLatencyTuner->setMinimumBufferSize(bufferSize);
+        }
+    }
 
     void tuneLatencyIfEnabled(oboe::AudioStream *audioStream);
 
@@ -294,6 +307,7 @@ private:
     std::mutex                  mLatencyTunerLock;
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
     oboe::AudioStream          *mLatencyTunerStream = nullptr;
+    std::atomic<int32_t>        mMinimumBufferSize{0};
 
     bool                       mIsPartialDataCallback = false;
     static constexpr int       kPartialDataCallbackPercentage = 100;

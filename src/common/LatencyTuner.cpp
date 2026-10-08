@@ -30,10 +30,14 @@ LatencyTuner::LatencyTuner(oboe::AudioStream &stream, int32_t maximumBufferSize)
     if (burstSize <= 0) {
         burstSize = 1;
     }
-    if (mMaxBufferSize.load() <= 0) {
-        mMaxBufferSize.store(stream.getBufferCapacityInFrames());
+    int32_t capacity = stream.getBufferCapacityInFrames();
+    int32_t maxBuf = maximumBufferSize;
+    if (maxBuf <= 0) {
+        maxBuf = (capacity > 0) ? capacity : 0;
+    } else if (capacity > 0 && maxBuf > capacity) {
+        maxBuf = capacity;
     }
-    int32_t maxBuf = mMaxBufferSize.load();
+    mMaxBufferSize.store(maxBuf);
     int32_t minBufferSize = kDefaultNumBursts * burstSize;
     if (maxBuf > 0 && minBufferSize > maxBuf) {
         minBufferSize = maxBuf;
@@ -48,12 +52,19 @@ Result LatencyTuner::tune() {
     if (mState.load() == State::Unsupported) {
         return Result::ErrorUnimplemented;
     }
+    if (!mStream.isXRunCountSupported()) {
+        mState.store(State::Unsupported);
+        return Result::ErrorUnimplemented;
+    }
 
     // Process reset requests.
     int32_t numRequests = mLatencyTriggerRequests.load();
     if (numRequests != mLatencyTriggerResponses.load()) {
         mLatencyTriggerResponses.store(numRequests);
         reset();
+        if (mState.load() == State::Unsupported) {
+            return Result::ErrorUnimplemented;
+        }
     }
 
     auto xRunCountResult = mStream.getXRunCount();
@@ -73,11 +84,14 @@ Result LatencyTuner::tune() {
             mPreviousXRuns = currentXRuns;
             mPendingXRunEvents = 0;
             if (mIdleCountDown.fetch_sub(1) - 1 <= 0) {
-                mState.store(State::Active);
+                mIdleCountDown.store(0);
+                State expected = State::Idle;
+                mState.compare_exchange_strong(expected, State::Active);
             }
             return Result::OK;
         }
-        mState.store(State::Active);
+        State expected = State::Idle;
+        mState.compare_exchange_strong(expected, State::Active);
     }
 
     // In Settling state after a buffer size change, absorb additional xRun increments
@@ -103,11 +117,24 @@ Result LatencyTuner::tune() {
     if (currentState == State::Active || currentState == State::AtMax) {
         if (xRunDelta > 0) {
             mCalmCallbackCount = 0;
+            if (currentState == State::AtMax) {
+                int32_t maxBuf = mMaxBufferSize.load();
+                if (maxBuf > 0 && mStream.getBufferSizeInFrames() < maxBuf) {
+                    currentState = State::Active;
+                    mState.store(State::Active);
+                }
+            }
             if (currentState == State::Active) {
                 mPendingXRunEvents++;
                 if (mPendingXRunEvents >= mXRunThreshold.load()) {
                     mPendingXRunEvents = 0;
                     int32_t oldBufferSize = mStream.getBufferSizeInFrames();
+                    int32_t maxBuf = mMaxBufferSize.load();
+                    if (maxBuf > 0 && oldBufferSize >= maxBuf) {
+                        mSteppedDownRecently = false;
+                        mState.store(State::AtMax);
+                        return Result::OK;
+                    }
                     int32_t increment = getBufferSizeIncrement();
                     if (increment <= 0) {
                         increment = std::max(1, mStream.getFramesPerBurst());
@@ -117,7 +144,6 @@ Result LatencyTuner::tune() {
 
                     // Do not request more than the maximum buffer size (which was either
                     // user-specified or was from stream->getBufferCapacityInFrames()).
-                    int32_t maxBuf = mMaxBufferSize.load();
                     if (maxBuf > 0 && requested64 > maxBuf) {
                         requested64 = maxBuf;
                     }
@@ -125,16 +151,6 @@ Result LatencyTuner::tune() {
                         requested64 = INT32_MAX;
                     }
                     int32_t requestedBufferSize = static_cast<int32_t>(requested64);
-
-                    if (mSteppedDownRecently) {
-                        if (mStepDownBackoffEnabled.load()) {
-                            int32_t curDyn = mDynamicMinimumBufferSize.load();
-                            if (requestedBufferSize > curDyn) {
-                                mDynamicMinimumBufferSize.store(requestedBufferSize);
-                            }
-                        }
-                        mSteppedDownRecently = false;
-                    }
 
                     // Note that this will not allocate more memory. It simply determines
                     // how much of the existing buffer capacity will be used. The size will be
@@ -145,11 +161,47 @@ Result LatencyTuner::tune() {
                         return setBufferResult.error();
                     }
                     int32_t newBufferSize = setBufferResult.value();
+                    if (newBufferSize <= oldBufferSize) {
+                        int32_t burstIncrement = std::max(1, mStream.getFramesPerBurst());
+                        if (burstIncrement > increment) {
+                            int64_t burstRequested64 =
+                                    static_cast<int64_t>(oldBufferSize) +
+                                    static_cast<int64_t>(burstIncrement);
+                            if (maxBuf > 0 && burstRequested64 > maxBuf) {
+                                burstRequested64 = maxBuf;
+                            }
+                            if (burstRequested64 > INT32_MAX) {
+                                burstRequested64 = INT32_MAX;
+                            }
+                            int32_t burstRequestedBufferSize =
+                                    static_cast<int32_t>(burstRequested64);
+                            if (burstRequestedBufferSize > requestedBufferSize) {
+                                setBufferResult =
+                                        mStream.setBufferSizeInFrames(burstRequestedBufferSize);
+                                if (setBufferResult != Result::OK) {
+                                    mState.store(State::Unsupported);
+                                    return setBufferResult.error();
+                                }
+                                newBufferSize = setBufferResult.value();
+                            }
+                        }
+                    }
+
+                    if (mSteppedDownRecently) {
+                        if (mStepDownBackoffEnabled.load() && newBufferSize > oldBufferSize) {
+                            int32_t curDyn = mDynamicMinimumBufferSize.load();
+                            if (newBufferSize > curDyn) {
+                                mDynamicMinimumBufferSize.store(newBufferSize);
+                            }
+                        }
+                        mSteppedDownRecently = false;
+                    }
+
                     if (newBufferSize > oldBufferSize) {
                         mBumpUpCount.fetch_add(1);
                     }
                     int32_t settleCount = mSettleCount.load();
-                    if (newBufferSize == oldBufferSize ||
+                    if (newBufferSize <= oldBufferSize ||
                             (maxBuf > 0 && newBufferSize >= maxBuf)) {
                         mState.store(State::AtMax);
                     } else if (settleCount > 0) {
@@ -168,17 +220,15 @@ Result LatencyTuner::tune() {
             if (callbacksBeforeStepDown > 0) {
                 mCalmCallbackCount++;
                 if (mCalmCallbackCount >= callbacksBeforeStepDown) {
+                    mCalmCallbackCount = 0;
                     mPendingXRunEvents = 0;
                     if (mSteppedDownRecently) {
                         // Survived a full quiet window at the stepped-down size.
                         mSteppedDownRecently = false;
                     }
-                }
-                int32_t oldBufferSize = mStream.getBufferSizeInFrames();
-                int32_t minFloor = getEffectiveMinimumBufferSize();
-                if (oldBufferSize > minFloor) {
-                    if (mCalmCallbackCount >= callbacksBeforeStepDown) {
-                        mCalmCallbackCount = 0;
+                    int32_t oldBufferSize = mStream.getBufferSizeInFrames();
+                    int32_t minFloor = getEffectiveMinimumBufferSize();
+                    if (oldBufferSize > minFloor) {
                         int32_t decrement = getBufferSizeDecrement();
                         if (decrement <= 0) {
                             decrement = getBufferSizeIncrement();
@@ -212,13 +262,14 @@ Result LatencyTuner::tune() {
                             mStepDownCount.fetch_add(1);
                             mSteppedDownRecently = true;
                             mState.store(State::Active);
-                        } else {
+                        } else if (mStepDownBackoffEnabled.load()) {
                             mDynamicMinimumBufferSize.store(oldBufferSize);
                         }
                     }
-                } else {
-                    mCalmCallbackCount = 0;
                 }
+            } else {
+                mCalmCallbackCount = 0;
+                mSteppedDownRecently = false;
             }
         }
     }
@@ -243,22 +294,30 @@ void LatencyTuner::reset() {
     mStepDownCount.store(0);
     mSuppressedXRunCount.store(0);
     mDynamicMinimumBufferSize.store(0);
-    mState.store((idleCount > 0) ? State::Idle : State::Active);
+    if (!mStream.isXRunCountSupported()) {
+        mState.store(State::Unsupported);
+        return;
+    }
     auto xRunCountResult = mStream.getXRunCount();
-    if (xRunCountResult == Result::OK) {
-        mPreviousXRuns = xRunCountResult.value();
-    } else {
+    if (xRunCountResult != Result::OK) {
         mState.store(State::Unsupported);
         return;
     }
     // Set to minimal latency
-    auto setBufferResult = mStream.setBufferSizeInFrames(getMinimumBufferSize());
+    int32_t minBuf = getMinimumBufferSize();
+    int32_t maxBuf = getMaximumBufferSize();
+    if (maxBuf > 0 && minBuf > maxBuf) {
+        minBuf = maxBuf;
+    }
+    auto setBufferResult = mStream.setBufferSizeInFrames(minBuf);
     if (setBufferResult != Result::OK) {
         mState.store(State::Unsupported);
+        return;
     }
+    mPreviousXRuns = xRunCountResult.value();
+    mState.store((idleCount > 0) ? State::Idle : State::Active);
 }
 
 bool LatencyTuner::isAtMaximumBufferSize() {
     return mState.load() == State::AtMax;
 }
-

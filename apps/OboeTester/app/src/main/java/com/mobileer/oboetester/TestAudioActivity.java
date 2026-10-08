@@ -643,6 +643,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             });
         }
         OboeAudioStream.setHangTimeMillis(0);
+        OboeAudioStream.setUseLatencyTuner(false);
 
         mStreamSniffer = new MyStreamSniffer();
 

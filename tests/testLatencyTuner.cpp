@@ -531,6 +531,14 @@ TEST_F(LatencyTunerTest, CustomConstructorAndSettersClampAndAlignProperly) {
     EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 3 * kBurst);
 
     // Negative / invalid setters clamp safely.
+    tuner.setMinimumBufferSize(-50);
+    EXPECT_EQ(tuner.getMinimumBufferSize(), 0);
+    tuner.setMinimumBufferSize(3 * kBurst);
+    tuner.setMaximumBufferSize(20 * kBurst);
+    EXPECT_EQ(tuner.getMaximumBufferSize(), kCapacity);
+    tuner.setMaximumBufferSize(-10);
+    EXPECT_EQ(tuner.getMaximumBufferSize(), kCapacity);
+    tuner.setMaximumBufferSize(5 * kBurst);
     tuner.setIdleCount(-10);
     EXPECT_EQ(tuner.getIdleCount(), 0);
     tuner.setSettleCount(-5);
@@ -577,16 +585,228 @@ TEST_F(LatencyTunerTest, CustomConstructorAndSettersClampAndAlignProperly) {
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 6 * kBurst);
 }
 
-TEST_F(LatencyTunerTest,ConcurrentRequestResetFromMultipleThreads) {
+TEST_F(LatencyTunerTest, StepDownToMinFloorClearsSteppedDownRecentlyAfterQuietWindow) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(1);
+    tuner.setCallbacksBeforeStepDown(5);
+    tuner.setStepDownBackoffEnabled(true);
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst
+
+    // Bump from 2 -> 3 bursts.
+    mStream.addXRuns(1);
+    tuner.tune(); // bump to 3 * kBurst -> Settling
+    tuner.tune(); // Settling -> Active
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+
+    // 5 quiet callbacks step down to minFloor (2 * kBurst) and set mSteppedDownRecently = true.
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+    ASSERT_EQ(tuner.getStepDownCount(), 1);
+
+    // Run 5 quiet callbacks at minFloor (2 * kBurst) to complete a full quiet window.
+    // This MUST clear mSteppedDownRecently even though oldBufferSize == minFloor.
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+
+    // Now an isolated glitch occurs at 2 * kBurst after surviving the quiet window.
+    // It should bump to 3 * kBurst, but MUST NOT lock getEffectiveMinimumBufferSize() at 3 * kBurst!
+    mStream.addXRuns(1);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 2 * kBurst);
+
+    // Finish 1 settling callback, then 5 quiet callbacks must step back down to 2 * kBurst.
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+    EXPECT_EQ(tuner.getStepDownCount(), 2);
+}
+
+TEST_F(LatencyTunerTest, DynamicFloorUsesQuantizedAndClampedNewBufferSize) {
+    mStream.setQuantizeToBurst(true);
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+    tuner.setCallbacksBeforeStepDown(4);
+    tuner.setBufferSizeIncrement(50); // Sub-burst increment (50 < 96)
+    tuner.setBufferSizeDecrement(kBurst);
+    tuner.setStepDownBackoffEnabled(true);
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst (192)
+
+    // Bump from 2 * kBurst (192) -> requested 242 -> quantized to 3 * kBurst (288).
+    mStream.addXRuns(1);
+    tuner.tune();
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+
+    // Step down after 4 quiet callbacks to 2 * kBurst (192).
+    for (int i = 0; i < 4; ++i) {
+        tuner.tune();
+    }
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+
+    // Glitch before quiet window completes -> bumps back to quantized 3 * kBurst (288).
+    // Effective minimum floor must match the quantized newBufferSize (288), not unquantized 242!
+    mStream.addXRuns(1);
+    tuner.tune();
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 3 * kBurst);
+
+    // Verify no further step-downs occur even after 20 quiet callbacks.
+    for (int i = 0; i < 20; ++i) {
+        tuner.tune();
+    }
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    EXPECT_EQ(tuner.getStepDownCount(), 1);
+}
+
+TEST_F(LatencyTunerTest, XRunWhenBufferSizeExceedsMaxDoesNotShrinkBuffer) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst
+
+    // Bump to 5 * kBurst.
+    for (int i = 0; i < 3; ++i) {
+        mStream.addXRuns(1);
+        tuner.tune();
+    }
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 5 * kBurst);
+
+    // Lower maximumBufferSize below the stream's current buffer size (to 3 * kBurst).
+    tuner.setMaximumBufferSize(3 * kBurst);
+    EXPECT_EQ(tuner.getMaximumBufferSize(), 3 * kBurst);
+
+    int32_t callsBefore = mStream.getSetBufferSizeCallCount();
+    mStream.addXRuns(1);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+
+    // Must transition to AtMax WITHOUT calling setBufferSizeInFrames to shrink the buffer!
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 5 * kBurst);
+    EXPECT_EQ(mStream.getSetBufferSizeCallCount(), callsBefore);
+}
+
+TEST_F(LatencyTunerTest, DisablingStepDownBackoffClearsDynamicFloor) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+    tuner.setCallbacksBeforeStepDown(4);
+    tuner.setStepDownBackoffEnabled(true);
+
+    tuner.tune(); // Idle -> Active
+
+    // Bump to 3 * kBurst, step down to 2 * kBurst, then glitch to lock dynamic floor at 3 * kBurst.
+    mStream.addXRuns(1);
+    tuner.tune();
+    for (int i = 0; i < 4; ++i) {
+        tuner.tune();
+    }
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+    mStream.addXRuns(1);
+    tuner.tune();
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    ASSERT_EQ(tuner.getEffectiveMinimumBufferSize(), 3 * kBurst);
+
+    // Disabling step-down backoff must immediately clear the dynamic floor back to 2 * kBurst.
+    tuner.setStepDownBackoffEnabled(false);
+    EXPECT_FALSE(tuner.isStepDownBackoffEnabled());
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 2 * kBurst);
+
+    // And the next 4 quiet callbacks can now step down to 2 * kBurst.
+    for (int i = 0; i < 4; ++i) {
+        tuner.tune();
+    }
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+}
+
+TEST_F(LatencyTunerTest, SetBufferSizeFailureTransitionsToUnsupported) {
+    FakeAudioStream stream(kBurst, kInitialSize, kCapacity);
+    stream.setSetBufferSizeSupported(false);
+
+    // Construction reset() fails setBufferSizeInFrames -> immediately Unsupported.
+    LatencyTuner tunerOnUnsupportedSet(stream);
+    EXPECT_EQ(tunerOnUnsupportedSet.getState(), LatencyTuner::State::Unsupported);
+    EXPECT_EQ(tunerOnUnsupportedSet.tune(), Result::ErrorUnimplemented);
+
+    // Also test failure during Active bump-up when setBufferSizeInFrames fails mid-stream.
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.tune(); // Idle -> Active
+    ASSERT_EQ(tuner.getState(), LatencyTuner::State::Active);
+
+    mStream.setSetBufferSizeSupported(false);
+    mStream.addXRuns(1);
+    EXPECT_EQ(tuner.tune(), Result::ErrorUnimplemented);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Unsupported);
+}
+
+TEST_F(LatencyTunerTest, ExternalBufferSizeDecreaseWhileAtMaxResumesTuningOnXRun) {
+    LatencyTuner tuner(mStream, 4 * kBurst);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst
+
+    // Bump twice to 4 * kBurst (AtMax).
+    mStream.addXRuns(1);
+    tuner.tune();
+    mStream.addXRuns(1);
+    tuner.tune();
+    ASSERT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 4 * kBurst);
+
+    // Lower the stream buffer size externally (e.g. via UI radio button / fader) to 2 * kBurst.
+    mStream.setBufferSizeInFrames(2 * kBurst);
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+
+    // A subsequent xRun while in State::AtMax must detect that bufferSize < maxBufferSize
+    // and bump the buffer size to 3 * kBurst!
+    mStream.addXRuns(1);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+
+    // Bump again to 4 * kBurst (AtMax), then call setMinimumBufferSize(2 * kBurst) and verify
+    // it also transitions AtMax -> Active and clears any dynamic floor.
+    mStream.addXRuns(1);
+    tuner.tune();
+    ASSERT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    tuner.setMinimumBufferSize(2 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+}
+
+TEST_F(LatencyTunerTest, ConcurrentRequestResetFromMultipleThreads) {
     LatencyTuner tuner(mStream);
     tuner.setIdleCount(2);
     tuner.setSettleCount(2);
     tuner.setCallbacksBeforeStepDown(10);
 
     std::atomic<bool> running{true};
-    std::thread resetter([&]() {
+    std::thread mutator([&]() {
         for (int i = 0; i < 500 && running.load(); ++i) {
             tuner.requestReset();
+            tuner.setIdleCount(i % 4);
+            tuner.setSettleCount(i % 4);
+            tuner.setXRunThreshold((i % 2) + 1);
+            tuner.setCallbacksBeforeStepDown((i % 3) * 5);
+            tuner.setStepDownBackoffEnabled((i % 2) == 0);
+            tuner.setMinimumBufferSize(((i % 2) + 1) * kBurst);
+            tuner.setMaximumBufferSize((6 + (i % 3)) * kBurst);
+            (void) tuner.getState();
+            (void) tuner.getBumpUpCount();
+            (void) tuner.getStepDownCount();
+            (void) tuner.getSuppressedXRunCount();
+            (void) tuner.getEffectiveMinimumBufferSize();
         }
     });
 
@@ -596,11 +816,11 @@ TEST_F(LatencyTunerTest,ConcurrentRequestResetFromMultipleThreads) {
         }
         EXPECT_EQ(tuner.tune(), Result::OK);
         int32_t bufSize = mStream.getBufferSizeInFrames();
-        EXPECT_GE(bufSize, tuner.getMinimumBufferSize());
-        EXPECT_LE(bufSize, tuner.getMaximumBufferSize());
+        EXPECT_GE(bufSize, kBurst);
+        EXPECT_LE(bufSize, kCapacity);
     }
 
     running.store(false);
-    resetter.join();
+    mutator.join();
 }
 

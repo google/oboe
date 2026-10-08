@@ -385,6 +385,8 @@ abstract class OboeAudioStream extends AudioStreamBase {
 
     public static native boolean isLatencyTunerEnabled();
 
+    public static native boolean isLatencyTunerStepDownEnabled();
+
     public static native void setLatencyTunerParams(
             int idleCount,
             int settleCount,

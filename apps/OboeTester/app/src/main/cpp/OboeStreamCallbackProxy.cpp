@@ -29,6 +29,7 @@ std::atomic<int32_t> OboeStreamCallbackProxy::sTunerCallbacksBeforeStepDown{0};
 std::atomic<bool> OboeStreamCallbackProxy::sTunerStepDownBackoffEnabled{true};
 
 void OboeStreamCallbackProxy::clearLatencyTuner() {
+    mMinimumBufferSize.store(0);
     std::lock_guard<std::mutex> lock(mLatencyTunerLock);
     mLatencyTuner.reset();
     mLatencyTunerStream = nullptr;
@@ -53,8 +54,16 @@ void OboeStreamCallbackProxy::tuneLatencyIfEnabled(oboe::AudioStream *audioStrea
         return;
     }
     if (mLatencyTuner == nullptr || mLatencyTunerStream != audioStream) {
+        int32_t initialBufferSize = mMinimumBufferSize.load();
+        if (initialBufferSize <= 0) {
+            initialBufferSize = audioStream->getBufferSizeInFrames();
+        }
         mLatencyTunerStream = audioStream;
         mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*audioStream);
+        if (initialBufferSize > 0) {
+            mLatencyTuner->setMinimumBufferSize(initialBufferSize);
+            audioStream->setBufferSizeInFrames(initialBufferSize);
+        }
         applyLatencyTunerParamsLocked();
         sLatencyTunerParamsDirty.store(false);
         sLatencyTunerResetRequested.store(false);
