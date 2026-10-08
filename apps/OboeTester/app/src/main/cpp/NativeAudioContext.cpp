@@ -119,6 +119,9 @@ void ActivityContext::close(int32_t streamIndex) {
     std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
     if (oboeStream != nullptr) {
         oboeStream->close();
+        if (oboeStream->getDirection() == oboe::Direction::Output) {
+            oboeCallbackProxy->clearLatencyTuner();
+        }
         LOGD("ActivityContext::%s() delete stream %d ", __func__, streamIndex);
         freeStreamIndex(streamIndex);
     }
@@ -393,6 +396,9 @@ int32_t ActivityContext::setBufferSizeInFrames(int streamIndex, int threshold) {
         auto result = oboeStream->setBufferSizeInFrames(threshold);
         if (result) {
             mBufferSizeInFrames = result.value();
+            if (oboeStream->getDirection() == oboe::Direction::Output) {
+                oboeCallbackProxy->setMinimumBufferSize(result.value());
+            }
         }
         return (!result) ? (int32_t) result.error() : result.value();
     }
@@ -559,6 +565,8 @@ void ActivityTestOutput::runBlockingIO() {
             LOGE("%s() : write() wrote %d of %d\n", __func__, framesWritten, framesPerBlock);
             break;
         }
+
+        oboeCallbackProxy->tuneLatencyIfEnabled(oboeStream.get());
 
         const int64_t bufferSizeInFrames = mBufferSizeInFrames.load();
         if (oboeStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&

@@ -30,6 +30,7 @@ add_executable(
 		testAudioClock.cpp
 		testFlowgraph.cpp
 		testFullDuplexStream.cpp
+		testLatencyTuner.cpp
 		testResampler.cpp
 		testReturnStop.cpp
 		testReturnStopDeadlock.cpp
