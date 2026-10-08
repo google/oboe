@@ -183,6 +183,12 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".TestMmapTimestampActivity"
+            android:label="@string/title_mmap_timestamp"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
 
         <service
             android:name=".MidiTapTester"
