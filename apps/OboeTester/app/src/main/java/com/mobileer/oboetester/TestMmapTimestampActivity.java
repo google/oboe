@@ -362,6 +362,9 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
             }
             outFile = new File(dir, REPORT_FILENAME);
         }
+        if (outFile.exists()) {
+            outFile.delete();
+        }
         try (FileOutputStream fos = new FileOutputStream(outFile)) {
             fos.write(report.getBytes(StandardCharsets.UTF_8));
             Log.i(TAG, "Saved MMAP timestamp report to: " + outFile.getAbsolutePath());
@@ -433,7 +436,8 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
             public void run() {
                 mStatusView.setText(styled);
                 if (mScrollView != null && !running) {
-                    mScrollView.fullScroll(View.FOCUS_UP);
+                    mScrollView.scrollTo(0, 0);
+                    mScrollView.post(() -> mScrollView.scrollTo(0, 0));
                 }
             }
         });

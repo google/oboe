@@ -152,7 +152,10 @@ private:
                                std::string *inoutFailureTag);
 
     bool sleepMillisInterruptible(int32_t durationMs);
-    bool runUntilUnalignedPosition(int32_t minRunMs, int32_t bufferCapacity, int32_t framesPerBurst);
+    bool runUntilUnalignedPosition(int64_t cycleBaseHw,
+                                   int32_t minRunMs,
+                                   int32_t bufferCapacity,
+                                   int32_t framesPerBurst);
     bool waitForFreshTimestamp(int64_t prevTsTimeNs,
                                int32_t timeoutMs,
                                TimestampSample *outSample,

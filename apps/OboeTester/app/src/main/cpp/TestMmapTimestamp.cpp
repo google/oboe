@@ -880,7 +880,7 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
     }
 
     if (direction == Direction::Output) {
-        if (avgPipelineOffsetMs < -1.0 || (hwLagAfterCbMs >= 12.0 && std::abs(avgPipelineOffsetMs) < 2.0)) {
+        if (avgPipelineOffsetMs < -1.0 || (hwLagAfterCbMs >= 12.0 && avgPipelineOffsetMs < 0.2)) {
             const bool isFail = (avgPipelineOffsetMs < -1.0);
             if (isFail) {
                 checkFailed = true;
@@ -918,7 +918,8 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
     }
 }
 
-bool TestMmapTimestamp::runUntilUnalignedPosition(int32_t minRunMs,
+bool TestMmapTimestamp::runUntilUnalignedPosition(int64_t cycleBaseHw,
+                                                  int32_t minRunMs,
                                                   int32_t bufferCapacity,
                                                   int32_t framesPerBurst) {
     if (!sleepMillisInterruptible(minRunMs)) {
@@ -927,13 +928,18 @@ bool TestMmapTimestamp::runUntilUnalignedPosition(int32_t minRunMs,
     if (bufferCapacity <= 0) {
         return true;
     }
-    const int32_t minRem = std::min(bufferCapacity / 4, std::max(framesPerBurst, 48));
-    for (int32_t attempt = 0; attempt < 40 && mThreadEnabled.load(); ++attempt) {
+    const int32_t minRem = std::min(bufferCapacity / 6, std::max(framesPerBurst * 2, 96));
+    const int32_t maxRem = (mStream->getDirection() == Direction::Input)
+            ? std::max(minRem + framesPerBurst, bufferCapacity / 2)
+            : (bufferCapacity - minRem);
+    for (int32_t attempt = 0; attempt < 50 && mThreadEnabled.load(); ++attempt) {
         const int64_t hw = (mStream->getDirection() == Direction::Output)
                 ? mStream->getFramesRead()
                 : mStream->getFramesWritten();
-        const int64_t rem = (bufferCapacity > 0) ? (hw % bufferCapacity) : 0;
-        if (rem >= minRem && rem <= (bufferCapacity - minRem)) {
+        const int64_t rem = (bufferCapacity > 0)
+                ? (std::max<int64_t>(0, hw - cycleBaseHw) % bufferCapacity)
+                : 0;
+        if (rem >= minRem && rem <= maxRem) {
             return true;
         }
         AudioClock::sleepForNanos(3 * NANOS_PER_MILLISECOND);
@@ -1038,10 +1044,12 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
     int64_t exampleTsError = 0;
     int64_t exampleHwError = 0;
     int64_t exampleRingOffset = 0;
+    int64_t cycleBaseHw = 0;
 
     for (int32_t cycle = 1; cycle <= kRapidCycleCount && mThreadEnabled.load(); ++cycle) {
         const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
-        if (!runUntilUnalignedPosition(220, capacity, burst)) {
+        const int32_t minRunMs = (cycle == 1) ? 150 : 70;
+        if (!runUntilUnalignedPosition(cycleBaseHw, minRunMs, capacity, burst)) {
             break;
         }
 
@@ -1063,7 +1071,9 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
 
         const int64_t preHw = (direction == Direction::Output)
                 ? preSample.framesRead : preSample.framesWritten;
-        const int64_t preRem = (capacity > 0) ? (preHw % capacity) : 0;
+        const int64_t preRem = (capacity > 0)
+                ? (std::max<int64_t>(0, preHw - cycleBaseHw) % capacity)
+                : 0;
         const int64_t preComp = (capacity > 0) ? (capacity - preRem) : 0;
 
         if (usePauseFlush) {
@@ -1129,6 +1139,7 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
         const int64_t dmaError = dHw - dApp;
         cumulativeTsDrift += tsError;
         cumulativeHwDrift += dmaError;
+        cycleBaseHw = preHw + dmaError;
 
         const int64_t jumpThreshold = isShared
                 ? std::max(capacity, burst * 12)
@@ -1307,7 +1318,7 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
     }
 
     const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
-    if (!runUntilUnalignedPosition(300, capacity, burst)) {
+    if (!runUntilUnalignedPosition(0, 160, capacity, burst)) {
         return;
     }
 

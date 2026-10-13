@@ -186,12 +186,14 @@
         <activity
             android:name=".TestMmapTimestampActivity"
             android:label="@string/title_mmap_timestamp"
+            android:launchMode="singleTop"
             android:exported="true"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
         <activity
             android:name=".TestVoiceCommAecActivity"
             android:label="@string/title_voice_comm_aec"
+            android:launchMode="singleTop"
             android:exported="true"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
