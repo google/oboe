@@ -93,13 +93,19 @@ DataCallbackResult TestMmapTimestamp::MyDataCallback::onAudioReady(
 }
 
 int32_t TestMmapTimestamp::start(const ConfigFlags &flags) {
-    stop();
+    std::lock_guard<std::mutex> lifecycleLock(mLifecycleMutex);
+    mThreadEnabled.store(false);
+    if (mWorkerThread.joinable()) {
+        mWorkerThread.join();
+    }
+    mIsRunning.store(false);
     {
         std::lock_guard<std::mutex> lock(mReportMutex);
         mTelemetryLog.clear();
         mCurrentProgress = "Initializing MMAP diagnostic suite...";
         mScorecard.clear();
         mFindings.clear();
+        mHasRun = true;
         mSuiteCompleted = false;
         mSuiteStoppedByUser = false;
         mPassCount = 0;
@@ -114,6 +120,7 @@ int32_t TestMmapTimestamp::start(const ConfigFlags &flags) {
 }
 
 int32_t TestMmapTimestamp::stop() {
+    std::lock_guard<std::mutex> lifecycleLock(mLifecycleMutex);
     mThreadEnabled.store(false);
     if (mWorkerThread.joinable()) {
         mWorkerThread.join();
@@ -207,7 +214,7 @@ std::string TestMmapTimestamp::buildFullReportLocked(bool suiteCompleted) const 
     std::ostringstream out;
 
     const int32_t totalChecks = mPassCount + mWarnCount + mFailCount;
-    std::string overallStr = "RUNNING...";
+    std::string overallStr = mHasRun ? "RUNNING..." : "NOT STARTED";
     if (suiteCompleted) {
         if (mSuiteStoppedByUser) {
             overallStr = "STOPPED (cancelled by user)";
@@ -219,6 +226,8 @@ std::string TestMmapTimestamp::buildFullReportLocked(bool suiteCompleted) const 
             overallStr = formatString("WARN (%zu issue%s detected)",
                                       mFindings.size(),
                                       mFindings.size() == 1 ? "" : "s");
+        } else if (totalChecks == 0) {
+            overallStr = "SKIPPED (0 checks executed)";
         } else {
             overallStr = "PASS";
         }
@@ -312,6 +321,7 @@ bool TestMmapTimestamp::sleepMillisInterruptible(int32_t durationMs) {
 
 void TestMmapTimestamp::runSuite(ConfigFlags flags) {
     const bool prevWorkarounds = OboeGlobals::areWorkaroundsEnabled();
+    const bool prevMmapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
     OboeGlobals::setWorkaroundsEnabled(false);
 
     struct StreamPlan {
@@ -372,7 +382,7 @@ void TestMmapTimestamp::runSuite(ConfigFlags flags) {
         }
         if (mFailCount > 0) {
             mResult.store(RESULT_FAIL);
-        } else if (mWarnCount > 0) {
+        } else if (mWarnCount > 0 || (mPassCount + mWarnCount + mFailCount) == 0) {
             mResult.store(RESULT_WARN);
         } else {
             mResult.store(RESULT_PASS);
@@ -385,6 +395,7 @@ void TestMmapTimestamp::runSuite(ConfigFlags flags) {
         }
     }
 
+    AAudioExtensions::getInstance().setMMapEnabled(prevMmapEnabled);
     OboeGlobals::setWorkaroundsEnabled(prevWorkarounds);
     mIsRunning.store(false);
 }
@@ -407,7 +418,18 @@ Result TestMmapTimestamp::openMmapStream(Direction direction, SharingMode sharin
         builder.setInputPreset(InputPreset::Unprocessed);
     }
 
-    return builder.openStream(mStream);
+    Result result = builder.openStream(mStream);
+    if (result == Result::OK && mStream &&
+        sharingMode == SharingMode::Exclusive &&
+        mStream->getSharingMode() != SharingMode::Exclusive &&
+        mThreadEnabled.load()) {
+        closeStream();
+        AudioClock::sleepForNanos(30 * NANOS_PER_MILLISECOND);
+        mDataCallback = std::make_shared<MyDataCallback>();
+        builder.setDataCallback(mDataCallback);
+        result = builder.openStream(mStream);
+    }
+    return result;
 }
 
 void TestMmapTimestamp::closeStream() {
@@ -473,7 +495,13 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         return;
     }
     if (sharingMode == SharingMode::Exclusive && actualSharing != SharingMode::Exclusive) {
-        appendTelemetryLine("  [NOTE] Requested EXCLUSIVE fell back to SHARED.\n");
+        setScorecardConfig(rowIndex, "Fell back to SHARED");
+        setScorecardCell(rowIndex, 1, "SKIP");
+        setScorecardCell(rowIndex, 2, "SKIP");
+        setScorecardCell(rowIndex, 3, "SKIP");
+        appendTelemetryLine("  [SKIP] Requested EXCLUSIVE fell back to SHARED.\n");
+        closeStream();
+        return;
     }
 
     const std::string streamDesc = formatString("%s %s (%d Hz, cap=%df/%.0fms, burst=%df)",
@@ -490,7 +518,7 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         f.id = "STREAM-REOPEN-OR-START-FAILURE";
         f.severity = "FAIL";
         f.title = "MMAP stream failed to reopen or start during diagnostic phase";
-        f.whatHappened = "Reopening or starting the MMAP stream for a subsequent test phase failed or fell back to non-MMAP.";
+        f.whatHappened = "Reopening or starting the MMAP stream for a subsequent test phase failed, fell back to non-MMAP, or lost its requested sharing mode.";
         f.androidContract = "AAudio.h: Opening and starting a valid MMAP stream configuration after closing a previous stream must succeed and remain on the MMAP path.";
         f.whyItMatters = "Indicates a resource leak or unreleased hardware subdevice when closing or restarting MMAP streams.";
         f.howToFix = "Ensure the HAL and audio service release all PCM handles and shared memory file descriptors when an MMAP stream is stopped and closed.";
@@ -511,8 +539,9 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         std::string rapidFailureTag = "FAIL";
         if (direction == Direction::Output && mThreadEnabled.load()) {
             Result openRes = openMmapStream(direction, sharingMode);
-            if (openRes == Result::OK &&
-                AAudioExtensions::getInstance().isMMapUsed(mStream.get())) {
+            if (openRes == Result::OK && mStream &&
+                AAudioExtensions::getInstance().isMMapUsed(mStream.get()) &&
+                mStream->getSharingMode() == sharingMode) {
                 runRapidCyclesCheck(direction, true /* usePauseFlush */, rowIndex,
                                     &rapidFailed, &rapidFailureTag);
             } else if (mThreadEnabled.load()) {
@@ -521,8 +550,9 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         }
         if (mThreadEnabled.load()) {
             Result openRes = openMmapStream(direction, sharingMode);
-            if (openRes == Result::OK &&
-                AAudioExtensions::getInstance().isMMapUsed(mStream.get())) {
+            if (openRes == Result::OK && mStream &&
+                AAudioExtensions::getInstance().isMMapUsed(mStream.get()) &&
+                mStream->getSharingMode() == sharingMode) {
                 runRapidCyclesCheck(direction, false /* usePauseFlush (stop->start) */, rowIndex,
                                     &rapidFailed, &rapidFailureTag);
             } else if (mThreadEnabled.load()) {
@@ -542,8 +572,9 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         std::string standbyFailureTag = "FAIL";
         if (direction == Direction::Output && mThreadEnabled.load()) {
             Result openRes = openMmapStream(direction, sharingMode);
-            if (openRes == Result::OK &&
-                AAudioExtensions::getInstance().isMMapUsed(mStream.get())) {
+            if (openRes == Result::OK && mStream &&
+                AAudioExtensions::getInstance().isMMapUsed(mStream.get()) &&
+                mStream->getSharingMode() == sharingMode) {
                 runStandbyResumeCheck(direction, true /* usePauseFlush */, rowIndex,
                                       &standbyFailed, &standbyFailureTag);
             } else if (mThreadEnabled.load()) {
@@ -552,8 +583,9 @@ void TestMmapTimestamp::runSingleConfig(Direction direction,
         }
         if (mThreadEnabled.load()) {
             Result openRes = openMmapStream(direction, sharingMode);
-            if (openRes == Result::OK &&
-                AAudioExtensions::getInstance().isMMapUsed(mStream.get())) {
+            if (openRes == Result::OK && mStream &&
+                AAudioExtensions::getInstance().isMMapUsed(mStream.get()) &&
+                mStream->getSharingMode() == sharingMode) {
                 runStandbyResumeCheck(direction, false /* usePauseFlush (stop->standby->start) */, rowIndex,
                                       &standbyFailed, &standbyFailureTag);
             } else if (mThreadEnabled.load()) {
@@ -618,8 +650,9 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
     double minInstRate = 1e12;
     double maxInstRate = 0.0;
 
-    TimestampSample prevValidSample{};
-    bool hasPrevValid = false;
+    TimestampSample prevPollSample{};
+    TimestampSample lastDistinctPosSample{};
+    bool hasPrevPoll = false;
 
     const int64_t testEndNs = startCallNs + 1500LL * NANOS_PER_MILLISECOND;
     while (AudioClock::getNanoseconds() < testEndNs && mThreadEnabled.load()) {
@@ -638,24 +671,25 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
             validTimestampPolls++;
             TimestampSample s{nowNs, tsPos, tsTime, fw, fr};
 
-            if (hasPrevValid) {
-                const int64_t dPos = s.tsPosition - prevValidSample.tsPosition;
-                const int64_t dTimeNs = s.tsTimeNs - prevValidSample.tsTimeNs;
+            if (hasPrevPoll) {
+                if (s.tsPosition < prevPollSample.tsPosition) backwardPosCount++;
+                if (s.tsTimeNs < prevPollSample.tsTimeNs) backwardTimeCount++;
 
-                if (dPos < 0) backwardPosCount++;
-                if (dTimeNs < 0) backwardTimeCount++;
+                const int64_t dPosDistinct = s.tsPosition - lastDistinctPosSample.tsPosition;
+                const int64_t dTimeDistinctNs = s.tsTimeNs - lastDistinctPosSample.tsTimeNs;
 
-                if (dPos == 0 && dTimeNs > 0) {
+                if (dPosDistinct == 0 && s.tsTimeNs > prevPollSample.tsTimeNs) {
                     staleFrameNewTimeCount++;
-                    const double deltaMs = static_cast<double>(dTimeNs) / NANOS_PER_MILLISECOND;
+                    const double deltaMs =
+                            static_cast<double>(dTimeDistinctNs) / NANOS_PER_MILLISECOND;
                     if (deltaMs > maxStaleFrameDeltaMs) {
                         maxStaleFrameDeltaMs = deltaMs;
                         staleFrameExamplePos = s.tsPosition;
                     }
-                } else if (dPos > 0 && dTimeNs > 0) {
+                } else if (dPosDistinct > 0 && dTimeDistinctNs > 0) {
                     const double instRate =
-                            (static_cast<double>(dPos) * NANOS_PER_SECOND) /
-                            static_cast<double>(dTimeNs);
+                            (static_cast<double>(dPosDistinct) * NANOS_PER_SECOND) /
+                            static_cast<double>(dTimeDistinctNs);
                     minInstRate = std::min(minInstRate, instRate);
                     maxInstRate = std::max(maxInstRate, instRate);
                     if (instRate < 0.5 * sampleRate || instRate > 1.5 * sampleRate) {
@@ -663,11 +697,15 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
                     }
                     samples.push_back(s);
                 }
+                if (s.tsPosition != lastDistinctPosSample.tsPosition) {
+                    lastDistinctPosSample = s;
+                }
             } else {
                 samples.push_back(s);
-                hasPrevValid = true;
+                lastDistinctPosSample = s;
+                hasPrevPoll = true;
             }
-            prevValidSample = s;
+            prevPollSample = s;
         }
 
         const int64_t elapsedMs = (nowNs - startCallNs) / NANOS_PER_MILLISECOND;
@@ -680,6 +718,7 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
         return;
     }
 
+    const int64_t endPollNs = AudioClock::getNanoseconds();
     const int64_t firstCbNs = mDataCallback->getFirstCallbackTimeNs();
     const double firstCbMs = (firstCbNs > 0)
             ? static_cast<double>(firstCbNs - startCallNs) / NANOS_PER_MILLISECOND
@@ -687,8 +726,12 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
     const double firstHwMs = (firstHwAdvanceNs > 0)
             ? static_cast<double>(firstHwAdvanceNs - startCallNs) / NANOS_PER_MILLISECOND
             : -1.0;
-    const double hwLagAfterCbMs = (firstCbNs > 0 && firstHwAdvanceNs > firstCbNs)
-            ? static_cast<double>(firstHwAdvanceNs - firstCbNs) / NANOS_PER_MILLISECOND
+    const double hwLagAfterCbMs = (firstCbNs > 0)
+            ? ((firstHwAdvanceNs > firstCbNs)
+                    ? static_cast<double>(firstHwAdvanceNs - firstCbNs) / NANOS_PER_MILLISECOND
+                    : ((firstHwAdvanceNs == 0)
+                            ? static_cast<double>(endPollNs - firstCbNs) / NANOS_PER_MILLISECOND
+                            : 0.0))
             : 0.0;
 
     appendTelemetryLine(formatString(
@@ -811,13 +854,16 @@ void TestMmapTimestamp::runSteadyStateCheck(Direction direction, size_t rowIndex
     }
 
     if (std::abs(rateErrorPpm) > 5000.0 || maxAbsResidualMs > 15.0) {
-        const bool isFail = (std::abs(rateErrorPpm) > 20000.0);
+        const bool isFail = (std::abs(rateErrorPpm) > 20000.0 || maxAbsResidualMs > 50.0);
+        const std::string detailStr = (std::abs(rateErrorPpm) > 5000.0)
+                ? formatString("rate %+.0fppm", rateErrorPpm)
+                : formatString("jitter %.1fms", maxAbsResidualMs);
         if (isFail) {
             checkFailed = true;
-            statusTag = formatString("FAIL (rate %+.0fppm)", rateErrorPpm);
+            statusTag = formatString("FAIL (%s)", detailStr.c_str());
         } else if (!checkFailed) {
             checkWarned = true;
-            statusTag = formatString("WARN (jitter %.1fms)", maxAbsResidualMs);
+            statusTag = formatString("WARN (%s)", detailStr.c_str());
         }
         Finding f;
         f.id = "STEADY-CLOCK-DRIFT-OR-JITTER";
@@ -918,8 +964,25 @@ bool TestMmapTimestamp::waitForFreshTimestamp(int64_t prevTsTimeNs,
         }
         AudioClock::sleepForNanos(2 * NANOS_PER_MILLISECOND);
     }
+    if (lastRes == Result::OK) {
+        lastRes = Result::ErrorTimeout;
+    }
     if (outLastResult) *outLastResult = lastRes;
     return false;
+}
+
+int64_t TestMmapTimestamp::projectTimestampToHostTime(const TimestampSample &s,
+                                                      int32_t sampleRate) {
+    if (sampleRate <= 0 || s.tsTimeNs <= 0 || s.hostTimeNs <= 0) {
+        return s.tsPosition;
+    }
+    const int64_t dtNs = s.hostTimeNs - s.tsTimeNs;
+    // Compensate for timestamp age within a sane window ([0ms, +50ms])
+    if (dtNs >= 0 && dtNs <= 50LL * NANOS_PER_MILLISECOND) {
+        const int64_t ageFrames = (dtNs * sampleRate) / NANOS_PER_SECOND;
+        return s.tsPosition + ageFrames;
+    }
+    return s.tsPosition;
 }
 
 void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
@@ -971,20 +1034,20 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
     int64_t cumulativeTsDrift = 0;
     int64_t cumulativeHwDrift = 0;
     int32_t fullCapForwardJumpCount = 0;
-    int32_t backwardResetCount = 0;
     int32_t unalignedRemJumpCount = 0;
     int64_t exampleTsError = 0;
     int64_t exampleHwError = 0;
     int64_t exampleRingOffset = 0;
 
     for (int32_t cycle = 1; cycle <= kRapidCycleCount && mThreadEnabled.load(); ++cycle) {
+        const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
         if (!runUntilUnalignedPosition(220, capacity, burst)) {
             break;
         }
 
         TimestampSample preSample{};
         Result lastTsRes = Result::OK;
-        if (!waitForFreshTimestamp(0, 500, &preSample, &lastTsRes)) {
+        if (!waitForFreshTimestamp(cycleRunStartNs, 500, &preSample, &lastTsRes)) {
             if (!mThreadEnabled.load()) break;
             appendTelemetryLine(formatString("    C%d [FAIL]: getTimestamp failed pre-%s (%s)",
                                              cycle, usePauseFlush ? "pause" : "stop",
@@ -1056,7 +1119,9 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
                 ? postSample.framesRead : postSample.framesWritten;
         const int64_t dWritten = postSample.framesWritten - preSample.framesWritten;
         const int64_t dRead = postSample.framesRead - preSample.framesRead;
-        const int64_t dTsPos = postSample.tsPosition - preSample.tsPosition;
+        const int64_t preProjTs = projectTimestampToHostTime(preSample, sampleRate);
+        const int64_t postProjTs = projectTimestampToHostTime(postSample, sampleRate);
+        const int64_t dTsPos = postProjTs - preProjTs;
         const int64_t dApp = (direction == Direction::Output) ? dWritten : dRead;
         const int64_t dHw = (direction == Direction::Output) ? dRead : dWritten;
 
@@ -1095,15 +1160,13 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
 
             if (tsError > 0 && std::abs(tsError - capacity) <= burst * 6) {
                 fullCapForwardJumpCount++;
-            } else if (backwardTs || backwardHw ||
-                       std::abs(tsError + preComp) <= burst * 3 ||
-                       std::abs(dmaError + preComp) <= burst * 3) {
-                backwardResetCount++;
-            } else if (std::abs(tsError - preRem) <= burst * 3 ||
-                       std::abs(dmaError - preRem) <= burst * 3) {
+            } else if (!backwardTs && !backwardHw &&
+                       std::abs(tsError + preComp) > burst * 3 &&
+                       std::abs(dmaError + preComp) > burst * 3 &&
+                       preRem > 0 &&
+                       (std::abs(tsError - preRem) <= burst * 3 ||
+                        std::abs(dmaError - preRem) <= burst * 3)) {
                 unalignedRemJumpCount++;
-            } else {
-                backwardResetCount++;
             }
         }
     }
@@ -1135,11 +1198,13 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
                 f.whyItMatters = "Every time an input stream is stopped and restarted, capture timestamps jump forward by a full buffer capacity per restart, breaking Acoustic Echo Cancellation (AEC) and multi-track recording alignment.";
                 f.howToFix = "1. Check how the HAL and audio service coordinate cumulative MMAP frame positions across stop() -> start().\n  2. If the HAL rounds its pre-stop cumulative position up to the next full ring-buffer boundary (+bufferCapacity) on stop() while failing to stop the underlying capture PCM driver on pause/stop, the hardware DMA pointer continues from its previous ring offset (rem) on restart, adding +1 full bufferCapacity on every stop/start cycle.\n  3. Ensure the Input MMAP HAL stops the capture PCM driver on pause/stop and keeps cumulative position accounting consistent with the hardware ring pointer reset.";
                 addOrUpdateFinding(f, streamDesc,
-                                   formatString("%s %s (%s): Jumped forward by %+lld frames (%+.1f ms = %+.2fx bufferCapacity) per stop/start; net drift over %d cycles = %+lld frames (%+.1f ms).",
+                                   formatString("%s %s (%s): Jumped forward by %+lld frames (%+.1f ms = %+.2fx bufferCapacity) per stop/start (%d/%d cycles); net drift over %d cycles = %+lld frames (%+.1f ms).",
                                                 dirStr, shareStr, modeStr,
                                                 static_cast<long long>(exampleTsError),
                                                 framesToMs(exampleTsError, sampleRate),
                                                 static_cast<double>(exampleTsError) / capacity,
+                                                fullCapForwardJumpCount,
+                                                kRapidCycleCount,
                                                 kRapidCycleCount,
                                                 static_cast<long long>(cumulativeTsDrift),
                                                 framesToMs(cumulativeTsDrift, sampleRate)));
@@ -1241,13 +1306,14 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
         return;
     }
 
+    const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
     if (!runUntilUnalignedPosition(300, capacity, burst)) {
         return;
     }
 
     TimestampSample preSample{};
     Result lastTsRes = Result::OK;
-    if (!waitForFreshTimestamp(0, 500, &preSample, &lastTsRes)) {
+    if (!waitForFreshTimestamp(cycleRunStartNs, 500, &preSample, &lastTsRes)) {
         if (!mThreadEnabled.load()) return;
         appendTelemetryLine(formatString("    FAIL: no valid timestamp before standby (%s)\n",
                                          convertToText(lastTsRes)));
@@ -1403,7 +1469,9 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
             ? postSample.framesWritten : postSample.framesRead;
     const int64_t dWritten = postSample.framesWritten - preSample.framesWritten;
     const int64_t dRead = postSample.framesRead - preSample.framesRead;
-    const int64_t dTsPos = postSample.tsPosition - preSample.tsPosition;
+    const int64_t preProjTs = projectTimestampToHostTime(preSample, sampleRate);
+    const int64_t postProjTs = projectTimestampToHostTime(postSample, sampleRate);
+    const int64_t dTsPos = postProjTs - preProjTs;
     const int64_t dCb = postSample.callbackFrames - cbBeforeStandby;
     const int64_t dApp = (direction == Direction::Output) ? dWritten : dRead;
     const int64_t dHw = (direction == Direction::Output) ? dRead : dWritten;
@@ -1413,7 +1481,9 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
     const int64_t tsError = dTsPos - referenceAppDelta;
     const int64_t dmaError = dHw - referenceAppDelta;
 
-    const int64_t jumpThreshold = std::max(capacity / 2, burst * 6);
+    const int64_t jumpThreshold = (!isExclusive)
+            ? std::max(capacity, burst * 12)
+            : std::max(capacity / 2, burst * 6);
     const bool backwardTs = (postSample.tsPosition < preSample.tsPosition);
     const bool backwardHw = (postHw < preHw);
     const bool causalViolationOut = (direction == Direction::Output) &&
@@ -1467,12 +1537,16 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
                                formatString("%s %s (%s): After 3.5s standby and 200+ ms post-start wait, callback received cbDelta=+0 frames and app/DMA frame counters remained stuck at %lldf.",
                                             dirStr, shareStr, modeStr,
                                             static_cast<long long>(postApp)));
-        } else if (appCounterFrozen || backwardTs || tsError < -jumpThreshold) {
+        } else if (appCounterFrozen || backwardTs || backwardHw ||
+                   tsError < -jumpThreshold || dmaError < -jumpThreshold) {
             if (appCounterFrozen) {
                 *inoutFailureTag = formatString("FAIL (app frozen, ts %+.0fms)",
                                                 framesToMs(tsError, sampleRate));
+            } else if (backwardTs || backwardHw) {
+                *inoutFailureTag = formatString("FAIL (ts regressed %+.0fms)",
+                                                framesToMs(tsError, sampleRate));
             } else {
-                *inoutFailureTag = formatString("FAIL (ts jumped %+.0fms)",
+                *inoutFailureTag = formatString("FAIL (ts jump %+.0fms)",
                                                 framesToMs(tsError, sampleRate));
             }
 
@@ -1484,13 +1558,13 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
             f.title = (direction == Direction::Output)
                     ? "Output frame counters freeze or jump backward after resuming from >3s idle standby"
                     : "Input frame counters freeze or jump backward after resuming from >3s idle standby";
-            f.whatHappened = "After pausing or stopping an MMAP stream for 3.5 seconds (triggering MMAP idle standby) and calling start(), audio callbacks resumed transferring frames, but getFramesWritten()/getFramesRead() froze at their pre-standby value or getTimestamp().position jumped backward toward 0.";
+            f.whatHappened = "After pausing or stopping an MMAP stream for 3.5 seconds (triggering MMAP idle standby) and calling start(), audio callbacks resumed transferring frames, but getFramesWritten()/getFramesRead() froze at their pre-standby value or getTimestamp().position regressed relative to transferred frames.";
             f.androidContract = "AAudio.h & StreamDescriptor.aidl: Exiting MMAP idle standby (>3s stopped) must preserve monotonic getFramesWritten(), getFramesRead(), and getTimestamp().position without resetting to 0 or shifting by buffer multiples.";
-            f.whyItMatters = "When an MMAP stream is paused or stopped for >3 seconds and resumed, getFramesWritten()/getFramesRead() freeze until post-standby transfer catches up and getTimestamp().position jumps backward by hundreds of milliseconds, breaking A/V lip-sync and recording alignment.";
+            f.whyItMatters = "When an MMAP stream is paused or stopped for >3 seconds and resumed, getFramesWritten()/getFramesRead() freeze until post-standby transfer catches up or getTimestamp().position lags/regresses by hundreds of milliseconds, breaking A/V lip-sync and recording alignment.";
             f.howToFix = "1. When recreating the MMAP client FIFO during standby exit (which resets the new FIFO's counters to 0), carry over the pre-standby frame count into the client's frame offset so client and timestamp counters continue from the pre-standby total.\n  2. In the HAL, keep the pre-stop position latched for both Reply.observable and Reply.hardware while stopped/paused (clearing the latch in start() rather than on the first position read) so hardware and presentation offsets stay synchronized across standby.";
             if (appCounterFrozen) {
                 addOrUpdateFinding(f, streamDesc,
-                                   formatString("%s %s (%s): Callback transferred %+lld new frames (%.1f ms) after standby, but getFramesWritten()/getFramesRead() stayed frozen at %lldf and getTimestamp().position regressed from %lldf to %lldf (tsError=%+lldf / %+.1f ms).",
+                                   formatString("%s %s (%s): Callback transferred %+lld new frames (%.1f ms) after standby, but getFramesWritten()/getFramesRead() stayed frozen at %lldf and getTimestamp().position moved from %lldf to %lldf (tsError=%+lldf / %+.1f ms).",
                                                 dirStr, shareStr, modeStr,
                                                 static_cast<long long>(dCb),
                                                 framesToMs(dCb, sampleRate),
@@ -1499,9 +1573,19 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
                                                 static_cast<long long>(postSample.tsPosition),
                                                 static_cast<long long>(tsError),
                                                 framesToMs(tsError, sampleRate)));
+            } else if (backwardTs) {
+                addOrUpdateFinding(f, streamDesc,
+                                   formatString("%s %s (%s): After 3.5s standby, getTimestamp().position jumped BACKWARD from %lldf to %lldf (tsError=%+lldf / %+.1f ms) while appFrames advanced %lldf -> %lldf.",
+                                                dirStr, shareStr, modeStr,
+                                                static_cast<long long>(preSample.tsPosition),
+                                                static_cast<long long>(postSample.tsPosition),
+                                                static_cast<long long>(tsError),
+                                                framesToMs(tsError, sampleRate),
+                                                static_cast<long long>(preApp),
+                                                static_cast<long long>(postApp)));
             } else {
                 addOrUpdateFinding(f, streamDesc,
-                                   formatString("%s %s (%s): After 3.5s standby, getTimestamp().position jumped BACKWARD relative to appFrames by %+lld frames (%+.1f ms), from %lldf to %lldf while appFrames advanced %lldf -> %lldf.",
+                                   formatString("%s %s (%s): After 3.5s standby, getTimestamp().position lagged behind appFrames by %+lld frames (%+.1f ms), advancing from %lldf to %lldf while appFrames advanced %lldf -> %lldf.",
                                                 dirStr, shareStr, modeStr,
                                                 static_cast<long long>(tsError),
                                                 framesToMs(tsError, sampleRate),
@@ -1510,9 +1594,10 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
                                                 static_cast<long long>(preApp),
                                                 static_cast<long long>(postApp)));
             }
-        } else {
-            *inoutFailureTag = formatString("FAIL (ts jump %+.0fms)",
-                                            framesToMs(tsError, sampleRate));
+        } else if (preRem > 0 &&
+                   (std::abs(tsError - preRem) <= burst * 3 ||
+                    std::abs(dmaError - preRem) <= burst * 3)) {
+            *inoutFailureTag = "FAIL (ring offset jump)";
             Finding f;
             f.id = "STANDBY-UNALIGNED-RING-OFFSET";
             f.severity = "FAIL";
@@ -1530,10 +1615,29 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
                                             framesToMs(tsError, sampleRate),
                                             static_cast<long long>(dmaError),
                                             framesToMs(dmaError, sampleRate)));
+        } else {
+            *inoutFailureTag = formatString("FAIL (ts jump %+.0fms)",
+                                            framesToMs(tsError, sampleRate));
+            Finding f;
+            f.id = "STANDBY-POSITION-JUMP";
+            f.severity = "FAIL";
+            f.title = "MMAP frame position or DMA counter jumps forward after >3s idle standby";
+            f.whatHappened = "After resuming from 3.5 seconds of idle standby, the reported timestamp position or DMA frame counter jumped forward relative to the frames actually transferred by the app.";
+            f.androidContract = "StreamDescriptor.aidl & AAudio.h: Exiting standby on an MMAP stream must maintain continuous hardware and observable frame counts matching actual frames transferred.";
+            f.whyItMatters = "Causes forward timestamp jumps, A/V lip-sync offset, and false XRun buffer inflation whenever an audio stream resumes after >3s idle.";
+            f.howToFix = "Verify how the HAL and audio service preserve and restore cumulative MMAP frame counters across standby entry and exit so no extra buffer capacity or offset is added on resume.";
+            addOrUpdateFinding(f, streamDesc,
+                               formatString("%s %s (%s): After 3.5s standby (stop@ringOffset=%lld/%df), jumped forward by tsError=%+lldf (%+.1f ms), dmaError=%+lldf (%+.1f ms).",
+                                            dirStr, shareStr, modeStr,
+                                            static_cast<long long>(preRem),
+                                            capacity,
+                                            static_cast<long long>(tsError),
+                                            framesToMs(tsError, sampleRate),
+                                            static_cast<long long>(dmaError),
+                                            framesToMs(dmaError, sampleRate)));
         }
         recordFail();
     } else {
         recordPass();
     }
 }
-

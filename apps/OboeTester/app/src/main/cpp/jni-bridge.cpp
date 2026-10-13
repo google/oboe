@@ -770,67 +770,6 @@ Java_com_mobileer_oboetester_OboeAudioStream_isMMap(JNIEnv *env, jobject instanc
     return engine.getCurrentActivity()->isMMapUsed(streamIndex);
 }
 
-JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_setUseLatencyTuner(
-        JNIEnv * /*env*/, jclass /*type*/, jboolean enabled) {
-    OboeStreamCallbackProxy::setLatencyTunerEnabled(enabled);
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_isLatencyTunerEnabled(
-        JNIEnv * /*env*/, jclass /*type*/) {
-    return OboeStreamCallbackProxy::isLatencyTunerEnabled();
-}
-
-JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_setLatencyTunerParams(
-        JNIEnv * /*env*/,
-        jclass /*type*/,
-        jint idleCount,
-        jint settleCount,
-        jint xRunThreshold,
-        jint callbacksBeforeStepDown,
-        jboolean stepDownBackoff) {
-    OboeStreamCallbackProxy::setLatencyTunerParams(
-            idleCount, settleCount, xRunThreshold, callbacksBeforeStepDown, stepDownBackoff);
-}
-
-JNIEXPORT void JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_requestLatencyTunerReset(
-        JNIEnv * /*env*/, jclass /*type*/) {
-    OboeStreamCallbackProxy::requestLatencyTunerReset();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerState(
-        JNIEnv * /*env*/, jobject /*instance*/) {
-    return engine.getCurrentActivity()->getLatencyTunerState();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerBumpUpCount(
-        JNIEnv * /*env*/, jobject /*instance*/) {
-    return engine.getCurrentActivity()->getLatencyTunerBumpUpCount();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerStepDownCount(
-        JNIEnv * /*env*/, jobject /*instance*/) {
-    return engine.getCurrentActivity()->getLatencyTunerStepDownCount();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerSuppressedXRunCount(
-        JNIEnv * /*env*/, jobject /*instance*/) {
-    return engine.getCurrentActivity()->getLatencyTunerSuppressedXRunCount();
-}
-
-JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_OboeAudioStream_getLatencyTunerEffectiveMinBufferSize(
-        JNIEnv * /*env*/, jobject /*instance*/) {
-    return engine.getCurrentActivity()->getLatencyTunerEffectiveMinBufferSize();
-}
-
 // ================= OboeAudioOutputStream ================================
 
 JNIEXPORT void JNICALL
@@ -1832,10 +1771,13 @@ public:
         const int32_t channels = std::max(1, audioStream->getChannelCount());
         const int32_t numSamples = numFrames * channels;
 
-        if (mPlaySpeech.load(std::memory_order_acquire) && !mPlaybackBuffer.empty()) {
-            size_t offset = mResetOffset.exchange(false, std::memory_order_acq_rel)
-                    ? 0
-                    : mPlaybackBufferOffset.load(std::memory_order_relaxed);
+        std::unique_lock<std::mutex> lock(mBufferMutex, std::try_to_lock);
+        if (lock.owns_lock() && mPlaySpeech.load(std::memory_order_acquire) &&
+            !mPlaybackBuffer.empty()) {
+            size_t offset = mPlaybackBufferOffset.load(std::memory_order_relaxed);
+            if (mResetOffset.exchange(false, std::memory_order_acq_rel)) {
+                offset = 0;
+            }
             const size_t len = mPlaybackBuffer.size();
             offset %= len;
             for (int32_t i = 0; i < numFrames; i++) {
@@ -1845,12 +1787,12 @@ public:
                 }
                 offset = (offset + 1) % len;
             }
-            if (!mResetOffset.load(std::memory_order_acquire)) {
-                mPlaybackBufferOffset.store(offset, std::memory_order_release);
-            }
+            mPlaybackBufferOffset.store(offset, std::memory_order_release);
         } else {
-            mResetOffset.store(false, std::memory_order_release);
-            mPlaybackBufferOffset.store(0, std::memory_order_release);
+            if (mResetOffset.exchange(false, std::memory_order_acq_rel) ||
+                mPlaybackBufferOffset.load(std::memory_order_relaxed) != 0) {
+                mPlaybackBufferOffset.store(0, std::memory_order_release);
+            }
             memset(out, 0, static_cast<size_t>(numSamples) * sizeof(int16_t));
         }
         return oboe::DataCallbackResult::Continue;
@@ -1858,6 +1800,7 @@ public:
 
     void setPlaybackData(const int16_t *data, size_t numSamples) {
         mPlaySpeech.store(false, std::memory_order_release);
+        std::lock_guard<std::mutex> lock(mBufferMutex);
         if (data != nullptr && numSamples > 0) {
             mPlaybackBuffer.assign(data, data + numSamples);
         } else {
@@ -1868,8 +1811,10 @@ public:
     }
 
     void setPlaySpeech(bool play) {
-        mPlaybackBufferOffset.store(0, std::memory_order_release);
         mResetOffset.store(true, std::memory_order_release);
+        if (!play) {
+            mPlaybackBufferOffset.store(0, std::memory_order_release);
+        }
         mPlaySpeech.store(play, std::memory_order_release);
     }
 
@@ -1878,6 +1823,7 @@ public:
     }
 
 private:
+    std::mutex mBufferMutex;
     std::vector<int16_t> mPlaybackBuffer;
     std::atomic<size_t> mPlaybackBufferOffset{0};
     std::atomic<bool> mResetOffset{false};
@@ -1906,6 +1852,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsMMapExclusiveSuppo
 JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
         JNIEnv * /*env*/, jobject /*thiz*/, jint sampleRate, jint channelCount) {
+    const bool wasMMapEnabled = oboe::AAudioExtensions::getInstance().isMMapEnabled();
     oboe::AAudioExtensions::getInstance().setMMapEnabled(true);
 
     auto *holder = new VoiceCommNativeStream();
@@ -1917,8 +1864,10 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setSharingMode(oboe::SharingMode::Exclusive)
             ->setFormat(oboe::AudioFormat::I16)
+            ->setFormatConversionAllowed(true)
             ->setSampleRate(sampleRate)
             ->setChannelCount(channelCount)
+            ->setChannelConversionAllowed(true)
             ->setUsage(oboe::Usage::VoiceCommunication)
             ->setContentType(oboe::ContentType::Speech)
             ->setDataCallback(holder->callback);
@@ -1928,6 +1877,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
         builder.setSharingMode(oboe::SharingMode::Shared);
         res = builder.openStream(holder->stream);
     }
+    oboe::AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
     if (res != oboe::Result::OK || !holder->stream) {
         delete holder;
         return 0;
@@ -1946,6 +1896,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
 JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenInputStream(
         JNIEnv * /*env*/, jobject /*thiz*/, jint sampleRate, jint channelCount, jint inputPreset) {
+    const bool wasMMapEnabled = oboe::AAudioExtensions::getInstance().isMMapEnabled();
     oboe::AAudioExtensions::getInstance().setMMapEnabled(true);
 
     auto *holder = new VoiceCommNativeStream();
@@ -1959,8 +1910,10 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenInputStream(
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setSharingMode(oboe::SharingMode::Exclusive)
             ->setFormat(oboe::AudioFormat::I16)
+            ->setFormatConversionAllowed(true)
             ->setSampleRate(sampleRate)
             ->setChannelCount(channelCount)
+            ->setChannelConversionAllowed(true)
             ->setInputPreset(preset)
             ->setSessionId(inputPreset == 7 ? oboe::SessionId::Allocate : oboe::SessionId::None);
 
@@ -1969,6 +1922,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenInputStream(
         builder.setSharingMode(oboe::SharingMode::Shared);
         res = builder.openStream(holder->stream);
     }
+    oboe::AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
     if (res != oboe::Result::OK || !holder->stream) {
         delete holder;
         return 0;
@@ -1988,7 +1942,11 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeSetPlaybackData(
         JNIEnv *env, jobject /*thiz*/, jlong streamHandle, jshortArray audioData) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
-    if (!holder || !holder->callback || !audioData) return;
+    if (!holder || !holder->callback) return;
+    if (!audioData) {
+        holder->callback->setPlaybackData(nullptr, 0);
+        return;
+    }
     const jsize len = env->GetArrayLength(audioData);
     if (len > 0) {
         std::vector<jshort> temp(static_cast<size_t>(len));
@@ -2075,11 +2033,11 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetSessionId(
 }
 
 JNIEXPORT jint JNICALL
-Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetSampleRate(
+Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetStreamState(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
-    if (!holder || !holder->stream) return 0;
-    return holder->stream->getSampleRate();
+    if (!holder || !holder->stream) return static_cast<jint>(oboe::StreamState::Uninitialized);
+    return static_cast<jint>(holder->stream->getState());
 }
 
 JNIEXPORT jint JNICALL
@@ -2115,22 +2073,6 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsMMap(
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetFramesWritten(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
-    auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
-    if (!holder || !holder->stream) return 0;
-    return holder->stream->getFramesWritten();
-}
-
-JNIEXPORT jlong JNICALL
-Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetFramesRead(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
-    auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
-    if (!holder || !holder->stream) return 0;
-    return holder->stream->getFramesRead();
-}
-
-JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetTimestampPosition(
         JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
@@ -2152,20 +2094,10 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetRoundTripTimestam
     const int64_t outPos = outTsRes.value().position;
     const int64_t outTime = outTsRes.value().timestamp;
 
-    int64_t inPos = 0;
-    int64_t inTime = 0;
     auto inTsRes = inHolder->stream->getTimestamp(CLOCK_MONOTONIC);
-    if (inTsRes == oboe::Result::OK) {
-        inPos = inTsRes.value().position;
-        inTime = inTsRes.value().timestamp;
-    } else if (!oboe::AAudioExtensions::getInstance().isMMapUsed(inHolder->stream.get())) {
-        inPos = inHolder->stream->getFramesRead();
-        struct timespec ts;
-        if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) return -1.0;
-        inTime = static_cast<int64_t>(ts.tv_sec) * 1000000000LL + ts.tv_nsec;
-    } else {
-        return -1.0;
-    }
+    if (inTsRes != oboe::Result::OK) return -1.0;
+    const int64_t inPos = inTsRes.value().position;
+    const int64_t inTime = inTsRes.value().timestamp;
 
     if (outPos <= 0 || inPos <= 0 || outTime <= 0 || inTime <= 0) return -1.0;
     const int64_t framesWritten = outHolder->stream->getFramesWritten();

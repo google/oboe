@@ -53,7 +53,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -69,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +93,14 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
     public static final String TAG = "OboeTester";
     public static final String KEY_AUTO_RUN = "auto_run";
+    public static final String KEY_NATIVE = "native";
+    public static final String KEY_JAVA = "java";
+    public static final String KEY_FORCE_NS_OFF = "force_ns_off";
+    public static final String KEY_AEC_PHASES = "aec_phases";
+    public static final String KEY_STANDBY = "standby";
     public static final String REPORT_FILENAME = "voice_comm_aec_report.txt";
+
+    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 938357;
 
     private static final int COLOR_HEADER = Color.parseColor("#0D47A1");
     private static final int COLOR_PASS = Color.parseColor("#2E7D32");
@@ -98,7 +108,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
     private static final int COLOR_FAIL = Color.parseColor("#C62828");
 
     private static final Pattern PATTERN_PASS =
-            Pattern.compile("\\bPASS\\b|\\[OK\\s*\\]");
+            Pattern.compile("(?<!\\b0 )\\bPASS\\b|\\[OK\\s*\\]");
     private static final Pattern PATTERN_WARN =
             Pattern.compile("(?<!\\b0 )\\bWARN(?:ING)?(?: \\([^)\\n]+\\))?");
     private static final Pattern PATTERN_FAIL =
@@ -111,7 +121,10 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
     private static final int AAUDIO_INPUT_PRESET_VOICE_RECOGNITION = 6;
     private static final int AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION = 7;
+    private static final int STREAM_STATE_DISCONNECTED = 13;
+    private static final int OBOE_ERROR_TIMEOUT = -890;
 
+    private static final int PHASE1_WARMUP_MS = 150;
     private static final int PHASE1_SILENCE_MS = 1500;
     private static final int PHASE_SPEECH_MS = 5000;
     private static final int SHOT_INTERVAL_MS = 200;
@@ -149,6 +162,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
     private final Object mReportLock = new Object();
     private final Object mSpeechDecodeLock = new Object();
+    private final Object mAuditionLock = new Object();
     private short[] mSpeechPcm;
     private int mSpeechSampleRate = SAMPLE_RATE;
 
@@ -156,6 +170,10 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
     private volatile boolean mIsRunning = false;
     private Thread mWorkerThread;
     private ReportPoller mPoller;
+    private Thread mAuditionThread;
+    private AudioTrack mAuditionTrack;
+    private String mReportFilePath;
+    private boolean mAutoRun = false;
 
     private String mDeviceHeader = "";
     private String mCurrentProgress = "Idle";
@@ -389,8 +407,41 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
         new Thread(this::ensureSpeechPcmDecoded).start();
 
-        Intent intent = getIntent();
-        if (intent != null && intent.getBooleanExtra(KEY_AUTO_RUN, false)) {
+        applyIntentExtras(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        applyIntentExtras(intent);
+    }
+
+    private void applyIntentExtras(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        setIntent(intent);
+        if (intent.hasExtra(KEY_NATIVE)) {
+            mNativeApiCheckBox.setChecked(intent.getBooleanExtra(KEY_NATIVE, true));
+        }
+        if (intent.hasExtra(KEY_JAVA)) {
+            mJavaApiCheckBox.setChecked(intent.getBooleanExtra(KEY_JAVA, true));
+        }
+        if (intent.hasExtra(KEY_FORCE_NS_OFF)) {
+            mForceNsOffCheckBox.setChecked(intent.getBooleanExtra(KEY_FORCE_NS_OFF, true));
+        }
+        if (intent.hasExtra(KEY_AEC_PHASES)) {
+            mPhaseAecCheckBox.setChecked(intent.getBooleanExtra(KEY_AEC_PHASES, true));
+        }
+        if (intent.hasExtra(KEY_STANDBY)) {
+            mPhaseStandbyCheckBox.setChecked(intent.getBooleanExtra(KEY_STANDBY, true));
+        }
+        String customFile = intent.getStringExtra(IntentBasedTestSupport.KEY_FILE_NAME);
+        if (customFile != null && !customFile.isEmpty()) {
+            mReportFilePath = customFile;
+        }
+        mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
+        if (mAutoRun) {
             startTest();
         }
     }
@@ -410,6 +461,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
     }
 
     public void onStartVoiceCommAecTest(View view) {
+        mAutoRun = false;
         startTest();
     }
 
@@ -437,20 +489,58 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
     }
 
     private void startTest() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this, new String[]{Manifest.permission.RECORD_AUDIO}, 1001);
-            return;
-        }
-        stopTest();
-        keepScreenOn(true);
-
         final boolean testNative = mNativeApiCheckBox.isChecked();
         final boolean testJava = mJavaApiCheckBox.isChecked();
         final boolean forceNsOff = mForceNsOffCheckBox.isChecked();
         final boolean run4PhaseAec = mPhaseAecCheckBox.isChecked();
         final boolean runStandby = mPhaseStandbyCheckBox.isChecked();
+
+        if ((!testNative && !testJava) || (!run4PhaseAec && !runStandby)) {
+            Toast.makeText(
+                    this,
+                    "Select at least one API path and one test phase",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mDeviceHeader = buildDeviceHeader();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (!mAutoRun) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+                return;
+            } else {
+                Log.e(TAG, "RECORD_AUDIO permission not granted during auto_run.");
+                synchronized (mReportLock) {
+                    mTelemetryLog.setLength(0);
+                    mScorecard.clear();
+                    mFindings.clear();
+                    mSuiteCompleted = true;
+                    mSuiteStoppedByUser = false;
+                    mPassCount = 0;
+                    mWarnCount = 0;
+                    mFailCount = 1;
+                    mTelemetryLog.append("ERROR: RECORD_AUDIO permission not granted.\n");
+                }
+                final String finalReport = mDeviceHeader + "\n" + buildFullReport();
+                saveReportToFile(finalReport);
+                updateReportUI();
+                return;
+            }
+        }
+
+        stopTest();
+        stopAuditionPlayback();
+        keepScreenOn(true);
+
+        mLastRecordingAecOff = null;
+        mLastRecordingAecOffLen = 0;
+        mLastRecordingAecOn = null;
+        mLastRecordingAecOnLen = 0;
+        mLastRecordingApiLabel = "";
 
         synchronized (mReportLock) {
             mTelemetryLog.setLength(0);
@@ -496,7 +586,23 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         mPoller.start();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode != MY_PERMISSIONS_REQUEST_RECORD_AUDIO) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startTest();
+        } else {
+            Toast.makeText(this, R.string.need_record_audio_permission, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void stopTest() {
+        stopAuditionPlayback();
         mWorkerEnabled = false;
         if (mWorkerThread != null) {
             mWorkerThread.interrupt();
@@ -526,11 +632,14 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         mPhaseStandbyCheckBox.setEnabled(!running);
     }
 
+    @SuppressWarnings("deprecation")
     private void runDiagnosticSuite(
             boolean forceNsOff, boolean run4PhaseAec, boolean runStandby) {
         AudioManager am = getSystemService(AudioManager.class);
         int originalMode = (am != null) ? am.getMode() : AudioManager.MODE_NORMAL;
         int originalVoiceVol = -1;
+        boolean originalSpeakerphone = false;
+        boolean speakerphoneChanged = false;
         AudioDeviceInfo speakerDevice = null;
 
         try {
@@ -545,13 +654,15 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             if (am != null) {
                 setProgress("Configuring MODE_IN_COMMUNICATION & speakerphone routing...");
                 am.setMode(AudioManager.MODE_IN_COMMUNICATION);
-                for (AudioDeviceInfo dev : am.getAvailableCommunicationDevices()) {
-                    if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-                        speakerDevice = dev;
-                        break;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    for (AudioDeviceInfo dev : am.getAvailableCommunicationDevices()) {
+                        if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                            speakerDevice = dev;
+                            break;
+                        }
                     }
                 }
-                if (speakerDevice != null) {
+                if (speakerDevice != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     am.setCommunicationDevice(speakerDevice);
                     long deadline = SystemClock.elapsedRealtime() + 300;
                     while (SystemClock.elapsedRealtime() < deadline && mWorkerEnabled) {
@@ -564,7 +675,9 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     }
                     SystemClock.sleep(50);
                 } else {
+                    originalSpeakerphone = am.isSpeakerphoneOn();
                     am.setSpeakerphoneOn(true);
+                    speakerphoneChanged = true;
                 }
 
                 if (!am.isVolumeFixed()) {
@@ -588,8 +701,8 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             for (int i = 0; i < rowsCopy.size(); i++) {
                 if (!mWorkerEnabled) break;
                 if (i > 0) {
-                    // Allow HAL communication route/DSP teardown to settle between API runs
-                    sleepInterruptible(300);
+                    // Allow HAL communication route/DSP teardown and VoipHelper 1s debounce to settle
+                    if (!sleepInterruptible(1200)) break;
                 }
                 runSingleApiPath(
                         rowsCopy.get(i), speechPcm, am, forceNsOff, run4PhaseAec, runStandby);
@@ -608,8 +721,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     if (originalVoiceVol >= 0 && !am.isVolumeFixed()) {
                         am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, originalVoiceVol, 0);
                     }
-                    if (speakerDevice != null) {
+                    if (speakerDevice != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         am.clearCommunicationDevice();
+                    }
+                    if (speakerphoneChanged) {
+                        am.setSpeakerphoneOn(originalSpeakerphone);
                     }
                     am.setMode(originalMode);
                 } catch (Exception e) {
@@ -658,6 +774,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
                 double p1RmsSum = 0.0;
                 int p1Count = 0;
+                boolean p1HasNonZero = false;
 
                 if (isNative) {
                     nativeRec = nativeOpenInputStream(
@@ -670,15 +787,29 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     }
                     row.rawInMmap = nativeIsMMap(nativeRec);
                     int burst = Math.max(256, nativeGetBurstFrames(nativeRec));
-                    nativeStartStream(nativeRec);
+                    if (nativeStartStream(nativeRec) != 0) {
+                        updatePhaseStatus(row, 1, "FAIL (start failed)");
+                        appendTelemetry("    FAIL: nativeStartStream(VOICE_RECOGNITION) failed");
+                        recordFail();
+                        return;
+                    }
 
                     short[] buf = new short[burst];
-                    long end = SystemClock.elapsedRealtime() + PHASE1_SILENCE_MS;
+                    long startMs = SystemClock.elapsedRealtime();
+                    long warmupEnd = startMs + PHASE1_WARMUP_MS;
+                    long end = warmupEnd + PHASE1_SILENCE_MS;
                     while (SystemClock.elapsedRealtime() < end && mWorkerEnabled) {
                         int read = nativeReadStream(nativeRec, buf, 0, burst, 100_000_000L);
-                        if (read > 0) {
+                        if (read < 0 && read != OBOE_ERROR_TIMEOUT) {
+                            appendTelemetry("    WARN: nativeReadStream returned " + read + " in Phase 1");
+                            break;
+                        }
+                        if (read > 0 && SystemClock.elapsedRealtime() >= warmupEnd) {
                             p1RmsSum += computeBlockRms(buf, read);
                             p1Count++;
+                            if (!p1HasNonZero && hasNonZeroSample(buf, read)) {
+                                p1HasNonZero = true;
+                            }
                         }
                     }
                     nativeStopStream(nativeRec);
@@ -700,14 +831,29 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                     .build())
                             .setBufferSizeInBytes(minBuf)
                             .build();
+                    if (javaRec.getState() != AudioRecord.STATE_INITIALIZED) {
+                        updatePhaseStatus(row, 1, "FAIL (init failed)");
+                        appendTelemetry("    FAIL: AudioRecord(VOICE_RECOGNITION) failed to init");
+                        recordFail();
+                        return;
+                    }
                     javaRec.startRecording();
                     short[] buf = new short[1024];
-                    long end = SystemClock.elapsedRealtime() + PHASE1_SILENCE_MS;
+                    long startMs = SystemClock.elapsedRealtime();
+                    long warmupEnd = startMs + PHASE1_WARMUP_MS;
+                    long end = warmupEnd + PHASE1_SILENCE_MS;
                     while (SystemClock.elapsedRealtime() < end && mWorkerEnabled) {
                         int read = javaRec.read(buf, 0, buf.length, AudioRecord.READ_BLOCKING);
-                        if (read > 0) {
+                        if (read < 0) {
+                            appendTelemetry("    WARN: AudioRecord.read returned " + read + " in Phase 1");
+                            break;
+                        }
+                        if (read > 0 && SystemClock.elapsedRealtime() >= warmupEnd) {
                             p1RmsSum += computeBlockRms(buf, read);
                             p1Count++;
+                            if (!p1HasNonZero && hasNonZeroSample(buf, read)) {
+                                p1HasNonZero = true;
+                            }
                         }
                     }
                     javaRec.stop();
@@ -719,40 +865,56 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
                 double avgNoiseRms = (p1Count > 0) ? (p1RmsSum / p1Count) : MIN_RMS_VAL;
                 row.noiseFloorDbfs = 20.0 * Math.log10(Math.max(avgNoiseRms, MIN_RMS_VAL));
-                boolean p1Pass = (row.noiseFloorDbfs <= THRESHOLD_AMBIENT_NOISE_CEILING_DBFS);
+                boolean p1CaptureOk = (p1Count > 0 && p1HasNonZero);
+                boolean p1Pass = p1CaptureOk
+                        && (row.noiseFloorDbfs <= THRESHOLD_AMBIENT_NOISE_CEILING_DBFS);
+                String p1FailReason = !p1CaptureOk ? "FAIL (muted/dead mic)" : "FAIL (noisy room)";
                 updatePhaseStatus(
                         row,
                         1,
                         String.format(
                                 Locale.US,
                                 "%s (%.1f dBFS)",
-                                p1Pass ? "PASS" : "FAIL (noisy room)",
+                                p1Pass ? "PASS" : p1FailReason,
                                 row.noiseFloorDbfs));
                 appendTelemetry(String.format(
                         Locale.US,
-                        "    Noise Floor : %.1f dBFS (ceiling <= %.1f dBFS) -> %s",
+                        "    Noise Floor : %.1f dBFS (ceiling <= %.1f dBFS, live=%b) -> %s",
                         row.noiseFloorDbfs,
                         THRESHOLD_AMBIENT_NOISE_CEILING_DBFS,
+                        p1CaptureOk,
                         p1Pass ? "PASS" : "FAIL"));
                 if (p1Pass) {
                     recordPass();
                 } else {
                     recordFail();
                     Finding f = new Finding();
-                    f.id = "AMBIENT-NOISE-TOO-HIGH";
-                    f.severity = "FAIL";
-                    f.title = "Ambient room noise floor exceeds -35.0 dBFS ceiling";
-                    f.whatHappened = "During Phase 1 silence capture on VOICE_RECOGNITION, the microphone recorded higher background noise than allowed for reliable echo cancellation measurement.";
-                    f.androidContract = "Acoustic echo cancellation diagnostics require a quiet room (ambient noise <= -35.0 dBFS) so residual echo can be separated from room noise.";
-                    f.whyItMatters = "High ambient noise masks echo attenuation (ERLE) and inflates microphone envelope variance.";
-                    f.howToFix = "Re-run the test in a quiet room away from fans, HVAC vents, or conversation, and verify that the microphone hardware bias/ADC self-noise is below -40 dBFS.";
+                    if (!p1CaptureOk) {
+                        f.id = "PHASE1-CAPTURE-SILENT-OR-STALLED";
+                        f.severity = "FAIL";
+                        f.title = "Microphone capture returned 0 frames or all-zero digital silence in Phase 1";
+                        f.whatHappened = "During Phase 1 on VOICE_RECOGNITION, the input stream either stalled or delivered only exact digital zeros (0x0000), indicating a muted or non-functional microphone path.";
+                        f.androidContract = "Active audio input streams must deliver live ADC samples with non-zero thermal/quantization noise floor.";
+                        f.whyItMatters = "A dead or muted microphone prevents voice capture in all communication and recording apps.";
+                        f.howToFix = "Verify that hardware microphone privacy mute is off and that the VOICE_RECOGNITION input route and ADC bias are enabled in the Audio HAL.";
+                    } else {
+                        f.id = "AMBIENT-NOISE-TOO-HIGH";
+                        f.severity = "FAIL";
+                        f.title = "Ambient room noise floor exceeds -35.0 dBFS ceiling";
+                        f.whatHappened = "During Phase 1 silence capture on VOICE_RECOGNITION, the microphone recorded higher background noise than allowed for reliable echo cancellation measurement.";
+                        f.androidContract = "Acoustic echo cancellation diagnostics require a quiet room (ambient noise <= -35.0 dBFS) so residual echo can be separated from room noise.";
+                        f.whyItMatters = "High ambient noise masks echo attenuation (ERLE) and inflates microphone envelope variance.";
+                        f.howToFix = "Re-run the test in a quiet room away from fans, HVAC vents, or conversation, and verify that the microphone hardware bias/ADC self-noise is below -40 dBFS.";
+                    }
                     addOrUpdateFinding(
                             f,
                             row.apiLabel,
                             String.format(
                                     Locale.US,
-                                    "%s: Phase 1 ambient noise = %.1f dBFS (limit <= %.1f dBFS).",
+                                    "%s: Phase 1 blocks=%d, nonZero=%b, ambient noise = %.1f dBFS (limit <= %.1f dBFS).",
                                     row.apiLabel,
+                                    p1Count,
+                                    p1HasNonZero,
                                     row.noiseFloorDbfs,
                                     THRESHOLD_AMBIENT_NOISE_CEILING_DBFS));
                 }
@@ -775,7 +937,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (isNative && am != null && !am.isVolumeFixed()) {
+                if (am != null && !am.isVolumeFixed()) {
                     int maxVol = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
                     if (maxVol > 1) {
                         am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, maxVol - 1, 0);
@@ -798,14 +960,19 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     row.outBurstFrames = nativeGetBurstFrames(player.getNativeHandle());
                     row.outCapacityFrames = nativeGetBufferCapacityFrames(player.getNativeHandle());
                     burst2 = Math.max(256, nativeGetBurstFrames(nativeRec));
-                    nativeStartStream(nativeRec);
+                    if (nativeStartStream(nativeRec) != 0) {
+                        updatePhaseStatus(row, 2, "FAIL (input start)");
+                        appendTelemetry("    FAIL: nativeStartStream failed in Phase 2");
+                        recordFail();
+                        return;
+                    }
                 } else {
                     int minBuf = Math.max(
-                            4096,
+                            SAMPLE_RATE,
                             AudioRecord.getMinBufferSize(
                                     SAMPLE_RATE,
                                     AudioFormat.CHANNEL_IN_MONO,
-                                    AudioFormat.ENCODING_PCM_16BIT) * 2);
+                                    AudioFormat.ENCODING_PCM_16BIT) * 4);
                     javaRec = new AudioRecord.Builder()
                             .setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
                             .setAudioFormat(new AudioFormat.Builder()
@@ -815,8 +982,16 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                     .build())
                             .setBufferSizeInBytes(minBuf)
                             .build();
+                    if (javaRec.getState() != AudioRecord.STATE_INITIALIZED) {
+                        updatePhaseStatus(row, 2, "FAIL (input init)");
+                        appendTelemetry("    FAIL: AudioRecord failed to initialize in Phase 2");
+                        recordFail();
+                        return;
+                    }
                     javaRec.startRecording();
                 }
+
+                player.restartIfDisconnected();
 
                 // Stabilize DMA for 200 ms while playing silence
                 short[] ioBuf2 = new short[burst2];
@@ -824,9 +999,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 long stabEnd2 = SystemClock.elapsedRealtime() + 200;
                 while (SystemClock.elapsedRealtime() < stabEnd2 && mWorkerEnabled) {
                     if (isNative) {
-                        nativeReadStream(nativeRec, ioBuf2, 0, burst2, 100_000_000L);
+                        int r = nativeReadStream(nativeRec, ioBuf2, 0, burst2, 100_000_000L);
+                        if (r < 0 && r != OBOE_ERROR_TIMEOUT) break;
                     } else {
                         int r = javaRec.read(ioBuf2, 0, burst2, AudioRecord.READ_BLOCKING);
+                        if (r < 0) break;
                         if (r > 0) javaFramesRead2 += r;
                     }
                 }
@@ -845,6 +1022,13 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     int read = isNative
                             ? nativeReadStream(nativeRec, ioBuf2, 0, burst2, 100_000_000L)
                             : javaRec.read(ioBuf2, 0, burst2, AudioRecord.READ_BLOCKING);
+                    if (isNative && read < 0 && read != OBOE_ERROR_TIMEOUT) {
+                        appendTelemetry("    WARN: nativeReadStream returned " + read + " in Phase 2");
+                        break;
+                    } else if (!isNative && read < 0) {
+                        appendTelemetry("    WARN: AudioRecord.read returned " + read + " in Phase 2");
+                        break;
+                    }
                     if (!isNative && read > 0) {
                         javaFramesRead2 += read;
                     }
@@ -883,7 +1067,8 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             speechPcm, mSpeechSampleRate, slice, SAMPLE_RATE, 500);
                 }
 
-                boolean p2Pass = (row.stimulusSnrDb >= THRESHOLD_STIMULUS_SNR_DB);
+                boolean p2Pass = (p2Count > 0 && rawCaptureLen > 0)
+                        && (row.stimulusSnrDb >= THRESHOLD_STIMULUS_SNR_DB);
                 updatePhaseStatus(
                         row,
                         2,
@@ -912,7 +1097,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     f.id = "STIMULUS-SNR-TOO-LOW";
                     f.severity = "FAIL";
                     f.title = "Speaker-to-microphone acoustic coupling SNR is below 12.0 dB";
-                    f.whatHappened = "During Phase 2 speech playback on VOICE_RECOGNITION, the captured loudspeaker level was Less than 12.0 dB above the Phase 1 room noise floor.";
+                    f.whatHappened = "During Phase 2 speech playback on VOICE_RECOGNITION, the captured loudspeaker level was less than 12.0 dB above the Phase 1 room noise floor.";
                     f.androidContract = "Built-in speakerphone playback at maximum STREAM_VOICE_CALL volume must produce at least 12.0 dB SNR at the built-in microphone.";
                     f.whyItMatters = "Insufficient loudspeaker coupling prevents accurate measurement of Echo Return Loss Enhancement (ERLE).";
                     f.howToFix = "Verify that STREAM_VOICE_CALL speakerphone routing and volume curves are active, nothing is obstructing the speaker or microphone ports, and MMAP playback volume attenuation is properly applied.";
@@ -921,11 +1106,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             row.apiLabel,
                             String.format(
                                     Locale.US,
-                                    "%s: Raw coupling = %.1f dBFS vs. Noise floor = %.1f dBFS (SNR = %.1f dB < 12.0 dB).",
+                                    "%s: Raw coupling = %.1f dBFS vs. Noise floor = %.1f dBFS (SNR = %.1f dB < 12.0 dB, blocks=%d).",
                                     row.apiLabel,
                                     row.rawCouplingDbfs,
                                     row.noiseFloorDbfs,
-                                    row.stimulusSnrDb));
+                                    row.stimulusSnrDb,
+                                    p2Count));
                 }
 
                 if (!sleepInterruptible(500)) return;
@@ -948,29 +1134,40 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         recordFail();
                         return;
                     }
-                    row.voipOutMmap = nativeIsMMap(player.getNativeHandle());
-                    row.voipInMmap = nativeIsMMap(nativeRec);
-                    row.voipOutExclusive = nativeIsExclusive(player.getNativeHandle());
-                    row.voipInExclusive = nativeIsExclusive(nativeRec);
-                    row.voipInBurstFrames = nativeGetBurstFrames(nativeRec);
-                    row.voipInCapacityFrames = nativeGetBufferCapacityFrames(nativeRec);
-                    row.configSummary = String.format(
-                            Locale.US,
-                            "MMAP Out=%s In=%s, %df/%df",
-                            row.voipOutMmap ? "YES" : "NO",
-                            row.voipInMmap ? "YES" : "NO",
-                            row.outBurstFrames,
-                            row.voipInBurstFrames);
                     sessionId = nativeGetSessionId(nativeRec);
-                    burst3 = Math.max(256, row.voipInBurstFrames);
-                    nativeStartStream(nativeRec);
+                    if (mAecSupported && sessionId > 0) {
+                        try {
+                            aec = AcousticEchoCanceler.create(sessionId);
+                            if (aec != null) {
+                                aec.setEnabled(false);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create AcousticEchoCanceler", e);
+                        }
+                    }
+                    if (mNsSupported && sessionId > 0) {
+                        try {
+                            ns = NoiseSuppressor.create(sessionId);
+                            if (ns != null && forceNsOff) {
+                                ns.setEnabled(false);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create NoiseSuppressor", e);
+                        }
+                    }
+                    if (nativeStartStream(nativeRec) != 0) {
+                        updatePhaseStatus(row, 3, "FAIL (start failed)");
+                        appendTelemetry("    FAIL: nativeStartStream(VOICE_COMMUNICATION) failed");
+                        recordFail();
+                        return;
+                    }
                 } else {
                     int minBuf = Math.max(
-                            4096,
+                            SAMPLE_RATE,
                             AudioRecord.getMinBufferSize(
                                     SAMPLE_RATE,
                                     AudioFormat.CHANNEL_IN_MONO,
-                                    AudioFormat.ENCODING_PCM_16BIT) * 2);
+                                    AudioFormat.ENCODING_PCM_16BIT) * 4);
                     javaRec = new AudioRecord.Builder()
                             .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
                             .setAudioFormat(new AudioFormat.Builder()
@@ -980,30 +1177,69 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                     .build())
                             .setBufferSizeInBytes(minBuf)
                             .build();
-                    javaRec.startRecording();
+                    if (javaRec.getState() != AudioRecord.STATE_INITIALIZED) {
+                        updatePhaseStatus(row, 3, "FAIL (init failed)");
+                        appendTelemetry("    FAIL: AudioRecord(VOICE_COMMUNICATION) failed to init");
+                        recordFail();
+                        return;
+                    }
                     sessionId = javaRec.getAudioSessionId();
+                    if (mAecSupported && sessionId > 0) {
+                        try {
+                            aec = AcousticEchoCanceler.create(sessionId);
+                            if (aec != null) {
+                                aec.setEnabled(false);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create AcousticEchoCanceler", e);
+                        }
+                    }
+                    if (mNsSupported && sessionId > 0) {
+                        try {
+                            ns = NoiseSuppressor.create(sessionId);
+                            if (ns != null && forceNsOff) {
+                                ns.setEnabled(false);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create NoiseSuppressor", e);
+                        }
+                    }
+                    javaRec.startRecording();
                     row.configSummary = "AudioTrack + AudioRecord VOIP";
                 }
 
-                if (mAecSupported && sessionId > 0) {
+                // Re-verify effect state after stream start and check if output stream disconnected
+                if (aec != null) {
                     try {
-                        aec = AcousticEchoCanceler.create(sessionId);
-                        if (aec != null) {
-                            aec.setEnabled(false);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Failed to create AcousticEchoCanceler", e);
+                        aec.setEnabled(false);
+                    } catch (Exception ignored) {
                     }
                 }
-                if (mNsSupported && sessionId > 0) {
+                if (ns != null && forceNsOff) {
                     try {
-                        ns = NoiseSuppressor.create(sessionId);
-                        if (ns != null && forceNsOff) {
-                            ns.setEnabled(false);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Failed to create NoiseSuppressor", e);
+                        ns.setEnabled(false);
+                    } catch (Exception ignored) {
                     }
+                }
+                player.restartIfDisconnected();
+
+                if (isNative) {
+                    row.voipOutMmap = nativeIsMMap(player.getNativeHandle());
+                    row.voipInMmap = nativeIsMMap(nativeRec);
+                    row.voipOutExclusive = nativeIsExclusive(player.getNativeHandle());
+                    row.voipInExclusive = nativeIsExclusive(nativeRec);
+                    row.outBurstFrames = nativeGetBurstFrames(player.getNativeHandle());
+                    row.outCapacityFrames = nativeGetBufferCapacityFrames(player.getNativeHandle());
+                    row.voipInBurstFrames = nativeGetBurstFrames(nativeRec);
+                    row.voipInCapacityFrames = nativeGetBufferCapacityFrames(nativeRec);
+                    row.configSummary = String.format(
+                            Locale.US,
+                            "MMAP Out=%s In=%s, %df/%df",
+                            row.voipOutMmap ? "YES" : "NO",
+                            row.voipInMmap ? "YES" : "NO",
+                            row.outBurstFrames,
+                            row.voipInBurstFrames);
+                    burst3 = Math.max(256, row.voipInBurstFrames);
                 }
 
                 int maxShots = (PHASE_SPEECH_MS / SHOT_INTERVAL_MS) + 5;
@@ -1017,9 +1253,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 long flushEnd3 = SystemClock.elapsedRealtime() + 350;
                 while (SystemClock.elapsedRealtime() < flushEnd3 && mWorkerEnabled) {
                     if (isNative) {
-                        nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L);
+                        int r = nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L);
+                        if (r < 0 && r != OBOE_ERROR_TIMEOUT) break;
                     } else {
                         int r = javaRec.read(ioBuf3, 0, burst3, AudioRecord.READ_BLOCKING);
+                        if (r < 0) break;
                         if (r > 0) javaFramesReadComm += r;
                     }
                 }
@@ -1041,6 +1279,13 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     int read = isNative
                             ? nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L)
                             : javaRec.read(ioBuf3, 0, burst3, AudioRecord.READ_BLOCKING);
+                    if (isNative && read < 0 && read != OBOE_ERROR_TIMEOUT) {
+                        appendTelemetry("    WARN: nativeReadStream returned " + read + " in Phase 3");
+                        break;
+                    } else if (!isNative && read < 0) {
+                        appendTelemetry("    WARN: AudioRecord.read returned " + read + " in Phase 3");
+                        break;
+                    }
                     if (!isNative && read > 0) {
                         javaFramesReadComm += read;
                     }
@@ -1093,12 +1338,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
                 // Scale VOICE_COMMUNICATION levels by the measured VOICE_RECOGNITION /
                 // VOICE_COMMUNICATION preset gain ratio so differences in nominal volume
-                // between presets are normalized before floor clamping and ERLE scoring.
+                // between presets are normalized symmetrically using computeBlockRmsScaled.
                 double rawToVoipRatio = (avgOffRms > 1e-6) ? (avgRawRms / avgOffRms) : 1.0;
                 double voipGainScale = Math.max(0.05, Math.min(20.0, rawToVoipRatio));
                 row.voipGainScaleDb = 20.0 * Math.log10(voipGainScale);
-                row.scaledAecOffDbfs = 20.0 * Math.log10(
-                        Math.max(avgOffRms * voipGainScale, MIN_RMS_VAL));
+                row.scaledAecOffDbfs = computeScaledBufferDbfs(
+                        recAecOff, recAecOffLen, burst3, voipGainScale);
                 double corrBroadband = Math.max(
                         computeEnvelopeCorrelation(
                                 playerEnv3.getSnapshotsCopy(), recEnv3.getSnapshotsCopy(), 1.0),
@@ -1123,7 +1368,19 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             speechPcm, mSpeechSampleRate, slice, SAMPLE_RATE, 500);
                 }
 
-                boolean corrOffOk = (row.corrAecOff >= THRESHOLD_CORR_AEC_OFF_MIN);
+                // Drain any input frames buffered while computeAcousticLatencyMs executed
+                while (mWorkerEnabled) {
+                    int drained = isNative
+                            ? nativeReadStream(nativeRec, ioBuf3, 0, burst3, 0L)
+                            : javaRec.read(ioBuf3, 0, burst3, AudioRecord.READ_NON_BLOCKING);
+                    if (!isNative && drained > 0) {
+                        javaFramesReadComm += drained;
+                    }
+                    if (drained <= 0) break;
+                }
+
+                boolean corrOffOk = (p3Count > 0 && recAecOffLen > 0)
+                        && (row.corrAecOff >= THRESHOLD_CORR_AEC_OFF_MIN);
                 if (corrOffOk) {
                     updatePhaseStatus(
                             row,
@@ -1161,11 +1418,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             row.apiLabel,
                             String.format(
                                     Locale.US,
-                                    "%s: Phase 3 AEC OFF Corr = %.2f (< 0.60), level = %.1f dBFS (delta vs raw = %+.1f dB).",
+                                    "%s: Phase 3 AEC OFF Corr = %.2f (< 0.60), level = %.1f dBFS (delta vs raw = %+.1f dB, blocks=%d).",
                                     row.apiLabel,
                                     row.corrAecOff,
                                     row.aecOffDbfs,
-                                    row.signedGainDeltaDb));
+                                    row.signedGainDeltaDb,
+                                    p3Count));
                 }
 
                 appendTelemetry(String.format(
@@ -1218,6 +1476,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 if (aec != null) {
                     aec.setEnabled(true);
                 }
+                player.restartIfDisconnected();
 
                 RmsEnvelopeTracker playerEnv4 = new RmsEnvelopeTracker(SAMPLE_RATE, maxShots);
                 RmsEnvelopeTracker recEnv4 = new RmsEnvelopeTracker(SAMPLE_RATE, maxShots);
@@ -1228,9 +1487,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 long flushEnd4 = SystemClock.elapsedRealtime() + 300;
                 while (SystemClock.elapsedRealtime() < flushEnd4 && mWorkerEnabled) {
                     if (isNative) {
-                        nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L);
+                        int r = nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L);
+                        if (r < 0 && r != OBOE_ERROR_TIMEOUT) break;
                     } else {
                         int r = javaRec.read(ioBuf3, 0, burst3, AudioRecord.READ_BLOCKING);
+                        if (r < 0) break;
                         if (r > 0) javaFramesReadComm += r;
                     }
                 }
@@ -1247,13 +1508,22 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 double p4RmsSum = 0.0;
                 double p4ScaledRmsSum = 0.0;
                 int p4Count = 0;
-                long end4 = SystemClock.elapsedRealtime() + PHASE_SPEECH_MS;
-                long nextShot4 = SystemClock.elapsedRealtime() + SHOT_INTERVAL_MS;
+                long p4StartMs = SystemClock.elapsedRealtime();
+                long p4WarmupEnd = p4StartMs + 800;
+                long end4 = p4StartMs + PHASE_SPEECH_MS;
+                long nextShot4 = p4StartMs + SHOT_INTERVAL_MS;
 
                 while (SystemClock.elapsedRealtime() < end4 && mWorkerEnabled) {
                     int read = isNative
                             ? nativeReadStream(nativeRec, ioBuf3, 0, burst3, 100_000_000L)
                             : javaRec.read(ioBuf3, 0, burst3, AudioRecord.READ_BLOCKING);
+                    if (isNative && read < 0 && read != OBOE_ERROR_TIMEOUT) {
+                        appendTelemetry("    WARN: nativeReadStream returned " + read + " in Phase 4");
+                        break;
+                    } else if (!isNative && read < 0) {
+                        appendTelemetry("    WARN: AudioRecord.read returned " + read + " in Phase 4");
+                        break;
+                    }
                     if (!isNative && read > 0) {
                         javaFramesReadComm += read;
                     }
@@ -1264,9 +1534,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             recAecOnLen += toCopy;
                         }
                         recEnv4.updateDirect(ioBuf3, read);
-                        p4RmsSum += computeBlockRms(ioBuf3, read);
-                        p4ScaledRmsSum += computeBlockRmsScaled(ioBuf3, read, voipGainScale);
-                        p4Count++;
+                        if (SystemClock.elapsedRealtime() >= p4WarmupEnd) {
+                            p4RmsSum += computeBlockRms(ioBuf3, read);
+                            p4ScaledRmsSum += computeBlockRmsScaled(ioBuf3, read, voipGainScale);
+                            p4Count++;
+                        }
                     }
                     if (SystemClock.elapsedRealtime() >= nextShot4) {
                         recEnv4.captureShot();
@@ -1327,7 +1599,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         || (row.distToFloorDb <= THRESHOLD_DIST_TO_FLOOR_DB
                                 && row.peakRefErleDb >= THRESHOLD_MIN_ERLE_AT_FLOOR_DB);
                 boolean corrOnOk = (row.corrAecOn <= THRESHOLD_CORR_AEC_ON_MAX);
-                boolean p4Pass = erleOk && corrOnOk;
+                boolean p4Pass = (p4Count > 0 && recAecOnLen > 0) && erleOk && corrOnOk;
 
                 updatePhaseStatus(
                         row,
@@ -1375,12 +1647,13 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             row.apiLabel,
                             String.format(
                                     Locale.US,
-                                    "%s: Norm-ERLE = %.1f dB (Raw = %.1f dB), Dist-to-Floor = %.1f dB, Corr = %.2f.",
+                                    "%s: Norm-ERLE = %.1f dB (Raw = %.1f dB), Dist-to-Floor = %.1f dB, Corr = %.2f (blocks=%d).",
                                     row.apiLabel,
                                     row.selfErleDb,
                                     row.rawErleDb,
                                     row.distToFloorDb,
-                                    row.corrAecOn));
+                                    row.corrAecOn,
+                                    p4Count));
                 }
 
                 // Check 100ms Voice Agent Round-Trip Latency target on Native AAudio
@@ -1421,28 +1694,72 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 if (player == null) {
                     player = new VoipPlayer(isNative, speechPcm);
                     player.setPlaySpeech(false);
-                    player.start();
+                    if (!player.start()) {
+                        updatePhaseStatus(row, 5, "FAIL (output open)");
+                        appendTelemetry("    FAIL: Could not start VoIP output player in Phase 5");
+                        recordFail();
+                        return;
+                    }
                 }
                 int burst5 = 960;
                 if (isNative && nativeRec == 0) {
                     nativeRec = nativeOpenInputStream(
                             SAMPLE_RATE, 1, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION);
-                    if (nativeRec != 0) {
-                        burst5 = Math.max(256, nativeGetBurstFrames(nativeRec));
-                        int sid = nativeGetSessionId(nativeRec);
-                        if (mAecSupported && sid > 0 && aec == null) {
+                    if (nativeRec == 0) {
+                        updatePhaseStatus(row, 5, "FAIL (input open)");
+                        appendTelemetry("    FAIL: nativeOpenInputStream failed in Phase 5");
+                        recordFail();
+                        return;
+                    }
+                    int sid = nativeGetSessionId(nativeRec);
+                    if (mAecSupported && sid > 0 && aec == null) {
+                        try {
                             aec = AcousticEchoCanceler.create(sid);
                             if (aec != null) aec.setEnabled(true);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create AcousticEchoCanceler in Phase 5", e);
                         }
-                        nativeStartStream(nativeRec);
                     }
+                    if (mNsSupported && sid > 0 && ns == null) {
+                        try {
+                            ns = NoiseSuppressor.create(sid);
+                            if (ns != null && forceNsOff) ns.setEnabled(false);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create NoiseSuppressor in Phase 5", e);
+                        }
+                    }
+                    if (nativeStartStream(nativeRec) != 0) {
+                        updatePhaseStatus(row, 5, "FAIL (input start)");
+                        appendTelemetry("    FAIL: nativeStartStream failed in Phase 5");
+                        recordFail();
+                        return;
+                    }
+                    player.restartIfDisconnected();
+                    row.voipOutMmap = nativeIsMMap(player.getNativeHandle());
+                    row.voipInMmap = nativeIsMMap(nativeRec);
+                    row.voipOutExclusive = nativeIsExclusive(player.getNativeHandle());
+                    row.voipInExclusive = nativeIsExclusive(nativeRec);
+                    row.outBurstFrames = nativeGetBurstFrames(player.getNativeHandle());
+                    row.outCapacityFrames = nativeGetBufferCapacityFrames(player.getNativeHandle());
+                    row.voipInBurstFrames = nativeGetBurstFrames(nativeRec);
+                    row.voipInCapacityFrames = nativeGetBufferCapacityFrames(nativeRec);
+                    if ("Pending...".equals(row.configSummary)) {
+                        row.configSummary = String.format(
+                                Locale.US,
+                                "MMAP Out=%s In=%s, %df/%df",
+                                row.voipOutMmap ? "YES" : "NO",
+                                row.voipInMmap ? "YES" : "NO",
+                                row.outBurstFrames,
+                                row.voipInBurstFrames);
+                    }
+                    burst5 = Math.max(256, row.voipInBurstFrames);
                 } else if (!isNative && javaRec == null) {
                     int minBuf = Math.max(
-                            4096,
+                            SAMPLE_RATE,
                             AudioRecord.getMinBufferSize(
                                     SAMPLE_RATE,
                                     AudioFormat.CHANNEL_IN_MONO,
-                                    AudioFormat.ENCODING_PCM_16BIT) * 2);
+                                    AudioFormat.ENCODING_PCM_16BIT) * 4);
                     javaRec = new AudioRecord.Builder()
                             .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
                             .setAudioFormat(new AudioFormat.Builder()
@@ -1452,11 +1769,32 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                     .build())
                             .setBufferSizeInBytes(minBuf)
                             .build();
-                    javaRec.startRecording();
+                    if (javaRec.getState() != AudioRecord.STATE_INITIALIZED) {
+                        updatePhaseStatus(row, 5, "FAIL (input init)");
+                        appendTelemetry("    FAIL: AudioRecord failed to init in Phase 5");
+                        recordFail();
+                        return;
+                    }
                     int sid = javaRec.getAudioSessionId();
                     if (mAecSupported && sid > 0 && aec == null) {
-                        aec = AcousticEchoCanceler.create(sid);
-                        if (aec != null) aec.setEnabled(true);
+                        try {
+                            aec = AcousticEchoCanceler.create(sid);
+                            if (aec != null) aec.setEnabled(true);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create AcousticEchoCanceler in Phase 5", e);
+                        }
+                    }
+                    if (mNsSupported && sid > 0 && ns == null) {
+                        try {
+                            ns = NoiseSuppressor.create(sid);
+                            if (ns != null && forceNsOff) ns.setEnabled(false);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to create NoiseSuppressor in Phase 5", e);
+                        }
+                    }
+                    javaRec.startRecording();
+                    if ("Pending...".equals(row.configSummary)) {
+                        row.configSummary = "AudioTrack + AudioRecord VOIP";
                     }
                 } else if (isNative && nativeRec != 0) {
                     burst5 = Math.max(256, nativeGetBurstFrames(nativeRec));
@@ -1467,9 +1805,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 long warmEnd = SystemClock.elapsedRealtime() + 250;
                 while (SystemClock.elapsedRealtime() < warmEnd && mWorkerEnabled) {
                     if (isNative) {
-                        nativeReadStream(nativeRec, ioBuf5, 0, burst5, 20_000_000L);
+                        int r = nativeReadStream(nativeRec, ioBuf5, 0, burst5, 20_000_000L);
+                        if (r < 0 && r != OBOE_ERROR_TIMEOUT) break;
                     } else {
-                        javaRec.read(ioBuf5, 0, burst5, AudioRecord.READ_BLOCKING);
+                        int r = javaRec.read(ioBuf5, 0, burst5, AudioRecord.READ_BLOCKING);
+                        if (r < 0) break;
                     }
                 }
 
@@ -1506,6 +1846,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 }
                 player.playSpeechFromStart();
 
+                long loopStartMs = SystemClock.elapsedRealtime();
                 long firstReadMs = -1;
                 boolean nonZeroVerified = false;
                 boolean probedAecOffForLiveness = false;
@@ -1513,8 +1854,8 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         !mAecSupported || (aec != null && aec.getEnabled());
                 double postRmsSum = 0.0;
                 int postCount = 0;
-                long resumeEnd = SystemClock.elapsedRealtime() + STANDBY_RESUME_MS;
-                long probeSwitchTime = resumeStartMs + (STANDBY_RESUME_MS / 2);
+                long resumeEnd = loopStartMs + STANDBY_RESUME_MS;
+                long probeSwitchTime = loopStartMs + (STANDBY_RESUME_MS / 2);
                 while (SystemClock.elapsedRealtime() < resumeEnd && mWorkerEnabled) {
                     long now = SystemClock.elapsedRealtime();
                     // Some OEM hardware DSPs (e.g. Qualcomm Fluence AEC+NS) gate cancelled echo
@@ -1522,7 +1863,10 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     // are arriving but all samples are 0x0000 in the first half of the window,
                     // briefly disable AEC/NS for the second half while speech is playing to verify
                     // the ADC/DMA is capturing live acoustic signal rather than stuck zero buffers.
-                    if (!nonZeroVerified && !probedAecOffForLiveness && now >= probeSwitchTime) {
+                    if (!nonZeroVerified
+                            && postCount > 0
+                            && !probedAecOffForLiveness
+                            && now >= probeSwitchTime) {
                         probedAecOffForLiveness = true;
                         if (aec != null) {
                             try {
@@ -1540,6 +1884,13 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     int read = isNative
                             ? nativeReadStream(nativeRec, ioBuf5, 0, burst5, 100_000_000L)
                             : javaRec.read(ioBuf5, 0, burst5, AudioRecord.READ_BLOCKING);
+                    if (isNative && read < 0 && read != OBOE_ERROR_TIMEOUT) {
+                        appendTelemetry("    WARN: nativeReadStream returned " + read + " in Phase 5");
+                        break;
+                    } else if (!isNative && read < 0) {
+                        appendTelemetry("    WARN: AudioRecord.read returned " + read + " in Phase 5");
+                        break;
+                    }
                     if (read > 0) {
                         long elapsed = SystemClock.elapsedRealtime() - resumeStartMs;
                         if (firstReadMs < 0) {
@@ -1582,10 +1933,21 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 row.standbyAecStillEnabled = aecEnabledAfterWake
                         && (!mAecSupported || (aec != null && aec.getEnabled()));
 
-                boolean tsValid = isNative
-                        ? ((row.standbyPreTsPos <= 0)
-                                || (row.standbyPostTsPos >= row.standbyPreTsPos))
-                        : (row.standbyPostTsPos > 0);
+                boolean tsValid;
+                if (isNative) {
+                    boolean expectNativeInputTs = row.voipInMmap
+                            || row.standbyPreTsPos > 0
+                            || row.standbyPostTsPos > 0;
+                    tsValid = !expectNativeInputTs
+                            || (row.standbyPostTsPos > 0
+                                    && (row.standbyPreTsPos <= 0
+                                            || row.standbyPostTsPos > row.standbyPreTsPos));
+                } else {
+                    tsValid = (row.standbyPostTsPos > 0);
+                }
+                String tsDesc = (row.standbyPostTsPos > 0)
+                        ? (isNative ? "ts monotonic" : "ts active")
+                        : "ts N/A";
                 row.standbyPassed = (startInRes == 0 && startOutRes == 0)
                         && (postCount > 0 && firstReadMs >= 0 && firstReadMs <= 600)
                         && nonZeroVerified
@@ -1598,9 +1960,9 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         row.standbyPassed
                                 ? String.format(
                                         Locale.US,
-                                        "PASS (%dms, ts %s, AEC)",
+                                        "PASS (%dms, %s, AEC)",
                                         firstReadMs,
-                                        isNative ? "monotonic" : "active")
+                                        tsDesc)
                                 : String.format(
                                         Locale.US,
                                         "FAIL (%dms, live=%b, ts %d->%d)",
@@ -1646,6 +2008,17 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                     row.standbyAecStillEnabled));
                 }
             }
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected exception in runSingleApiPath (" + row.apiLabel + ")", e);
+            appendTelemetry("    EXCEPTION in " + row.apiLabel + ": " + e.getMessage());
+            synchronized (mReportLock) {
+                if ("RUNNING...".equals(row.phase1Status)) row.phase1Status = "FAIL (exception)";
+                if ("RUNNING...".equals(row.phase2Status)) row.phase2Status = "FAIL (exception)";
+                if ("RUNNING...".equals(row.phase3Status)) row.phase3Status = "FAIL (exception)";
+                if ("RUNNING...".equals(row.phase4Status)) row.phase4Status = "FAIL (exception)";
+                if ("RUNNING...".equals(row.phase5Status)) row.phase5Status = "FAIL (exception)";
+            }
+            recordFail();
         } finally {
             if (aec != null) {
                 try {
@@ -1732,6 +2105,25 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         return Math.max(Math.sqrt(sumSq / count), MIN_RMS_VAL);
     }
 
+    private static double computeScaledBufferDbfs(
+            short[] buf, int len, int blockSize, double gainScale) {
+        if (buf == null || len <= 0 || blockSize <= 0) return MIN_RMS_DB;
+        double rmsSum = 0.0;
+        int blocks = 0;
+        for (int offset = 0; offset < len; offset += blockSize) {
+            int count = Math.min(blockSize, len - offset);
+            double sumSq = 0.0;
+            for (int i = 0; i < count; i++) {
+                double v = (buf[offset + i] / MAX_VAL) * gainScale;
+                sumSq += v * v;
+            }
+            rmsSum += Math.max(Math.sqrt(sumSq / count), MIN_RMS_VAL);
+            blocks++;
+        }
+        double avgRms = (blocks > 0) ? (rmsSum / blocks) : MIN_RMS_VAL;
+        return 20.0 * Math.log10(Math.max(avgRms, MIN_RMS_VAL));
+    }
+
     private static double computeEnvelopeCorrelation(double[] playerRms, double[] recRms) {
         return computeEnvelopeCorrelation(playerRms, recRms, 1.0, MIN_RMS_DB);
     }
@@ -1748,7 +2140,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         int last = len - 1;
         int first = Math.max(0, last - 15);
         int n = last - first + 1;
-        if (n <= 2) return 0.0;
+        if (n <= 3) return 0.0;
 
         double[] a = new double[n];
         double[] b = new double[n];
@@ -1774,16 +2166,20 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         }
         varA /= n;
         varB /= n;
-        double denom = Math.sqrt(varA * varB);
+        double effVarB = (recFloorDb > MIN_RMS_DB) ? Math.max(varB, 4.0) : varB;
+        double denom = Math.sqrt(varA * effVarB);
         if (denom <= 1e-7) return 0.0;
 
         double maxCorr = 0.0;
-        for (int lag = 0; lag < n; lag++) {
+        int maxLag = Math.min(3, n - 3);
+        for (int lag = 0; lag <= maxLag; lag++) {
+            int overlap = n - lag;
+            if (overlap <= 2) break;
             double cross = 0.0;
-            for (int j = 0; j < n - lag; j++) {
+            for (int j = 0; j < overlap; j++) {
                 cross += (a[j] - meanA) * (b[lag + j] - meanB);
             }
-            double corr = Math.abs(cross / (n * denom));
+            double corr = cross / (overlap * denom);
             if (corr > maxCorr) {
                 maxCorr = corr;
             }
@@ -1809,15 +2205,16 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         }
         if (windowRecSamples <= 0) return -1.0;
 
-        int coarseStride = 16;
+        int coarseLagStep = 4;
+        int coarseIntStride = 16;
         double maxCorr = -1.0;
         int bestLag = 0;
 
-        for (int lag = 0; lag < maxLagSamples; lag += coarseStride) {
+        for (int lag = 0; lag < maxLagSamples; lag += coarseLagStep) {
             double dot = 0.0;
             double normRef = 0.0;
             double normRec = 0.0;
-            for (int i = 0; i < windowRecSamples; i += coarseStride) {
+            for (int i = 0; i < windowRecSamples; i += coarseIntStride) {
                 int refIdx = startRefSample + (int) ((long) i * refRate / recRate);
                 double r = ref[refIdx];
                 double s = rec[startRecSample + lag + i];
@@ -1835,8 +2232,8 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             }
         }
 
-        int fineStart = Math.max(0, bestLag - 32);
-        int fineEnd = Math.min(maxLagSamples, bestLag + 32);
+        int fineStart = Math.max(0, bestLag - 16);
+        int fineEnd = Math.min(maxLagSamples, bestLag + 16);
         for (int lag = fineStart; lag <= fineEnd; lag++) {
             double dot = 0.0;
             double normRef = 0.0;
@@ -1858,6 +2255,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 }
             }
         }
+        if (maxCorr < 0.08) return -1.0;
         return (bestLag * 1000.0) / recRate;
     }
 
@@ -1887,13 +2285,14 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         private final boolean mIsNative;
         private final short[] mAudioData;
         private final int mAudioDataLen;
-        private long mNativeHandle = 0;
+        private final Object mNativeLock = new Object();
+        private volatile long mNativeHandle = 0;
         private AudioTrack mAudioTrack;
         private volatile boolean mPlaying = false;
         private volatile boolean mPlaySpeech = false;
         private volatile boolean mPausedJava = false;
         private volatile boolean mResetCursor = false;
-        private volatile long mFramesWritten = 0;
+        private final AtomicLong mFramesWritten = new AtomicLong(0);
         private volatile RmsEnvelopeTracker mRmsTracker;
         private Thread mThread;
 
@@ -1908,8 +2307,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         }
 
         void setPlaySpeech(boolean play) {
-            if (mIsNative && mNativeHandle != 0) {
-                nativeSetPlaySpeech(mNativeHandle, play);
+            if (mIsNative) {
+                synchronized (mNativeLock) {
+                    if (mNativeHandle != 0) {
+                        nativeSetPlaySpeech(mNativeHandle, play);
+                    }
+                }
             }
             mPlaySpeech = play;
             mResetCursor = true;
@@ -1920,7 +2323,9 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         }
 
         long getNativeHandle() {
-            return mNativeHandle;
+            synchronized (mNativeLock) {
+                return mNativeHandle;
+            }
         }
 
         AudioTrack getAudioTrack() {
@@ -1928,7 +2333,27 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         }
 
         long getFramesWritten() {
-            return mFramesWritten;
+            return mFramesWritten.get();
+        }
+
+        void restartIfDisconnected() {
+            if (!mIsNative) return;
+            synchronized (mNativeLock) {
+                if (mNativeHandle == 0) return;
+                if (nativeGetStreamState(mNativeHandle) == STREAM_STATE_DISCONNECTED) {
+                    Log.w(TAG, "VoipPlayer output stream disconnected on route change; reopening");
+                    nativeStopStream(mNativeHandle);
+                    nativeCloseStream(mNativeHandle);
+                    mNativeHandle = nativeOpenOutputStream(SAMPLE_RATE, 1);
+                    if (mNativeHandle != 0) {
+                        if (mAudioData != null) {
+                            nativeSetPlaybackData(mNativeHandle, mAudioData);
+                        }
+                        nativeSetPlaySpeech(mNativeHandle, mPlaySpeech);
+                        nativeStartStream(mNativeHandle);
+                    }
+                }
+            }
         }
 
         void pauseJavaTrack() {
@@ -1953,18 +2378,20 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
         boolean start() {
             if (mPlaying) return true;
-            mFramesWritten = 0;
+            mFramesWritten.set(0);
             if (mIsNative) {
-                mNativeHandle = nativeOpenOutputStream(SAMPLE_RATE, 1);
-                if (mNativeHandle == 0) return false;
-                if (mAudioData != null) {
-                    nativeSetPlaybackData(mNativeHandle, mAudioData);
-                }
-                nativeSetPlaySpeech(mNativeHandle, mPlaySpeech);
-                if (nativeStartStream(mNativeHandle) != 0) {
-                    nativeCloseStream(mNativeHandle);
-                    mNativeHandle = 0;
-                    return false;
+                synchronized (mNativeLock) {
+                    mNativeHandle = nativeOpenOutputStream(SAMPLE_RATE, 1);
+                    if (mNativeHandle == 0) return false;
+                    if (mAudioData != null) {
+                        nativeSetPlaybackData(mNativeHandle, mAudioData);
+                    }
+                    nativeSetPlaySpeech(mNativeHandle, mPlaySpeech);
+                    if (nativeStartStream(mNativeHandle) != 0) {
+                        nativeCloseStream(mNativeHandle);
+                        mNativeHandle = 0;
+                        return false;
+                    }
                 }
             } else {
                 int minBuf = AudioTrack.getMinBufferSize(
@@ -1972,7 +2399,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         AudioFormat.CHANNEL_OUT_MONO,
                         AudioFormat.ENCODING_PCM_16BIT);
                 int bufferSize = Math.max(minBuf * 2, 7680);
-                mAudioTrack = new AudioTrack.Builder()
+                AudioTrack.Builder builder = new AudioTrack.Builder()
                         .setAudioAttributes(new AudioAttributes.Builder()
                                 .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
                                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
@@ -1982,10 +2409,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                                 .setSampleRate(SAMPLE_RATE)
                                 .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                                 .build())
-                        .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                         .setBufferSizeInBytes(bufferSize)
-                        .setTransferMode(AudioTrack.MODE_STREAM)
-                        .build();
+                        .setTransferMode(AudioTrack.MODE_STREAM);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    builder.setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY);
+                }
+                mAudioTrack = builder.build();
                 mAudioTrack.play();
             }
 
@@ -2001,14 +2430,23 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             short[] tempBuf = new short[burst];
             short[] silenceBuf = new short[burst];
 
-            if (mIsNative && mNativeHandle != 0) {
-                int lastOffset = nativeGetPlaybackOffset(mNativeHandle);
+            if (mIsNative) {
+                int lastOffset = 0;
+                synchronized (mNativeLock) {
+                    if (mNativeHandle != 0) {
+                        lastOffset = nativeGetPlaybackOffset(mNativeHandle);
+                    }
+                }
                 while (mPlaying) {
                     if (mResetCursor) {
                         lastOffset = 0;
                         mResetCursor = false;
                     }
-                    int currOffset = nativeGetPlaybackOffset(mNativeHandle);
+                    int currOffset = 0;
+                    synchronized (mNativeLock) {
+                        if (mNativeHandle == 0) break;
+                        currOffset = nativeGetPlaybackOffset(mNativeHandle);
+                    }
                     RmsEnvelopeTracker tracker = mRmsTracker;
                     if (tracker != null && mPlaySpeech && mAudioData != null && mAudioDataLen > 0) {
                         int advanced = (currOffset - lastOffset + mAudioDataLen) % mAudioDataLen;
@@ -2058,17 +2496,17 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         int written = mAudioTrack.write(
                                 tempBuf, 0, burst, AudioTrack.WRITE_BLOCKING);
                         if (written < 0) break;
-                        mFramesWritten += written;
+                        mFramesWritten.addAndGet(written);
                     } else {
                         long head = mAudioTrack.getPlaybackHeadPosition() & 0xFFFFFFFFL;
-                        if (mFramesWritten - head > 960) {
+                        if (mFramesWritten.get() - head > 960) {
                             SystemClock.sleep(5);
                             continue;
                         }
                         int written = mAudioTrack.write(
                                 silenceBuf, 0, silenceChunk, AudioTrack.WRITE_BLOCKING);
                         if (written < 0) break;
-                        mFramesWritten += written;
+                        mFramesWritten.addAndGet(written);
                     }
                 }
             }
@@ -2078,16 +2516,26 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             mPlaying = false;
             mPausedJava = false;
             if (mThread != null) {
+                boolean wasInterrupted = Thread.interrupted();
                 try {
-                    mThread.join(500);
+                    mThread.join(1000);
                 } catch (InterruptedException ignored) {
+                    wasInterrupted = true;
+                } finally {
+                    if (wasInterrupted) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
                 mThread = null;
             }
-            if (mIsNative && mNativeHandle != 0) {
-                nativeStopStream(mNativeHandle);
-                nativeCloseStream(mNativeHandle);
-                mNativeHandle = 0;
+            if (mIsNative) {
+                synchronized (mNativeLock) {
+                    if (mNativeHandle != 0) {
+                        nativeStopStream(mNativeHandle);
+                        nativeCloseStream(mNativeHandle);
+                        mNativeHandle = 0;
+                    }
+                }
             }
             if (mAudioTrack != null) {
                 try {
@@ -2217,10 +2665,34 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
         return out;
     }
 
+    private void stopAuditionPlayback() {
+        Thread threadToJoin;
+        synchronized (mAuditionLock) {
+            threadToJoin = mAuditionThread;
+            mAuditionThread = null;
+            if (mAuditionTrack != null) {
+                try {
+                    mAuditionTrack.pause();
+                    mAuditionTrack.flush();
+                    mAuditionTrack.stop();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        if (threadToJoin != null) {
+            threadToJoin.interrupt();
+            try {
+                threadToJoin.join(300);
+            } catch (InterruptedException ignored) {
+            }
+        }
+    }
+
     private void playCapturedBuffer(short[] buffer, int length) {
         if (buffer == null || length <= 0 || mIsRunning) return;
+        stopAuditionPlayback();
         final short[] copy = Arrays.copyOf(buffer, length);
-        new Thread(() -> {
+        Thread playThread = new Thread(() -> {
             int minBuf = AudioTrack.getMinBufferSize(
                     SAMPLE_RATE,
                     AudioFormat.CHANNEL_OUT_MONO,
@@ -2238,16 +2710,42 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                     .setBufferSizeInBytes(Math.max(minBuf * 4, 16384))
                     .setTransferMode(AudioTrack.MODE_STREAM)
                     .build();
+            synchronized (mAuditionLock) {
+                if (Thread.currentThread().isInterrupted()) {
+                    track.release();
+                    return;
+                }
+                mAuditionTrack = track;
+            }
             try {
                 track.play();
-                track.write(copy, 0, copy.length);
+                int offset = 0;
+                int chunk = 2048;
+                while (offset < copy.length && !Thread.currentThread().isInterrupted()) {
+                    int toWrite = Math.min(chunk, copy.length - offset);
+                    int written = track.write(copy, offset, toWrite);
+                    if (written <= 0) break;
+                    offset += written;
+                }
                 track.stop();
             } catch (Exception e) {
                 Log.e(TAG, "Diagnostic playback failed", e);
             } finally {
+                synchronized (mAuditionLock) {
+                    if (mAuditionTrack == track) {
+                        mAuditionTrack = null;
+                    }
+                    if (mAuditionThread == Thread.currentThread()) {
+                        mAuditionThread = null;
+                    }
+                }
                 track.release();
             }
-        }).start();
+        }, "AuditionPlayback");
+        synchronized (mAuditionLock) {
+            mAuditionThread = playThread;
+        }
+        playThread.start();
     }
 
     private boolean sleepInterruptible(int durationMs) {
@@ -2357,8 +2855,10 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                             "WARN (%d issue%s detected)",
                             mFindings.size(),
                             mFindings.size() == 1 ? "" : "s");
-                } else {
+                } else if (mPassCount > 0) {
                     verdict = "PASS";
+                } else {
+                    verdict = "SKIPPED (0 checks executed)";
                 }
             }
 
@@ -2487,7 +2987,9 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                 out.append("\n");
             }
             if (!anyMetrics) {
-                out.append("Waiting for 4-Phase AEC + RTL measurements...\n\n");
+                out.append(mSuiteCompleted
+                        ? "4-Phase AEC + RTL measurements not run (skipped or stopped).\n\n"
+                        : "Waiting for 4-Phase AEC + RTL measurements...\n\n");
             }
 
             out.append("================================================\n");
@@ -2548,6 +3050,9 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             saveReportToFile(finalReport);
             updateReportUI();
             runOnUiThread(() -> {
+                if (mPoller == ReportPoller.this) {
+                    mPoller = null;
+                }
                 keepScreenOn(mIsRunning);
                 setButtonsEnabled(mIsRunning);
             });
@@ -2565,8 +3070,20 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
     private void saveReportToFile(String report) {
         File dir = getExternalFilesDir(null);
-        if (dir == null) return;
-        File outFile = new File(dir, REPORT_FILENAME);
+        File outFile;
+        if (mReportFilePath != null && !mReportFilePath.isEmpty()) {
+            File candidate = new File(mReportFilePath);
+            if (candidate.isAbsolute() || dir == null) {
+                outFile = candidate;
+            } else {
+                outFile = new File(dir, mReportFilePath);
+            }
+        } else {
+            if (dir == null) {
+                return;
+            }
+            outFile = new File(dir, REPORT_FILENAME);
+        }
         try (FileOutputStream fos = new FileOutputStream(outFile)) {
             fos.write(report.getBytes(StandardCharsets.UTF_8));
             Log.i(TAG, "Saved VoIP & AEC report to: " + outFile.getAbsolutePath());
@@ -2674,13 +3191,11 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
     private native int nativeReadStream(
             long streamHandle, short[] buffer, int offset, int numSamples, long timeoutNanos);
     private native int nativeGetSessionId(long streamHandle);
-    private native int nativeGetSampleRate(long streamHandle);
+    private native int nativeGetStreamState(long streamHandle);
     private native int nativeGetBurstFrames(long streamHandle);
     private native int nativeGetBufferCapacityFrames(long streamHandle);
     private native boolean nativeIsExclusive(long streamHandle);
     private native boolean nativeIsMMap(long streamHandle);
-    private native long nativeGetFramesWritten(long streamHandle);
-    private native long nativeGetFramesRead(long streamHandle);
     private native long nativeGetTimestampPosition(long streamHandle);
     private native double nativeGetRoundTripTimestampLatencyMillis(
             long outStreamHandle, long inStreamHandle);

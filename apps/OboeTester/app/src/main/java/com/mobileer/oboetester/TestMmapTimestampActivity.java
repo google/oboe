@@ -18,7 +18,9 @@ package com.mobileer.oboetester;
 
 import static com.mobileer.oboetester.AudioQueryTools.getSystemProperty;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -34,8 +36,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,7 +58,16 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
 
     public static final String TAG = "OboeTester";
     public static final String KEY_AUTO_RUN = "auto_run";
+    public static final String KEY_OUTPUT = "output";
+    public static final String KEY_INPUT = "input";
+    public static final String KEY_EXCLUSIVE = "exclusive";
+    public static final String KEY_SHARED = "shared";
+    public static final String KEY_STEADY = "steady";
+    public static final String KEY_RAPID = "rapid";
+    public static final String KEY_STANDBY = "standby";
     public static final String REPORT_FILENAME = "mmap_timestamp_report.txt";
+
+    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 938356;
 
     private static final int COLOR_HEADER = Color.parseColor("#0D47A1");
     private static final int COLOR_PASS = Color.parseColor("#2E7D32");
@@ -60,7 +75,7 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     private static final int COLOR_FAIL = Color.parseColor("#C62828");
 
     private static final Pattern PATTERN_PASS =
-            Pattern.compile("\\bPASS\\b|\\[OK\\s*\\]");
+            Pattern.compile("(?<!\\b0 )\\bPASS\\b|\\[OK\\s*\\]");
     private static final Pattern PATTERN_WARN =
             Pattern.compile("(?<!\\b0 )\\bWARN(?:ING)?(?: \\([^)\\n]+\\))?");
     private static final Pattern PATTERN_FAIL =
@@ -85,6 +100,8 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
 
     private ReportPoller mPoller;
     private String mDeviceHeader;
+    private String mReportFilePath;
+    private boolean mAutoRun;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,8 +135,47 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
 
         setButtonsEnabled(false);
 
-        Intent intent = getIntent();
-        if (intent != null && intent.getBooleanExtra(KEY_AUTO_RUN, false)) {
+        applyIntentExtras(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        applyIntentExtras(intent);
+    }
+
+    private void applyIntentExtras(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        setIntent(intent);
+        if (intent.hasExtra(KEY_OUTPUT)) {
+            mOutputCheckBox.setChecked(intent.getBooleanExtra(KEY_OUTPUT, true));
+        }
+        if (intent.hasExtra(KEY_INPUT)) {
+            mInputCheckBox.setChecked(intent.getBooleanExtra(KEY_INPUT, true));
+        }
+        if (intent.hasExtra(KEY_EXCLUSIVE)) {
+            mExclusiveCheckBox.setChecked(intent.getBooleanExtra(KEY_EXCLUSIVE, true));
+        }
+        if (intent.hasExtra(KEY_SHARED)) {
+            mSharedCheckBox.setChecked(intent.getBooleanExtra(KEY_SHARED, true));
+        }
+        if (intent.hasExtra(KEY_STEADY)) {
+            mPhaseSteadyCheckBox.setChecked(intent.getBooleanExtra(KEY_STEADY, true));
+        }
+        if (intent.hasExtra(KEY_RAPID)) {
+            mPhaseRapidCyclesCheckBox.setChecked(intent.getBooleanExtra(KEY_RAPID, true));
+        }
+        if (intent.hasExtra(KEY_STANDBY)) {
+            mPhaseStandbyCheckBox.setChecked(intent.getBooleanExtra(KEY_STANDBY, true));
+        }
+        String customFile = intent.getStringExtra(IntentBasedTestSupport.KEY_FILE_NAME);
+        if (customFile != null && !customFile.isEmpty()) {
+            mReportFilePath = customFile;
+        }
+        mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
+        if (mAutoRun) {
             startTest();
         }
     }
@@ -139,6 +195,7 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     }
 
     public void onStartMmapTimestampTest(View view) {
+        mAutoRun = false;
         startTest();
     }
 
@@ -158,9 +215,6 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     }
 
     private void startTest() {
-        keepScreenOn(true);
-        stopPoller();
-
         boolean testOutput = mOutputCheckBox.isChecked();
         boolean testInput = mInputCheckBox.isChecked();
         boolean testExclusive = mExclusiveCheckBox.isChecked();
@@ -168,6 +222,34 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         boolean runSteadyState = mPhaseSteadyCheckBox.isChecked();
         boolean runRapidCycles = mPhaseRapidCyclesCheckBox.isChecked();
         boolean runStandbyResume = mPhaseStandbyCheckBox.isChecked();
+
+        if ((!testOutput && !testInput)
+                || (!testExclusive && !testShared)
+                || (!runSteadyState && !runRapidCycles && !runStandbyResume)) {
+            Toast.makeText(this,
+                    "Select at least one direction, sharing mode, and test phase",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mDeviceHeader = buildDeviceHeader();
+        if (testInput && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (!mAutoRun) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.RECORD_AUDIO},
+                        MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+                return;
+            } else {
+                Log.w(TAG, "RECORD_AUDIO permission not granted during auto_run; skipping Input.");
+                mDeviceHeader += "Note   : RECORD_AUDIO permission not granted (Input skipped)\n";
+                testInput = false;
+            }
+        }
+
+        keepScreenOn(true);
+        stopPoller();
 
         startTestNative(testOutput, testInput, testExclusive, testShared,
                 runSteadyState, runRapidCycles, runStandbyResume);
@@ -177,10 +259,33 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         mPoller.start();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode != MY_PERMISSIONS_REQUEST_RECORD_AUDIO) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startTest();
+        } else {
+            Toast.makeText(this, R.string.need_record_audio_permission, Toast.LENGTH_SHORT).show();
+            mInputCheckBox.setChecked(false);
+            if (mOutputCheckBox.isChecked()) {
+                startTest();
+            }
+        }
+    }
+
     private void stopTest() {
+        if (!isRunningNative() && (mPoller == null || !mPoller.isAlive())) {
+            mPoller = null;
+            return;
+        }
         keepScreenOn(false);
-        stopTestNative();
         stopPoller();
+        stopTestNative();
         updateReportUI();
         setButtonsEnabled(false);
     }
@@ -220,6 +325,9 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if (mPoller == ReportPoller.this) {
+                        mPoller = null;
+                    }
                     boolean running = isRunningNative();
                     keepScreenOn(running);
                     setButtonsEnabled(running);
@@ -240,10 +348,20 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
 
     private void saveReportToFile(String report) {
         File dir = getExternalFilesDir(null);
-        if (dir == null) {
-            return;
+        File outFile;
+        if (mReportFilePath != null && !mReportFilePath.isEmpty()) {
+            File candidate = new File(mReportFilePath);
+            if (candidate.isAbsolute() || dir == null) {
+                outFile = candidate;
+            } else {
+                outFile = new File(dir, mReportFilePath);
+            }
+        } else {
+            if (dir == null) {
+                return;
+            }
+            outFile = new File(dir, REPORT_FILENAME);
         }
-        File outFile = new File(dir, REPORT_FILENAME);
         try (FileOutputStream fos = new FileOutputStream(outFile)) {
             fos.write(report.getBytes(StandardCharsets.UTF_8));
             Log.i(TAG, "Saved MMAP timestamp report to: " + outFile.getAbsolutePath());
