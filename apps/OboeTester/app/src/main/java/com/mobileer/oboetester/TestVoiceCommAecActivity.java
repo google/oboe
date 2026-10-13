@@ -437,9 +437,7 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             mPhaseStandbyCheckBox.setChecked(intent.getBooleanExtra(KEY_STANDBY, true));
         }
         String customFile = intent.getStringExtra(IntentBasedTestSupport.KEY_FILE_NAME);
-        if (customFile != null && !customFile.isEmpty()) {
-            mReportFilePath = customFile;
-        }
+        mReportFilePath = (customFile != null && !customFile.isEmpty()) ? customFile : null;
         mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
         if (mAutoRun) {
             startTest();
@@ -603,6 +601,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
 
     private void stopTest() {
         stopAuditionPlayback();
+        if (!mIsRunning && mWorkerThread == null && (mPoller == null || !mPoller.isAlive())) {
+            mPoller = null;
+            return;
+        }
+        keepScreenOn(false);
+        stopPoller();
         mWorkerEnabled = false;
         if (mWorkerThread != null) {
             mWorkerThread.interrupt();
@@ -613,8 +617,6 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
             mWorkerThread = null;
         }
         mIsRunning = false;
-        stopPoller();
-        keepScreenOn(false);
         updateReportUI();
         setButtonsEnabled(false);
     }

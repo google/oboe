@@ -930,16 +930,23 @@ bool TestMmapTimestamp::runUntilUnalignedPosition(int64_t cycleBaseHw,
     }
     const int32_t minRem = std::min(bufferCapacity / 6, std::max(framesPerBurst * 2, 96));
     const int32_t maxRem = (mStream->getDirection() == Direction::Input)
-            ? std::max(minRem + framesPerBurst, bufferCapacity / 2)
+            ? std::max(minRem + framesPerBurst * 2, bufferCapacity / 3)
             : (bufferCapacity - minRem);
-    for (int32_t attempt = 0; attempt < 50 && mThreadEnabled.load(); ++attempt) {
+    for (int32_t attempt = 0; attempt < 60 && mThreadEnabled.load(); ++attempt) {
         const int64_t hw = (mStream->getDirection() == Direction::Output)
                 ? mStream->getFramesRead()
                 : mStream->getFramesWritten();
         const int64_t rem = (bufferCapacity > 0)
                 ? (std::max<int64_t>(0, hw - cycleBaseHw) % bufferCapacity)
                 : 0;
-        if (rem >= minRem && rem <= maxRem) {
+        int64_t tsPos = 0;
+        int64_t tsTime = 0;
+        const Result tsRes = mStream->getTimestamp(CLOCK_MONOTONIC, &tsPos, &tsTime);
+        const int64_t nowNs = AudioClock::getNanoseconds();
+        const bool tsFresh = (tsRes == Result::OK) &&
+                (nowNs >= tsTime) &&
+                (nowNs - tsTime <= 45LL * NANOS_PER_MILLISECOND);
+        if (rem >= minRem && rem <= maxRem && (tsFresh || attempt >= 40)) {
             return true;
         }
         AudioClock::sleepForNanos(3 * NANOS_PER_MILLISECOND);
@@ -983,8 +990,8 @@ int64_t TestMmapTimestamp::projectTimestampToHostTime(const TimestampSample &s,
         return s.tsPosition;
     }
     const int64_t dtNs = s.hostTimeNs - s.tsTimeNs;
-    // Compensate for timestamp age within a sane window ([0ms, +50ms])
-    if (dtNs >= 0 && dtNs <= 50LL * NANOS_PER_MILLISECOND) {
+    // Compensate for timestamp age within a sane window ([0ms, +150ms])
+    if (dtNs >= 0 && dtNs <= 150LL * NANOS_PER_MILLISECOND) {
         const int64_t ageFrames = (dtNs * sampleRate) / NANOS_PER_SECOND;
         return s.tsPosition + ageFrames;
     }
@@ -1048,7 +1055,7 @@ void TestMmapTimestamp::runRapidCyclesCheck(Direction direction,
 
     for (int32_t cycle = 1; cycle <= kRapidCycleCount && mThreadEnabled.load(); ++cycle) {
         const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
-        const int32_t minRunMs = (cycle == 1) ? 150 : 70;
+        const int32_t minRunMs = (cycle == 1) ? 120 : 45;
         if (!runUntilUnalignedPosition(cycleBaseHw, minRunMs, capacity, burst)) {
             break;
         }
@@ -1318,7 +1325,7 @@ void TestMmapTimestamp::runStandbyResumeCheck(Direction direction,
     }
 
     const int64_t cycleRunStartNs = AudioClock::getNanoseconds();
-    if (!runUntilUnalignedPosition(0, 160, capacity, burst)) {
+    if (!runUntilUnalignedPosition(0, 120, capacity, burst)) {
         return;
     }
 

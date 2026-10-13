@@ -171,9 +171,7 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
             mPhaseStandbyCheckBox.setChecked(intent.getBooleanExtra(KEY_STANDBY, true));
         }
         String customFile = intent.getStringExtra(IntentBasedTestSupport.KEY_FILE_NAME);
-        if (customFile != null && !customFile.isEmpty()) {
-            mReportFilePath = customFile;
-        }
+        mReportFilePath = (customFile != null && !customFile.isEmpty()) ? customFile : null;
         mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
         if (mAutoRun) {
             startTest();
