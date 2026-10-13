@@ -345,6 +345,26 @@ public:
         oboeCallbackProxy->setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
+    int32_t getLatencyTunerState() {
+        return oboeCallbackProxy->getLatencyTunerState();
+    }
+
+    int32_t getLatencyTunerBumpUpCount() {
+        return oboeCallbackProxy->getLatencyTunerBumpUpCount();
+    }
+
+    int32_t getLatencyTunerStepDownCount() {
+        return oboeCallbackProxy->getLatencyTunerStepDownCount();
+    }
+
+    int32_t getLatencyTunerSuppressedXRunCount() {
+        return oboeCallbackProxy->getLatencyTunerSuppressedXRunCount();
+    }
+
+    int32_t getLatencyTunerEffectiveMinBufferSize() {
+        return oboeCallbackProxy->getLatencyTunerEffectiveMinBufferSize();
+    }
+
     int32_t setBufferSizeInFrames(int streamIndex, int threshold);
 
     virtual void setupMemoryBuffer([[maybe_unused]] std::unique_ptr<uint8_t[]>& buffer,
