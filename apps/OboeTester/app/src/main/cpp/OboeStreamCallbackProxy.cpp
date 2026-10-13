@@ -58,7 +58,8 @@ void OboeStreamCallbackProxy::tuneLatencyIfEnabled(oboe::AudioStream *audioStrea
         mLatencyTunerStream = audioStream;
         mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*audioStream);
         if (initialBufferSize > 0) {
-            mLatencyTuner->setMinimumBufferSize(initialBufferSize);
+            int32_t defaultMin = mLatencyTuner->getMinimumBufferSize();
+            mLatencyTuner->setMinimumBufferSize(std::min(initialBufferSize, defaultMin));
             audioStream->setBufferSizeInFrames(initialBufferSize);
         }
         applyLatencyTunerParamsLocked();

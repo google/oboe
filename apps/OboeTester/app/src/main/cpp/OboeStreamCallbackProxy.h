@@ -236,8 +236,14 @@ public:
         if (bufferSize <= 0) return;
         mMinimumBufferSize.store(bufferSize);
         std::lock_guard<std::mutex> lock(mLatencyTunerLock);
-        if (mLatencyTuner != nullptr) {
-            mLatencyTuner->setMinimumBufferSize(bufferSize);
+        if (mLatencyTuner != nullptr && mLatencyTunerStream != nullptr) {
+            int32_t defaultMin = oboe::LatencyTuner::kDefaultNumBursts *
+                    std::max(1, mLatencyTunerStream->getFramesPerBurst());
+            int32_t maxBuf = mLatencyTuner->getMaximumBufferSize();
+            if (maxBuf > 0 && defaultMin > maxBuf) {
+                defaultMin = maxBuf;
+            }
+            mLatencyTuner->setMinimumBufferSize(std::min(bufferSize, defaultMin));
         }
     }
 
