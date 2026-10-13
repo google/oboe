@@ -158,7 +158,6 @@ public class BufferSizeView extends LinearLayout {
                             if (mUpdatingTunerUi) {
                                 return;
                             }
-                            OboeAudioStream.setLatencyTunerStepDownEnabled(isChecked);
                             applyLatencyTunerParamsFromUi();
                         }
                     });
@@ -171,6 +170,8 @@ public class BufferSizeView extends LinearLayout {
                 }
             });
         }
+        OboeAudioStream.setUseLatencyTuner(false);
+        applyLatencyTunerParamsFromUi();
         updateLatencyTunerWidgets();
 
         mNumBursts = DEFAULT_NUM_BURSTS;
@@ -230,13 +231,16 @@ public class BufferSizeView extends LinearLayout {
             if (framesPerBurst > 0) mFramesPerBurst = framesPerBurst;
         }
         mUpdatingTunerUi = true;
-        if (mCheckBoxLatencyTuner != null) {
-            mCheckBoxLatencyTuner.setChecked(OboeAudioStream.isLatencyTunerEnabled());
+        try {
+            if (mCheckBoxLatencyTuner != null) {
+                mCheckBoxLatencyTuner.setChecked(OboeAudioStream.isLatencyTunerEnabled());
+            }
+            if (mCheckBoxTunerStepDown != null) {
+                mCheckBoxTunerStepDown.setChecked(OboeAudioStream.isLatencyTunerStepDownEnabled());
+            }
+        } finally {
+            mUpdatingTunerUi = false;
         }
-        if (mCheckBoxTunerStepDown != null) {
-            mCheckBoxTunerStepDown.setChecked(OboeAudioStream.isLatencyTunerStepDownEnabled());
-        }
-        mUpdatingTunerUi = false;
         updateLatencyTunerWidgets();
         updateBufferSize();
     }

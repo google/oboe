@@ -381,19 +381,11 @@ abstract class OboeAudioStream extends AudioStreamBase {
     }
     private static native void setUsePartialDataCallbackNative(boolean usePartialDataCallback);
 
-    private static boolean sLatencyTunerStepDownEnabled = false;
-
     public static native void setUseLatencyTuner(boolean enabled);
 
     public static native boolean isLatencyTunerEnabled();
 
-    public static void setLatencyTunerStepDownEnabled(boolean enabled) {
-        sLatencyTunerStepDownEnabled = enabled;
-    }
-
-    public static boolean isLatencyTunerStepDownEnabled() {
-        return sLatencyTunerStepDownEnabled;
-    }
+    public static native boolean isLatencyTunerStepDownEnabled();
 
     public static native void setLatencyTunerParams(
             int idleCount,

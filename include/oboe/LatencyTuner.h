@@ -44,31 +44,31 @@ public:
     /**
      * Internal state of the LatencyTuner state machine.
      */
-    enum class State {
+    enum class State : int32_t {
         /**
          * Initial grace period after construction or reset(). XRuns during this
          * window are ignored and the baseline xRun count is latched at the end
          * of the window.
          */
-        Idle,
+        Idle = 0,
         /**
          * Actively monitoring getXRunCount() for underruns.
          */
-        Active,
+        Active = 1,
         /**
-         * Cooldown window after changing the buffer size. Additional xRun
+         * Cooldown window after increasing the buffer size. Additional xRun
          * increments from the same underrun episode are absorbed while the new
          * buffer size takes effect.
          */
-        Settling,
+        Settling = 2,
         /**
          * The stream buffer size has reached maximumBufferSize (or capacity).
          */
-        AtMax,
+        AtMax = 3,
         /**
          * Latency tuning is not supported on this stream (e.g. OpenSL ES).
          */
-        Unsupported
+        Unsupported = 4
     };
 
     /**
@@ -119,7 +119,14 @@ public:
      * @param bufferSize
      */
     void setMinimumBufferSize(int32_t bufferSize) {
-        mMinimumBufferSize.store(bufferSize);
+        int32_t clamped = (bufferSize < 0) ? 0 : bufferSize;
+        mMinimumBufferSize.store(clamped);
+        mDynamicMinimumBufferSize.store(0);
+        int32_t maxBuf = mMaxBufferSize.load();
+        if (maxBuf <= 0 || clamped < maxBuf) {
+            State expected = State::AtMax;
+            mState.compare_exchange_strong(expected, State::Active);
+        }
     }
 
     int32_t getMinimumBufferSize() const {
@@ -131,10 +138,16 @@ public:
      * @param maxBufferSize maximum buffer size in frames
      */
     void setMaximumBufferSize(int32_t maxBufferSize) {
-        mMaxBufferSize.store(maxBufferSize);
-        if (mState.load() == State::AtMax) {
-            mState.store(State::Active);
+        int32_t capacity = mStream.getBufferCapacityInFrames();
+        int32_t clamped = maxBufferSize;
+        if (clamped <= 0) {
+            clamped = (capacity > 0) ? capacity : 0;
+        } else if (capacity > 0 && clamped > capacity) {
+            clamped = capacity;
         }
+        mMaxBufferSize.store(clamped);
+        State expected = State::AtMax;
+        mState.compare_exchange_strong(expected, State::Active);
     }
 
     int32_t getMaximumBufferSize() const {
@@ -173,7 +186,8 @@ public:
         if (mState.load() == State::Idle) {
             mIdleCountDown.store(clamped);
             if (clamped == 0) {
-                mState.store(State::Active);
+                State expected = State::Idle;
+                mState.compare_exchange_strong(expected, State::Active);
             }
         }
     }
@@ -184,7 +198,7 @@ public:
 
     /**
      * Set the number of tune() calls to wait in State::Settling after each buffer size
-     * adjustment before responding to further xRun increases.
+     * increase before responding to further xRun increases.
      *
      * On many Android devices, a single underrun episode increments the stream's xRun counter
      * on multiple consecutive callbacks while the ring buffer recovers, and increasing the
@@ -193,7 +207,7 @@ public:
      *
      * Default is kDefaultSettleCount (8). Set to 0 for legacy behavior (no settling cooldown).
      *
-     * @param settleCount number of callbacks to settle after each buffer size change
+     * @param settleCount number of callbacks to settle after each buffer size increase
      */
     void setSettleCount(int32_t settleCount) {
         mSettleCount.store((settleCount < 0) ? 0 : settleCount);
@@ -263,6 +277,9 @@ public:
      */
     void setStepDownBackoffEnabled(bool enabled) {
         mStepDownBackoffEnabled.store(enabled);
+        if (!enabled) {
+            mDynamicMinimumBufferSize.store(0);
+        }
     }
 
     bool isStepDownBackoffEnabled() const {
@@ -353,4 +370,3 @@ private:
 } // namespace oboe
 
 #endif // OBOE_LATENCY_TUNER_
-

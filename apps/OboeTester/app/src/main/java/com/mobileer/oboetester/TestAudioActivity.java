@@ -643,6 +643,7 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             });
         }
         OboeAudioStream.setHangTimeMillis(0);
+        OboeAudioStream.setUseLatencyTuner(false);
 
         mStreamSniffer = new MyStreamSniffer();
 
@@ -1178,7 +1179,8 @@ abstract class TestAudioActivity extends AppCompatActivity implements AudioManag
             int framesPerBurst = streamTester.getCurrentAudioStream().getFramesPerBurst();
             status.framesPerCallback = getFramesPerCallback();
             report.append("timestamp.latency = " + latencyStatistics.dump() + "\n");
-            if (OboeAudioStream.isLatencyTunerEnabled() || status.latencyTunerState >= 0) {
+            if (!streamContext.isInput()
+                    && (OboeAudioStream.isLatencyTunerEnabled() || status.latencyTunerState >= 0)) {
                 report.append(
                         "latency.tuner.enabled = "
                                 + OboeAudioStream.isLatencyTunerEnabled()

@@ -75,11 +75,13 @@ public abstract class AudioStreamBase {
         status.callbackTimeStr = getCallbackTimeStr();
         status.cpuLoad = getCpuLoad();
         status.state = getState();
-        status.latencyTunerState = getLatencyTunerState();
-        status.latencyTunerBumpUpCount = getLatencyTunerBumpUpCount();
-        status.latencyTunerStepDownCount = getLatencyTunerStepDownCount();
-        status.latencyTunerSuppressedXRunCount = getLatencyTunerSuppressedXRunCount();
-        status.latencyTunerEffectiveMinBufferSize = getLatencyTunerEffectiveMinBufferSize();
+        if (!isInput()) {
+            status.latencyTunerState = getLatencyTunerState();
+            status.latencyTunerBumpUpCount = getLatencyTunerBumpUpCount();
+            status.latencyTunerStepDownCount = getLatencyTunerStepDownCount();
+            status.latencyTunerSuppressedXRunCount = getLatencyTunerSuppressedXRunCount();
+            status.latencyTunerEffectiveMinBufferSize = getLatencyTunerEffectiveMinBufferSize();
+        }
         mSampleRateMonitor.add(status.framesRead);
         status.measuredRate = mSampleRateMonitor.getRate();
         return status;

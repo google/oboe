@@ -367,7 +367,6 @@ public class IntentBasedTestSupport {
                 bundle.getInt(
                         KEY_TUNER_STEP_DOWN_CALLBACKS, VALUE_DEFAULT_TUNER_STEP_DOWN_CALLBACKS);
         boolean tunerStepDownBackoff = bundle.getBoolean(KEY_TUNER_STEP_DOWN_BACKOFF, true);
-        OboeAudioStream.setLatencyTunerStepDownEnabled(tunerStepDownCallbacks > 0);
         OboeAudioStream.setLatencyTunerParams(
                 tunerIdleCount,
                 tunerSettleCount,

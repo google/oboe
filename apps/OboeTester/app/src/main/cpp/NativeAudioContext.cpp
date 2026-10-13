@@ -396,6 +396,9 @@ int32_t ActivityContext::setBufferSizeInFrames(int streamIndex, int threshold) {
         auto result = oboeStream->setBufferSizeInFrames(threshold);
         if (result) {
             mBufferSizeInFrames = result.value();
+            if (oboeStream->getDirection() == oboe::Direction::Output) {
+                oboeCallbackProxy->setMinimumBufferSize(result.value());
+            }
         }
         return (!result) ? (int32_t) result.error() : result.value();
     }
