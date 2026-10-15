@@ -83,7 +83,7 @@
                 android:layout_marginEnd="8dp"
                 android:checked="true"
                 android:singleLine="true"
-                android:text="4-Phase AEC + RTL"
+                android:text="AEC + RTL (Phases 1-4)"
                 android:textSize="12sp" />
 
             <CheckBox
