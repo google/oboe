@@ -1250,6 +1250,12 @@ Java_com_mobileer_oboetester_TestErrorCallbackActivity_getCallbackMagic(
     return sErrorCallbackTester.getCallbackMagic();
 }
 
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestErrorCallbackActivity_getCallbackError(
+        JNIEnv *env, jobject instance) {
+    return sErrorCallbackTester.getCallbackError();
+}
+
 static TestRoutingCrash sRoutingCrash;
 
 JNIEXPORT jint JNICALL

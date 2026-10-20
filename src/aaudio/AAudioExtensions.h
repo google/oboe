@@ -204,6 +204,10 @@ public:
         return mLibLoader != nullptr && mLibLoader->builder_setPartialDataCallback != nullptr;
     }
 
+    bool isRoutingChangedCallbackSupported() {
+        return mLibLoader != nullptr && mLibLoader->builder_setRoutingChangedCallback != nullptr;
+    }
+
 private:
     bool initMMapPolicy() {
         if (mLibLoader == nullptr || mLibLoader->open() != 0) {
