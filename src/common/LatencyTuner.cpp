@@ -75,23 +75,19 @@ Result LatencyTuner::tune() {
     const int32_t currentXRuns = xRunCountResult.value();
     const int32_t xRunDelta = currentXRuns - mPreviousXRuns;
 
-    // In Idle state, absorb any startup / post-reset xRuns and re-baseline at the end.
+    // In Idle state, absorb any startup / post-reset xRuns and re-baseline on every callback.
+    // Only tune() leaves Idle, so the baseline is always latched before monitoring starts.
     if (mState.load() == State::Idle) {
-        if (mIdleCountDown.load() > 0) {
-            if (xRunDelta > 0) {
-                mSuppressedXRunCount.fetch_add(xRunDelta);
-            }
-            mPreviousXRuns = currentXRuns;
-            mPendingXRunEvents = 0;
-            if (mIdleCountDown.fetch_sub(1) - 1 <= 0) {
-                mIdleCountDown.store(0);
-                State expected = State::Idle;
-                mState.compare_exchange_strong(expected, State::Active);
-            }
-            return Result::OK;
+        if (xRunDelta > 0) {
+            mSuppressedXRunCount.fetch_add(xRunDelta);
         }
-        State expected = State::Idle;
-        mState.compare_exchange_strong(expected, State::Active);
+        mPreviousXRuns = currentXRuns;
+        mPendingXRunEvents = 0;
+        if (++mIdleCallbackCount >= mIdleCount.load()) {
+            State expected = State::Idle;
+            mState.compare_exchange_strong(expected, State::Active);
+        }
+        return Result::OK;
     }
 
     // In Settling state after a buffer size increase, absorb additional xRun increments
@@ -272,7 +268,10 @@ Result LatencyTuner::tune() {
                             mStepDownCount.fetch_add(1);
                             mSteppedDownRecently = true;
                             mState.store(State::Active);
-                        } else if (mStepDownBackoffEnabled.load()) {
+                        } else {
+                            // The stream refused to shrink (e.g. HAL minimum or burst
+                            // quantization). Record the floor, independent of step-down backoff,
+                            // so later quiet windows do not keep calling setBufferSizeInFrames().
                             mDynamicMinimumBufferSize.store(oldBufferSize);
                         }
                     }
@@ -295,7 +294,7 @@ void LatencyTuner::requestReset() {
 
 void LatencyTuner::reset() {
     int32_t idleCount = mIdleCount.load();
-    mIdleCountDown.store(idleCount);
+    mIdleCallbackCount = 0;
     mSettleCountDown = 0;
     mPendingXRunEvents = 0;
     mCalmCallbackCount = 0;

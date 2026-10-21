@@ -772,6 +772,7 @@ JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_OboeAudioStream_setUseLatencyTuner(
         JNIEnv * /*env*/, jclass /*type*/, jboolean enabled) {
     OboeStreamCallbackProxy::setLatencyTunerEnabled(enabled);
+    engine.getCurrentActivity()->updateLatencyTuner();
 }
 
 JNIEXPORT jboolean JNICALL

@@ -144,8 +144,8 @@ public class BufferSizeView extends LinearLayout {
                             if (mUpdatingTunerUi) {
                                 return;
                             }
-                            OboeAudioStream.setUseLatencyTuner(isChecked);
                             applyLatencyTunerParamsFromUi();
+                            OboeAudioStream.setUseLatencyTuner(isChecked);
                             updateLatencyTunerWidgets();
                         }
                     });
@@ -170,8 +170,8 @@ public class BufferSizeView extends LinearLayout {
                 }
             });
         }
-        OboeAudioStream.setUseLatencyTuner(false);
         applyLatencyTunerParamsFromUi();
+        OboeAudioStream.setUseLatencyTuner(false);
         updateLatencyTunerWidgets();
 
         mNumBursts = DEFAULT_NUM_BURSTS;

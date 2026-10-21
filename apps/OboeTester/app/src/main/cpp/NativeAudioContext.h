@@ -345,6 +345,16 @@ public:
         oboeCallbackProxy->setNotifyWorkloadIncreaseEnabled(enabled);
     }
 
+    void updateLatencyTuner() {
+        std::shared_ptr<oboe::AudioStream> outputStream = getOutputStream();
+        if (OboeStreamCallbackProxy::isLatencyTunerEnabled() && outputStream != nullptr) {
+            oboeCallbackProxy->createLatencyTuner(outputStream.get());
+            mBufferSizeInFrames = outputStream->getBufferSizeInFrames();
+        } else {
+            oboeCallbackProxy->destroyLatencyTuner();
+        }
+    }
+
     int32_t getLatencyTunerState() {
         return oboeCallbackProxy->getLatencyTunerState();
     }

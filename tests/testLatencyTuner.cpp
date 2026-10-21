@@ -776,11 +776,23 @@ TEST_F(LatencyTunerTest, ExternalBufferSizeDecreaseWhileAtMaxResumesTuningOnXRun
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
     EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
 
-    // Bump again to 4 * kBurst (AtMax), then call setMinimumBufferSize(2 * kBurst) and verify
-    // it also transitions AtMax -> Active and clears any dynamic floor.
+    // Bump again to 4 * kBurst (AtMax). setMinimumBufferSize() does not change the stream's
+    // buffer size, so the tuner must stay AtMax while the stream is still at maxBufferSize.
     mStream.addXRuns(1);
     tuner.tune();
     ASSERT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    tuner.setMinimumBufferSize(2 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    EXPECT_TRUE(tuner.isAtMaximumBufferSize());
+
+    // Lowering maximumBufferSize to <= the current stream buffer size also stays AtMax.
+    tuner.setMaximumBufferSize(3 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    tuner.setMaximumBufferSize(4 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+
+    // Once the stream buffer size is lowered externally, setMinimumBufferSize() leaves AtMax.
+    mStream.setBufferSizeInFrames(2 * kBurst);
     tuner.setMinimumBufferSize(2 * kBurst);
     EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
 }
@@ -807,6 +819,112 @@ TEST_F(LatencyTunerTest, SubBurstDecrementClampedToMinFloorStepsDown) {
     EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+    EXPECT_EQ(tuner.getStepDownCount(), 1);
+}
+
+TEST_F(LatencyTunerTest, SetIdleCountZeroMidIdleAbsorbsStartupXRuns) {
+    // 1. Calling setIdleCount(0) immediately after construction after startup xRuns.
+    {
+        LatencyTuner tuner(mStream);
+        mStream.addXRuns(3);
+        tuner.setIdleCount(0);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::Idle);
+
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+        EXPECT_EQ(tuner.getSuppressedXRunCount(), 3);
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+        EXPECT_EQ(tuner.getBumpUpCount(), 0);
+    }
+
+    // 2. Calling setIdleCount(0) mid-Idle after startup xRuns.
+    LatencyTuner tuner(mStream); // Idle window of 8 callbacks
+
+    tuner.tune();
+    tuner.tune();
+    mStream.addXRuns(3); // Startup xRuns that occur while still Idle.
+
+    // setIdleCount() never changes state on the caller thread.
+    tuner.setIdleCount(0);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Idle);
+
+    // The next tune() absorbs the startup xRuns, re-latches the baseline and goes Active.
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+    EXPECT_EQ(tuner.getSuppressedXRunCount(), 3);
+
+    // No new xRuns, so no bump.
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
+    EXPECT_EQ(tuner.getBumpUpCount(), 0);
+}
+
+TEST_F(LatencyTunerTest, SetIdleCountSameValueMidIdleDoesNotExtendWindow) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(4);
+
+    tuner.tune();
+    tuner.tune();
+    // Re-applying the same value (e.g. OboeTester re-applies all params) must not restart the window.
+    tuner.setIdleCount(4);
+    tuner.tune();
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Idle);
+    tuner.tune(); // 4th Idle callback since reset()
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+}
+
+TEST_F(LatencyTunerTest, LargerIdleCountAfterConstructionIsHonored) {
+    LatencyTuner tuner(mStream); // Constructor reset() uses the default idle count (8).
+    tuner.setIdleCount(12);
+
+    for (int i = 0; i < 11; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::Idle);
+    }
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+
+    // Shortening an active Idle window after extending it takes effect on the next tune().
+    tuner.setIdleCount(100);
+    tuner.requestReset();
+    for (int i = 0; i < 10; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::Idle);
+    }
+    tuner.setIdleCount(3);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+}
+
+TEST_F(LatencyTunerTest, StepDownStopsRetryingWhenStreamCannotShrinkWithBackoffDisabled) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+    tuner.setCallbacksBeforeStepDown(2);
+    tuner.setStepDownBackoffEnabled(false);
+    tuner.setMinimumBufferSize(0); // Below what the stream accepts (FakeAudioStream clamps to 1 burst).
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst
+
+    // 2 quiet callbacks step down to 1 burst, the smallest size the stream accepts.
+    tuner.tune();
+    tuner.tune();
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), kBurst);
+    ASSERT_EQ(tuner.getStepDownCount(), 1);
+
+    // The next quiet window requests 0 frames, which the stream clamps back to 1 burst.
+    tuner.tune();
+    tuner.tune();
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), kBurst);
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), kBurst);
+
+    // Later quiet windows must not keep calling setBufferSizeInFrames().
+    int32_t callsBefore = mStream.getSetBufferSizeCallCount();
+    for (int i = 0; i < 20; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    EXPECT_EQ(mStream.getSetBufferSizeCallCount(), callsBefore);
     EXPECT_EQ(tuner.getStepDownCount(), 1);
 }
 

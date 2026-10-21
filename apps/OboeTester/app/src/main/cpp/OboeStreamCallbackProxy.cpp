@@ -28,11 +28,38 @@ std::atomic<int32_t> OboeStreamCallbackProxy::sTunerXRunThreshold{1};
 std::atomic<int32_t> OboeStreamCallbackProxy::sTunerCallbacksBeforeStepDown{0};
 std::atomic<bool> OboeStreamCallbackProxy::sTunerStepDownBackoffEnabled{true};
 
-void OboeStreamCallbackProxy::clearLatencyTuner() {
-    mMinimumBufferSize.store(0);
+void OboeStreamCallbackProxy::createLatencyTuner(oboe::AudioStream *audioStream) {
+    if (audioStream == nullptr || audioStream->getDirection() != oboe::Direction::Output) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(mLatencyTunerLock);
+    mLatencyTunerStream = audioStream;
+    mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*audioStream);
+    int32_t userMin = mMinimumBufferSize.load();
+    if (userMin > 0) {
+        int32_t defaultMin = mLatencyTuner->getMinimumBufferSize();
+        int32_t targetMin = std::min(userMin, defaultMin);
+        mLatencyTuner->setMinimumBufferSize(targetMin);
+        if (targetMin < defaultMin) {
+            audioStream->setBufferSizeInFrames(targetMin);
+        }
+    }
+    applyLatencyTunerParamsLocked();
+    sLatencyTunerParamsDirty.store(false);
+    sLatencyTunerResetRequested.store(false);
+    updateLatencyTunerTelemetryLocked();
+}
+
+void OboeStreamCallbackProxy::destroyLatencyTuner() {
     std::lock_guard<std::mutex> lock(mLatencyTunerLock);
     mLatencyTuner.reset();
     mLatencyTunerStream = nullptr;
+    resetLatencyTunerTelemetry();
+}
+
+void OboeStreamCallbackProxy::clearLatencyTuner() {
+    mMinimumBufferSize.store(0);
+    destroyLatencyTuner();
 }
 
 void OboeStreamCallbackProxy::applyLatencyTunerParamsLocked() {
@@ -44,36 +71,44 @@ void OboeStreamCallbackProxy::applyLatencyTunerParamsLocked() {
     mLatencyTuner->setStepDownBackoffEnabled(sTunerStepDownBackoffEnabled.load());
 }
 
+void OboeStreamCallbackProxy::updateLatencyTunerTelemetryLocked() {
+    if (mLatencyTuner == nullptr) {
+        resetLatencyTunerTelemetry();
+        return;
+    }
+    mCachedLatencyTunerState.store(static_cast<int32_t>(mLatencyTuner->getState()));
+    mCachedLatencyTunerBumpUpCount.store(mLatencyTuner->getBumpUpCount());
+    mCachedLatencyTunerStepDownCount.store(mLatencyTuner->getStepDownCount());
+    mCachedLatencyTunerSuppressedXRunCount.store(mLatencyTuner->getSuppressedXRunCount());
+    mCachedLatencyTunerEffectiveMinBufferSize.store(
+            mLatencyTuner->getEffectiveMinimumBufferSize());
+}
+
+void OboeStreamCallbackProxy::resetLatencyTunerTelemetry() {
+    mCachedLatencyTunerState.store(-1);
+    mCachedLatencyTunerBumpUpCount.store(0);
+    mCachedLatencyTunerStepDownCount.store(0);
+    mCachedLatencyTunerSuppressedXRunCount.store(0);
+    mCachedLatencyTunerEffectiveMinBufferSize.store(0);
+}
+
 void OboeStreamCallbackProxy::tuneLatencyIfEnabled(oboe::AudioStream *audioStream) {
     if (!sLatencyTunerEnabled.load() || audioStream == nullptr
             || audioStream->getDirection() != oboe::Direction::Output) {
         return;
     }
     std::unique_lock<std::mutex> lock(mLatencyTunerLock, std::try_to_lock);
-    if (!lock.owns_lock()) {
+    if (!lock.owns_lock() || mLatencyTuner == nullptr || mLatencyTunerStream != audioStream) {
         return;
     }
-    if (mLatencyTuner == nullptr || mLatencyTunerStream != audioStream) {
-        int32_t initialBufferSize = mMinimumBufferSize.load();
-        mLatencyTunerStream = audioStream;
-        mLatencyTuner = std::make_unique<oboe::LatencyTuner>(*audioStream);
-        if (initialBufferSize > 0) {
-            int32_t defaultMin = mLatencyTuner->getMinimumBufferSize();
-            mLatencyTuner->setMinimumBufferSize(std::min(initialBufferSize, defaultMin));
-            audioStream->setBufferSizeInFrames(initialBufferSize);
-        }
+    if (sLatencyTunerParamsDirty.exchange(false)) {
         applyLatencyTunerParamsLocked();
-        sLatencyTunerParamsDirty.store(false);
-        sLatencyTunerResetRequested.store(false);
-    } else {
-        if (sLatencyTunerParamsDirty.exchange(false)) {
-            applyLatencyTunerParamsLocked();
-        }
-        if (sLatencyTunerResetRequested.exchange(false)) {
-            mLatencyTuner->requestReset();
-        }
+    }
+    if (sLatencyTunerResetRequested.exchange(false)) {
+        mLatencyTuner->requestReset();
     }
     mLatencyTuner->tune();
+    updateLatencyTunerTelemetryLocked();
 }
 
 void OboeStreamCallbackProxy::preDataCallback(oboe::AudioStream *audioStream,

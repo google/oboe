@@ -263,6 +263,10 @@ int ActivityContext::open(jint nativeApi,
     } else {
         mOboeStreams[streamIndex] = oboeStream; // save shared_ptr
 
+        if (!isInput) {
+            updateLatencyTuner();
+        }
+
         mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();

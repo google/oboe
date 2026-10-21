@@ -122,11 +122,7 @@ public:
         int32_t clamped = (bufferSize < 0) ? 0 : bufferSize;
         mMinimumBufferSize.store(clamped);
         mDynamicMinimumBufferSize.store(0);
-        int32_t maxBuf = mMaxBufferSize.load();
-        if (maxBuf <= 0 || clamped < maxBuf) {
-            State expected = State::AtMax;
-            mState.compare_exchange_strong(expected, State::Active);
-        }
+        leaveAtMaxIfBelow(mMaxBufferSize.load());
     }
 
     int32_t getMinimumBufferSize() const {
@@ -146,8 +142,7 @@ public:
             clamped = capacity;
         }
         mMaxBufferSize.store(clamped);
-        State expected = State::AtMax;
-        mState.compare_exchange_strong(expected, State::Active);
+        leaveAtMaxIfBelow(clamped);
     }
 
     int32_t getMaximumBufferSize() const {
@@ -178,18 +173,15 @@ public:
      *
      * Default is kDefaultIdleCount (8). Set to 0 to disable the startup grace period.
      *
+     * The window is measured in tune() calls since construction or the last reset() and is
+     * re-evaluated by tune() on every call, so changing it while in State::Idle shortens or
+     * extends the current window, and re-applying the same value has no effect. Only tune()
+     * leaves State::Idle, after absorbing pending xRuns and re-latching the xRun baseline.
+     *
      * @param idleCount number of callbacks to stay idle after reset
      */
     void setIdleCount(int32_t idleCount) {
-        int32_t clamped = (idleCount < 0) ? 0 : idleCount;
-        mIdleCount.store(clamped);
-        if (mState.load() == State::Idle) {
-            mIdleCountDown.store(clamped);
-            if (clamped == 0) {
-                State expected = State::Idle;
-                mState.compare_exchange_strong(expected, State::Active);
-            }
-        }
+        mIdleCount.store((idleCount < 0) ? 0 : idleCount);
     }
 
     int32_t getIdleCount() const {
@@ -318,8 +310,11 @@ public:
     }
 
     /**
-     * @return the effective minimum buffer size in frames, including any dynamic floor raised by
-     *         step-down backoff hysteresis
+     * @return the effective minimum buffer size in frames: the larger of getMinimumBufferSize()
+     *         and the dynamic floor. The dynamic floor is raised by step-down backoff hysteresis,
+     *         or (regardless of backoff) when a step-down request is not honored because the
+     *         stream cannot shrink below its current size. It is cleared by requestReset(),
+     *         setMinimumBufferSize() and setStepDownBackoffEnabled(false).
      */
     int32_t getEffectiveMinimumBufferSize() const {
         int32_t minBuf = mMinimumBufferSize.load();
@@ -342,12 +337,24 @@ private:
      */
     void reset();
 
+    /**
+     * Leave State::AtMax only if the stream's current buffer size is below maxBufferSize.
+     * This mirrors the AtMax exit condition used by tune().
+     */
+    void leaveAtMaxIfBelow(int32_t maxBufferSize) {
+        if (mState.load() == State::AtMax && maxBufferSize > 0
+                && mStream.getBufferSizeInFrames() < maxBufferSize) {
+            State expected = State::AtMax;
+            mState.compare_exchange_strong(expected, State::Active);
+        }
+    }
+
     AudioStream           &mStream;
     std::atomic<State>    mState{State::Idle};
     std::atomic<int32_t>  mMaxBufferSize{0};
     int32_t               mPreviousXRuns = 0;
     std::atomic<int32_t>  mIdleCount{kDefaultIdleCount};
-    std::atomic<int32_t>  mIdleCountDown{0};
+    int32_t               mIdleCallbackCount = 0; // only accessed by tune() and reset()
     std::atomic<int32_t>  mSettleCount{kDefaultSettleCount};
     int32_t               mSettleCountDown = 0;
     std::atomic<int32_t>  mXRunThreshold{1};
