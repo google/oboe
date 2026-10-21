@@ -198,6 +198,79 @@ public:
         mNotifyWorkloadIncreaseEnabled = enabled;
     }
 
+    static void setLatencyTunerEnabled(bool enabled) {
+        sLatencyTunerEnabled.store(enabled);
+    }
+
+    static bool isLatencyTunerEnabled() {
+        return sLatencyTunerEnabled.load();
+    }
+
+    static bool isLatencyTunerStepDownEnabled() {
+        return sTunerCallbacksBeforeStepDown.load() > 0;
+    }
+
+    static void setLatencyTunerParams(int32_t idleCount,
+                                      int32_t settleCount,
+                                      int32_t xRunThreshold,
+                                      int32_t callbacksBeforeStepDown,
+                                      bool stepDownBackoff) {
+        sTunerIdleCount.store(idleCount);
+        sTunerSettleCount.store(settleCount);
+        sTunerXRunThreshold.store(xRunThreshold);
+        sTunerCallbacksBeforeStepDown.store(callbacksBeforeStepDown);
+        sTunerStepDownBackoffEnabled.store(stepDownBackoff);
+        sLatencyTunerParamsDirty.store(true);
+    }
+
+    static void requestLatencyTunerReset() {
+        sLatencyTunerResetRequested.store(true);
+    }
+
+    void createLatencyTuner(oboe::AudioStream *audioStream);
+
+    void destroyLatencyTuner();
+
+    void clearLatencyTuner();
+
+    void setMinimumBufferSize(int32_t bufferSize) {
+        if (bufferSize <= 0) return;
+        mMinimumBufferSize.store(bufferSize);
+        std::lock_guard<std::mutex> lock(mLatencyTunerLock);
+        if (mLatencyTuner != nullptr && mLatencyTunerStream != nullptr) {
+            int32_t defaultMin = oboe::LatencyTuner::kDefaultNumBursts *
+                    std::max(1, mLatencyTunerStream->getFramesPerBurst());
+            int32_t maxBuf = mLatencyTuner->getMaximumBufferSize();
+            if (maxBuf > 0 && defaultMin > maxBuf) {
+                defaultMin = maxBuf;
+            }
+            mLatencyTuner->setMinimumBufferSize(std::min(bufferSize, defaultMin));
+            updateLatencyTunerTelemetryLocked();
+        }
+    }
+
+    void tuneLatencyIfEnabled(oboe::AudioStream *audioStream);
+
+    int32_t getLatencyTunerState() const {
+        return sLatencyTunerEnabled.load() ? mCachedLatencyTunerState.load() : -1;
+    }
+
+    int32_t getLatencyTunerBumpUpCount() const {
+        return mCachedLatencyTunerBumpUpCount.load();
+    }
+
+    int32_t getLatencyTunerStepDownCount() const {
+        return mCachedLatencyTunerStepDownCount.load();
+    }
+
+    int32_t getLatencyTunerSuppressedXRunCount() const {
+        return mCachedLatencyTunerSuppressedXRunCount.load();
+    }
+
+    int32_t getLatencyTunerEffectiveMinBufferSize() const {
+        return mCachedLatencyTunerEffectiveMinBufferSize.load();
+    }
+
 private:
     void preDataCallback(oboe::AudioStream *audioStream, int numFrames, int numWorkloadVoices);
     void postDataCallback(oboe::AudioStream *audioStream,
@@ -205,6 +278,9 @@ private:
                           int numFrames,
                           int64_t startTimeNanos,
                           int numWorkloadVoices);
+    void applyLatencyTunerParamsLocked();
+    void updateLatencyTunerTelemetryLocked();
+    void resetLatencyTunerTelemetry();
 
     static constexpr double    kNsToMsScaler = 0.000001;
     const std::string          kClassName = "OboeStreamCallbackProxy";
@@ -222,6 +298,25 @@ private:
 
     oboe::AudioStreamDataCallback *mCallback = nullptr;
     static bool                mCallbackReturnStop;
+
+    static std::atomic<bool>    sLatencyTunerEnabled;
+    static std::atomic<bool>    sLatencyTunerResetRequested;
+    static std::atomic<bool>    sLatencyTunerParamsDirty;
+    static std::atomic<int32_t> sTunerIdleCount;
+    static std::atomic<int32_t> sTunerSettleCount;
+    static std::atomic<int32_t> sTunerXRunThreshold;
+    static std::atomic<int32_t> sTunerCallbacksBeforeStepDown;
+    static std::atomic<bool>    sTunerStepDownBackoffEnabled;
+
+    std::mutex                  mLatencyTunerLock;
+    std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
+    oboe::AudioStream          *mLatencyTunerStream = nullptr;
+    std::atomic<int32_t>        mMinimumBufferSize{0};
+    std::atomic<int32_t>        mCachedLatencyTunerState{-1};
+    std::atomic<int32_t>        mCachedLatencyTunerBumpUpCount{0};
+    std::atomic<int32_t>        mCachedLatencyTunerStepDownCount{0};
+    std::atomic<int32_t>        mCachedLatencyTunerSuppressedXRunCount{0};
+    std::atomic<int32_t>        mCachedLatencyTunerEffectiveMinBufferSize{0};
 
     bool                       mIsPartialDataCallback = false;
     static constexpr int       kPartialDataCallbackPercentage = 100;
