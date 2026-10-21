@@ -22,11 +22,17 @@
 using namespace oboe;
 
 oboe::Result TestErrorCallback::open() {
+    if (mStream) {
+        mStream->close();
+    }
+    cleanup();
     mCallbackMagic = 0;
+    mCallbackError = 0;
+    mInitialDeviceIds.clear();
     mDataCallback = std::make_shared<MyDataCallback>();
     mErrorCallback = std::make_shared<MyErrorCallback>(this);
     AudioStreamBuilder builder;
-    oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
+    builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::Float)
             ->setChannelCount(kChannelCount)
@@ -35,9 +41,21 @@ oboe::Result TestErrorCallback::open() {
             ->setErrorCallback(mErrorCallback.get()) // This can lead to a crash or FAIL.
 #else
             ->setDataCallback(mDataCallback)
-            ->setErrorCallback(mErrorCallback) // shared_ptr avoids a crash
+            ->setErrorCallback(mErrorCallback); // shared_ptr avoids a crash
 #endif
-            ->openStream(mStream);
+    if (OboeExtensions::isRoutingChangedCallbackSupported()) {
+        // On newer platforms a legacy stream may be rerouted instead of disconnected,
+        // so the error callback would never fire. Run the same experiment from the
+        // routing callback.
+        mRoutingCallback = std::make_shared<MyRoutingCallback>(this);
+        builder.setRoutingCallback(mRoutingCallback);
+    }
+    oboe::Result result = builder.openStream(mStream);
+    if (result == oboe::Result::OK) {
+        // Remember the initial routing so a routing callback that merely reports
+        // the initial devices is not mistaken for a plug/unplug event.
+        mInitialDeviceIds = mStream->getDeviceIds();
+    }
     return result;
 }
 

@@ -198,6 +198,8 @@ public:
  */
 class AudioStreamRoutingCallback {
 public:
+    virtual ~AudioStreamRoutingCallback() = default;
+
     /**
      * This will be called when the routed devices of the stream are changed.
      *

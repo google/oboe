@@ -38,3 +38,7 @@ bool OboeExtensions::isMMapUsed(oboe::AudioStream *oboeStream){
 bool OboeExtensions::isPartialDataCallbackSupported() {
     return AAudioExtensions::getInstance().isPartialDataCallbackSupported();
 }
+
+bool OboeExtensions::isRoutingChangedCallbackSupported() {
+    return AAudioExtensions::getInstance().isRoutingChangedCallbackSupported();
+}

@@ -62,6 +62,11 @@ public:
      * @returns true if partial data callback is supported.
      */
     static bool isPartialDataCallbackSupported();
+
+    /**
+     * @returns true if routing changed callback is supported.
+     */
+    static bool isRoutingChangedCallbackSupported();
 };
 
 } // namespace oboe
