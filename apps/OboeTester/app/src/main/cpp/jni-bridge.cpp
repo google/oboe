@@ -33,6 +33,7 @@
 #include "TestErrorCallback.h"
 #include "TestRoutingCrash.h"
 #include "TestRapidCycle.h"
+#include "TestMmapTimestamp.h"
 #include "cpu/AudioWorkloadTest.h"
 #include "cpu/AudioWorkloadTestRunner.h"
 #include "ReverseJniEngine.h"
@@ -1708,6 +1709,50 @@ Java_com_mobileer_oboetester_ReverseJniEngine_setAudioBuffer(JNIEnv *env, jobjec
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestDisconnectActivity_getRoutingChangedCount(JNIEnv *env, jobject) {
     return engine.mActivityTestDisconnect.getRoutingChangedCount();
+}
+
+static TestMmapTimestamp sMmapTimestamp;
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_startTestNative(
+        JNIEnv * /*env*/, jobject /*thiz*/,
+        jboolean testOutput, jboolean testInput,
+        jboolean testExclusive, jboolean testShared,
+        jboolean runSteadyState, jboolean runRapidCycles, jboolean runStandbyResume) {
+    TestMmapTimestamp::ConfigFlags flags;
+    flags.testOutput = testOutput;
+    flags.testInput = testInput;
+    flags.testExclusive = testExclusive;
+    flags.testShared = testShared;
+    flags.runSteadyState = runSteadyState;
+    flags.runRapidCycles = runRapidCycles;
+    flags.runStandbyResume = runStandbyResume;
+    return sMmapTimestamp.start(flags);
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_stopTestNative(
+        JNIEnv * /*env*/, jobject /*thiz*/) {
+    return sMmapTimestamp.stop();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_isRunningNative(
+        JNIEnv * /*env*/, jobject /*thiz*/) {
+    return sMmapTimestamp.isRunning();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_getResultNative(
+        JNIEnv * /*env*/, jobject /*thiz*/) {
+    return sMmapTimestamp.getResult();
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_getReportNative(
+        JNIEnv *env, jobject /*thiz*/) {
+    std::string report = sMmapTimestamp.getReport();
+    return env->NewStringUTF(report.c_str());
 }
 
 } // extern "C"
