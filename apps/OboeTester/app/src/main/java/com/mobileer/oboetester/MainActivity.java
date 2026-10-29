@@ -40,13 +40,14 @@ import androidx.core.view.WindowCompat;
 
 public class MainActivity extends BaseOboeTesterActivity {
 
-    private static final String KEY_TEST_NAME = "test";
+    public static final String KEY_TEST_NAME = "test";
     public static final String VALUE_TEST_NAME_LATENCY = "latency";
     public static final String VALUE_TEST_NAME_GLITCH = "glitch";
     public static final String VALUE_TEST_NAME_DATA_PATHS = "data_paths";
     public static final String VALUE_TEST_NAME_OUTPUT = "output";
     public static final String VALUE_TEST_NAME_INPUT = "input";
     public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
+    public static final String VALUE_TEST_NAME_MMAP_TIMESTAMP = "mmap_timestamp";
 
 
     private TextView mCallbackSizeEditor;
@@ -183,6 +184,9 @@ public class MainActivity extends BaseOboeTesterActivity {
                 intent.putExtras(bundle);
             } else if (VALUE_TEST_NAME_CPU_LOAD.equals(testName)) {
                 intent = new Intent(this, DynamicWorkloadActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_MMAP_TIMESTAMP.equals(testName)) {
+                intent = new Intent(this, TestMmapTimestampActivity.class);
                 intent.putExtras(bundle);
             }
         }
