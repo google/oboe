@@ -833,7 +833,7 @@ final class VoipAecTestEngine {
                             f.severity = "FAIL";
                             f.title = "AcousticEchoCanceler.setEnabled(false) failed to bypass echo cancellation";
                             f.whatHappened = "During Phase 3 on VOICE_COMMUNICATION with AcousticEchoCanceler.setEnabled(false), the loudspeaker speech envelope was still suppressed (Correlation < 0.60).";
-                            f.androidContract = "CDD 5.4 / AcousticEchoCanceler API: Disabling AcousticEchoCanceler via setEnabled(false) on a VOICE_COMMUNICATION stream must disable echo cancellation in the HAL/DSP.";
+                            f.androidContract = "Android 17 CDD 5.4.4 [C-1-2] / [C-SR-1]: AcousticEchoCanceler.getEnabled() MUST reflect active/inactive state on non-watch devices, and controllability via AcousticEchoCanceler.setEnabled(false) is STRONGLY_RECOMMENDED to bypass echo cancellation.";
                             f.whyItMatters = "Apps and compliance tests cannot disable echo cancellation when needed, or the HAL is running unreported always-on DSP AEC.";
                             f.howToFix = "Ensure the Audio HAL effect implementation forwards setEnabled(false) to the voice DSP module and bypasses AEC adaptation/subtraction when disabled.";
                             cb.onFinding(
@@ -868,11 +868,23 @@ final class VoipAecTestEngine {
                     Finding f = new Finding();
                     f.id = "VOIP-MMAP-FALLBACK";
                     f.severity = "INFO";
-                    f.title = "Native AAudio VOICE_COMMUNICATION used Legacy (non-MMAP) path";
-                    f.whatHappened = "The device supports AAudio MMAP for general media/low-latency streams, while LowLatency USAGE_VOICE_COMMUNICATION / INPUT_PRESET_VOICE_COMMUNICATION opened on the Legacy AudioFlinger path.";
-                    f.androidContract = "MMAP on VOICE_COMMUNICATION requires both framework mmap_voip_aec support and HAL MMAP VoIP profiles with hardware DSP AEC bound by sessionId; falling back to Legacy AudioFlinger is expected on earlier OS builds or software-AEC devices.";
-                    f.whyItMatters = "Legacy AudioFlinger mixer/capture threads add ~20-60 ms of extra round-trip latency compared to MMAP VoIP.";
-                    f.howToFix = "On builds with mmap_voip_aec enabled, expose MMAP profiles for USAGE_VOICE_COMMUNICATION and INPUT_PRESET_VOICE_COMMUNICATION in the Audio HAL with hardware DSP AEC attached via sessionId.";
+                    f.androidContract = "MMAP on VOICE_COMMUNICATION requires both framework mmap_voip_aec support and HAL MMAP VoIP profiles with hardware DSP AEC bound by sessionId; partial or full fallback is expected when either direction uses a non-MMAP VoIP pipeline.";
+                    if (!row.voipOutMmap && row.voipInMmap) {
+                        f.title = "Native AAudio VOICE_COMMUNICATION used hybrid MMAP path (Out=Legacy, In=MMAP)";
+                        f.whatHappened = "INPUT_PRESET_VOICE_COMMUNICATION capture opened on AAudio MMAP, while USAGE_VOICE_COMMUNICATION playback opened on the non-MMAP VoIP downlink (VOIP_RX / Legacy AudioFlinger) path so hardware DSP AEC receives the speaker echo reference.";
+                        f.whyItMatters = "Capture benefits from zero-IPC MMAP bursts, while the non-MMAP VoIP playback pipeline governs total round-trip latency compared to full-duplex <= 100 ms MMAP VoIP.";
+                        f.howToFix = "To achieve full-duplex MMAP VoIP (<= 100 ms RTL), also route USAGE_VOICE_COMMUNICATION playback to an MMAP profile that feeds the speaker echo reference into hardware DSP AEC.";
+                    } else if (row.voipOutMmap) {
+                        f.title = "Native AAudio VOICE_COMMUNICATION capture used Legacy (non-MMAP) path (Out=MMAP, In=Legacy)";
+                        f.whatHappened = "USAGE_VOICE_COMMUNICATION playback opened on AAudio MMAP, while LowLatency INPUT_PRESET_VOICE_COMMUNICATION capture fell back to the Legacy AudioFlinger RecordThread path.";
+                        f.whyItMatters = "Legacy AudioFlinger capture threads add extra buffering and Binder IPC overhead compared to full-duplex MMAP VoIP.";
+                        f.howToFix = "On builds with mmap_voip_aec enabled, expose an MMAP capture profile for INPUT_PRESET_VOICE_COMMUNICATION in the Audio HAL with hardware DSP AEC attached via sessionId.";
+                    } else {
+                        f.title = "Native AAudio VOICE_COMMUNICATION used Legacy (non-MMAP) path";
+                        f.whatHappened = "The device supports AAudio MMAP for general media/low-latency streams, while both LowLatency USAGE_VOICE_COMMUNICATION playback and INPUT_PRESET_VOICE_COMMUNICATION capture opened on the Legacy AudioFlinger path.";
+                        f.whyItMatters = "Legacy AudioFlinger mixer/capture threads add ~20-60 ms of extra round-trip latency compared to MMAP VoIP.";
+                        f.howToFix = "On builds with mmap_voip_aec enabled, expose MMAP profiles for USAGE_VOICE_COMMUNICATION and INPUT_PRESET_VOICE_COMMUNICATION in the Audio HAL with hardware DSP AEC attached via sessionId.";
+                    }
                     cb.onFinding(
                             f,
                             row.apiLabel,
@@ -1114,7 +1126,7 @@ final class VoipAecTestEngine {
                                 f.severity = "FAIL";
                                 f.title = "Active AEC failed ERLE (>= 15.0 dB) or residual envelope correlation (<= 0.50)";
                                 f.whatHappened = "With AcousticEchoCanceler.setEnabled(true) on VOICE_COMMUNICATION, loudspeaker speech bled into the captured microphone signal over the [0.8s, 5.0s) window.";
-                                f.androidContract = "5-Phase AudioAEC requires self-referenced ERLE >= 15.0 dB (or Dist-to-Floor <= 6.0 dB with ERLE >= 8.0 dB) and Residual Envelope Correlation <= 0.50 on both Java and Native AAudio VoIP paths.";
+                                f.androidContract = "OboeTester / CTS-V diagnostic target: self-referenced ERLE >= 15.0 dB (or Dist-to-Floor <= 6.0 dB with ERLE >= 8.0 dB) and Residual Envelope Correlation <= 0.50 (CDD 5.4.4 correlation gate; dB/ERLE and Native AAudio checks are informational).";
                                 f.whyItMatters = "Poor echo cancellation causes conversational voice agents to hear and transcribe their own TTS output (self-interruption) and causes echo in VoIP calls.";
                                 f.howToFix = "1. Verify that the HAL feeds the speakerphone playback echo_reference into the hardware AEC module for both Legacy and MMAP (USAGE_VOICE_COMMUNICATION) output streams.\n  2. Check for sample-rate or DMA timestamp jumps between output and input streams that prevent the adaptive AEC filter from converging.";
                                 cb.onFinding(
@@ -1135,29 +1147,34 @@ final class VoipAecTestEngine {
                     }
                 }
 
-                // Check 100ms Voice Agent Round-Trip Latency target on Native AAudio
-                double bestVoipRtlMs = (row.voipOnTimestampRtlMs > 0)
-                        ? row.voipOnTimestampRtlMs
-                        : row.voipOffAcousticRtlMs;
-                if (isNative && bestVoipRtlMs > THRESHOLD_VOICE_AGENT_RTL_MS) {
-                    cb.onWarn();
-                    Finding f = new Finding();
-                    f.id = "VOIP-RTL-EXCEEDS-100MS-TARGET";
-                    f.severity = "WARNING";
-                    f.title = "Native AAudio VoIP Round-Trip Latency exceeds 100.0 ms target";
-                    f.whatHappened = "Measured full-duplex round-trip latency on the Native AAudio VOICE_COMMUNICATION path exceeded the 100.0 ms real-time budget.";
-                    f.androidContract = "Low-latency interactive voice agents and VoIP communication target <= 100.0 ms round-trip audio latency.";
-                    f.whyItMatters = "High VoIP path latency delays barge-in detection, degrades AEC filter convergence, and adds noticeable conversational lag.";
-                    f.howToFix = "Ensure VOICE_COMMUNICATION streams use MMAP with small period/burst sizes (<= 5 ms) and avoid large DSP block-buffering queues in the HAL.";
-                    cb.onFinding(
-                            f,
-                            row.apiLabel,
-                            String.format(
-                                    Locale.US,
-                                    "%s: VoIP Acoustic RTL = %.1f ms, VoIP HW Timestamp RTL = %s.",
-                                    row.apiLabel,
-                                    row.voipOffAcousticRtlMs,
-                                    formatMs(row.voipOnTimestampRtlMs)));
+                // Check 100ms Voice Agent Round-Trip Latency target on full-duplex Native MMAP
+                if (isNative && row.voipOutMmap && row.voipInMmap) {
+                    double worstFullDuplexRtlMs =
+                            (row.voipOffAcousticRtlMs > 0 && row.voipOnTimestampRtlMs > 0)
+                                    ? Math.max(row.voipOffAcousticRtlMs, row.voipOnTimestampRtlMs)
+                                    : ((row.voipOffAcousticRtlMs > 0)
+                                            ? row.voipOffAcousticRtlMs
+                                            : row.voipOnTimestampRtlMs);
+                    if (worstFullDuplexRtlMs > THRESHOLD_VOICE_AGENT_RTL_MS) {
+                        cb.onWarn();
+                        Finding f = new Finding();
+                        f.id = "VOIP-RTL-EXCEEDS-100MS-TARGET";
+                        f.severity = "WARNING";
+                        f.title = "Full-duplex Native AAudio MMAP VoIP RTL exceeds 100.0 ms target";
+                        f.whatHappened = "Measured round-trip latency (acoustic or hardware timestamp) on full-duplex Native AAudio MMAP VOICE_COMMUNICATION exceeded the 100.0 ms real-time budget.";
+                        f.androidContract = "Full-duplex AAudio MMAP VOICE_COMMUNICATION (Out=MMAP, In=MMAP) targets <= 100.0 ms end-to-end round-trip audio latency.";
+                        f.whyItMatters = "High VoIP path latency delays barge-in detection, degrades AEC filter convergence, and adds noticeable conversational lag.";
+                        f.howToFix = "Ensure VOICE_COMMUNICATION MMAP profiles use small period/burst sizes (<= 5 ms) and avoid large DSP block-buffering queues in the HAL.";
+                        cb.onFinding(
+                                f,
+                                row.apiLabel,
+                                String.format(
+                                        Locale.US,
+                                        "%s (Out=MMAP, In=MMAP): VoIP Acoustic RTL = %.1f ms, VoIP HW Timestamp RTL = %s.",
+                                        row.apiLabel,
+                                        row.voipOffAcousticRtlMs,
+                                        formatMs(row.voipOnTimestampRtlMs)));
+                    }
                 }
             }
 

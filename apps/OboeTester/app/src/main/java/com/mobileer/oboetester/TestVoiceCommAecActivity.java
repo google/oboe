@@ -1001,9 +1001,12 @@ public class TestVoiceCommAecActivity extends AppCompatActivity {
                         "  - VoIP RTL (AEC OFF)  : %.1fms (TS %s)\n",
                         row.voipOffAcousticRtlMs,
                         formatMs(row.voipOffTimestampRtlMs)));
+                boolean fullDuplexMmap = row.isNative && row.voipOutMmap && row.voipInMmap;
                 out.append(String.format(
                         Locale.US,
-                        "  - VoIP RTL (AEC ON)   : TS %s (<=100ms)\n",
+                        fullDuplexMmap
+                                ? "  - VoIP RTL (AEC ON)   : TS %s (<=100ms)\n"
+                                : "  - VoIP RTL (AEC ON)   : TS %s\n",
                         formatMs(row.voipOnTimestampRtlMs)));
                 out.append(String.format(
                         Locale.US,
