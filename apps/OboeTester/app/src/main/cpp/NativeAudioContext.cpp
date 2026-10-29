@@ -119,11 +119,12 @@ void ActivityContext::close(int32_t streamIndex) {
     std::shared_ptr<oboe::AudioStream> oboeStream = getStream(streamIndex);
     if (oboeStream != nullptr) {
         oboeStream->close();
-        if (oboeStream->getDirection() == oboe::Direction::Output) {
-            oboeCallbackProxy->clearLatencyTuner();
-        }
         LOGD("ActivityContext::%s() delete stream %d ", __func__, streamIndex);
         freeStreamIndex(streamIndex);
+        if (oboeStream->getDirection() == oboe::Direction::Output) {
+            oboeCallbackProxy->clearLatencyTuner(oboeStream.get());
+            updateLatencyTuner();
+        }
     }
 }
 

@@ -15,6 +15,7 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <thread>
 #include <gtest/gtest.h>
@@ -33,7 +34,9 @@ class FakeAudioStream : public AudioStream {
 public:
     FakeAudioStream(int32_t framesPerBurst = 96,
                     int32_t initialBufferSize = 192,
-                    int32_t bufferCapacity = 960) {
+                    int32_t bufferCapacity = 960)
+            : mAtomicBufferSize(initialBufferSize)
+            , mMaxAcceptedBufferSize(bufferCapacity) {
         mFramesPerBurst = framesPerBurst;
         mBufferSizeInFrames = initialBufferSize;
         mBufferCapacityInFrames = bufferCapacity;
@@ -58,46 +61,54 @@ public:
         return Result::OK;
     }
 
+    int32_t getBufferSizeInFrames() override {
+        return mAtomicBufferSize.load();
+    }
+
     ResultWithValue<int32_t> setBufferSizeInFrames(int32_t requestedFrames) override {
-        if (!mSetBufferSizeSupported) {
+        if (!mSetBufferSizeSupported.load()) {
             return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
         }
-        mSetBufferSizeCallCount++;
-        int32_t clamped = std::clamp(requestedFrames, mFramesPerBurst, mBufferCapacityInFrames);
-        if (mQuantizeToBurst && mFramesPerBurst > 0) {
+        mSetBufferSizeCallCount.fetch_add(1);
+        int32_t maxAllowed = std::min(mBufferCapacityInFrames, mMaxAcceptedBufferSize.load());
+        int32_t clamped = std::clamp(requestedFrames, mFramesPerBurst, maxAllowed);
+        if (mQuantizeToBurst.load() && mFramesPerBurst > 0) {
             // Simulate AAudio / HAL rounding buffer size to burst multiples or clamping.
             clamped = ((clamped + mFramesPerBurst - 1) / mFramesPerBurst) * mFramesPerBurst;
-            clamped = std::min(clamped, mBufferCapacityInFrames);
+            clamped = std::min(clamped, maxAllowed);
         }
-        mBufferSizeInFrames = clamped;
-        return ResultWithValue<int32_t>(mBufferSizeInFrames);
+        mAtomicBufferSize.store(clamped);
+        return ResultWithValue<int32_t>(clamped);
     }
 
     ResultWithValue<int32_t> getXRunCount() override {
-        if (!mXRunSupported) {
+        if (!mXRunSupported.load()) {
             return ResultWithValue<int32_t>(Result::ErrorUnimplemented);
         }
-        return ResultWithValue<int32_t>(mXRunCount);
+        return ResultWithValue<int32_t>(mXRunCount.load());
     }
 
-    bool isXRunCountSupported() const override { return mXRunSupported; }
+    bool isXRunCountSupported() const override { return mXRunSupported.load(); }
     AudioApi getAudioApi() const override { return AudioApi::AAudio; }
     void updateFramesWritten() override {}
     void updateFramesRead() override {}
 
-    void addXRuns(int32_t delta = 1) { mXRunCount += delta; }
-    void setXRunCount(int32_t count) { mXRunCount = count; }
-    void setXRunSupported(bool supported) { mXRunSupported = supported; }
-    void setSetBufferSizeSupported(bool supported) { mSetBufferSizeSupported = supported; }
-    void setQuantizeToBurst(bool quantize) { mQuantizeToBurst = quantize; }
-    int32_t getSetBufferSizeCallCount() const { return mSetBufferSizeCallCount; }
+    void addXRuns(int32_t delta = 1) { mXRunCount.fetch_add(delta); }
+    void setXRunCount(int32_t count) { mXRunCount.store(count); }
+    void setXRunSupported(bool supported) { mXRunSupported.store(supported); }
+    void setSetBufferSizeSupported(bool supported) { mSetBufferSizeSupported.store(supported); }
+    void setQuantizeToBurst(bool quantize) { mQuantizeToBurst.store(quantize); }
+    void setMaxAcceptedBufferSize(int32_t maxFrames) { mMaxAcceptedBufferSize.store(maxFrames); }
+    int32_t getSetBufferSizeCallCount() const { return mSetBufferSizeCallCount.load(); }
 
 private:
-    int32_t mXRunCount = 0;
-    int32_t mSetBufferSizeCallCount = 0;
-    bool mXRunSupported = true;
-    bool mSetBufferSizeSupported = true;
-    bool mQuantizeToBurst = false;
+    std::atomic<int32_t> mAtomicBufferSize;
+    std::atomic<int32_t> mMaxAcceptedBufferSize;
+    std::atomic<int32_t> mXRunCount{0};
+    std::atomic<int32_t> mSetBufferSizeCallCount{0};
+    std::atomic<bool> mXRunSupported{true};
+    std::atomic<bool> mSetBufferSizeSupported{true};
+    std::atomic<bool> mQuantizeToBurst{false};
 };
 
 } // namespace
@@ -253,19 +264,39 @@ TEST_F(LatencyTunerTest, CustomXRunThresholdRequiresMultipleEventsBeforeBump) {
     EXPECT_EQ(tuner.tune(), Result::OK);
     ASSERT_EQ(tuner.getState(), LatencyTuner::State::Active);
 
-    // Event 1 (even if xRunCount jumps by 4 in a single callback, it counts as 1 event).
+    // Episode 1 spans 2 consecutive callbacks with xRun increments -> counts as 1 rising-edge episode!
     mStream.addXRuns(4);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    mStream.addXRuns(2);
     EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
     EXPECT_EQ(tuner.getBumpUpCount(), 0);
 
-    // Event 2.
+    // One quiet callback ends Episode 1.
+    EXPECT_EQ(tuner.tune(), Result::OK);
+
+    // Episode 2.
     mStream.addXRuns(1);
     EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 2 * kBurst);
     EXPECT_EQ(tuner.getBumpUpCount(), 0);
 
-    // Event 3 triggers the bump!
+    // If 100+ quiet callbacks pass with step-down disabled, pending episodes decay back to 0
+    // so isolated glitches hours apart do not accumulate into a bump.
+    for (int i = 0; i < 100; ++i) {
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    mStream.addXRuns(1); // New Episode 1 after decay
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(tuner.getBumpUpCount(), 0);
+    EXPECT_EQ(tuner.tune(), Result::OK); // quiet
+
+    mStream.addXRuns(1); // Episode 2
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(tuner.getBumpUpCount(), 0);
+    EXPECT_EQ(tuner.tune(), Result::OK); // quiet
+
+    // Episode 3 within the active window triggers the bump!
     mStream.addXRuns(1);
     EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
@@ -481,8 +512,8 @@ TEST_F(LatencyTunerTest, RealisticWorkloadSimulationComparison) {
     //    dynamic floor at 4 bursts, and remains rock-solid at 4 bursts for the remaining 4,000+ callbacks!
     auto [adaptiveSize, adaptiveBumps, adaptiveStepDowns] = runSimulation(8, 200, true);
     EXPECT_EQ(adaptiveSize, 4 * kBurst);
-    EXPECT_LE(adaptiveBumps, 5);
-    EXPECT_LE(adaptiveStepDowns, 3);
+    EXPECT_EQ(adaptiveBumps, 4);
+    EXPECT_EQ(adaptiveStepDowns, 2);
 }
 
 TEST_F(LatencyTunerTest, StepDownBackoffDisabledAllowsRepeatedStepDown) {
@@ -791,10 +822,101 @@ TEST_F(LatencyTunerTest, ExternalBufferSizeDecreaseWhileAtMaxResumesTuningOnXRun
     tuner.setMaximumBufferSize(4 * kBurst);
     EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
 
-    // Once the stream buffer size is lowered externally, setMinimumBufferSize() leaves AtMax.
+    // Once the stream buffer size is lowered externally, the next tune() leaves AtMax even
+    // without an xRun, updating mLastKnownBufferSize safely on the tune() thread.
     mStream.setBufferSizeInFrames(2 * kBurst);
-    tuner.setMinimumBufferSize(2 * kBurst);
+    EXPECT_EQ(tuner.tune(), Result::OK);
     EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+    EXPECT_FALSE(tuner.isAtMaximumBufferSize());
+}
+
+TEST_F(LatencyTunerTest, AtMaxHoldsWhenStreamCapsBelowCapacity) {
+    // Real AAudio MMAP streams clamp setBufferSizeInFrames() to capacity - 1 burst
+    // (and Samsung exclusive clips to capacity - 2 bursts), while the 1-arg LatencyTuner
+    // constructor sets mMaxBufferSize = capacity.
+    mStream.setMaxAcceptedBufferSize(kCapacity - kBurst); // 7 * kBurst (672 < 768)
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+
+    EXPECT_EQ(tuner.tune(), Result::OK); // Idle -> Active at 2 * kBurst
+    ASSERT_EQ(tuner.getState(), LatencyTuner::State::Active);
+
+    // 5 glitches grow buffer size from 2 -> 7 bursts.
+    for (int step = 1; step <= 5; ++step) {
+        mStream.addXRuns(1);
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(mStream.getBufferSizeInFrames(), (2 + step) * kBurst);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+    }
+
+    // 6th glitch requests 8 * kBurst, stream returns 7 * kBurst (<= oldBufferSize):
+    // tuner latches observed max = 7 * kBurst and transitions to State::AtMax.
+    mStream.addXRuns(1);
+    EXPECT_EQ(tuner.tune(), Result::OK);
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 7 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    EXPECT_TRUE(tuner.isAtMaximumBufferSize());
+
+    // 10 more xRuns at the stream's real ceiling MUST NOT flap back to Active or call
+    // setBufferSizeInFrames() again, and UI-thread setMinimumBufferSize() MUST NOT exit AtMax!
+    const int32_t callsAtCeiling = mStream.getSetBufferSizeCallCount();
+    tuner.setMinimumBufferSize(2 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    EXPECT_TRUE(tuner.isAtMaximumBufferSize());
+    for (int i = 0; i < 10; ++i) {
+        mStream.addXRuns(1);
+        EXPECT_EQ(tuner.tune(), Result::OK);
+        EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+        EXPECT_TRUE(tuner.isAtMaximumBufferSize());
+    }
+    EXPECT_EQ(mStream.getSetBufferSizeCallCount(), callsAtCeiling);
+
+    // Also verify capacity - 2 bursts (Samsung exclusive quirk) after requestReset().
+    mStream.setMaxAcceptedBufferSize(kCapacity - 2 * kBurst); // 6 * kBurst
+    tuner.requestReset();
+    EXPECT_EQ(tuner.tune(), Result::OK); // reset -> 1 Idle callback absorbed -> Active
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::Active);
+    for (int step = 1; step <= 5; ++step) {
+        mStream.addXRuns(1);
+        EXPECT_EQ(tuner.tune(), Result::OK);
+    }
+    EXPECT_EQ(mStream.getBufferSizeInFrames(), 6 * kBurst);
+    EXPECT_EQ(tuner.getState(), LatencyTuner::State::AtMax);
+    EXPECT_TRUE(tuner.isAtMaximumBufferSize());
+}
+
+TEST_F(LatencyTunerTest, SetMinimumBufferSizePreservesLearnedDynamicFloorUntilReset) {
+    LatencyTuner tuner(mStream);
+    tuner.setIdleCount(1);
+    tuner.setSettleCount(0);
+    tuner.setCallbacksBeforeStepDown(4);
+    tuner.setStepDownBackoffEnabled(true);
+
+    tuner.tune(); // Idle -> Active at 2 * kBurst
+
+    // Bump 2 -> 3 -> 4 bursts, step down to 3 bursts, then glitch to lock dynamic floor at 4 bursts.
+    mStream.addXRuns(1);
+    tuner.tune();
+    mStream.addXRuns(1);
+    tuner.tune();
+    for (int i = 0; i < 4; ++i) {
+        tuner.tune();
+    }
+    ASSERT_EQ(mStream.getBufferSizeInFrames(), 3 * kBurst);
+    mStream.addXRuns(1);
+    tuner.tune();
+    ASSERT_EQ(tuner.getEffectiveMinimumBufferSize(), 4 * kBurst);
+
+    // Dragging a UI slider calls setMinimumBufferSize(2 * kBurst); learned floor MUST stay 4 * kBurst!
+    tuner.setMinimumBufferSize(2 * kBurst);
+    EXPECT_EQ(tuner.getMinimumBufferSize(), 2 * kBurst);
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 4 * kBurst);
+
+    // Explicit requestReset() clears the dynamic floor back to 2 * kBurst.
+    tuner.requestReset();
+    tuner.tune();
+    EXPECT_EQ(tuner.getEffectiveMinimumBufferSize(), 2 * kBurst);
 }
 
 TEST_F(LatencyTunerTest, SubBurstDecrementClampedToMinFloorStepsDown) {
@@ -961,8 +1083,16 @@ TEST_F(LatencyTunerTest, ConcurrentRequestResetFromMultipleThreads) {
         int32_t bufSize = mStream.getBufferSizeInFrames();
         EXPECT_GE(bufSize, kBurst);
         EXPECT_LE(bufSize, kCapacity);
+        LatencyTuner::State state = tuner.getState();
+        EXPECT_GE(static_cast<int32_t>(state), static_cast<int32_t>(LatencyTuner::State::Idle));
+        EXPECT_LE(static_cast<int32_t>(state), static_cast<int32_t>(LatencyTuner::State::AtMax));
+        EXPECT_GE(tuner.getEffectiveMinimumBufferSize(), kBurst);
+        EXPECT_GE(tuner.getBumpUpCount(), 0);
+        EXPECT_GE(tuner.getStepDownCount(), 0);
+        EXPECT_GE(tuner.getSuppressedXRunCount(), 0);
     }
 
     running.store(false);
     mutator.join();
+    EXPECT_GE(tuner.getEffectiveMinimumBufferSize(), tuner.getMinimumBufferSize());
 }

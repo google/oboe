@@ -37,6 +37,11 @@ namespace oboe {
  * If you want to see the ongoing results of this tuning process then call
  * stream->getBufferSize() periodically.
  *
+ * Thread safety:
+ * - tune() must be called from a single thread (the audio data callback or the blocking I/O
+ *   thread), never concurrently from multiple threads.
+ * - requestReset(), all configuration setters, and all getters / telemetry accessors are
+ *   lock-free and safe to call concurrently with tune() from any thread (e.g. a UI thread).
  */
 class LatencyTuner {
 public:
@@ -47,8 +52,8 @@ public:
     enum class State : int32_t {
         /**
          * Initial grace period after construction or reset(). XRuns during this
-         * window are ignored and the baseline xRun count is latched at the end
-         * of the window.
+         * window are ignored and the baseline xRun count is latched on each Idle
+         * callback until transitioning to State::Active.
          */
         Idle = 0,
         /**
@@ -114,15 +119,17 @@ public:
     bool isAtMaximumBufferSize();
 
     /**
-     * Set the minimum bufferSize in frames that is used when the tuner is reset.
-     * You may wish to call requestReset() after calling this.
+     * Set the minimum bufferSize in frames that is used when the tuner is reset or steps down.
+     * Any higher dynamic floor learned from step-down backoff hysteresis is preserved until
+     * requestReset() or setStepDownBackoffEnabled(false) is called, so updating this value from
+     * a UI slider does not discard learned stability floors. Call requestReset() after this if
+     * you want to immediately drop the stream buffer size to the new minimum.
      * @param bufferSize
      */
     void setMinimumBufferSize(int32_t bufferSize) {
         int32_t clamped = (bufferSize < 0) ? 0 : bufferSize;
         mMinimumBufferSize.store(clamped);
-        mDynamicMinimumBufferSize.store(0);
-        leaveAtMaxIfBelow(mMaxBufferSize.load());
+        leaveAtMaxIfBelow(getEffectiveMaximumBufferSize());
     }
 
     int32_t getMinimumBufferSize() const {
@@ -141,6 +148,7 @@ public:
         } else if (capacity > 0 && clamped > capacity) {
             clamped = capacity;
         }
+        mObservedMaxBufferSize.store(0);
         mMaxBufferSize.store(clamped);
         leaveAtMaxIfBelow(clamped);
     }
@@ -171,7 +179,10 @@ public:
      * before actively monitoring xRuns. Any xRuns occurring during this startup grace period
      * are ignored and the xRun baseline is latched when transitioning to State::Active.
      *
-     * Default is kDefaultIdleCount (8). Set to 0 to disable the startup grace period.
+     * Default is kDefaultIdleCount (8). Set to 0 before requestReset() to disable the
+     * post-reset grace period; calling setIdleCount(0) while already in State::Idle (for
+     * example immediately after construction) absorbs at most one tune() call so startup xRuns
+     * are still baselined before entering State::Active.
      *
      * The window is measured in tune() calls since construction or the last reset() and is
      * re-evaluated by tune() on every call, so changing it while in State::Idle shortens or
@@ -210,10 +221,13 @@ public:
     }
 
     /**
-     * Set the number of distinct xRun callback events required in State::Active before
-     * increasing the buffer size. Default is 1.
+     * Set the number of distinct xRun episodes required in State::Active before increasing
+     * the buffer size. Consecutive callbacks reporting xRun increments are counted as a single
+     * episode (rising-edge detection), and pending episode counts below the threshold decay
+     * back to 0 after a sustained glitch-free window so isolated glitches hours apart do not
+     * accumulate. Default is 1.
      *
-     * @param threshold number of xRun events (>= 1)
+     * @param threshold number of xRun episodes (>= 1)
      */
     void setXRunThreshold(int32_t threshold) {
         mXRunThreshold.store((threshold < 1) ? 1 : threshold);
@@ -313,8 +327,8 @@ public:
      * @return the effective minimum buffer size in frames: the larger of getMinimumBufferSize()
      *         and the dynamic floor. The dynamic floor is raised by step-down backoff hysteresis,
      *         or (regardless of backoff) when a step-down request is not honored because the
-     *         stream cannot shrink below its current size. It is cleared by requestReset(),
-     *         setMinimumBufferSize() and setStepDownBackoffEnabled(false).
+     *         stream cannot shrink below its current size. It is cleared by requestReset()
+     *         and setStepDownBackoffEnabled(false).
      */
     int32_t getEffectiveMinimumBufferSize() const {
         int32_t minBuf = mMinimumBufferSize.load();
@@ -337,13 +351,24 @@ private:
      */
     void reset();
 
+    int32_t getEffectiveMaximumBufferSize() const {
+        int32_t maxBuf = mMaxBufferSize.load();
+        int32_t observedMax = mObservedMaxBufferSize.load();
+        if (observedMax > 0 && (maxBuf <= 0 || observedMax < maxBuf)) {
+            return observedMax;
+        }
+        return maxBuf;
+    }
+
     /**
-     * Leave State::AtMax only if the stream's current buffer size is below maxBufferSize.
-     * This mirrors the AtMax exit condition used by tune().
+     * Leave State::AtMax only if the stream's last known buffer size is below effectiveMax.
+     * Uses mLastKnownBufferSize (updated on the tune()/reset() thread) rather than calling
+     * non-thread-safe mStream.getBufferSizeInFrames() from arbitrary caller threads.
      */
-    void leaveAtMaxIfBelow(int32_t maxBufferSize) {
-        if (mState.load() == State::AtMax && maxBufferSize > 0
-                && mStream.getBufferSizeInFrames() < maxBufferSize) {
+    void leaveAtMaxIfBelow(int32_t effectiveMax) {
+        int32_t lastKnown = mLastKnownBufferSize.load();
+        if (mState.load() == State::AtMax && effectiveMax > 0
+                && lastKnown > 0 && lastKnown < effectiveMax) {
             State expected = State::AtMax;
             mState.compare_exchange_strong(expected, State::Active);
         }
@@ -352,6 +377,8 @@ private:
     AudioStream           &mStream;
     std::atomic<State>    mState{State::Idle};
     std::atomic<int32_t>  mMaxBufferSize{0};
+    std::atomic<int32_t>  mObservedMaxBufferSize{0};
+    std::atomic<int32_t>  mLastKnownBufferSize{0};
     int32_t               mPreviousXRuns = 0;
     std::atomic<int32_t>  mIdleCount{kDefaultIdleCount};
     int32_t               mIdleCallbackCount = 0; // only accessed by tune() and reset()
@@ -359,6 +386,7 @@ private:
     int32_t               mSettleCountDown = 0;
     std::atomic<int32_t>  mXRunThreshold{1};
     int32_t               mPendingXRunEvents = 0;
+    bool                  mInXRunEpisode = false;
     std::atomic<int32_t>  mCallbacksBeforeStepDown{0};
     int32_t               mCalmCallbackCount = 0;
     std::atomic<int32_t>  mMinimumBufferSize{0};

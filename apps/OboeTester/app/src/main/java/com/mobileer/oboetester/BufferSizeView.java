@@ -170,8 +170,10 @@ public class BufferSizeView extends LinearLayout {
                 }
             });
         }
-        applyLatencyTunerParamsFromUi();
-        OboeAudioStream.setUseLatencyTuner(false);
+        if (!isInEditMode()) {
+            applyLatencyTunerParamsFromUi();
+            OboeAudioStream.setUseLatencyTuner(false);
+        }
         updateLatencyTunerWidgets();
 
         mNumBursts = DEFAULT_NUM_BURSTS;

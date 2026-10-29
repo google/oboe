@@ -17,6 +17,11 @@
 #ifndef NATIVEOBOE_OBOESTREAMCALLBACKPROXY_H
 #define NATIVEOBOE_OBOESTREAMCALLBACKPROXY_H
 
+#include <atomic>
+#include <cfloat>
+#include <memory>
+#include <mutex>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysinfo.h>
@@ -231,22 +236,12 @@ public:
 
     void destroyLatencyTuner();
 
-    void clearLatencyTuner();
+    void clearLatencyTuner(oboe::AudioStream *closedStream = nullptr);
 
     void setMinimumBufferSize(int32_t bufferSize) {
         if (bufferSize <= 0) return;
         mMinimumBufferSize.store(bufferSize);
-        std::lock_guard<std::mutex> lock(mLatencyTunerLock);
-        if (mLatencyTuner != nullptr && mLatencyTunerStream != nullptr) {
-            int32_t defaultMin = oboe::LatencyTuner::kDefaultNumBursts *
-                    std::max(1, mLatencyTunerStream->getFramesPerBurst());
-            int32_t maxBuf = mLatencyTuner->getMaximumBufferSize();
-            if (maxBuf > 0 && defaultMin > maxBuf) {
-                defaultMin = maxBuf;
-            }
-            mLatencyTuner->setMinimumBufferSize(std::min(bufferSize, defaultMin));
-            updateLatencyTunerTelemetryLocked();
-        }
+        mMinimumBufferSizeDirty.store(true);
     }
 
     void tuneLatencyIfEnabled(oboe::AudioStream *audioStream);
@@ -279,6 +274,7 @@ private:
                           int64_t startTimeNanos,
                           int numWorkloadVoices);
     void applyLatencyTunerParamsLocked();
+    void applyMinimumBufferSizeLocked();
     void updateLatencyTunerTelemetryLocked();
     void resetLatencyTunerTelemetry();
 
@@ -312,6 +308,7 @@ private:
     std::unique_ptr<oboe::LatencyTuner> mLatencyTuner;
     oboe::AudioStream          *mLatencyTunerStream = nullptr;
     std::atomic<int32_t>        mMinimumBufferSize{0};
+    std::atomic<bool>           mMinimumBufferSizeDirty{false};
     std::atomic<int32_t>        mCachedLatencyTunerState{-1};
     std::atomic<int32_t>        mCachedLatencyTunerBumpUpCount{0};
     std::atomic<int32_t>        mCachedLatencyTunerStepDownCount{0};
