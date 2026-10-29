@@ -121,6 +121,10 @@ void ActivityContext::close(int32_t streamIndex) {
         oboeStream->close();
         LOGD("ActivityContext::%s() delete stream %d ", __func__, streamIndex);
         freeStreamIndex(streamIndex);
+        if (oboeStream->getDirection() == oboe::Direction::Output) {
+            oboeCallbackProxy->clearLatencyTuner(oboeStream.get());
+            updateLatencyTuner();
+        }
     }
 }
 
@@ -260,6 +264,10 @@ int ActivityContext::open(jint nativeApi,
     } else {
         mOboeStreams[streamIndex] = oboeStream; // save shared_ptr
 
+        if (!isInput) {
+            updateLatencyTuner();
+        }
+
         mChannelCount = oboeStream->getChannelCount(); // FIXME store per stream
         mFramesPerBurst = oboeStream->getFramesPerBurst();
         mSampleRate = oboeStream->getSampleRate();
@@ -393,6 +401,9 @@ int32_t ActivityContext::setBufferSizeInFrames(int streamIndex, int threshold) {
         auto result = oboeStream->setBufferSizeInFrames(threshold);
         if (result) {
             mBufferSizeInFrames = result.value();
+            if (oboeStream->getDirection() == oboe::Direction::Output) {
+                oboeCallbackProxy->setMinimumBufferSize(result.value());
+            }
         }
         return (!result) ? (int32_t) result.error() : result.value();
     }
@@ -559,6 +570,8 @@ void ActivityTestOutput::runBlockingIO() {
             LOGE("%s() : write() wrote %d of %d\n", __func__, framesWritten, framesPerBlock);
             break;
         }
+
+        oboeCallbackProxy->tuneLatencyIfEnabled(oboeStream.get());
 
         const int64_t bufferSizeInFrames = mBufferSizeInFrames.load();
         if (oboeStream->getPerformanceMode() == PerformanceMode::PowerSavingOffloaded &&

@@ -131,6 +131,17 @@ public class IntentBasedTestSupport {
 
     public static final String KEY_BUFFER_CAPACITY = "buffer_capacity";
 
+    public static final String KEY_USE_LATENCY_TUNER = "use_latency_tuner";
+    public static final String KEY_TUNER_IDLE_COUNT = "tuner_idle_count";
+    public static final String KEY_TUNER_SETTLE_COUNT = "tuner_settle_count";
+    public static final String KEY_TUNER_XRUN_THRESHOLD = "tuner_xrun_threshold";
+    public static final String KEY_TUNER_STEP_DOWN_CALLBACKS = "tuner_step_down_callbacks";
+    public static final String KEY_TUNER_STEP_DOWN_BACKOFF = "tuner_step_down_backoff";
+    public static final int VALUE_DEFAULT_TUNER_IDLE_COUNT = 8;
+    public static final int VALUE_DEFAULT_TUNER_SETTLE_COUNT = 8;
+    public static final int VALUE_DEFAULT_TUNER_XRUN_THRESHOLD = 1;
+    public static final int VALUE_DEFAULT_TUNER_STEP_DOWN_CALLBACKS = 0;
+
     public static int getApiFromText(String text) {
         if (VALUE_API_AAUDIO.equals(text)) {
             return StreamConfiguration.NATIVE_API_AAUDIO;
@@ -344,6 +355,25 @@ public class IntentBasedTestSupport {
 
         int bufferCapacity = bundle.getInt(KEY_BUFFER_CAPACITY, 0);
         requestedOutConfig.setBufferCapacityInFrames(bufferCapacity);
+
+        boolean useLatencyTuner = bundle.getBoolean(KEY_USE_LATENCY_TUNER, false);
+        int tunerIdleCount =
+                bundle.getInt(KEY_TUNER_IDLE_COUNT, VALUE_DEFAULT_TUNER_IDLE_COUNT);
+        int tunerSettleCount =
+                bundle.getInt(KEY_TUNER_SETTLE_COUNT, VALUE_DEFAULT_TUNER_SETTLE_COUNT);
+        int tunerXRunThreshold =
+                bundle.getInt(KEY_TUNER_XRUN_THRESHOLD, VALUE_DEFAULT_TUNER_XRUN_THRESHOLD);
+        int tunerStepDownCallbacks =
+                bundle.getInt(
+                        KEY_TUNER_STEP_DOWN_CALLBACKS, VALUE_DEFAULT_TUNER_STEP_DOWN_CALLBACKS);
+        boolean tunerStepDownBackoff = bundle.getBoolean(KEY_TUNER_STEP_DOWN_BACKOFF, true);
+        OboeAudioStream.setLatencyTunerParams(
+                tunerIdleCount,
+                tunerSettleCount,
+                tunerXRunThreshold,
+                tunerStepDownCallbacks,
+                tunerStepDownBackoff);
+        OboeAudioStream.setUseLatencyTuner(useLatencyTuner);
     }
 
     public static void configureInputStreamFromBundle(Bundle bundle,
