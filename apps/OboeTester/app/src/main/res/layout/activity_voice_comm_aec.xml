@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:singleLine="true"
-                android:text="Turn Pause (&gt;3.5s)"
+                android:text="Turn Pause (3.5s)"
                 android:textSize="12sp" />
         </LinearLayout>
 

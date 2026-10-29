@@ -17,6 +17,7 @@
 package com.mobileer.oboetester;
 
 import android.content.Context;
+import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaCodecList;
 import android.media.MediaExtractor;
@@ -27,6 +28,8 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,24 +37,36 @@ import java.util.List;
 /**
  * UI-independent DSP analyzer and result models for the 5-Phase {@code VOICE_COMMUNICATION}
  * Acoustic Echo Cancellation (AEC), Round-Trip Latency (RTL), and Multi-Turn Standby diagnostic.
+ *
+ * <p>Reference Speech Asset Provenance: {@code res/raw/voice_speech_48k.mp3} is resampled to
+ * 48 kHz mono from AOSP {@code cts/apps/CtsVerifier/res/raw/speech.mp3}
+ * (Copyright The Android Open Source Project, licensed under the Apache License, Version 2.0).
  */
 final class VoipAecAnalyzer {
 
     static final int SAMPLE_RATE = 48000;
     static final float MAX_VAL = 32768.0f;
+
+    // Envelope correlation floor (-60 dBFS prevents room-noise jitter from dominating correlation)
     static final float MIN_RMS_DB = -60.0f;
     static final float MIN_RMS_VAL = (float) Math.pow(10.0, MIN_RMS_DB / 20.0);
 
+    // True 16-bit PCM level floor (-96 dBFS preserves quiet silence baselines down to 1 LSB)
+    static final double LEVEL_MIN_RMS_DB = -96.0;
+    static final double LEVEL_MIN_RMS_VAL = Math.pow(10.0, LEVEL_MIN_RMS_DB / 20.0);
+
     static final int AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION = 7;
     static final int STREAM_STATE_DISCONNECTED = 13;
-    static final int OBOE_ERROR_TIMEOUT = -890;
+    static final int OBOE_ERROR_TIMEOUT = -885; // oboe::Result::ErrorTimeout (AAUDIO_ERROR_TIMEOUT)
 
     static final int PHASE_SILENCE_WARMUP_MS = 400;
     static final int PHASE_SILENCE_DURATION_MS = 1500;
     static final int PHASE_SPEECH_MS = 5000;
+    static final int SPEECH_LEVEL_WARMUP_MS = 800; // Symmetric [0.8s, 5.0s) window for P3 & P4
     static final int SHOT_INTERVAL_MS = 200;
-    static final int STANDBY_PAUSE_MS = 3500;
+    static final int STANDBY_PAUSE_MS = 3500;      // 3.5s (>3.0s AAudio MMAP standby threshold)
     static final int STANDBY_RESUME_MS = 1200;
+    static final int STANDBY_POST_WARMUP_MS = 300;
     static final int PLAYER_RMS_WINDOW_SAMPLES = 960; // 20 ms at 48 kHz
 
     // Diagnostic thresholds (aligned with 5-Phase CTS Verifier AudioAEC & 100ms Voice Agent target)
@@ -63,6 +78,10 @@ final class VoipAecAnalyzer {
     static final double THRESHOLD_DIST_TO_FLOOR_DB = 6.0;
     static final double THRESHOLD_MIN_ERLE_AT_FLOOR_DB = 8.0;
     static final double THRESHOLD_VOICE_AGENT_RTL_MS = 100.0;
+    static final double MIN_LIVE_SAMPLE_VARIANCE = 1e-12;
+
+    private static final int MAX_DECODE_STEPS = 20000;
+    private static final int MAX_DECODED_BYTES = SAMPLE_RATE * 4 * 20;
 
     private VoipAecAnalyzer() {}
 
@@ -86,16 +105,27 @@ final class VoipAecAnalyzer {
         int voipInBurstFrames = 0;
         int voipInCapacityFrames = 0;
 
+        // Effect attachment & control diagnostics (captured pre-start)
+        int sessionId = -1;
+        boolean aecAvailable = false;
+        boolean aecCreated = false;
+        boolean aecDefaultEnabled = false;
+        boolean aecHasControl = false;
+        int aecSetEnabledRc = Integer.MIN_VALUE;
+        boolean aecControlVerified = false;
+
         // Phase 1 & Phase 2: Silence baselines on VOICE_COMMUNICATION (AEC OFF vs AEC ON)
-        double noiseFloorDbfs = -99.0;
-        double aecOnSilenceDbfs = -99.0;
+        double noiseFloorDbfs = LEVEL_MIN_RMS_DB;
+        double aecOnSilenceDbfs = LEVEL_MIN_RMS_DB;
+        boolean phase2Measured = false;
 
         // Phase 3 & Phase 4: Speech echo levels & self-referenced dB deltas on VOICE_COMMUNICATION
-        double aecOffDbfs = -99.0;
-        double aecOnDbfs = -99.0;
+        double aecOffDbfs = LEVEL_MIN_RMS_DB;
+        double aecOnDbfs = LEVEL_MIN_RMS_DB;
+        boolean aecOnMeasured = false;
         double stimulusSnrDb = 0.0;    // aecOffDbfs - noiseFloorDbfs
-        double selfErleDb = 0.0;       // aecOffDbfs - aecOnDbfs
-        double distToFloorDb = 0.0;    // aecOnDbfs - noiseFloorDbfs
+        double selfErleDb = 0.0;       // aecOffDbfs - aecOnDbfs (over symmetric [0.8s, 5.0s) window)
+        double distToFloorDb = 0.0;    // aecOnDbfs - max(noiseFloorDbfs, aecOnSilenceDbfs)
 
         double corrAecOff = 0.0;
         double corrAecOn = 0.0;
@@ -104,13 +134,14 @@ final class VoipAecAnalyzer {
         double voipOffTimestampRtlMs = -1.0;
         double voipOnTimestampRtlMs = -1.0;
 
-        // Phase 5: Multi-Turn Standby (>3.5s Pause + Resume)
+        // Phase 5: Multi-Turn Standby (3.5s Pause + Resume)
         boolean standbyExecuted = false;
         boolean standbyPassed = false;
         long standbyFirstFrameMs = -1;
         long standbyPreTsPos = -1;
         long standbyPostTsPos = -1;
-        double standbyPostRmsDbfs = -99.0;
+        long standbyOutFramesAdvanced = 0;
+        double standbyPostRmsDbfs = LEVEL_MIN_RMS_DB;
         boolean standbyAecStillEnabled = false;
 
         boolean metricsPopulated = false;
@@ -123,7 +154,7 @@ final class VoipAecAnalyzer {
 
     static final class Finding {
         String id;
-        String severity; // "FAIL" or "WARNING"
+        String severity; // "FAIL", "WARNING", or "INFO"
         String title;
         final List<String> affectedPaths = new ArrayList<>();
         String whatHappened;
@@ -140,6 +171,27 @@ final class VoipAecAnalyzer {
         DecodedSpeech(short[] pcm, int sampleRate) {
             this.pcm = pcm;
             this.sampleRate = sampleRate;
+        }
+    }
+
+    static final class SignalWindowStats {
+        final int sampleCount;
+        final boolean hasNonZero;
+        final double rms;
+        final double dbfs;
+        final double sampleVariance;
+
+        SignalWindowStats(
+                int sampleCount,
+                boolean hasNonZero,
+                double rms,
+                double dbfs,
+                double sampleVariance) {
+            this.sampleCount = sampleCount;
+            this.hasNonZero = hasNonZero;
+            this.rms = rms;
+            this.dbfs = dbfs;
+            this.sampleVariance = sampleVariance;
         }
     }
 
@@ -179,7 +231,8 @@ final class VoipAecAnalyzer {
 
         synchronized void updateDirect(short[] samples, int numSamples) {
             if (!mRunning || samples == null || numSamples <= 0) return;
-            for (int i = 0; i < numSamples; i++) {
+            int limit = Math.min(numSamples, samples.length);
+            for (int i = 0; i < limit; i++) {
                 double raw = samples[i] / MAX_VAL;
                 double hp = raw - 0.82 * mPrevSample;
                 mPrevSample = raw;
@@ -225,22 +278,56 @@ final class VoipAecAnalyzer {
         }
     }
 
+    static double rmsToDbfs(double rms) {
+        return 20.0 * Math.log10(Math.max(rms, LEVEL_MIN_RMS_VAL));
+    }
+
     static boolean hasNonZeroSample(short[] buf, int count) {
         if (buf == null || count <= 0) return false;
-        for (int i = 0; i < count; i++) {
+        int limit = Math.min(count, buf.length);
+        for (int i = 0; i < limit; i++) {
             if (buf[i] != 0) return true;
         }
         return false;
     }
 
     static double computeBlockRms(short[] buf, int count) {
-        if (buf == null || count <= 0) return MIN_RMS_VAL;
+        if (buf == null || count <= 0) return LEVEL_MIN_RMS_VAL;
+        int limit = Math.min(count, buf.length);
+        if (limit <= 0) return LEVEL_MIN_RMS_VAL;
         double sumSq = 0.0;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < limit; i++) {
             double v = buf[i] / MAX_VAL;
             sumSq += v * v;
         }
-        return Math.max(Math.sqrt(sumSq / count), MIN_RMS_VAL);
+        return Math.max(Math.sqrt(sumSq / limit), LEVEL_MIN_RMS_VAL);
+    }
+
+    static SignalWindowStats computeWindowStats(short[] pcm, int startSample, int endSample) {
+        if (pcm == null || pcm.length == 0) {
+            return new SignalWindowStats(0, false, LEVEL_MIN_RMS_VAL, LEVEL_MIN_RMS_DB, 0.0);
+        }
+        int start = Math.max(0, Math.min(startSample, pcm.length));
+        int end = Math.max(start, Math.min(endSample, pcm.length));
+        int count = end - start;
+        if (count <= 0) {
+            return new SignalWindowStats(0, false, LEVEL_MIN_RMS_VAL, LEVEL_MIN_RMS_DB, 0.0);
+        }
+        boolean nonZero = false;
+        double sum = 0.0;
+        double sumSq = 0.0;
+        for (int i = start; i < end; i++) {
+            short s = pcm[i];
+            if (s != 0) nonZero = true;
+            double v = s / MAX_VAL;
+            sum += v;
+            sumSq += v * v;
+        }
+        double meanSq = sumSq / count;
+        double mean = sum / count;
+        double variance = Math.max(0.0, meanSq - (mean * mean));
+        double rms = Math.max(Math.sqrt(meanSq), LEVEL_MIN_RMS_VAL);
+        return new SignalWindowStats(count, nonZero, rms, rmsToDbfs(rms), variance);
     }
 
     static double computeEnvelopeCorrelation(
@@ -369,6 +456,10 @@ final class VoipAecAnalyzer {
         return (bestLag * 1000.0) / recRate;
     }
 
+    /**
+     * Decodes {@code res/raw/voice_speech_48k.mp3} (resampled to 48 kHz mono from AOSP
+     * {@code cts/apps/CtsVerifier/res/raw/speech.mp3}, Apache License 2.0) into 16-bit mono PCM.
+     */
     static DecodedSpeech decodeSpeechResource(Context context, int resId) {
         Uri uri = Uri.parse("android.resource://" + context.getPackageName() + "/" + resId);
         MediaExtractor extractor = new MediaExtractor();
@@ -396,17 +487,23 @@ final class VoipAecAnalyzer {
                     codec.configure(format, null, null, 0);
                     codec.start();
 
+                    MediaFormat outputFormat = format;
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                     MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
                     boolean sawInputEOS = false;
                     boolean sawOutputEOS = false;
+                    int steps = 0;
 
-                    while (!sawOutputEOS) {
+                    while (!sawOutputEOS && steps < MAX_DECODE_STEPS
+                            && byteStream.size() < MAX_DECODED_BYTES) {
+                        steps++;
                         if (!sawInputEOS) {
                             int inIdx = codec.dequeueInputBuffer(5000);
                             if (inIdx >= 0) {
                                 ByteBuffer inBuf = codec.getInputBuffer(inIdx);
-                                int sampleSize = extractor.readSampleData(inBuf, 0);
+                                int sampleSize = (inBuf != null)
+                                        ? extractor.readSampleData(inBuf, 0)
+                                        : -1;
                                 if (sampleSize < 0) {
                                     sawInputEOS = true;
                                     codec.queueInputBuffer(
@@ -419,29 +516,45 @@ final class VoipAecAnalyzer {
                             }
                         }
                         int outIdx = codec.dequeueOutputBuffer(info, 5000);
-                        if (outIdx >= 0) {
+                        if (outIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                            outputFormat = codec.getOutputFormat();
+                        } else if (outIdx >= 0) {
                             ByteBuffer outBuf = codec.getOutputBuffer(outIdx);
-                            byte[] chunk = new byte[info.size];
-                            outBuf.get(chunk);
-                            outBuf.clear();
-                            byteStream.write(chunk, 0, chunk.length);
+                            if (outBuf != null && info.size > 0) {
+                                outBuf.position(info.offset);
+                                outBuf.limit(info.offset + info.size);
+                                byte[] chunk = new byte[info.size];
+                                outBuf.get(chunk);
+                                outBuf.clear();
+                                byteStream.write(chunk, 0, chunk.length);
+                            }
                             codec.releaseOutputBuffer(outIdx, false);
                             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                                 sawOutputEOS = true;
                             }
                         }
                     }
-                    if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+
+                    if (outputFormat != null
+                            && outputFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                        sampleRate = outputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+                    } else if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
                         sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
                     }
+                    int channels = (outputFormat != null
+                            && outputFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT))
+                            ? Math.max(1, outputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
+                            : 1;
+                    int pcmEncoding = (outputFormat != null
+                            && outputFormat.containsKey(MediaFormat.KEY_PCM_ENCODING))
+                            ? outputFormat.getInteger(MediaFormat.KEY_PCM_ENCODING)
+                            : AudioFormat.ENCODING_PCM_16BIT;
+
                     byte[] pcmBytes = byteStream.toByteArray();
-                    short[] pcmShorts = new short[pcmBytes.length / 2];
-                    ByteBuffer.wrap(pcmBytes)
-                            .order(ByteOrder.LITTLE_ENDIAN)
-                            .asShortBuffer()
-                            .get(pcmShorts);
-                    if (pcmShorts.length >= SAMPLE_RATE) {
-                        return new DecodedSpeech(pcmShorts, sampleRate);
+                    short[] monoShorts = convertDecodedBytesToMonoShorts(
+                            pcmBytes, channels, pcmEncoding);
+                    if (monoShorts.length >= SAMPLE_RATE) {
+                        return new DecodedSpeech(monoShorts, sampleRate);
                     }
                 }
             }
@@ -451,6 +564,9 @@ final class VoipAecAnalyzer {
             if (codec != null) {
                 try {
                     codec.stop();
+                } catch (Exception ignored) {
+                }
+                try {
                     codec.release();
                 } catch (Exception ignored) {
                 }
@@ -458,6 +574,46 @@ final class VoipAecAnalyzer {
             extractor.release();
         }
         return new DecodedSpeech(generateSyntheticSpeechFallback(SAMPLE_RATE, 6), SAMPLE_RATE);
+    }
+
+    private static short[] convertDecodedBytesToMonoShorts(
+            byte[] pcmBytes, int channels, int pcmEncoding) {
+        int ch = Math.max(1, channels);
+        if (pcmEncoding == AudioFormat.ENCODING_PCM_FLOAT) {
+            FloatBuffer fb = ByteBuffer.wrap(pcmBytes)
+                    .order(ByteOrder.LITTLE_ENDIAN)
+                    .asFloatBuffer();
+            int frames = fb.remaining() / ch;
+            short[] mono = new short[frames];
+            for (int f = 0; f < frames; f++) {
+                float sum = 0.0f;
+                for (int c = 0; c < ch; c++) {
+                    sum += fb.get();
+                }
+                float avg = (sum / ch) * 32767.0f;
+                mono[f] = (short) Math.max(-32768.0f, Math.min(32767.0f, avg));
+            }
+            return mono;
+        }
+        ShortBuffer sb = ByteBuffer.wrap(pcmBytes)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .asShortBuffer();
+        int totalShorts = sb.remaining();
+        if (ch == 1) {
+            short[] mono = new short[totalShorts];
+            sb.get(mono);
+            return mono;
+        }
+        int frames = totalShorts / ch;
+        short[] mono = new short[frames];
+        for (int f = 0; f < frames; f++) {
+            int sum = 0;
+            for (int c = 0; c < ch; c++) {
+                sum += sb.get();
+            }
+            mono[f] = (short) (sum / ch);
+        }
+        return mono;
     }
 
     static short[] generateSyntheticSpeechFallback(int sampleRate, int seconds) {

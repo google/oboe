@@ -16,18 +16,23 @@
 
 #define MODULE_NAME "OboeTester"
 
+#include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cstring>
 #include <jni.h>
 #include <memory>
+#include <mutex>
 #include <stdint.h>
 #include <sys/sysinfo.h>
 #include <thread>
+#include <vector>
 
 #include "common/AdpfWrapper.h"
 #include "common/OboeDebug.h"
 #include "oboe/Oboe.h"
 #include <aaudio/AAudioExtensions.h>
+#include <aaudio/AAudioLoader.h>
 
 #include "NativeAudioContext.h"
 #include "TestColdStartLatency.h"
@@ -39,6 +44,124 @@
 #include "ReverseJniEngine.h"
 
 static NativeAudioContext engine;
+
+namespace {
+
+// Temporarily enables AAudio MMAP policy (AUTO) if currently forced to NEVER, restoring
+// the exact prior policy value on scope exit without clobbering UNSPECIFIED into NEVER.
+class ScopedMMapAutoPolicy {
+public:
+    ScopedMMapAutoPolicy() {
+        mLoader = oboe::AAudioLoader::getInstance();
+        if (mLoader != nullptr && mLoader->open() == 0 &&
+            mLoader->aaudio_getMMapPolicy != nullptr &&
+            mLoader->aaudio_setMMapPolicy != nullptr) {
+            mSavedPolicy = mLoader->aaudio_getMMapPolicy();
+            if (static_cast<oboe::MMapPolicy>(mSavedPolicy) == oboe::MMapPolicy::Never) {
+                mLoader->aaudio_setMMapPolicy(
+                        static_cast<aaudio_policy_t>(oboe::MMapPolicy::Auto));
+                mChangedViaLoader = true;
+            }
+        } else if (oboe::AAudioExtensions::getInstance().isMMapSupported() &&
+                   !oboe::AAudioExtensions::getInstance().isMMapEnabled()) {
+            oboe::AAudioExtensions::getInstance().setMMapEnabled(true);
+            mChangedViaExt = true;
+        }
+    }
+
+    ~ScopedMMapAutoPolicy() {
+        if (mChangedViaLoader && mLoader != nullptr && mLoader->aaudio_setMMapPolicy != nullptr) {
+            mLoader->aaudio_setMMapPolicy(mSavedPolicy);
+        } else if (mChangedViaExt) {
+            oboe::AAudioExtensions::getInstance().setMMapEnabled(false);
+        }
+    }
+
+    ScopedMMapAutoPolicy(const ScopedMMapAutoPolicy &) = delete;
+    ScopedMMapAutoPolicy &operator=(const ScopedMMapAutoPolicy &) = delete;
+
+private:
+    oboe::AAudioLoader *mLoader = nullptr;
+    aaudio_policy_t mSavedPolicy = 0;
+    bool mChangedViaLoader = false;
+    bool mChangedViaExt = false;
+};
+
+class VoiceCommOutputCallback : public oboe::AudioStreamDataCallback {
+public:
+    oboe::DataCallbackResult onAudioReady(
+            oboe::AudioStream *audioStream,
+            void *audioData,
+            int32_t numFrames) override {
+        auto *out = static_cast<int16_t *>(audioData);
+        const int32_t channels = std::max(1, audioStream->getChannelCount());
+        const int32_t numSamples = numFrames * channels;
+
+        std::unique_lock<std::mutex> lock(mBufferMutex, std::try_to_lock);
+        if (lock.owns_lock() && mPlaySpeech.load(std::memory_order_acquire) &&
+            !mPlaybackBuffer.empty()) {
+            size_t offset = mPlaybackBufferOffset.load(std::memory_order_relaxed);
+            if (mResetOffset.exchange(false, std::memory_order_acq_rel)) {
+                offset = 0;
+            }
+            const size_t len = mPlaybackBuffer.size();
+            offset %= len;
+            for (int32_t i = 0; i < numFrames; i++) {
+                const int16_t sample = mPlaybackBuffer[offset];
+                for (int32_t ch = 0; ch < channels; ch++) {
+                    *out++ = sample;
+                }
+                offset = (offset + 1) % len;
+            }
+            mPlaybackBufferOffset.store(offset, std::memory_order_release);
+        } else {
+            if (mResetOffset.exchange(false, std::memory_order_acq_rel) ||
+                mPlaybackBufferOffset.load(std::memory_order_relaxed) != 0) {
+                mPlaybackBufferOffset.store(0, std::memory_order_release);
+            }
+            memset(out, 0, static_cast<size_t>(numSamples) * sizeof(int16_t));
+        }
+        return oboe::DataCallbackResult::Continue;
+    }
+
+    void setPlaybackData(const int16_t *data, size_t numSamples) {
+        mPlaySpeech.store(false, std::memory_order_release);
+        std::lock_guard<std::mutex> lock(mBufferMutex);
+        if (data != nullptr && numSamples > 0) {
+            mPlaybackBuffer.assign(data, data + numSamples);
+        } else {
+            mPlaybackBuffer.clear();
+        }
+        mPlaybackBufferOffset.store(0, std::memory_order_release);
+        mResetOffset.store(true, std::memory_order_release);
+    }
+
+    void setPlaySpeech(bool play) {
+        mResetOffset.store(true, std::memory_order_release);
+        if (!play) {
+            mPlaybackBufferOffset.store(0, std::memory_order_release);
+        }
+        mPlaySpeech.store(play, std::memory_order_release);
+    }
+
+    int32_t getPlaybackOffset() const {
+        return static_cast<int32_t>(mPlaybackBufferOffset.load(std::memory_order_acquire));
+    }
+
+private:
+    std::mutex mBufferMutex;
+    std::vector<int16_t> mPlaybackBuffer;
+    std::atomic<size_t> mPlaybackBufferOffset{0};
+    std::atomic<bool> mResetOffset{false};
+    std::atomic<bool> mPlaySpeech{false};
+};
+
+struct VoiceCommNativeStream {
+    std::shared_ptr<oboe::AudioStream> stream;
+    std::shared_ptr<VoiceCommOutputCallback> callback;
+};
+
+} // namespace
 
 /*********************************************************************************/
 /**********************  JNI  Prototypes *****************************************/
@@ -1714,83 +1837,6 @@ Java_com_mobileer_oboetester_TestDisconnectActivity_getRoutingChangedCount(JNIEn
 // ============================================================================
 // TestVoiceCommAecActivity: Native AAudio Low-Latency VoIP & AEC Helpers
 // ============================================================================
-namespace {
-
-class VoiceCommOutputCallback : public oboe::AudioStreamDataCallback {
-public:
-    oboe::DataCallbackResult onAudioReady(
-            oboe::AudioStream *audioStream,
-            void *audioData,
-            int32_t numFrames) override {
-        auto *out = static_cast<int16_t *>(audioData);
-        const int32_t channels = std::max(1, audioStream->getChannelCount());
-        const int32_t numSamples = numFrames * channels;
-
-        std::unique_lock<std::mutex> lock(mBufferMutex, std::try_to_lock);
-        if (lock.owns_lock() && mPlaySpeech.load(std::memory_order_acquire) &&
-            !mPlaybackBuffer.empty()) {
-            size_t offset = mPlaybackBufferOffset.load(std::memory_order_relaxed);
-            if (mResetOffset.exchange(false, std::memory_order_acq_rel)) {
-                offset = 0;
-            }
-            const size_t len = mPlaybackBuffer.size();
-            offset %= len;
-            for (int32_t i = 0; i < numFrames; i++) {
-                const int16_t sample = mPlaybackBuffer[offset];
-                for (int32_t ch = 0; ch < channels; ch++) {
-                    *out++ = sample;
-                }
-                offset = (offset + 1) % len;
-            }
-            mPlaybackBufferOffset.store(offset, std::memory_order_release);
-        } else {
-            if (mResetOffset.exchange(false, std::memory_order_acq_rel) ||
-                mPlaybackBufferOffset.load(std::memory_order_relaxed) != 0) {
-                mPlaybackBufferOffset.store(0, std::memory_order_release);
-            }
-            memset(out, 0, static_cast<size_t>(numSamples) * sizeof(int16_t));
-        }
-        return oboe::DataCallbackResult::Continue;
-    }
-
-    void setPlaybackData(const int16_t *data, size_t numSamples) {
-        mPlaySpeech.store(false, std::memory_order_release);
-        std::lock_guard<std::mutex> lock(mBufferMutex);
-        if (data != nullptr && numSamples > 0) {
-            mPlaybackBuffer.assign(data, data + numSamples);
-        } else {
-            mPlaybackBuffer.clear();
-        }
-        mPlaybackBufferOffset.store(0, std::memory_order_release);
-        mResetOffset.store(true, std::memory_order_release);
-    }
-
-    void setPlaySpeech(bool play) {
-        mResetOffset.store(true, std::memory_order_release);
-        if (!play) {
-            mPlaybackBufferOffset.store(0, std::memory_order_release);
-        }
-        mPlaySpeech.store(play, std::memory_order_release);
-    }
-
-    int32_t getPlaybackOffset() const {
-        return static_cast<int32_t>(mPlaybackBufferOffset.load(std::memory_order_acquire));
-    }
-
-private:
-    std::mutex mBufferMutex;
-    std::vector<int16_t> mPlaybackBuffer;
-    std::atomic<size_t> mPlaybackBufferOffset{0};
-    std::atomic<bool> mResetOffset{false};
-    std::atomic<bool> mPlaySpeech{false};
-};
-
-struct VoiceCommNativeStream {
-    std::shared_ptr<oboe::AudioStream> stream;
-    std::shared_ptr<VoiceCommOutputCallback> callback;
-};
-
-} // namespace
 
 JNIEXPORT jboolean JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsMMapSupported(
@@ -1806,9 +1852,8 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsMMapExclusiveSuppo
 
 JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
-        JNIEnv * /*env*/, jobject /*thiz*/, jint sampleRate, jint channelCount) {
-    const bool wasMMapEnabled = oboe::AAudioExtensions::getInstance().isMMapEnabled();
-    oboe::AAudioExtensions::getInstance().setMMapEnabled(true);
+        JNIEnv * /*env*/, jclass /*clazz*/, jint sampleRate, jint channelCount) {
+    ScopedMMapAutoPolicy mmapScope;
 
     auto *holder = new VoiceCommNativeStream();
     holder->callback = std::make_shared<VoiceCommOutputCallback>();
@@ -1821,6 +1866,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
             ->setFormat(oboe::AudioFormat::I16)
             ->setFormatConversionAllowed(true)
             ->setSampleRate(sampleRate)
+            ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::None)
             ->setChannelCount(channelCount)
             ->setChannelConversionAllowed(true)
             ->setUsage(oboe::Usage::VoiceCommunication)
@@ -1832,7 +1878,6 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
         builder.setSharingMode(oboe::SharingMode::Shared);
         res = builder.openStream(holder->stream);
     }
-    oboe::AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
     if (res != oboe::Result::OK || !holder->stream) {
         delete holder;
         return 0;
@@ -1850,14 +1895,16 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenOutputStream(
 
 JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenInputStream(
-        JNIEnv * /*env*/, jobject /*thiz*/, jint sampleRate, jint channelCount, jint inputPreset) {
-    const bool wasMMapEnabled = oboe::AAudioExtensions::getInstance().isMMapEnabled();
-    oboe::AAudioExtensions::getInstance().setMMapEnabled(true);
+        JNIEnv * /*env*/, jclass /*clazz*/, jint sampleRate, jint channelCount, jint inputPreset) {
+    ScopedMMapAutoPolicy mmapScope;
 
     auto *holder = new VoiceCommNativeStream();
-    const oboe::InputPreset preset = (inputPreset == 7)
+    const bool isVoiceComm =
+            (inputPreset == static_cast<jint>(oboe::InputPreset::VoiceCommunication));
+    const oboe::InputPreset preset = isVoiceComm
             ? oboe::InputPreset::VoiceCommunication
             : oboe::InputPreset::VoiceRecognition;
+    const int32_t desiredCapacity = std::max<int32_t>(sampleRate / 5, 1920); // ~200 ms
 
     oboe::AudioStreamBuilder builder;
     builder.setAudioApi(oboe::AudioApi::AAudio)
@@ -1867,35 +1914,35 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeOpenInputStream(
             ->setFormat(oboe::AudioFormat::I16)
             ->setFormatConversionAllowed(true)
             ->setSampleRate(sampleRate)
+            ->setSampleRateConversionQuality(oboe::SampleRateConversionQuality::None)
             ->setChannelCount(channelCount)
             ->setChannelConversionAllowed(true)
+            ->setBufferCapacityInFrames(desiredCapacity)
             ->setInputPreset(preset)
-            ->setSessionId(inputPreset == 7 ? oboe::SessionId::Allocate : oboe::SessionId::None);
+            ->setSessionId(isVoiceComm ? oboe::SessionId::Allocate : oboe::SessionId::None);
 
     oboe::Result res = builder.openStream(holder->stream);
     if (res != oboe::Result::OK || !holder->stream) {
         builder.setSharingMode(oboe::SharingMode::Shared);
         res = builder.openStream(holder->stream);
     }
-    oboe::AAudioExtensions::getInstance().setMMapEnabled(wasMMapEnabled);
     if (res != oboe::Result::OK || !holder->stream) {
         delete holder;
         return 0;
     }
 
-    const bool isMmap = oboe::AAudioExtensions::getInstance().isMMapUsed(holder->stream.get());
     const int32_t burst = holder->stream->getFramesPerBurst();
-    if (burst > 0) {
-        const int32_t capacity = holder->stream->getBufferCapacityInFrames();
-        const int32_t target = isMmap ? (burst * 2) : std::min(capacity, burst * 4);
-        holder->stream->setBufferSizeInFrames(target);
+    const int32_t capacity = holder->stream->getBufferCapacityInFrames();
+    if (burst > 0 && capacity > 0) {
+        const int32_t desiredSize = std::max<int32_t>(burst * 4, sampleRate / 25); // >= 40 ms
+        holder->stream->setBufferSizeInFrames(std::min(capacity, desiredSize));
     }
     return reinterpret_cast<jlong>(holder);
 }
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeSetPlaybackData(
-        JNIEnv *env, jobject /*thiz*/, jlong streamHandle, jshortArray audioData) {
+        JNIEnv *env, jclass /*clazz*/, jlong streamHandle, jshortArray audioData) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->callback) return;
     if (!audioData) {
@@ -1914,7 +1961,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeSetPlaybackData(
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeSetPlaySpeech(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle, jboolean playSpeech) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle, jboolean playSpeech) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->callback) return;
     holder->callback->setPlaySpeech(playSpeech);
@@ -1922,7 +1969,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeSetPlaySpeech(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetPlaybackOffset(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->callback) return 0;
     return holder->callback->getPlaybackOffset();
@@ -1930,7 +1977,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetPlaybackOffset(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeStartStream(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return static_cast<jint>(oboe::Result::ErrorNull);
     return static_cast<jint>(holder->stream->requestStart());
@@ -1938,7 +1985,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeStartStream(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeStopStream(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return static_cast<jint>(oboe::Result::ErrorNull);
     return static_cast<jint>(holder->stream->requestStop());
@@ -1946,7 +1993,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeStopStream(
 
 JNIEXPORT void JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeCloseStream(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder) return;
     if (holder->stream) {
@@ -1958,7 +2005,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeCloseStream(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeReadStream(
-        JNIEnv *env, jobject /*thiz*/, jlong streamHandle,
+        JNIEnv *env, jclass /*clazz*/, jlong streamHandle,
         jshortArray buffer, jint offset, jint numSamples, jlong timeoutNanos) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream || !buffer) {
@@ -1974,22 +2021,34 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeReadStream(
 
     const int32_t framesToRead = numSamples / channels;
     auto res = holder->stream->read(elements + offset, framesToRead, timeoutNanos);
-    const int32_t framesRead = (res == oboe::Result::OK) ? res.value() : static_cast<int32_t>(res.error());
+    const int32_t framesRead = (res == oboe::Result::OK)
+            ? res.value()
+            : static_cast<int32_t>(res.error());
     env->ReleaseShortArrayElements(buffer, elements, framesRead > 0 ? 0 : JNI_ABORT);
     return framesRead > 0 ? framesRead * channels : framesRead;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetSessionId(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return -1;
-    return static_cast<jint>(holder->stream->getSessionId());
+    int32_t sessionId = static_cast<int32_t>(holder->stream->getSessionId());
+    if (sessionId <= 0 && holder->stream->getAudioApi() == oboe::AudioApi::AAudio) {
+        auto *aaudioStream = reinterpret_cast<AAudioStream *>(
+                holder->stream->getUnderlyingStream());
+        oboe::AAudioLoader *libLoader = oboe::AAudioLoader::getInstance();
+        if (aaudioStream != nullptr && libLoader != nullptr &&
+            libLoader->open() == 0 && libLoader->stream_getSessionId != nullptr) {
+            sessionId = libLoader->stream_getSessionId(aaudioStream);
+        }
+    }
+    return sessionId;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetStreamState(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return static_cast<jint>(oboe::StreamState::Uninitialized);
     return static_cast<jint>(holder->stream->getState());
@@ -1997,7 +2056,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetStreamState(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetBurstFrames(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return 0;
     return holder->stream->getFramesPerBurst();
@@ -2005,7 +2064,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetBurstFrames(
 
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetBufferCapacityFrames(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return 0;
     return holder->stream->getBufferCapacityInFrames();
@@ -2013,7 +2072,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetBufferCapacityFra
 
 JNIEXPORT jboolean JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsExclusive(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return false;
     return holder->stream->getSharingMode() == oboe::SharingMode::Exclusive;
@@ -2021,15 +2080,23 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsExclusive(
 
 JNIEXPORT jboolean JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeIsMMap(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return false;
     return oboe::AAudioExtensions::getInstance().isMMapUsed(holder->stream.get());
 }
 
 JNIEXPORT jlong JNICALL
+Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetFramesWritten(
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
+    auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
+    if (!holder || !holder->stream) return -1;
+    return holder->stream->getFramesWritten();
+}
+
+JNIEXPORT jlong JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetTimestampPosition(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong streamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return -1;
     auto res = holder->stream->getTimestamp(CLOCK_MONOTONIC);
@@ -2039,7 +2106,7 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetTimestampPosition
 
 JNIEXPORT jdouble JNICALL
 Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeGetRoundTripTimestampLatencyMillis(
-        JNIEnv * /*env*/, jobject /*thiz*/, jlong outStreamHandle, jlong inStreamHandle) {
+        JNIEnv * /*env*/, jclass /*clazz*/, jlong outStreamHandle, jlong inStreamHandle) {
     auto *outHolder = reinterpret_cast<VoiceCommNativeStream *>(outStreamHandle);
     auto *inHolder = reinterpret_cast<VoiceCommNativeStream *>(inStreamHandle);
     if (!outHolder || !outHolder->stream || !inHolder || !inHolder->stream) return -1.0;
