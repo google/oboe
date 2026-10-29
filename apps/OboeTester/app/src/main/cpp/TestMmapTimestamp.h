@@ -18,6 +18,7 @@
 #define OBOETESTER_TEST_MMAP_TIMESTAMP_H
 
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -29,13 +30,14 @@
 
 /**
  * Diagnostic suite for MMAP audio timestamp accuracy, DMA ring-buffer position reporting,
- * rapid start/stop/pause/flush continuity, and idle standby (>3s) resume behavior.
+ * rapid start/stop/pause/flush continuity, and idle (>3.5s) standby/resume behavior.
  */
 class TestMmapTimestamp {
 public:
     static constexpr int32_t RESULT_RUNNING = 0;
     static constexpr int32_t RESULT_PASS = 1;
     static constexpr int32_t RESULT_WARN = 2;
+    static constexpr int32_t RESULT_STOPPED = 3;
     static constexpr int32_t RESULT_FAIL = -1;
 
     struct ConfigFlags {
@@ -53,6 +55,7 @@ public:
     }
 
     int32_t start(const ConfigFlags &flags);
+    int32_t requestStop();
     int32_t stop();
 
     bool isRunning() const {
@@ -78,6 +81,7 @@ private:
     struct StreamScoreRow {
         std::string streamLabel;
         std::string configSummary;
+        bool isShared = false;
         std::string steadyStatus = "SKIP";
         std::string rapidCyclesStatus = "SKIP";
         std::string standbyStatus = "SKIP";
@@ -126,7 +130,32 @@ private:
         std::atomic<int64_t> mTotalCallbackFrames{0};
         std::atomic<int64_t> mFirstCallbackTimeNs{0};
         float mPhase = 0.0f;
-        static constexpr float kPhaseIncrement = 2.0f * static_cast<float>(M_PI) * 440.0f / 48000.0f;
+    };
+
+    class MyErrorCallback : public oboe::AudioStreamErrorCallback {
+    public:
+        void onErrorBeforeClose(oboe::AudioStream * /* oboeStream */,
+                                oboe::Result error) override {
+            mDisconnectedError.store(static_cast<int32_t>(error));
+            mDisconnected.store(true);
+        }
+
+        void reset() {
+            mDisconnected.store(false);
+            mDisconnectedError.store(static_cast<int32_t>(oboe::Result::OK));
+        }
+
+        bool isDisconnected() const {
+            return mDisconnected.load();
+        }
+
+        oboe::Result getError() const {
+            return static_cast<oboe::Result>(mDisconnectedError.load());
+        }
+
+    private:
+        std::atomic<bool> mDisconnected{false};
+        std::atomic<int32_t> mDisconnectedError{static_cast<int32_t>(oboe::Result::OK)};
     };
 
     void runSuite(ConfigFlags flags);
@@ -138,29 +167,42 @@ private:
     oboe::Result openMmapStream(oboe::Direction direction,
                                 oboe::SharingMode sharingMode);
     void closeStream();
+    bool checkAndReportDisconnect(const std::string &streamDesc,
+                                  const char *phaseLabel,
+                                  size_t rowIndex,
+                                  int phaseIndex);
 
     void runSteadyStateCheck(oboe::Direction direction, size_t rowIndex);
     void runRapidCyclesCheck(oboe::Direction direction,
                              bool usePauseFlush,
                              size_t rowIndex,
                              bool *inoutAnyFailed,
+                             bool *inoutDisconnected,
                              std::string *inoutFailureTag);
     void runStandbyResumeCheck(oboe::Direction direction,
                                bool usePauseFlush,
                                size_t rowIndex,
                                bool *inoutAnyFailed,
+                               bool *inoutDisconnected,
                                std::string *inoutFailureTag);
 
     bool sleepMillisInterruptible(int32_t durationMs);
     bool runUntilUnalignedPosition(int64_t cycleBaseHw,
                                    int32_t minRunMs,
                                    int32_t bufferCapacity,
-                                   int32_t framesPerBurst);
+                                   int32_t framesPerBurst,
+                                   int64_t jumpThreshold);
     bool waitForFreshTimestamp(int64_t prevTsTimeNs,
                                int32_t timeoutMs,
                                TimestampSample *outSample,
                                oboe::Result *outLastResult = nullptr);
-    static int64_t projectTimestampToHostTime(const TimestampSample &s, int32_t sampleRate);
+    static bool projectTimestampToHostTime(const TimestampSample &s,
+                                           int32_t sampleRate,
+                                           int64_t *outProjectedFrames,
+                                           double *outAgeMs = nullptr);
+    static int64_t computeJumpThresholdFrames(int32_t sampleRate,
+                                              int32_t framesPerBurst,
+                                              bool isShared);
 
     void appendTelemetryLine(const std::string &line);
     void setScorecardCell(size_t rowIndex,
@@ -183,9 +225,11 @@ private:
     bool mHasRun = false;
     bool mSuiteCompleted = false;
     bool mSuiteStoppedByUser = false;
+    bool mWorkaroundsDisabledDuringRun = false;
 
     std::shared_ptr<oboe::AudioStream> mStream;
     std::shared_ptr<MyDataCallback> mDataCallback;
+    std::shared_ptr<MyErrorCallback> mErrorCallback;
 
     std::atomic<bool> mThreadEnabled{false};
     std::atomic<bool> mIsRunning{false};
@@ -197,7 +241,7 @@ private:
     int32_t mWarnCount = 0;
     int32_t mFailCount = 0;
 
-    static constexpr int32_t kChannelCount = 2;
+    static constexpr int32_t kDefaultChannelCount = 2;
     static constexpr int32_t kRapidCycleCount = 5;
     static constexpr int32_t kStandbySleepMs = 3500;
 };

@@ -1733,6 +1733,12 @@ Java_com_mobileer_oboetester_TestMmapTimestampActivity_startTestNative(
 JNIEXPORT jint JNICALL
 Java_com_mobileer_oboetester_TestMmapTimestampActivity_stopTestNative(
         JNIEnv * /*env*/, jobject /*thiz*/) {
+    return sMmapTimestamp.requestStop();
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_TestMmapTimestampActivity_joinWorkerNative(
+        JNIEnv * /*env*/, jobject /*thiz*/) {
     return sMmapTimestamp.stop();
 }
 

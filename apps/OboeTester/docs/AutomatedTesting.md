@@ -59,7 +59,7 @@ For example:
 
 There are two required parameters for all tests:
 
-    --es test {latency, glitch, data_paths, input, output, cpu_load}
+    --es test {latency, glitch, data_paths, input, output, cpu_load, mmap_timestamp}
             The "latency" test will perform a Round Trip Latency test.
             It will request EXCLUSIVE mode for minimal latency.
             The "glitch" test will perform a single Glitch test.
@@ -67,6 +67,7 @@ There are two required parameters for all tests:
             The "input" test will open and start an input stream.
             The "output" test will open and start an output stream.
             The "cpu_load" test will run the CPU LOAD activity.
+            The "mmap_timestamp" test will run the MMAP Timestamp & Position Diagnostic suite.
 
     --es file {name of resulting file}
 
@@ -145,6 +146,18 @@ There are some optional parameters for just the "cpu_load" test:
     --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
     --ez use_workload_increase_api {true, false} // if true and using ADPF, notify adpf with workload increase/reset apis. Default is false.
 
+There are some optional parameters for just the "mmap_timestamp" test:
+
+    --ez auto_run         {true, false} // start automatically on launch (defaults to true when launched via --es test mmap_timestamp)
+    --ez output           {true, false} // test MMAP Output streams. Default is true.
+    --ez input            {true, false} // test MMAP Input streams (requires RECORD_AUDIO permission). Default is true.
+    --ez exclusive        {true, false} // test EXCLUSIVE sharing mode. Default is true.
+    --ez shared           {true, false} // test SHARED sharing mode. Default is true.
+    --ez steady           {true, false} // run Phase 1 (Steady-State & Cold-Start DMA Check). Default is true.
+    --ez rapid            {true, false} // run Phase 2 (Rapid Start / Pause / Flush / Stop Cycles). Default is true.
+    --ez standby          {true, false} // run Phase 3 (MMAP Idle Standby / Resume >3.5s Check). Default is true.
+    --es file             {relativeFileName} // optional filename under OboeTester's external files directory (default: mmap_timestamp_report.txt)
+
 For example, a complete command for a "latency" test might be:
 
     adb shell am start -n com.mobileer.oboetester/.MainActivity \
@@ -178,6 +191,16 @@ or for a "data_paths" test:
         --ez use_input_devices false \
         --ez use_output_devices true \
         --es file datapaths20230608.txt
+
+or for an "mmap_timestamp" test:
+
+    adb shell am start -n com.mobileer.oboetester/.MainActivity \
+        --es test mmap_timestamp \
+        --ez output true \
+        --ez input true \
+        --ez exclusive true \
+        --ez shared true \
+        --es file mmap_timestamp_report.txt
 
 ## Interpreting Test Results
 

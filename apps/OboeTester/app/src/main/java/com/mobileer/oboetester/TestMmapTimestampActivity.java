@@ -77,7 +77,9 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     private static final Pattern PATTERN_PASS =
             Pattern.compile("(?<!\\b0 )\\bPASS\\b|\\[OK\\s*\\]");
     private static final Pattern PATTERN_WARN =
-            Pattern.compile("(?<!\\b0 )\\bWARN(?:ING)?(?: \\([^)\\n]+\\))?");
+            Pattern.compile("(?<!\\b0 )\\bWARN(?:ING)?(?: \\([^)\\n]+\\))?"
+                    + "|\\bDISCONNECTED(?: \\([^)\\n]+\\))?"
+                    + "|\\bSTOPPED(?: \\([^)\\n]+\\))?");
     private static final Pattern PATTERN_FAIL =
             Pattern.compile("(?<!\\b0 )\\bFAIL(?: \\([^)\\n]+\\))?|\\[FAIL\\]");
 
@@ -98,14 +100,16 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     private Button mStopButton;
     private Button mShareButton;
 
-    private ReportPoller mPoller;
-    private String mDeviceHeader;
-    private String mReportFilePath;
+    private volatile ReportPoller mPoller;
+    private volatile String mDeviceHeader = "";
+    private volatile String mReportFilePath;
+    private volatile boolean mUiAlive;
     private boolean mAutoRun;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mUiAlive = true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
@@ -172,7 +176,14 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         }
         String customFile = intent.getStringExtra(IntentBasedTestSupport.KEY_FILE_NAME);
         mReportFilePath = (customFile != null && !customFile.isEmpty()) ? customFile : null;
-        mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
+        boolean launchedByTestIntent = intent.hasExtra(MainActivity.KEY_TEST_NAME);
+        if (intent.hasExtra(KEY_AUTO_RUN)) {
+            mAutoRun = intent.getBooleanExtra(KEY_AUTO_RUN, false);
+        } else {
+            mAutoRun = launchedByTestIntent;
+        }
+        intent.removeExtra(KEY_AUTO_RUN);
+        intent.removeExtra(MainActivity.KEY_TEST_NAME);
         if (mAutoRun) {
             startTest();
         }
@@ -213,6 +224,12 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     }
 
     private void startTest() {
+        ReportPoller existingPoller = mPoller;
+        if (isRunningNative() || (existingPoller != null && existingPoller.isAlive())) {
+            Log.w(TAG, "MMAP timestamp test is already running; ignoring duplicate start.");
+            return;
+        }
+
         boolean testOutput = mOutputCheckBox.isChecked();
         boolean testInput = mInputCheckBox.isChecked();
         boolean testExclusive = mExclusiveCheckBox.isChecked();
@@ -224,9 +241,12 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         if ((!testOutput && !testInput)
                 || (!testExclusive && !testShared)
                 || (!runSteadyState && !runRapidCycles && !runStandbyResume)) {
-            Toast.makeText(this,
-                    "Select at least one direction, sharing mode, and test phase",
-                    Toast.LENGTH_SHORT).show();
+            String msg = "Select at least one direction, sharing mode, and test phase";
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            if (mAutoRun) {
+                Log.e(TAG, "Invalid MMAP timestamp test configuration: " + msg);
+                saveReportToFile(buildDeviceHeader() + "\nERROR: " + msg + "\n");
+            }
             return;
         }
 
@@ -247,14 +267,19 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         }
 
         keepScreenOn(true);
-        stopPoller();
 
-        startTestNative(testOutput, testInput, testExclusive, testShared,
+        int rc = startTestNative(testOutput, testInput, testExclusive, testShared,
                 runSteadyState, runRapidCycles, runStandbyResume);
+        if (rc < 0) {
+            Log.w(TAG, "startTestNative returned " + rc + " (already running)");
+            keepScreenOn(false);
+            return;
+        }
 
         setButtonsEnabled(true);
-        mPoller = new ReportPoller();
-        mPoller.start();
+        ReportPoller poller = new ReportPoller();
+        mPoller = poller;
+        poller.start();
     }
 
     @Override
@@ -277,15 +302,18 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     }
 
     private void stopTest() {
-        if (!isRunningNative() && (mPoller == null || !mPoller.isAlive())) {
+        ReportPoller poller = mPoller;
+        if (!isRunningNative() && (poller == null || !poller.isAlive())) {
             mPoller = null;
+            setButtonsEnabled(false);
             return;
         }
         keepScreenOn(false);
-        stopPoller();
         stopTestNative();
-        updateReportUI();
-        setButtonsEnabled(false);
+        mStopButton.setEnabled(false);
+        if (poller != null) {
+            poller.wakeUp();
+        }
     }
 
     private void setButtonsEnabled(boolean running) {
@@ -302,69 +330,92 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
     }
 
     private class ReportPoller extends Thread {
-        volatile boolean mEnabled = true;
-
         @Override
         public void run() {
-            while (mEnabled && isRunningNative()) {
-                updateReportUI();
+            while (isRunningNative()) {
+                if (mUiAlive) {
+                    updateReportUI();
+                }
                 try {
                     sleep(200);
                 } catch (InterruptedException e) {
-                    break;
+                    // Woken early (e.g., stop requested); re-check isRunningNative().
                 }
             }
-            if (!mEnabled) {
-                return;
-            }
+            joinWorkerNative();
             final String finalReport = mDeviceHeader + "\n" + getReportNative();
             saveReportToFile(finalReport);
-            updateReportUI();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mPoller == ReportPoller.this) {
-                        mPoller = null;
+            if (mUiAlive) {
+                updateReportUI();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mPoller == ReportPoller.this) {
+                            mPoller = null;
+                        }
+                        if (!mUiAlive) {
+                            return;
+                        }
+                        boolean running = isRunningNative();
+                        keepScreenOn(running);
+                        setButtonsEnabled(running);
                     }
-                    boolean running = isRunningNative();
-                    keepScreenOn(running);
-                    setButtonsEnabled(running);
-                }
-            });
+                });
+            } else if (mPoller == ReportPoller.this) {
+                mPoller = null;
+            }
         }
 
-        void finish() {
-            mEnabled = false;
+        void wakeUp() {
             interrupt();
-            try {
-                join(1000);
-            } catch (InterruptedException e) {
-                // Ignore
-            }
         }
     }
 
     private void saveReportToFile(String report) {
         File dir = getExternalFilesDir(null);
+        if (dir == null) {
+            Log.e(TAG, "External files directory unavailable; cannot save MMAP timestamp report.");
+            return;
+        }
         File outFile;
-        if (mReportFilePath != null && !mReportFilePath.isEmpty()) {
-            File candidate = new File(mReportFilePath);
-            if (candidate.isAbsolute() || dir == null) {
+        String requested = mReportFilePath;
+        try {
+            String canonicalDir = dir.getCanonicalPath();
+            String canonicalPrefix = canonicalDir.endsWith(File.separator)
+                    ? canonicalDir
+                    : canonicalDir + File.separator;
+            if (requested != null && !requested.trim().isEmpty()) {
+                if (requested.contains("..")) {
+                    Log.e(TAG, "Rejecting unsafe report file path with '..': " + requested);
+                    return;
+                }
+                File raw = new File(requested);
+                File candidate = raw.isAbsolute() ? raw : new File(dir, requested);
+                String canonicalCandidate = candidate.getCanonicalPath();
+                if (!canonicalCandidate.startsWith(canonicalPrefix)) {
+                    Log.e(TAG, "Rejecting report file path outside external files dir: "
+                            + requested);
+                    return;
+                }
                 outFile = candidate;
             } else {
-                outFile = new File(dir, mReportFilePath);
+                outFile = new File(dir, REPORT_FILENAME);
             }
-        } else {
-            if (dir == null) {
+            File parent = outFile.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                Log.e(TAG, "Failed to create parent directory: " + parent.getAbsolutePath());
                 return;
             }
-            outFile = new File(dir, REPORT_FILENAME);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to resolve report file path", e);
+            return;
         }
         if (outFile.exists()) {
             outFile.delete();
         }
         try (FileOutputStream fos = new FileOutputStream(outFile)) {
             fos.write(report.getBytes(StandardCharsets.UTF_8));
+            Log.d(TAG, "EXTFILE = " + outFile.getAbsolutePath());
             Log.i(TAG, "Saved MMAP timestamp report to: " + outFile.getAbsolutePath());
         } catch (IOException e) {
             Log.e(TAG, "Failed to write MMAP timestamp report", e);
@@ -392,9 +443,10 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
                 span.setSpan(new ForegroundColorSpan(COLOR_HEADER), lineStart, lineEnd,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             } else if (line.startsWith("[ISSUE #")) {
+                int issueColor = line.contains("(WARNING)") ? COLOR_WARN : COLOR_FAIL;
                 span.setSpan(new StyleSpan(Typeface.BOLD), lineStart, lineEnd,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                span.setSpan(new ForegroundColorSpan(COLOR_FAIL), lineStart, lineEnd,
+                span.setSpan(new ForegroundColorSpan(issueColor), lineStart, lineEnd,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             } else if (line.startsWith("* OUTPUT") || line.startsWith("* INPUT")
                     || line.startsWith("  [Phase ")) {
@@ -432,6 +484,9 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (!mUiAlive || mStatusView == null) {
+                    return;
+                }
                 mStatusView.setText(styled);
                 if (mScrollView != null && !running) {
                     mScrollView.scrollTo(0, 0);
@@ -441,17 +496,21 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
         });
     }
 
-    private void stopPoller() {
-        if (mPoller != null) {
-            mPoller.finish();
-            mPoller = null;
-        }
-    }
-
     @Override
     public void onPause() {
         super.onPause();
         stopTest();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mUiAlive = false;
+        stopTestNative();
+        ReportPoller poller = mPoller;
+        if (poller != null) {
+            poller.wakeUp();
+        }
+        super.onDestroy();
     }
 
     protected void keepScreenOn(boolean on) {
@@ -467,6 +526,7 @@ public class TestMmapTimestampActivity extends AppCompatActivity {
                                        boolean runSteadyState, boolean runRapidCycles,
                                        boolean runStandbyResume);
     private native int stopTestNative();
+    private native int joinWorkerNative();
     private native boolean isRunningNative();
     private native int getResultNative();
     private native String getReportNative();
