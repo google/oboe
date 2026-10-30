@@ -22,12 +22,15 @@ import static com.mobileer.oboetester.VoipAecAnalyzer.MAX_VAL;
 import static com.mobileer.oboetester.VoipAecAnalyzer.MIN_LIVE_SAMPLE_VARIANCE;
 import static com.mobileer.oboetester.VoipAecAnalyzer.MIN_RMS_DB;
 import static com.mobileer.oboetester.VoipAecAnalyzer.OBOE_ERROR_TIMEOUT;
+import static com.mobileer.oboetester.VoipAecAnalyzer.PHASE_FLUSH_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.PHASE_SILENCE_DURATION_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.PHASE_SILENCE_WARMUP_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.PHASE_SPEECH_MS;
+import static com.mobileer.oboetester.VoipAecAnalyzer.PHASE_TAIL_DRAIN_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.PLAYER_RMS_WINDOW_SAMPLES;
 import static com.mobileer.oboetester.VoipAecAnalyzer.SAMPLE_RATE;
 import static com.mobileer.oboetester.VoipAecAnalyzer.SHOT_INTERVAL_MS;
+import static com.mobileer.oboetester.VoipAecAnalyzer.SPEECH_FADE_OUT_SAMPLES;
 import static com.mobileer.oboetester.VoipAecAnalyzer.SPEECH_LEVEL_WARMUP_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.STANDBY_PAUSE_MS;
 import static com.mobileer.oboetester.VoipAecAnalyzer.STANDBY_POST_WARMUP_MS;
@@ -41,6 +44,7 @@ import static com.mobileer.oboetester.VoipAecAnalyzer.THRESHOLD_ERLE_DB;
 import static com.mobileer.oboetester.VoipAecAnalyzer.THRESHOLD_MIN_ERLE_AT_FLOOR_DB;
 import static com.mobileer.oboetester.VoipAecAnalyzer.THRESHOLD_STIMULUS_SNR_DB;
 import static com.mobileer.oboetester.VoipAecAnalyzer.THRESHOLD_VOICE_AGENT_RTL_MS;
+import static com.mobileer.oboetester.VoipAecAnalyzer.applyTailCosineFadeOut;
 import static com.mobileer.oboetester.VoipAecAnalyzer.computeAcousticLatencyMs;
 import static com.mobileer.oboetester.VoipAecAnalyzer.computeEnvelopeCorrelation;
 import static com.mobileer.oboetester.VoipAecAnalyzer.computeWindowStats;
@@ -68,6 +72,7 @@ import com.mobileer.oboetester.VoipAecAnalyzer.SignalWindowStats;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -123,7 +128,9 @@ final class VoipAecTestEngine {
         NoiseSuppressor ns = null;
 
         try {
-            player = new VoipPlayer(isNative, speechPcm);
+            final short[] playbackSpeechPcm =
+                    applyTailCosineFadeOut(speechPcm, SPEECH_FADE_OUT_SAMPLES);
+            player = new VoipPlayer(isNative, playbackSpeechPcm);
             player.setPlaySpeech(false);
             if (!player.start()) {
                 int failPhase = runAecPhases ? 1 : 5;
@@ -183,14 +190,18 @@ final class VoipAecTestEngine {
                             outBurst,
                             inBurst);
                 });
-                burst = Math.max(256, inBurst);
+                // Cap read chunk at 20 ms (960 frames) so Legacy AudioStreamRecord fallback
+                // (4,800-frame burst = 100 ms) still updates envelopes and wakeup timing finely.
+                burst = Math.min(PLAYER_RMS_WINDOW_SAMPLES, Math.max(256, inBurst));
             } else {
+                // Allocate >= 1.0 s (96,000 bytes at 48 kHz mono 16-bit) so offline DSP/correlation
+                // analysis between phases never overruns AudioRecord's cblk and skews HW TS.
                 int minBuf = Math.max(
-                        16384,
+                        SAMPLE_RATE * 2,
                         AudioRecord.getMinBufferSize(
                                 SAMPLE_RATE,
                                 AudioFormat.CHANNEL_IN_MONO,
-                                AudioFormat.ENCODING_PCM_16BIT) * 2);
+                                AudioFormat.ENCODING_PCM_16BIT) * 4);
                 javaRec = new AudioRecord.Builder()
                         .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
                         .setAudioFormat(new AudioFormat.Builder()
@@ -633,15 +644,27 @@ final class VoipAecTestEngine {
                 }
                 player.restartIfDisconnected();
 
-                int maxShots = (PHASE_SPEECH_MS / SHOT_INTERVAL_MS) + 5;
-                int maxSamples = (SAMPLE_RATE * PHASE_SPEECH_MS) / 1000;
+                final int activeSpeechMs =
+                        (playbackSpeechPcm != null && playbackSpeechPcm.length > 0)
+                                ? Math.max(
+                                        1000,
+                                        (int) Math.round(
+                                                (playbackSpeechPcm.length * 1000.0) / SAMPLE_RATE))
+                                : PHASE_SPEECH_MS;
+                final int totalCaptureMs = activeSpeechMs + PHASE_TAIL_DRAIN_MS;
+                final int activeSpeechSamples =
+                        (int) (((long) SAMPLE_RATE * activeSpeechMs) / 1000L);
+                int maxShots = (activeSpeechMs / SHOT_INTERVAL_MS) + 5;
+                int maxSamples = (int) (((long) SAMPLE_RATE * totalCaptureMs) / 1000L);
                 int warmupSamples = (SAMPLE_RATE * SPEECH_LEVEL_WARMUP_MS) / 1000;
                 RmsEnvelopeTracker playerEnv3 = new RmsEnvelopeTracker(maxShots);
                 RmsEnvelopeTracker recEnv3 = new RmsEnvelopeTracker(maxShots);
                 player.setRmsTracker(playerEnv3);
                 player.setPlaySpeech(false);
 
-                long flushEnd3 = SystemClock.elapsedRealtime() + 300;
+                javaFramesReadComm += drainPendingCapture(isNative, nativeRec, javaRec, ioBuf,
+                        burst, cb);
+                long flushEnd3 = SystemClock.elapsedRealtime() + PHASE_FLUSH_MS;
                 while (SystemClock.elapsedRealtime() < flushEnd3 && cb.isWorkerEnabled()) {
                     if (isNative) {
                         int r = TestVoiceCommAecActivity.nativeReadStream(
@@ -663,8 +686,11 @@ final class VoipAecTestEngine {
                 short[] recAecOff = new short[maxSamples];
                 int recAecOffLen = 0;
                 int p3Blocks = 0;
+                double sampledOffTsRtlMs = -1.0;
+                boolean offTsSampled = false;
                 long p3StartMs = SystemClock.elapsedRealtime();
-                long end3 = p3StartMs + PHASE_SPEECH_MS;
+                long speechEnd3 = p3StartMs + activeSpeechMs;
+                long end3 = p3StartMs + totalCaptureMs;
                 long nextShot3 = p3StartMs + SHOT_INTERVAL_MS;
 
                 while (SystemClock.elapsedRealtime() < end3 && cb.isWorkerEnabled()) {
@@ -682,16 +708,19 @@ final class VoipAecTestEngine {
                     if (!isNative && read > 0) {
                         javaFramesReadComm += read;
                     }
+                    long nowMs = SystemClock.elapsedRealtime();
                     if (read > 0) {
                         int toCopy = Math.min(read, recAecOff.length - recAecOffLen);
                         if (toCopy > 0) {
                             System.arraycopy(ioBuf, 0, recAecOff, recAecOffLen, toCopy);
                             recAecOffLen += toCopy;
                         }
-                        recEnv3.updateDirect(ioBuf, read);
+                        if (nowMs <= speechEnd3) {
+                            recEnv3.updateDirect(ioBuf, read);
+                        }
                         p3Blocks++;
                     }
-                    if (SystemClock.elapsedRealtime() >= nextShot3) {
+                    while (nowMs >= nextShot3 && nextShot3 <= speechEnd3) {
                         recEnv3.captureShot();
                         playerEnv3.captureShot();
                         nextShot3 += SHOT_INTERVAL_MS;
@@ -702,12 +731,28 @@ final class VoipAecTestEngine {
                                 recEnv3.getCurrentDbfs(),
                                 playerEnv3.getCurrentDbfs()));
                     }
+                    if (nowMs >= speechEnd3) {
+                        playerEnv3.setRunning(false);
+                        recEnv3.setRunning(false);
+                        if (!offTsSampled) {
+                            sampledOffTsRtlMs = isNative
+                                    ? TestVoiceCommAecActivity
+                                            .nativeGetRoundTripTimestampLatencyMillis(
+                                                    player.getNativeHandle(), nativeRec)
+                                    : computeJavaTimestampLatencyMillis(
+                                            player, javaRec, javaFramesReadComm);
+                            offTsSampled = true;
+                        }
+                    }
                 }
 
-                final double offTsRtlMs = isNative
-                        ? TestVoiceCommAecActivity.nativeGetRoundTripTimestampLatencyMillis(
-                                player.getNativeHandle(), nativeRec)
-                        : computeJavaTimestampLatencyMillis(player, javaRec, javaFramesReadComm);
+                final double offTsRtlMs = offTsSampled
+                        ? sampledOffTsRtlMs
+                        : (isNative
+                                ? TestVoiceCommAecActivity.nativeGetRoundTripTimestampLatencyMillis(
+                                        player.getNativeHandle(), nativeRec)
+                                : computeJavaTimestampLatencyMillis(
+                                        player, javaRec, javaFramesReadComm));
 
                 player.setPlaySpeech(false);
                 player.setRmsTracker(null);
@@ -716,8 +761,9 @@ final class VoipAecTestEngine {
 
                 if (!cb.isWorkerEnabled()) return;
 
-                SignalWindowStats p3Stats = (recAecOffLen > warmupSamples)
-                        ? computeWindowStats(recAecOff, warmupSamples, recAecOffLen)
+                int evalOffEnd3 = Math.min(recAecOffLen, activeSpeechSamples);
+                SignalWindowStats p3Stats = (evalOffEnd3 > warmupSamples)
+                        ? computeWindowStats(recAecOff, warmupSamples, evalOffEnd3)
                         : computeWindowStats(recAecOff, 0, recAecOffLen);
                 final double p3Dbfs = p3Stats.dbfs;
                 final double stimSnrDb = p3Dbfs - p1Dbfs;
@@ -734,7 +780,7 @@ final class VoipAecTestEngine {
                 if (recAecOffLen > 0) {
                     short[] slice = Arrays.copyOf(recAecOff, recAecOffLen);
                     acousticRtlMs = computeAcousticLatencyMs(
-                            speechPcm, speechSampleRate, slice, SAMPLE_RATE, 500);
+                            playbackSpeechPcm, speechSampleRate, slice, SAMPLE_RATE, 500);
                 } else {
                     acousticRtlMs = -1.0;
                 }
@@ -748,16 +794,8 @@ final class VoipAecTestEngine {
                 });
 
                 // Drain any input frames buffered while computeAcousticLatencyMs executed
-                while (cb.isWorkerEnabled()) {
-                    int drained = isNative
-                            ? TestVoiceCommAecActivity.nativeReadStream(
-                                    nativeRec, ioBuf, 0, burst, 0L)
-                            : javaRec.read(ioBuf, 0, burst, AudioRecord.READ_NON_BLOCKING);
-                    if (!isNative && drained > 0) {
-                        javaFramesReadComm += drained;
-                    }
-                    if (drained <= 0) break;
-                }
+                javaFramesReadComm += drainPendingCapture(isNative, nativeRec, javaRec, ioBuf,
+                        burst, cb);
 
                 boolean p3CaptureOk = (p3Stats.sampleCount > 0 && p3Stats.hasNonZero);
                 boolean snrOk = (stimSnrDb >= THRESHOLD_STIMULUS_SNR_DB);
@@ -811,7 +849,7 @@ final class VoipAecTestEngine {
                             f.id = "STIMULUS-SNR-TOO-LOW";
                             f.severity = "FAIL";
                             f.title = "Speaker-to-microphone acoustic coupling SNR is below 12.0 dB on VOICE_COMMUNICATION";
-                            f.whatHappened = "During Phase 3 speech playback on VOICE_COMMUNICATION with AEC OFF, the captured loudspeaker level over [0.8s, 5.0s) was less than 12.0 dB above the Phase 1 VOICE_COMMUNICATION silence floor.";
+                            f.whatHappened = "During Phase 3 speech playback on VOICE_COMMUNICATION with AEC OFF, the captured loudspeaker level over [0.8s, 6.0s) was less than 12.0 dB above the Phase 1 VOICE_COMMUNICATION silence floor.";
                             f.androidContract = "Built-in speakerphone playback at maximum STREAM_VOICE_CALL volume must produce at least 12.0 dB SNR at the built-in microphone when AEC is disabled.";
                             f.whyItMatters = "Insufficient loudspeaker coupling or unreported always-on DSP AEC prevents verifying Echo Return Loss Enhancement (ERLE) and effect bypass control.";
                             f.howToFix = "Verify that STREAM_VOICE_CALL speakerphone routing and volume curves are active, nothing is obstructing the speaker or microphone ports, and AcousticEchoCanceler.setEnabled(false) bypasses hardware AEC.";
@@ -934,7 +972,9 @@ final class VoipAecTestEngine {
                         player.setRmsTracker(playerEnv4);
                         player.setPlaySpeech(false);
 
-                        long flushEnd4 = SystemClock.elapsedRealtime() + 300;
+                        javaFramesReadComm += drainPendingCapture(isNative, nativeRec, javaRec,
+                                ioBuf, burst, cb);
+                        long flushEnd4 = SystemClock.elapsedRealtime() + PHASE_FLUSH_MS;
                         while (SystemClock.elapsedRealtime() < flushEnd4 && cb.isWorkerEnabled()) {
                             if (isNative) {
                                 int r = TestVoiceCommAecActivity.nativeReadStream(
@@ -956,8 +996,11 @@ final class VoipAecTestEngine {
                         short[] recAecOn = new short[maxSamples];
                         int recAecOnLen = 0;
                         int p4Blocks = 0;
+                        double sampledOnTsRtlMs = -1.0;
+                        boolean onTsSampled = false;
                         long p4StartMs = SystemClock.elapsedRealtime();
-                        long end4 = p4StartMs + PHASE_SPEECH_MS;
+                        long speechEnd4 = p4StartMs + activeSpeechMs;
+                        long end4 = p4StartMs + totalCaptureMs;
                         long nextShot4 = p4StartMs + SHOT_INTERVAL_MS;
 
                         while (SystemClock.elapsedRealtime() < end4 && cb.isWorkerEnabled()) {
@@ -979,16 +1022,19 @@ final class VoipAecTestEngine {
                             if (!isNative && read > 0) {
                                 javaFramesReadComm += read;
                             }
+                            long nowMs = SystemClock.elapsedRealtime();
                             if (read > 0) {
                                 int toCopy = Math.min(read, recAecOn.length - recAecOnLen);
                                 if (toCopy > 0) {
                                     System.arraycopy(ioBuf, 0, recAecOn, recAecOnLen, toCopy);
                                     recAecOnLen += toCopy;
                                 }
-                                recEnv4.updateDirect(ioBuf, read);
+                                if (nowMs <= speechEnd4) {
+                                    recEnv4.updateDirect(ioBuf, read);
+                                }
                                 p4Blocks++;
                             }
-                            if (SystemClock.elapsedRealtime() >= nextShot4) {
+                            while (nowMs >= nextShot4 && nextShot4 <= speechEnd4) {
                                 recEnv4.captureShot();
                                 playerEnv4.captureShot();
                                 nextShot4 += SHOT_INTERVAL_MS;
@@ -999,14 +1045,29 @@ final class VoipAecTestEngine {
                                         recEnv4.getCurrentDbfs(),
                                         playerEnv4.getCurrentDbfs()));
                             }
+                            if (nowMs >= speechEnd4) {
+                                playerEnv4.setRunning(false);
+                                recEnv4.setRunning(false);
+                                if (!onTsSampled) {
+                                    sampledOnTsRtlMs = isNative
+                                            ? TestVoiceCommAecActivity
+                                                    .nativeGetRoundTripTimestampLatencyMillis(
+                                                            player.getNativeHandle(), nativeRec)
+                                            : computeJavaTimestampLatencyMillis(
+                                                    player, javaRec, javaFramesReadComm);
+                                    onTsSampled = true;
+                                }
+                            }
                         }
 
-                        final double onTsRtlMs = isNative
-                                ? TestVoiceCommAecActivity
-                                        .nativeGetRoundTripTimestampLatencyMillis(
-                                                player.getNativeHandle(), nativeRec)
-                                : computeJavaTimestampLatencyMillis(
-                                        player, javaRec, javaFramesReadComm);
+                        final double onTsRtlMs = onTsSampled
+                                ? sampledOnTsRtlMs
+                                : (isNative
+                                        ? TestVoiceCommAecActivity
+                                                .nativeGetRoundTripTimestampLatencyMillis(
+                                                        player.getNativeHandle(), nativeRec)
+                                        : computeJavaTimestampLatencyMillis(
+                                                player, javaRec, javaFramesReadComm));
 
                         player.setPlaySpeech(false);
                         player.setRmsTracker(null);
@@ -1018,16 +1079,19 @@ final class VoipAecTestEngine {
 
                         if (!cb.isWorkerEnabled()) return;
 
-                        // Symmetric [0.8s, sharedEnd) window across Phase 3 & Phase 4
-                        int sharedEnd = (recAecOffLen > warmupSamples
-                                && recAecOnLen > warmupSamples)
-                                ? Math.min(recAecOffLen, recAecOnLen)
-                                : recAecOnLen;
-                        SignalWindowStats p4Stats = (recAecOnLen > warmupSamples)
+                        // Symmetric [0.8s, sharedEnd) active-speech window across Phase 3 & Phase 4
+                        // (excluding the trailing +250 ms silent tail drain from steady-state dBFS)
+                        int evalOffEnd = Math.min(recAecOffLen, activeSpeechSamples);
+                        int evalOnEnd = Math.min(recAecOnLen, activeSpeechSamples);
+                        int sharedEnd = (evalOffEnd > warmupSamples
+                                && evalOnEnd > warmupSamples)
+                                ? Math.min(evalOffEnd, evalOnEnd)
+                                : evalOnEnd;
+                        SignalWindowStats p4Stats = (evalOnEnd > warmupSamples)
                                 ? computeWindowStats(recAecOn, warmupSamples, sharedEnd)
                                 : computeWindowStats(recAecOn, 0, recAecOnLen);
                         final double alignedOffDbfs =
-                                (recAecOffLen > warmupSamples && sharedEnd > warmupSamples)
+                                (evalOffEnd > warmupSamples && sharedEnd > warmupSamples)
                                         ? computeWindowStats(recAecOff, warmupSamples, sharedEnd)
                                                 .dbfs
                                         : p3Dbfs;
@@ -1125,7 +1189,7 @@ final class VoipAecTestEngine {
                                 f.id = "AEC-INSUFFICIENT-CANCELLATION";
                                 f.severity = "FAIL";
                                 f.title = "Active AEC failed ERLE (>= 15.0 dB) or residual envelope correlation (<= 0.50)";
-                                f.whatHappened = "With AcousticEchoCanceler.setEnabled(true) on VOICE_COMMUNICATION, loudspeaker speech bled into the captured microphone signal over the [0.8s, 5.0s) window.";
+                                f.whatHappened = "With AcousticEchoCanceler.setEnabled(true) on VOICE_COMMUNICATION, loudspeaker speech bled into the captured microphone signal over the [0.8s, 6.0s) window.";
                                 f.androidContract = "OboeTester / CTS-V diagnostic target: self-referenced ERLE >= 15.0 dB (or Dist-to-Floor <= 6.0 dB with ERLE >= 8.0 dB) and Residual Envelope Correlation <= 0.50 (CDD 5.4.4 correlation gate; dB/ERLE and Native AAudio checks are informational).";
                                 f.whyItMatters = "Poor echo cancellation causes conversational voice agents to hear and transcribe their own TTS output (self-interruption) and causes echo in VoIP calls.";
                                 f.howToFix = "1. Verify that the HAL feeds the speakerphone playback echo_reference into the hardware AEC module for both Legacy and MMAP (USAGE_VOICE_COMMUNICATION) output streams.\n  2. Check for sample-rate or DMA timestamp jumps between output and input streams that prevent the adaptive AEC filter from converging.";
@@ -1191,7 +1255,10 @@ final class VoipAecTestEngine {
                     p5CtrlOk = verifyAecToggle(aec, true, "Phase 5 pre-standby", row, cb);
                 }
 
-                // Warm up for 250 ms before stopping
+                // Warm up on clean digital silence for 250 ms before entering standby
+                player.setPlaySpeech(false);
+                javaFramesReadComm += drainPendingCapture(isNative, nativeRec, javaRec, ioBuf,
+                        burst, cb);
                 long warmEnd = SystemClock.elapsedRealtime() + 250;
                 while (SystemClock.elapsedRealtime() < warmEnd && cb.isWorkerEnabled()) {
                     if (isNative) {
@@ -1201,6 +1268,7 @@ final class VoipAecTestEngine {
                     } else {
                         int r = javaRec.read(ioBuf, 0, burst, AudioRecord.READ_BLOCKING);
                         if (r < 0) break;
+                        if (r > 0) javaFramesReadComm += r;
                     }
                 }
 
@@ -1220,9 +1288,9 @@ final class VoipAecTestEngine {
                             == AudioRecord.SUCCESS)
                             ? ts.framePosition
                             : -1L;
-                    preOutFrames = player.getFramesWritten();
                     javaRec.stop();
                     player.pauseForStandby();
+                    preOutFrames = player.getFramesWritten();
                 }
 
                 cb.onTelemetry(String.format(
@@ -1234,7 +1302,8 @@ final class VoipAecTestEngine {
 
                 long resumeStartMs = SystemClock.elapsedRealtime();
                 int startInRes = 0;
-                int startOutRes = player.resumeAfterStandby();
+                // Wake capture stream BEFORE playback so echo reference and microphone capture
+                // stabilize before sample 0 of post-standby speech is emitted.
                 if (isNative) {
                     startInRes = TestVoiceCommAecActivity.nativeStartStream(nativeRec);
                 } else {
@@ -1243,6 +1312,7 @@ final class VoipAecTestEngine {
                         startInRes = -1;
                     }
                 }
+                int startOutRes = player.resumeAfterStandby();
                 player.playSpeechFromStart();
 
                 long loopStartMs = SystemClock.elapsedRealtime();
@@ -1315,7 +1385,7 @@ final class VoipAecTestEngine {
                             : -1L;
                     postOutFrames = player.getFramesWritten();
                 }
-                player.setPlaySpeech(false);
+                player.fadeOutSpeechAndDrain(cb);
 
                 if (!cb.isWorkerEnabled()) return;
 
@@ -1653,6 +1723,26 @@ final class VoipAecTestEngine {
         return cb.isWorkerEnabled();
     }
 
+    private static long drainPendingCapture(
+            boolean isNative,
+            long nativeRec,
+            AudioRecord javaRec,
+            short[] ioBuf,
+            int burst,
+            Callbacks cb) {
+        long javaDrained = 0;
+        while (cb.isWorkerEnabled()) {
+            int drained = isNative
+                    ? TestVoiceCommAecActivity.nativeReadStream(nativeRec, ioBuf, 0, burst, 0L)
+                    : javaRec.read(ioBuf, 0, burst, AudioRecord.READ_NON_BLOCKING);
+            if (!isNative && drained > 0) {
+                javaDrained += drained;
+            }
+            if (drained <= 0) break;
+        }
+        return javaDrained;
+    }
+
     private static double computeJavaTimestampLatencyMillis(
             VoipPlayer player, AudioRecord record, long framesRead) {
         if (player == null || player.getAudioTrack() == null || record == null) return -1.0;
@@ -1666,7 +1756,7 @@ final class VoipAecTestEngine {
                 || inTs.framePosition <= 0) {
             return -1.0;
         }
-        long framesWritten = player.getFramesWritten();
+        long framesWritten = player.getStreamFramesWritten();
         long outPresNs = outTs.nanoTime
                 + ((framesWritten - outTs.framePosition) * 1_000_000_000L) / SAMPLE_RATE;
         long inCapNs = inTs.nanoTime
@@ -1680,13 +1770,16 @@ final class VoipAecTestEngine {
         private final short[] mAudioData;
         private final int mAudioDataLen;
         private final Object mNativeLock = new Object();
+        private final Object mJavaWriteLock = new Object();
         private volatile long mNativeHandle = 0;
         private volatile AudioTrack mAudioTrack;
         private volatile boolean mPlaying = false;
         private volatile boolean mPlaySpeech = false;
         private volatile boolean mPausedJava = false;
-        private volatile boolean mResetCursor = false;
-        private final AtomicLong mFramesWritten = new AtomicLong(0);
+        private volatile boolean mFadeOutJava = false;
+        private final AtomicInteger mResetGeneration = new AtomicInteger(0);
+        private final AtomicLong mTotalFramesWritten = new AtomicLong(0);
+        private final AtomicLong mStreamFramesWritten = new AtomicLong(0);
         private volatile RmsEnvelopeTracker mRmsTracker;
         private Thread mThread;
 
@@ -1708,12 +1801,29 @@ final class VoipAecTestEngine {
                     }
                 }
             }
-            mPlaySpeech = play;
-            mResetCursor = true;
+            if (play) {
+                mFadeOutJava = false;
+                mPlaySpeech = true;
+                mResetGeneration.incrementAndGet();
+            } else {
+                boolean wasPlaying = mPlaySpeech;
+                mPlaySpeech = false;
+                if (wasPlaying) {
+                    mFadeOutJava = true;
+                } else {
+                    mFadeOutJava = false;
+                    mResetGeneration.incrementAndGet();
+                }
+            }
         }
 
         void playSpeechFromStart() {
             setPlaySpeech(true);
+        }
+
+        void fadeOutSpeechAndDrain(Callbacks cb) {
+            setPlaySpeech(false);
+            sleepInterruptible(45, cb);
         }
 
         long getNativeHandle() {
@@ -1727,7 +1837,11 @@ final class VoipAecTestEngine {
         }
 
         long getFramesWritten() {
-            return mFramesWritten.get();
+            return mTotalFramesWritten.get();
+        }
+
+        long getStreamFramesWritten() {
+            return mStreamFramesWritten.get();
         }
 
         void restartIfDisconnected() {
@@ -1753,6 +1867,9 @@ final class VoipAecTestEngine {
         }
 
         void pauseForStandby() {
+            mPlaySpeech = false;
+            mFadeOutJava = false;
+            mResetGeneration.incrementAndGet();
             if (mIsNative) {
                 synchronized (mNativeLock) {
                     if (mNativeHandle != 0) {
@@ -1767,14 +1884,25 @@ final class VoipAecTestEngine {
                         track.pause();
                     } catch (Exception ignored) {
                     }
+                    synchronized (mJavaWriteLock) {
+                        try {
+                            track.flush();
+                        } catch (Exception ignored) {
+                        }
+                        mStreamFramesWritten.set(0);
+                    }
                 }
             }
         }
 
         int resumeAfterStandby() {
+            mPlaySpeech = false;
+            mFadeOutJava = false;
+            mResetGeneration.incrementAndGet();
             if (mIsNative) {
                 synchronized (mNativeLock) {
                     if (mNativeHandle != 0) {
+                        TestVoiceCommAecActivity.nativeSetPlaySpeech(mNativeHandle, false);
                         return TestVoiceCommAecActivity.nativeStartStream(mNativeHandle);
                     }
                     return -1;
@@ -1795,7 +1923,10 @@ final class VoipAecTestEngine {
 
         boolean start() {
             if (mPlaying) return true;
-            mFramesWritten.set(0);
+            mTotalFramesWritten.set(0);
+            mStreamFramesWritten.set(0);
+            mFadeOutJava = false;
+            mResetGeneration.incrementAndGet();
             if (mIsNative) {
                 synchronized (mNativeLock) {
                     mNativeHandle = TestVoiceCommAecActivity.nativeOpenOutputStream(SAMPLE_RATE, 1);
@@ -1816,7 +1947,7 @@ final class VoipAecTestEngine {
                             SAMPLE_RATE,
                             AudioFormat.CHANNEL_OUT_MONO,
                             AudioFormat.ENCODING_PCM_16BIT);
-                    int bufferSize = Math.max(minBuf * 2, 7680);
+                    int bufferSize = Math.max(minBuf * 4, 16384);
                     AudioTrack.Builder builder = new AudioTrack.Builder()
                             .setAudioAttributes(new AudioAttributes.Builder()
                                     .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
@@ -1836,6 +1967,9 @@ final class VoipAecTestEngine {
                     if (track.getState() != AudioTrack.STATE_INITIALIZED) {
                         track.release();
                         return false;
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        track.setStartThresholdInFrames(PLAYER_RMS_WINDOW_SAMPLES * 2);
                     }
                     track.play();
                     mAudioTrack = track;
@@ -1858,6 +1992,7 @@ final class VoipAecTestEngine {
             short[] silenceBuf = new short[burst];
 
             if (mIsNative) {
+                int seenResetGen = mResetGeneration.get();
                 int lastOffset = 0;
                 synchronized (mNativeLock) {
                     if (mNativeHandle != 0) {
@@ -1866,9 +2001,10 @@ final class VoipAecTestEngine {
                     }
                 }
                 while (mPlaying) {
-                    if (mResetCursor) {
+                    int gen = mResetGeneration.get();
+                    if (gen != seenResetGen) {
+                        seenResetGen = gen;
                         lastOffset = 0;
-                        mResetCursor = false;
                     }
                     int currOffset;
                     synchronized (mNativeLock) {
@@ -1876,61 +2012,122 @@ final class VoipAecTestEngine {
                         currOffset =
                                 TestVoiceCommAecActivity.nativeGetPlaybackOffset(mNativeHandle);
                     }
+                    if (currOffset < lastOffset) {
+                        lastOffset = Math.max(0, currOffset);
+                    }
                     RmsEnvelopeTracker tracker = mRmsTracker;
                     if (tracker != null && mPlaySpeech && mAudioData != null && mAudioDataLen > 0) {
-                        int advanced = (currOffset - lastOffset + mAudioDataLen) % mAudioDataLen;
-                        if (advanced > mAudioDataLen / 2) {
-                            lastOffset = currOffset;
-                            advanced = 0;
-                        }
+                        int clampedCurr = Math.min(currOffset, mAudioDataLen);
+                        int advanced = clampedCurr - lastOffset;
                         while (advanced > 0) {
                             int count = Math.min(advanced, burst);
-                            for (int i = 0; i < count; i++) {
-                                tempBuf[i] = mAudioData[(lastOffset + i) % mAudioDataLen];
-                            }
+                            System.arraycopy(mAudioData, lastOffset, tempBuf, 0, count);
                             tracker.updateDirect(tempBuf, count);
-                            lastOffset = (lastOffset + count) % mAudioDataLen;
+                            lastOffset += count;
                             advanced -= count;
                         }
                     } else {
-                        lastOffset = currOffset;
+                        lastOffset = Math.max(0, currOffset);
                     }
                     SystemClock.sleep(10);
                 }
             } else {
                 AudioTrack track = mAudioTrack;
                 if (track == null) return;
+                short[] rmsBuf = new short[burst];
                 int offset = 0;
+                int seenResetGen = mResetGeneration.get();
+                boolean trackingSpeech = false;
+                long speechStartStreamFrame = 0L;
+                long speechPlayedStreamFrame = 0L;
+
                 while (mPlaying) {
                     if (mPausedJava) {
                         SystemClock.sleep(15);
                         continue;
                     }
-                    if (mResetCursor) {
+                    boolean playSpeech = mPlaySpeech;
+                    int gen = mResetGeneration.get();
+                    boolean resetCursor = (gen != seenResetGen);
+                    if (resetCursor) {
+                        seenResetGen = gen;
                         offset = 0;
-                        mResetCursor = false;
+                        mFadeOutJava = false;
                     }
+
+                    // Throttle queued cblk depth to <= 2 bursts (40 ms) during BOTH silence and
+                    // speech so sample 0 of speech never queues behind 150 ms of buffered zeros
+                    // and speech never stuffs 170 ms of unplayed tail into cblk.
+                    long streamWrittenNow = mStreamFramesWritten.get();
+                    long playHeadBeforeWrite = track.getPlaybackHeadPosition() & 0xFFFFFFFFL;
+                    if (playHeadBeforeWrite > 0
+                            && streamWrittenNow - playHeadBeforeWrite >= burst * 2L) {
+                        speechPlayedStreamFrame = updateJavaRmsFromPlayHead(
+                                track,
+                                trackingSpeech,
+                                speechStartStreamFrame,
+                                speechPlayedStreamFrame,
+                                rmsBuf,
+                                silenceBuf,
+                                burst);
+                        SystemClock.sleep(4);
+                        continue;
+                    }
+
+                    if (playSpeech && (!trackingSpeech || resetCursor)) {
+                        offset = 0;
+                        speechStartStreamFrame = streamWrittenNow;
+                        speechPlayedStreamFrame = streamWrittenNow;
+                        trackingSpeech = true;
+                    } else if (!playSpeech) {
+                        trackingSpeech = false;
+                    }
+
                     short[] writeBuf;
-                    if (mPlaySpeech && mAudioData != null && mAudioDataLen > 0) {
-                        int toWrite = Math.min(burst, mAudioDataLen - offset);
-                        System.arraycopy(mAudioData, offset, tempBuf, 0, toWrite);
-                        if (toWrite < burst) {
-                            System.arraycopy(mAudioData, 0, tempBuf, toWrite, burst - toWrite);
-                            offset = burst - toWrite;
+                    if (playSpeech && mAudioData != null && mAudioDataLen > 0) {
+                        if (offset < mAudioDataLen) {
+                            int toWrite = Math.min(burst, mAudioDataLen - offset);
+                            System.arraycopy(mAudioData, offset, tempBuf, 0, toWrite);
+                            if (toWrite < burst) {
+                                Arrays.fill(tempBuf, toWrite, burst, (short) 0);
+                            }
+                            offset += toWrite;
+                            writeBuf = tempBuf;
                         } else {
-                            offset = (offset + toWrite) % mAudioDataLen;
+                            writeBuf = silenceBuf;
                         }
+                    } else if (mFadeOutJava && mAudioData != null && offset > 0
+                            && offset < mAudioDataLen) {
+                        mFadeOutJava = false;
+                        int fadeLen = Math.min(SPEECH_FADE_OUT_SAMPLES, mAudioDataLen - offset);
+                        fadeLen = Math.min(fadeLen, burst);
+                        for (int i = 0; i < fadeLen; i++) {
+                            double gain = 0.5 * (1.0 + Math.cos(Math.PI * (i + 1) / fadeLen));
+                            tempBuf[i] = (short) Math.round(mAudioData[offset + i] * gain);
+                        }
+                        if (fadeLen < burst) {
+                            Arrays.fill(tempBuf, fadeLen, burst, (short) 0);
+                        }
+                        offset = 0;
                         writeBuf = tempBuf;
-                        RmsEnvelopeTracker tracker = mRmsTracker;
-                        if (tracker != null) {
-                            tracker.updateDirect(writeBuf, burst);
-                        }
                     } else {
+                        mFadeOutJava = false;
+                        offset = 0;
                         writeBuf = silenceBuf;
                     }
+
                     int written;
                     try {
-                        written = track.write(writeBuf, 0, burst, AudioTrack.WRITE_BLOCKING);
+                        synchronized (mJavaWriteLock) {
+                            if (!mPlaying || mPausedJava) {
+                                continue;
+                            }
+                            written = track.write(writeBuf, 0, burst, AudioTrack.WRITE_BLOCKING);
+                            if (written > 0 && !mPausedJava) {
+                                mStreamFramesWritten.addAndGet(written);
+                                mTotalFramesWritten.addAndGet(written);
+                            }
+                        }
                     } catch (Exception e) {
                         if (mPlaying) {
                             Log.w(TAG, "AudioTrack.write threw in VoipPlayer", e);
@@ -1943,22 +2140,81 @@ final class VoipAecTestEngine {
                         }
                         break;
                     }
-                    mFramesWritten.addAndGet(written);
+
+                    if (trackingSpeech) {
+                        speechPlayedStreamFrame = updateJavaRmsFromPlayHead(
+                                track,
+                                true,
+                                speechStartStreamFrame,
+                                speechPlayedStreamFrame,
+                                rmsBuf,
+                                silenceBuf,
+                                burst);
+                    }
                 }
             }
+        }
+
+        private long updateJavaRmsFromPlayHead(
+                AudioTrack track,
+                boolean trackingSpeech,
+                long speechStartStreamFrame,
+                long speechPlayedStreamFrame,
+                short[] rmsBuf,
+                short[] silenceBuf,
+                int burst) {
+            if (!trackingSpeech || mAudioData == null || mAudioDataLen <= 0) {
+                return speechPlayedStreamFrame;
+            }
+            RmsEnvelopeTracker tracker = mRmsTracker;
+            long totalStreamWritten = mStreamFramesWritten.get();
+            long playHead = track.getPlaybackHeadPosition() & 0xFFFFFFFFL;
+            if (playHead > totalStreamWritten) {
+                playHead = totalStreamWritten;
+            }
+            if (playHead <= speechPlayedStreamFrame) {
+                return speechPlayedStreamFrame;
+            }
+            if (tracker != null) {
+                long advanced = playHead - speechPlayedStreamFrame;
+                long relOffset = Math.max(0L, speechPlayedStreamFrame - speechStartStreamFrame);
+                while (advanced > 0) {
+                    int count = (int) Math.min(advanced, (long) burst);
+                    if (relOffset < mAudioDataLen) {
+                        int avail = (int) Math.min((long) count, mAudioDataLen - relOffset);
+                        System.arraycopy(mAudioData, (int) relOffset, rmsBuf, 0, avail);
+                        if (avail < count) {
+                            Arrays.fill(rmsBuf, avail, count, (short) 0);
+                        }
+                        tracker.updateDirect(rmsBuf, count);
+                    } else {
+                        tracker.updateDirect(silenceBuf, count);
+                    }
+                    relOffset += count;
+                    advanced -= count;
+                }
+            }
+            return playHead;
         }
 
         void stop() {
             mPlaying = false;
             mPausedJava = false;
-            // Pause and stop Java AudioTrack BEFORE joining mThread so WRITE_BLOCKING unblocks!
+            // Pause Java AudioTrack BEFORE acquiring mJavaWriteLock / joining mThread so
+            // WRITE_BLOCKING unblocks immediately without risk of lock inversion.
             AudioTrack track = mAudioTrack;
             if (track != null) {
                 try {
                     track.pause();
-                    track.flush();
-                    track.stop();
                 } catch (Exception ignored) {
+                }
+                synchronized (mJavaWriteLock) {
+                    try {
+                        track.flush();
+                        track.stop();
+                    } catch (Exception ignored) {
+                    }
+                    mStreamFramesWritten.set(0);
                 }
             }
             if (mIsNative) {

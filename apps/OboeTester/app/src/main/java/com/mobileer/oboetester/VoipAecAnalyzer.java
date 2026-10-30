@@ -61,8 +61,12 @@ final class VoipAecAnalyzer {
 
     static final int PHASE_SILENCE_WARMUP_MS = 400;
     static final int PHASE_SILENCE_DURATION_MS = 1500;
-    static final int PHASE_SPEECH_MS = 5000;
-    static final int SPEECH_LEVEL_WARMUP_MS = 800; // Symmetric [0.8s, 5.0s) window for P3 & P4
+    static final int PHASE_FLUSH_MS = 400;
+    static final int PHASE_SPEECH_MS = 6000;
+    static final int PHASE_TAIL_DRAIN_MS = 250;
+    static final int SPEECH_FADE_OUT_MS = 15;
+    static final int SPEECH_FADE_OUT_SAMPLES = (SAMPLE_RATE * SPEECH_FADE_OUT_MS) / 1000; // 720
+    static final int SPEECH_LEVEL_WARMUP_MS = 800; // Symmetric [0.8s, 6.0s) window for P3 & P4
     static final int SHOT_INTERVAL_MS = 200;
     static final int STANDBY_PAUSE_MS = 3500;      // 3.5s (>3.0s AAudio MMAP standby threshold)
     static final int STANDBY_RESUME_MS = 1200;
@@ -124,7 +128,7 @@ final class VoipAecAnalyzer {
         double aecOnDbfs = LEVEL_MIN_RMS_DB;
         boolean aecOnMeasured = false;
         double stimulusSnrDb = 0.0;    // aecOffDbfs - noiseFloorDbfs
-        double selfErleDb = 0.0;       // aecOffDbfs - aecOnDbfs (over symmetric [0.8s, 5.0s) window)
+        double selfErleDb = 0.0;       // aecOffDbfs - aecOnDbfs (over symmetric [0.8s, 6.0s) window)
         double distToFloorDb = 0.0;    // aecOnDbfs - max(noiseFloorDbfs, aecOnSilenceDbfs)
 
         double corrAecOff = 0.0;
@@ -280,6 +284,25 @@ final class VoipAecAnalyzer {
 
     static double rmsToDbfs(double rms) {
         return 20.0 * Math.log10(Math.max(rms, LEVEL_MIN_RMS_VAL));
+    }
+
+    /**
+     * Returns a copy of {@code pcm} with a half-cosine fade-out ramp applied over the final
+     * {@code fadeSamples} samples so single-pass playback transitions smoothly to digital silence
+     * without an end-of-clip discontinuity click.
+     */
+    static short[] applyTailCosineFadeOut(short[] pcm, int fadeSamples) {
+        if (pcm == null || pcm.length == 0 || fadeSamples <= 0) {
+            return pcm;
+        }
+        short[] out = Arrays.copyOf(pcm, pcm.length);
+        int fade = Math.min(fadeSamples, out.length);
+        int start = out.length - fade;
+        for (int i = 0; i < fade; i++) {
+            double gain = 0.5 * (1.0 + Math.cos(Math.PI * (i + 1) / fade));
+            out[start + i] = (short) Math.round(out[start + i] * gain);
+        }
+        return out;
     }
 
     static boolean hasNonZeroSample(short[] buf, int count) {

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <jni.h>
 #include <memory>
@@ -89,6 +90,17 @@ private:
 
 class VoiceCommOutputCallback : public oboe::AudioStreamDataCallback {
 public:
+    static constexpr size_t kFadeOutFrames = 720; // 15 ms at 48 kHz
+
+    VoiceCommOutputCallback() {
+        constexpr double kPi = 3.14159265358979323846;
+        for (size_t i = 0; i < kFadeOutFrames; i++) {
+            const double gain = 0.5 * (1.0 + std::cos(kPi * static_cast<double>(i + 1) /
+                                                      static_cast<double>(kFadeOutFrames)));
+            mFadeOutGainQ15[i] = static_cast<int32_t>(std::lround(gain * 32768.0));
+        }
+    }
+
     oboe::DataCallbackResult onAudioReady(
             oboe::AudioStream *audioStream,
             void *audioData,
@@ -98,25 +110,47 @@ public:
         const int32_t numSamples = numFrames * channels;
 
         std::unique_lock<std::mutex> lock(mBufferMutex, std::try_to_lock);
-        if (lock.owns_lock() && mPlaySpeech.load(std::memory_order_acquire) &&
-            !mPlaybackBuffer.empty()) {
-            size_t offset = mPlaybackBufferOffset.load(std::memory_order_relaxed);
-            if (mResetOffset.exchange(false, std::memory_order_acq_rel)) {
-                offset = 0;
-            }
-            const size_t len = mPlaybackBuffer.size();
-            offset %= len;
+        if (!lock.owns_lock() || mPlaybackBuffer.empty()) {
+            memset(out, 0, static_cast<size_t>(numSamples) * sizeof(int16_t));
+            return oboe::DataCallbackResult::Continue;
+        }
+
+        const size_t len = mPlaybackBuffer.size();
+        size_t offset = mPlaybackBufferOffset.load(std::memory_order_relaxed);
+        if (mResetOffset.exchange(false, std::memory_order_acq_rel)) {
+            offset = 0;
+            mFadeOutPos = 0;
+        }
+
+        if (mPlaySpeech.load(std::memory_order_acquire)) {
+            mFadeOutPos = 0;
             for (int32_t i = 0; i < numFrames; i++) {
-                const int16_t sample = mPlaybackBuffer[offset];
+                const int16_t sample = (offset < len) ? mPlaybackBuffer[offset++] : 0;
                 for (int32_t ch = 0; ch < channels; ch++) {
                     *out++ = sample;
                 }
-                offset = (offset + 1) % len;
             }
             mPlaybackBufferOffset.store(offset, std::memory_order_release);
+        } else if (mFadingOut.load(std::memory_order_acquire)) {
+            for (int32_t i = 0; i < numFrames; i++) {
+                int16_t sample = 0;
+                if (offset < len && mFadeOutPos < kFadeOutFrames) {
+                    const int32_t s = mPlaybackBuffer[offset++];
+                    sample = static_cast<int16_t>((s * mFadeOutGainQ15[mFadeOutPos++]) >> 15);
+                }
+                for (int32_t ch = 0; ch < channels; ch++) {
+                    *out++ = sample;
+                }
+            }
+            if (offset >= len || mFadeOutPos >= kFadeOutFrames) {
+                mFadeOutPos = 0;
+                mFadingOut.store(false, std::memory_order_release);
+                mPlaybackBufferOffset.store(0, std::memory_order_release);
+            } else {
+                mPlaybackBufferOffset.store(offset, std::memory_order_release);
+            }
         } else {
-            if (mResetOffset.exchange(false, std::memory_order_acq_rel) ||
-                mPlaybackBufferOffset.load(std::memory_order_relaxed) != 0) {
+            if (offset != 0) {
                 mPlaybackBufferOffset.store(0, std::memory_order_release);
             }
             memset(out, 0, static_cast<size_t>(numSamples) * sizeof(int16_t));
@@ -126,22 +160,41 @@ public:
 
     void setPlaybackData(const int16_t *data, size_t numSamples) {
         mPlaySpeech.store(false, std::memory_order_release);
+        mFadingOut.store(false, std::memory_order_release);
         std::lock_guard<std::mutex> lock(mBufferMutex);
         if (data != nullptr && numSamples > 0) {
             mPlaybackBuffer.assign(data, data + numSamples);
         } else {
             mPlaybackBuffer.clear();
         }
+        mFadeOutPos = 0;
         mPlaybackBufferOffset.store(0, std::memory_order_release);
         mResetOffset.store(true, std::memory_order_release);
     }
 
     void setPlaySpeech(bool play) {
-        mResetOffset.store(true, std::memory_order_release);
-        if (!play) {
-            mPlaybackBufferOffset.store(0, std::memory_order_release);
+        if (play) {
+            mFadingOut.store(false, std::memory_order_release);
+            mResetOffset.store(true, std::memory_order_release);
+            mPlaySpeech.store(true, std::memory_order_release);
+        } else {
+            const bool wasPlaying = mPlaySpeech.exchange(false, std::memory_order_acq_rel);
+            const size_t offset = mPlaybackBufferOffset.load(std::memory_order_acquire);
+            if (wasPlaying && offset > 0) {
+                mFadingOut.store(true, std::memory_order_release);
+            } else {
+                mFadingOut.store(false, std::memory_order_release);
+                mPlaybackBufferOffset.store(0, std::memory_order_release);
+                mResetOffset.store(true, std::memory_order_release);
+            }
         }
-        mPlaySpeech.store(play, std::memory_order_release);
+    }
+
+    void resetImmediate() {
+        mPlaySpeech.store(false, std::memory_order_release);
+        mFadingOut.store(false, std::memory_order_release);
+        mPlaybackBufferOffset.store(0, std::memory_order_release);
+        mResetOffset.store(true, std::memory_order_release);
     }
 
     int32_t getPlaybackOffset() const {
@@ -151,9 +204,12 @@ public:
 private:
     std::mutex mBufferMutex;
     std::vector<int16_t> mPlaybackBuffer;
+    int32_t mFadeOutGainQ15[kFadeOutFrames]{};
+    size_t mFadeOutPos = 0;
     std::atomic<size_t> mPlaybackBufferOffset{0};
     std::atomic<bool> mResetOffset{false};
     std::atomic<bool> mPlaySpeech{false};
+    std::atomic<bool> mFadingOut{false};
 };
 
 struct VoiceCommNativeStream {
@@ -1988,6 +2044,9 @@ Java_com_mobileer_oboetester_TestVoiceCommAecActivity_nativeStopStream(
         JNIEnv * /*env*/, jclass /*clazz*/, jlong streamHandle) {
     auto *holder = reinterpret_cast<VoiceCommNativeStream *>(streamHandle);
     if (!holder || !holder->stream) return static_cast<jint>(oboe::Result::ErrorNull);
+    if (holder->callback) {
+        holder->callback->resetImmediate();
+    }
     return static_cast<jint>(holder->stream->requestStop());
 }
 
