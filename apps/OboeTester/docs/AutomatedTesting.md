@@ -59,7 +59,7 @@ For example:
 
 There are two required parameters for all tests:
 
-    --es test {latency, glitch, data_paths, input, output, cpu_load}
+    --es test {latency, glitch, data_paths, input, output, cpu_load, voip_aec}
             The "latency" test will perform a Round Trip Latency test.
             It will request EXCLUSIVE mode for minimal latency.
             The "glitch" test will perform a single Glitch test.
@@ -67,6 +67,7 @@ There are two required parameters for all tests:
             The "input" test will open and start an input stream.
             The "output" test will open and start an output stream.
             The "cpu_load" test will run the CPU LOAD activity.
+            The "voip_aec" test will run the 5-Phase VoIP & AEC Diagnostic suite.
 
     --es file {name of resulting file}
 
@@ -145,6 +146,16 @@ There are some optional parameters for just the "cpu_load" test:
     --ez scroll_graphics  {true, false} // if true then continually update the power scope. Default is false.
     --ez use_workload_increase_api {true, false} // if true and using ADPF, notify adpf with workload increase/reset apis. Default is false.
 
+There are some optional parameters for just the "voip_aec" test (requires `RECORD_AUDIO` permission granted beforehand, no external loopback adapter needed):
+
+    --ez auto_run         {true, false} // start automatically on launch (defaults to true when launched via --es test voip_aec)
+    --ez native           {true, false} // test Native AAudio (Oboe LowLatency VOICE_COMMUNICATION). Default is true.
+    --ez java             {true, false} // test Java API (AudioTrack + AudioRecord VOICE_COMMUNICATION). Default is true.
+    --ez force_ns_off     {true, false} // explicitly disable NoiseSuppressor to isolate pure AcousticEchoCanceler performance. Default is false.
+    --ez aec_phases       {true, false} // run Phases 1-4 (Silence Floors, Uncancelled Echo & RTL, Cancelled Echo & Self-ERLE). Default is true.
+    --ez standby          {true, false} // run Phase 5 (Multi-Turn Voice Agent Standby 3.5s Pause + Resume). Default is true.
+    --es file             {relativeFileName} // optional filename under OboeTester's external files directory (default: voice_comm_aec_report.txt)
+
 For example, a complete command for a "latency" test might be:
 
     adb shell am start -n com.mobileer.oboetester/.MainActivity \
@@ -178,6 +189,16 @@ or for a "data_paths" test:
         --ez use_input_devices false \
         --ez use_output_devices true \
         --es file datapaths20230608.txt
+
+or for a "voip_aec" test:
+
+    adb shell am start -n com.mobileer.oboetester/.MainActivity \
+        --es test voip_aec \
+        --ez native true \
+        --ez java true \
+        --ez aec_phases true \
+        --ez standby true \
+        --es file voice_comm_aec_report.txt
 
 ## Interpreting Test Results
 
@@ -297,3 +318,13 @@ input devices tests, and output tests.
 Each will show the specific configuration of a test before showing whether it passed or failed.
 At the end of the report, an analysis of the failed tests will be given
 followed by the number of passed, failed, and skipped tests.
+
+### VoIP & AEC Diagnostic Report (`voip_aec`)
+
+The `voip_aec` report contains a 5-phase self-referenced `VOICE_COMMUNICATION` diagnostic summary across Native AAudio (`PerformanceMode::LowLatency`) and Java (`AudioTrack` + `AudioRecord`), including Ambient/Active-AEC silence floors, Uncancelled Speech SNR & Round-Trip Latency (RTL), Cancelled Speech Self-ERLE & residual correlation, 3.5s multi-turn standby recovery, effect control verification (`AcousticEchoCanceler` and `NoiseSuppressor`), and actionable HAL/framework findings.
+
+#### Stimulus Asset Provenance & License
+
+`apps/OboeTester/app/src/main/res/raw/voice_speech_48k.mp3` is resampled to 48 kHz mono from the Android Open Source Project (AOSP) CTS Verifier speech stimulus `cts/apps/CtsVerifier/res/raw/speech.mp3`:
+- **Copyright**: Copyright The Android Open Source Project
+- **License**: Apache License, Version 2.0 (`http://www.apache.org/licenses/LICENSE-2.0`)
