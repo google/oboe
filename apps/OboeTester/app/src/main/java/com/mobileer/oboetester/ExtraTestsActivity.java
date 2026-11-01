@@ -58,4 +58,8 @@ public class ExtraTestsActivity extends BaseOboeTesterActivity {
     public void onLaunchMmapTimestampTest(View view) {
         launchTestThatDoesRecording(TestMmapTimestampActivity.class);
     }
+
+    public void onLaunchVoiceCommAecTest(View view) {
+        launchTestThatDoesRecording(TestVoiceCommAecActivity.class);
+    }
 }

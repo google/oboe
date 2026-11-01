@@ -48,6 +48,7 @@ public class MainActivity extends BaseOboeTesterActivity {
     public static final String VALUE_TEST_NAME_INPUT = "input";
     public static final String VALUE_TEST_NAME_CPU_LOAD = "cpu_load";
     public static final String VALUE_TEST_NAME_MMAP_TIMESTAMP = "mmap_timestamp";
+    public static final String VALUE_TEST_NAME_VOIP_AEC = "voip_aec";
 
 
     private TextView mCallbackSizeEditor;
@@ -187,6 +188,9 @@ public class MainActivity extends BaseOboeTesterActivity {
                 intent.putExtras(bundle);
             } else if (VALUE_TEST_NAME_MMAP_TIMESTAMP.equals(testName)) {
                 intent = new Intent(this, TestMmapTimestampActivity.class);
+                intent.putExtras(bundle);
+            } else if (VALUE_TEST_NAME_VOIP_AEC.equals(testName)) {
+                intent = new Intent(this, TestVoiceCommAecActivity.class);
                 intent.putExtras(bundle);
             }
         }

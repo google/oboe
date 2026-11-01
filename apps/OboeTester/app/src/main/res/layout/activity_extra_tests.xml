@@ -156,5 +156,15 @@
             android:backgroundTint="@color/button_tint"
             android:onClick="onLaunchMmapTimestampTest"
             android:text="MMAP Timestamp" />
+
+        <Button
+            android:id="@+id/buttonVoiceCommAecTest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
+            android:backgroundTint="@color/button_tint"
+            android:onClick="onLaunchVoiceCommAecTest"
+            android:text="VoIP &amp; AEC Diag" />
     </GridLayout>
 </LinearLayout>

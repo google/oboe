@@ -19,7 +19,6 @@
 #include "TestMmapTimestamp.h"
 
 #include <aaudio/AAudioExtensions.h>
-#include <aaudio/AAudioLoader.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdarg>
@@ -31,6 +30,7 @@
 #include "common/OboeDebug.h"
 #include "oboe/AudioClock.h"
 #include "OboeTools.h"
+#include "ScopedMMapAutoPolicy.h"
 
 using namespace oboe;
 
@@ -347,61 +347,44 @@ void TestMmapTimestamp::runSuite(ConfigFlags flags) {
     const bool prevWorkarounds = OboeGlobals::areWorkaroundsEnabled();
     OboeGlobals::setWorkaroundsEnabled(false);
 
-    AAudioLoader *loader = AAudioLoader::getInstance();
-    const bool hasRawPolicyApi = (loader != nullptr && loader->open() == 0 &&
-            loader->aaudio_getMMapPolicy != nullptr && loader->aaudio_setMMapPolicy != nullptr);
-    const aaudio_policy_t prevRawPolicy = hasRawPolicyApi
-            ? loader->aaudio_getMMapPolicy()
-            : static_cast<aaudio_policy_t>(MMapPolicy::Unspecified);
-    const bool prevMmapEnabled = AAudioExtensions::getInstance().isMMapEnabled();
-    bool overrodeMmapPolicy = false;
-    if (!prevMmapEnabled) {
-        AAudioExtensions::getInstance().setMMapEnabled(true);
-        overrodeMmapPolicy = true;
-    }
-
-    struct StreamPlan {
-        Direction dir;
-        SharingMode sharing;
-        std::string label;
-    };
-    std::vector<StreamPlan> plans;
-    if (flags.testOutput && flags.testExclusive) {
-        plans.push_back({Direction::Output, SharingMode::Exclusive, "OUTPUT EXCLUSIVE"});
-    }
-    if (flags.testOutput && flags.testShared) {
-        plans.push_back({Direction::Output, SharingMode::Shared, "OUTPUT SHARED"});
-    }
-    if (flags.testInput && flags.testExclusive) {
-        plans.push_back({Direction::Input, SharingMode::Exclusive, "INPUT EXCLUSIVE"});
-    }
-    if (flags.testInput && flags.testShared) {
-        plans.push_back({Direction::Input, SharingMode::Shared, "INPUT SHARED"});
-    }
-
     {
-        std::lock_guard<std::mutex> lock(mReportMutex);
-        for (const auto &p : plans) {
-            StreamScoreRow row;
-            row.streamLabel = p.label;
-            row.configSummary = "Pending...";
-            row.isShared = (p.sharing == SharingMode::Shared);
-            row.steadyStatus = flags.runSteadyState ? "PENDING" : "SKIP";
-            row.rapidCyclesStatus = flags.runRapidCycles ? "PENDING" : "SKIP";
-            row.standbyStatus = flags.runStandbyResume ? "PENDING" : "SKIP";
-            mScorecard.push_back(std::move(row));
+        ScopedMMapAutoPolicy mmapScope;
+
+        struct StreamPlan {
+            Direction dir;
+            SharingMode sharing;
+            std::string label;
+        };
+        std::vector<StreamPlan> plans;
+        if (flags.testOutput && flags.testExclusive) {
+            plans.push_back({Direction::Output, SharingMode::Exclusive, "OUTPUT EXCLUSIVE"});
         }
-    }
+        if (flags.testOutput && flags.testShared) {
+            plans.push_back({Direction::Output, SharingMode::Shared, "OUTPUT SHARED"});
+        }
+        if (flags.testInput && flags.testExclusive) {
+            plans.push_back({Direction::Input, SharingMode::Exclusive, "INPUT EXCLUSIVE"});
+        }
+        if (flags.testInput && flags.testShared) {
+            plans.push_back({Direction::Input, SharingMode::Shared, "INPUT SHARED"});
+        }
 
-    for (size_t i = 0; i < plans.size() && mThreadEnabled.load(); ++i) {
-        runSingleConfig(plans[i].dir, plans[i].sharing, flags, i);
-    }
+        {
+            std::lock_guard<std::mutex> lock(mReportMutex);
+            for (const auto &p : plans) {
+                StreamScoreRow row;
+                row.streamLabel = p.label;
+                row.configSummary = "Pending...";
+                row.isShared = (p.sharing == SharingMode::Shared);
+                row.steadyStatus = flags.runSteadyState ? "PENDING" : "SKIP";
+                row.rapidCyclesStatus = flags.runRapidCycles ? "PENDING" : "SKIP";
+                row.standbyStatus = flags.runStandbyResume ? "PENDING" : "SKIP";
+                mScorecard.push_back(std::move(row));
+            }
+        }
 
-    if (overrodeMmapPolicy) {
-        if (hasRawPolicyApi) {
-            loader->aaudio_setMMapPolicy(prevRawPolicy);
-        } else {
-            AAudioExtensions::getInstance().setMMapEnabled(prevMmapEnabled);
+        for (size_t i = 0; i < plans.size() && mThreadEnabled.load(); ++i) {
+            runSingleConfig(plans[i].dir, plans[i].sharing, flags, i);
         }
     }
     OboeGlobals::setWorkaroundsEnabled(prevWorkarounds);
