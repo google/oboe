@@ -59,7 +59,8 @@ public class TestErrorCallbackActivity extends AppCompatActivity {
             @Override
             public void run() {
                 int magic = getCallbackMagic();
-                updateMagicDisplay(magic);
+                int error = getCallbackError();
+                updateMagicDisplay(magic, error);
                 mHandler.postDelayed(runnableCode, SNIFFER_UPDATE_PERIOD_MSEC);
             }
         };
@@ -78,7 +79,7 @@ public class TestErrorCallbackActivity extends AppCompatActivity {
         }
     }
 
-    private void updateMagicDisplay(int magic) {
+    private void updateMagicDisplay(int magic, int error) {
         if (magic != 0) {
             String text = getString(R.string.report_magic_pass, MAGIC_GOOD);
             if (magic != MAGIC_GOOD) {
@@ -86,6 +87,9 @@ public class TestErrorCallbackActivity extends AppCompatActivity {
                         magic, MAGIC_GOOD);
             }
             mStatusDeleteCallback.setText(text);
+        } else if (error != 0) {
+            // The error callback fired with something other than a disconnect.
+            mStatusDeleteCallback.setText(getString(R.string.report_unexpected_error, error));
         }
     }
 
@@ -97,5 +101,6 @@ public class TestErrorCallbackActivity extends AppCompatActivity {
 
     private native void testDeleteCrash();
     private native int getCallbackMagic();
+    private native int getCallbackError();
 
 }

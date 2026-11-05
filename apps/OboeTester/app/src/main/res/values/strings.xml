@@ -286,6 +286,7 @@
     <string name="plug_or_unplug">Plug in or Unplug a Headset</string>
     <string name="report_magic_pass">PASS, got %X"</string>
     <string name="report_magic_fail">FAIL, got %1$X, expected %2$X</string>
+    <string name="report_unexpected_error">FAIL, unexpected error callback, error = %d</string>
     <string name="log_of_test_results">Log of Test Results</string>
     <string name="save_file">Save</string>
     <string name="cpu_affinity">CPUs:</string>
