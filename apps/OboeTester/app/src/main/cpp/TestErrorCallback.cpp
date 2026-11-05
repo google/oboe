@@ -21,55 +21,73 @@
 
 using namespace oboe;
 
-oboe::Result TestErrorCallback::open() {
+oboe::Result TestErrorCallback::open()
+{
     mCallbackMagic = 0;
     mDataCallback = std::make_shared<MyDataCallback>();
     mErrorCallback = std::make_shared<MyErrorCallback>(this);
     AudioStreamBuilder builder;
     oboe::Result result = builder.setSharingMode(oboe::SharingMode::Exclusive)
-            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
-            ->setFormat(oboe::AudioFormat::Float)
-            ->setChannelCount(kChannelCount)
+                              ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+                              ->setFormat(oboe::AudioFormat::Float)
+                              ->setChannelCount(kChannelCount)
 #if 0
             ->setDataCallback(mDataCallback.get())
             ->setErrorCallback(mErrorCallback.get()) // This can lead to a crash or FAIL.
 #else
-            ->setDataCallback(mDataCallback)
-            ->setErrorCallback(mErrorCallback) // shared_ptr avoids a crash
+                              ->setDataCallback(mDataCallback)
+                              ->setErrorCallback(mErrorCallback)
+                              ->setRoutingCallback(mErrorCallback)
 #endif
-            ->openStream(mStream);
+                              ->openStream(mStream);
     return result;
 }
 
-oboe::Result TestErrorCallback::start() {
+oboe::Result TestErrorCallback::start()
+{
     return mStream->requestStart();
 }
 
-oboe::Result TestErrorCallback::stop() {
+oboe::Result TestErrorCallback::stop()
+{
     return mStream->requestStop();
 }
 
-oboe::Result TestErrorCallback::close() {
+oboe::Result TestErrorCallback::close()
+{
     return mStream->close();
 }
 
-int TestErrorCallback::test() {
+int TestErrorCallback::test()
+{
     oboe::Result result = open();
-    if (result != oboe::Result::OK) {
-        return (int) result;
+    if (result != oboe::Result::OK)
+    {
+        return (int)result;
     }
-    return (int) start();
+    return (int)start();
 }
 
 DataCallbackResult TestErrorCallback::MyDataCallback::onAudioReady(
-        AudioStream *audioStream,
-        void *audioData,
-        int32_t numFrames) {
-    float *output = (float *) audioData;
+    AudioStream *audioStream,
+    void *audioData,
+    int32_t numFrames)
+{
+    float *output = (float *)audioData;
     // Fill buffer with random numbers to create "white noise".
     int numSamples = numFrames * kChannelCount;
-    for (int i = 0; i < numSamples; i++) {
+    for (int i = 0; i < numSamples; i++)
+    {
         *output++ = (float)((drand48() - 0.5) * 0.2);
     }
     return oboe::DataCallbackResult::Continue;
+}
+
+void TestErrorCallback::MyErrorCallback::onRoutingChanged(
+    oboe::AudioStream *audioStream,
+    const int32_t *deviceIds,
+    int32_t numDevices)
+{
+
+    LOGI("Routing changed! Number of devices: %d", numDevices);
 }

@@ -24,9 +24,9 @@
 /**
  * This code is an experiment to see if we can cause a crash from the ErrorCallback.
  */
-class TestErrorCallback {
+class TestErrorCallback
+{
 public:
-
     oboe::Result open();
     oboe::Result start();
     oboe::Result stop();
@@ -34,37 +34,39 @@ public:
 
     int test();
 
-    int32_t getCallbackMagic() {
+    int32_t getCallbackMagic()
+    {
         return mCallbackMagic.load();
     }
 
 protected:
-
     std::atomic<int32_t> mCallbackMagic{0};
 
 private:
-
-    void cleanup() {
+    void cleanup()
+    {
         mDataCallback.reset();
         mErrorCallback.reset();
         mStream.reset();
     }
 
-    class MyDataCallback : public oboe::AudioStreamDataCallback {    public:
-
+    class MyDataCallback : public oboe::AudioStreamDataCallback
+    {
+    public:
         oboe::DataCallbackResult onAudioReady(
-                oboe::AudioStream *audioStream,
-                void *audioData,
-                int32_t numFrames) override;
-
+            oboe::AudioStream *audioStream,
+            void *audioData,
+            int32_t numFrames) override;
     };
 
-    class MyErrorCallback : public oboe::AudioStreamErrorCallback {
+    class MyErrorCallback : public oboe::AudioStreamErrorCallback,
+                            public oboe::AudioStreamRoutingCallback
+    {
     public:
+        MyErrorCallback(TestErrorCallback *parent) : mParent(parent) {}
 
-        MyErrorCallback(TestErrorCallback *parent): mParent(parent) {}
-
-        virtual ~MyErrorCallback() {
+        virtual ~MyErrorCallback()
+        {
             // If the delete occurs before onErrorAfterClose() then this bad magic
             // value will be seen by the Java test code, causing a failure.
             // It is also possible that this code will just cause OboeTester to crash!
@@ -72,16 +74,17 @@ private:
             LOGE("%s() called", __func__);
         }
 
-        void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
+        void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override
+        {
             LOGE("%s() - error = %s, parent = %p",
                  __func__, oboe::convertToText(error), &mParent);
             // Trigger a crash by "deleting" this callback object while in use!
             // Do not try this at home. We are just trying to reproduce the crash
             // reported in #1603.
-            std::thread t([this]() {
+            std::thread t([this]()
+                          {
                     this->mParent->cleanup(); // Possibly delete stream and callback objects.
-                    LOGE("onErrorBeforeClose called cleanup!");
-                });
+                    LOGE("onErrorBeforeClose called cleanup!"); });
             t.detach();
             // There is a race condition between the deleting thread and this thread.
             // We do not want to add synchronization because the object is getting deleted
@@ -90,12 +93,17 @@ private:
             usleep(10 * 1000);
         }
 
-        void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override {
+        void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override
+        {
             // The callback was probably deleted by now.
             LOGE("%s() - error = %s, mMagic = 0x%08X",
                  __func__, oboe::convertToText(error), mMagic.load());
             mParent->mCallbackMagic = mMagic.load();
         }
+        void onRoutingChanged(
+            oboe::AudioStream *audioStream,
+            const int32_t *deviceIds,
+            int32_t numDevices) override;
 
     private:
         TestErrorCallback *mParent;
@@ -111,4 +119,4 @@ private:
     static constexpr int kChannelCount = 2;
 };
 
-#endif //OBOETESTER_TEST_ERROR_CALLBACK_H
+#endif // OBOETESTER_TEST_ERROR_CALLBACK_H
