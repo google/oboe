@@ -67,7 +67,7 @@ public:
         mChildStream->setParentStream(this);
     }
 
-    virtual ~FilterAudioStream() = default;
+    virtual ~FilterAudioStream();
 
     Result configureFlowGraph();
 

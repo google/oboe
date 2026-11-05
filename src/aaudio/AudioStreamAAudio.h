@@ -30,6 +30,8 @@
 
 namespace oboe {
 
+class AAudioStreamCollection;
+
 /**
  * Implementation of OboeStream that uses AAudio.
  *
@@ -37,11 +39,17 @@ namespace oboe {
  * Use an OboeStreamBuilder to create one.
  */
 class AudioStreamAAudio : public AudioStream {
+    friend class AAudioStreamCollection;
 public:
     AudioStreamAAudio();
     explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
-    virtual ~AudioStreamAAudio() = default;
+    virtual ~AudioStreamAAudio();
+
+    static void onWeakThisSet(AudioStream *stream,
+                              const std::shared_ptr<oboe::AudioStream> &sharedStream);
+
+    static void cleanupUnclosedStream(AudioStream *stream);
 
     /**
      *
@@ -180,6 +188,8 @@ protected:
     AdpfWrapper          mAdpfWrapper;
 
 private:
+    void cleanupUnclosedStream();
+
     // Must call under mLock. And stream must NOT be nullptr.
     Result requestStop_l(AAudioStream *stream);
 
@@ -213,6 +223,10 @@ private:
         std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
     };
     UpdatedDeviceIds mUpdatedDeviceIds;
+
+    bool mWeakThisSet = false;
+    std::weak_ptr<AudioStream> mWeakParentStream;
+    bool mWeakParentSet = false;
 };
 
 } // namespace oboe
