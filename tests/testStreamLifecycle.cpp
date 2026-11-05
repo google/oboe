@@ -192,9 +192,17 @@ protected:
 
     template <typename Fn>
     void runWithDeadlockTimeout(int timeoutSeconds, Fn &&fn) {
-        auto future = std::async(std::launch::async, std::forward<Fn>(fn));
-        ASSERT_NE(future.wait_for(std::chrono::seconds(timeoutSeconds)),
-                  std::future_status::timeout) << "Timed out (potential deadlock)!";
+        // Not std::async: its future blocks in ~future() until the task finishes,
+        // which would hang forever on a real deadlock instead of failing.
+        std::packaged_task<void()> task(std::forward<Fn>(fn));
+        auto future = task.get_future();
+        std::thread worker(std::move(task));
+        if (future.wait_for(std::chrono::seconds(timeoutSeconds)) ==
+                std::future_status::timeout) {
+            worker.detach();
+            FAIL() << "Timed out (potential deadlock)!";
+        }
+        worker.join();
         future.get();
     }
 

@@ -70,8 +70,10 @@ namespace oboe {
 class AAudioStreamCollection {
 public:
     static AAudioStreamCollection &getInstance() {
-        static AAudioStreamCollection instance;
-        return instance;
+        // Intentionally leaked so it outlives any static/global AudioStream destructors
+        // that run during exit() or dlclose().
+        static AAudioStreamCollection *instance = new AAudioStreamCollection();
+        return *instance;
     }
 
     AAudioStreamCollection(const AAudioStreamCollection &) = delete;
@@ -79,15 +81,19 @@ public:
     AAudioStreamCollection(AAudioStreamCollection &&) = delete;
     AAudioStreamCollection &operator=(AAudioStreamCollection &&) = delete;
 
+    // Must be called on the thread that owns `stream` (e.g. from open()).
     void addStream(AudioStreamAAudio *stream,
                    AAudioStream *aaudioStream,
                    const std::weak_ptr<oboe::AudioStream> &weakStream = {},
                    bool usesSharedPtr = false,
                    const std::weak_ptr<oboe::AudioStream> &weakParentStream = {},
                    bool usesParentSharedPtr = false) {
+        const AudioStream *parentStream =
+                stream->hasParentStream() ? stream->getParentStream() : nullptr;
         std::lock_guard<std::mutex> lock(mLock);
         mStreams[static_cast<const AudioStream *>(stream)] = StreamInfo{
                 stream,
+                parentStream,
                 aaudioStream,
                 weakStream,
                 weakParentStream,
@@ -96,15 +102,20 @@ public:
         };
     }
 
+    // Must be called on the thread that created `stream` (AudioStreamBuilder).
     void onWeakThisSet(AudioStream *stream,
                        const std::shared_ptr<oboe::AudioStream> &sharedStream) {
         if (stream == nullptr) {
             return;
         }
+        // Read the parent link on the owning thread, outside mLock.
+        const AudioStream *parentStream =
+                stream->hasParentStream() ? stream->getParentStream() : nullptr;
         std::lock_guard<std::mutex> lock(mLock);
         auto it = mStreams.find(stream);
         if (it != mStreams.end()) {
             const bool usesShared = (sharedStream != nullptr);
+            it->second.parentStream = parentStream;
             it->second.weakStream = sharedStream;
             it->second.usesSharedPtr = usesShared;
             it->second.oboeStream->mWeakThisSet = usesShared;
@@ -112,10 +123,9 @@ public:
         }
 
         // Otherwise `stream` may be a parent FilterAudioStream wrapping an open AAudio child.
-        // Compare pointer identity only; never dereference getParentStream().
+        // Compare cached pointer identity only; never dereference other streams.
         for (auto &[key, info] : mStreams) {
-            if (info.oboeStream->hasParentStream() &&
-                info.oboeStream->getParentStream() == stream) {
+            if (info.parentStream == stream) {
                 const bool usesParentShared = (sharedStream != nullptr);
                 info.weakParentStream = sharedStream;
                 info.usesParentSharedPtr = usesParentShared;
@@ -201,6 +211,8 @@ public:
 private:
     struct StreamInfo {
         AudioStreamAAudio *oboeStream = nullptr;
+        // Identity of the wrapping FilterAudioStream, if any. Compared only, never dereferenced.
+        const AudioStream *parentStream = nullptr;
         AAudioStream *aaudioStream = nullptr;
         std::weak_ptr<oboe::AudioStream> weakStream;
         std::weak_ptr<oboe::AudioStream> weakParentStream;
@@ -393,6 +405,11 @@ void AudioStreamAAudio::cleanupUnclosedStream(AudioStream *stream) {
 }
 
 void AudioStreamAAudio::cleanupUnclosedStream() {
+    // close() and this method both unregister before nulling mAAudioStream,
+    // so a null stream means there is nothing left to clean up.
+    if (mAAudioStream.load() == nullptr) {
+        return;
+    }
     AAudioStreamCollection::getInstance().removeStream(this);
 
     if (sActiveCallbackDepth > 0) {
@@ -400,6 +417,8 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
         // synchronously from within an AAudio callback thread without risking deadlock.
         AAudioStream *stream = mAAudioStream.exchange(nullptr);
         if (stream != nullptr) {
+            // AudioStream::close() is bypassed here, so release the ADPF session explicitly.
+            closePerformanceHint();
             LOGW("AudioStreamAAudio(%p) destroyed on callback thread without close()! "
                  "Closing underlying AAudioStream asynchronously.", this);
             AAudioLoader *libLoader = mLibLoader;
@@ -408,7 +427,17 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
                                                     kMaxDelayBeforeCloseMillis);
             std::thread([libLoader, stream, workarounds, delayMillis]() {
                 if (workarounds) {
-                    libLoader->stream_requestStop(stream);
+                    // Same O_MR1 state-machine guard as requestStop_l().
+                    bool shouldStop = true;
+                    if (getSdkVersion() <= __ANDROID_API_O_MR1__) {
+                        StreamState state = static_cast<StreamState>(
+                                libLoader->stream_getState(stream));
+                        shouldStop = (state != StreamState::Stopping &&
+                                      state != StreamState::Stopped);
+                    }
+                    if (shouldStop) {
+                        libLoader->stream_requestStop(stream);
+                    }
                     if (delayMillis > 0) {
                         usleep(static_cast<useconds_t>(delayMillis) * 1000);
                     }
@@ -416,7 +445,7 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
                 libLoader->stream_close(stream);
             }).detach();
         }
-    } else if (mAAudioStream.load() != nullptr) {
+    } else {
         LOGW("AudioStreamAAudio(%p) destroyed without close()! Closing stream now.", this);
         close();
     }
