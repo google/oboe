@@ -18,6 +18,7 @@
 #define OBOE_STREAM_AAUDIO_H_
 
 #include <atomic>
+#include <pthread.h>
 #include <shared_mutex>
 #include <mutex>
 #include <thread>
@@ -190,6 +191,13 @@ protected:
 private:
     void cleanupUnclosedStream();
 
+    // True if the caller is this stream's data callback thread, currently inside
+    // callOnAudioReady()/callOnPartialAudioReady(). Lock-free; no TLS.
+    bool isOnOwnDataCallbackThread() const {
+        return mDataCallbackThread.load(std::memory_order_relaxed) ==
+                static_cast<uintptr_t>(pthread_self());
+    }
+
     // Must call under mLock. And stream must NOT be nullptr.
     Result requestStop_l(AAudioStream *stream);
 
@@ -227,6 +235,10 @@ private:
     bool mWeakThisSet = false;
     std::weak_ptr<AudioStream> mWeakParentStream;
     bool mWeakParentSet = false;
+
+    // pthread_self() of the thread currently inside callOnAudioReady/callOnPartialAudioReady,
+    // or 0. Written with relaxed stores on the data callback thread (lock-free, no TLS).
+    std::atomic<uintptr_t> mDataCallbackThread{0};
 };
 
 } // namespace oboe
