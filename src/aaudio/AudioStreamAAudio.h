@@ -32,6 +32,7 @@
 namespace oboe {
 
 class AAudioStreamCollection;
+class HelperThreadTracker;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -47,10 +48,29 @@ public:
 
     virtual ~AudioStreamAAudio();
 
+    /**
+     * Called by AudioStreamBuilder right after it wraps a new stream in a shared_ptr.
+     * `stream` may be an AudioStreamAAudio or a FilterAudioStream that wraps one; any other
+     * stream type is ignored. Lets error/routing/presentation callbacks (and the Stop
+     * workaround thread) take shared_ptrs to the stream and its parent.
+     */
     static void onWeakThisSet(AudioStream *stream,
                               const std::shared_ptr<oboe::AudioStream> &sharedStream);
 
+    /**
+     * If `stream` is an AudioStreamAAudio that is still open, closes it the way its destructor
+     * would. Does nothing for any other stream (for example OpenSL ES) or a closed stream.
+     * Uses the stream registry instead of dynamic_cast, so RTTI is not required.
+     */
     static void cleanupUnclosedStream(AudioStream *stream);
+
+    /**
+     * If `stream` is an AudioStreamAAudio, waits (up to 2 s) until no Oboe helper thread
+     * (error, routing, presentation or stop thread) is still using it. Used by
+     * ~FilterAudioStream(), because those threads also call into the FilterAudioStream that
+     * wraps the child stream. Does nothing for other stream types.
+     */
+    static void waitForHelperThreads(AudioStream *stream);
 
     /**
      *
@@ -68,6 +88,7 @@ public:
     Result requestPause() override;
     Result requestFlush() override;
     Result requestStop() override;
+    Result stop(int64_t timeoutNanoseconds = kDefaultTimeoutNanos) override;
 
     ResultWithValue<int32_t> write(const void *buffer,
                   int32_t numFrames,
@@ -189,10 +210,16 @@ protected:
     AdpfWrapper          mAdpfWrapper;
 
 private:
+    // Closes the stream if the app destroyed it without calling close(). Called from the
+    // destructor and, through the static overload, from ~FilterAudioStream().
     void cleanupUnclosedStream();
 
-    // True if the caller is this stream's data callback thread, currently inside
-    // callOnAudioReady()/callOnPartialAudioReady(). Lock-free; no TLS.
+    // Waits (up to 2 s) until no helper thread other than the caller holds a HelperLease on
+    // this stream. Returns at once if called from this stream's own data callback.
+    void waitForHelperThreads();
+
+    // True if the caller is inside this stream's callOnAudioReady()/callOnPartialAudioReady()
+    // (for example, the app called close() from onAudioReady()). Lock-free.
     bool isOnOwnDataCallbackThread() const {
         return mDataCallbackThread.load(std::memory_order_relaxed) ==
                 static_cast<uintptr_t>(pthread_self());
@@ -232,13 +259,29 @@ private:
     };
     UpdatedDeviceIds mUpdatedDeviceIds;
 
+    // Copy of this stream's AAudioStreamCollection registration, for launchStopThread(), which
+    // runs on the data callback thread and must not take the registry lock. Written only
+    // during openStream(), before the stream can start. The *Set flags are true if the
+    // stream / its FilterAudioStream parent is owned by a shared_ptr.
     bool mWeakThisSet = false;
     std::weak_ptr<AudioStream> mWeakParentStream;
     bool mWeakParentSet = false;
 
-    // pthread_self() of the thread currently inside callOnAudioReady/callOnPartialAudioReady,
-    // or 0. Written with relaxed stores on the data callback thread (lock-free, no TLS).
+    // pthread_self() of the thread currently inside callOnAudioReady()/callOnPartialAudioReady(),
+    // or 0. Only the callback thread writes it, and readers only compare it with their own
+    // pthread_self(). A thread can only match a value it stored itself, so relaxed ordering
+    // is enough.
     std::atomic<uintptr_t> mDataCallbackThread{0};
+
+    // Set when the app calls requestStop(), stop(), close() or release() from inside this
+    // stream's data callback. Those calls then return without locking (requestStop()/stop()
+    // return OK; close()/release() return ErrorInvalidState), and the callback returns
+    // DataCallbackResult::Stop when the app's onAudioReady() returns. Cleared by requestStart().
+    std::atomic<bool> mStopRequestedFromCallback{false};
+
+    // Counts the Oboe helper threads that are using this stream, so the destructor can wait for
+    // them. Shared with the registry entry and with each HelperLease, so it outlives the stream.
+    std::shared_ptr<HelperThreadTracker> mHelperThreads;
 };
 
 } // namespace oboe

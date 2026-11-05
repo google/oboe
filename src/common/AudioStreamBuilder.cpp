@@ -164,6 +164,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
             std::shared_ptr<AudioStream> childStream(tempStream);
             FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, childStream);
             childStream->setWeakThis(childStream);
+            // Let AAudio callbacks take shared_ptrs to the child. No-op for non-AAudio streams.
             AudioStreamAAudio::onWeakThisSet(childStream.get(), childStream);
             result = filterStream->configureFlowGraph();
             if (result !=  Result::OK) {
@@ -246,6 +247,8 @@ Result AudioStreamBuilder::openStream(std::shared_ptr<AudioStream> &sharedStream
         sharedStream.reset(streamptr);
         // Save a weak_ptr in the stream for use with callbacks.
         streamptr->setWeakThis(sharedStream);
+        // Register the shared_ptr with AAudio's stream registry (handles both a direct
+        // AudioStreamAAudio and a FilterAudioStream parent). No-op for other stream types.
         AudioStreamAAudio::onWeakThisSet(streamptr, sharedStream);
     }
     return result;

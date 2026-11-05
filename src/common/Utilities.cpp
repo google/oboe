@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include <set>
 #include <sstream>
 
 #ifdef __ANDROID__
@@ -383,12 +382,22 @@ int getChannelCountFromChannelMask(ChannelMask channelMask) {
 }
 
 
-std::set<AudioFormat> COMPRESSED_FORMATS = {
-        AudioFormat::MP3, AudioFormat::AAC_LC, AudioFormat::AAC_HE_V1, AudioFormat::AAC_HE_V2,
-        AudioFormat::AAC_ELD, AudioFormat::AAC_XHE, AudioFormat::OPUS
-};
+// A switch rather than a global container: AudioStream::getBytesPerFrame() calls this, often
+// from the data callback, and a global with a destructor could already be destroyed if a
+// stream is still running while exit() destroys static objects.
 bool isCompressedFormat(AudioFormat format) {
-    return COMPRESSED_FORMATS.count(format) != 0;
+    switch (format) {
+        case AudioFormat::MP3:
+        case AudioFormat::AAC_LC:
+        case AudioFormat::AAC_HE_V1:
+        case AudioFormat::AAC_HE_V2:
+        case AudioFormat::AAC_ELD:
+        case AudioFormat::AAC_XHE:
+        case AudioFormat::OPUS:
+            return true;
+        default:
+            return false;
+    }
 }
 
 std::string toString(const PlaybackParameters& parameters) {

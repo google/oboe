@@ -110,6 +110,15 @@ public:
         return mChildStream->requestStop();
     }
 
+    /**
+     * Stop the stream and wait for it to reach Stopped. Forwarded to the child stream so that a
+     * call from inside the data callback is handled by the child: it requests the stop and
+     * returns OK right away, without waiting or taking locks.
+     */
+    Result stop(int64_t timeoutNanoseconds = kDefaultTimeoutNanos) override {
+        return mChildStream->stop(timeoutNanoseconds);
+    }
+
     ResultWithValue<int32_t> read(void *buffer,
             int32_t numFrames,
             int64_t timeoutNanoseconds) override;

@@ -39,8 +39,9 @@ AAudioLoader::~AAudioLoader() {
 }
 
 AAudioLoader* AAudioLoader::getInstance() {
-    // Intentionally leaked: streams may still be closed during exit() or dlclose()
-    // (for example an unclosed global stream), after function-local statics are destroyed.
+    // Intentionally never destroyed. ~AudioStreamAAudio() closes a stream that is still open,
+    // and that can happen during exit() or dlclose() (e.g. a global shared_ptr<AudioStream>),
+    // after a function-local static loader would already have been destroyed.
     static AAudioLoader *instance = new AAudioLoader();
     return instance;
 }
