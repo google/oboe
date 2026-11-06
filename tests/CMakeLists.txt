@@ -35,6 +35,7 @@ add_executable(
 		testReturnStopDeadlock.cpp
 		testStreamClosedMethods.cpp
 		testStreamFramesProcessed.cpp
+		testStreamLifecycle.cpp
 		testStreamOpen.cpp
 		testStreamStates.cpp
 		testStreamStop.cpp
