@@ -60,7 +60,7 @@ public:
 
     /**
      * Called by ~FilterAudioStream() with its child. If `child` is an AudioStreamAAudio, closes
-     * it if still open, then waits (up to 2 s) for its Oboe helper threads, which also call
+     * it if still open, then waits for its Oboe helper threads, which also call
      * into the parent FilterAudioStream. No-op for other stream types. Does not require RTTI.
      */
     static void closeAndWaitForChild(AudioStream *child);
@@ -218,7 +218,7 @@ private:
     // destructor and, via closeAndWaitForChild(), from ~FilterAudioStream().
     void cleanupUnclosedStream();
 
-    // Waits (up to 2 s) until no helper thread other than the caller holds a HelperLease on
+    // Waits until no helper thread other than the caller holds a HelperLease on
     // this stream. Returns at once if called from this stream's own data callback.
     void waitForHelperThreads();
 
@@ -294,6 +294,9 @@ private:
 
     // userData of the AAudio data callback while the stream is open (see DataCallbackContext).
     DataCallbackContext *mDataCallbackContext = nullptr;
+
+    // Held for the whole of close(). Never taken by this stream's own data callback.
+    std::mutex mCloseLock;
 };
 
 } // namespace oboe

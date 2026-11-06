@@ -719,7 +719,7 @@ TEST_F(TestStreamLifecycle, StopFromOwnDataCallback) {
 
 // Streams opened with the raw-pointer API have no shared_ptr to keep them alive while Oboe's
 // error/routing/presentation helper threads use them. Deleting such a stream must therefore wait
-// (up to 2 s) for those threads. These tests simulate a disconnect by calling the AAudio error
+// for those threads. These tests simulate a disconnect by calling the AAudio error
 // callback directly, which makes the timing deterministic.
 namespace {
 
@@ -1282,6 +1282,80 @@ TEST_F(TestStreamLifecycle, NoDataCallbackAfterCloseReturns) {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             EXPECT_EQ(callback->lateCalls.load(), 0)
                     << "Iteration " << i << kind << ": data callback started after close()";
+        }
+    });
+}
+
+// A data callback that calls requestPause(), requestFlush() or requestStart() on its own stream
+// while another thread is in close() must not deadlock. close() waits for the running callback
+// (AAudioStream_close() joins it, and Oboe waits too). Like AAudio, Oboe rejects these calls from
+// the stream's own callback with ErrorInvalidState, without taking any lock.
+TEST_F(TestStreamLifecycle, ControlCallsFromCallbackDuringCloseDoNotDeadlock) {
+    if (!AudioStreamBuilder::isAAudioSupported()) GTEST_SKIP() << "AAudio not supported";
+
+    class ControlInCallback : public AudioStreamDataCallback {
+    public:
+        DataCallbackResult onAudioReady(AudioStream *s, void *data, int32_t n) override {
+            std::memset(data, 0, static_cast<size_t>(n) *
+                                 static_cast<size_t>(s->getBytesPerFrame()));
+            if (count.fetch_add(1) + 1 == 3) {
+                entered.store(true);
+                // Give close() time to get past the point where it detaches the stream.
+                const auto deadline = std::chrono::steady_clock::now() +
+                                      std::chrono::milliseconds(500);
+                while (!closeStarted.load() && std::chrono::steady_clock::now() < deadline) {
+                    std::this_thread::sleep_for(std::chrono::microseconds(200));
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                const Result results[] = {s->requestPause(), s->requestFlush(),
+                                          s->requestStart()};
+                for (Result r : results) {
+                    if (r != Result::ErrorInvalidState) unexpected.fetch_add(1);
+                }
+                done.store(true);
+            }
+            return DataCallbackResult::Continue;
+        }
+        std::atomic<int32_t> count{0};
+        std::atomic<bool> entered{false};
+        std::atomic<bool> closeStarted{false};
+        std::atomic<bool> done{false};
+        std::atomic<int32_t> unexpected{0};
+    };
+
+    runWithDeadlockTimeout(30, []() {
+        for (bool mmap : {false, true}) {
+            if (mmap && !AAudioExtensions::getInstance().isMMapSupported()) continue;
+            AAudioExtensions::getInstance().setMMapEnabled(mmap);
+            for (bool convert : {false, true}) {
+                auto callback = std::make_shared<ControlInCallback>();
+                AudioStreamBuilder builder;
+                builder.setAudioApi(AudioApi::AAudio)
+                       ->setDirection(Direction::Output)
+                       ->setPerformanceMode(PerformanceMode::LowLatency)
+                       ->setUsage(mmap ? Usage::Game : Usage::Notification)
+                       ->setDataCallback(callback);
+                if (convert) {
+                    builder.setSampleRate(11025)
+                           ->setChannelCount(1)
+                           ->setChannelConversionAllowed(true)
+                           ->setSampleRateConversionQuality(SampleRateConversionQuality::Fastest);
+                }
+                std::shared_ptr<AudioStream> stream;
+                ASSERT_EQ(builder.openStream(stream), Result::OK)
+                        << "mmap=" << mmap << " convert=" << convert;
+                stream->setDelayBeforeCloseMillis(0);
+                ASSERT_EQ(stream->requestStart(), Result::OK);
+                ASSERT_TRUE(waitForFlag(callback->entered)) << "mmap=" << mmap
+                                                            << " convert=" << convert;
+                callback->closeStarted.store(true);
+                EXPECT_EQ(stream->close(), Result::OK) << "mmap=" << mmap
+                                                       << " convert=" << convert;
+                EXPECT_TRUE(callback->done.load()) << "close() returned before the callback did";
+                EXPECT_EQ(callback->unexpected.load(), 0)
+                        << "a control call from the callback did not return ErrorInvalidState";
+                stream.reset();
+            }
         }
     });
 }
