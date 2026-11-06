@@ -43,15 +43,9 @@ using namespace flowgraph;
 //                <= app
 
 FilterAudioStream::~FilterAudioStream() {
-    if (mChildStream) {
-        // If the app set data/error callbacks, this parent is the child's data and error
-        // callback. Close the child first if the app did not, so no data callback can still be
-        // running into this object. Then wait for the child's error/routing/presentation
-        // helper threads, which also call into this object (for example onErrorAfterClose()),
-        // before it is freed.
-        AudioStreamAAudio::cleanupUnclosedStream(mChildStream.get());
-        AudioStreamAAudio::waitForHelperThreads(mChildStream.get());
-    }
+    // This parent may be the child's data/error callback, and the child's helper threads also
+    // call into it (e.g. onErrorAfterClose()); close and drain the child before mFlowGraph dies.
+    AudioStreamAAudio::closeAndWaitForChild(mChildStream.get());
 }
 
 Result FilterAudioStream::configureFlowGraph() {

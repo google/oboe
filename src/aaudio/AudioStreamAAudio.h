@@ -33,6 +33,7 @@ namespace oboe {
 
 class AAudioStreamCollection;
 class HelperThreadTracker;
+struct DataCallbackContext;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -43,6 +44,7 @@ class HelperThreadTracker;
 class AudioStreamAAudio : public AudioStream {
     friend class AAudioStreamCollection;
 public:
+    AudioStreamAAudio();
     explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
     virtual ~AudioStreamAAudio();
@@ -57,19 +59,18 @@ public:
                               const std::shared_ptr<oboe::AudioStream> &sharedStream);
 
     /**
-     * If `stream` is an AudioStreamAAudio that is still open, closes it the way its destructor
-     * would. Does nothing for any other stream (for example OpenSL ES) or a closed stream.
-     * Uses the stream registry instead of dynamic_cast, so RTTI is not required.
+     * Called by ~FilterAudioStream() with its child. If `child` is an AudioStreamAAudio, closes
+     * it if still open, then waits (up to 2 s) for its Oboe helper threads, which also call
+     * into the parent FilterAudioStream. No-op for other stream types. Does not require RTTI.
      */
-    static void cleanupUnclosedStream(AudioStream *stream);
+    static void closeAndWaitForChild(AudioStream *child);
 
     /**
-     * If `stream` is an AudioStreamAAudio, waits (up to 2 s) until no Oboe helper thread
-     * (error, routing, presentation or stop thread) is still using it. Used by
-     * ~FilterAudioStream(), because those threads also call into the FilterAudioStream that
-     * wraps the child stream. Does nothing for other stream types.
+     * Registered with std::atexit() right after libaaudio.so is loaded, so at exit() or
+     * dlclose() any still-open AAudio streams (such as pre-main globals) are closed while
+     * libaaudio's internal state is still intact.
      */
-    static void waitForHelperThreads(AudioStream *stream);
+    static void closeAllStreamsAtExit();
 
     /**
      *
@@ -214,7 +215,7 @@ protected:
 
 private:
     // Closes the stream if the app destroyed it without calling close(). Called from the
-    // destructor and, through the static overload, from ~FilterAudioStream().
+    // destructor and, via closeAndWaitForChild(), from ~FilterAudioStream().
     void cleanupUnclosedStream();
 
     // Waits (up to 2 s) until no helper thread other than the caller holds a HelperLease on
@@ -290,6 +291,9 @@ private:
     // Counts the Oboe helper threads that are using this stream, so the destructor can wait for
     // them. Shared with the registry entry and with each HelperLease, so it outlives the stream.
     std::shared_ptr<HelperThreadTracker> mHelperThreads;
+
+    // userData of the AAudio data callback while the stream is open (see DataCallbackContext).
+    DataCallbackContext *mDataCallbackContext = nullptr;
 };
 
 } // namespace oboe

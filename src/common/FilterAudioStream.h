@@ -72,8 +72,11 @@ public:
     Result configureFlowGraph();
 
     // Close child and parent.
-    Result close()  override {
+    Result close() override {
         const Result result1 = mChildStream->close();
+        if (result1 == Result::ErrorInvalidState) {
+            return result1; // Rejected (e.g. called from own data callback); keep parent open.
+        }
         const Result result2 = AudioStream::close();
         return (result1 != Result::OK ? result1 : result2);
     }

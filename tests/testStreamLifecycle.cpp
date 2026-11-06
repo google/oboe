@@ -468,9 +468,11 @@ TEST_F(TestStreamLifecycle, ResetUnclosedInputStream) {
     });
 }
 
-// A stream destroyed during exit() without close(). Its destructor closes it, which uses Oboe's
-// stream registry and AAudioLoader singletons. If those singletons were destroyed first, this
-// would abort with "pthread_mutex_lock called on a destroyed mutex".
+// A stream destroyed during exit() without close(). Function-static streams constructed after
+// libaaudio is loaded are closed by ~AudioStreamAAudio(); pre-main globals constructed before
+// libaaudio is loaded are closed first by Oboe's atexit handler while libaaudio is still intact.
+// Oboe's stream registry and AAudioLoader singletons are intentionally leaked so neither path
+// touches a destroyed singleton.
 class TestStreamLifecycle_ExitCallback : public AudioStreamDataCallback {
 public:
     DataCallbackResult onAudioReady(AudioStream *audioStream, void *audioData,
@@ -482,7 +484,7 @@ public:
 };
 
 // Namespace-scope globals are constructed before main(), i.e. before Oboe loads libaaudio, so
-// they are destroyed after libaaudio's own static objects. This is the worst case for exit().
+// their destructors run after libaaudio's own static destructors.
 static auto gExitCallback = std::make_shared<TestStreamLifecycle_ExitCallback>();
 static std::shared_ptr<AudioStream> gExitStream;
 
@@ -1201,5 +1203,85 @@ TEST_F(TestStreamLifecycle, MultiThreadedConcurrentChurnABA) {
             w.join();
         }
         EXPECT_GT(successfulOpens.load(), kNumThreads * (kCyclesPerThread / 2));
+    });
+}
+
+// No app data callback may run after close() returns, on any Android version. Before Android S,
+// AAudioStream_close() does not always join the callback thread of a Legacy stream, so a callback
+// could otherwise still be running, or start later, on a stream that the app deletes right after
+// close(). Each cycle holds one callback, calls close() during the hold, then checks that no
+// callback is running or starts afterwards. The close delay is 0 so it does not hide the window.
+// Covers a direct AudioStreamAAudio and a FilterAudioStream (whose child callback calls into the
+// parent).
+TEST_F(TestStreamLifecycle, NoDataCallbackAfterCloseReturns) {
+    if (!AudioStreamBuilder::isAAudioSupported()) GTEST_SKIP() << "AAudio not supported";
+
+    class LateCallbackDetector : public AudioStreamDataCallback {
+    public:
+        DataCallbackResult onAudioReady(AudioStream *s, void *data, int32_t n) override {
+            inCallback.fetch_add(1);
+            if (closeReturned.load()) {
+                lateCalls.fetch_add(1);  // must not touch `s`: it may be freed
+                inCallback.fetch_sub(1);
+                return DataCallbackResult::Stop;
+            }
+            std::memset(data, 0, static_cast<size_t>(n) *
+                                 static_cast<size_t>(s->getBytesPerFrame()));
+            if (count.fetch_add(1) + 1 == 3) {
+                // Hold this callback so that close() runs while it is in progress.
+                entered.store(true);
+                const auto deadline = std::chrono::steady_clock::now() +
+                                      std::chrono::milliseconds(50);
+                while (std::chrono::steady_clock::now() < deadline) {
+                    std::this_thread::sleep_for(std::chrono::microseconds(200));
+                }
+            }
+            inCallback.fetch_sub(1);
+            return DataCallbackResult::Continue;
+        }
+        std::atomic<int32_t> inCallback{0};
+        std::atomic<bool> entered{false};
+        std::atomic<bool> closeReturned{false};
+        std::atomic<int32_t> count{0};
+        std::atomic<int32_t> lateCalls{0};
+    };
+
+    runWithDeadlockTimeout(60, []() {
+        AAudioExtensions::getInstance().setMMapEnabled(false);
+        for (int i = 0; i < 30; ++i) {
+            const bool convert = (i % 2 == 1);
+            const char *kind = convert ? " (FilterAudioStream)" : "";
+            auto callback = std::make_shared<LateCallbackDetector>();
+            AudioStreamBuilder builder;
+            builder.setAudioApi(AudioApi::AAudio)
+                   ->setDirection(Direction::Output)
+                   ->setPerformanceMode(PerformanceMode::LowLatency)
+                   ->setUsage(Usage::Notification)
+                   ->setFramesPerDataCallback(64)
+                   ->setDataCallback(callback);
+            if (convert) {
+                builder.setFormat(AudioFormat::I16)
+                       ->setChannelCount(1)
+                       ->setSampleRate(11025)
+                       ->setFormatConversionAllowed(true)
+                       ->setChannelConversionAllowed(true)
+                       ->setSampleRateConversionQuality(SampleRateConversionQuality::Fastest);
+            }
+            std::shared_ptr<AudioStream> stream;
+            ASSERT_EQ(builder.openStream(stream), Result::OK) << "Iteration " << i;
+            stream->setDelayBeforeCloseMillis(0);
+            ASSERT_EQ(stream->requestStart(), Result::OK) << "Iteration " << i;
+            ASSERT_TRUE(waitForFlag(callback->entered)) << "Iteration " << i;
+
+            EXPECT_EQ(stream->close(), Result::OK) << "Iteration " << i << kind;
+            EXPECT_EQ(callback->inCallback.load(), 0)
+                    << "Iteration " << i << kind << ": data callback still running after close()";
+            callback->closeReturned.store(true);
+            stream.reset();
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            EXPECT_EQ(callback->lateCalls.load(), 0)
+                    << "Iteration " << i << kind << ": data callback started after close()";
+        }
     });
 }
