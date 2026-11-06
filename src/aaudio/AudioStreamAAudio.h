@@ -43,7 +43,6 @@ class HelperThreadTracker;
 class AudioStreamAAudio : public AudioStream {
     friend class AAudioStreamCollection;
 public:
-    AudioStreamAAudio();
     explicit AudioStreamAAudio(const AudioStreamBuilder &builder);
 
     virtual ~AudioStreamAAudio();
@@ -126,6 +125,10 @@ public:
     DataCallbackResult callOnAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
 
     int32_t callOnPartialAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+
+    // Used by the Stop workaround thread (Android R and older); see launchStopThread().
+    // Stops the stream unless requestStart() was called after `startGeneration` was read.
+    Result requestStopFromStopThread(uint32_t startGeneration);
 
     bool isMMapUsed();
 
@@ -278,6 +281,11 @@ private:
     // return OK; close()/release() return ErrorInvalidState), and the callback returns
     // DataCallbackResult::Stop when the app's onAudioReady() returns. Cleared by requestStart().
     std::atomic<bool> mStopRequestedFromCallback{false};
+
+    // Incremented by requestStart() under mLock. The Stop workaround thread (Android R and
+    // older) only stops the stream if no requestStart() happened after the callback asked to
+    // stop, so a later start is not lost.
+    std::atomic<uint32_t> mStartGeneration{0};
 
     // Counts the Oboe helper threads that are using this stream, so the destructor can wait for
     // them. Shared with the registry entry and with each HelperLease, so it outlives the stream.

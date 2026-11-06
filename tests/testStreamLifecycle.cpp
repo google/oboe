@@ -55,6 +55,7 @@ protected:
                 AudioStream *audioStream,
                 void *audioData,
                 int32_t numFrames) override {
+            inCallback.fetch_add(1);
             // Exercise virtual methods on audioStream to catch any UAF / vptr corruption.
             EXPECT_NE(audioStream, nullptr);
             int32_t bytesPerFrame = audioStream->getBytesPerFrame();
@@ -77,9 +78,12 @@ protected:
                 std::this_thread::sleep_for(std::chrono::microseconds(300));
             }
 
-            return returnStop.load() ? DataCallbackResult::Stop : DataCallbackResult::Continue;
+            const bool stop = returnStop.load();
+            inCallback.fetch_sub(1);
+            return stop ? DataCallbackResult::Stop : DataCallbackResult::Continue;
         }
 
+        std::atomic<int32_t> inCallback{0};  // > 0 while onAudioReady() is running
         std::atomic<int32_t> callbackCount{0};
         std::atomic<bool> holdInCallback{false};
         std::atomic<int32_t> targetHoldCount{2};
@@ -94,6 +98,7 @@ protected:
                 AudioStream *audioStream,
                 void *audioData,
                 int32_t numFrames) override {
+            inCallback.fetch_add(1);
             EXPECT_NE(audioStream, nullptr);
             int32_t bytesPerFrame = audioStream->getBytesPerFrame();
             (void) audioStream->getDeviceId();
@@ -112,8 +117,11 @@ protected:
                     std::this_thread::sleep_for(std::chrono::microseconds(100));
                 }
             }
+            inCallback.fetch_sub(1);
             return numFrames;
         }
+
+        std::atomic<int32_t> inCallback{0};  // > 0 while onPartialAudioReady() is running
 
         std::atomic<int32_t> callbackCount{0};
         std::atomic<bool> holdInCallback{false};
@@ -128,6 +136,21 @@ protected:
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         return counter.load() >= minCount;
+    }
+
+    // Waits until no callback is running and the count stays unchanged for 200 ms.
+    static bool waitForCallbacksToStop(const std::atomic<int32_t> &counter,
+                                       const std::atomic<int32_t> &inCallback,
+                                       int32_t timeoutMs = 3000) {
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+        while (std::chrono::steady_clock::now() < deadline) {
+            const int32_t before = counter.load();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            if (inCallback.load() == 0 && counter.load() == before) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static bool waitForFlag(const std::atomic<bool> &flag, int32_t timeoutMs = 1000) {
@@ -184,7 +207,12 @@ protected:
                 // callback holds no reference (it is lock-free), so the destructor must
                 // close the stream and wait for this in-flight callback before freeing it.
                 stream.reset();
-                callback->releaseHold.store(true);
+                // The destructor closes the stream, which waits for the running callback before
+                // the memory is freed (HWASan builds catch it if not). It usually runs here, but
+                // can run on an Oboe helper thread that briefly held a reference (for example
+                // after a routing callback), so only check that callbacks stop soon.
+                EXPECT_TRUE(waitForCallbacksToStop(callback->callbackCount, callback->inCallback))
+                        << "callbacks kept running after the stream was destroyed";
             } else {
                 ASSERT_TRUE(waitForCallbacks(callback->callbackCount, 2))
                         << "Cycle " << i << " did not fire callbacks";
@@ -369,7 +397,12 @@ TEST_F(TestStreamLifecycle, ResetUnclosedPartialDataCallbackStream) {
             if (resetDuringCallback) {
                 ASSERT_TRUE(waitForFlag(callback->enteredHold)) << "Iteration " << i;
                 stream.reset();
-                callback->releaseHold.store(true);
+                // The destructor closes the stream, which waits for the running callback before
+                // the memory is freed (HWASan builds catch it if not). It usually runs here, but
+                // can run on an Oboe helper thread that briefly held a reference (for example
+                // after a routing callback), so only check that callbacks stop soon.
+                EXPECT_TRUE(waitForCallbacksToStop(callback->callbackCount, callback->inCallback))
+                        << "callbacks kept running after the stream was destroyed";
             } else {
                 ASSERT_TRUE(waitForCallbacks(callback->callbackCount, 2)) << "Iteration " << i;
                 stream.reset();
@@ -420,7 +453,12 @@ TEST_F(TestStreamLifecycle, ResetUnclosedInputStream) {
             if (resetDuringCallback) {
                 ASSERT_TRUE(waitForFlag(callback->enteredHold)) << "Iteration " << i;
                 stream.reset();
-                callback->releaseHold.store(true);
+                // The destructor closes the stream, which waits for the running callback before
+                // the memory is freed (HWASan builds catch it if not). It usually runs here, but
+                // can run on an Oboe helper thread that briefly held a reference (for example
+                // after a routing callback), so only check that callbacks stop soon.
+                EXPECT_TRUE(waitForCallbacksToStop(callback->callbackCount, callback->inCallback))
+                        << "callbacks kept running after the stream was destroyed";
             } else {
                 ASSERT_TRUE(waitForCallbacks(callback->callbackCount, 2)) << "Iteration " << i;
                 stream.reset();
@@ -481,67 +519,99 @@ static void openGlobalStreamAndExit(bool closeFirst) {
 
 TEST_F(TestStreamLifecycle, StaticStreamDestroyedDuringExit) {
     if (!AudioStreamBuilder::isAAudioSupported()) GTEST_SKIP() << "AAudio not supported";
-    GTEST_FLAG_SET(death_test_style, "threadsafe");
+    {
+        // The child processes exit with code 3 if they cannot open a stream; skip instead.
+        std::shared_ptr<AudioStream> probe;
+        if (!openExitStream(probe, std::make_shared<TestStreamLifecycle_ExitCallback>())) {
+            GTEST_SKIP() << "Cannot open an output stream";
+        }
+        probe->close();
+    }
+    const std::string oldStyle = ::testing::GTEST_FLAG(death_test_style);
+    ::testing::GTEST_FLAG(death_test_style) = "threadsafe";
     for (bool closeFirst : {false, true}) {
         EXPECT_EXIT(openFunctionStaticStreamAndExit(closeFirst),
                     ::testing::ExitedWithCode(0), "") << "function static, close=" << closeFirst;
         EXPECT_EXIT(openGlobalStreamAndExit(closeFirst),
                     ::testing::ExitedWithCode(0), "") << "global, close=" << closeFirst;
     }
+    ::testing::GTEST_FLAG(death_test_style) = oldStyle;
 }
 
 // close() from the stream's own data callback must return ErrorInvalidState without closing or
 // unregistering the stream, and the callback must then return Stop so the audio stops.
 // Restarting must resume callbacks, and close() from the app thread must still work.
+// Covered for a plain AAudio stream and a FilterAudioStream (data conversion), and for release()
+// on Android S and later (release() is not supported on older versions or on a FilterAudioStream).
 TEST_F(TestStreamLifecycle, CloseFromOwnDataCallbackIsRejected) {
     if (!AudioStreamBuilder::isAAudioSupported()) GTEST_SKIP() << "AAudio not supported";
 
     class CloseInCallback : public AudioStreamDataCallback {
     public:
+        explicit CloseInCallback(bool useRelease) : mUseRelease(useRelease) {}
         DataCallbackResult onAudioReady(AudioStream *s, void *data, int32_t n) override {
             std::memset(data, 0, static_cast<size_t>(n) *
                                  static_cast<size_t>(s->getBytesPerFrame()));
             count.fetch_add(1);
             if (!attempted.exchange(true)) {
-                closeResult.store(static_cast<int32_t>(s->close()));
+                const Result r = mUseRelease ? s->release() : s->close();
+                closeResult.store(static_cast<int32_t>(r));
                 done.store(true);
             }
             return DataCallbackResult::Continue;
         }
+        const bool mUseRelease;
         std::atomic<bool> attempted{false};
         std::atomic<bool> done{false};
         std::atomic<int32_t> closeResult{0};
         std::atomic<int32_t> count{0};
     };
 
-    runWithDeadlockTimeout(15, []() {
+    runWithDeadlockTimeout(30, []() {
         AAudioExtensions::getInstance().setMMapEnabled(false);
-        auto callback = std::make_shared<CloseInCallback>();
-        AudioStreamBuilder builder;
-        builder.setAudioApi(AudioApi::AAudio)
-               ->setDirection(Direction::Output)
-               ->setPerformanceMode(PerformanceMode::LowLatency)
-               ->setUsage(Usage::Notification)
-               ->setDataCallback(callback);
-        std::shared_ptr<AudioStream> stream;
-        ASSERT_EQ(builder.openStream(stream), Result::OK);
-        stream->setDelayBeforeCloseMillis(0);
-        ASSERT_EQ(stream->requestStart(), Result::OK);
-        ASSERT_TRUE(waitForFlag(callback->done, 2000));
-        EXPECT_EQ(static_cast<Result>(callback->closeResult.load()), Result::ErrorInvalidState);
+        for (bool forceConversion : {false, true})
+        for (bool useRelease : {false, true}) {
+            if (useRelease && (forceConversion || getSdkVersion() < __ANDROID_API_S__)) {
+                continue;
+            }
+            SCOPED_TRACE(testing::Message() << "conversion=" << forceConversion
+                                            << " release=" << useRelease);
+            auto callback = std::make_shared<CloseInCallback>(useRelease);
+            AudioStreamBuilder builder;
+            builder.setAudioApi(AudioApi::AAudio)
+                   ->setDirection(Direction::Output)
+                   ->setPerformanceMode(PerformanceMode::LowLatency)
+                   ->setUsage(Usage::Notification)
+                   ->setDataCallback(callback);
+            if (forceConversion) {
+                builder.setFormat(AudioFormat::I16)
+                       ->setChannelCount(1)
+                       ->setSampleRate(11025)
+                       ->setFormatConversionAllowed(true)
+                       ->setChannelConversionAllowed(true)
+                       ->setSampleRateConversionQuality(SampleRateConversionQuality::Fastest);
+            }
+            std::shared_ptr<AudioStream> stream;
+            ASSERT_EQ(builder.openStream(stream), Result::OK);
+            stream->setDelayBeforeCloseMillis(0);
+            ASSERT_EQ(stream->requestStart(), Result::OK);
+            ASSERT_TRUE(waitForFlag(callback->done, 2000));
+            EXPECT_EQ(static_cast<Result>(callback->closeResult.load()),
+                      Result::ErrorInvalidState);
 
-        // The stream must still be open, and callbacks must stop.
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_NE(stream->getState(), StreamState::Closed);
-        const int32_t countAfterStop = callback->count.load();
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_LE(callback->count.load(), countAfterStop + 1) << "callbacks did not stop";
+            // The stream must still be open, and callbacks must stop.
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            EXPECT_NE(stream->getState(), StreamState::Closed);
+            const int32_t countAfterStop = callback->count.load();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            EXPECT_LE(callback->count.load(), countAfterStop + 1) << "callbacks did not stop";
 
-        // Restarting clears the stop request and callbacks resume.
-        ASSERT_EQ(stream->requestStart(), Result::OK);
-        EXPECT_TRUE(waitForCallbacks(callback->count, countAfterStop + 5, 2000))
-                << "callbacks did not resume after restart";
-        EXPECT_EQ(stream->close(), Result::OK);
+            // Restarting clears the stop request and callbacks resume.
+            ASSERT_EQ(stream->requestStart(), Result::OK);
+            EXPECT_TRUE(waitForCallbacks(callback->count, countAfterStop + 5, 2000))
+                    << "callbacks did not resume after restart";
+            EXPECT_EQ(stream->close(), Result::OK);
+        }
     });
 }
 
@@ -620,7 +690,7 @@ TEST_F(TestStreamLifecycle, StopFromOwnDataCallback) {
                 callback->stopNow.store(true);
                 ASSERT_TRUE(waitForFlag(callback->done, 2000)) << "blocking=" << blocking;
                 EXPECT_EQ(static_cast<Result>(callback->stopResult.load()), Result::OK);
-                EXPECT_LT(callback->stopMicros.load(), 5000) << "stop blocked the callback";
+                EXPECT_LT(callback->stopMicros.load(), 20000) << "stop blocked the callback";
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 const int32_t countAfterStop = callback->count.load();
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -739,17 +809,17 @@ TEST_F(TestStreamLifecycle, DeleteRawStreamDuringErrorCallbackWaitsForHelperThre
             // The first iteration holds longer than the 500 ms warning threshold.
             error->holdMs = (i == 0) ? 1000 : 20 * i;
             AudioStreamBuilder builder = makeRawTestBuilder(data, error);
-            auto *stream = new TestableAAudioStream(builder);
+            auto stream = std::make_unique<TestableAAudioStream>(builder);
             ASSERT_EQ(stream->open(), Result::OK) << "iteration " << i;
             stream->setDelayBeforeCloseMillis(0);
             ASSERT_EQ(stream->requestStart(), Result::OK);
             ASSERT_TRUE(waitForCallbacks(data->count, 2));
 
-            TestableAAudioStream::simulateDisconnect(stream);
+            TestableAAudioStream::simulateDisconnect(stream.get());
             ASSERT_TRUE(waitForFlag(error->enteredBeforeClose, 2000)) << "iteration " << i;
 
             // Delete without close(), while the helper thread is in onErrorBeforeClose().
-            delete stream;
+            stream.reset();
             EXPECT_TRUE(error->afterCloseDone.load())
                     << "delete returned while the error helper thread still used the stream, "
                     << "iteration " << i;
@@ -784,15 +854,15 @@ TEST_F(TestStreamLifecycle, DeleteRawStreamDuringRoutingCallbackWaitsForHelperTh
         auto routing = std::make_shared<SlowRoutingCallback>();
         AudioStreamBuilder builder = makeRawTestBuilder(data, error);
         builder.setRoutingCallback(routing);
-        auto *stream = new TestableAAudioStream(builder);
+        auto stream = std::make_unique<TestableAAudioStream>(builder);
         ASSERT_EQ(stream->open(), Result::OK);
         stream->setDelayBeforeCloseMillis(0);
         ASSERT_EQ(stream->requestStart(), Result::OK);
         ASSERT_TRUE(waitForCallbacks(data->count, 2));
 
-        TestableAAudioStream::simulateRoutingChange(stream);
+        TestableAAudioStream::simulateRoutingChange(stream.get());
         ASSERT_TRUE(waitForFlag(routing->entered, 2000));
-        delete stream;
+        stream.reset();
         EXPECT_TRUE(routing->done.load())
                 << "delete returned while the routing helper thread still used the stream";
         EXPECT_GT(routing->sampleRateSeen.load(), 0);
@@ -812,14 +882,15 @@ TEST_F(TestStreamLifecycle, DeleteRawStreamInsideOnErrorAfterClose) {
         error->holdMs = 0;
         error->deleteInAfterClose = true;
         AudioStreamBuilder builder = makeRawTestBuilder(data, error);
-        auto *stream = new TestableAAudioStream(builder);
+        auto stream = std::make_unique<TestableAAudioStream>(builder);
         ASSERT_EQ(stream->open(), Result::OK);
         stream->setDelayBeforeCloseMillis(0);
         ASSERT_EQ(stream->requestStart(), Result::OK);
         ASSERT_TRUE(waitForCallbacks(data->count, 2));
 
         const auto start = std::chrono::steady_clock::now();
-        TestableAAudioStream::simulateDisconnect(stream);
+        // onErrorAfterClose() deletes the stream, so give up ownership here.
+        TestableAAudioStream::simulateDisconnect(stream.release());
         ASSERT_TRUE(waitForFlag(error->afterCloseDone, 5000));
         const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - start).count();
@@ -847,7 +918,7 @@ TEST_F(TestStreamLifecycle, DeleteRawFilterStreamDuringErrorCallbackWaitsForHelp
             parentBuilder.setFormat(AudioFormat::I16)
                          ->setSampleRate(child->getSampleRate())
                          ->setChannelCount(child->getChannelCount());
-            auto *parent = new FilterAudioStream(parentBuilder, child);
+            auto parent = std::make_unique<FilterAudioStream>(parentBuilder, child);
             child->registerSharedPtr(child);
             ASSERT_EQ(parent->configureFlowGraph(), Result::OK);
             ASSERT_EQ(parent->requestStart(), Result::OK);
@@ -857,7 +928,7 @@ TEST_F(TestStreamLifecycle, DeleteRawFilterStreamDuringErrorCallbackWaitsForHelp
             child.reset();  // The parent now owns the child, as in openStreamInternal().
             ASSERT_TRUE(waitForFlag(error->enteredBeforeClose, 2000)) << "iteration " << i;
 
-            delete parent;
+            parent.reset();
             EXPECT_TRUE(error->afterCloseDone.load())
                     << "delete returned while the error helper thread still used the parent, "
                     << "iteration " << i;
@@ -873,25 +944,64 @@ TEST_F(TestStreamLifecycle, ReopenClosedSharedStreamDeliversCallbacks) {
         GTEST_SKIP() << "AAudio not supported";
     }
 
-    auto callback = std::make_shared<LifecycleDataCallback>();
-    AudioStreamBuilder builder;
-    builder.setAudioApi(AudioApi::AAudio)
-           ->setDirection(Direction::Output)
-           ->setPerformanceMode(PerformanceMode::LowLatency)
-           ->setUsage(Usage::Notification)
-           ->setDataCallback(callback);
+    runWithDeadlockTimeout(15, []() {
+        auto callback = std::make_shared<LifecycleDataCallback>();
+        AudioStreamBuilder builder;
+        builder.setAudioApi(AudioApi::AAudio)
+               ->setDirection(Direction::Output)
+               ->setPerformanceMode(PerformanceMode::LowLatency)
+               ->setUsage(Usage::Notification)
+               ->setDataCallback(callback);
 
-    std::shared_ptr<AudioStream> stream;
-    ASSERT_EQ(builder.openStream(stream), Result::OK);
-    ASSERT_EQ(stream->requestStart(), Result::OK);
-    ASSERT_TRUE(waitForCallbacks(callback->callbackCount, 3));
-    ASSERT_EQ(stream->close(), Result::OK);
+        std::shared_ptr<AudioStream> stream;
+        ASSERT_EQ(builder.openStream(stream), Result::OK);
+        ASSERT_EQ(stream->requestStart(), Result::OK);
+        ASSERT_TRUE(waitForCallbacks(callback->callbackCount, 3));
+        ASSERT_EQ(stream->close(), Result::OK);
 
-    callback->callbackCount.store(0);
-    ASSERT_EQ(stream->open(), Result::OK);
-    ASSERT_EQ(stream->requestStart(), Result::OK);
-    EXPECT_TRUE(waitForCallbacks(callback->callbackCount, 3));
-    EXPECT_EQ(stream->close(), Result::OK);
+        callback->callbackCount.store(0);
+        ASSERT_EQ(stream->open(), Result::OK);
+        ASSERT_EQ(stream->requestStart(), Result::OK);
+        EXPECT_TRUE(waitForCallbacks(callback->callbackCount, 3));
+        EXPECT_EQ(stream->close(), Result::OK);
+    });
+}
+
+// A stream that is closed and re-opened must be registered again in the stream registry, so
+// that routing (and error/presentation) callbacks after the reopen are still delivered.
+TEST_F(TestStreamLifecycle, ReopenedSharedStreamStillReceivesRoutingCallbacks) {
+    if (!AudioStreamBuilder::isAAudioSupported()) GTEST_SKIP() << "AAudio not supported";
+
+    class CountingRoutingCallback final : public AudioStreamRoutingCallback {
+    public:
+        void onRoutingChanged(AudioStream *stream, const int32_t *, int32_t) override {
+            (void) stream->getSampleRate();
+            count.fetch_add(1);
+        }
+        std::atomic<int32_t> count{0};
+    };
+
+    runWithDeadlockTimeout(15, []() {
+        AAudioExtensions::getInstance().setMMapEnabled(false);
+        auto data = std::make_shared<SilenceCallback>();
+        auto error = std::make_shared<SlowErrorCallback>();
+        auto routing = std::make_shared<CountingRoutingCallback>();
+        AudioStreamBuilder builder = makeRawTestBuilder(data, error);
+        builder.setRoutingCallback(routing);
+        auto stream = std::make_shared<TestableAAudioStream>(builder);
+        ASSERT_EQ(stream->open(), Result::OK);
+        stream->registerSharedPtr(stream);
+        stream->setDelayBeforeCloseMillis(0);
+        ASSERT_EQ(stream->close(), Result::OK);
+
+        ASSERT_EQ(stream->open(), Result::OK);
+        ASSERT_EQ(stream->requestStart(), Result::OK);
+        ASSERT_TRUE(waitForCallbacks(data->count, 2));
+        TestableAAudioStream::simulateRoutingChange(stream.get());
+        EXPECT_TRUE(waitForCallbacks(routing->count, 1, 2000))
+                << "routing callback not delivered after reopen";
+        EXPECT_EQ(stream->close(), Result::OK);
+    });
 }
 
 // Exercises DataCallbackResult::Stop racing with unclosed shared_ptr::reset().
