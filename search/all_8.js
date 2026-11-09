@@ -16,6 +16,7 @@ var searchData=
   ['ispartialdatacallbacksupported_13',['isPartialDataCallbackSupported',['../classoboe_1_1_oboe_extensions.html#aa42010a19f604da072bc7683d12c2ccb',1,'oboe::OboeExtensions']]],
   ['isperformancehintenabled_14',['isPerformanceHintEnabled',['../classoboe_1_1_audio_stream.html#a9fdffea9e3a3f693fcbbbca699a22c6b',1,'oboe::AudioStream']]],
   ['ispresentationcallbackspecified_15',['isPresentationCallbackSpecified',['../classoboe_1_1_audio_stream_base.html#abbf0b7df1cd7c78caa794f2e314f90f2',1,'oboe::AudioStreamBase']]],
-  ['isvalidconfig_16',['isValidConfig',['../classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2',1,'oboe::AudioStreamBase']]],
-  ['isxruncountsupported_17',['isXRunCountSupported',['../classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
+  ['isroutingchangedcallbacksupported_16',['isRoutingChangedCallbackSupported',['../classoboe_1_1_oboe_extensions.html#a6c04e98f52582a840938278d7d7ddbb5',1,'oboe::OboeExtensions']]],
+  ['isvalidconfig_17',['isValidConfig',['../classoboe_1_1_audio_stream_base.html#a5d5e07e98921d0193a5c0ccbe06f68c2',1,'oboe::AudioStreamBase']]],
+  ['isxruncountsupported_18',['isXRunCountSupported',['../classoboe_1_1_audio_stream.html#a43d8a098440cde28f4ee8bedd6d107c4',1,'oboe::AudioStream']]]
 ];
