@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+#include <cstdlib>
 #include <dlfcn.h>
 #include <type_traits>
 #include <oboe/Utilities.h>
 #include "common/OboeDebug.h"
 #include "AAudioLoader.h"
+#include "AudioStreamAAudio.h"
 
 #define LIB_AAUDIO_NAME "libaaudio.so"
 
@@ -39,8 +41,11 @@ AAudioLoader::~AAudioLoader() {
 }
 
 AAudioLoader* AAudioLoader::getInstance() {
-    static AAudioLoader instance;
-    return &instance;
+    // Intentionally never destroyed. ~AudioStreamAAudio() closes a stream that is still open,
+    // and that can happen during exit() or dlclose() (e.g. a global shared_ptr<AudioStream>),
+    // after a function-local static loader would already have been destroyed.
+    static AAudioLoader *instance = new AAudioLoader();
+    return instance;
 }
 
 int AAudioLoader::open() {
@@ -211,6 +216,9 @@ int AAudioLoader::open() {
         builder_setPartialDataCallback =
                 load_V_PBPDPV("AAudioStreamBuilder_setPartialDataCallback");
     }
+
+    // Must run after dlopen(libaaudio.so); see registerExitHandler().
+    AudioStreamAAudio::registerExitHandler();
 
     return 0;
 }

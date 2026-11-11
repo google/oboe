@@ -737,7 +737,9 @@ public:
      * Create and open a stream object based on the current settings.
      *
      * The caller owns the pointer to the AudioStream object
-     * and must delete it when finished.
+     * and must delete it when finished. Call close() first. Deleting an open AAudio stream
+     * closes it and waits for its callbacks, with the same caveats as releasing the last
+     * reference in openStream(std::shared_ptr<oboe::AudioStream> &stream).
      *
      * @deprecated Use openStream(std::shared_ptr<oboe::AudioStream> &stream) instead.
      * @param stream pointer to a variable to receive the stream address
@@ -751,6 +753,13 @@ public:
      * The caller shares the pointer to the AudioStream object.
      * The shared_ptr is used internally by Oboe to prevent the stream from being
      * deleted while it is being used by callbacks.
+     *
+     * Call stop() and close() before releasing the last reference. If an AAudio stream is
+     * still open when its last reference is released, it is closed then, and that waits for
+     * any running data, error, routing or presentation callback to return. So do not release
+     * the last reference on a thread that holds a lock that those callbacks also take, or the
+     * two threads will deadlock. Avoid it on the UI thread too, because the close can block
+     * briefly.
      *
      * @param stream reference to a shared_ptr to receive the stream address
      * @return OBOE_OK if successful or a negative error code

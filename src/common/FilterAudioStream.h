@@ -67,13 +67,16 @@ public:
         mChildStream->setParentStream(this);
     }
 
-    virtual ~FilterAudioStream() = default;
+    virtual ~FilterAudioStream();
 
     Result configureFlowGraph();
 
     // Close child and parent.
-    Result close()  override {
+    Result close() override {
         const Result result1 = mChildStream->close();
+        if (result1 == Result::ErrorInvalidState) {
+            return result1; // Rejected (e.g. called from own data callback); keep parent open.
+        }
         const Result result2 = AudioStream::close();
         return (result1 != Result::OK ? result1 : result2);
     }
@@ -108,6 +111,15 @@ public:
      */
     Result requestStop() override {
         return mChildStream->requestStop();
+    }
+
+    /**
+     * Stop the stream and wait for it to reach Stopped. Forwarded to the child stream so that a
+     * call from inside the data callback is handled by the child: it requests the stop and
+     * returns OK right away, without waiting or taking locks.
+     */
+    Result stop(int64_t timeoutNanoseconds = kDefaultTimeoutNanos) override {
+        return mChildStream->stop(timeoutNanoseconds);
     }
 
     ResultWithValue<int32_t> read(void *buffer,

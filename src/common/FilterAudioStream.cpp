@@ -16,6 +16,7 @@
 
 #include <memory>
 
+#include "aaudio/AudioStreamAAudio.h"
 #include "OboeDebug.h"
 #include "FilterAudioStream.h"
 
@@ -40,6 +41,12 @@ using namespace flowgraph;
 //                <= DataConversionFlowGraph::read()
 //                <== FilterAudioStream::read()
 //                <= app
+
+FilterAudioStream::~FilterAudioStream() {
+    // This parent may be the child's data/error callback, and the child's helper threads also
+    // call into it (e.g. onErrorAfterClose()); close and drain the child before mFlowGraph dies.
+    AudioStreamAAudio::closeAndWaitForChild(mChildStream.get());
+}
 
 Result FilterAudioStream::configureFlowGraph() {
     mFlowGraph = std::make_unique<DataConversionFlowGraph>();
