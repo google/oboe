@@ -217,12 +217,8 @@ int AAudioLoader::open() {
                 load_V_PBPDPV("AAudioStreamBuilder_setPartialDataCallback");
     }
 
-    // Registered after dlopen(libaaudio.so), so at exit() it runs in reverse order BEFORE
-    // libaaudio's own static destructors tear down internal AAudio state. Closes any open
-    // streams (such as pre-main globals) whose destructors would otherwise run too late.
-    static const bool sExitHandlerRegistered =
-            (std::atexit(&AudioStreamAAudio::closeAllStreamsAtExit) == 0);
-    (void) sExitHandlerRegistered;
+    // Must run after dlopen(libaaudio.so); see registerExitHandler().
+    AudioStreamAAudio::registerExitHandler();
 
     return 0;
 }

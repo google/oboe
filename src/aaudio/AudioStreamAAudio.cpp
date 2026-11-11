@@ -22,6 +22,7 @@
 #include <vector>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "aaudio/AAudioLoader.h"
 #include "aaudio/AudioStreamAAudio.h"
@@ -198,7 +199,7 @@ private:
  * The data callbacks intentionally do NOT use this class, because the data path must stay
  * lock-free. They are safe because every teardown path calls close() before the stream
  * object is freed, and close() returns only when no data callback can reach the stream
- * (see DataCallbackContext). The one exception is an app that destroys the stream from
+ * (see DataCallbackSlots). The one exception is an app that destroys the stream from
  * inside its own data callback; see cleanupUnclosedStream().
  */
 class AAudioStreamCollection {
@@ -316,7 +317,7 @@ public:
             }
             if (alive && oboeStream != nullptr && !oboeStream->isOnOwnDataCallbackThread()) {
                 LOGW("AudioStreamAAudio(%p) still open at exit; closing stream now.", oboeStream);
-                oboeStream->close();
+                oboeStream->closeInternal(AudioStreamAAudio::CloseMode::Exit);
             }
             lease.reset();
         }
@@ -402,64 +403,130 @@ private:
 };
 
 /**
- * The userData that AAudio passes to the data callback, instead of the AudioStreamAAudio itself.
+ * Maps the userData of AAudio data callbacks to the AudioStreamAAudio, without ever giving AAudio
+ * a pointer to memory that may be freed.
  *
  * On Legacy (non-MMAP) streams, AAudioStream_close() does not reliably wait for the
- * AudioTrack/AudioRecord callback thread (before Android S it never does, and late callbacks
- * have been reported on later versions too), so a data callback can arrive after close()
- * returns and the app has deleted the stream. close() therefore detaches this context
- * (see detach()) right after AAudioStream_close(): any later callback finds `stream == nullptr`
- * and returns Stop without touching the stream. Lock-free: two atomic RMWs per callback.
+ * AudioTrack/AudioRecord callback thread (before Android S it never does, and later versions
+ * cannot be fully ruled out), so a data callback can arrive after close() returns and the app
+ * has deleted the stream.
+ *
+ * So AAudio gets a handle *value* as userData: a slot index plus the slot's generation. The slots
+ * are never freed. close() calls release() right after AAudioStream_close(): it clears the slot,
+ * bumps its generation and waits for running callbacks. Any later callback, even one that
+ * arrives after the slot has been given to another stream, finds a different generation and
+ * returns Stop without touching any stream. The slots are one fixed, zero-initialized static
+ * array (24 KB on 64-bit ABIs, of which only the pages of slots actually used are touched), so
+ * nothing is allocated or leaked per open.
+ *
+ * The data callback side is lock-free and wait-free: one atomic increment, two loads and one
+ * decrement. acquire() and release() run on the control plane and take a mutex.
  */
-struct DataCallbackContext {
-    explicit DataCallbackContext(AudioStreamAAudio *s) : stream(s) {}
+class DataCallbackSlots {
+public:
+    struct Slot {
+        std::atomic<uint32_t> generation{0};
+        std::atomic<AudioStreamAAudio *> stream{nullptr};
+        std::atomic<int32_t> active{0};  // data callbacks currently using this slot
+        bool inUse = false;              // guarded by getLock()
+    };
 
-    std::atomic<AudioStreamAAudio *> stream;
-    // The AAudioStream this context belongs to, set once open() succeeds. A callback for any
-    // other AAudioStream is rejected, as a second line of defense against reused memory.
-    std::atomic<AAudioStream *> aaudioStream{nullptr};
-    std::atomic<int32_t> active{0};  // data callbacks currently using `stream`
-
-    // Returns the stream and counts this callback as active, or nullptr after detach() or if
-    // `callingStream` is not this context's AAudioStream. Always call leave() afterwards.
-    AudioStreamAAudio *enter(AAudioStream *callingStream) {
-        // seq_cst on both sides (here and in detach()): either this callback sees nullptr,
-        // or detach() sees it as active and waits for it.
-        active.fetch_add(1);
-        AudioStreamAAudio *s = stream.load();
-        return (callingStream == aaudioStream.load(std::memory_order_relaxed)) ? s : nullptr;
-    }
-    void leave() {
-        active.fetch_sub(1, std::memory_order_release);
-    }
-
-    // After this returns, no data callback is using the stream, and none ever will.
-    // `waitForCallbacks` must be false on the stream's own data callback thread. The wait lasts
-    // as long as the running callback.
-    // Deletes the context only if `mayDelete`, which the caller sets only when AAudio guarantees
-    // no more callbacks (a successful close of an MMAP stream). Otherwise the context is leaked
-    // (a few bytes), because AAudio may still call it.
-    static void detach(DataCallbackContext *context, bool waitForCallbacks, bool mayDelete) {
-        if (context == nullptr) {
-            return;
-        }
-        context->stream.store(nullptr);
-        if (!waitForCallbacks) {
-            return;
-        }
-        // A callback normally finishes within microseconds; fall back to sleeping if it blocks.
-        for (int spins = 0; context->active.load() != 0; ++spins) {
-            if (spins < 100) {
-                std::this_thread::yield();
-            } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    // Takes a free slot for `stream`. Returns false if every slot is in use.
+    static bool acquire(AudioStreamAAudio *stream, uintptr_t *handle) {
+        std::lock_guard<std::mutex> lock(getLock());
+        // The lowest free index, so the memory touched is bounded by the peak number of
+        // streams open at the same time.
+        for (uint32_t index = 0; index < kMaxSlots; index++) {
+            Slot &slot = sSlots[index];
+            if (!slot.inUse) {
+                slot.inUse = true;
+                slot.stream.store(stream);
+                const uintptr_t generation = slot.generation.load() & kGenerationMask;
+                *handle = (generation << kIndexBits) | index;
+                return true;
             }
         }
-        if (mayDelete) {
-            delete context;
+        return false;
+    }
+
+    // Data callback: returns the stream and counts this callback as active, or nullptr if the
+    // handle is stale (the stream was closed). Always call leave(slot) afterwards.
+    static AudioStreamAAudio *enter(void *userData, Slot **slot) {
+        const auto handle = reinterpret_cast<uintptr_t>(userData);
+        *slot = &sSlots[handle & kIndexMask];
+        // seq_cst here and in release(): either this callback sees the new generation, or
+        // release() sees it as active and waits for it.
+        (*slot)->active.fetch_add(1);
+        if (((*slot)->generation.load() & kGenerationMask) != (handle >> kIndexBits)) {
+            return nullptr;
         }
+        return (*slot)->stream.load();
+    }
+
+    static void leave(Slot *slot) {
+        slot->active.fetch_sub(1, std::memory_order_release);
+    }
+
+    // Invalidates `handle` and frees its slot. Afterwards no data callback uses the stream, and
+    // none ever will. `waitForCallbacks` is false only when no callback can be running or on
+    // the stream's own data callback thread; a later owner of the slot then waits for that
+    // callback in its own release().
+    static void release(uintptr_t handle, bool waitForCallbacks) {
+        Slot &slot = sSlots[handle & kIndexMask];
+        slot.stream.store(nullptr);
+        slot.generation.fetch_add(1);
+        if (waitForCallbacks) {
+            // A callback normally finishes within microseconds; sleep if it blocks.
+            for (int spins = 0; slot.active.load() != 0; ++spins) {
+                if (spins < 100) {
+                    std::this_thread::yield();
+                } else {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+            }
+        }
+        std::lock_guard<std::mutex> lock(getLock());
+        slot.inUse = false;
+    }
+
+    // For tests: the number of slots in use now.
+    static int32_t getInUseCountForTest() {
+        std::lock_guard<std::mutex> lock(getLock());
+        int32_t count = 0;
+        for (const Slot &slot : sSlots) {
+            count += slot.inUse ? 1 : 0;
+        }
+        return count;
+    }
+
+private:
+    // 10 index bits: up to 1024 streams open at once. The rest of the handle is the generation:
+    // 22 bits on 32-bit ABIs (about 4 million reuses of one slot before it wraps), 32 bits on
+    // 64-bit ABIs. Late callbacks arrive within milliseconds of close(), so wrapping is harmless.
+    static constexpr uint32_t kIndexBits = 10;
+    static constexpr uint32_t kMaxSlots = 1u << kIndexBits;
+    static constexpr uintptr_t kIndexMask = kMaxSlots - 1;
+    static constexpr uintptr_t kGenerationMask = (sizeof(uintptr_t) >= 8)
+            ? uintptr_t{0xFFFFFFFFu}
+            : ((uintptr_t{1} << (32 - kIndexBits)) - 1);
+
+    // Static storage that is never freed, so a late callback always reads valid memory.
+    // Constant-initialized with a trivial destructor, so it is also safe during exit().
+    static Slot sSlots[kMaxSlots];
+
+    static std::mutex &getLock() {
+        // Intentionally leaked, like the other singletons, so streams closed during exit()
+        // never use a destroyed mutex.
+        static std::mutex *lock = new std::mutex();
+        return *lock;
     }
 };
+
+DataCallbackSlots::Slot DataCallbackSlots::sSlots[DataCallbackSlots::kMaxSlots];
+
+int32_t AudioStreamAAudio::getDataCallbackSlotsInUseForTest() {
+    return DataCallbackSlots::getInUseCountForTest();
+}
 
 } // namespace oboe
 
@@ -471,22 +538,22 @@ struct DataCallbackContext {
 // Stop workaround on Android R and older (launchStopThread()) and ADPF (AdpfWrapper), which
 // opens its session on the first callback after a start.
 //
-// The stream cannot be freed while this runs: close() detaches the DataCallbackContext and
-// waits for running callbacks before it returns, on every Android version. The exception is
-// an app that releases its last reference to the stream inside onAudioReady(); that is not
-// supported and may crash (see cleanupUnclosedStream()). To stop from the callback, return
+// The stream cannot be freed while this runs: close() releases the stream's DataCallbackSlots
+// handle and waits for running callbacks before it returns, on every Android version. The
+// exception is an app that releases its last reference to the stream inside onAudioReady(); that
+// is not supported and may crash (see cleanupUnclosedStream()). To stop from the callback, return
 // DataCallbackResult::Stop (or call requestStop()) and release the stream from another thread.
 static aaudio_data_callback_result_t oboe_aaudio_data_callback_proc(
         AAudioStream *stream,
         void *userData,
         void *audioData,
         int32_t numFrames) {
-    auto *context = static_cast<DataCallbackContext *>(userData);
-    AudioStreamAAudio *oboeStream = context->enter(stream);
+    DataCallbackSlots::Slot *slot = nullptr;
+    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot);
     const DataCallbackResult result = (oboeStream != nullptr)
             ? oboeStream->callOnAudioReady(stream, audioData, numFrames)
             : DataCallbackResult::Stop;  // closed: never touch the stream
-    context->leave();
+    DataCallbackSlots::leave(slot);
     return static_cast<aaudio_data_callback_result_t>(result);
 }
 
@@ -496,13 +563,13 @@ static int32_t oboe_aaudio_partial_data_callback_proc(
         void *userData,
         void *audioData,
         int32_t numFrames) {
-    auto *context = static_cast<DataCallbackContext *>(userData);
-    AudioStreamAAudio *oboeStream = context->enter(stream);
+    DataCallbackSlots::Slot *slot = nullptr;
+    AudioStreamAAudio *oboeStream = DataCallbackSlots::enter(userData, &slot);
     // A negative result stops the stream.
     const int32_t result = (oboeStream != nullptr)
             ? oboeStream->callOnPartialAudioReady(stream, audioData, numFrames)
             : -1;
-    context->leave();
+    DataCallbackSlots::leave(slot);
     return result;
 }
 
@@ -674,8 +741,28 @@ void AudioStreamAAudio::closeAndWaitForChild(AudioStream *child) {
     }
 }
 
-void AudioStreamAAudio::closeAllStreamsAtExit() {
+namespace {
+// The process that registered closeAllStreamsAtExit(). A child forked from it that calls exit()
+// must not close the AAudio streams it inherited from the parent.
+std::atomic<pid_t> sExitHandlerPid{0};
+
+void closeAllStreamsAtExit() {
+    if (getpid() != sExitHandlerPid.load()) {
+        return;
+    }
     AAudioStreamCollection::getInstance().closeAllStreams();
+}
+} // namespace
+
+void AudioStreamAAudio::registerExitHandler() {
+    // Registered after dlopen(libaaudio.so), so at exit() it runs in reverse order BEFORE
+    // libaaudio's own static destructors tear down internal AAudio state. Closes any open
+    // streams (such as pre-main globals) whose destructors would otherwise run too late.
+    static const bool sRegistered = [] {
+        sExitHandlerPid.store(getpid());
+        return std::atexit(&closeAllStreamsAtExit) == 0;
+    }();
+    (void) sRegistered;
 }
 
 void AudioStreamAAudio::onWeakThisSet(AudioStream *stream,
@@ -690,7 +777,7 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
     }
     if (!isOnOwnDataCallbackThread()) {
         LOGW("AudioStreamAAudio(%p) destroyed without close()! Closing stream now.", this);
-        close();
+        closeInternal(CloseMode::Destructor);
         return;
     }
 
@@ -704,8 +791,10 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
         return;
     }
     // Later callbacks return Stop. This callback is still running, so do not wait for it.
-    DataCallbackContext::detach(mDataCallbackContext, false, false);
-    mDataCallbackContext = nullptr;
+    if (mHasDataCallbackHandle) {
+        DataCallbackSlots::release(mDataCallbackHandle, /*waitForCallbacks=*/false);
+        mHasDataCallbackHandle = false;
+    }
     closePerformanceHint();  // AudioStream::close() is bypassed here.
     LOGW("AudioStreamAAudio(%p) destroyed from its own data callback without close(). "
          "This is unsupported; closing the AAudioStream asynchronously.", this);
@@ -714,11 +803,10 @@ void AudioStreamAAudio::cleanupUnclosedStream() {
     const int32_t delayMillis = std::min<int32_t>(mDelayBeforeCloseMillis,
                                                   kMaxDelayBeforeCloseMillis);
     std::thread([libLoader, stream, workarounds, delayMillis]() {
-        if (workarounds) {
-            requestStopChecked(libLoader, stream);
-            if (delayMillis > 0) {
-                usleep(static_cast<useconds_t>(delayMillis) * 1000);
-            }
+        // Always stop first (see closeInternal()).
+        requestStopChecked(libLoader, stream);
+        if (workarounds && delayMillis > 0) {
+            usleep(static_cast<useconds_t>(delayMillis) * 1000);
         }
         libLoader->stream_close(stream);
     }).detach();
@@ -969,9 +1057,13 @@ Result AudioStreamAAudio::open() {
 
     if (anyDataCallbackSpecified()) {
         if (isDataCallbackSpecified()) {
-            mDataCallbackContext = new DataCallbackContext(this);
+            if (!acquireDataCallbackHandle()) {
+                mLibLoader->builder_delete(aaudioBuilder);
+                return Result::ErrorNoFreeHandles;
+            }
             mLibLoader->builder_setDataCallback(
-                    aaudioBuilder, oboe_aaudio_data_callback_proc, mDataCallbackContext);
+                    aaudioBuilder, oboe_aaudio_data_callback_proc,
+                    reinterpret_cast<void *>(mDataCallbackHandle));
         } else if (isPartialDataCallbackSpecified()) {
             if (mLibLoader->builder_setPartialDataCallback == nullptr) {
                 // This must not happen. The stream should fail open from the builder.
@@ -979,9 +1071,13 @@ Result AudioStreamAAudio::open() {
                 LOGE("Using partial data callback while it is not available");
                 return Result::ErrorIllegalArgument;
             }
-            mDataCallbackContext = new DataCallbackContext(this);
+            if (!acquireDataCallbackHandle()) {
+                mLibLoader->builder_delete(aaudioBuilder);
+                return Result::ErrorNoFreeHandles;
+            }
             mLibLoader->builder_setPartialDataCallback(
-                    aaudioBuilder, oboe_aaudio_partial_data_callback_proc, mDataCallbackContext);
+                    aaudioBuilder, oboe_aaudio_partial_data_callback_proc,
+                    reinterpret_cast<void *>(mDataCallbackHandle));
         }
         mLibLoader->builder_setFramesPerDataCallback(aaudioBuilder, getFramesPerDataCallback());
 
@@ -1013,10 +1109,6 @@ Result AudioStreamAAudio::open() {
         AAudioStream *stream = nullptr;
         result = static_cast<Result>(mLibLoader->builder_openStream(aaudioBuilder, &stream));
         mAAudioStream.store(stream);
-        if (mDataCallbackContext != nullptr) {
-            // Data callbacks start only after requestStart(), so they always see this value.
-            mDataCallbackContext->aaudioStream.store(stream, std::memory_order_relaxed);
-        }
     }
     if (result != Result::OK) {
         // Warn developer because ErrorInternal is not very informative.
@@ -1120,15 +1212,22 @@ error2:
                     mWeakParentStream, mWeakParentSet);
         }
     }
-    if (result != Result::OK && mDataCallbackContext != nullptr) {
-        if (mAAudioStream.load() == nullptr) {
-            delete mDataCallbackContext;  // AAudio never got a stream that could call it
-        } else {
-            DataCallbackContext::detach(mDataCallbackContext, false, false);  // leaked
-        }
-        mDataCallbackContext = nullptr;
+    if (result != Result::OK && mHasDataCallbackHandle) {
+        // The stream never started, so no callback can be running. Any later one finds a stale
+        // handle and returns Stop.
+        DataCallbackSlots::release(mDataCallbackHandle, /*waitForCallbacks=*/false);
+        mHasDataCallbackHandle = false;
     }
     return result;
+}
+
+bool AudioStreamAAudio::acquireDataCallbackHandle() {
+    if (!DataCallbackSlots::acquire(this, &mDataCallbackHandle)) {
+        LOGE("AudioStreamAAudio.open() too many streams open at once");
+        return false;
+    }
+    mHasDataCallbackHandle = true;
+    return true;
 }
 
 Result AudioStreamAAudio::release() {
@@ -1176,6 +1275,10 @@ Result AudioStreamAAudio::close() {
              "DataCallbackResult::Stop and close from another thread.", __func__);
         return Result::ErrorInvalidState;
     }
+    return closeInternal(CloseMode::App);
+}
+
+Result AudioStreamAAudio::closeInternal(CloseMode mode) {
     // Always remove the stream from the collection before closing it as after closing, the client
     // will free the resource of the stream.
     AAudioStreamCollection::getInstance().removeStream(this);
@@ -1183,45 +1286,66 @@ Result AudioStreamAAudio::close() {
     // Serializes close() calls for the whole close, including the wait for data callbacks below,
     // so a second closer (for example the error thread) cannot return early and let the app
     // delete the stream while this close() is still finishing. This stream's own data callback
-    // never takes it (close() from there is rejected above).
+    // never takes it (close() from there is rejected).
     std::lock_guard<std::mutex> closeLock(mCloseLock);
 
     AAudioStream *stream = nullptr;
-    DataCallbackContext *context = nullptr;
+    uintptr_t callbackHandle = 0;
+    bool hasCallbackHandle = false;
     {
         // Wait for stream methods that are running (they hold mLock or mAAudioStreamLock), then
         // detach the AAudioStream. After this block no other method can reach it: they all see
         // mAAudioStream == nullptr and return ErrorClosed. So the rest of close() does not need
-        // mLock, and a data callback that calls requestPause() or requestStart() while
-        // AAudioStream_close() waits for it gets ErrorClosed instead of deadlocking.
+        // mLock, and a data callback that calls a locking stream method while
+        // AAudioStream_close() waits for it does not deadlock.
         std::lock_guard<std::mutex> lock(mLock);
         AudioStream::close();
         std::unique_lock<std::shared_mutex> lock2(mAAudioStreamLock);
         stream = mAAudioStream.exchange(nullptr);
         if (stream != nullptr) {
-            context = mDataCallbackContext;
-            mDataCallbackContext = nullptr;
+            callbackHandle = mDataCallbackHandle;
+            hasCallbackHandle = mHasDataCallbackHandle;
+            mHasDataCallbackHandle = false;
         }
     }
     if (stream == nullptr) {
         return Result::ErrorClosed;
     }
-    if (OboeGlobals::areWorkaroundsEnabled()) {
-        // Make sure we are really stopped. No other thread can restart the stream now.
-        requestStopChecked(mLibLoader, stream);
+    // Always stop before closing. On Android Q, closing a running Legacy stream can block
+    // forever in ~AudioTrack(), and the destructor and exit handler may close running streams.
+    // No other thread can restart the stream now.
+    const auto stateBeforeStop = static_cast<StreamState>(mLibLoader->stream_getState(stream));
+    requestStopChecked(mLibLoader, stream);
+    if (OboeGlobals::areWorkaroundsEnabled() && needsDelayBeforeClose(mode, stateBeforeStop)) {
         sleepBeforeClose();
     }
-    // Only MMAP streams reliably join the data callback thread in AAudioStream_close().
-    const bool usedMMap = AAudioExtensions::getInstance().isMMapUsed(stream);
     const Result result = static_cast<Result>(mLibLoader->stream_close(stream));
     // A Legacy stream's data callback can still be running, or arrive later. Stop it from
     // reaching this object.
-    DataCallbackContext::detach(context, /*waitForCallbacks=*/true,
-                                /*mayDelete=*/usedMMap && result == Result::OK);
+    if (hasCallbackHandle) {
+        DataCallbackSlots::release(callbackHandle, /*waitForCallbacks=*/true);
+    }
     // A data callback that ran after AudioStream::close() above may have re-opened the ADPF
     // session. No callback can reach this stream now, so close it again to avoid a leak.
     closePerformanceHint();
     return result;
+}
+
+bool AudioStreamAAudio::needsDelayBeforeClose(CloseMode mode, StreamState stateBeforeStop) {
+    switch (mode) {
+        case CloseMode::App:
+            return true;
+        case CloseMode::Destructor:
+            // "Stop, then release" is the common correct pattern. If the stream was never
+            // started or had already stopped, the delay would only block the releasing thread.
+            return !(stateBeforeStop == StreamState::Open
+                    || stateBeforeStop == StreamState::Stopped
+                    || stateBeforeStop == StreamState::Paused
+                    || stateBeforeStop == StreamState::Flushed);
+        case CloseMode::Exit:
+            return false;  // The process is going away; the extra margin buys nothing.
+    }
+    return true;
 }
 
 // Stops the stream on its own thread (see launchStopThread()). The shared_ptrs, if any, keep the
@@ -1326,11 +1450,12 @@ int32_t AudioStreamAAudio::callOnPartialAudioReady(AAudioStream * /*stream*/,
     return result;
 }
 
+bool AudioStreamAAudio::isControlCallFromOwnCallbackRejected() const {
+    return isOnOwnDataCallbackThread() && getSdkVersion() >= __ANDROID_API_P__;
+}
+
 Result AudioStreamAAudio::requestStart() {
-    if (isOnOwnDataCallbackThread()) {
-        // AAudio rejects start, pause and flush from a stream's own data callback (Android P and
-        // later). Reject them before taking mLock: another thread may hold mLock while AAudio
-        // waits for this callback to return (for example requestStop() on an MMAP stream).
+    if (isControlCallFromOwnCallbackRejected()) {
         return Result::ErrorInvalidState;
     }
     std::lock_guard<std::mutex> lock(mLock);
@@ -1361,8 +1486,8 @@ Result AudioStreamAAudio::requestStart() {
 }
 
 Result AudioStreamAAudio::requestPause() {
-    if (isOnOwnDataCallbackThread()) {
-        return Result::ErrorInvalidState;  // See requestStart().
+    if (isControlCallFromOwnCallbackRejected()) {
+        return Result::ErrorInvalidState;
     }
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -1381,8 +1506,8 @@ Result AudioStreamAAudio::requestPause() {
 }
 
 Result AudioStreamAAudio::requestFlush() {
-    if (isOnOwnDataCallbackThread()) {
-        return Result::ErrorInvalidState;  // See requestStart().
+    if (isControlCallFromOwnCallbackRejected()) {
+        return Result::ErrorInvalidState;
     }
     std::lock_guard<std::mutex> lock(mLock);
     AAudioStream *stream = mAAudioStream.load();
@@ -1570,19 +1695,18 @@ StreamState AudioStreamAAudio::getState() {
 }
 
 void AudioStreamAAudio::onRoutingChanged(std::vector<int32_t> deviceIds) {
-    int nextIdx = mUpdatedDeviceIds.idx.load() ^ 1;
-    mUpdatedDeviceIds.deviceIds[nextIdx] = deviceIds;
-    mUpdatedDeviceIds.idx.store(nextIdx);
+    std::lock_guard<std::mutex> lock(mUpdatedDeviceIds.lock);
+    mUpdatedDeviceIds.deviceIds = std::move(deviceIds);
 }
 
 int32_t AudioStreamAAudio::getDeviceId() const {
-    auto deviceIds = mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()];
-    return deviceIds.empty() ? kUnspecified : deviceIds[0];
+    std::lock_guard<std::mutex> lock(mUpdatedDeviceIds.lock);
+    return mUpdatedDeviceIds.deviceIds.empty() ? kUnspecified : mUpdatedDeviceIds.deviceIds[0];
 }
 
 std::vector<int32_t> AudioStreamAAudio::getDeviceIds() const {
-    auto deviceIds = mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()];
-    return deviceIds;
+    std::lock_guard<std::mutex> lock(mUpdatedDeviceIds.lock);
+    return mUpdatedDeviceIds.deviceIds;
 }
 
 int32_t AudioStreamAAudio::getBufferSizeInFrames() {
@@ -1847,7 +1971,10 @@ void AudioStreamAAudio::updateDeviceIds() {
             mDeviceIds.push_back(deviceIds[i]);
         }
     }
-    mUpdatedDeviceIds.deviceIds[mUpdatedDeviceIds.idx.load()] = mDeviceIds;
+    {
+        std::lock_guard<std::mutex> lock(mUpdatedDeviceIds.lock);
+        mUpdatedDeviceIds.deviceIds = mDeviceIds;
+    }
 
     // This should not happen in most cases. Please file a bug on Oboe if you see this happening.
     if (getDeviceIds().empty()) {

@@ -22,6 +22,7 @@
 #include <shared_mutex>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 #include <common/AdpfWrapper.h>
 #include "oboe/AudioStreamBuilder.h"
@@ -33,7 +34,6 @@ namespace oboe {
 
 class AAudioStreamCollection;
 class HelperThreadTracker;
-struct DataCallbackContext;
 
 /**
  * Implementation of OboeStream that uses AAudio.
@@ -66,11 +66,17 @@ public:
     static void closeAndWaitForChild(AudioStream *child);
 
     /**
-     * Registered with std::atexit() right after libaaudio.so is loaded, so at exit() or
-     * dlclose() any still-open AAudio streams (such as pre-main globals) are closed while
-     * libaaudio's internal state is still intact.
+     * Called right after libaaudio.so is loaded. Registers an std::atexit() handler so that at
+     * exit() or dlclose() any still-open AAudio streams (such as pre-main globals) are closed
+     * while libaaudio's internal state is still intact. Only the first call registers it.
      */
-    static void closeAllStreamsAtExit();
+    static void registerExitHandler();
+
+    /**
+     * For tests: the number of data callback slots in use (one per open stream with a data
+     * callback). See DataCallbackSlots.
+     */
+    static int32_t getDataCallbackSlotsInUseForTest();
 
     /**
      *
@@ -218,6 +224,24 @@ private:
     // destructor and, via closeAndWaitForChild(), from ~FilterAudioStream().
     void cleanupUnclosedStream();
 
+    // Who is closing the stream. Only affects whether close sleeps before AAudioStream_close().
+    enum class CloseMode {
+        App,         // the app called close()
+        Destructor,  // the app released the stream without close()
+        Exit,        // the exit handler
+    };
+    Result closeInternal(CloseMode mode);
+    static bool needsDelayBeforeClose(CloseMode mode, StreamState stateBeforeStop);
+
+    // Takes a DataCallbackSlots handle for this stream (see open()). False if none is free.
+    bool acquireDataCallbackHandle();
+
+    // Starting, pausing or flushing from the stream's own data callback is rejected on Android P
+    // and later, before taking mLock, like AAudio does: another thread may hold mLock while AAudio
+    // waits for this callback to return (for example requestStop() on an MMAP stream). Allowed
+    // on O and O_MR1, where AAudio allows it too.
+    bool isControlCallFromOwnCallbackRejected() const;
+
     // Waits until no helper thread other than the caller holds a HelperLease on
     // this stream. Returns at once if called from this stream's own data callback.
     void waitForHelperThreads();
@@ -255,11 +279,11 @@ private:
 
     // With AAudio introduce routing changed callback in Android 17, aaudio may not disconnect
     // the stream when routing is changed. In that case, UpdatedDeviceIds is introduced to track
-    // the device ids. When there is routing callback, set the value to `deviceIds[idx^1]` and then
-    // flip the `idx` to `idx^1`. The get device query will then return `deviceIds[idx]`.
+    // the device ids. The routing callback writes them and getDeviceId()/getDeviceIds() read
+    // them on other threads, so they are guarded by a mutex (never taken on the data path).
     struct UpdatedDeviceIds {
-        std::atomic<int> idx{0};
-        std::vector<std::vector<int32_t>> deviceIds{ {}, {} };
+        mutable std::mutex lock;
+        std::vector<int32_t> deviceIds;
     };
     UpdatedDeviceIds mUpdatedDeviceIds;
 
@@ -292,8 +316,9 @@ private:
     // them. Shared with the registry entry and with each HelperLease, so it outlives the stream.
     std::shared_ptr<HelperThreadTracker> mHelperThreads;
 
-    // userData of the AAudio data callback while the stream is open (see DataCallbackContext).
-    DataCallbackContext *mDataCallbackContext = nullptr;
+    // userData of the AAudio data callback while the stream is open (see DataCallbackSlots).
+    uintptr_t mDataCallbackHandle = 0;
+    bool mHasDataCallbackHandle = false;
 
     // Held for the whole of close(). Never taken by this stream's own data callback.
     std::mutex mCloseLock;
