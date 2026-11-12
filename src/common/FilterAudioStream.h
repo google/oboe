@@ -57,6 +57,7 @@ public:
         mPerformanceMode = mChildStream->getPerformanceMode();
         mSharingMode = mChildStream->getSharingMode();
         mInputPreset = mChildStream->getInputPreset();
+        mSessionId = mChildStream->getSessionId();
         mFramesPerBurst = mChildStream->getFramesPerBurst();
         mDeviceIds = mChildStream->getDeviceIds();
         mHardwareSampleRate = mChildStream->getHardwareSampleRate();
