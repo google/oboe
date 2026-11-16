@@ -377,6 +377,7 @@
     </string-array>
 
     <string name="channel_mask_prompt">ChannelMask:</string>
+    <string name="channel_acn_mask_prompt">ACN Mask:</string>
 
     <string name="close_open_prompt">, Sleep before open (ms)</string>
     <string name="open_start_prompt">, Sleep between open and start (ms)</string>

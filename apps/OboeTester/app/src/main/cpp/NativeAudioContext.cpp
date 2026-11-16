@@ -168,6 +168,7 @@ int ActivityContext::open(jint nativeApi,
                           jint sampleRate,
                           jint channelCount,
                           jint channelMask,
+                          jint channelAcnMask,
                           jint format,
                           jint sharingMode,
                           jint performanceMode,
@@ -231,6 +232,10 @@ int ActivityContext::open(jint nativeApi,
     if (channelMask != (jint) oboe::ChannelMask::Unspecified) {
         // Set channel mask when it is specified.
         builder.setChannelMask((oboe::ChannelMask) channelMask);
+    }
+    if (channelAcnMask != (jint) oboe::ChannelAcnMask::Unspecified) {
+        // Set ambisonic channel mask when it is specified. This overrides channel count and mask.
+        builder.setChannelAcnMask((oboe::ChannelAcnMask) channelAcnMask);
     }
     if (mUseCallback) {
         builder.setFramesPerCallback(callbackSize);

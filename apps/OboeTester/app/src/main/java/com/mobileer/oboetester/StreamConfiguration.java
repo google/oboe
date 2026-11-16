@@ -236,6 +236,11 @@ public class StreamConfiguration {
                                                     CHANNEL_TOP_SIDE_RIGHT;
     public static final int CHANNEL_FRONT_BACK = CHANNEL_FRONT_CENTER | CHANNEL_BACK_CENTER;
 
+    // Ambisonic channel masks. Must match oboe::ChannelAcnMask.
+    public static final int CHANNEL_ACN_HORIZONTAL = 1 << 9;
+    public static final int CHANNEL_ACN_COUNT_MASK = (1 << 8) - 1;
+    public static final int CHANNEL_ACN_MAX_ORDER = 14;
+
     public static final int[] usages = {
             USAGE_MEDIA,
             USAGE_VOICE_COMMUNICATION,
@@ -284,6 +289,16 @@ public class StreamConfiguration {
             CHANNEL_FRONT_BACK
     };
 
+    // All full-sphere masks (order 0 to 14) followed by all horizontal-only masks.
+    public static final int[] channelAcnMasks = new int[2 * (CHANNEL_ACN_MAX_ORDER + 1)];
+    static {
+        for (int order = 0; order <= CHANNEL_ACN_MAX_ORDER; order++) {
+            channelAcnMasks[order] = (order + 1) * (order + 1);
+            channelAcnMasks[CHANNEL_ACN_MAX_ORDER + 1 + order] =
+                    CHANNEL_ACN_HORIZONTAL | (2 * order + 1);
+        }
+    }
+
     public static boolean isCompressedFormat(int format) {
         return format == AUDIO_FORMAT_MP3;
     }
@@ -292,6 +307,8 @@ public class StreamConfiguration {
     private static HashMap<String,Integer> mContentTypeStringToIntegerMap;
     private static HashMap<String,Integer> mChannelMaskStringToIntegerMap;
     private static List<String> mChannelMaskStrings = new ArrayList<>();
+    private static HashMap<String,Integer> mChannelAcnMaskStringToIntegerMap;
+    private static List<String> mChannelAcnMaskStrings = new ArrayList<>();
 
     private int mNativeApi;
     private int mBufferCapacityInFrames;
@@ -313,6 +330,7 @@ public class StreamConfiguration {
     private int mFramesPerBurst;
     private boolean mMMap;
     private int mChannelMask;
+    private int mChannelAcnMask;
     private int mHardwareChannelCount;
     private int mHardwareSampleRate;
     private int mHardwareFormat;
@@ -349,6 +367,17 @@ public class StreamConfiguration {
             mChannelMaskStringToIntegerMap.put(channelMaskStr, channelMask);
             mChannelMaskStrings.add(channelMaskStr);
         }
+
+        // Build map for Channel ACN Mask string-to-int conversion.
+        mChannelAcnMaskStringToIntegerMap = new HashMap<String, Integer>();
+        String channelAcnMaskStr = convertChannelAcnMaskToText(UNSPECIFIED);
+        mChannelAcnMaskStringToIntegerMap.put(channelAcnMaskStr, UNSPECIFIED);
+        mChannelAcnMaskStrings.add(channelAcnMaskStr);
+        for (int channelAcnMask : channelAcnMasks) {
+            channelAcnMaskStr = convertChannelAcnMaskToText(channelAcnMask);
+            mChannelAcnMaskStringToIntegerMap.put(channelAcnMaskStr, channelAcnMask);
+            mChannelAcnMaskStrings.add(channelAcnMaskStr);
+        }
     }
 
     public void reset() {
@@ -356,6 +385,7 @@ public class StreamConfiguration {
         mBufferCapacityInFrames = UNSPECIFIED;
         mChannelCount = UNSPECIFIED;
         mChannelMask = UNSPECIFIED;
+        mChannelAcnMask = UNSPECIFIED;
         mDeviceId = UNSPECIFIED;
         mDeviceIds = new int[0];
         mSessionId = -1;
@@ -701,6 +731,23 @@ public class StreamConfiguration {
         }
     }
 
+    public static String convertChannelAcnMaskToText(int channelAcnMask) {
+        if (channelAcnMask == UNSPECIFIED) {
+            return "Unspecified";
+        }
+        boolean isHorizontal = (channelAcnMask & CHANNEL_ACN_HORIZONTAL) != 0;
+        int count = channelAcnMask & CHANNEL_ACN_COUNT_MASK;
+        for (int order = 0; order <= CHANNEL_ACN_MAX_ORDER; order++) {
+            int expectedCount = isHorizontal ? (2 * order + 1) : (order + 1) * (order + 1);
+            int expectedMask = isHorizontal ? (CHANNEL_ACN_HORIZONTAL | expectedCount)
+                    : expectedCount;
+            if (count == expectedCount && channelAcnMask == expectedMask) {
+                return "ACN" + order + (isHorizontal ? "H" : "") + " (" + count + "ch)";
+            }
+        }
+        return "?=" + Integer.toHexString(channelAcnMask);
+    }
+
     static String convertRateConversionQualityToText(int quality) {
         switch(quality) {
             case RATE_CONVERSION_QUALITY_NONE:
@@ -724,6 +771,10 @@ public class StreamConfiguration {
         return mChannelMaskStringToIntegerMap.get(text);
     }
 
+    public static int convertTextToChannelAcnMask(String text) {
+        return mChannelAcnMaskStringToIntegerMap.get(text);
+    }
+
     public String getPackageName() { return mPackageName; }
     public void setPackageName(String packageName) {
         this.mPackageName = packageName;
@@ -738,6 +789,10 @@ public class StreamConfiguration {
         String prefix = (getDirection() == DIRECTION_INPUT) ? "in" : "out";
         StringBuffer message = new StringBuffer();
         message.append(String.format(Locale.getDefault(), "%s.channels = %d\n", prefix, mChannelCount));
+        if (mChannelAcnMask != UNSPECIFIED) {
+            message.append(String.format(Locale.getDefault(), "%s.channelAcnMask = %s\n", prefix,
+                    convertChannelAcnMaskToText(mChannelAcnMask)));
+        }
         message.append(String.format(Locale.getDefault(), "%s.perf = %s\n", prefix,
                 convertPerformanceModeToText(mPerformanceMode).toLowerCase(Locale.getDefault())));
         if (getDirection() == DIRECTION_INPUT) {
@@ -948,6 +1003,18 @@ public class StreamConfiguration {
 
     public static List<String> getAllChannelMasks() {
         return mChannelMaskStrings;
+    }
+
+    public int getChannelAcnMask() {
+        return mChannelAcnMask;
+    }
+
+    public void setChannelAcnMask(int channelAcnMask) {
+        this.mChannelAcnMask = channelAcnMask;
+    }
+
+    public static List<String> getAllChannelAcnMasks() {
+        return mChannelAcnMaskStrings;
     }
 
     public int getHardwareChannelCount() {

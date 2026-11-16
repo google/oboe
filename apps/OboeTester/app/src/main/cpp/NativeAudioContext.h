@@ -114,6 +114,7 @@ public:
      * @param sampleRate
      * @param channelCount
      * @param channelMask
+     * @param channelAcnMask
      * @param format
      * @param sharingMode
      * @param performanceMode
@@ -135,6 +136,7 @@ public:
              jint sampleRate,
              jint channelCount,
              jint channelMask,
+             jint channelAcnMask,
              jint format,
              jint sharingMode,
              jint performanceMode,

@@ -78,6 +78,9 @@ public class IntentBasedTestSupport {
     public static final String VALUE_VOLUME_TYPE_SYSTEM = "system";
     public static final String VALUE_VOLUME_TYPE_VOICE_CALL = "voice_call";
 
+    public static final String KEY_IN_CHANNEL_ACN_MASK = "in_channel_acn_mask";
+    public static final String KEY_OUT_CHANNEL_ACN_MASK = "out_channel_acn_mask";
+
     public static final String KEY_IN_CHANNEL_MASK = "in_channel_mask";
     public static final String KEY_OUT_CHANNEL_MASK = "out_channel_mask";
     public static final String VALUE_CHANNEL_MONO = "mono";
@@ -217,6 +220,31 @@ public class IntentBasedTestSupport {
         }
     }
 
+    /**
+     * Parse an ambisonic order, for example "1" for full-sphere order 1
+     * or "3h" for horizontal-only order 3.
+     */
+    public static int getChannelAcnMaskFromBundle(Bundle bundle, String channelAcnMaskKey) {
+        String text = bundle.getString(channelAcnMaskKey);
+        if (text == null) {
+            return StreamConfiguration.UNSPECIFIED;
+        }
+        boolean isHorizontal = text.endsWith("h") || text.endsWith("H");
+        String orderText = isHorizontal ? text.substring(0, text.length() - 1) : text;
+        int order;
+        try {
+            order = Integer.parseInt(orderText);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(channelAcnMaskKey + " invalid: " + text);
+        }
+        if (order < 0 || order > StreamConfiguration.CHANNEL_ACN_MAX_ORDER) {
+            throw new IllegalArgumentException(channelAcnMaskKey + " out of range: " + text);
+        }
+        return isHorizontal
+                ? (StreamConfiguration.CHANNEL_ACN_HORIZONTAL | (2 * order + 1))
+                : (order + 1) * (order + 1);
+    }
+
     public static int getChannelMaskFromBundle(Bundle bundle, String channelMaskKey) {
         String channelMaskText = bundle.getString(channelMaskKey);
         if (channelMaskText == null) {
@@ -317,8 +345,11 @@ public class IntentBasedTestSupport {
 
         int outChannels = bundle.getInt(KEY_OUT_CHANNELS, VALUE_DEFAULT_CHANNELS);
         int channelMask = getChannelMaskFromBundle(bundle, KEY_OUT_CHANNEL_MASK);
-        // Respect channel mask when it is specified.
-        if (channelMask != StreamConfiguration.UNSPECIFIED) {
+        int channelAcnMask = getChannelAcnMaskFromBundle(bundle, KEY_OUT_CHANNEL_ACN_MASK);
+        // Respect ambisonic channel mask or channel mask when it is specified.
+        if (channelAcnMask != StreamConfiguration.UNSPECIFIED) {
+            requestedOutConfig.setChannelAcnMask(channelAcnMask);
+        } else if (channelMask != StreamConfiguration.UNSPECIFIED) {
             requestedOutConfig.setChannelMask(channelMask);
         } else {
             requestedOutConfig.setChannelCount(outChannels);
@@ -362,8 +393,11 @@ public class IntentBasedTestSupport {
 
         int inChannels = bundle.getInt(KEY_IN_CHANNELS, VALUE_DEFAULT_CHANNELS);
         int channelMask = getChannelMaskFromBundle(bundle, KEY_IN_CHANNEL_MASK);
-        // Respect channel mask when it is specified.
-        if (channelMask != StreamConfiguration.UNSPECIFIED) {
+        int channelAcnMask = getChannelAcnMaskFromBundle(bundle, KEY_IN_CHANNEL_ACN_MASK);
+        // Respect ambisonic channel mask or channel mask when it is specified.
+        if (channelAcnMask != StreamConfiguration.UNSPECIFIED) {
+            requestedInConfig.setChannelAcnMask(channelAcnMask);
+        } else if (channelMask != StreamConfiguration.UNSPECIFIED) {
             requestedInConfig.setChannelMask(channelMask);
         } else {
             requestedInConfig.setChannelCount(inChannels);
