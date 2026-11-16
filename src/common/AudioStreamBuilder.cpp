@@ -88,7 +88,8 @@ bool AudioStreamBuilder::isCompatible(AudioStreamBase &other) {
     return (getSampleRate() == oboe::Unspecified || getSampleRate() == other.getSampleRate())
            && (getFormat() == (AudioFormat)oboe::Unspecified || getFormat() == other.getFormat())
            && (getFramesPerDataCallback() == oboe::Unspecified || getFramesPerDataCallback() == other.getFramesPerDataCallback())
-           && (getChannelCount() == oboe::Unspecified || getChannelCount() == other.getChannelCount());
+           && (getChannelCount() == oboe::Unspecified || getChannelCount() == other.getChannelCount())
+           && getChannelAcnMask() == other.getChannelAcnMask();
 }
 
 Result AudioStreamBuilder::openStream(AudioStream **streamPP) {
@@ -106,6 +107,11 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
         (!OboeExtensions::isPartialDataCallbackSupported() || !willUseAAudio())) {
         LOGE("%s() Partial data callback is not supported.", __func__);
         return Result::ErrorIllegalArgument;
+    }
+    if (mChannelAcnMask != ChannelAcnMask::Unspecified &&
+        (!OboeExtensions::isChannelAcnMaskSupported() || !willUseAAudio())) {
+        LOGE("%s() Ambisonic channel mask is not supported.", __func__);
+        return Result::ErrorUnimplemented;
     }
 
 #ifndef OBOE_SUPPRESS_LOG_SPAM

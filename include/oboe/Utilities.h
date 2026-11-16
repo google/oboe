@@ -94,6 +94,19 @@ bool isAtLeastPreReleaseCodename(const std::string& codename);
 
 int getChannelCountFromChannelMask(ChannelMask channelMask);
 
+/**
+ * @param channelAcnMask an ambisonic channel mask
+ * @return the number of channels encoded in the mask, or 0 for ChannelAcnMask::Unspecified
+ */
+int getChannelCountFromChannelAcnMask(ChannelAcnMask channelAcnMask);
+
+/**
+ * @param channelAcnMask an ambisonic channel mask
+ * @return true if the mask is one of the defined ChannelAcnMask::OrderN or
+ *         ChannelAcnMask::OrderNHrz values
+ */
+bool isValidChannelAcnMask(ChannelAcnMask channelAcnMask);
+
 bool isCompressedFormat(AudioFormat format);
 
 std::string toString(const PlaybackParameters& parameters);

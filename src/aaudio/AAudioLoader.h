@@ -123,6 +123,10 @@ typedef void (*AAudioStream_routingChangedCallback)(
 #define __ANDROID_API_C__ 37
 #endif
 
+#ifndef __ANDROID_API_D__
+#define __ANDROID_API_D__ 38
+#endif
+
 #if OBOE_USING_NDK && __NDK_MAJOR__ < 30
 // These were defined in Android B
 typedef int32_t AAudio_DeviceType;
@@ -279,6 +283,8 @@ class AAudioLoader {
     signature_V_PBI builder_setSampleRate = nullptr;
     signature_V_PBI builder_setSharingMode = nullptr;
     signature_V_PBU builder_setChannelMask = nullptr;
+    // AAudioStreamBuilder_setChannelAcnMask(), takes an AAudio_ChannelAcnMask (uint32_t)
+    signature_V_PBU builder_setChannelAcnMask = nullptr;
 
     signature_V_PBI builder_setUsage = nullptr;
     signature_V_PBI builder_setContentType = nullptr;
@@ -348,6 +354,8 @@ class AAudioLoader {
     signature_I_PS   stream_getAllowedCapturePolicy = nullptr;
 
     signature_U_PS   stream_getChannelMask = nullptr;
+    // AAudioStream_getChannelAcnMask(), returns an AAudio_ChannelAcnMask (uint32_t)
+    signature_U_PS   stream_getChannelAcnMask = nullptr;
 
     signature_O_PS   stream_isContentSpatialized = nullptr;
     signature_I_PS   stream_getSpatializationBehavior = nullptr;
@@ -376,6 +384,13 @@ class AAudioLoader {
   private:
     AAudioLoader() {}
     ~AAudioLoader();
+
+    /**
+     * @param releasedSdkVersion the SDK version of the most recent public release
+     * @return true if the device is running a pre-release build of the version
+     *         after releasedSdkVersion
+     */
+    static bool isPreReleaseOfNextSdk(int releasedSdkVersion);
 
     // Load function pointers for specific signatures.
     signature_I_PPB     load_I_PPB(const char *name);

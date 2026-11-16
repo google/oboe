@@ -790,6 +790,160 @@ namespace oboe {
     };
 
     /**
+     * The ambisonic channel mask of the audio stream. The underlying type is `uint32_t`.
+     *
+     * Ambisonic channel masks describe a scene-based audio stream in Ambisonic Channel Number
+     * (ACN) ordering. The channel count is encoded in the lower 8 bits of the mask
+     * (see ChannelAcnMask::CountMask). A full-sphere (3D) mask of order N has (N + 1)^2
+     * channels. A horizontal-only (2D) mask of order N has 2N + 1 channels and also has the
+     * ChannelAcnMask::Horizontal flag set.
+     *
+     * ChannelAcnMask::Unspecified means this is not specified.
+     *
+     * Use AudioStreamBuilder::setChannelAcnMask() to request an ambisonic stream.
+     * Call OboeExtensions::isChannelAcnMaskSupported() to check whether it is supported.
+     *
+     * Added in API 38.
+     */
+    enum class ChannelAcnMask : uint32_t { // AAudio_ChannelAcnMask
+        Unspecified = kUnspecified,
+
+        /**
+         * Full-sphere ambisonics, order 0. 1 channel.
+         */
+        Order0 = 1,
+        /**
+         * Full-sphere ambisonics, order 1. 4 channels.
+         */
+        Order1 = 4,
+        /**
+         * Full-sphere ambisonics, order 2. 9 channels.
+         */
+        Order2 = 9,
+        /**
+         * Full-sphere ambisonics, order 3. 16 channels.
+         */
+        Order3 = 16,
+        /**
+         * Full-sphere ambisonics, order 4. 25 channels.
+         */
+        Order4 = 25,
+        /**
+         * Full-sphere ambisonics, order 5. 36 channels.
+         */
+        Order5 = 36,
+        /**
+         * Full-sphere ambisonics, order 6. 49 channels.
+         */
+        Order6 = 49,
+        /**
+         * Full-sphere ambisonics, order 7. 64 channels.
+         */
+        Order7 = 64,
+        /**
+         * Full-sphere ambisonics, order 8. 81 channels.
+         */
+        Order8 = 81,
+        /**
+         * Full-sphere ambisonics, order 9. 100 channels.
+         */
+        Order9 = 100,
+        /**
+         * Full-sphere ambisonics, order 10. 121 channels.
+         */
+        Order10 = 121,
+        /**
+         * Full-sphere ambisonics, order 11. 144 channels.
+         */
+        Order11 = 144,
+        /**
+         * Full-sphere ambisonics, order 12. 169 channels.
+         */
+        Order12 = 169,
+        /**
+         * Full-sphere ambisonics, order 13. 196 channels.
+         */
+        Order13 = 196,
+        /**
+         * Full-sphere ambisonics, order 14. 225 channels.
+         */
+        Order14 = 225,
+
+        /**
+         * Flag for the horizontal-only (2D) representation.
+         * This is not a valid ambisonic channel mask on its own.
+         */
+        Horizontal = 1 << 9,
+
+        /**
+         * Mask for the bits that encode the channel count.
+         * This is not a valid ambisonic channel mask on its own.
+         */
+        CountMask = (1 << 8) - 1,
+
+        /**
+         * Horizontal-only ambisonics, order 0. 1 channel.
+         */
+        Order0Hrz = Horizontal | 1,
+        /**
+         * Horizontal-only ambisonics, order 1. 3 channels.
+         */
+        Order1Hrz = Horizontal | 3,
+        /**
+         * Horizontal-only ambisonics, order 2. 5 channels.
+         */
+        Order2Hrz = Horizontal | 5,
+        /**
+         * Horizontal-only ambisonics, order 3. 7 channels.
+         */
+        Order3Hrz = Horizontal | 7,
+        /**
+         * Horizontal-only ambisonics, order 4. 9 channels.
+         */
+        Order4Hrz = Horizontal | 9,
+        /**
+         * Horizontal-only ambisonics, order 5. 11 channels.
+         */
+        Order5Hrz = Horizontal | 11,
+        /**
+         * Horizontal-only ambisonics, order 6. 13 channels.
+         */
+        Order6Hrz = Horizontal | 13,
+        /**
+         * Horizontal-only ambisonics, order 7. 15 channels.
+         */
+        Order7Hrz = Horizontal | 15,
+        /**
+         * Horizontal-only ambisonics, order 8. 17 channels.
+         */
+        Order8Hrz = Horizontal | 17,
+        /**
+         * Horizontal-only ambisonics, order 9. 19 channels.
+         */
+        Order9Hrz = Horizontal | 19,
+        /**
+         * Horizontal-only ambisonics, order 10. 21 channels.
+         */
+        Order10Hrz = Horizontal | 21,
+        /**
+         * Horizontal-only ambisonics, order 11. 23 channels.
+         */
+        Order11Hrz = Horizontal | 23,
+        /**
+         * Horizontal-only ambisonics, order 12. 25 channels.
+         */
+        Order12Hrz = Horizontal | 25,
+        /**
+         * Horizontal-only ambisonics, order 13. 27 channels.
+         */
+        Order13Hrz = Horizontal | 27,
+        /**
+         * Horizontal-only ambisonics, order 14. 29 channels.
+         */
+        Order14Hrz = Horizontal | 29,
+    };
+
+    /**
      * The spatialization behavior of the audio stream.
      */
     enum class SpatializationBehavior : int32_t {

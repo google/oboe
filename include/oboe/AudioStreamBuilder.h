@@ -45,12 +45,14 @@ public:
      * the application should query for the actual value after the stream is opened.
      *
      * As the channel count here may be different from the corresponding channel count of
-     * provided channel mask used in setChannelMask(). The last called will be respected
-     * if this function and setChannelMask() are called.
+     * provided channel mask used in setChannelMask() or setChannelAcnMask(). The last called
+     * will be respected if this function and setChannelMask() or setChannelAcnMask() are called.
+     * Calling this clears any channel mask or ambisonic channel mask previously set.
      */
     AudioStreamBuilder *setChannelCount(int channelCount) {
         mChannelCount = channelCount;
         mChannelMask = ChannelMask::Unspecified;
+        mChannelAcnMask = ChannelAcnMask::Unspecified;
         return this;
     }
 
@@ -62,7 +64,8 @@ public:
      *
      * As the corresponding channel count of provided channel mask here may be different
      * from the channel count used in setChannelCount(). The last called will be respected
-     * if this function and setChannelCount() are called.
+     * if this function and setChannelCount() or setChannelAcnMask() are called.
+     * Calling this clears any ambisonic channel mask previously set.
      *
      * As the setChannelMask API is available on Android 32+, this call will only take effects
      * on Android 32+.
@@ -70,8 +73,50 @@ public:
      AudioStreamBuilder *setChannelMask(ChannelMask channelMask) {
          mChannelMask = channelMask;
          mChannelCount = getChannelCountFromChannelMask(channelMask);
+         mChannelAcnMask = ChannelAcnMask::Unspecified;
          return this;
      }
+
+    /**
+     * Request an ambisonic channel mask, for example ChannelAcnMask::Order1.
+     *
+     * Default is ChannelAcnMask::Unspecified.
+     *
+     * The channel count is derived from the mask (mask & ChannelAcnMask::CountMask) so
+     * getChannelCount() will return, for example, 4 for ChannelAcnMask::Order1.
+     * The last call to setChannelCount(), setChannelMask() or setChannelAcnMask() is respected.
+     * Calling this clears any channel mask previously set. Setting
+     * ChannelAcnMask::Unspecified clears the ambisonic channel mask and the channel count.
+     *
+     * Ambisonic channel masks are only supported by AAudio on Android 38+.
+     * Call OboeExtensions::isChannelAcnMaskSupported() to check if they are supported.
+     * If they are not supported, or OpenSL ES will be used, then openStream() will fail
+     * with Result::ErrorUnimplemented. It will fail with Result::ErrorIllegalArgument if the
+     * mask is not a valid ambisonic channel mask. The stream may also fail to open if the
+     * device does not support the requested ambisonic channel mask.
+     *
+     * Oboe will never up-mix or down-mix an ambisonic stream. Data format and sample rate
+     * conversion may still be performed if enabled.
+     *
+     * After the stream is opened, getChannelAcnMask() returns the mask,
+     * getChannelMask() returns ChannelMask::Unspecified and getChannelCount() returns the
+     * number of ambisonic channels.
+     *
+     * Note that AAudio does not use the MMAP data path for ambisonic streams.
+     *
+     * Added in API level 38 to AAudio.
+     *
+     * @param channelAcnMask the ambisonic channel mask
+     * @return pointer to the builder so calls can be chained
+     */
+    AudioStreamBuilder *setChannelAcnMask(ChannelAcnMask channelAcnMask) {
+        mChannelAcnMask = channelAcnMask;
+        mChannelMask = ChannelMask::Unspecified;
+        mChannelCount = (channelAcnMask == ChannelAcnMask::Unspecified)
+                ? kUnspecified
+                : getChannelCountFromChannelAcnMask(channelAcnMask);
+        return this;
+    }
 
     /**
      * Request the direction for a stream. The default is Direction::Output.

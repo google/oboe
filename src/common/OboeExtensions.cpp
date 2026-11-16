@@ -42,3 +42,7 @@ bool OboeExtensions::isPartialDataCallbackSupported() {
 bool OboeExtensions::isRoutingChangedCallbackSupported() {
     return AAudioExtensions::getInstance().isRoutingChangedCallbackSupported();
 }
+
+bool OboeExtensions::isChannelAcnMaskSupported() {
+    return AAudioExtensions::getInstance().isChannelAcnMaskSupported();
+}

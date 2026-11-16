@@ -280,7 +280,10 @@ bool QuirksManager::isConversionNeeded(
     }
 
     // Channel Count conversions
+    // Never up-mix or down-mix an ambisonic stream.
+    const bool isAmbisonic = builder.getChannelAcnMask() != ChannelAcnMask::Unspecified;
     if (OboeGlobals::areWorkaroundsEnabled()
+            && !isAmbisonic
             && builder.isChannelConversionAllowed()
             && builder.getChannelCount() == kChannelCountStereo
             && isInput
@@ -293,6 +296,7 @@ bool QuirksManager::isConversionNeeded(
         conversionNeeded = true;
         LOGI("QuirksManager::%s() using mono internally for low latency on O", __func__);
     } else if (OboeGlobals::areWorkaroundsEnabled()
+               && !isAmbisonic
                && builder.getChannelCount() == kChannelCountMono
                && isInput
                && mDeviceQuirks->isMonoMMapActuallyStereo()

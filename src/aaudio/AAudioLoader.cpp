@@ -212,7 +212,23 @@ int AAudioLoader::open() {
                 load_V_PBPDPV("AAudioStreamBuilder_setPartialDataCallback");
     }
 
+    // TODO: Remove the pre-release check after API 38 is released.
+    if (getSdkVersion() >= __ANDROID_API_D__ || isPreReleaseOfNextSdk(__ANDROID_API_C__)) {
+        builder_setChannelAcnMask = load_V_PBU("AAudioStreamBuilder_setChannelAcnMask");
+        stream_getChannelAcnMask = load_U_PS("AAudioStream_getChannelAcnMask");
+    }
+
     return 0;
+}
+
+bool AAudioLoader::isPreReleaseOfNextSdk(int releasedSdkVersion) {
+    // A pre-release build reports the SDK version of the last release
+    // and a codename other than "REL".
+    if (getSdkVersion() != releasedSdkVersion) {
+        return false;
+    }
+    std::string codename = getPropertyString("ro.build.version.codename");
+    return !codename.empty() && codename != "REL";
 }
 
 static void AAudioLoader_check(void *proc, const char *functionName) {

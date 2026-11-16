@@ -69,6 +69,12 @@ Result AudioStreamOpenSLES::open() {
     LOGI("AudioStreamOpenSLES::open() chans=%d, rate=%d", mChannelCount, mSampleRate);
 #endif
 
+    // OpenSL ES does not support ambisonic channel masks.
+    if (mChannelAcnMask != ChannelAcnMask::Unspecified) {
+        LOGW("%s() OpenSL ES does not support ambisonic channel masks.", __func__);
+        return Result::ErrorUnimplemented;
+    }
+
     // OpenSL ES only supports I16 and Float
     if (mFormat != AudioFormat::I16 && mFormat != AudioFormat::Float) {
         LOGW("%s() Android's OpenSL ES implementation only supports I16 and Float. Format: %s",
