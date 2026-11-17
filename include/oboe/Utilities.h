@@ -92,6 +92,15 @@ int getSdkVersion();
  */
 bool isAtLeastPreReleaseCodename(const std::string& codename);
 
+/**
+ * Returns whether the device is on a pre-release build of the next SDK after releasedSdkVersion
+ * (i.e. getSdkVersion() == releasedSdkVersion and ro.build.version.codename is not "REL").
+ *
+ * @param releasedSdkVersion the last released SDK version
+ * @return true if running on a pre-release build of releasedSdkVersion + 1
+ */
+bool isPreReleaseOfNextSdk(int releasedSdkVersion);
+
 int getChannelCountFromChannelMask(ChannelMask channelMask);
 
 /**

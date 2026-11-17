@@ -383,9 +383,9 @@ TEST_F(StreamAcnMask, UnsupportedPlatformFailsCleanly) {
 }
 
 TEST_F(StreamAcnMask, SupportedMatchesSdkVersion) {
-    if (getSdkVersion() >= 38) {
+    if (getSdkVersion() >= 38 || isPreReleaseOfNextSdk(37)) {
         EXPECT_TRUE(OboeExtensions::isChannelAcnMaskSupported());
-    } else if (getSdkVersion() < 37) {
+    } else {
         EXPECT_FALSE(OboeExtensions::isChannelAcnMaskSupported());
     }
 }

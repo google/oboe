@@ -112,9 +112,7 @@ public:
     AudioStreamBuilder *setChannelAcnMask(ChannelAcnMask channelAcnMask) {
         mChannelAcnMask = channelAcnMask;
         mChannelMask = ChannelMask::Unspecified;
-        mChannelCount = (channelAcnMask == ChannelAcnMask::Unspecified)
-                ? kUnspecified
-                : getChannelCountFromChannelAcnMask(channelAcnMask);
+        mChannelCount = getChannelCountFromChannelAcnMask(channelAcnMask);
         return this;
     }
 

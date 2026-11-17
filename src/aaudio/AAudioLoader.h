@@ -385,13 +385,6 @@ class AAudioLoader {
     AAudioLoader() {}
     ~AAudioLoader();
 
-    /**
-     * @param releasedSdkVersion the SDK version of the most recent public release
-     * @return true if the device is running a pre-release build of the version
-     *         after releasedSdkVersion
-     */
-    static bool isPreReleaseOfNextSdk(int releasedSdkVersion);
-
     // Load function pointers for specific signatures.
     signature_I_PPB     load_I_PPB(const char *name);
     signature_CPH_I     load_CPH_I(const char *name);

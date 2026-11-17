@@ -46,9 +46,11 @@ Result FilterAudioStream::configureFlowGraph() {
     if (getChannelAcnMask() != mChildStream->getChannelAcnMask()
             || (getChannelAcnMask() != ChannelAcnMask::Unspecified
                     && getChannelCount() != mChildStream->getChannelCount())) {
-        LOGE("%s() cannot convert ambisonic channel mask %s to %s", __func__,
+        LOGE("%s() cannot convert ambisonic stream between %s (%d ch) and %s (%d ch)", __func__,
              convertToText(mChildStream->getChannelAcnMask()),
-             convertToText(getChannelAcnMask()));
+             mChildStream->getChannelCount(),
+             convertToText(getChannelAcnMask()),
+             getChannelCount());
         return Result::ErrorInvalidFormat;
     }
 

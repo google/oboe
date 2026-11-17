@@ -221,16 +221,6 @@ int AAudioLoader::open() {
     return 0;
 }
 
-bool AAudioLoader::isPreReleaseOfNextSdk(int releasedSdkVersion) {
-    // A pre-release build reports the SDK version of the last release
-    // and a codename other than "REL".
-    if (getSdkVersion() != releasedSdkVersion) {
-        return false;
-    }
-    std::string codename = getPropertyString("ro.build.version.codename");
-    return !codename.empty() && codename != "REL";
-}
-
 static void AAudioLoader_check(void *proc, const char *functionName) {
     if (proc == nullptr) {
         LOGW("AAudioLoader could not find %s", functionName);
