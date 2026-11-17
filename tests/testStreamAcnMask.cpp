@@ -309,6 +309,22 @@ protected:
                 && OboeExtensions::isChannelAcnMaskSupported();
     }
 
+    // Returns the first ambisonic channel mask that can be opened in the given direction,
+    // or ChannelAcnMask::Unspecified if none can be opened. Devices are not required to
+    // support any particular mask.
+    static ChannelAcnMask findOpenableMask(Direction direction) {
+        for (ChannelAcnMask mask : kAllAcnMasks) {
+            AudioStreamBuilder builder;
+            std::shared_ptr<AudioStream> stream;
+            builder.setDirection(direction)->setChannelAcnMask(mask);
+            if (builder.openStream(stream) == Result::OK) {
+                stream->close();
+                return mask;
+            }
+        }
+        return ChannelAcnMask::Unspecified;
+    }
+
     AudioStreamBuilder mBuilder;
     std::shared_ptr<AudioStream> mStream;
 };
@@ -436,11 +452,15 @@ TEST_F(StreamAcnMask, ChannelMaskThenAcnMaskOpensAcn) {
     if (!isSupported()) {
         GTEST_SKIP() << "Ambisonic channel masks are not supported";
     }
+    const ChannelAcnMask mask = findOpenableMask(Direction::Input);
+    if (mask == ChannelAcnMask::Unspecified) {
+        GTEST_SKIP() << "No ambisonic input mask can be opened on this device";
+    }
     mBuilder.setDirection(Direction::Input)
             ->setChannelMask(ChannelMask::Stereo)
-            ->setChannelAcnMask(ChannelAcnMask::Order1);
+            ->setChannelAcnMask(mask);
     ASSERT_EQ(Result::OK, openStream());
-    checkOpenedAcnStream(ChannelAcnMask::Order1);
+    checkOpenedAcnStream(mask);
 }
 
 TEST_F(StreamAcnMask, AcnMaskThenChannelMaskOpensPositional) {
@@ -561,12 +581,18 @@ public:
     }
 
 protected:
-    // Returns false if the output could not be rendered.
-    bool runData(ChannelAcnMask mask, Direction direction, bool useCallback, bool useSrc);
+    enum class DataResult {
+        Exercised,   // data was transferred (or a failure was reported)
+        OpenFailed,  // the device does not support this mask in this configuration
+        NotRendered, // the stream opened but the device did not consume the output data
+    };
+
+    DataResult runData(ChannelAcnMask mask, Direction direction, bool useCallback, bool useSrc);
 };
 
-bool StreamAcnMaskData::runData(ChannelAcnMask mask, Direction direction, bool useCallback,
-                                bool useSrc) {
+StreamAcnMaskData::DataResult StreamAcnMaskData::runData(ChannelAcnMask mask,
+                                                         Direction direction,
+                                                         bool useCallback, bool useSrc) {
     AcnCallback callback;
     callback.expectedChannelCount = expectedChannelCount(mask);
     std::shared_ptr<AcnErrorCallback> errorCallback = std::make_shared<AcnErrorCallback>();
@@ -584,8 +610,8 @@ bool StreamAcnMaskData::runData(ChannelAcnMask mask, Direction direction, bool u
     }
     Result result = openStream();
     if (result != Result::OK) {
-        ADD_FAILURE() << "open failed for " << acnMaskName(mask) << ": " << convertToText(result);
-        return true;
+        // AAudio may fail to open masks that the device cannot support.
+        return DataResult::OpenFailed;
     }
     checkOpenedAcnStream(mask);
     EXPECT_EQ(Result::OK, mStream->requestStart());
@@ -637,7 +663,7 @@ bool StreamAcnMaskData::runData(ChannelAcnMask mask, Direction direction, bool u
     }
     mStream->requestStop();
     closeStream();
-    return rendered;
+    return rendered ? DataResult::Exercised : DataResult::NotRendered;
 }
 
 TEST_P(StreamAcnMaskData, StartTransferStop) {
@@ -647,17 +673,35 @@ TEST_P(StreamAcnMaskData, StartTransferStop) {
     const Direction direction = std::get<0>(GetParam());
     const bool useCallback = std::get<1>(GetParam());
     const bool useSrc = std::get<2>(GetParam());
+    int exercisedCount = 0;
+    std::string openFailed;
     std::string unrendered;
     for (ChannelAcnMask mask : kDataTestMasks) {
         mBuilder = AudioStreamBuilder();
-        if (!runData(mask, direction, useCallback, useSrc)) {
-            unrendered += std::string(" ") + acnMaskName(mask);
+        switch (runData(mask, direction, useCallback, useSrc)) {
+            case DataResult::Exercised:
+                exercisedCount++;
+                break;
+            case DataResult::OpenFailed:
+                openFailed += std::string(" ") + acnMaskName(mask);
+                break;
+            case DataResult::NotRendered:
+                unrendered += std::string(" ") + acnMaskName(mask);
+                break;
         }
     }
+    if (!openFailed.empty()) {
+        RecordProperty("open_failed", openFailed);
+    }
     if (!unrendered.empty()) {
-        // Some devices accept an ambisonic output stream but cannot render it to the current
+        RecordProperty("not_rendered", unrendered);
+    }
+    if (exercisedCount == 0) {
+        // Devices are not required to support any particular ambisonic mask, and some
+        // devices accept an ambisonic output stream but cannot render it to the current
         // output device. That is a platform limitation, not an Oboe failure.
-        GTEST_SKIP() << "Device did not render ambisonic output for:" << unrendered;
+        GTEST_SKIP() << "No ambisonic stream could be exercised. Open failed for:" << openFailed
+                     << ". Not rendered:" << unrendered;
     }
 }
 
@@ -671,10 +715,14 @@ TEST_F(StreamAcnMask, ReopenAfterClose) {
     if (!isSupported()) {
         GTEST_SKIP() << "Ambisonic channel masks are not supported";
     }
-    mBuilder.setDirection(Direction::Input)->setChannelAcnMask(ChannelAcnMask::Order1);
+    const ChannelAcnMask mask = findOpenableMask(Direction::Input);
+    if (mask == ChannelAcnMask::Unspecified) {
+        GTEST_SKIP() << "No ambisonic input mask can be opened on this device";
+    }
+    mBuilder.setDirection(Direction::Input)->setChannelAcnMask(mask);
     for (int i = 0; i < 3; i++) {
         ASSERT_EQ(Result::OK, openStream());
-        checkOpenedAcnStream(ChannelAcnMask::Order1);
+        checkOpenedAcnStream(mask);
         EXPECT_EQ(Result::OK, mStream->requestStart());
         usleep(50 * 1000);
         EXPECT_EQ(Result::OK, mStream->requestStop());
