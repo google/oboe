@@ -129,9 +129,17 @@ public:
         return AudioApi::AAudio;
     }
 
-    DataCallbackResult callOnAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+    oboe::DataCallbackResult callOnAudioReady(
+            AAudioStream *stream,
+            void *audioData,
+            int32_t numFrames,
+            const std::atomic<AudioStreamAAudio *> *slotStream = nullptr);
 
-    int32_t callOnPartialAudioReady(AAudioStream *stream, void *audioData, int32_t numFrames);
+    int32_t callOnPartialAudioReady(
+            AAudioStream *stream,
+            void *audioData,
+            int32_t numFrames,
+            const std::atomic<AudioStreamAAudio *> *slotStream = nullptr);
 
     // Used by the Stop workaround thread (Android R and older); see launchStopThread().
     // Stops the stream unless requestStart() was called after `startGeneration` was read.
@@ -284,6 +292,7 @@ private:
     struct UpdatedDeviceIds {
         mutable std::mutex lock;
         std::vector<int32_t> deviceIds;
+        std::atomic<int32_t> primaryId{kUnspecified};
     };
     UpdatedDeviceIds mUpdatedDeviceIds;
 

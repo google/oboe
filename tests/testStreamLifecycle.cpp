@@ -52,6 +52,7 @@ namespace {
 std::atomic<long long> gLiveHeapBytes{0};
 } // namespace
 
+#ifndef OBOE_TEST_SANITIZER_BUILD
 void *operator new(size_t size) {
     void *p = malloc(size == 0 ? 1 : size);
     if (p == nullptr) abort();
@@ -71,6 +72,7 @@ void operator delete(void *p) noexcept {
 void operator delete(void *p, size_t) noexcept {
     operator delete(p);
 }
+#endif
 
 // Regression and stress tests for AAudio stream lifecycle: streams destroyed or overwritten
 // without close(), stop/close called from the stream's own data callback, and raw-pointer
