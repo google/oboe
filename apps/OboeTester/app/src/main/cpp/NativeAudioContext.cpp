@@ -168,6 +168,7 @@ int ActivityContext::open(jint nativeApi,
                           jint sampleRate,
                           jint channelCount,
                           jint channelMask,
+                          jint channelAcnMask,
                           jint format,
                           jint sharingMode,
                           jint performanceMode,
@@ -231,6 +232,10 @@ int ActivityContext::open(jint nativeApi,
     if (channelMask != (jint) oboe::ChannelMask::Unspecified) {
         // Set channel mask when it is specified.
         builder.setChannelMask((oboe::ChannelMask) channelMask);
+    }
+    if (channelAcnMask != (jint) oboe::ChannelAcnMask::Unspecified) {
+        // Set ambisonic channel mask when it is specified. This overrides channel count and mask.
+        builder.setChannelAcnMask((oboe::ChannelAcnMask) channelAcnMask);
     }
     if (mUseCallback) {
         builder.setFramesPerCallback(callbackSize);
@@ -413,7 +418,11 @@ void ActivityTestOutput::close(int32_t streamIndex) {
 }
 
 void ActivityTestOutput::setChannelEnabled(int channelIndex, bool enabled) {
-    if (manyToMulti == nullptr) {
+    if (manyToMulti == nullptr
+            || channelIndex < 0
+            || channelIndex >= static_cast<int>(manyToMulti->inputs.size())
+            || channelIndex >= static_cast<int>(sineOscillators.size())
+            || channelIndex >= static_cast<int>(sawtoothOscillators.size())) {
         return;
     }
     if (enabled) {
@@ -476,10 +485,13 @@ void ActivityTestOutput::configureAfterOpen() {
     mTriangleOscillator.output.connect(&(mLinearShape.input));
     mTriangleOscillator.output.connect(&(mExponentialShape.input));
     {
-        double frequency = 330.0;
+        const int numOscillators = std::min(mChannelCount, MAX_SINE_OSCILLATORS);
+        constexpr double kBaseFrequency = 330.0;
+        const double maxFrequency = outputStream->getSampleRate() * 0.45; // below Nyquist
+        double frequency = kBaseFrequency;
         // Go up by a minor third or a perfect fourth just intoned interval.
         const float interval = (mChannelCount > 8) ? (6.0f / 5.0f) : (4.0f / 3.0f);
-        for (int i = 0; i < mChannelCount; i++) {
+        for (int i = 0; i < numOscillators; i++) {
             sineOscillators[i].setSampleRate(outputStream->getSampleRate());
             sineOscillators[i].frequency.setValue(frequency);
             sineOscillators[i].amplitude.setValue(AMPLITUDE_SINE / mChannelCount);
@@ -488,6 +500,9 @@ void ActivityTestOutput::configureAfterOpen() {
             sawtoothOscillators[i].amplitude.setValue(AMPLITUDE_SAWTOOTH / mChannelCount);
 
             frequency *= interval; // each wave is at a higher frequency
+            if (frequency > maxFrequency) {
+                frequency = kBaseFrequency;
+            }
             setChannelEnabled(i, true);
         }
     }

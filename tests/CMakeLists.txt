@@ -33,6 +33,7 @@ add_executable(
 		testResampler.cpp
 		testReturnStop.cpp
 		testReturnStopDeadlock.cpp
+		testStreamAcnMask.cpp
 		testStreamClosedMethods.cpp
 		testStreamFramesProcessed.cpp
 		testStreamOpen.cpp

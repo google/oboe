@@ -203,6 +203,44 @@ const char *convertToText<AudioApi>(AudioApi audioApi) {
 }
 
 template<>
+const char *convertToText<ChannelAcnMask>(ChannelAcnMask channelAcnMask) {
+    switch (channelAcnMask) {
+        case ChannelAcnMask::Unspecified: return "Unspecified";
+        case ChannelAcnMask::Order0:      return "Order0";
+        case ChannelAcnMask::Order1:      return "Order1";
+        case ChannelAcnMask::Order2:      return "Order2";
+        case ChannelAcnMask::Order3:      return "Order3";
+        case ChannelAcnMask::Order4:      return "Order4";
+        case ChannelAcnMask::Order5:      return "Order5";
+        case ChannelAcnMask::Order6:      return "Order6";
+        case ChannelAcnMask::Order7:      return "Order7";
+        case ChannelAcnMask::Order8:      return "Order8";
+        case ChannelAcnMask::Order9:      return "Order9";
+        case ChannelAcnMask::Order10:     return "Order10";
+        case ChannelAcnMask::Order11:     return "Order11";
+        case ChannelAcnMask::Order12:     return "Order12";
+        case ChannelAcnMask::Order13:     return "Order13";
+        case ChannelAcnMask::Order14:     return "Order14";
+        case ChannelAcnMask::Order0Hrz:   return "Order0Hrz";
+        case ChannelAcnMask::Order1Hrz:   return "Order1Hrz";
+        case ChannelAcnMask::Order2Hrz:   return "Order2Hrz";
+        case ChannelAcnMask::Order3Hrz:   return "Order3Hrz";
+        case ChannelAcnMask::Order4Hrz:   return "Order4Hrz";
+        case ChannelAcnMask::Order5Hrz:   return "Order5Hrz";
+        case ChannelAcnMask::Order6Hrz:   return "Order6Hrz";
+        case ChannelAcnMask::Order7Hrz:   return "Order7Hrz";
+        case ChannelAcnMask::Order8Hrz:   return "Order8Hrz";
+        case ChannelAcnMask::Order9Hrz:   return "Order9Hrz";
+        case ChannelAcnMask::Order10Hrz:  return "Order10Hrz";
+        case ChannelAcnMask::Order11Hrz:  return "Order11Hrz";
+        case ChannelAcnMask::Order12Hrz:  return "Order12Hrz";
+        case ChannelAcnMask::Order13Hrz:  return "Order13Hrz";
+        case ChannelAcnMask::Order14Hrz:  return "Order14Hrz";
+        default:                          return "Unrecognized channel ACN mask";
+    }
+}
+
+template<>
 const char *convertToText<AudioStream*>(AudioStream* stream) {
     static std::string streamText;
     std::stringstream s;
@@ -217,6 +255,7 @@ const char *convertToText<AudioStream*>(AudioStream* stream) {
      <<"FramesPerDataCallback: "<<stream->getFramesPerDataCallback()<<std::endl
      <<"SampleRate: "<<stream->getSampleRate()<<std::endl
      <<"ChannelCount: "<<stream->getChannelCount()<<std::endl
+     <<"ChannelAcnMask: "<<oboe::convertToText(stream->getChannelAcnMask())<<std::endl
      <<"Format: "<<oboe::convertToText(stream->getFormat())<<std::endl
      <<"SharingMode: "<<oboe::convertToText(stream->getSharingMode())<<std::endl
      <<"PerformanceMode: "<<oboe::convertToText(stream->getPerformanceMode())
@@ -378,8 +417,61 @@ bool isAtLeastPreReleaseCodename(const std::string& codename) {
     return buildCodename.compare(codename) >= 0;
 }
 
+bool isPreReleaseOfNextSdk(int releasedSdkVersion) {
+    // A pre-release build reports the SDK version of the last release
+    // and a codename other than "REL".
+    if (getSdkVersion() != releasedSdkVersion) {
+        return false;
+    }
+    std::string codename = getPropertyString("ro.build.version.codename");
+    return !codename.empty() && codename != "REL";
+}
+
 int getChannelCountFromChannelMask(ChannelMask channelMask) {
     return __builtin_popcount(static_cast<uint32_t>(channelMask));
+}
+
+int getChannelCountFromChannelAcnMask(ChannelAcnMask channelAcnMask) {
+    return static_cast<int>(static_cast<uint32_t>(channelAcnMask) &
+                            static_cast<uint32_t>(ChannelAcnMask::CountMask));
+}
+
+bool isValidChannelAcnMask(ChannelAcnMask channelAcnMask) {
+    switch (channelAcnMask) {
+        case ChannelAcnMask::Order0:
+        case ChannelAcnMask::Order1:
+        case ChannelAcnMask::Order2:
+        case ChannelAcnMask::Order3:
+        case ChannelAcnMask::Order4:
+        case ChannelAcnMask::Order5:
+        case ChannelAcnMask::Order6:
+        case ChannelAcnMask::Order7:
+        case ChannelAcnMask::Order8:
+        case ChannelAcnMask::Order9:
+        case ChannelAcnMask::Order10:
+        case ChannelAcnMask::Order11:
+        case ChannelAcnMask::Order12:
+        case ChannelAcnMask::Order13:
+        case ChannelAcnMask::Order14:
+        case ChannelAcnMask::Order0Hrz:
+        case ChannelAcnMask::Order1Hrz:
+        case ChannelAcnMask::Order2Hrz:
+        case ChannelAcnMask::Order3Hrz:
+        case ChannelAcnMask::Order4Hrz:
+        case ChannelAcnMask::Order5Hrz:
+        case ChannelAcnMask::Order6Hrz:
+        case ChannelAcnMask::Order7Hrz:
+        case ChannelAcnMask::Order8Hrz:
+        case ChannelAcnMask::Order9Hrz:
+        case ChannelAcnMask::Order10Hrz:
+        case ChannelAcnMask::Order11Hrz:
+        case ChannelAcnMask::Order12Hrz:
+        case ChannelAcnMask::Order13Hrz:
+        case ChannelAcnMask::Order14Hrz:
+            return true;
+        default:
+            return false;
+    }
 }
 
 

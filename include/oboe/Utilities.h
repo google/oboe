@@ -92,7 +92,29 @@ int getSdkVersion();
  */
 bool isAtLeastPreReleaseCodename(const std::string& codename);
 
+/**
+ * Returns whether the device is on a pre-release build of the next SDK after releasedSdkVersion
+ * (i.e. getSdkVersion() == releasedSdkVersion and ro.build.version.codename is not "REL").
+ *
+ * @param releasedSdkVersion the last released SDK version
+ * @return true if running on a pre-release build of releasedSdkVersion + 1
+ */
+bool isPreReleaseOfNextSdk(int releasedSdkVersion);
+
 int getChannelCountFromChannelMask(ChannelMask channelMask);
+
+/**
+ * @param channelAcnMask an ambisonic channel mask
+ * @return the number of channels encoded in the mask, or 0 for ChannelAcnMask::Unspecified
+ */
+int getChannelCountFromChannelAcnMask(ChannelAcnMask channelAcnMask);
+
+/**
+ * @param channelAcnMask an ambisonic channel mask
+ * @return true if the mask is one of the defined ChannelAcnMask::OrderN or
+ *         ChannelAcnMask::OrderNHrz values
+ */
+bool isValidChannelAcnMask(ChannelAcnMask channelAcnMask);
 
 bool isCompressedFormat(AudioFormat format);
 

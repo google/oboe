@@ -68,6 +68,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(JNIEnv *env, jobject,
                                                        jint sampleRate,
                                                        jint channelCount,
                                                        jint channelMask,
+                                                       jint channelAcnMask,
                                                        jint format,
                                                        jint sharingMode,
                                                        jint performanceMode,
@@ -182,6 +183,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
         jint sampleRate,
         jint channelCount,
         jint channelMask,
+        jint channelAcnMask,
         jint format,
         jint sharingMode,
         jint performanceMode,
@@ -208,6 +210,7 @@ Java_com_mobileer_oboetester_OboeAudioStream_openNative(
                                       sampleRate,
                                       channelCount,
                                       channelMask,
+                                      channelAcnMask,
                                       format,
                                       sharingMode,
                                       performanceMode,
@@ -476,6 +479,17 @@ Java_com_mobileer_oboetester_OboeAudioStream_getChannelMask(
     std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
     if (oboeStream != nullptr) {
         result = (jint) oboeStream->getChannelMask();
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_mobileer_oboetester_OboeAudioStream_getChannelAcnMask(
+        JNIEnv *env, jobject, jint streamIndex) {
+    jint result = (jint) oboe::Result::ErrorNull;
+    std::shared_ptr<oboe::AudioStream> oboeStream = engine.getCurrentActivity()->getStream(streamIndex);
+    if (oboeStream != nullptr) {
+        result = (jint) oboeStream->getChannelAcnMask();
     }
     return result;
 }
