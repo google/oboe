@@ -189,6 +189,8 @@ virtual std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="
 <tr class="separator:a1de8d6982d411a0cf50a32efba0ca3f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a960887cfbac00417560e31b37538833d" id="r_a960887cfbac00417560e31b37538833d"><td class="memItemLeft" align="right" valign="top">ChannelMask&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a960887cfbac00417560e31b37538833d">getChannelMask</a> () const</td></tr>
 <tr class="separator:a960887cfbac00417560e31b37538833d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7f9f2e0c16e21f188ad2d93ef53a847" id="r_ad7f9f2e0c16e21f188ad2d93ef53a847"><td class="memItemLeft" align="right" valign="top">ChannelAcnMask&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad7f9f2e0c16e21f188ad2d93ef53a847">getChannelAcnMask</a> () const</td></tr>
+<tr class="separator:ad7f9f2e0c16e21f188ad2d93ef53a847"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5a7ef505c01a808c8e2435fe43a6b5d" id="r_ad5a7ef505c01a808c8e2435fe43a6b5d"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad5a7ef505c01a808c8e2435fe43a6b5d">getHardwareChannelCount</a> () const</td></tr>
 <tr class="separator:ad5a7ef505c01a808c8e2435fe43a6b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d2dd829dc24189e050bd97d668d36fd" id="r_a6d2dd829dc24189e050bd97d668d36fd"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d2dd829dc24189e050bd97d668d36fd">getHardwareSampleRate</a> () const</td></tr>
@@ -236,6 +238,8 @@ std::shared_ptr&lt; <a class="el" href="classoboe_1_1_audio_stream_routing_callb
 <tr class="separator:a3b65595d26d1eae1b8ce9925a5b98f6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3cefeac8d6fd9d3edbdac972922292b" id="r_aa3cefeac8d6fd9d3edbdac972922292b"><td class="memItemLeft" align="right" valign="top">ChannelMask&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa3cefeac8d6fd9d3edbdac972922292b">mChannelMask</a> = ChannelMask::Unspecified</td></tr>
 <tr class="separator:aa3cefeac8d6fd9d3edbdac972922292b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13d7c60aeed12c4ed2ab7bec7b3793f9" id="r_a13d7c60aeed12c4ed2ab7bec7b3793f9"><td class="memItemLeft" align="right" valign="top">ChannelAcnMask&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a13d7c60aeed12c4ed2ab7bec7b3793f9">mChannelAcnMask</a> = ChannelAcnMask::Unspecified</td></tr>
+<tr class="separator:a13d7c60aeed12c4ed2ab7bec7b3793f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9187492b679c97a0963e264954be473" id="r_ae9187492b679c97a0963e264954be473"><td class="memItemLeft" align="right" valign="top">SharingMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae9187492b679c97a0963e264954be473">mSharingMode</a> = SharingMode::Shared</td></tr>
 <tr class="separator:ae9187492b679c97a0963e264954be473"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7869f04836c2c2bdc10c7309ad4b8e09" id="r_a7869f04836c2c2bdc10c7309ad4b8e09"><td class="memItemLeft" align="right" valign="top">AudioFormat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7869f04836c2c2bdc10c7309ad4b8e09">mFormat</a> = AudioFormat::Unspecified</td></tr>
@@ -447,6 +451,36 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </div><div class="memdoc">
 <p>Query the maximum number of frames that can be filled without blocking. If the stream has been closed the last known value will be returned.</p>
 <dl class="section return"><dt>Returns</dt><dd>buffer size </dd></dl>
+
+</div>
+</div>
+<a id="ad7f9f2e0c16e21f188ad2d93ef53a847" name="ad7f9f2e0c16e21f188ad2d93ef53a847"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7f9f2e0c16e21f188ad2d93ef53a847">&#9670;&#160;</a></span>getChannelAcnMask()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ChannelAcnMask oboe::AudioStreamBase::getChannelAcnMask </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return the ambisonic channel mask of the stream.</p>
+<p>If the stream was opened with an ambisonic channel mask then this returns that mask, <a class="el" href="#a960887cfbac00417560e31b37538833d">getChannelMask()</a> returns ChannelMask::Unspecified and <a class="el" href="#a87e6bf37d6a2a5e983b8ca8d29aea575">getChannelCount()</a> returns the number of ambisonic channels. Otherwise this returns ChannelAcnMask::Unspecified.</p>
+<p>See <a class="el" href="classoboe_1_1_audio_stream_builder.html#ab9bd42625ef1fdeef80f18fa14cbbe3e">AudioStreamBuilder::setChannelAcnMask()</a>.</p>
+<p>Added in API level 38 to AAudio.</p>
+<dl class="section return"><dt>Returns</dt><dd>the ambisonic channel mask, for example ChannelAcnMask::Order1 </dd></dl>
 
 </div>
 </div>
@@ -1456,6 +1490,29 @@ std::vector&lt; int32_t &gt;&#160;</td><td class="memItemRight" valign="bottom">
 </table>
 </div><div class="memdoc">
 <p>Stream buffer size specified as a number of audio frames </p>
+
+</div>
+</div>
+<a id="a13d7c60aeed12c4ed2ab7bec7b3793f9" name="a13d7c60aeed12c4ed2ab7bec7b3793f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13d7c60aeed12c4ed2ab7bec7b3793f9">&#9670;&#160;</a></span>mChannelAcnMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ChannelAcnMask oboe::AudioStreamBase::mChannelAcnMask = ChannelAcnMask::Unspecified</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Stream ambisonic channel mask. Only active on Android 38+ AAudio streams </p>
 
 </div>
 </div>
