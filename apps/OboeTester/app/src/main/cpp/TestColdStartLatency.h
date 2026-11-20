@@ -18,6 +18,7 @@
 #define OBOETESTER_TEST_COLD_START_LATENCY_H
 
 #include "oboe/Oboe.h"
+#include <math.h>
 #include <thread>
 
 /**

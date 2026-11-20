@@ -898,6 +898,15 @@ Result AudioStreamAAudio::open() {
         return result;
     }
 
+    // Ambisonic channel masks were added in API 38. Never fall back to a positional
+    // stream with the same channel count because the data would be misinterpreted.
+    if (mChannelAcnMask != ChannelAcnMask::Unspecified
+            && (mLibLoader->builder_setChannelAcnMask == nullptr
+                    || mLibLoader->stream_getChannelAcnMask == nullptr)) {
+        LOGE("AudioStreamAAudio.open() ambisonic channel mask is not supported");
+        return Result::ErrorUnimplemented;
+    }
+
     AAudioStreamBuilder *aaudioBuilder;
     result = static_cast<Result>(mLibLoader->createStreamBuilder(&aaudioBuilder));
     if (result != Result::OK) {
@@ -943,7 +952,12 @@ Result AudioStreamAAudio::open() {
     // If channel mask is set after channel count, the channel count will be automatically
     // calculated from selected channel mask. In that case, only set channel mask when the API
     // is available and the channel mask is specified.
-    if (mLibLoader->builder_setChannelMask != nullptr && mChannelMask != ChannelMask::Unspecified) {
+    // The ambisonic channel mask follows the same rule. It is only set when specified.
+    if (mChannelAcnMask != ChannelAcnMask::Unspecified) {
+        mLibLoader->builder_setChannelAcnMask(aaudioBuilder,
+                                              static_cast<uint32_t>(mChannelAcnMask));
+    } else if (mLibLoader->builder_setChannelMask != nullptr
+            && mChannelMask != ChannelMask::Unspecified) {
         mLibLoader->builder_setChannelMask(aaudioBuilder,
                                            static_cast<aaudio_channel_mask_t>(mChannelMask));
     } else {
@@ -1124,6 +1138,13 @@ Result AudioStreamAAudio::open() {
 
     if (mLibLoader->stream_getChannelMask != nullptr) {
         mChannelMask = static_cast<ChannelMask>(mLibLoader->stream_getChannelMask(mAAudioStream));
+    }
+
+    if (mLibLoader->stream_getChannelAcnMask != nullptr) {
+        mChannelAcnMask = static_cast<ChannelAcnMask>(
+                mLibLoader->stream_getChannelAcnMask(mAAudioStream));
+    } else {
+        mChannelAcnMask = ChannelAcnMask::Unspecified;
     }
 
     if (mLibLoader->stream_isContentSpatialized != nullptr) {

@@ -67,6 +67,8 @@ public class StreamConfigurationView extends LinearLayout {
     private TextView mActualChannelCountView;
     private Spinner mChannelMaskSpinner;
     private TextView mActualChannelMaskView;
+    private Spinner mChannelAcnMaskSpinner;
+    private TextView mActualChannelAcnMaskView;
     private TextView mActualFormatView;
     private Spinner  mCapacitySpinner;
     private TextView mActualCapacityView;
@@ -126,6 +128,7 @@ public class StreamConfigurationView extends LinearLayout {
     private SeekBar mLoudnessEnhancerSeekBar;
 
     private boolean mIsChannelMaskLastSelected;
+    private boolean mIsChannelAcnMaskLastSelected;
 
     private boolean misOutput;
 
@@ -397,6 +400,24 @@ public class StreamConfigurationView extends LinearLayout {
             }
         });
 
+        mActualChannelAcnMaskView = (TextView) findViewById(R.id.actualChannelAcnMask);
+        mChannelAcnMaskSpinner = (Spinner) findViewById(R.id.spinnerChannelAcnMask);
+        ArrayAdapter<String> channelAcnMaskSpinnerArrayAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_item,
+                StreamConfiguration.getAllChannelAcnMasks());
+        mChannelAcnMaskSpinner.setAdapter(channelAcnMaskSpinnerArrayAdapter);
+        mChannelAcnMaskSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                onChannelAcnMaskSpinnerSelected();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // no-op
+            }
+        });
+
         showSettingsView();
     }
 
@@ -458,7 +479,16 @@ public class StreamConfigurationView extends LinearLayout {
 
         // The corresponding channel count of the selected channel mask may be different from
         // the selected channel count, the last selected will be respected.
-        if (mIsChannelMaskLastSelected) {
+        config.setChannelAcnMask(StreamConfiguration.UNSPECIFIED);
+        if (mIsChannelAcnMaskLastSelected) {
+            text = mChannelAcnMaskSpinner.getSelectedItem().toString();
+            int channelAcnMask = StreamConfiguration.convertTextToChannelAcnMask(text);
+            config.setChannelAcnMask(channelAcnMask);
+            config.setChannelMask(StreamConfiguration.UNSPECIFIED);
+            config.setChannelCount(0);
+            Log.d(TAG, String.format(Locale.getDefault(), "Set channel ACN mask as %s(%#x)", text,
+                    channelAcnMask));
+        } else if (mIsChannelMaskLastSelected) {
             text = mChannelMaskSpinner.getSelectedItem().toString();
             int channelMask = StreamConfiguration.convertTextToChannelMask(text);
             config.setChannelMask(channelMask);
@@ -497,6 +527,7 @@ public class StreamConfigurationView extends LinearLayout {
         mFormatConversionBox.setEnabled(enabled);
         mChannelCountSpinner.setEnabled(enabled);
         mChannelMaskSpinner.setEnabled(enabled);
+        mChannelAcnMaskSpinner.setEnabled(enabled);
         mCapacitySpinner.setEnabled(enabled);
         mInputPresetSpinner.setEnabled(enabled);
         mUsageSpinner.setEnabled(enabled);
@@ -582,6 +613,8 @@ public class StreamConfigurationView extends LinearLayout {
         mActualSessionIdView.setText("S#: " + actualConfiguration.getSessionId());
         value = actualConfiguration.getChannelMask();
         mActualChannelMaskView.setText(StreamConfiguration.convertChannelMaskToText(value));
+        value = actualConfiguration.getChannelAcnMask();
+        mActualChannelAcnMaskView.setText(StreamConfiguration.convertChannelAcnMaskToText(value));
         mActualCapacityView.setText(actualConfiguration.getBufferCapacityInFrames() + "");
 
         boolean isMMap = actualConfiguration.isMMap();
@@ -637,14 +670,27 @@ public class StreamConfigurationView extends LinearLayout {
     private void onChannelCountSpinnerSelected() {
         if (mChannelCountSpinner.getSelectedItemPosition() != 0) {
             mChannelMaskSpinner.setSelection(0); // Override the previous channel mask selection
+            mChannelAcnMaskSpinner.setSelection(0);
             mIsChannelMaskLastSelected = false;
+            mIsChannelAcnMaskLastSelected = false;
         }
     }
 
     private void onChannelMaskSpinnerSelected() {
         if (mChannelMaskSpinner.getSelectedItemPosition() != 0) {
             mChannelCountSpinner.setSelection(0); // Override the previous channel count selection
+            mChannelAcnMaskSpinner.setSelection(0);
             mIsChannelMaskLastSelected = true;
+            mIsChannelAcnMaskLastSelected = false;
+        }
+    }
+
+    private void onChannelAcnMaskSpinnerSelected() {
+        if (mChannelAcnMaskSpinner.getSelectedItemPosition() != 0) {
+            mChannelCountSpinner.setSelection(0); // Override the previous channel count selection
+            mChannelMaskSpinner.setSelection(0); // Override the previous channel mask selection
+            mIsChannelMaskLastSelected = false;
+            mIsChannelAcnMaskLastSelected = true;
         }
     }
 

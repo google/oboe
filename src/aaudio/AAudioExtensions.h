@@ -204,6 +204,16 @@ public:
         return mLibLoader != nullptr && mLibLoader->builder_setPartialDataCallback != nullptr;
     }
 
+    bool isRoutingChangedCallbackSupported() {
+        return mLibLoader != nullptr && mLibLoader->builder_setRoutingChangedCallback != nullptr;
+    }
+
+    bool isChannelAcnMaskSupported() {
+        return mLibLoader != nullptr
+                && mLibLoader->builder_setChannelAcnMask != nullptr
+                && mLibLoader->stream_getChannelAcnMask != nullptr;
+    }
+
 private:
     bool initMMapPolicy() {
         if (mLibLoader == nullptr || mLibLoader->open() != 0) {

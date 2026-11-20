@@ -18,6 +18,7 @@
 #define OBOETESTER_TEST_ROUTING_CRASH_H
 
 #include "oboe/Oboe.h"
+#include <math.h>
 #include <thread>
 
 /**

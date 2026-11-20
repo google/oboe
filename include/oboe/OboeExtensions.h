@@ -62,6 +62,18 @@ public:
      * @returns true if partial data callback is supported.
      */
     static bool isPartialDataCallbackSupported();
+
+    /**
+     * @returns true if routing changed callback is supported.
+     */
+    static bool isRoutingChangedCallbackSupported();
+
+    /**
+     * @returns true if ambisonic channel masks are supported by AAudio.
+     * See AudioStreamBuilder::setChannelAcnMask().
+     * Note that a particular mask may still fail to open if the device does not support it.
+     */
+    static bool isChannelAcnMaskSupported();
 };
 
 } // namespace oboe

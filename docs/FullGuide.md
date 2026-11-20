@@ -251,6 +251,16 @@ In API 34, the following APIs were added to streams to get properties of the har
 * `getHardwareSampleRate()`
 * `getHardwareFormat()`
 
+In API 38, the following API was added:
+* `setChannelAcnMask(oboe::ChannelAcnMask)` - Requests an ambisonic stream in Ambisonic Channel Number
+  (ACN) ordering, for example `oboe::ChannelAcnMask::Order1` (4 channels) or
+  `oboe::ChannelAcnMask::Order1Hrz` (3 channels, horizontal-only). The channel count is derived from
+  the mask. The last call to `setChannelCount()`, `setChannelMask()` or `setChannelAcnMask()` is respected.
+  After opening, `getChannelAcnMask()` returns the mask and `getChannelMask()` returns `Unspecified`.
+  Use `OboeExtensions::isChannelAcnMaskSupported()` to check for support. If it is not supported,
+  or OpenSL ES is used, `openStream()` returns `Result::ErrorUnimplemented`. Oboe never up-mixes or
+  down-mixes an ambisonic stream. AAudio does not use the MMAP data path for ambisonic streams.
+
 
 ## Using an audio stream
 

@@ -22,6 +22,7 @@
 #include <vector>
 #include "oboe/AudioStreamCallback.h"
 #include "oboe/Definitions.h"
+#include "oboe/Utilities.h"
 
 namespace oboe {
 
@@ -296,6 +297,23 @@ public:
     }
 
     /**
+     * Return the ambisonic channel mask of the stream.
+     *
+     * If the stream was opened with an ambisonic channel mask then this returns that mask,
+     * getChannelMask() returns ChannelMask::Unspecified and getChannelCount() returns the
+     * number of ambisonic channels. Otherwise this returns ChannelAcnMask::Unspecified.
+     *
+     * See AudioStreamBuilder::setChannelAcnMask().
+     *
+     * Added in API level 38 to AAudio.
+     *
+     * @return the ambisonic channel mask, for example ChannelAcnMask::Order1
+     */
+    ChannelAcnMask getChannelAcnMask() const {
+        return mChannelAcnMask;
+    }
+
+    /**
      * @return number of channels for the hardware, for example 2 for stereo, or kUnspecified.
      */
     int32_t getHardwareChannelCount() const { return mHardwareChannelCount; }
@@ -339,6 +357,8 @@ protected:
     int32_t                         mBufferSizeInFrames = kUnspecified;
     /** Stream channel mask. Only active on Android 32+ */
     ChannelMask                     mChannelMask = ChannelMask::Unspecified;
+    /** Stream ambisonic channel mask. Only active on Android 38+ AAudio streams */
+    ChannelAcnMask                  mChannelAcnMask = ChannelAcnMask::Unspecified;
 
     /** Stream sharing mode */
     SharingMode                     mSharingMode = SharingMode::Shared;
@@ -412,6 +432,11 @@ protected:
 
             default:
                 return Result::ErrorInvalidFormat;
+        }
+
+        if (mChannelAcnMask != ChannelAcnMask::Unspecified
+                && !isValidChannelAcnMask(mChannelAcnMask)) {
+            return Result::ErrorIllegalArgument;
         }
 
         switch (mSampleRateConversionQuality) {

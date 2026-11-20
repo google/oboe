@@ -49,6 +49,18 @@ FilterAudioStream::~FilterAudioStream() {
 }
 
 Result FilterAudioStream::configureFlowGraph() {
+    // Never up-mix or down-mix an ambisonic stream.
+    if (getChannelAcnMask() != mChildStream->getChannelAcnMask()
+            || (getChannelAcnMask() != ChannelAcnMask::Unspecified
+                    && getChannelCount() != mChildStream->getChannelCount())) {
+        LOGE("%s() cannot convert ambisonic stream between %s (%d ch) and %s (%d ch)", __func__,
+             convertToText(mChildStream->getChannelAcnMask()),
+             mChildStream->getChannelCount(),
+             convertToText(getChannelAcnMask()),
+             getChannelCount());
+        return Result::ErrorInvalidFormat;
+    }
+
     mFlowGraph = std::make_unique<DataConversionFlowGraph>();
     bool isOutput = getDirection() == Direction::Output;
 

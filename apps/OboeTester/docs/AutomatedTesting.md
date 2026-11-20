@@ -91,8 +91,10 @@ There are several optional parameters in common for glitch, latency, input, and 
     --es out_api            {"unspecified", "opensles", "aaudio"}  // native output API, default is "unspecified"
     --es in_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
     --es out_channel_mask    {"mono", "stereo", "2.1", "tri", "triBack", "3.1", "2.0.2", "2.1.2", "3.0.2", "3.1.2", "quad", "quadSide", "surround", "penta", "5.1", "5.1Side", "6.1", "7.1", "5.1.2", "5.1.4", "7.1.2", "7.1.4", "9.1.4", "9.1.6", "frontBack"}
-    --ei in_channels        {samples}    // number of input channels, default is 2. This is ignored if in_channel_mask is set.
-    --ei out_channels       {samples}    // number of output channels, default is 2. This is ignored if out_channel_mask is set.
+    --es in_channel_acn_mask  {order}    // ambisonic order 0 to 14, add "h" for horizontal-only, e.g. "1" or "3h". Overrides in_channel_mask. Requires AAudio on API 38+.
+    --es out_channel_acn_mask {order}    // ambisonic order 0 to 14, add "h" for horizontal-only, e.g. "1" or "3h". Overrides out_channel_mask. Requires AAudio on API 38+.
+    --ei in_channels        {samples}    // number of input channels, default is 2. This is ignored if in_channel_mask or in_channel_acn_mask is set.
+    --ei out_channels       {samples}    // number of output channels, default is 2. This is ignored if out_channel_mask or out_channel_acn_mask is set.
     --es in_format          {"pcm_16_bit", "pcm_float", "pcm_24_bit", "pcm_32_bit", "iec61937", "mp3"}
     --es out_format         {"pcm_16_bit", "pcm_float", "pcm_24_bit", "pcm_32_bit", "iec61937", "mp3"}
     --ei sample_rate        {hertz}
